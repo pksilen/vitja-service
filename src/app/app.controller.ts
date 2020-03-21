@@ -1,9 +1,19 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
-import { validateOrReject, ValidationError } from 'class-validator';
+import {
+  getFromContainer,
+  MetadataStorage,
+  validateOrReject,
+  ValidationError,
+  ValidationTypes
+} from 'class-validator';
 import SalesItemsService from '../services/salesitems/salesitems.service';
 import UsersService from '../services/users/users.service';
 import getFunctionParamNames from '../backk/getFunctionParamNames';
 import OrdersService from '../services/orders/orders.service';
+import { plainToClass, Type } from 'class-transformer';
+import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
+import initializeController from '../backk/initializeController';
 
 type Params = {
   serviceCall: string;
@@ -15,7 +25,61 @@ export class AppController {
     private readonly salesItemsService: SalesItemsService,
     private readonly usersService: UsersService,
     private readonly ordersService: OrdersService
-  ) {}
+  ) {
+    initializeController(this);
+  }
+
+  @Post('/metadata')
+  processMetadataRequests(): any {
+    return Object.entries(this)
+      .filter(([, value]: [string, any]) => typeof value === 'object')
+      .map(([serviceName]: [string, any]) => {
+        const servicePrototype = Object.getPrototypeOf((this as any)[serviceName]);
+        const functionNames = Object.getOwnPropertyNames(servicePrototype).filter(
+          (ownPropertyName: string) => ownPropertyName !== 'constructor'
+        );
+
+        const functions = functionNames.map((functionName: string) => {
+          const [firstParamName] = getFunctionParamNames((this as any)[serviceName][functionName]);
+          const paramObjectClassName = firstParamName.charAt(0).toUpperCase() + firstParamName.slice(1);
+          const returnValueClassOrClassName: Function | string = (this as any)[serviceName][
+            functionName.charAt(0).toUpperCase() + functionName.slice(1) + 'ReturnValueType'
+          ];
+          return {
+            functionName,
+            argType: paramObjectClassName,
+            returnValueType:
+              (typeof returnValueClassOrClassName === 'string'
+                ? returnValueClassOrClassName
+                : returnValueClassOrClassName?.name
+                ? returnValueClassOrClassName.name
+                : 'void') + ' | ErrorResponse'
+          };
+        });
+
+        const targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean } = {};
+
+        const types = Object.entries((this as any)[serviceName].Types).reduce(
+          (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
+            const typeObject = this.getTypeObject(typeClass, targetAndPropNameToHasNestedValidationMap);
+            return { ...accumulatedTypes, [typeName]: typeObject };
+          },
+          {}
+        );
+
+        return {
+          serviceName,
+          functions,
+          types: {
+            ...types,
+            ErrorResponse: {
+              statusCode: 'integer',
+              message: 'string'
+            }
+          }
+        };
+      });
+  }
 
   @Post(':serviceCall')
   @HttpCode(200)
@@ -23,42 +87,19 @@ export class AppController {
     const [serviceName, functionName] = params.serviceCall.split('.');
     const [firstParamName] = getFunctionParamNames((this as any)[serviceName][functionName]);
     const argObjectClassName = firstParamName.charAt(0).toUpperCase() + firstParamName.slice(1);
-    const validatableObject = this.getValidatableObject(argObject, argObjectClassName, serviceName);
+    const validatableObject = plainToClass(
+      (this as any)[serviceName]['Types'][argObjectClassName],
+      argObject
+    );
 
     try {
-      await validateOrReject(validatableObject, { whitelist: true });
+      await validateOrReject(validatableObject as object, { whitelist: true });
     } catch (validationErrors) {
       const errorStr = this.getValidationErrors(validationErrors);
       throw new HttpException(errorStr, HttpStatus.BAD_REQUEST);
     }
 
     return (this as any)[serviceName][functionName](validatableObject);
-  }
-
-  private getValidatableObject(object: object, objectClassName: any, serviceName: string): object {
-    const validatableObject = new (this as any)[serviceName]['Types'][objectClassName]();
-
-    return Object.entries(object).reduce((accumulatedArgs, [key, value]: [string, any]) => {
-      let valueClassName = '';
-
-      if (
-        (!Array.isArray(value) && typeof value === 'object' && value !== null) ||
-        (Array.isArray(value) && value.length > 0 && !Array.isArray(value[0]) && typeof value[0] === 'object')
-      ) {
-        valueClassName = key.charAt(0).toUpperCase() + key.slice(1, -1);
-      }
-
-      return Object.assign(accumulatedArgs, {
-        [key]:
-          valueClassName && Array.isArray(value)
-            ? value.map((item: any) =>
-                item !== null ? this.getValidatableObject(item, valueClassName, serviceName) : null
-              )
-            : valueClassName
-            ? this.getValidatableObject(value, valueClassName, serviceName)
-            : value
-      });
-    }, validatableObject);
   }
 
   private getValidationErrors(validationErrors: ValidationError[]): string {
@@ -73,5 +114,64 @@ export class AppController {
         }
       })
       .join(', ');
+  }
+
+  private getTypeObject(
+    typeClass: Function,
+    targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean }
+  ): object {
+    const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
+    const propNameToIsOptionalMap: { [key: string]: boolean } = {};
+    const propNameToPropTypeMap: { [key: string]: string } = {};
+
+    validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
+      if (validationMetadata.type === 'conditionalValidation') {
+        propNameToIsOptionalMap[validationMetadata.propertyName] = true;
+      }
+
+      switch (validationMetadata.type) {
+        case 'isBoolean':
+          propNameToPropTypeMap[validationMetadata.propertyName] =
+            'boolean' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+          break;
+        case 'isNumber':
+          propNameToPropTypeMap[validationMetadata.propertyName] =
+            'number' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+          break;
+        case 'isString':
+          propNameToPropTypeMap[validationMetadata.propertyName] =
+            'string' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+          break;
+        case 'isInt':
+          propNameToPropTypeMap[validationMetadata.propertyName] =
+            'integer' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+          break;
+        case 'isIn':
+          propNameToPropTypeMap[validationMetadata.propertyName] =
+            '(' +
+            validationMetadata.constraints[0].map((value: any) => `'${value}'`).join('|') +
+            ')' +
+            (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+          break;
+        case 'isInstance':
+          propNameToPropTypeMap[validationMetadata.propertyName] =
+            validationMetadata.constraints[0].name +
+            (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+          break;
+        case 'isArray':
+          propNameToPropTypeMap[validationMetadata.propertyName] =
+            (propNameToPropTypeMap[validationMetadata.propertyName] ?? '') + '[]';
+          break;
+      }
+    });
+
+    return Object.entries(propNameToPropTypeMap).reduce((accumulatedTypeObject, [propName, propType]) => {
+      return {
+        ...accumulatedTypeObject,
+        [propName]: propNameToIsOptionalMap[propName]
+          ? '?' + propNameToPropTypeMap[propName]
+          : propNameToPropTypeMap[propName]
+      };
+    }, {});
   }
 }

@@ -1,41 +1,15 @@
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
-import { IsArray, IsIn, IsInt, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsIn, IsInstance, IsInt, IsString } from 'class-validator';
 
-export class UserNameWrapper {
+export class ShoppingCartItemWithoutId {
   @IsString()
-  userName!: string;
+  salesItemId!: string;
+
+  @IsInt()
+  quantity!: number;
 }
 
-export class UserWithoutId {
-  @IsString()
-  userName!: string;
-
-  @IsString()
-  password!: string;
-
-  @IsString()
-  streetAddress!: string;
-
-  @IsString()
-  postalCode!: string;
-
-  @IsString()
-  city!: string;
-
-  @ValidateNested({ each: true })
-  @IsArray()
-  paymentMethods?: PaymentMethod[];
-
-  @ValidateNested({ each: true })
-  @IsArray()
-  favoriteSalesItems?: string[];
-
-  @ValidateNested({ each: true })
-  @IsArray()
-  shoppingCartItems?: ShoppingCartItem[];
-}
-
-export class User extends UserWithoutId {
+export class ShoppingCartItem extends ShoppingCartItemWithoutId {
   @IsString()
   _id!: string;
 }
@@ -60,22 +34,51 @@ export class PaymentMethod extends PaymentMethodWithoutId {
   _id!: string;
 }
 
+export class UserNameWrapper {
+  @IsString()
+  userName!: string;
+}
+
+export class UserWithoutId {
+  @IsString()
+  userName!: string;
+
+  @IsString()
+  password!: string;
+
+  @IsString()
+  streetAddress!: string;
+
+  @IsString()
+  postalCode!: string;
+
+  @IsString()
+  city!: string;
+
+  @IsInstance(PaymentMethod)
+  defaultPaymentMethod!: PaymentMethod;
+
+  @IsInstance(PaymentMethod, { each: true})
+  @IsArray()
+  paymentMethods!: PaymentMethod[];
+
+  @IsString({ each: true })
+  @IsArray()
+  favoriteSalesItemIds!: string[];
+
+  @IsInstance(ShoppingCartItem, { each: true})
+  @IsArray()
+  shoppingCartItems!: ShoppingCartItem[];
+}
+
+export class User extends UserWithoutId {
+  @IsString()
+  _id!: string;
+}
+
 export class PaymentMethodAndUserId extends PaymentMethod {
   @IsString()
   userId!: string;
-}
-
-export class ShoppingCartItemWithoutId {
-  @IsString()
-  salesItemId!: string;
-
-  @IsInt()
-  quantity!: number;
-}
-
-export class ShoppingCartItem extends ShoppingCartItemWithoutId {
-  @IsString()
-  _id!: string;
 }
 
 export class PaymentMethodIdAndUserId {
@@ -104,11 +107,15 @@ export default abstract class UsersService {
     SalesItemIdAndUserId,
     User,
     UserNameWrapper,
-    UserWithoutId,
+    UserWithoutId
   };
 
   abstract getUserByUserName(userNameWrapper: UserNameWrapper): Promise<User | ErrorResponse>;
+  readonly GetUserByUserNameReturnValueType = User;
+
   abstract createUser(userWithoutId: UserWithoutId): Promise<IdWrapper | ErrorResponse>;
+  readonly CreateUserReturnValueType = IdWrapper;
+
   abstract deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
   abstract updateUser(user: User): Promise<void | ErrorResponse>;
 

@@ -61,7 +61,7 @@ export default class MongodbUsersServiceImpl extends UsersService {
   ): Promise<void | ErrorResponse> {
     await dbManager.addSubItemIdForItemById<User>(
       salesItemIdAndUserId.salesItemId,
-      'favoriteSalesItems',
+      'favoriteSalesItemIds',
       salesItemIdAndUserId.userId,
       DB_NAME,
       COLLECTION_NAME
@@ -73,7 +73,7 @@ export default class MongodbUsersServiceImpl extends UsersService {
   ): Promise<void | ErrorResponse> {
     await dbManager.removeSubItemByIdFromItemById<User>(
       salesItemIdAndUserId.salesItemId,
-      'favoriteSalesItems',
+      'favoriteSalesItemIds',
       salesItemIdAndUserId.userId,
       DB_NAME,
       COLLECTION_NAME

@@ -1,6 +1,6 @@
 import pick from 'lodash/pick';
 import omit from 'lodash/omit';
-import { IsString } from 'class-validator';
+import { IsBoolean, IsString } from 'class-validator';
 
 export class IdWrapper {
   @IsString()

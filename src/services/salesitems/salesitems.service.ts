@@ -2,64 +2,66 @@ import { IsArray, IsIn, IsInt, IsNumber, IsOptional, IsString } from 'class-vali
 import { ErrorResponse, IdWrapper, Projectable } from '../../backk/Backk';
 
 export class SalesItemsFilters implements Projectable {
-  @IsString()
   @IsOptional()
+  @IsString()
   sellerUserId?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   textFilter?: string;
 
   /** @IsIn(['Area1', 'Area2', 'Area3'], { each: true }) **/
-  @IsArray()
-  @IsIn(['Area1', 'Area2', 'Area3'], { each: true })
   @IsOptional()
+  @IsIn(['Area1', 'Area2', 'Area3'], { each: true })
+  @IsArray()
   areas?: string[];
 
-  /** @IsIn(['Vehicles'], { each: true}) **/
-  @IsArray()
-  @IsIn(['Vehicles'], { each: true })
+  /** @IsIn(['Vehicles', 'Clothes'], { each: true}) **/
   @IsOptional()
+  @IsIn(['Vehicles', 'Clothes'], { each: true })
+  @IsArray()
   productDepartments?: string[];
 
-  /** @IsIn(['Vehicles'], { each: true}) **/
-  @IsArray()
-  @IsIn(['Vehicles'], { each: true })
+  /** @IsIn(['Vehicles', 'Clothes'], { each: true}) **/
   @IsOptional()
+  @IsIn(['Vehicles', 'Clothes'], { each: true })
+  @IsArray()
   productCategories?: string[];
 
-  /** @IsIn(['Vehicles']) **/
-  @IsArray()
-  @IsIn(['Vehicles'], { each: true })
+  /** @IsIn(['Vehicles', 'Clothes'], { each: true }) **/
   @IsOptional()
+  @IsIn(['Vehicles', 'Clothes'], { each: true })
+  @IsArray()
   productSubCategories?: string[];
 
   /** @IsInt() **/
-  @IsInt()
   @IsOptional()
+  @IsInt()
   minPrice?: number;
 
   /** @IsInt() **/
-  @IsInt()
   @IsOptional()
+  @IsInt()
   maxPrice?: number;
 
   /** @IsIn(['price', 'priceWhenPreviousPrice', 'createdTimestamp']) **/
-  @IsIn(['price', 'priceWhenPreviousPrice', 'createdTimestamp'])
   @IsOptional()
+  @IsIn(['price', 'priceWhenPreviousPrice', 'createdTimestamp'])
   sortBy?: string;
 
   /** @IsIn(['ASC', 'DESC']) **/
-  @IsIn(['ASC', 'DESC'])
   @IsOptional()
+  @IsIn(['ASC', 'DESC'])
   sortDirection?: string;
 
-  @IsArray()
   @IsOptional()
+  @IsString({ each: true })
+  @IsArray()
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];
 
-  @IsArray()
   @IsOptional()
+  @IsString({ each: true })
+  @IsArray()
   excludeResponseFields?: string[];
 }
 
@@ -73,30 +75,27 @@ export class SalesItemWithoutId {
   @IsString()
   description!: string;
 
-  @IsString()
-  @IsIn(['Vehicles'], { each: true })
+  @IsIn(['Vehicles'])
   productDepartment!: string;
 
-  @IsString()
-  @IsIn(['Vehicles'], { each: true })
+  @IsIn(['Vehicles'])
   productCategory!: string;
 
-  @IsString()
-  @IsIn(['Vehicles'], { each: true })
+  @IsIn(['Vehicles'])
   productSubCategory!: string;
 
-  @IsNumber()
+  /** @IsNumber({ maxDecimalPlaces: 2 }) **/
+  @IsNumber({ maxDecimalPlaces: 2 })
   price!: number;
 
-  @IsNumber()
+  /** @IsNumber({ maxDecimalPlaces: 2 }) **/
+  @IsNumber({ maxDecimalPlaces: 2 })
   previousPrice!: number;
-
-  @IsInt()
-  createdTimestampInMillis!: number;
 
   @IsString()
   primaryImageDataUri!: string;
 
+  @IsString({ each: true })
   @IsArray()
   secondaryImageDataUris!: string[];
 }
@@ -104,6 +103,9 @@ export class SalesItemWithoutId {
 export class SalesItem extends SalesItemWithoutId {
   @IsString()
   _id!: string;
+
+  @IsInt()
+  createdTimestampInMillis!: number;
 }
 
 export default abstract class SalesItemsService {
@@ -117,9 +119,14 @@ export default abstract class SalesItemsService {
   abstract getSalesItems(
     salesItemsFilters: SalesItemsFilters
   ): Promise<Array<Partial<SalesItem>> | ErrorResponse>;
+  readonly GetSalesItemsReturnValueType = 'SalesItem[]';
 
   abstract getSalesItemById(idWrapper: IdWrapper): Promise<SalesItem | ErrorResponse>;
+  readonly GetSalesItemByIdReturnValueType = SalesItem;
+
   abstract createSalesItem(salesItem: SalesItemWithoutId): Promise<IdWrapper | ErrorResponse>;
+  readonly CreateSalesItemReturnValueType = IdWrapper;
+
   abstract updateSalesItem(salesItem: SalesItem): Promise<void | ErrorResponse>;
   abstract deleteSalesItemById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
 }

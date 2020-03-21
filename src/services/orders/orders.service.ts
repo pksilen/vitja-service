@@ -1,12 +1,12 @@
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import { ShoppingCartItem } from '../users/users.service';
-import { IsArray, IsIn, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsIn, IsInstance, IsString } from 'class-validator';
 
 export class OrderWithoutId {
   @IsString()
   buyerId!: string;
 
-  @ValidateNested({ each: true })
+  @IsInstance(ShoppingCartItem, { each: true })
   @IsArray()
   shoppingCartItems!: ShoppingCartItem[];
 
@@ -24,11 +24,18 @@ export default abstract class OrdersService {
   readonly Types = {
     IdWrapper,
     OrderWithoutId,
-    Order
+    Order,
+    ShoppingCartItem
   };
 
   abstract getOrderById(idWrapper: IdWrapper): Promise<Order | ErrorResponse>;
+  readonly GetOrderByIdReturnValueType = Order;
+
   abstract getOrderByBuyerId(idWrapper: IdWrapper): Promise<Order | ErrorResponse>;
+  readonly GetOrderByBuyerIdReturnValueType = Order;
+
   abstract createOrder(orderWithoutId: OrderWithoutId): Promise<IdWrapper | ErrorResponse>;
+  readonly CreateOrderIdReturnValueType = IdWrapper;
+
   abstract deleteOrderById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
 }
