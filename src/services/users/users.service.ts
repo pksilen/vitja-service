@@ -1,5 +1,7 @@
-import { ErrorResponse, IdWrapper } from '../../backk/Backk';
+import { ErrorResponse, getSourceFileName, IdWrapper } from '../../backk/Backk';
 import { IsArray, IsIn, IsInstance, IsInt, IsString } from 'class-validator';
+import ReturnType from '../../backk/getServiceTypeNames';
+import { Service } from '../../backk/service';
 
 export class ShoppingCartItemWithoutId {
   @IsString()
@@ -97,7 +99,9 @@ export class SalesItemIdAndUserId {
   userId!: string;
 }
 
-export default abstract class UsersService {
+export default abstract class UsersService implements Service {
+  readonly fileName = getSourceFileName(__filename);
+
   readonly Types = {
     IdWrapper,
     PaymentMethod,
@@ -111,11 +115,7 @@ export default abstract class UsersService {
   };
 
   abstract getUserByUserName(userNameWrapper: UserNameWrapper): Promise<User | ErrorResponse>;
-  readonly GetUserByUserNameReturnValueType = User;
-
   abstract createUser(userWithoutId: UserWithoutId): Promise<IdWrapper | ErrorResponse>;
-  readonly CreateUserReturnValueType = IdWrapper;
-
   abstract deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
   abstract updateUser(user: User): Promise<void | ErrorResponse>;
 

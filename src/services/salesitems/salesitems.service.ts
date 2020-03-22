@@ -1,11 +1,8 @@
 import { IsArray, IsIn, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
-import { ErrorResponse, IdWrapper, Projectable } from '../../backk/Backk';
+import { ErrorResponse, getSourceFileName, IdsWrapper, IdWrapper, Projectable } from '../../backk/Backk';
+import { Service } from '../../backk/service';
 
 export class SalesItemsFilters implements Projectable {
-  @IsOptional()
-  @IsString()
-  sellerUserId?: string;
-
   @IsOptional()
   @IsString()
   textFilter?: string;
@@ -67,7 +64,7 @@ export class SalesItemsFilters implements Projectable {
 
 export class SalesItemWithoutId {
   @IsString()
-  sellerUserId!: string;
+  userId!: string;
 
   @IsString()
   title!: string;
@@ -108,25 +105,22 @@ export class SalesItem extends SalesItemWithoutId {
   createdTimestampInMillis!: number;
 }
 
-export default abstract class SalesItemsService {
+export default abstract class SalesItemsService implements Service {
+  readonly fileName = getSourceFileName(__filename);
+
   readonly Types = {
     IdWrapper,
+    IdsWrapper,
     SalesItemsFilters,
     SalesItemWithoutId,
     SalesItem
   };
 
-  abstract getSalesItems(
-    salesItemsFilters: SalesItemsFilters
-  ): Promise<Array<Partial<SalesItem>> | ErrorResponse>;
-  readonly GetSalesItemsReturnValueType = 'SalesItem[]';
-
+  abstract getSalesItems(salesItemsFilters: SalesItemsFilters): Promise<Partial<SalesItem>[] | ErrorResponse>;
   abstract getSalesItemById(idWrapper: IdWrapper): Promise<SalesItem | ErrorResponse>;
-  readonly GetSalesItemByIdReturnValueType = SalesItem;
-
-  abstract createSalesItem(salesItem: SalesItemWithoutId): Promise<IdWrapper | ErrorResponse>;
-  readonly CreateSalesItemReturnValueType = IdWrapper;
-
+  abstract getSalesItemsByUserId(idWrapper: IdWrapper): Promise<SalesItem[] | ErrorResponse>;
+  abstract getSalesItemsByIds(idsWrapper: IdsWrapper): Promise<SalesItem[] | ErrorResponse>;
+  abstract createSalesItem(salesItemWithoutId: SalesItemWithoutId): Promise<IdWrapper | ErrorResponse>;
   abstract updateSalesItem(salesItem: SalesItem): Promise<void | ErrorResponse>;
   abstract deleteSalesItemById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
 }

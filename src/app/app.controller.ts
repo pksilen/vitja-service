@@ -1,19 +1,13 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
-import {
-  getFromContainer,
-  MetadataStorage,
-  validateOrReject,
-  ValidationError,
-  ValidationTypes
-} from 'class-validator';
+import { getFromContainer, MetadataStorage, validateOrReject, ValidationError } from 'class-validator';
+import { plainToClass } from 'class-transformer';
 import SalesItemsService from '../services/salesitems/salesitems.service';
 import UsersService from '../services/users/users.service';
-import getFunctionParamNames from '../backk/getFunctionParamNames';
 import OrdersService from '../services/orders/orders.service';
-import { plainToClass, Type } from 'class-transformer';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import initializeController from '../backk/initializeController';
+import getServiceTypeNames from '../backk/getServiceTypeNames';
+import { Service } from '../backk/service';
 
 type Params = {
   serviceCall: string;
@@ -27,41 +21,51 @@ export class AppController {
     private readonly ordersService: OrdersService
   ) {
     initializeController(this);
+    Object.entries(this).forEach(([serviceName, service]: [string, Service]) => {
+      const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(
+        serviceName,
+        service.fileName
+      );
+
+      (this as any)[`${serviceName}Types`] = {
+        functionNameToParamTypeNameMap,
+        functionNameToReturnTypeNameMap
+      };
+    });
   }
 
   @Post('/metadata')
   processMetadataRequests(): any {
     return Object.entries(this)
-      .filter(([, value]: [string, any]) => typeof value === 'object')
+      .filter(
+        ([, propValue]: [string, any]) => typeof propValue === 'object' && propValue.constructor !== Object
+      )
       .map(([serviceName]: [string, any]) => {
         const servicePrototype = Object.getPrototypeOf((this as any)[serviceName]);
+
         const functionNames = Object.getOwnPropertyNames(servicePrototype).filter(
           (ownPropertyName: string) => ownPropertyName !== 'constructor'
         );
 
         const functions = functionNames.map((functionName: string) => {
-          const [firstParamName] = getFunctionParamNames((this as any)[serviceName][functionName]);
-          const paramObjectClassName = firstParamName.charAt(0).toUpperCase() + firstParamName.slice(1);
-          const returnValueClassOrClassName: Function | string = (this as any)[serviceName][
-            functionName.charAt(0).toUpperCase() + functionName.slice(1) + 'ReturnValueType'
+          const paramTypeName = (this as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
+            functionName
           ];
+
+          const returnValueTypeName = (this as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap[
+            functionName
+          ];
+
           return {
             functionName,
-            argType: paramObjectClassName,
-            returnValueType:
-              (typeof returnValueClassOrClassName === 'string'
-                ? returnValueClassOrClassName
-                : returnValueClassOrClassName?.name
-                ? returnValueClassOrClassName.name
-                : 'void') + ' | ErrorResponse'
+            argType: paramTypeName,
+            returnValueType: returnValueTypeName
           };
         });
 
-        const targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean } = {};
-
         const types = Object.entries((this as any)[serviceName].Types).reduce(
           (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
-            const typeObject = this.getTypeObject(typeClass, targetAndPropNameToHasNestedValidationMap);
+            const typeObject = this.getTypeObject(typeClass);
             return { ...accumulatedTypes, [typeName]: typeObject };
           },
           {}
@@ -85,8 +89,11 @@ export class AppController {
   @HttpCode(200)
   async processRequests(@Param() params: Params, @Body() argObject: object): Promise<object | void> {
     const [serviceName, functionName] = params.serviceCall.split('.');
-    const [firstParamName] = getFunctionParamNames((this as any)[serviceName][functionName]);
-    const argObjectClassName = firstParamName.charAt(0).toUpperCase() + firstParamName.slice(1);
+
+    const argObjectClassName = (this as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
+      functionName
+    ];
+
     const validatableObject = plainToClass(
       (this as any)[serviceName]['Types'][argObjectClassName],
       argObject
@@ -116,10 +123,7 @@ export class AppController {
       .join(', ');
   }
 
-  private getTypeObject(
-    typeClass: Function,
-    targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean }
-  ): object {
+  private getTypeObject(typeClass: Function): object {
     const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
     const propNameToIsOptionalMap: { [key: string]: boolean } = {};
     const propNameToPropTypeMap: { [key: string]: string } = {};
@@ -168,9 +172,7 @@ export class AppController {
     return Object.entries(propNameToPropTypeMap).reduce((accumulatedTypeObject, [propName, propType]) => {
       return {
         ...accumulatedTypeObject,
-        [propName]: propNameToIsOptionalMap[propName]
-          ? '?' + propNameToPropTypeMap[propName]
-          : propNameToPropTypeMap[propName]
+        [propName]: propNameToIsOptionalMap[propName] ? '?' + propType : propType
       };
     }, {});
   }

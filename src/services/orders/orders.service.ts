@@ -1,6 +1,7 @@
-import { ErrorResponse, IdWrapper } from '../../backk/Backk';
+import { ErrorResponse, getSourceFileName, IdWrapper } from '../../backk/Backk';
 import { ShoppingCartItem } from '../users/users.service';
 import { IsArray, IsIn, IsInstance, IsString } from 'class-validator';
+import { Service } from '../../backk/service';
 
 export class OrderWithoutId {
   @IsString()
@@ -20,7 +21,9 @@ export class Order extends OrderWithoutId {
   _id!: string;
 }
 
-export default abstract class OrdersService {
+export default abstract class OrdersService implements Service{
+  readonly fileName = getSourceFileName(__filename);
+
   readonly Types = {
     IdWrapper,
     OrderWithoutId,
@@ -29,13 +32,7 @@ export default abstract class OrdersService {
   };
 
   abstract getOrderById(idWrapper: IdWrapper): Promise<Order | ErrorResponse>;
-  readonly GetOrderByIdReturnValueType = Order;
-
   abstract getOrderByBuyerId(idWrapper: IdWrapper): Promise<Order | ErrorResponse>;
-  readonly GetOrderByBuyerIdReturnValueType = Order;
-
   abstract createOrder(orderWithoutId: OrderWithoutId): Promise<IdWrapper | ErrorResponse>;
-  readonly CreateOrderIdReturnValueType = IdWrapper;
-
   abstract deleteOrderById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
 }

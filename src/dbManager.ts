@@ -33,6 +33,22 @@ class DbManager {
     throw new HttpException(`Item with _id: ${_id} not found`, HttpStatus.NOT_FOUND);
   }
 
+  async getItemsByIds<T>(_ids: string[], dbName: string, tableName: string): Promise<T[] | ErrorResponse> {
+    const foundItems = await this.execute((client) =>
+      client
+        .db(dbName)
+        .collection(tableName)
+        .find<T>({ _id: { $in: [_ids.map((_id: string) => new ObjectId(_id))] } })
+        .toArray()
+    );
+
+    if (foundItems) {
+      return foundItems;
+    }
+
+    throw new HttpException(`Item with _ids: ${_ids} not found`, HttpStatus.NOT_FOUND);
+  }
+
   async getItemBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
@@ -44,6 +60,27 @@ class DbManager {
         .db(dbName)
         .collection(tableName)
         .findOne<T>({ [fieldName]: fieldValue })
+    );
+
+    if (foundItem) {
+      return foundItem;
+    }
+
+    throw new HttpException(`Item with ${fieldName}: ${fieldValue} not found`, HttpStatus.NOT_FOUND);
+  }
+
+  async getItemsBy<T>(
+    fieldName: keyof T,
+    fieldValue: T[keyof T],
+    dbName: string,
+    tableName: string
+  ): Promise<T[] | ErrorResponse> {
+    const foundItem = await this.execute((client) =>
+      client
+        .db(dbName)
+        .collection(tableName)
+        .find<T>({ [fieldName]: fieldValue })
+        .toArray()
     );
 
     if (foundItem) {
@@ -96,7 +133,7 @@ class DbManager {
     }
   }
 
-  async addSubItemForItemById<T extends { _id: string } , U>(
+  async addSubItemForItemById<T extends { _id: string }, U>(
     subItem: T,
     fieldName: keyof U,
     itemId: string,

@@ -21,8 +21,8 @@ function setDecorators(
 
         if (
           !targetAndPropNameToHasNestedValidationMap[
-          (validationMetadata.target as Function).name + validationMetadata.propertyName
-            ]
+            (validationMetadata.target as Function).name + validationMetadata.propertyName
+          ]
         ) {
           Type(() => validationMetadata.constraints[0])(
             new (validationMetadata.target as new () => any)(),
@@ -34,8 +34,8 @@ function setDecorators(
           );
 
           targetAndPropNameToHasNestedValidationMap[
-          (validationMetadata.target as Function).name + validationMetadata.propertyName
-            ] = true;
+            (validationMetadata.target as Function).name + validationMetadata.propertyName
+          ] = true;
         }
         break;
     }
@@ -56,5 +56,3 @@ export default function initializeController<T>(controller: T) {
       );
     });
 }
-
-

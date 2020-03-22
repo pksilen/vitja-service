@@ -1,10 +1,20 @@
 import pick from 'lodash/pick';
 import omit from 'lodash/omit';
-import { IsBoolean, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsString } from 'class-validator';
+
+export function getSourceFileName(fileName: string, distFolderName = 'dist'): string {
+  return fileName.replace(distFolderName, 'src');
+}
 
 export class IdWrapper {
   @IsString()
   _id!: string;
+}
+
+export class IdsWrapper {
+  @IsString()
+  @IsArray()
+  _ids!: string[];
 }
 
 export type ErrorResponse = {
