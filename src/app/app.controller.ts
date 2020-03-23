@@ -1,13 +1,13 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
-import { getFromContainer, MetadataStorage, validateOrReject, ValidationError } from 'class-validator';
+import { validateOrReject, ValidationError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import SalesItemsService from '../services/salesitems/salesitems.service';
 import UsersService from '../services/users/users.service';
 import OrdersService from '../services/orders/orders.service';
-import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import initializeController from '../backk/initializeController';
 import getServiceTypeNames from '../backk/getServiceTypeNames';
 import { Service } from '../backk/service';
+import generateMetadata from '../backk/generateMetadata';
 
 type Params = {
   serviceCall: string;
@@ -20,7 +20,6 @@ export class AppController {
     private readonly usersService: UsersService,
     private readonly ordersService: OrdersService
   ) {
-    initializeController(this);
     Object.entries(this).forEach(([serviceName, service]: [string, Service]) => {
       const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(
         serviceName,
@@ -32,57 +31,13 @@ export class AppController {
         functionNameToReturnTypeNameMap
       };
     });
+
+    initializeController(this);
   }
 
   @Post('/metadata')
   processMetadataRequests(): any {
-    return Object.entries(this)
-      .filter(
-        ([, propValue]: [string, any]) => typeof propValue === 'object' && propValue.constructor !== Object
-      )
-      .map(([serviceName]: [string, any]) => {
-        const servicePrototype = Object.getPrototypeOf((this as any)[serviceName]);
-
-        const functionNames = Object.getOwnPropertyNames(servicePrototype).filter(
-          (ownPropertyName: string) => ownPropertyName !== 'constructor'
-        );
-
-        const functions = functionNames.map((functionName: string) => {
-          const paramTypeName = (this as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
-            functionName
-          ];
-
-          const returnValueTypeName = (this as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap[
-            functionName
-          ];
-
-          return {
-            functionName,
-            argType: paramTypeName,
-            returnValueType: returnValueTypeName
-          };
-        });
-
-        const types = Object.entries((this as any)[serviceName].Types).reduce(
-          (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
-            const typeObject = this.getTypeObject(typeClass);
-            return { ...accumulatedTypes, [typeName]: typeObject };
-          },
-          {}
-        );
-
-        return {
-          serviceName,
-          functions,
-          types: {
-            ...types,
-            ErrorResponse: {
-              statusCode: 'integer',
-              message: 'string'
-            }
-          }
-        };
-      });
+    return generateMetadata(this);
   }
 
   @Post(':serviceCall')
@@ -121,59 +76,5 @@ export class AppController {
         }
       })
       .join(', ');
-  }
-
-  private getTypeObject(typeClass: Function): object {
-    const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
-    const propNameToIsOptionalMap: { [key: string]: boolean } = {};
-    const propNameToPropTypeMap: { [key: string]: string } = {};
-
-    validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
-      if (validationMetadata.type === 'conditionalValidation') {
-        propNameToIsOptionalMap[validationMetadata.propertyName] = true;
-      }
-
-      switch (validationMetadata.type) {
-        case 'isBoolean':
-          propNameToPropTypeMap[validationMetadata.propertyName] =
-            'boolean' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
-          break;
-        case 'isNumber':
-          propNameToPropTypeMap[validationMetadata.propertyName] =
-            'number' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
-          break;
-        case 'isString':
-          propNameToPropTypeMap[validationMetadata.propertyName] =
-            'string' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
-          break;
-        case 'isInt':
-          propNameToPropTypeMap[validationMetadata.propertyName] =
-            'integer' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
-          break;
-        case 'isIn':
-          propNameToPropTypeMap[validationMetadata.propertyName] =
-            '(' +
-            validationMetadata.constraints[0].map((value: any) => `'${value}'`).join('|') +
-            ')' +
-            (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
-          break;
-        case 'isInstance':
-          propNameToPropTypeMap[validationMetadata.propertyName] =
-            validationMetadata.constraints[0].name +
-            (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
-          break;
-        case 'isArray':
-          propNameToPropTypeMap[validationMetadata.propertyName] =
-            (propNameToPropTypeMap[validationMetadata.propertyName] ?? '') + '[]';
-          break;
-      }
-    });
-
-    return Object.entries(propNameToPropTypeMap).reduce((accumulatedTypeObject, [propName, propType]) => {
-      return {
-        ...accumulatedTypeObject,
-        [propName]: propNameToIsOptionalMap[propName] ? '?' + propType : propType
-      };
-    }, {});
   }
 }
