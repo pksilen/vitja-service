@@ -114,7 +114,20 @@ function getValidationMetadata<T>(typeClass: new () => T): object {
   );
 }
 
-export default function generateMetadata<T>(controller: T): object {
+export type FunctionMetadata = {
+  functionName: string,
+  argType: string,
+  returnValueType: string
+}
+
+export type ServiceMetadata = {
+  serviceName: string,
+  functions: FunctionMetadata[],
+  types: { [p: string]: object },
+  validations: { [p: string]: any[] }
+}
+
+export default function generateServicesMetadata<T>(controller: T): ServiceMetadata[] {
   return Object.entries(controller)
     .filter(
       ([, propValue]: [string, any]) => typeof propValue === 'object' && propValue.constructor !== Object
@@ -126,12 +139,12 @@ export default function generateMetadata<T>(controller: T): object {
         (ownPropertyName: string) => ownPropertyName !== 'constructor'
       );
 
-      const functions = functionNames.map((functionName: string) => {
+      const functions: FunctionMetadata[] = functionNames.map((functionName: string) => {
         const paramTypeName = (controller as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
           functionName
         ];
 
-        const returnValueTypeName = (controller as any)[`${serviceName}Types`]
+        const returnValueTypeName: string = (controller as any)[`${serviceName}Types`]
           .functionNameToReturnTypeNameMap[functionName];
 
         return {

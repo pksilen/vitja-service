@@ -7,13 +7,13 @@ import OrdersService from '../services/orders/orders.service';
 import initializeController from '../backk/initializeController';
 import getServiceTypeNames from '../backk/getServiceTypeNames';
 import { Service } from '../backk/service';
-import generateMetadata from '../backk/generateMetadata';
+import generateServicesMetadata from '../backk/generateServicesMetadata';
 
 type Params = {
   serviceCall: string;
 };
 
-@Controller('vitja')
+@Controller()
 export class AppController {
   constructor(
     private readonly salesItemsService: SalesItemsService,
@@ -37,7 +37,7 @@ export class AppController {
 
   @Post('/metadata')
   processMetadataRequests(): any {
-    return generateMetadata(this);
+    return generateServicesMetadata(this);
   }
 
   @Post(':serviceCall')

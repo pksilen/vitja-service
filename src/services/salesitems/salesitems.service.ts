@@ -61,7 +61,7 @@ export class SalesItemsFilters implements Projectable {
   @IsOptional()
   @IsString({ each: true })
   @IsArray()
-  excludeResponseFields?: string[];
+  excludeResponseFields?: string[] = [];
 }
 
 export class SalesItemWithoutId {
