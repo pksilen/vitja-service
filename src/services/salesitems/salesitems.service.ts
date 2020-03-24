@@ -1,4 +1,4 @@
-import { IsArray, IsIn, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsIn, IsInt, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 import { ErrorResponse, getSourceFileName, IdsWrapper, IdWrapper, Projectable } from '../../backk/Backk';
 import { Service } from '../../backk/service';
 
@@ -34,11 +34,13 @@ export class SalesItemsFilters implements Projectable {
   /** @IsInt() **/
   @IsOptional()
   @IsInt()
+  @IsPositive()
   minPrice?: number;
 
   /** @IsInt() **/
   @IsOptional()
   @IsInt()
+  @IsPositive()
   maxPrice?: number;
 
   /** @IsIn(['price', 'priceWhenPreviousPrice', 'createdTimestamp']) **/
@@ -83,10 +85,12 @@ export class SalesItemWithoutId {
 
   /** @IsNumber({ maxDecimalPlaces: 2 }) **/
   @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
   price!: number;
 
   /** @IsNumber({ maxDecimalPlaces: 2 }) **/
   @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
   previousPrice!: number;
 
   @IsString()

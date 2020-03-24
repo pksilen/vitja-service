@@ -1,6 +1,5 @@
 import { ErrorResponse, getSourceFileName, IdWrapper } from '../../backk/Backk';
-import { IsArray, IsIn, IsInstance, IsInt, IsString } from 'class-validator';
-import ReturnType from '../../backk/getServiceTypeNames';
+import { IsArray, IsCreditCard, IsIn, IsInstance, IsInt, IsString, Matches } from 'class-validator';
 import { Service } from '../../backk/service';
 
 export class ShoppingCartItemWithoutId {
@@ -22,12 +21,15 @@ export class PaymentMethodWithoutId {
   paymentMethodType!: string;
 
   @IsString()
+  @IsCreditCard()
   creditCardNumber!: string;
 
   @IsString()
+  @Matches(/^(0[1-9]|1[0-2])\/([0-9]{2})$/g)
   creditCardExpiration!: string;
 
   @IsString()
+  @Matches(/^[0-9]{3,4}$/g)
   cardVerificationCode!: string;
 }
 

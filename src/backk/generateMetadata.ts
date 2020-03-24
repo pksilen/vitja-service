@@ -1,7 +1,7 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 
-function getTypeObject<T>(typeClass: new () => T): object {
+function getTypeMetadata<T>(typeClass: new () => T): object {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
   const propNameToIsOptionalMap: { [key: string]: boolean } = {};
   const propNameToPropTypeMap: { [key: string]: string } = {};
@@ -65,6 +65,55 @@ function getTypeObject<T>(typeClass: new () => T): object {
   }, {});
 }
 
+function getValidationMetadata<T>(typeClass: new () => T): object {
+  const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
+  const propNameToValidationsMap: { [key: string]: string[] } = {};
+
+  validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
+    if (
+      validationMetadata.type !== 'conditionalValidation' &&
+      validationMetadata.type !== 'nestedValidation' &&
+      validationMetadata.type !== 'isBoolean' &&
+      validationMetadata.type !== 'isBoolean' &&
+      (validationMetadata.type !== 'isNumber' ||
+        (validationMetadata.type === 'isNumber' && validationMetadata.constraints?.[0])) &&
+      validationMetadata.type !== 'isString' &&
+      validationMetadata.type !== 'isInt' &&
+      validationMetadata.type !== 'isIn' &&
+      validationMetadata.type !== 'isInstance' &&
+      validationMetadata.type !== 'isArray'
+    ) {
+      const validationExpr = `${validationMetadata.type}${
+        validationMetadata.constraints?.[0]
+          ? '(' +
+            (typeof validationMetadata.constraints[0] === 'object' &&
+            !(validationMetadata.constraints[0] instanceof RegExp)
+              ? JSON.stringify(validationMetadata.constraints[0])
+              : validationMetadata.constraints[0]) +
+            ')'
+          : ''
+      }`;
+
+      if (!propNameToValidationsMap[validationMetadata.propertyName]) {
+        propNameToValidationsMap[validationMetadata.propertyName] = [validationExpr];
+      }
+
+      if (!propNameToValidationsMap[validationMetadata.propertyName].includes(validationExpr))
+        propNameToValidationsMap[validationMetadata.propertyName].push(validationExpr);
+    }
+  });
+
+  return Object.entries(propNameToValidationsMap).reduce(
+    (accumulatedValidationMetadata, [propName, validations]) => {
+      return {
+        ...accumulatedValidationMetadata,
+        [propName]: validations
+      };
+    },
+    {}
+  );
+}
+
 export default function generateMetadata<T>(controller: T): object {
   return Object.entries(controller)
     .filter(
@@ -92,10 +141,21 @@ export default function generateMetadata<T>(controller: T): object {
         };
       });
 
-      const types = Object.entries((controller as any)[serviceName].Types).reduce(
+      const typeMetadatas = Object.entries((controller as any)[serviceName].Types).reduce(
         (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
-          const typeObject = getTypeObject(typeClass);
+          const typeObject = getTypeMetadata(typeClass);
           return { ...accumulatedTypes, [typeName]: typeObject };
+        },
+        {}
+      );
+
+      const validationMetadatas = Object.entries((controller as any)[serviceName].Types).reduce(
+        (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
+          const validationMetadata = getValidationMetadata(typeClass);
+          if (Object.keys(validationMetadata).length > 0) {
+            return { ...accumulatedTypes, [typeName]: validationMetadata };
+          }
+          return accumulatedTypes;
         },
         {}
       );
@@ -104,12 +164,13 @@ export default function generateMetadata<T>(controller: T): object {
         serviceName,
         functions,
         types: {
-          ...types,
+          ...typeMetadatas,
           ErrorResponse: {
             statusCode: 'integer',
             message: 'string'
           }
-        }
+        },
+        validations: validationMetadatas
       };
     });
 }
