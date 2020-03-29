@@ -1,6 +1,8 @@
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
-import OrdersService, { Order, OrderWithoutId } from './orders.service';
+import OrdersService from './OrdersService';
 import dbManager from '../../dbManager';
+import Order from './types/Order';
+import OrderWithoutId from './types/OrderWithoutId';
 
 const DB_NAME = 'vitja';
 const COLLECTION_NAME = 'orders';

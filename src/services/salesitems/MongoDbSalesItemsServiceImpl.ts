@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import SalesItemsService, { SalesItemsFilters, SalesItem, SalesItemWithoutId } from './salesitems.service';
+import SalesItemsService from './SalesItemsService';
 import dbManager from '../../dbManager';
 import Backk, { ErrorResponse, IdsWrapper, IdWrapper } from '../../backk/Backk';
-import ReturnType from '../../backk/getServiceTypeNames';
+import SalesItemsFilters from './types/SalesItemsFilters';
+import { SalesItem } from './types/SalesItem';
+import SalesItemWithoutId from './types/SalesItemWithoutId';
 
 const DB_NAME = 'vitja';
 const COLL_NAME = 'salesItems';

@@ -58,9 +58,9 @@ function getTypeMetadata<T>(typeClass: new () => T): object {
       ...accumulatedTypeObject,
       [propName]:
         (propNameToIsOptionalMap[propName] ? '?' + propType : propType) +
-        (propNameToDefaultValueMap[propName] !== undefined
-          ? ` = ${JSON.stringify(propNameToDefaultValueMap[propName])}`
-          : '')
+        (propNameToDefaultValueMap[propName] === undefined
+          ? ''
+          : ` = ${JSON.stringify(propNameToDefaultValueMap[propName])}`)
     };
   }, {});
 }
@@ -69,6 +69,7 @@ function getValidationMetadata<T>(typeClass: new () => T): object {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
   const propNameToValidationsMap: { [key: string]: string[] } = {};
 
+  // noinspection FunctionWithMoreThanThreeNegationsJS
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
     if (
       validationMetadata.type !== 'conditionalValidation' &&
@@ -115,17 +116,17 @@ function getValidationMetadata<T>(typeClass: new () => T): object {
 }
 
 export type FunctionMetadata = {
-  functionName: string,
-  argType: string,
-  returnValueType: string
-}
+  functionName: string;
+  argType: string;
+  returnValueType: string;
+};
 
 export type ServiceMetadata = {
-  serviceName: string,
-  functions: FunctionMetadata[],
-  types: { [p: string]: object },
-  validations: { [p: string]: any[] }
-}
+  serviceName: string;
+  functions: FunctionMetadata[];
+  types: { [p: string]: object };
+  validations: { [p: string]: any[] };
+};
 
 export default function generateServicesMetadata<T>(controller: T): ServiceMetadata[] {
   return Object.entries(controller)

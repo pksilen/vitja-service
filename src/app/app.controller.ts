@@ -1,13 +1,13 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
 import { validateOrReject, ValidationError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import SalesItemsService from '../services/salesitems/salesitems.service';
-import UsersService from '../services/users/users.service';
-import OrdersService from '../services/orders/orders.service';
+import SalesItemsService from '../services/salesitems/SalesItemsService';
+import UsersService from '../services/users/UsersService';
+import OrdersService from '../services/orders/OrdersService';
 import initializeController from '../backk/initializeController';
 import getServiceTypeNames from '../backk/getServiceTypeNames';
-import { Service } from '../backk/service';
 import generateServicesMetadata from '../backk/generateServicesMetadata';
+import getSrcFilenameForTypeName from '../backk/getSrcFilenameForTypeName';
 
 type Params = {
   serviceCall: string;
@@ -20,10 +20,10 @@ export class AppController {
     private readonly usersService: UsersService,
     private readonly ordersService: OrdersService
   ) {
-    Object.entries(this).forEach(([serviceName, service]: [string, Service]) => {
+    Object.entries(this).forEach(([serviceName]: [string, object]) => {
       const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(
         serviceName,
-        service.fileName
+        getSrcFilenameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
       );
 
       (this as any)[`${serviceName}Types`] = {

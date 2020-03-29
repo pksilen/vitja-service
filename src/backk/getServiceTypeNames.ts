@@ -5,8 +5,7 @@ export default function getServiceTypeNames(
   serviceName: string,
   serviceFileName: string
 ): [{ [key: string]: string }, { [key: string]: string }] {
-  const serviceSourceTsFileName = serviceFileName.replace('.js', '.ts');
-  const fileContentsStr = readFileSync(serviceSourceTsFileName, { encoding: 'UTF-8' });
+  const fileContentsStr = readFileSync(serviceFileName, { encoding: 'UTF-8' });
   const fileRows = fileContentsStr.split('\n');
   const ast = parseSync(fileContentsStr, {
     plugins: [

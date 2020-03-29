@@ -4,8 +4,9 @@ import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata'
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import generateServicesMetadata, { FunctionMetadata, ServiceMetadata } from './generateServicesMetadata';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import setPropertyTypeValidationDecorators from './setPropertyTypeValidationDecorators';
 
-function setDecorators(
+function setNestedTypeAndValidationDecorators(
   typeClass: Function,
   targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean }
 ) {
@@ -13,12 +14,14 @@ function setDecorators(
 
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
     if (validationMetadata.type === 'isInstance') {
+
       const nestedValidationMetadataArgs: ValidationMetadataArgs = {
         type: ValidationTypes.NESTED_VALIDATION,
         target: validationMetadata.target,
         propertyName: validationMetadata.propertyName,
         validationOptions: { each: validationMetadata.each }
       };
+
       if (
         !targetAndPropNameToHasNestedValidationMap[
           (validationMetadata.target as Function).name + validationMetadata.propertyName
@@ -50,8 +53,13 @@ function getSampleArg(typeProperties: object, types: { [key: string]: object }):
       : propertyTypeName;
 
     const propertyTypeNameAndDefaultValue = finalPropertyTypeName.split(' = ');
+    // noinspection ReuseOfLocalVariableJS
     finalPropertyTypeName = propertyTypeNameAndDefaultValue[0];
     const defaultValue = propertyTypeNameAndDefaultValue[1];
+
+    const finalPropertyTypeNameWithoutArraySuffix = finalPropertyTypeName.endsWith('[]')
+      ? finalPropertyTypeName.slice(0, -2)
+      : finalPropertyTypeName;
 
     if (finalPropertyTypeName.startsWith('integer') || finalPropertyTypeName.startsWith('number')) {
       sampleArg[propertyName] = defaultValue ?? 123;
@@ -60,13 +68,19 @@ function getSampleArg(typeProperties: object, types: { [key: string]: object }):
     } else if (finalPropertyTypeName.startsWith('string')) {
       sampleArg[propertyName] = defaultValue ?? 'abc';
     } else if (finalPropertyTypeName.startsWith('(')) {
-      sampleArg[propertyName] = defaultValue ?? finalPropertyTypeName.slice(1).split(/[|)]/)[0].split("'")[1];
-    } else if (types[finalPropertyTypeName]) {
-      sampleArg[propertyName] = getSampleArg(types[finalPropertyTypeName], types);
+      sampleArg[propertyName] =
+        defaultValue ??
+        finalPropertyTypeName
+          .slice(1)
+          .split(/[|)]/)[0]
+          .split("'")[1];
+    } else if (types[finalPropertyTypeNameWithoutArraySuffix]) {
+      sampleArg[propertyName] = getSampleArg(types[finalPropertyTypeNameWithoutArraySuffix], types);
     }
 
     if (finalPropertyTypeName.endsWith('[]')) {
-      sampleArg[propertyName] = defaultValue !== undefined ? JSON.parse(defaultValue) : [sampleArg[propertyName]];
+      sampleArg[propertyName] =
+        defaultValue === undefined ? [sampleArg[propertyName]] : JSON.parse(defaultValue);
     }
   });
 
@@ -155,7 +169,8 @@ export default function initializeController<T>(controller: T) {
     .forEach(([serviceName]: [string, any]) => {
       const targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean } = {};
       Object.entries((controller as any)[serviceName].Types).forEach(([, typeClass]: [string, any]) => {
-        setDecorators(typeClass, targetAndPropNameToHasNestedValidationMap);
+        setPropertyTypeValidationDecorators(typeClass, (controller as any)[serviceName].Types);
+        setNestedTypeAndValidationDecorators(typeClass, targetAndPropNameToHasNestedValidationMap);
       }, {});
     });
 }

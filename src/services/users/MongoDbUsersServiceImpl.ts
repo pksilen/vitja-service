@@ -1,19 +1,18 @@
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
-import UsersService, {
-  PaymentMethod,
-  PaymentMethodAndUserId,
-  PaymentMethodIdAndUserId,
-  SalesItemIdAndUserId,
-  User,
-  UserNameWrapper,
-  UserWithoutId
-} from './users.service';
+import UsersService from './UsersService';
 import dbManager from '../../dbManager';
+import UserNameWrapper from './types/UserNameWrapper';
+import User from './types/User';
+import UserWithoutId from './types/UserWithoutId';
+import PaymentMethodAndUserId from './types/PaymentMethodAndUserId';
+import PaymentMethod from './types/PaymentMethod';
+import { PaymentMethodIdAndUserId } from './types/PaymentMethodIdAndUserId';
+import SalesItemIdAndUserId from './types/SalesItemIdAndUserId';
 
 const DB_NAME = 'vitja';
 const COLLECTION_NAME = 'users';
 
-export default class MongodbUsersServiceImpl extends UsersService {
+export default class MongoDbUsersServiceImpl extends UsersService {
   async getUserByUserName(userNameWrapper: UserNameWrapper): Promise<User | ErrorResponse> {
     return await dbManager.getItemBy('userName', userNameWrapper.userName, DB_NAME, COLLECTION_NAME);
   }

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
-import { MongodbSalesItemsServiceImpl } from '../services/salesitems/mongodb.salesItems.service.impl';
+import { MongodbSalesItemsServiceImpl } from '../services/salesitems/MongoDbSalesItemsServiceImpl';
 
 describe('AppController', () => {
   let appController: AppController;

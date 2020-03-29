@@ -1,6 +1,6 @@
 import pick from 'lodash/pick';
 import omit from 'lodash/omit';
-import { IsArray, IsBoolean, IsString } from 'class-validator';
+import { IsArray, IsMongoId, IsString } from 'class-validator';
 
 export function getSourceFileName(fileName: string, distFolderName = 'dist'): string {
   return fileName.replace(distFolderName, 'src');
@@ -12,7 +12,7 @@ export class IdWrapper {
 }
 
 export class IdsWrapper {
-  @IsString()
+  @IsString({ each: true })
   @IsArray()
   _ids!: string[];
 }
