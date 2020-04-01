@@ -1,7 +1,7 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 
-function getTypeMetadata<T>(typeClass: new () => T): object {
+export function getTypeMetadata<T>(typeClass: new () => T): object {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
   const propNameToIsOptionalMap: { [key: string]: boolean } = {};
   const propNameToPropTypeMap: { [key: string]: string } = {};
@@ -147,6 +147,28 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
 
         const returnValueTypeName: string = (controller as any)[`${serviceName}Types`]
           .functionNameToReturnTypeNameMap[functionName];
+
+        if (paramTypeName !== undefined && !(controller as any)[serviceName].Types[paramTypeName]) {
+          throw new Error('Type: ' + paramTypeName + ' is not declared in Types of ' + serviceName);
+        }
+
+        let finalReturnValueTypeName = returnValueTypeName.split('|')[0].trim();
+        if (finalReturnValueTypeName.endsWith('[]')) {
+          finalReturnValueTypeName = finalReturnValueTypeName.slice(0, -2);
+        }
+
+        if (finalReturnValueTypeName.startsWith('Partial<')) {
+          finalReturnValueTypeName = finalReturnValueTypeName.slice(8, -1);
+        }
+
+        if (
+          finalReturnValueTypeName !== 'void' &&
+          !(controller as any)[serviceName].Types[finalReturnValueTypeName]
+        ) {
+          throw new Error(
+            'Type: ' + finalReturnValueTypeName + ' is not declared in Types of ' + serviceName
+          );
+        }
 
         return {
           functionName,

@@ -116,6 +116,15 @@ class DbManager {
     }
   }
 
+  async deleteAllItems(dbName: string, tableName: string): Promise<void | ErrorResponse> {
+    await this.execute((client) =>
+      client
+        .db(dbName)
+        .collection(tableName)
+        .deleteMany({})
+    );
+  }
+
   async updateItem<T extends { _id: string }>(
     { _id, ...restOfItem }: T,
     dbName: string,
@@ -130,86 +139,6 @@ class DbManager {
 
     if (updateOperationResult.matchedCount !== 1) {
       throw new HttpException(`Item with _id: ${_id} not found`, HttpStatus.NOT_FOUND);
-    }
-  }
-
-  async addSubItemForItemById<T extends { _id: string }, U>(
-    subItem: T,
-    fieldName: keyof U,
-    itemId: string,
-    dbName: string,
-    tableName: string
-  ): Promise<void | ErrorResponse> {
-    const updateOperationResult = await this.execute((client) =>
-      client
-        .db(dbName)
-        .collection(tableName)
-        .updateOne(
-          { _id: new ObjectId(itemId) },
-          {
-            $addToSet: {
-              [fieldName]: subItem
-            }
-          }
-        )
-    );
-
-    if (updateOperationResult.matchedCount !== 1) {
-      throw new HttpException(`Item with itemId: ${itemId} not found`, HttpStatus.NOT_FOUND);
-    }
-  }
-
-  async addSubItemIdForItemById<U>(
-    subItemId: string,
-    fieldName: keyof U,
-    itemId: string,
-    dbName: string,
-    tableName: string
-  ): Promise<void | ErrorResponse> {
-    const updateOperationResult = await this.execute((client) =>
-      client
-        .db(dbName)
-        .collection(tableName)
-        .updateOne(
-          { _id: new ObjectId(itemId) },
-          {
-            $addToSet: {
-              _id: subItemId
-            }
-          }
-        )
-    );
-
-    if (updateOperationResult.matchedCount !== 1) {
-      throw new HttpException(`Item with itemId: ${itemId} not found`, HttpStatus.NOT_FOUND);
-    }
-  }
-
-  async removeSubItemByIdFromItemById<U>(
-    subItemId: string,
-    fieldName: keyof U,
-    itemId: string,
-    dbName: string,
-    tableName: string
-  ): Promise<void | ErrorResponse> {
-    const updateOperationResult = await this.execute((client) =>
-      client
-        .db(dbName)
-        .collection(tableName)
-        .updateOne(
-          { _id: new ObjectId(itemId) },
-          {
-            $pull: {
-              [fieldName]: {
-                _id: subItemId
-              }
-            }
-          }
-        )
-    );
-
-    if (updateOperationResult.matchedCount !== 1) {
-      throw new HttpException(`Item with itemId: ${itemId} not found`, HttpStatus.NOT_FOUND);
     }
   }
 }

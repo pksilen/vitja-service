@@ -5,11 +5,7 @@ import { getFromContainer, MetadataStorage, ValidationTypes, Validator } from 'c
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 
-function doesPropertyContainValidation(
-  typeClass: Function,
-  propertyName: string,
-  validationType: string
-) {
+function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
 
   const foundValidation = validationMetadatas.find(
@@ -23,6 +19,7 @@ function doesPropertyContainValidation(
 // noinspection FunctionWithMultipleLoopsJS,OverlyComplexFunctionJS,FunctionTooLongJS,FunctionWithMoreThanThreeNegationsJS
 export default function setPropertyTypeValidationDecorators(
   typeClass: Function,
+  serviceName: string,
   types: { [key: string]: object }
 ) {
   const typeClassName = typeClass.name;
@@ -46,7 +43,7 @@ export default function setPropertyTypeValidationDecorators(
 
   for (const node of nodes) {
     if (
-      node.type === 'ExportDefaultDeclaration' &&
+      (node.type === 'ExportDefaultDeclaration' || node.type === 'ExportNamedDeclaration') &&
       node.declaration.type === 'ClassDeclaration' &&
       node.declaration.id.name === typeClassName
     ) {
@@ -69,13 +66,26 @@ export default function setPropertyTypeValidationDecorators(
           if (finalPropertyTypeName === 'boolean') {
             validationType = ValidationTypes.IS_BOOLEAN;
           } else if (finalPropertyTypeName === 'number') {
-            validationType = ValidationTypes.IS_NUMBER;
-            constraints = [{}];
+            if (!doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.IS_INT)) {
+              validationType = ValidationTypes.IS_NUMBER;
+              constraints = [{}];
+            }
           } else if (finalPropertyTypeName === 'string') {
             validationType = ValidationTypes.IS_STRING;
-          } else if (types[finalPropertyTypeName]) {
-            validationType = ValidationTypes.IS_INSTANCE;
-            constraints = [types[finalPropertyTypeName]];
+          } else if (finalPropertyTypeName.charAt(0).match(/^[_$A-Z]$/)) {
+            if (types[finalPropertyTypeName]) {
+              validationType = ValidationTypes.IS_INSTANCE;
+              constraints = [types[finalPropertyTypeName]];
+            } else {
+              throw new Error(
+                'Type: ' +
+                  finalPropertyTypeName +
+                  ' not found in ' +
+                  serviceName.charAt(0).toUpperCase() +
+                  serviceName.slice(1) +
+                  '.Types'
+              );
+            }
           } else if (finalPropertyTypeName !== 'any') {
             validationType = ValidationTypes.IS_IN;
             if (
@@ -85,20 +95,23 @@ export default function setPropertyTypeValidationDecorators(
               finalPropertyTypeName = finalPropertyTypeName.slice(1, -1);
             }
             const enumValues = finalPropertyTypeName.split('|').map((enumValue) => {
-              // noinspection AssignmentToFunctionParameterJS
-              enumValue = enumValue.trim();
-              if (
-                (enumValue.charAt(0) === "'" && enumValue.charAt(enumValue.length - 1) === "'") ||
-                (enumValue.charAt(0) === '"' && enumValue.charAt(enumValue.length - 1) === '"')
-              ) {
-                // noinspection AssignmentToFunctionParameterJS
-                enumValue = enumValue.slice(1, -1);
-              }
+              const trimmedEnumValue = enumValue.trim();
               const validator = new Validator();
-              if (validator.isNumberString(enumValue)) {
-                return parseFloat(enumValue);
+
+              if (validator.isNumberString(trimmedEnumValue)) {
+                return parseFloat(trimmedEnumValue);
+              } else if (
+                (trimmedEnumValue.charAt(0) === "'" &&
+                  trimmedEnumValue.charAt(trimmedEnumValue.length - 1) === "'") ||
+                (trimmedEnumValue.charAt(0) === '"' &&
+                  trimmedEnumValue.charAt(trimmedEnumValue.length - 1) === '"')
+              ) {
+                return trimmedEnumValue.slice(1, -1);
+              } else {
+                throw new Error(
+                  'Incompatible type: ' + finalPropertyTypeName + ' in ' + typeClassName + '.' + propertyName
+                );
               }
-              return enumValue;
             });
 
             constraints = [enumValues];
@@ -140,9 +153,11 @@ export default function setPropertyTypeValidationDecorators(
             const optionalValidationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.CONDITIONAL_VALIDATION,
               target: typeClass,
-              constraints: [(object: any) => {
-                return object[propertyName] !== null && object[propertyName] !== undefined;
-              }],
+              constraints: [
+                (object: any) => {
+                  return object[propertyName] !== null && object[propertyName] !== undefined;
+                }
+              ],
               propertyName
             };
 

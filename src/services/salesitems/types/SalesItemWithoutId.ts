@@ -1,4 +1,4 @@
-import { IsArray, IsIn, IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsNumber, IsPositive } from 'class-validator';
 
 export default class SalesItemWithoutId {
   userId!: string;

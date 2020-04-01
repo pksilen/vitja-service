@@ -2,17 +2,21 @@ import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import OrderWithoutId from './types/OrderWithoutId';
 import Order from './types/Order';
 import ShoppingCartItem from '../users/types/ShoppingCartItem';
+import UserIdWrapper from '../users/types/UserIdWrapper';
 
 export default abstract class OrdersService {
   readonly Types = {
     IdWrapper,
     OrderWithoutId,
     Order,
-    ShoppingCartItem
+    ShoppingCartItem,
+    UserIdWrapper
   };
 
-  abstract getOrderById(idWrapper: IdWrapper): Promise<Order | ErrorResponse>;
-  abstract getOrderByBuyerId(idWrapper: IdWrapper): Promise<Order | ErrorResponse>;
+  abstract deleteAllOrders(): Promise<void | ErrorResponse>;
   abstract createOrder(orderWithoutId: OrderWithoutId): Promise<IdWrapper | ErrorResponse>;
-  abstract deleteOrderById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
+  abstract getOrderById({ _id }: IdWrapper): Promise<Order | ErrorResponse>;
+  abstract getOrderByUserId({ userId }: UserIdWrapper): Promise<Order | ErrorResponse>;
+  abstract updateOrder(order: Order): Promise<void | ErrorResponse>;
+  abstract deleteOrderById({ _id }: IdWrapper): Promise<void | ErrorResponse>;
 }

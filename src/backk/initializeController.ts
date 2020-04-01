@@ -14,7 +14,6 @@ function setNestedTypeAndValidationDecorators(
 
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
     if (validationMetadata.type === 'isInstance') {
-
       const nestedValidationMetadataArgs: ValidationMetadataArgs = {
         type: ValidationTypes.NESTED_VALIDATION,
         target: validationMetadata.target,
@@ -44,8 +43,16 @@ function setNestedTypeAndValidationDecorators(
   });
 }
 
-function getSampleArg(typeProperties: object, types: { [key: string]: object }): object {
+function getSampleArg(
+  serviceBaseName: string,
+  typeProperties: object,
+  types: { [key: string]: object }
+): object | undefined {
   const sampleArg: { [key: string]: any } = {};
+
+  if (typeProperties === undefined) {
+    return undefined;
+  }
 
   Object.entries(typeProperties).map(([propertyName, propertyTypeName]: [string, string]) => {
     let finalPropertyTypeName = propertyTypeName.startsWith('?')
@@ -61,8 +68,14 @@ function getSampleArg(typeProperties: object, types: { [key: string]: object }):
       ? finalPropertyTypeName.slice(0, -2)
       : finalPropertyTypeName;
 
-    if (finalPropertyTypeName.startsWith('integer') || finalPropertyTypeName.startsWith('number')) {
+    if (propertyName === '_id') {
+      sampleArg[propertyName] = `{{${serviceBaseName}Id}}`;
+    } else if (propertyName === '_ids') {
+      sampleArg[propertyName] = `[{{${serviceBaseName}Id}}]`;
+    } else if (finalPropertyTypeName.startsWith('integer')) {
       sampleArg[propertyName] = defaultValue ?? 123;
+    } else if (finalPropertyTypeName.startsWith('number')) {
+      sampleArg[propertyName] = defaultValue ?? 123.12;
     } else if (finalPropertyTypeName.startsWith('boolean')) {
       sampleArg[propertyName] = defaultValue ?? true;
     } else if (finalPropertyTypeName.startsWith('string')) {
@@ -75,7 +88,11 @@ function getSampleArg(typeProperties: object, types: { [key: string]: object }):
           .split(/[|)]/)[0]
           .split("'")[1];
     } else if (types[finalPropertyTypeNameWithoutArraySuffix]) {
-      sampleArg[propertyName] = getSampleArg(types[finalPropertyTypeNameWithoutArraySuffix], types);
+      sampleArg[propertyName] = getSampleArg(
+        serviceBaseName,
+        types[finalPropertyTypeNameWithoutArraySuffix],
+        types
+      );
     }
 
     if (finalPropertyTypeName.endsWith('[]')) {
@@ -87,13 +104,154 @@ function getSampleArg(typeProperties: object, types: { [key: string]: object }):
   return sampleArg;
 }
 
+function getReturnValueTests(
+  returnValueTypeName: string,
+  serviceMetadata: ServiceMetadata,
+  responsePath: string
+): string[] {
+  const returnValueMetadata = serviceMetadata.types[returnValueTypeName];
+  const types = serviceMetadata.types;
+  const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
+  const javascriptLines = ['const response = pm.response.json();'];
+
+  Object.entries(returnValueMetadata).map(([propertyName, propertyTypeName]) => {
+    const isOptionalProperty = propertyTypeName.startsWith('?');
+    const isArray = propertyTypeName.endsWith('[]');
+    let finalPropertyTypeName = propertyTypeName;
+
+    if (isArray) {
+      finalPropertyTypeName = propertyTypeName.slice(0, -2);
+    }
+
+    let expectedValue: any;
+
+    if (propertyName === '_id') {
+      expectedValue = `pm.collectionVariables.get('${serviceBaseName}Id')`;
+    } else {
+      switch (finalPropertyTypeName) {
+        case 'string':
+          expectedValue = "'abc'";
+          break;
+        case 'boolean':
+          expectedValue = true;
+          break;
+        case 'integer':
+          expectedValue = 123;
+          break;
+        case 'number':
+          expectedValue = 123.12;
+          break;
+      }
+    }
+
+    if (finalPropertyTypeName.startsWith('(')) {
+      expectedValue = finalPropertyTypeName.slice(1).split(/[|)]/)[0];
+    } else if (types[finalPropertyTypeName]) {
+      const finalResponsePath = responsePath + (isArray ? '[0]' : '') + '.' + finalPropertyTypeName + '.';
+      if (!isOptionalProperty) {
+        javascriptLines.concat(
+          getReturnValueTests(finalPropertyTypeName, serviceMetadata, finalResponsePath)
+        );
+      }
+    }
+
+    if (isOptionalProperty) {
+      if (isArray) {
+        javascriptLines.push(
+          `pm.test("${propertyName}", function () {
+            if (response.${propertyName}) !== undefined) 
+              return pm.expect(response${responsePath}${propertyName}).to.have.members([${expectedValue}]);
+            else 
+              return true; 
+          })`
+        );
+      } else {
+        javascriptLines.push(
+          `pm.test("${propertyName}", function () {
+            if (response.${propertyName}) !== undefined) 
+             return pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});
+            else 
+              return true; 
+          })`
+        );
+      }
+    } else {
+      if (isArray) {
+        javascriptLines.push(
+          `pm.test("${propertyName}", function () {
+            pm.expect(response${responsePath}${propertyName}).to.have.members([${expectedValue}]); 
+          })`
+        );
+      } else {
+        javascriptLines.push(
+          `pm.test("${propertyName}", function () {
+            pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue}); 
+          })`
+        );
+      }
+    }
+  });
+
+  return javascriptLines;
+}
+
+function getTests(serviceMetadata: ServiceMetadata, functionMetadata: FunctionMetadata): object | undefined {
+  const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
+  const serviceEntityName =
+    serviceBaseName.charAt(serviceBaseName.length - 1) === 's'
+      ? serviceBaseName.slice(0, -1)
+      : serviceBaseName;
+
+  let returnValueTypeName = functionMetadata.returnValueType.split('|')[0].trim();
+  const isArray = returnValueTypeName.endsWith('[]');
+
+  if (isArray) {
+    returnValueTypeName = returnValueTypeName.slice(0, -2);
+  }
+
+  if (returnValueTypeName.startsWith('Partial<')) {
+    returnValueTypeName = returnValueTypeName.slice(8, -1);
+  }
+
+  if (returnValueTypeName === 'IdWrapper') {
+    return {
+      id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+      listen: 'test',
+      script: {
+        id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+        exec: [
+          'const response = pm.response.json()',
+          `pm.collectionVariables.set("${serviceEntityName}Id", response._id)`
+        ]
+      }
+    };
+  }
+
+  if (returnValueTypeName !== 'void') {
+    return {
+      id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+      listen: 'test',
+      script: {
+        id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+        exec: getReturnValueTests(returnValueTypeName, serviceMetadata, isArray ? '[0].' : '.')
+      }
+    };
+  }
+}
+
 function writePostmanCollectionExportFile<T>(controller: T) {
   const servicesMetadata = generateServicesMetadata(controller);
   const items: any[] = [];
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) =>
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata) => {
-      const sampleArg = getSampleArg(serviceMetadata.types[functionMetadata.argType], serviceMetadata.types);
+      const tests = getTests(serviceMetadata, functionMetadata);
+      const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
+      const sampleArg = getSampleArg(
+        serviceBaseName,
+        serviceMetadata.types[functionMetadata.argType],
+        serviceMetadata.types
+      );
       items.push({
         name: 'http://localhost:3000/' + serviceMetadata.serviceName + '.' + functionMetadata.functionName,
         request: {
@@ -106,7 +264,7 @@ function writePostmanCollectionExportFile<T>(controller: T) {
               type: 'text'
             }
           ],
-          body: {
+          body: sampleArg === undefined ? undefined : {
             mode: 'raw',
             raw: JSON.stringify(sampleArg, null, 4),
             options: {
@@ -116,14 +274,15 @@ function writePostmanCollectionExportFile<T>(controller: T) {
             }
           },
           url: {
-            raw: 'http://localhost:3000/salesItemsService.getSalesItems',
+            raw: 'http://localhost:3000/' + serviceMetadata.serviceName + '.' + functionMetadata.functionName,
             protocol: 'http',
             host: ['localhost'],
             port: '3000',
-            path: ['salesItemsService.getSalesItems']
+            path: [serviceMetadata.serviceName + '.' + functionMetadata.functionName]
           }
         },
-        response: []
+        response: [],
+        event: tests ? [tests] : undefined
       });
     })
   );
@@ -158,19 +317,19 @@ function writePostmanCollectionExportFile<T>(controller: T) {
     mkdirSync(cwd + '/postman');
   }
 
-  writeFileSync(process.cwd() + '/postman/postman_collection.json', JSON.stringify(postmanMetadata));
+  writeFileSync(process.cwd() + '/postman/postman_collection.json', JSON.stringify(postmanMetadata, null, 4));
 }
 
 export default function initializeController<T>(controller: T) {
-  writePostmanCollectionExportFile(controller);
-
   Object.entries(controller)
     .filter(([, value]: [string, any]) => typeof value === 'object' && value.constructor !== Object)
     .forEach(([serviceName]: [string, any]) => {
       const targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean } = {};
       Object.entries((controller as any)[serviceName].Types).forEach(([, typeClass]: [string, any]) => {
-        setPropertyTypeValidationDecorators(typeClass, (controller as any)[serviceName].Types);
+        setPropertyTypeValidationDecorators(typeClass, serviceName, (controller as any)[serviceName].Types);
         setNestedTypeAndValidationDecorators(typeClass, targetAndPropNameToHasNestedValidationMap);
       }, {});
     });
+
+  writePostmanCollectionExportFile(controller);
 }
