@@ -1,6 +1,5 @@
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import PaymentMethod from './types/PaymentMethod';
-import PaymentMethodWithoutId from './types/PaymentMethodWithoutId';
 import User from './types/User';
 import UserNameWrapper from './types/UserNameWrapper';
 import UserWithoutId from './types/UserWithoutId';
@@ -10,7 +9,6 @@ export default abstract class UsersService {
   readonly Types = {
     IdWrapper,
     PaymentMethod,
-    PaymentMethodWithoutId,
     ShoppingCartItem,
     User,
     UserNameWrapper,

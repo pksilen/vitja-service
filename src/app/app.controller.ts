@@ -16,8 +16,8 @@ type Params = {
 @Controller()
 export class AppController {
   constructor(
-    private readonly salesItemsService: SalesItemsService,
     private readonly usersService: UsersService,
+    private readonly salesItemsService: SalesItemsService,
     private readonly ordersService: OrdersService
   ) {
     Object.entries(this).forEach(([serviceName]: [string, object]) => {
@@ -42,26 +42,28 @@ export class AppController {
 
   @Post(':serviceCall')
   @HttpCode(200)
-  async processRequests(@Param() params: Params, @Body() argObject: object): Promise<object | void> {
+  async processRequests(@Param() params: Params, @Body() paramObject: object): Promise<object | void> {
     const [serviceName, functionName] = params.serviceCall.split('.');
-
-    const argObjectClassName = (this as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
+    const paramObjectTypeName = (this as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
       functionName
     ];
 
-    const validatableObject = plainToClass(
-      (this as any)[serviceName]['Types'][argObjectClassName],
-      argObject
-    );
+    let validatableParamObject;
+    if (paramObjectTypeName) {
+      validatableParamObject = plainToClass(
+        (this as any)[serviceName]['Types'][paramObjectTypeName],
+        paramObject
+      );
 
-    try {
-      await validateOrReject(validatableObject as object, { whitelist: true });
-    } catch (validationErrors) {
-      const errorStr = this.getValidationErrors(validationErrors);
-      throw new HttpException(errorStr, HttpStatus.BAD_REQUEST);
+      try {
+        await validateOrReject(validatableParamObject as object, { whitelist: true });
+      } catch (validationErrors) {
+        const errorStr = this.getValidationErrors(validationErrors);
+        throw new HttpException(errorStr, HttpStatus.BAD_REQUEST);
+      }
     }
 
-    return (this as any)[serviceName][functionName](validatableObject);
+    return (this as any)[serviceName][functionName](validatableParamObject);
   }
 
   private getValidationErrors(validationErrors: ValidationError[]): string {

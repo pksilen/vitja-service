@@ -5,6 +5,7 @@ import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetad
 import generateServicesMetadata, { FunctionMetadata, ServiceMetadata } from './generateServicesMetadata';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import setPropertyTypeValidationDecorators from './setPropertyTypeValidationDecorators';
+import testValueContainer from './testValueContainer';
 
 function setNestedTypeAndValidationDecorators(
   typeClass: Function,
@@ -45,10 +46,12 @@ function setNestedTypeAndValidationDecorators(
 
 function getSampleArg(
   serviceBaseName: string,
-  typeProperties: object,
-  types: { [key: string]: object }
+  argTypeName: string,
+  serviceMetadata: ServiceMetadata
 ): object | undefined {
   const sampleArg: { [key: string]: any } = {};
+  const typeProperties = serviceMetadata.types[argTypeName];
+  const types = serviceMetadata.types;
 
   if (typeProperties === undefined) {
     return undefined;
@@ -68,10 +71,16 @@ function getSampleArg(
       ? finalPropertyTypeName.slice(0, -2)
       : finalPropertyTypeName;
 
-    if (propertyName === '_id') {
+    const testValue = testValueContainer.getTestValue(argTypeName, propertyName);
+
+    if (testValue !== undefined) {
+      sampleArg[propertyName] = testValue;
+    } else if (propertyName === '_id') {
       sampleArg[propertyName] = `{{${serviceBaseName}Id}}`;
     } else if (propertyName === '_ids') {
       sampleArg[propertyName] = `[{{${serviceBaseName}Id}}]`;
+    } else if (propertyName.endsWith('Id')) {
+      sampleArg[propertyName] = `{{${propertyName}}}`;
     } else if (finalPropertyTypeName.startsWith('integer')) {
       sampleArg[propertyName] = defaultValue ?? 123;
     } else if (finalPropertyTypeName.startsWith('number')) {
@@ -90,8 +99,8 @@ function getSampleArg(
     } else if (types[finalPropertyTypeNameWithoutArraySuffix]) {
       sampleArg[propertyName] = getSampleArg(
         serviceBaseName,
-        types[finalPropertyTypeNameWithoutArraySuffix],
-        types
+        finalPropertyTypeNameWithoutArraySuffix,
+        serviceMetadata
       );
     }
 
@@ -107,15 +116,20 @@ function getSampleArg(
 function getReturnValueTests(
   returnValueTypeName: string,
   serviceMetadata: ServiceMetadata,
-  responsePath: string
+  responsePath: string,
+  isOptional: boolean
 ): string[] {
   const returnValueMetadata = serviceMetadata.types[returnValueTypeName];
   const types = serviceMetadata.types;
   const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
+  const serviceEntityName =
+    serviceBaseName.charAt(serviceBaseName.length - 1) === 's'
+      ? serviceBaseName.slice(0, -1)
+      : serviceBaseName;
   const javascriptLines = ['const response = pm.response.json();'];
 
   Object.entries(returnValueMetadata).map(([propertyName, propertyTypeName]) => {
-    const isOptionalProperty = propertyTypeName.startsWith('?');
+    const isOptionalProperty = propertyTypeName.startsWith('?') || isOptional;
     const isArray = propertyTypeName.endsWith('[]');
     let finalPropertyTypeName = propertyTypeName;
 
@@ -126,7 +140,7 @@ function getReturnValueTests(
     let expectedValue: any;
 
     if (propertyName === '_id') {
-      expectedValue = `pm.collectionVariables.get('${serviceBaseName}Id')`;
+      expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
     } else {
       switch (finalPropertyTypeName) {
         case 'string':
@@ -150,7 +164,7 @@ function getReturnValueTests(
       const finalResponsePath = responsePath + (isArray ? '[0]' : '') + '.' + finalPropertyTypeName + '.';
       if (!isOptionalProperty) {
         javascriptLines.concat(
-          getReturnValueTests(finalPropertyTypeName, serviceMetadata, finalResponsePath)
+          getReturnValueTests(finalPropertyTypeName, serviceMetadata, finalResponsePath, isOptional)
         );
       }
     }
@@ -159,7 +173,7 @@ function getReturnValueTests(
       if (isArray) {
         javascriptLines.push(
           `pm.test("${propertyName}", function () {
-            if (response.${propertyName}) !== undefined) 
+            if (response${responsePath}${propertyName} !== undefined) 
               return pm.expect(response${responsePath}${propertyName}).to.have.members([${expectedValue}]);
             else 
               return true; 
@@ -168,7 +182,7 @@ function getReturnValueTests(
       } else {
         javascriptLines.push(
           `pm.test("${propertyName}", function () {
-            if (response.${propertyName}) !== undefined) 
+            if (response${responsePath}${propertyName} !== undefined) 
              return pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});
             else 
               return true; 
@@ -209,9 +223,15 @@ function getTests(serviceMetadata: ServiceMetadata, functionMetadata: FunctionMe
     returnValueTypeName = returnValueTypeName.slice(0, -2);
   }
 
+  let isOptional = false;
   if (returnValueTypeName.startsWith('Partial<')) {
     returnValueTypeName = returnValueTypeName.slice(8, -1);
+    isOptional = true;
   }
+
+  const checkResponseCodeIsOk = `pm.test("Status code is 200 OK", function () {
+      pm.response.to.have.status(200);
+    });`;
 
   if (returnValueTypeName === 'IdWrapper') {
     return {
@@ -220,6 +240,7 @@ function getTests(serviceMetadata: ServiceMetadata, functionMetadata: FunctionMe
       script: {
         id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
         exec: [
+          checkResponseCodeIsOk,
           'const response = pm.response.json()',
           `pm.collectionVariables.set("${serviceEntityName}Id", response._id)`
         ]
@@ -227,16 +248,20 @@ function getTests(serviceMetadata: ServiceMetadata, functionMetadata: FunctionMe
     };
   }
 
-  if (returnValueTypeName !== 'void') {
-    return {
+  return {
+    id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+    listen: 'test',
+    script: {
       id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
-      listen: 'test',
-      script: {
-        id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
-        exec: getReturnValueTests(returnValueTypeName, serviceMetadata, isArray ? '[0].' : '.')
-      }
-    };
-  }
+      exec:
+        returnValueTypeName === 'void'
+          ? [checkResponseCodeIsOk]
+          : [
+              checkResponseCodeIsOk,
+              ...getReturnValueTests(returnValueTypeName, serviceMetadata, isArray ? '[0].' : '.', isOptional)
+            ]
+    }
+  };
 }
 
 function writePostmanCollectionExportFile<T>(controller: T) {
@@ -247,32 +272,34 @@ function writePostmanCollectionExportFile<T>(controller: T) {
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata) => {
       const tests = getTests(serviceMetadata, functionMetadata);
       const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
-      const sampleArg = getSampleArg(
-        serviceBaseName,
-        serviceMetadata.types[functionMetadata.argType],
-        serviceMetadata.types
-      );
+      const sampleArg = getSampleArg(serviceBaseName, functionMetadata.argType, serviceMetadata);
       items.push({
         name: 'http://localhost:3000/' + serviceMetadata.serviceName + '.' + functionMetadata.functionName,
         request: {
           method: 'POST',
-          header: [
-            {
-              key: 'Content-Type',
-              name: 'Content-Type',
-              value: 'application/json',
-              type: 'text'
-            }
-          ],
-          body: sampleArg === undefined ? undefined : {
-            mode: 'raw',
-            raw: JSON.stringify(sampleArg, null, 4),
-            options: {
-              raw: {
-                language: 'json'
-              }
-            }
-          },
+          header:
+            sampleArg === undefined
+              ? []
+              : [
+                  {
+                    key: 'Content-Type',
+                    name: 'Content-Type',
+                    value: 'application/json',
+                    type: 'text'
+                  }
+                ],
+          body:
+            sampleArg === undefined
+              ? undefined
+              : {
+                  mode: 'raw',
+                  raw: JSON.stringify(sampleArg, null, 4),
+                  options: {
+                    raw: {
+                      language: 'json'
+                    }
+                  }
+                },
           url: {
             raw: 'http://localhost:3000/' + serviceMetadata.serviceName + '.' + functionMetadata.functionName,
             protocol: 'http',

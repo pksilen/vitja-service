@@ -1,5 +1,11 @@
-import ShoppingCartItemWithoutId from './ShoppingCartItemWithoutId';
+import { IsInt, IsPositive } from 'class-validator';
 
-export default class ShoppingCartItem extends ShoppingCartItemWithoutId {
-  _id!: string;
+export default class ShoppingCartItem {
+  id!: string;
+
+  salesItemId!: string;
+
+  @IsInt()
+  @IsPositive()
+  quantity!: number;
 }
