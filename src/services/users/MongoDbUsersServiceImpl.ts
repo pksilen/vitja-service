@@ -21,11 +21,11 @@ export default class MongoDbUsersServiceImpl extends UsersService {
     return await dbManager.getItemBy('userName', userNameWrapper.userName, DB_NAME, COLLECTION_NAME);
   }
 
-  async deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse> {
-    await dbManager.deleteItemById(idWrapper._id, DB_NAME, COLLECTION_NAME);
-  }
-
   async updateUser(user: User): Promise<void | ErrorResponse> {
     await dbManager.updateItem(user, DB_NAME, COLLECTION_NAME);
+  }
+
+  async deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse> {
+    await dbManager.deleteItemById(idWrapper._id, DB_NAME, COLLECTION_NAME);
   }
 }

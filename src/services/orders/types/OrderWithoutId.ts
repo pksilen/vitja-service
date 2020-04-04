@@ -1,4 +1,4 @@
-import ShoppingCartItem from '../../users/types/ShoppingCartItem';
+import ShoppingCartItem from '../../shoppingcart/types/ShoppingCartItem';
 
 export default class OrderWithoutId {
   userId!: string;

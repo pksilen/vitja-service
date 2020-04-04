@@ -8,6 +8,7 @@ import initializeController from '../backk/initializeController';
 import getServiceTypeNames from '../backk/getServiceTypeNames';
 import generateServicesMetadata from '../backk/generateServicesMetadata';
 import getSrcFilenameForTypeName from '../backk/getSrcFilenameForTypeName';
+import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
 
 type Params = {
   serviceCall: string;
@@ -18,6 +19,7 @@ export class AppController {
   constructor(
     private readonly usersService: UsersService,
     private readonly salesItemsService: SalesItemsService,
+    private readonly shoppingCartService: ShoppingCartService,
     private readonly ordersService: OrdersService
   ) {
     Object.entries(this).forEach(([serviceName]: [string, object]) => {

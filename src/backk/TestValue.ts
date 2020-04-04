@@ -3,6 +3,6 @@ import testValueContainer from './testValueContainer';
 export function TestValue(testValue: any){
   // eslint-disable-next-line
   return function(object: Object, propertyName: string) {
-    testValueContainer.addTestValue(object.constructor.name, propertyName, testValue);
+    testValueContainer.addTestValue(object.constructor, propertyName, testValue);
   };
 }

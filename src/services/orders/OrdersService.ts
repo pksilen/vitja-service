@@ -1,7 +1,7 @@
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import OrderWithoutId from './types/OrderWithoutId';
 import Order from './types/Order';
-import ShoppingCartItem from '../users/types/ShoppingCartItem';
+import ShoppingCartItem from '../shoppingcart/types/ShoppingCartItem';
 import UserIdWrapper from '../users/types/UserIdWrapper';
 
 export default abstract class OrdersService {

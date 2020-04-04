@@ -3,13 +3,11 @@ import PaymentMethod from './types/PaymentMethod';
 import User from './types/User';
 import UserNameWrapper from './types/UserNameWrapper';
 import UserWithoutId from './types/UserWithoutId';
-import ShoppingCartItem from './types/ShoppingCartItem';
 
 export default abstract class UsersService {
   readonly Types = {
     IdWrapper,
     PaymentMethod,
-    ShoppingCartItem,
     User,
     UserNameWrapper,
     UserWithoutId
