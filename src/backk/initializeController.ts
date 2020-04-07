@@ -48,7 +48,8 @@ function getSampleArg(
   serviceTypes: { [key: string]: Function },
   serviceBaseName: string,
   argTypeName: string,
-  serviceMetadata: ServiceMetadata
+  serviceMetadata: ServiceMetadata,
+  isUpdate: boolean
 ): object | undefined {
   const sampleArg: { [key: string]: any } = {};
   const typeProperties = serviceMetadata.types[argTypeName];
@@ -83,17 +84,17 @@ function getSampleArg(
     } else if (propertyName === '_id') {
       sampleArg[propertyName] = `{{${serviceEntityName}Id}}`;
     } else if (propertyName === '_ids') {
-      sampleArg[propertyName] = `[{{${serviceEntityName}Id}}]`;
+      sampleArg[propertyName] = `{{${serviceEntityName}Id}}`;
     } else if (propertyName.endsWith('Id')) {
       sampleArg[propertyName] = `{{${propertyName}}}`;
     } else if (finalPropertyTypeName.startsWith('integer')) {
-      sampleArg[propertyName] = defaultValue ?? 123;
+      sampleArg[propertyName] = defaultValue ?? (isUpdate ? 1234 : 123);
     } else if (finalPropertyTypeName.startsWith('number')) {
-      sampleArg[propertyName] = defaultValue ?? 123.12;
+      sampleArg[propertyName] = defaultValue ?? (isUpdate ? 1234.12 : 123.12);
     } else if (finalPropertyTypeName.startsWith('boolean')) {
-      sampleArg[propertyName] = defaultValue ?? true;
+      sampleArg[propertyName] = defaultValue ?? (isUpdate ? false : true);
     } else if (finalPropertyTypeName.startsWith('string')) {
-      sampleArg[propertyName] = defaultValue ?? 'abc';
+      sampleArg[propertyName] = defaultValue ?? (isUpdate ? 'abcd' : 'abc');
     } else if (finalPropertyTypeName.startsWith('(')) {
       sampleArg[propertyName] =
         defaultValue ??
@@ -106,7 +107,8 @@ function getSampleArg(
         serviceTypes,
         serviceBaseName,
         finalPropertyTypeNameWithoutArraySuffix,
-        serviceMetadata
+        serviceMetadata,
+        isUpdate
       );
     }
 
@@ -124,7 +126,8 @@ function getReturnValueTests(
   returnValueTypeName: string,
   serviceMetadata: ServiceMetadata,
   responsePath: string,
-  isOptional: boolean
+  isOptional: boolean,
+  isUpdate: boolean
 ): string[] {
   const returnValueMetadata = serviceMetadata.types[returnValueTypeName];
   const types = serviceMetadata.types;
@@ -146,8 +149,13 @@ function getReturnValueTests(
     }
 
     let expectedValue: any;
+    let expectedType;
 
     const testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
+    const testValueType = testValueContainer.getTestValueType(
+      serviceTypes[returnValueTypeName],
+      propertyName
+    );
 
     if (testValue !== undefined) {
       if (typeof testValue === 'string') {
@@ -155,21 +163,25 @@ function getReturnValueTests(
       } else {
         expectedValue = testValue;
       }
+    } else if (testValueType !== undefined) {
+      expectedType = testValueType;
     } else if (propertyName === '_id') {
       expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
+    } else if (propertyName.endsWith('Id')) {
+      expectedValue = `pm.collectionVariables.get('${propertyName}')`;
     } else {
       switch (finalPropertyTypeName) {
         case 'string':
-          expectedValue = "'abc'";
+          expectedValue = isUpdate ? "'abcd'" : "'abc'";
           break;
         case 'boolean':
-          expectedValue = true;
+          expectedValue = !isUpdate;
           break;
         case 'integer':
-          expectedValue = 123;
+          expectedValue = isUpdate ? 1234 : 123;
           break;
         case 'number':
-          expectedValue = 123.12;
+          expectedValue = isUpdate ? 1234.12 : 123.12;
           break;
       }
     }
@@ -184,12 +196,18 @@ function getReturnValueTests(
           finalPropertyTypeName,
           serviceMetadata,
           finalResponsePath,
-          isOptional
+          isOptional,
+          isUpdate
         );
         javascriptLines = javascriptLines.concat(returnValueTests);
         return javascriptLines;
       }
     }
+
+    const expectation =
+      expectedType === undefined
+        ? `pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});`
+        : `pm.expect(response${responsePath}${propertyName}).to.be.a('${expectedType}');`;
 
     if (isOptionalProperty) {
       if (isArray) {
@@ -205,7 +223,7 @@ function getReturnValueTests(
         javascriptLines.push(
           `pm.test("response${responsePath}${propertyName}", function () {
             if (response${responsePath}${propertyName} !== undefined) 
-             return pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});
+             return ${expectation}
             else 
               return true; 
           })`
@@ -221,7 +239,7 @@ function getReturnValueTests(
       } else {
         javascriptLines.push(
           `pm.test("response${responsePath}${propertyName}", function () {
-            pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue}); 
+            ${expectation}
           })`
         );
       }
@@ -234,7 +252,9 @@ function getReturnValueTests(
 function getTests(
   serviceTypes: { [key: string]: Function },
   serviceMetadata: ServiceMetadata,
-  functionMetadata: FunctionMetadata
+  functionMetadata: FunctionMetadata,
+  isUpdate: boolean,
+  expectedResponseStatusCode = 200
 ): object | undefined {
   const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
   const serviceEntityName =
@@ -255,8 +275,8 @@ function getTests(
     isOptional = true;
   }
 
-  const checkResponseCodeIsOk = `pm.test("Status code is 200 OK", function () {
-      pm.response.to.have.status(200);
+  const checkResponseCode = `pm.test("Status code is ${expectedResponseStatusCode} OK", function () {
+      pm.response.to.have.status(${expectedResponseStatusCode});
     });`;
 
   if (returnValueTypeName === 'IdWrapper') {
@@ -266,7 +286,7 @@ function getTests(
       script: {
         id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
         exec: [
-          checkResponseCodeIsOk,
+          checkResponseCode,
           'const response = pm.response.json()',
           `pm.collectionVariables.set("${serviceEntityName}Id", response._id)`
         ]
@@ -280,78 +300,176 @@ function getTests(
     script: {
       id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
       exec:
-        returnValueTypeName === 'void'
-          ? [checkResponseCodeIsOk]
+        returnValueTypeName === 'void' || expectedResponseStatusCode !== 200
+          ? [checkResponseCode]
           : [
-              checkResponseCodeIsOk,
+              checkResponseCode,
               ...getReturnValueTests(
                 serviceTypes,
                 returnValueTypeName,
                 serviceMetadata,
                 isArray ? '[0].' : '.',
-                isOptional
+                isOptional,
+                isUpdate
               )
             ]
     }
   };
 }
 
+function createPostmanCollectionItem(
+  serviceMetadata: ServiceMetadata,
+  functionMetadata: FunctionMetadata,
+  sampleArg: object | undefined,
+  tests: object | undefined
+) {
+  return {
+    name: 'http://localhost:3000/' + serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+    request: {
+      method: 'POST',
+      header:
+        sampleArg === undefined
+          ? []
+          : [
+              {
+                key: 'Content-Type',
+                name: 'Content-Type',
+                value: 'application/json',
+                type: 'text'
+              }
+            ],
+      body:
+        sampleArg === undefined
+          ? undefined
+          : {
+              mode: 'raw',
+              raw: JSON.stringify(sampleArg, null, 4),
+              options: {
+                raw: {
+                  language: 'json'
+                }
+              }
+            },
+      url: {
+        raw: 'http://localhost:3000/' + serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+        protocol: 'http',
+        host: ['localhost'],
+        port: '3000',
+        path: [serviceMetadata.serviceName + '.' + functionMetadata.functionName]
+      }
+    },
+    response: [],
+    event: tests ? [tests] : undefined
+  };
+}
+
 function writePostmanCollectionExportFile<T>(controller: T) {
   const servicesMetadata = generateServicesMetadata(controller);
   const items: any[] = [];
+  let lastGetFunctionMetadata: FunctionMetadata;
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) =>
-    serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata) => {
+    serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
+      if (
+        functionMetadata.functionName.startsWith('get') ||
+        functionMetadata.functionName.startsWith('find') ||
+        functionMetadata.functionName.startsWith('read') ||
+        functionMetadata.functionName.startsWith('fetch') ||
+        functionMetadata.functionName.startsWith('retrieve')
+      ) {
+        lastGetFunctionMetadata = functionMetadata;
+      }
+
       const tests = getTests(
         (controller as any)[serviceMetadata.serviceName].Types,
         serviceMetadata,
-        functionMetadata
+        functionMetadata,
+        false
       );
+
+      let isUpdate = false;
+      if (
+        functionMetadata.functionName.startsWith('update') ||
+        functionMetadata.functionName.startsWith('modify') ||
+        functionMetadata.functionName.startsWith('change')
+      ) {
+        isUpdate = true;
+        if (lastGetFunctionMetadata === undefined) {
+          throw new Error(
+            'There must be a get function defined before update function in: ' + serviceMetadata.serviceName
+          );
+        }
+      }
+
       const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
+
       const sampleArg = getSampleArg(
         (controller as any)[serviceMetadata.serviceName].Types,
         serviceBaseName,
         functionMetadata.argType,
-        serviceMetadata
+        serviceMetadata,
+        isUpdate
       );
-      items.push({
-        name: 'http://localhost:3000/' + serviceMetadata.serviceName + '.' + functionMetadata.functionName,
-        request: {
-          method: 'POST',
-          header:
-            sampleArg === undefined
-              ? []
-              : [
-                  {
-                    key: 'Content-Type',
-                    name: 'Content-Type',
-                    value: 'application/json',
-                    type: 'text'
-                  }
-                ],
-          body:
-            sampleArg === undefined
-              ? undefined
-              : {
-                  mode: 'raw',
-                  raw: JSON.stringify(sampleArg, null, 4),
-                  options: {
-                    raw: {
-                      language: 'json'
-                    }
-                  }
-                },
-          url: {
-            raw: 'http://localhost:3000/' + serviceMetadata.serviceName + '.' + functionMetadata.functionName,
-            protocol: 'http',
-            host: ['localhost'],
-            port: '3000',
-            path: [serviceMetadata.serviceName + '.' + functionMetadata.functionName]
-          }
-        },
-        response: [],
-        event: tests ? [tests] : undefined
-      });
+
+      items.push(createPostmanCollectionItem(serviceMetadata, functionMetadata, sampleArg, tests));
+
+      if (isUpdate) {
+        const getFunctionTests = getTests(
+          (controller as any)[serviceMetadata.serviceName].Types,
+          serviceMetadata,
+          lastGetFunctionMetadata,
+          true
+        );
+
+        const getFunctionSampleArg = getSampleArg(
+          (controller as any)[serviceMetadata.serviceName].Types,
+          serviceBaseName,
+          lastGetFunctionMetadata.argType,
+          serviceMetadata,
+          isUpdate
+        );
+
+        items.push(
+          createPostmanCollectionItem(
+            serviceMetadata,
+            lastGetFunctionMetadata,
+            getFunctionSampleArg,
+            getFunctionTests
+          )
+        );
+      }
+
+      if (
+        (functionMetadata.functionName.startsWith('delete') ||
+          functionMetadata.functionName.startsWith('remove') ||
+          functionMetadata.functionName.startsWith('erase')) &&
+        index === serviceMetadata.functions.length - 1
+      ) {
+        const getFunctionTests = getTests(
+          (controller as any)[serviceMetadata.serviceName].Types,
+          serviceMetadata,
+          lastGetFunctionMetadata,
+          false,
+          404
+        );
+
+        const getFunctionSampleArg = getSampleArg(
+          (controller as any)[serviceMetadata.serviceName].Types,
+          serviceBaseName,
+          lastGetFunctionMetadata.argType,
+          serviceMetadata,
+          true
+        );
+
+        items.push(
+          createPostmanCollectionItem(
+            serviceMetadata,
+            lastGetFunctionMetadata,
+            getFunctionSampleArg,
+            getFunctionTests
+          )
+        );
+      }
     })
   );
 

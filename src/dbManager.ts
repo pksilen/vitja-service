@@ -38,7 +38,7 @@ class DbManager {
       client
         .db(dbName)
         .collection(tableName)
-        .find<T>({ _id: { $in: [_ids.map((_id: string) => new ObjectId(_id))] } })
+        .find<T>({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } })
         .toArray()
     );
 

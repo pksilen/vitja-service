@@ -17,7 +17,11 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
   }
 
   async createSalesItem(salesItemWithoutId: SalesItemWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await dbManager.createItem(salesItemWithoutId, DB_NAME, COLL_NAME);
+    return await dbManager.createItem(
+      { ...salesItemWithoutId, createdTimestampInMillis: Date.now() },
+      DB_NAME,
+      COLL_NAME
+    );
   }
 
   async getSalesItems(
@@ -37,12 +41,13 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
     return await dbManager.getItemsBy<SalesItem>('userId', userId, DB_NAME, COLL_NAME);
   }
 
-  async getSalesItemById({ _id }: IdWrapper): Promise<SalesItem | ErrorResponse> {
-    return await dbManager.getItemById(_id, DB_NAME, COLL_NAME);
-  }
-
   async getSalesItemsByIds({ _ids }: IdsWrapper): Promise<SalesItem[] | ErrorResponse> {
     return await dbManager.getItemsByIds(_ids, DB_NAME, COLL_NAME);
+  }
+
+
+  async getSalesItemById({ _id }: IdWrapper): Promise<SalesItem | ErrorResponse> {
+    return await dbManager.getItemById(_id, DB_NAME, COLL_NAME);
   }
 
   async updateSalesItem(salesItem: SalesItem): Promise<void | ErrorResponse> {

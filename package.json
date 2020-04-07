@@ -34,7 +34,8 @@
     "mongodb": "^3.5.4",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
-    "rxjs": "^6.5.4"
+    "rxjs": "^6.5.4",
+    "typedoc-pksilen": "^0.17.4"
   },
   "devDependencies": {
     "@nestjs/cli": "^6.13.2",
@@ -58,7 +59,6 @@
     "ts-loader": "^6.2.1",
     "ts-node": "^8.6.0",
     "tsconfig-paths": "^3.9.0",
-    "typedoc": "^0.16.10",
     "typescript": "^3.7.4"
   },
   "jest": {
