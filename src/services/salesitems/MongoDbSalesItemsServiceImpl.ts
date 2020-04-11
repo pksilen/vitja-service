@@ -35,7 +35,9 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
     sortBy,
     sortDirection,
     includeResponseFields,
-    excludeResponseFields
+    excludeResponseFields,
+    pageNumber,
+    pageSize
   }: SalesItemsFilters): Promise<Array<Partial<SalesItem>> | ErrorResponse> {
     return await dbManager.execute((client) =>
       client
@@ -55,6 +57,8 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
         })
         .project(getMongoDbProjection({ includeResponseFields, excludeResponseFields }))
         .sort(sortBy, sortDirection === 'ASC' ? 1 : -1 )
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize)
         .toArray()
     );
   }

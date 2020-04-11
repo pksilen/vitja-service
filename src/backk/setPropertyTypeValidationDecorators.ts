@@ -50,6 +50,9 @@ export default function setPropertyTypeValidationDecorators(
       for (const classBodyNode of node.declaration.body.body) {
         if (classBodyNode.type === 'ClassProperty') {
           const propertyName = classBodyNode.key.name;
+          if (classBodyNode.typeAnnotation === undefined) {
+            throw new Error('Missing type annotation for property: ' + propertyName + ' in ' + typeClass.name)
+          }
           const propertyTypeNameStart = classBodyNode.typeAnnotation.loc.start;
           const propertyTypeNameEnd = classBodyNode.typeAnnotation.loc.end;
 

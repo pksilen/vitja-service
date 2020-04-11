@@ -8,11 +8,9 @@ export default class SalesItemsFilters implements Projectable {
   productCategories?: 'Vehicles'[];
   productSubCategories?: 'Vehicles'[];
 
-  @IsInt()
   @Min(0)
   minPrice?: number;
-
-  @IsInt()
+  
   @Min(0)
   maxPrice?: number;
 

@@ -88,20 +88,24 @@ function getSampleArg(
     } else if (propertyName.endsWith('Id')) {
       sampleArg[propertyName] = `{{${propertyName}}}`;
     } else if (finalPropertyTypeName.startsWith('integer')) {
-      sampleArg[propertyName] = defaultValue ?? (isUpdate ? 1234 : 123);
+      sampleArg[propertyName] =
+        defaultValue === undefined ? (isUpdate ? 1234 : 123) : JSON.parse(defaultValue);
     } else if (finalPropertyTypeName.startsWith('number')) {
-      sampleArg[propertyName] = defaultValue ?? (isUpdate ? 1234.12 : 123.12);
+      sampleArg[propertyName] =
+        defaultValue === undefined ? (isUpdate ? 1234.12 : 123.12) : JSON.parse(defaultValue);
     } else if (finalPropertyTypeName.startsWith('boolean')) {
-      sampleArg[propertyName] = defaultValue ?? (isUpdate ? false : true);
+      sampleArg[propertyName] = defaultValue === undefined ? !isUpdate : JSON.parse(defaultValue);
     } else if (finalPropertyTypeName.startsWith('string')) {
-      sampleArg[propertyName] = defaultValue ?? (isUpdate ? 'abcd' : 'abc');
+      sampleArg[propertyName] =
+        defaultValue === undefined ? (isUpdate ? 'abcd' : 'abc') : JSON.parse(defaultValue);
     } else if (finalPropertyTypeName.startsWith('(')) {
       sampleArg[propertyName] =
-        defaultValue ??
-        finalPropertyTypeName
-          .slice(1)
-          .split(/[|)]/)[0]
-          .split("'")[1];
+        defaultValue === undefined
+          ? finalPropertyTypeName
+              .slice(1)
+              .split(/[|)]/)[0]
+              .split("'")[1]
+          : JSON.parse(defaultValue);
     } else if (types[finalPropertyTypeNameWithoutArraySuffix]) {
       sampleArg[propertyName] = getSampleArg(
         serviceTypes,

@@ -85,7 +85,7 @@ function getValidationMetadata<T>(typeClass: new () => T): object {
       validationMetadata.type !== 'isArray'
     ) {
       const validationExpr = `${validationMetadata.type}${
-        validationMetadata.constraints?.[0]
+        validationMetadata.constraints?.[0] !== undefined
           ? '(' +
             (typeof validationMetadata.constraints[0] === 'object' &&
             !(validationMetadata.constraints[0] instanceof RegExp)
