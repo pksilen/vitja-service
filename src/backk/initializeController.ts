@@ -1,11 +1,13 @@
 import { getFromContainer, MetadataStorage, ValidationTypes } from 'class-validator';
 import { Type } from 'class-transformer';
+import _ from 'lodash';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import generateServicesMetadata, { FunctionMetadata, ServiceMetadata } from './generateServicesMetadata';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import setPropertyTypeValidationDecorators from './setPropertyTypeValidationDecorators';
 import testValueContainer from './testValueContainer';
+import { getFileNamesRecursively } from './getSrcFilenameForTypeName';
 
 function setNestedTypeAndValidationDecorators(
   typeClass: Function,
@@ -217,34 +219,34 @@ function getReturnValueTests(
       if (isArray) {
         javascriptLines.push(
           `pm.test("response${responsePath}${propertyName}", function () {
-            if (response${responsePath}${propertyName} !== undefined) 
-              return pm.expect(response${responsePath}${propertyName}).to.have.members([${expectedValue}]);
-            else 
-              return true; 
-          })`
+  if (response${responsePath}${propertyName} !== undefined) 
+    return pm.expect(response${responsePath}${propertyName}).to.have.members([${expectedValue}]);
+  else 
+    return true; 
+})`
         );
       } else {
         javascriptLines.push(
           `pm.test("response${responsePath}${propertyName}", function () {
-            if (response${responsePath}${propertyName} !== undefined) 
-             return ${expectation}
-            else 
-              return true; 
-          })`
+  if (response${responsePath}${propertyName} !== undefined) 
+   return ${expectation}
+  else 
+    return true; 
+})`
         );
       }
     } else {
       if (isArray) {
         javascriptLines.push(
           `pm.test("response${responsePath}${propertyName}", function () {
-            pm.expect(response${responsePath}${propertyName}).to.have.members([${expectedValue}]); 
-          })`
+  pm.expect(response${responsePath}${propertyName}).to.have.members([${expectedValue}]); 
+})`
         );
       } else {
         javascriptLines.push(
           `pm.test("response${responsePath}${propertyName}", function () {
-            ${expectation}
-          })`
+  ${expectation}
+})`
         );
       }
     }
@@ -280,8 +282,8 @@ function getTests(
   }
 
   const checkResponseCode = `pm.test("Status code is ${expectedResponseStatusCode} OK", function () {
-      pm.response.to.have.status(${expectedResponseStatusCode});
-    });`;
+  pm.response.to.have.status(${expectedResponseStatusCode});
+});`;
 
   if (returnValueTypeName === 'IdWrapper') {
     return {
@@ -328,7 +330,7 @@ function createPostmanCollectionItem(
   tests: object | undefined
 ) {
   return {
-    name: 'http://localhost:3000/' + serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+    name: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
     request: {
       method: 'POST',
       header:
@@ -367,10 +369,84 @@ function createPostmanCollectionItem(
   };
 }
 
+function createPostmanCollectionItemFromWrittenTest(writtenTest: any) {
+  const checkResponseCode = writtenTest.response.statusCode
+    ? `pm.test("Status code is ${writtenTest.response.statusCode} OK", function () {
+  pm.response.to.have.status(${writtenTest.response.statusCode});
+});`
+    : '';
+
+  return {
+    name: writtenTest.testName,
+    request: {
+      method: 'POST',
+      header:
+        writtenTest.argument === undefined
+          ? []
+          : [
+              {
+                key: 'Content-Type',
+                name: 'Content-Type',
+                value: 'application/json',
+                type: 'text'
+              }
+            ],
+      body:
+        writtenTest.argument === undefined
+          ? undefined
+          : {
+              mode: 'raw',
+              raw: JSON.stringify(writtenTest.argument, null, 4),
+              options: {
+                raw: {
+                  language: 'json'
+                }
+              }
+            },
+      url: {
+        raw: 'http://localhost:3000/' + writtenTest.serviceName + '.' + writtenTest.functionName,
+        protocol: 'http',
+        host: ['localhost'],
+        port: '3000',
+        path: [writtenTest.serviceName + '.' + writtenTest.functionName]
+      }
+    },
+    response: [],
+    event: [
+      {
+        id: writtenTest.serviceName + '.' + writtenTest.functionName,
+        listen: 'test',
+        script: {
+          id: writtenTest.serviceName + '.' + writtenTest.functionName,
+          exec: [
+            checkResponseCode,
+            'const response = pm.response.json();',
+            ...(writtenTest.response.tests
+              ? writtenTest.response.tests.map(
+                  (test: any) =>
+                    `pm.test("${test.name}", function () {
+  ${test.exec.join('\n  ')} 
+})`
+                )
+              : [])
+          ]
+        }
+      }
+    ]
+  };
+}
+
 function writePostmanCollectionExportFile<T>(controller: T) {
   const servicesMetadata = generateServicesMetadata(controller);
   const items: any[] = [];
   let lastGetFunctionMetadata: FunctionMetadata;
+  const testFilePathNames = getFileNamesRecursively(process.cwd() + '/integrationtests');
+  const writtenTests = _.flatten(
+    testFilePathNames.map((testFilePathName) => {
+      const testFileContents = readFileSync(testFilePathName, { encoding: 'UTF-8' });
+      return JSON.parse(testFileContents);
+    })
+  );
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) =>
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
@@ -473,6 +549,14 @@ function writePostmanCollectionExportFile<T>(controller: T) {
             getFunctionTests
           )
         );
+      }
+
+      if (index === serviceMetadata.functions.length - 1) {
+        writtenTests
+          .filter((writtenTest) => writtenTest.serviceName === serviceMetadata.serviceName)
+          .forEach((writtenTest) => {
+            items.push(createPostmanCollectionItemFromWrittenTest(writtenTest));
+          });
       }
     })
   );

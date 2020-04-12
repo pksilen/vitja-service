@@ -1,0 +1,234 @@
+[
+  {
+    "testName": "salesItemsService.createSalesItem1",
+    "serviceName": "salesItemsService",
+    "functionName": "createSalesItem",
+    "argument": {
+      "price": 1.00,
+      "previousPrice": 1.00,
+      "userId": "{{userId}}",
+      "title": "firstTitle",
+      "description": "firstDescription",
+      "area": "Area1",
+      "productDepartment": "Vehicles",
+      "productCategory": "Vehicles",
+      "productSubCategory": "Vehicles",
+      "primaryImageDataUri": "abc",
+      "secondaryImageDataUris": ["abc"]
+    },
+    "response": {
+      "statusCode": 200
+    }
+  },
+  {
+    "testName": "salesItemsService.createSalesItem2",
+    "serviceName": "salesItemsService",
+    "functionName": "createSalesItem",
+    "argument": {
+      "price": 2.00,
+      "previousPrice": 2.00,
+      "userId": "{{userId}}",
+      "title": "secondTitle",
+      "description": "secondDescription",
+      "area": "Area2",
+      "productDepartment": "Clothes",
+      "productCategory": "Clothes",
+      "productSubCategory": "Clothes",
+      "primaryImageDataUri": "abc",
+      "secondaryImageDataUris": ["abc"]
+    },
+    "response": {
+      "statusCode": 200
+    }
+  },
+  {
+    "testName": "salesItemsService.getSalesItems (textFilter title)",
+    "serviceName": "salesItemsService",
+    "functionName": "getSalesItems",
+    "argument": {
+      "textFilter": "secondTitle",
+      "includeResponseFields": []
+    },
+    "response": {
+      "statusCode": 200,
+      "tests": [
+        {
+          "name": "title is secondTitle",
+          "exec": [
+            "pm.expect(response[0].title).to.eql('secondTitle');",
+            "pm.expect(response.length).to.eql(1);"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "testName": "salesItemsService.getSalesItems (textFilter description)",
+    "serviceName": "salesItemsService",
+    "functionName": "getSalesItems",
+    "argument": {
+      "textFilter": "secondDescription",
+      "includeResponseFields": []
+    },
+    "response": {
+      "statusCode": 200,
+      "tests": [
+        {
+          "name": "description is secondDescription",
+          "exec": [
+            "pm.expect(response[0].description).to.eql('secondDescription');",
+            "pm.expect(response.length).to.eql(1);"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "testName": "salesItemsService.getSalesItems (areas)",
+    "serviceName": "salesItemsService",
+    "functionName": "getSalesItems",
+    "argument": {
+      "areas": ["Area2"],
+      "includeResponseFields": []
+    },
+    "response": {
+      "statusCode": 200,
+      "tests": [
+        {
+          "name": "area is Area2",
+          "exec": ["pm.expect(response[0].area).to.eql('Area2');", "pm.expect(response.length).to.eql(1);"]
+        }
+      ]
+    }
+  },
+  {
+    "testName": "salesItemsService.getSalesItems (productDepartments)",
+    "serviceName": "salesItemsService",
+    "functionName": "getSalesItems",
+    "argument": {
+      "productDepartments": ["Clothes"],
+      "includeResponseFields": []
+    },
+    "response": {
+      "statusCode": 200,
+      "tests": [
+        {
+          "name": "productDepartment is Clothes",
+          "exec": [
+            "pm.expect(response[0].productDepartment).to.eql('Clothes');",
+            "pm.expect(response.length).to.eql(1);"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "testName": "salesItemsService.getSalesItems (productCategories)",
+    "serviceName": "salesItemsService",
+    "functionName": "getSalesItems",
+    "argument": {
+      "productCategories": ["Clothes"],
+      "includeResponseFields": []
+    },
+    "response": {
+      "statusCode": 200,
+      "tests": [
+        {
+          "name": "productCategory is Clothes",
+          "exec": [
+            "pm.expect(response[0].productCategory).to.eql('Clothes');",
+            "pm.expect(response.length).to.eql(1);"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "testName": "salesItemsService.getSalesItems (productSubCategories)",
+    "serviceName": "salesItemsService",
+    "functionName": "getSalesItems",
+    "argument": {
+      "productSubCategories": ["Clothes"],
+      "includeResponseFields": []
+    },
+    "response": {
+      "statusCode": 200,
+      "tests": [
+        {
+          "name": "productSubCategory is Clothes",
+          "exec": [
+            "pm.expect(response[0].productSubCategory).to.eql('Clothes');",
+            "pm.expect(response.length).to.eql(1);"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "testName": "salesItemsService.getSalesItems (minPrice, maxPrice)",
+    "serviceName": "salesItemsService",
+    "functionName": "getSalesItems",
+    "argument": {
+      "minPrice": 2,
+      "maxPrice": 2,
+      "includeResponseFields": []
+    },
+    "response": {
+      "statusCode": 200,
+      "tests": [
+        {
+          "name": "price is 2",
+          "exec": [
+            "pm.expect(response[0].price).to.eql(2.00);",
+            "pm.expect(response.length).to.eql(1);"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "testName": "salesItemsService.getSalesItems (sortBy, sortDirection)",
+    "serviceName": "salesItemsService",
+    "functionName": "getSalesItems",
+    "argument": {
+      "sortBy": "price",
+      "sortDirection": "DESC",
+      "includeResponseFields": []
+    },
+    "response": {
+      "statusCode": 200,
+      "tests": [
+        {
+          "name": "first price is 2 and second price is 1",
+          "exec": [
+            "pm.expect(response[0].price).to.eql(2.00);",
+            "pm.expect(response[1].price).to.eql(1.00);",
+            "pm.expect(response.length).to.eql(2);"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "testName": "salesItemsService.getSalesItems (pageNumber, pageSize)",
+    "serviceName": "salesItemsService",
+    "functionName": "getSalesItems",
+    "argument": {
+      "pageNumber": 2,
+      "pageSize": 1,
+      "includeResponseFields": []
+    },
+    "response": {
+      "statusCode": 200,
+      "tests": [
+        {
+          "name": "price is 2",
+          "exec": [
+            "pm.expect(response[0].price).to.eql(2.00);",
+            "pm.expect(response.length).to.eql(1);"
+          ]
+        }
+      ]
+    }
+  }
+]

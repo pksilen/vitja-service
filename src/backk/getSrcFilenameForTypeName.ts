@@ -1,7 +1,7 @@
 import { Dirent, readdirSync } from 'fs';
 import { resolve } from 'path';
 
-function getFileNamesRecursively(directory: string): string[] {
+export function getFileNamesRecursively(directory: string): string[] {
   const directoryEntries = readdirSync(directory, { withFileTypes: true });
 
   const files = directoryEntries.map((directoryEntry: Dirent) => {

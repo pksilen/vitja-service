@@ -4,9 +4,10 @@ export default class SalesItemWithoutId {
   userId!: string;
   title!: string;
   description!: string;
-  productDepartment!: 'Vehicles';
-  productCategory!: 'Vehicles';
-  productSubCategory!: 'Vehicles';
+  area!: 'Area1' | 'Area2' | 'Area3';
+  productDepartment!: 'Vehicles' | 'Clothes';
+  productCategory!: 'Vehicles' | 'Clothes';
+  productSubCategory!: 'Vehicles' | 'Clothes';
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()

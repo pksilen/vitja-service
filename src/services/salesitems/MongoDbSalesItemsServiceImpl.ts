@@ -27,6 +27,7 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
 
   async getSalesItems({
     textFilter,
+    areas,
     productDepartments,
     productCategories,
     productSubCategories,
@@ -44,19 +45,24 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
         .db(DB_NAME)
         .collection<SalesItem>(COLL_NAME)
         .find({
-          $or: textFilter
-            ? [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }]
-            : undefined,
-          productDepartment: productDepartments ? { $in: productDepartments } : undefined,
-          productCategory: productCategories ? { $in: productCategories } : undefined,
-          productSubCategory: productSubCategories ? { $in: productSubCategories } : undefined,
-          $and:
-            minPrice !== undefined || maxPrice
-              ? [{ price: { $gte: minPrice || 0 } }, { price: { $lte: maxPrice || Number.MAX_SAFE_INTEGER } }]
-              : undefined
+          ...(textFilter
+            ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
+            : {}),
+          ...(areas ? { area:  { $in: areas }} : {}),
+          ...(productDepartments ? { productDepartment:  { $in: productDepartments } }: {}),
+          ...(productCategories ? { productCategory:  { $in: productCategories }} : {}),
+          ...(productSubCategories ? { productSubCategory:  { $in: productSubCategories }}: {}),
+          ...(minPrice !== undefined || maxPrice
+            ? {
+                $and: [
+                  { price: { $gte: minPrice || 0 } },
+                  { price: { $lte: maxPrice || Number.MAX_SAFE_INTEGER } }
+                ]
+              }
+            : {})
         })
         .project(getMongoDbProjection({ includeResponseFields, excludeResponseFields }))
-        .sort(sortBy, sortDirection === 'ASC' ? 1 : -1 )
+        .sort(sortBy, sortDirection === 'ASC' ? 1 : -1)
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize)
         .toArray()

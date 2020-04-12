@@ -4,13 +4,13 @@ import { IsInt, IsPositive, Min } from 'class-validator';
 export default class SalesItemsFilters implements Projectable {
   textFilter?: string;
   areas?: ('Area1' | 'Area2' | 'Area3')[];
-  productDepartments?: 'Vehicles'[];
-  productCategories?: 'Vehicles'[];
-  productSubCategories?: 'Vehicles'[];
+  productDepartments?: ('Vehicles' | 'Clothes')[];
+  productCategories?: ('Vehicles' | 'Clothes')[];
+  productSubCategories?: ('Vehicles' | 'Clothes')[];
 
   @Min(0)
   minPrice?: number;
-  
+
   @Min(0)
   maxPrice?: number;
 
