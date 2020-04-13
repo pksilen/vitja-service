@@ -2,25 +2,33 @@
   {
     "templateValues": [
       {
-        "argumentPropertyValues": [1.0, "firstTitle", "firstDescription", "Area1", "Vehicles"]
+        "price": 1.0,
+        "title": "firstTitle",
+        "description": "firstDescription",
+        "area": "Area1",
+        "category": "Vehicles"
       },
       {
-        "argumentPropertyValues": [2.0, "secondTitle", "secondDescription", "Area2", "Clothes"]
+        "price": 2.0,
+        "title": "secondTitle",
+        "description": "secondDescription",
+        "area": "Area2",
+        "category": "Clothes"
       }
     ],
-    "testName": "salesItemsService.createSalesItem ({{argumentPropertyValues[0]}})",
+    "testName": "salesItemsService.createSalesItem ({{price}})",
     "serviceName": "salesItemsService",
     "functionName": "createSalesItem",
     "argument": {
-      "price": "{{argumentPropertyValues[0]}}",
-      "previousPrice": "{{argumentPropertyValues[0]}}",
+      "price": "{{price}}",
+      "previousPrice": "{{price}}",
       "userId": "{{userId}}",
-      "title": "{{argumentPropertyValues[1]}}",
-      "description": "{{argumentPropertyValues[2]}}",
-      "area": "{{argumentPropertyValues[3]}}",
-      "productDepartment": "{{argumentPropertyValues[4]}}",
-      "productCategory": "{{argumentPropertyValues[4]}}",
-      "productSubCategory": "{{argumentPropertyValues[4]}}",
+      "title": "{{title}}",
+      "description": "{{description}}",
+      "area": "{{area}}",
+      "productDepartment": "{{category}}",
+      "productCategory": "{{category}}",
+      "productSubCategory": "{{category}}",
       "primaryImageDataUri": "abc",
       "secondaryImageDataUris": ["abc"]
     },
@@ -31,119 +39,71 @@
   {
     "templateValues": [
       {
-        "argumentPropertyNames": ["textFilter"],
-        "argumentPropertyValues": ["secondTitle"],
-        "responsePropertyNames": ["title"],
-        "responsePropertyValues": ["'secondTitle'"]
+        "argumentProperty1": ["textFilter", "secondTitle"],
+        "responseProperty": ["title", "'secondTitle'"],
+        "responseLength": "1"
       },
       {
-        "argumentPropertyNames": ["textFilter"],
-        "argumentPropertyValues": ["secondDescription"],
-        "responsePropertyNames": ["description"],
-        "responsePropertyValues": ["'secondDescription'"]
+        "argumentProperty1": ["textFilter", "secondDescription"],
+        "responseProperty": ["description", "'secondDescription'"],
+        "responseLength": "1"
       },
       {
-        "argumentPropertyNames": ["areas"],
-        "argumentPropertyValues": [["Area2"]],
-        "responsePropertyNames": ["area"],
-        "responsePropertyValues": ["'Area2'"]
+        "argumentProperty1": ["areas", ["Area2"]],
+        "responseProperty": ["area", "'Area2'"],
+        "responseLength": "1"
       },
       {
-        "argumentPropertyNames": ["productDepartments"],
-        "argumentPropertyValues": [["Clothes"]],
-        "responsePropertyNames": ["productDepartment"],
-        "responsePropertyValues": ["'Clothes'"]
+        "argumentProperty1": ["productDepartments", ["Clothes"]],
+        "responseProperty": ["productDepartment", "'Clothes'"],
+        "responseLength": "1"
       },
       {
-        "argumentPropertyNames": ["productCategories"],
-        "argumentPropertyValues": [["Clothes"]],
-        "responsePropertyNames": ["productCategory"],
-        "responsePropertyValues": ["'Clothes'"]
+        "argumentProperty1": ["productCategories", ["Clothes"]],
+        "responseProperty": ["productCategory", "'Clothes'"],
+        "responseLength":  "1"
       },
       {
-        "argumentPropertyNames": ["productSubCategories"],
-        "argumentPropertyValues": [["Clothes"]],
-        "responsePropertyNames": ["productSubCategory"],
-        "responsePropertyValues": ["'Clothes'"]
+        "argumentProperty1": ["productSubCategories", ["Clothes"]],
+        "responseProperty": ["productSubCategory", "'Clothes'"],
+        "responseLength": "1"
+      },
+      {
+        "argumentProperty1": ["minPrice", 2],
+        "argumentProperty2": ["maxPrice", 2],
+        "responseProperty": ["price", "2"],
+        "responseLength": "1"
+      },
+      {
+        "argumentProperty1": ["sortBy", "price"],
+        "argumentProperty2": ["sortDirection", "DESC"],
+        "responseProperty": ["price", "2"],
+        "responseLength": "2"
+      },
+      {
+        "argumentProperty1": ["pageNumber", 2],
+        "argumentProperty2": ["pageSize", 1],
+        "responseProperty": ["price", "2"],
+        "responseLength": "1"
       }
     ],
-    "testName": "salesItemsService.getSalesItems ({{argumentPropertyNames[0]}} = {{argumentPropertyValues[0]}})",
+    "testName": "salesItemsService.getSalesItems ({{argumentProperty1[0]}} = {{argumentProperty1[1]}})",
     "serviceName": "salesItemsService",
     "functionName": "getSalesItems",
     "argument": {
-      "{{argumentPropertyNames[0]}}": "{{argumentPropertyValues[0]}}",
+      "{{argumentProperty1[0]}}": "{{argumentProperty1[1]}}",
+      "{{argumentProperty2[0]}}": "{{argumentProperty2[1]}}",
       "includeResponseFields": []
     },
     "response": {
       "statusCode": 200,
       "tests": [
         {
-          "name": "{{responsePropertyNames[0]}} is {{responsePropertyValues[0]}}",
+          "name": "{{responseProperty[0]}} is {{responseProperty[1]}}",
           "exec": [
-            "pm.expect(response[0].{{responsePropertyNames[0]}}).to.eql({{responsePropertyValues[0]}});",
-            "pm.expect(response.length).to.eql(1);"
+            "pm.expect(response[0].{{responseProperty[0]}}).to.eql({{responseProperty[1]}});",
+            "pm.expect(response.length).to.eql({{responseLength}});"
           ]
-        }
-      ]
-    }
-  },
-  {
-    "testName": "salesItemsService.getSalesItems (minPrice, maxPrice)",
-    "serviceName": "salesItemsService",
-    "functionName": "getSalesItems",
-    "argument": {
-      "minPrice": 2,
-      "maxPrice": 2,
-      "includeResponseFields": []
-    },
-    "response": {
-      "statusCode": 200,
-      "tests": [
-        {
-          "name": "price is 2",
-          "exec": ["pm.expect(response[0].price).to.eql(2.00);", "pm.expect(response.length).to.eql(1);"]
-        }
-      ]
-    }
-  },
-  {
-    "testName": "salesItemsService.getSalesItems (sortBy, sortDirection)",
-    "serviceName": "salesItemsService",
-    "functionName": "getSalesItems",
-    "argument": {
-      "sortBy": "price",
-      "sortDirection": "DESC",
-      "includeResponseFields": []
-    },
-    "response": {
-      "statusCode": 200,
-      "tests": [
-        {
-          "name": "first price is 2 and second price is 1",
-          "exec": [
-            "pm.expect(response[0].price).to.eql(2.00);",
-            "pm.expect(response[1].price).to.eql(1.00);",
-            "pm.expect(response.length).to.eql(2);"
-          ]
-        }
-      ]
-    }
-  },
-  {
-    "testName": "salesItemsService.getSalesItems (pageNumber, pageSize)",
-    "serviceName": "salesItemsService",
-    "functionName": "getSalesItems",
-    "argument": {
-      "pageNumber": 2,
-      "pageSize": 1,
-      "includeResponseFields": []
-    },
-    "response": {
-      "statusCode": 200,
-      "tests": [
-        {
-          "name": "price is 2",
-          "exec": ["pm.expect(response[0].price).to.eql(2.00);", "pm.expect(response.length).to.eql(1);"]
         }
       ]
     }

@@ -557,60 +557,38 @@ function writePostmanCollectionExportFile<T>(controller: T) {
           .forEach((writtenTest) => {
             if (writtenTest.templateValues) {
               writtenTest.templateValues.forEach((templateValueMap: any) => {
-                const instantiatedWrittenTest = _.cloneDeepWith(writtenTest, (value: any, key, object) => {
+                const instantiatedWrittenTest = _.cloneDeepWith(writtenTest, (value: any) => {
                   let newValue = value;
-                  templateValueMap.argumentPropertyValues.forEach((_: any, index: number) => {
-                    if (
-                      typeof newValue === 'string' &&
-                      newValue.includes(`{{argumentPropertyNames[${index}]}}`)
-                    ) {
-                      newValue = newValue.replace(
-                        `{{argumentPropertyNames[${index}]}}`,
-                        templateValueMap.argumentPropertyNames[index]
-                      );
-                    }
-                    if (newValue === `{{argumentPropertyValues[${index}]}}`) {
-                      newValue = templateValueMap.argumentPropertyValues[index];
-                    }
-                    if (
-                      typeof newValue === 'string' &&
-                      newValue.includes(`{{argumentPropertyValues[${index}]}}`)
-                    ) {
-                      newValue = newValue.replace(
-                        `{{argumentPropertyValues[${index}]}}`,
-                        templateValueMap.argumentPropertyValues[index]
-                      );
-                    }
-                    if (
-                      typeof newValue === 'string' &&
-                      newValue.includes(`{{responsePropertyNames[${index}]}}`)
-                    ) {
-                      newValue = newValue.replace(
-                        `{{responsePropertyNames[${index}]}}`,
-                        templateValueMap.responsePropertyNames[index]
-                      );
-                    }
-                    if (
-                      typeof newValue === 'string' &&
-                      newValue.includes(`{{responsePropertyValues[${index}]}}`)
-                    ) {
-                      newValue = newValue.replace(
-                        `{{responsePropertyValues[${index}]}}`,
-                        templateValueMap.responsePropertyValues[index]
-                      );
+                  Object.entries(templateValueMap).forEach(([key, templateValue]: [string, any]) => {
+                    if (Array.isArray(templateValue)) {
+                      Array(2)
+                        .fill(0)
+                        .forEach((_, index) => {
+                          if (newValue === `{{${key}[${index}]}}`) {
+                            newValue = templateValue[index];
+                          }
+                          if (typeof newValue === 'string' && newValue.includes(`{{${key}[${index}]}}`)) {
+                            newValue = newValue.replace(`{{${key}[${index}]}}`, templateValue[index]);
+                          }
+                        });
+                    } else {
+                      if (newValue === `{{${key}}}`) {
+                        newValue = templateValue;
+                      }
+                      if (typeof newValue === 'string' && newValue.includes(`{{${key}}}`)) {
+                        newValue = newValue.replace(`{{${key}}}`, templateValue);
+                      }
                     }
                   });
                   return newValue === value ? undefined : newValue;
                 });
 
                 Object.keys(instantiatedWrittenTest.argument).forEach((argumentKey: string) => {
-                  templateValueMap.argumentPropertyValues.forEach((_: any, index: number) => {
-                    if (argumentKey === `{{argumentPropertyNames[${index}]}}`) {
+                  Object.entries(templateValueMap).forEach(([key, templateValue]: [string, any]) => {
+                    if (argumentKey === `{{${key}[0]}}`) {
                       const argumentValue = instantiatedWrittenTest.argument[argumentKey];
                       delete instantiatedWrittenTest.argument[argumentKey];
-                      instantiatedWrittenTest.argument[
-                        templateValueMap.argumentPropertyNames[index]
-                      ] = argumentValue;
+                      instantiatedWrittenTest.argument[templateValue[0]] = argumentValue;
                     }
                   });
                 });
