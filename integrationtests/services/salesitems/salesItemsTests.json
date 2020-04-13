@@ -1,39 +1,26 @@
 [
   {
-    "testName": "salesItemsService.createSalesItem1",
+    "templateValues": [
+      {
+        "argumentPropertyValues": [1.0, "firstTitle", "firstDescription", "Area1", "Vehicles"]
+      },
+      {
+        "argumentPropertyValues": [2.0, "secondTitle", "secondDescription", "Area2", "Clothes"]
+      }
+    ],
+    "testName": "salesItemsService.createSalesItem ({{argumentPropertyValues[0]}})",
     "serviceName": "salesItemsService",
     "functionName": "createSalesItem",
     "argument": {
-      "price": 1.0,
-      "previousPrice": 1.0,
+      "price": "{{argumentPropertyValues[0]}}",
+      "previousPrice": "{{argumentPropertyValues[0]}}",
       "userId": "{{userId}}",
-      "title": "firstTitle",
-      "description": "firstDescription",
-      "area": "Area1",
-      "productDepartment": "Vehicles",
-      "productCategory": "Vehicles",
-      "productSubCategory": "Vehicles",
-      "primaryImageDataUri": "abc",
-      "secondaryImageDataUris": ["abc"]
-    },
-    "response": {
-      "statusCode": 200
-    }
-  },
-  {
-    "testName": "salesItemsService.createSalesItem2",
-    "serviceName": "salesItemsService",
-    "functionName": "createSalesItem",
-    "argument": {
-      "price": 2.0,
-      "previousPrice": 2.0,
-      "userId": "{{userId}}",
-      "title": "secondTitle",
-      "description": "secondDescription",
-      "area": "Area2",
-      "productDepartment": "Clothes",
-      "productCategory": "Clothes",
-      "productSubCategory": "Clothes",
+      "title": "{{argumentPropertyValues[1]}}",
+      "description": "{{argumentPropertyValues[2]}}",
+      "area": "{{argumentPropertyValues[3]}}",
+      "productDepartment": "{{argumentPropertyValues[4]}}",
+      "productCategory": "{{argumentPropertyValues[4]}}",
+      "productSubCategory": "{{argumentPropertyValues[4]}}",
       "primaryImageDataUri": "abc",
       "secondaryImageDataUris": ["abc"]
     },
