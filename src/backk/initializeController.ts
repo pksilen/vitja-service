@@ -555,7 +555,61 @@ function writePostmanCollectionExportFile<T>(controller: T) {
         writtenTests
           .filter((writtenTest) => writtenTest.serviceName === serviceMetadata.serviceName)
           .forEach((writtenTest) => {
-            items.push(createPostmanCollectionItemFromWrittenTest(writtenTest));
+            if (writtenTest.templateValues) {
+              writtenTest.templateValues.forEach((templateValueMap: any) => {
+                const instantiatedWrittenTest = _.cloneDeepWith(writtenTest, (value: any, key, object) => {
+                  let newValue = value;
+                  templateValueMap.argumentPropertyNames.forEach((_: any, index: number) => {
+                    if (typeof newValue === 'string') {
+                      if (newValue.includes(`{{argumentPropertyNames[${index}]}}`)) {
+                        newValue = newValue.replace(
+                          `{{argumentPropertyNames[${index}]}}`,
+                          templateValueMap.argumentPropertyNames[index]
+                        );
+                      }
+                      if (newValue === `{{argumentPropertyValues[${index}]}}`) {
+                        newValue = templateValueMap.argumentPropertyValues[index];
+                      }
+                      if (newValue.includes(`{{argumentPropertyValues[${index}]}}`)) {
+                        newValue = newValue.replace(
+                          `{{argumentPropertyValues[${index}]}}`,
+                          templateValueMap.argumentPropertyValues[index]
+                        );
+                      }
+                      if (newValue.includes(`{{responsePropertyNames[${index}]}}`)) {
+                        newValue = newValue.replace(
+                          `{{responsePropertyNames[${index}]}}`,
+                          templateValueMap.responsePropertyNames[index]
+                        );
+                      }
+                      if (newValue.includes(`{{responsePropertyValues[${index}]}}`)) {
+                        newValue = newValue.replace(
+                          `{{responsePropertyValues[${index}]}}`,
+                          templateValueMap.responsePropertyValues[index]
+                        );
+                      }
+                    }
+                  });
+                  return newValue === value ? undefined : newValue;
+                });
+
+                Object.keys(instantiatedWrittenTest.argument).forEach((argumentKey: string) => {
+                  templateValueMap.argumentPropertyNames.forEach((_: any, index: number) => {
+                    if (argumentKey === `{{argumentPropertyNames[${index}]}}`) {
+                      const argumentValue = instantiatedWrittenTest.argument[argumentKey];
+                      delete instantiatedWrittenTest.argument[argumentKey];
+                      instantiatedWrittenTest.argument[
+                        templateValueMap.argumentPropertyNames[index]
+                      ] = argumentValue;
+                    }
+                  });
+                });
+
+                items.push(createPostmanCollectionItemFromWrittenTest(instantiatedWrittenTest));
+              });
+            } else {
+              items.push(createPostmanCollectionItemFromWrittenTest(writtenTest));
+            }
           });
       }
     })

@@ -4,8 +4,8 @@
     "serviceName": "salesItemsService",
     "functionName": "createSalesItem",
     "argument": {
-      "price": 1.00,
-      "previousPrice": 1.00,
+      "price": 1.0,
+      "previousPrice": 1.0,
       "userId": "{{userId}}",
       "title": "firstTitle",
       "description": "firstDescription",
@@ -25,8 +25,8 @@
     "serviceName": "salesItemsService",
     "functionName": "createSalesItem",
     "argument": {
-      "price": 2.00,
-      "previousPrice": 2.00,
+      "price": 2.0,
+      "previousPrice": 2.0,
       "userId": "{{userId}}",
       "title": "secondTitle",
       "description": "secondDescription",
@@ -42,122 +42,58 @@
     }
   },
   {
-    "testName": "salesItemsService.getSalesItems (textFilter title)",
+    "templateValues": [
+      {
+        "argumentPropertyNames": ["textFilter"],
+        "argumentPropertyValues": ["secondTitle"],
+        "responsePropertyNames": ["title"],
+        "responsePropertyValues": ["'secondTitle'"]
+      },
+      {
+        "argumentPropertyNames": ["textFilter"],
+        "argumentPropertyValues": ["secondDescription"],
+        "responsePropertyNames": ["description"],
+        "responsePropertyValues": ["'secondDescription'"]
+      },
+      {
+        "argumentPropertyNames": ["areas"],
+        "argumentPropertyValues": [["Area2"]],
+        "responsePropertyNames": ["area"],
+        "responsePropertyValues": ["'Area2'"]
+      },
+      {
+        "argumentPropertyNames": ["productDepartments"],
+        "argumentPropertyValues": [["Clothes"]],
+        "responsePropertyNames": ["productDepartment"],
+        "responsePropertyValues": ["'Clothes'"]
+      },
+      {
+        "argumentPropertyNames": ["productCategories"],
+        "argumentPropertyValues": [["Clothes"]],
+        "responsePropertyNames": ["productCategory"],
+        "responsePropertyValues": ["'Clothes'"]
+      },
+      {
+        "argumentPropertyNames": ["productSubCategories"],
+        "argumentPropertyValues": [["Clothes"]],
+        "responsePropertyNames": ["productSubCategory"],
+        "responsePropertyValues": ["'Clothes'"]
+      }
+    ],
+    "testName": "salesItemsService.getSalesItems ({{argumentPropertyNames[0]}} = {{argumentPropertyValues[0]}})",
     "serviceName": "salesItemsService",
     "functionName": "getSalesItems",
     "argument": {
-      "textFilter": "secondTitle",
+      "{{argumentPropertyNames[0]}}": "{{argumentPropertyValues[0]}}",
       "includeResponseFields": []
     },
     "response": {
       "statusCode": 200,
       "tests": [
         {
-          "name": "title is secondTitle",
+          "name": "{{responsePropertyNames[0]}} is {{responsePropertyValues[0]}}",
           "exec": [
-            "pm.expect(response[0].title).to.eql('secondTitle');",
-            "pm.expect(response.length).to.eql(1);"
-          ]
-        }
-      ]
-    }
-  },
-  {
-    "testName": "salesItemsService.getSalesItems (textFilter description)",
-    "serviceName": "salesItemsService",
-    "functionName": "getSalesItems",
-    "argument": {
-      "textFilter": "secondDescription",
-      "includeResponseFields": []
-    },
-    "response": {
-      "statusCode": 200,
-      "tests": [
-        {
-          "name": "description is secondDescription",
-          "exec": [
-            "pm.expect(response[0].description).to.eql('secondDescription');",
-            "pm.expect(response.length).to.eql(1);"
-          ]
-        }
-      ]
-    }
-  },
-  {
-    "testName": "salesItemsService.getSalesItems (areas)",
-    "serviceName": "salesItemsService",
-    "functionName": "getSalesItems",
-    "argument": {
-      "areas": ["Area2"],
-      "includeResponseFields": []
-    },
-    "response": {
-      "statusCode": 200,
-      "tests": [
-        {
-          "name": "area is Area2",
-          "exec": ["pm.expect(response[0].area).to.eql('Area2');", "pm.expect(response.length).to.eql(1);"]
-        }
-      ]
-    }
-  },
-  {
-    "testName": "salesItemsService.getSalesItems (productDepartments)",
-    "serviceName": "salesItemsService",
-    "functionName": "getSalesItems",
-    "argument": {
-      "productDepartments": ["Clothes"],
-      "includeResponseFields": []
-    },
-    "response": {
-      "statusCode": 200,
-      "tests": [
-        {
-          "name": "productDepartment is Clothes",
-          "exec": [
-            "pm.expect(response[0].productDepartment).to.eql('Clothes');",
-            "pm.expect(response.length).to.eql(1);"
-          ]
-        }
-      ]
-    }
-  },
-  {
-    "testName": "salesItemsService.getSalesItems (productCategories)",
-    "serviceName": "salesItemsService",
-    "functionName": "getSalesItems",
-    "argument": {
-      "productCategories": ["Clothes"],
-      "includeResponseFields": []
-    },
-    "response": {
-      "statusCode": 200,
-      "tests": [
-        {
-          "name": "productCategory is Clothes",
-          "exec": [
-            "pm.expect(response[0].productCategory).to.eql('Clothes');",
-            "pm.expect(response.length).to.eql(1);"
-          ]
-        }
-      ]
-    }
-  },
-  {
-    "testName": "salesItemsService.getSalesItems (productSubCategories)",
-    "serviceName": "salesItemsService",
-    "functionName": "getSalesItems",
-    "argument": {
-      "productSubCategories": ["Clothes"],
-      "includeResponseFields": []
-    },
-    "response": {
-      "statusCode": 200,
-      "tests": [
-        {
-          "name": "productSubCategory is Clothes",
-          "exec": [
-            "pm.expect(response[0].productSubCategory).to.eql('Clothes');",
+            "pm.expect(response[0].{{responsePropertyNames[0]}}).to.eql({{responsePropertyValues[0]}});",
             "pm.expect(response.length).to.eql(1);"
           ]
         }
@@ -178,10 +114,7 @@
       "tests": [
         {
           "name": "price is 2",
-          "exec": [
-            "pm.expect(response[0].price).to.eql(2.00);",
-            "pm.expect(response.length).to.eql(1);"
-          ]
+          "exec": ["pm.expect(response[0].price).to.eql(2.00);", "pm.expect(response.length).to.eql(1);"]
         }
       ]
     }
@@ -223,10 +156,7 @@
       "tests": [
         {
           "name": "price is 2",
-          "exec": [
-            "pm.expect(response[0].price).to.eql(2.00);",
-            "pm.expect(response.length).to.eql(1);"
-          ]
+          "exec": ["pm.expect(response[0].price).to.eql(2.00);", "pm.expect(response.length).to.eql(1);"]
         }
       ]
     }
