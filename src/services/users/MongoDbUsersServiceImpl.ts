@@ -1,6 +1,6 @@
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import UsersService from './UsersService';
-import dbManager from '../../dbManager';
+import dbManager from '../../backk/dbmanager/mongoDbManager';
 import UserNameWrapper from './types/UserNameWrapper';
 import User from './types/User';
 import UserWithoutId from './types/UserWithoutId';

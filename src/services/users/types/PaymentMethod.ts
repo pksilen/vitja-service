@@ -1,6 +1,8 @@
 import { IsCreditCard, Matches } from 'class-validator';
 import { TestValue } from '../../../backk/TestValue';
+import Entity from "../../../backk/Entity";
 
+@Entity
 export default class PaymentMethod {
   id!: string;
   paymentMethodType!: 'creditCard';

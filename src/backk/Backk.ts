@@ -27,9 +27,18 @@ export interface Projectable {
   excludeResponseFields?: string[];
 }
 
+export interface PostQueryOperations {
+  includeResponseFields?: string[];
+  excludeResponseFields?: string[];
+  sortBy?: string;
+  sortDirection: 'ASC' | 'DESC';
+  pageNumber: number;
+  pageSize: number;
+}
+
 export function transformResponse<T extends object>(
   responseObjects: T[],
-  args: Projectable
+  args: PostQueryOperations
 ): Array<Partial<T>> {
   return responseObjects.map((responseObject) => {
     let newResponseObject: Partial<T> = responseObject;

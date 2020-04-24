@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import SalesItemsService from './SalesItemsService';
-import dbManager from '../../dbManager';
+import dbManager from '../../backk/dbmanager/mongoDbManager';
 import { ErrorResponse, getMongoDbProjection, IdsWrapper, IdWrapper } from '../../backk/Backk';
 import SalesItemsFilters from './types/SalesItemsFilters';
 import { SalesItem } from './types/SalesItem';
@@ -33,39 +33,27 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
     productSubCategories,
     minPrice,
     maxPrice,
-    sortBy,
-    sortDirection,
-    includeResponseFields,
-    excludeResponseFields,
-    pageNumber,
-    pageSize
+    ...postQueryOperations
   }: SalesItemsFilters): Promise<Array<Partial<SalesItem>> | ErrorResponse> {
-    return await dbManager.execute((client) =>
-      client
-        .db(DB_NAME)
-        .collection<SalesItem>(COLL_NAME)
-        .find({
-          ...(textFilter
-            ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
-            : {}),
-          ...(areas ? { area:  { $in: areas }} : {}),
-          ...(productDepartments ? { productDepartment:  { $in: productDepartments } }: {}),
-          ...(productCategories ? { productCategory:  { $in: productCategories }} : {}),
-          ...(productSubCategories ? { productSubCategory:  { $in: productSubCategories }}: {}),
-          ...(minPrice !== undefined || maxPrice
-            ? {
-                $and: [
-                  { price: { $gte: minPrice || 0 } },
-                  { price: { $lte: maxPrice || Number.MAX_SAFE_INTEGER } }
-                ]
-              }
-            : {})
-        })
-        .project(getMongoDbProjection({ includeResponseFields, excludeResponseFields }))
-        .sort(sortBy, sortDirection === 'ASC' ? 1 : -1)
-        .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize)
-        .toArray()
+    return await dbManager.getItems(
+      {
+        ...(textFilter
+          ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
+          : {}),
+        ...(areas ? { area: { $in: areas } } : {}),
+        ...(productDepartments ? { productDepartment: { $in: productDepartments } } : {}),
+        ...(productCategories ? { productCategory: { $in: productCategories } } : {}),
+        ...(productSubCategories ? { productSubCategory: { $in: productSubCategories } } : {}),
+        ...(minPrice !== undefined || maxPrice
+          ? {
+              $and: [
+                { price: { $gte: minPrice || 0 } },
+                { price: { $lte: maxPrice || Number.MAX_SAFE_INTEGER } }
+              ]
+            }
+          : {})
+      },
+      postQueryOperations, DB_NAME, COLL_NAME
     );
   }
 

@@ -1,6 +1,7 @@
 import { Matches } from 'class-validator';
 import PaymentMethod from './PaymentMethod';
 import { TestValue } from '../../../backk/TestValue';
+import DefaultPaymentMethod from "./DefaultPaymentMethod";
 
 export default class UserWithoutId {
   userName!: string;
@@ -12,7 +13,7 @@ export default class UserWithoutId {
   streetAddress!: string;
   postalCode!: string;
   city!: string;
-  defaultPaymentMethod!: PaymentMethod;
+  defaultPaymentMethod!: DefaultPaymentMethod;
   paymentMethods!: PaymentMethod[];
   favoriteSalesItemIds!: string[];
 }

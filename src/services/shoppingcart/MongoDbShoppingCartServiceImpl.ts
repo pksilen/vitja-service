@@ -4,7 +4,7 @@ import ShoppingCartWithoutId from './types/ShoppingCartWithoutId';
 import UserIdWrapper from '../users/types/UserIdWrapper';
 import Order from '../orders/types/Order';
 import ShoppingCart from './types/ShoppingCart';
-import dbManager from '../../dbManager';
+import dbManager from '../../backk/dbmanager/mongoDbManager';
 
 const DB_NAME = 'vitja';
 const COLLECTION_NAME = 'shoppingcarts';

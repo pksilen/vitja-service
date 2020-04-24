@@ -1,6 +1,6 @@
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import OrdersService from './OrdersService';
-import dbManager from '../../dbManager';
+import dbManager from '../../backk/dbmanager/mongoDbManager';
 import Order from './types/Order';
 import OrderWithoutId from './types/OrderWithoutId';
 import UserIdWrapper from '../users/types/UserIdWrapper';

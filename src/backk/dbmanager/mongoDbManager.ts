@@ -1,10 +1,11 @@
 import { MongoClient, ObjectId } from 'mongodb';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorResponse, IdWrapper } from './backk/Backk';
+import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOperations } from '../Backk';
+import { SalesItem } from '../../services/salesitems/types/SalesItem';
 
 const uri = 'mongodb+srv://admin:admin@vitja-tjdze.mongodb.net/test?retryWrites=true&w=majority';
 
-class DbManager {
+class MongoDbManager {
   mongoClient = new MongoClient(uri, { useNewUrlParser: true });
 
   async execute<T>(dbOperationFunction: (client: MongoClient) => Promise<T>): Promise<T> {
@@ -16,6 +17,31 @@ class DbManager {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async getItems<T>(
+    query: object,
+    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
+    dbName: string,
+    tableName: string
+  ): Promise<T[]> {
+    return this.execute((client) => {
+      let cursor = client
+        .db(dbName)
+        .collection<SalesItem>(tableName)
+        .find<T>(query)
+        .project(getMongoDbProjection(projection));
+
+      if (sortBy && sortDirection) {
+        cursor = cursor.sort(sortBy, sortDirection === 'ASC' ? 1 : -1);
+      }
+
+      if (pageNumber && pageSize) {
+        cursor = cursor.skip((pageNumber - 1) * pageSize).limit(pageSize);
+      }
+
+      return cursor.toArray();
+    });
   }
 
   async getItemById<T>(_id: string, dbName: string, tableName: string): Promise<T | ErrorResponse> {
@@ -143,4 +169,4 @@ class DbManager {
   }
 }
 
-export default new DbManager();
+export default new MongoDbManager();
