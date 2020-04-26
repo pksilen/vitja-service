@@ -36,7 +36,8 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
     "rxjs": "^6.5.4",
-    "typedoc-pksilen": "^0.17.4"
+    "typedoc-pksilen": "^0.17.4",
+    "yesql": "^4.1.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^6.13.2",
@@ -49,6 +50,7 @@
     "@types/node": "^13.1.6",
     "@types/pg": "^7.14.3",
     "@types/supertest": "^2.0.8",
+    "@types/yesql": "^3.2.2",
     "@typescript-eslint/eslint-plugin": "^2.12.0",
     "@typescript-eslint/parser": "^2.12.0",
     "eslint": "^6.7.2",

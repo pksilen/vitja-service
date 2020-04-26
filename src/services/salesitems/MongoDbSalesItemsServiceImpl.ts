@@ -6,7 +6,6 @@ import SalesItemsFilters from './types/SalesItemsFilters';
 import { SalesItem } from './types/SalesItem';
 import SalesItemWithoutId from './types/SalesItemWithoutId';
 import UserIdWrapper from '../users/types/UserIdWrapper';
-import { text } from 'express';
 
 const DB_NAME = 'vitja';
 const COLL_NAME = 'salesItems';

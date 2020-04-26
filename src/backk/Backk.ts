@@ -22,14 +22,12 @@ export type ErrorResponse = {
   message: string;
 };
 
-export interface Projectable {
+export interface Projection {
   includeResponseFields?: string[];
   excludeResponseFields?: string[];
 }
 
-export interface PostQueryOperations {
-  includeResponseFields?: string[];
-  excludeResponseFields?: string[];
+export interface PostQueryOperations extends Projection {
   sortBy?: string;
   sortDirection: 'ASC' | 'DESC';
   pageNumber: number;
@@ -76,7 +74,7 @@ function getExcludeFieldsMap(excludeResponseFields?: string[]): object {
     : {};
 }
 
-export function getMongoDbProjection(args: Projectable): object {
+export function getMongoDbProjection(args: Projection): object {
   const includeFieldsMap = getIncludeFieldsMap(args.includeResponseFields);
   const excludeFieldsMap = getExcludeFieldsMap(args.excludeResponseFields);
   return { ...includeFieldsMap, ...excludeFieldsMap };

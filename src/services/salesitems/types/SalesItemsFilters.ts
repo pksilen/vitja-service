@@ -1,7 +1,7 @@
-import { Projectable } from '../../../backk/Backk';
+import { Projection } from '../../../backk/Backk';
 import { IsInt, IsPositive, Min } from 'class-validator';
 
-export default class SalesItemsFilters implements Projectable {
+export default class SalesItemsFilters implements Projection {
   textFilter?: string;
   areas?: ('Area1' | 'Area2' | 'Area3')[];
   productDepartments?: ('Vehicles' | 'Clothes')[];

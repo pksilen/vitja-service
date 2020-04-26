@@ -20,16 +20,16 @@ class MongoDbManager {
   }
 
   async getItems<T>(
-    query: object,
+    filters: object,
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
     dbName: string,
     tableName: string
   ): Promise<T[]> {
-    return this.execute((client) => {
+    return await this.execute((client) => {
       let cursor = client
         .db(dbName)
         .collection<SalesItem>(tableName)
-        .find<T>(query)
+        .find<T>(filters)
         .project(getMongoDbProjection(projection));
 
       if (sortBy && sortDirection) {
