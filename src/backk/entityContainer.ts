@@ -1,6 +1,7 @@
 import postgreSqlDbManager from './dbmanager/postgreSqlDbManager';
 import { Pool } from 'pg';
 import { getTypeMetadata } from './generateServicesMetadata';
+import asyncForEach from "./asyncForEach";
 
 export interface ManyToManyRelationTableSpec {
   tableName: string;
@@ -8,8 +9,15 @@ export interface ManyToManyRelationTableSpec {
   id2Name: string;
 }
 
+export interface JoinSpec {
+  joinTableName: string;
+  fieldName: string;
+  joinTableFieldName: string;
+}
+
 class EntityContainer {
   private entityNameToClassMap: { [key: string]: Function } = {};
+  private entityNameToJoinsMap: { [key: string]: JoinSpec[] } = {};
   private entityNameToAdditionalPropertyNamesMap: { [key: string]: string[] } = {};
   private manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
 
@@ -29,14 +37,8 @@ class EntityContainer {
     this.manyToManyRelationTableSpecs.push(manyToManyRelationTableSpec);
   }
 
-  private async asyncForEach(array: any, callback: Function) {
-    for (let index = 0; index < array.length; index++) {
-      await callback(array[index], index, array);
-    }
-  }
-
   async createTables(schema: string) {
-    await this.asyncForEach(
+    await asyncForEach(
       Object.entries(this.entityNameToClassMap),
       async ([entityName, entityClass]: [any, any]) => {
         try {
@@ -47,10 +49,10 @@ class EntityContainer {
       }
     );
 
-    await this.asyncForEach(
+    await asyncForEach(
       Object.entries(this.entityNameToAdditionalPropertyNamesMap),
       async ([entityName, additionalPropertyNames]: [any, any]) => {
-        await this.asyncForEach(additionalPropertyNames, async (additionalPropertyName: any) => {
+        await asyncForEach(additionalPropertyNames, async (additionalPropertyName: any) => {
           const result = await postgreSqlDbManager.execute((pool: Pool) => {
             return pool.query(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
           });
@@ -78,7 +80,7 @@ class EntityContainer {
       let createTableStatement = `CREATE TABLE ${schema}.${entityName} (`;
       let fieldCnt = 0;
 
-      await this.asyncForEach(
+      await asyncForEach(
         Object.entries(entityMetadata),
         async ([fieldName, fieldTypeName]: [any, any]) => {
           let baseFieldTypeName = fieldTypeName;
@@ -128,6 +130,16 @@ class EntityContainer {
             } else {
               this.entityNameToAdditionalPropertyNamesMap[relationEntityName] = [idFieldName];
             }
+            const joinSpec = {
+              joinTableName: schema + '.' + relationEntityName,
+              fieldName: '_id',
+              joinTableFieldName: idFieldName
+            };
+            if (this.entityNameToJoinsMap[entityName]) {
+              this.entityNameToJoinsMap[entityName].push(joinSpec);
+            } else {
+              this.entityNameToJoinsMap[entityName] = [joinSpec];
+            }
           } else if (
             baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
             baseFieldTypeName[0] !== '('
@@ -139,6 +151,16 @@ class EntityContainer {
             } else {
               this.entityNameToAdditionalPropertyNamesMap[relationEntityName] = [idFieldName];
             }
+            const joinSpec = {
+              joinTableName: schema + '.' + relationEntityName,
+              fieldName: '_id',
+              joinTableFieldName: idFieldName
+            };
+            if (this.entityNameToJoinsMap[entityName]) {
+              this.entityNameToJoinsMap[entityName].push(joinSpec);
+            } else {
+              this.entityNameToJoinsMap[entityName] = [joinSpec];
+            }
           } else if (isArray) {
             let createAdditionalTableStatement = `CREATE TABLE IF NOT EXISTS ${schema}.${entityName +
               fieldName.slice(0, -1)} (`;
@@ -148,6 +170,16 @@ class EntityContainer {
             await postgreSqlDbManager.execute((pool: Pool) => {
               return pool.query(createAdditionalTableStatement);
             });
+            const joinSpec = {
+              joinTableName: schema + '.' + entityName + fieldName.slice(0, -1),
+              fieldName: '_id',
+              joinTableFieldName: idFieldName
+            };
+            if (this.entityNameToJoinsMap[entityName]) {
+              this.entityNameToJoinsMap[entityName].push(joinSpec);
+            } else {
+              this.entityNameToJoinsMap[entityName] = [joinSpec];
+            }
           } else {
             if (fieldCnt > 0) {
               createTableStatement += ', ';
@@ -166,7 +198,7 @@ class EntityContainer {
 
     response.then(async (result) => {
       const entityMetadata = getTypeMetadata(entityClass as any);
-      await this.asyncForEach(
+      await asyncForEach(
         Object.entries(entityMetadata),
         async ([fieldName, fieldTypeName]: [any, any]) => {
           if (!result.fields.find((field) => field.name.toLowerCase() === fieldName.toLowerCase())) {
@@ -214,7 +246,16 @@ class EntityContainer {
               } else {
                 this.entityNameToAdditionalPropertyNamesMap[relationEntityName] = [idFieldName];
               }
-              return;
+              const joinSpec = {
+                joinTableName: relationEntityName,
+                fieldName: '_id',
+                joinTableFieldName: idFieldName
+              };
+              if (this.entityNameToJoinsMap[entityName]) {
+                this.entityNameToJoinsMap[entityName].push(joinSpec);
+              } else {
+                this.entityNameToJoinsMap[entityName] = [joinSpec];
+              }
             } else if (baseFieldTypeName[0] === baseFieldTypeName.toUpperCase()) {
               const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
               const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
@@ -223,7 +264,16 @@ class EntityContainer {
               } else {
                 this.entityNameToAdditionalPropertyNamesMap[relationEntityName] = [idFieldName];
               }
-              return;
+              const joinSpec = {
+                joinTableName: relationEntityName,
+                fieldName: '_id',
+                joinTableFieldName: idFieldName
+              };
+              if (this.entityNameToJoinsMap[entityName]) {
+                this.entityNameToJoinsMap[entityName].push(joinSpec);
+              } else {
+                this.entityNameToJoinsMap[entityName] = [joinSpec];
+              }
             } else if (isArray) {
               let createAdditionalTableStatement = `CREATE TABLE IF NOT EXISTS ${schema}.${entityName +
                 fieldName.slice(0, -1)} (`;
@@ -233,6 +283,16 @@ class EntityContainer {
               await postgreSqlDbManager.execute((pool: Pool) => {
                 return pool.query(createAdditionalTableStatement);
               });
+              const joinSpec = {
+                joinTableName: schema + '.' + entityName + fieldName.slice(0, -1),
+                fieldName: '_id',
+                joinTableFieldName: idFieldName
+              };
+              if (this.entityNameToJoinsMap[entityName]) {
+                this.entityNameToJoinsMap[entityName].push(joinSpec);
+              } else {
+                this.entityNameToJoinsMap[entityName] = [joinSpec];
+              }
             } else {
               alterTableStatement += fieldName + ' ' + sqlColumnType;
               await postgreSqlDbManager.execute((pool: Pool) => {

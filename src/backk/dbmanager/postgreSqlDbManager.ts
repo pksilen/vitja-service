@@ -4,6 +4,8 @@ import { pg } from 'yesql';
 import { ErrorResponse, IdWrapper, PostQueryOperations, Projection } from '../Backk';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
 import SqlExpression from '../sqlexpression/SqlExpression';
+import { getTypeMetadata } from '../generateServicesMetadata';
+import asyncForEach from '../asyncForEach';
 
 class PostgreSqlDbManager {
   schema = 'public';
@@ -23,29 +25,99 @@ class PostgreSqlDbManager {
     }
   }
 
-  async createItem<T>(item: T, dbName: string, tableName: string): Promise<IdWrapper | ErrorResponse> {
+  async createItem<T>(
+    item: T,
+    dbName: string,
+    entityClass: Function,
+    Types: object
+  ): Promise<IdWrapper | ErrorResponse> {
+    const entityMetadata = getTypeMetadata(entityClass as any);
+    const columns: any = [];
+    const values: any = [];
+
+    Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [any, any]) => {
+      let baseFieldTypeName = fieldTypeName;
+      let isArray = false;
+
+      if (fieldTypeName.endsWith('[]')) {
+        baseFieldTypeName = fieldTypeName.slice(0, -2);
+        isArray = true;
+      }
+
+      if (
+        !isArray &&
+        (baseFieldTypeName[0] !== baseFieldTypeName[0].toUpperCase() || baseFieldTypeName[0] === '(')
+      ) {
+        columns.push(fieldName);
+        values.push((item as any)[fieldName]);
+      }
+    });
+
+    const sqlColumns = Object.keys(columns).map(
+      (fieldName, index) => fieldName + (index === Object.keys(item).length - 1 ? '' : ', ')
+    );
+
+    const sqlValuePlaceholders = Object.keys(columns).map(
+      (_, index) => `${index + 1}` + (index === Object.keys(item).length - 1 ? '' : ', ')
+    );
+
+    let _id: string;
     try {
-      const columns = Object.keys(item).map(
-        (fieldName, index) => fieldName + (index === Object.keys(item).length - 1 ? '' : ', ')
-      );
-
-      const values = Object.values(item).map(
-        (_, index) => `${index + 1}` + (index === Object.keys(item).length - 1 ? '' : ', ')
-      );
-
       const result = await this.execute((pool: Pool) => {
         return pool.query(
-          `INSERT INTO ${dbName}.${tableName} (${columns}) VALUES (${values}) RETURNING _id`,
+          `INSERT INTO ${dbName}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) RETURNING _id`,
           values
         );
       });
 
-      return {
-        _id: result.rows[0]._id
-      };
+      _id = result.rows[0]._id;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    await asyncForEach(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]: [any, any]) => {
+      let baseFieldTypeName = fieldTypeName;
+      let isArray = false;
+
+      if (fieldTypeName.endsWith('[]')) {
+        baseFieldTypeName = fieldTypeName.slice(0, -2);
+        isArray = true;
+      }
+
+      const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+
+      if (
+        isArray &&
+        baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+        baseFieldTypeName[0] !== '('
+      ) {
+        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+        await asyncForEach((item as any)[fieldName], async (subItem: any) => {
+          subItem[idFieldName] = _id;
+          await this.createItem(subItem, dbName, (Types as any)[relationEntityName], Types);
+        });
+      } else if (
+        baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+        baseFieldTypeName[0] !== '('
+      ) {
+        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+        const subItem = (item as any)[fieldName];
+        subItem[idFieldName] = _id;
+        await this.createItem(subItem, dbName, (Types as any)[relationEntityName], Types);
+      } else if (isArray) {
+        await asyncForEach((item as any)[fieldName], async (subItem: any) => {
+          let insertStatement = `INSERT INTO ${dbName}.${entityClass.name +
+            fieldName.slice(0, -1)} (${idFieldName}) VALUES($1)`;
+          await this.execute((pool: Pool) => {
+            return pool.query(insertStatement, [_id]);
+          });
+        });
+      }
+    });
+
+    return {
+      _id
+    };
   }
 
   async getItems<T>(
@@ -265,13 +337,13 @@ class PostgreSqlDbManager {
   }
 
   private getProcessedFilters(filters: object) {
-    const processedFilters: {[key: string]: any } = {};
+    const processedFilters: { [key: string]: any } = {};
 
     Object.entries(filters).forEach(([fieldName, value]) => {
       if (Array.isArray(value)) {
         value.forEach((v, index) => {
           processedFilters[`${fieldName}${index + 1}`] = v;
-        })
+        });
       } else {
         processedFilters[fieldName] = value;
       }
