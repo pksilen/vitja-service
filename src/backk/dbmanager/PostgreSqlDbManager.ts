@@ -7,16 +7,27 @@ import SqlExpression from '../sqlexpression/SqlExpression';
 import { getTypeMetadata } from '../generateServicesMetadata';
 import asyncForEach from '../asyncForEach';
 import entityContainer, { JoinSpec } from '../entityContainer';
+import DbManager from './DbManager';
 
-class PostgreSqlDbManager {
-  schema = 'public';
-  pool = new Pool({
-    user: 'postgres',
-    host: '127.0.0.1',
-    database: 'postgres',
-    password: 'postgres',
-    port: 5432
-  });
+export default class PostgreSqlDbManager implements DbManager {
+  private pool: Pool;
+
+  constructor(
+    host: string,
+    port: number,
+    user: string,
+    password: string,
+    database: string,
+    private schema: string
+  ) {
+    this.pool = new Pool({
+      user,
+      host,
+      database,
+      password,
+      port
+    });
+  }
 
   async execute<T>(dbOperationFunction: (pool: Pool) => Promise<T>): Promise<T> {
     try {
@@ -27,9 +38,8 @@ class PostgreSqlDbManager {
   }
 
   async createItem<T>(
-    item: T,
-    dbName: string,
-    entityClass: Function,
+    item: Omit<T, '_id'>,
+    entityClass: new () => T,
     Types: object
   ): Promise<IdWrapper | ErrorResponse> {
     const entityMetadata = getTypeMetadata(entityClass as any);
@@ -66,7 +76,7 @@ class PostgreSqlDbManager {
     try {
       const result = await this.execute((pool: Pool) => {
         return pool.query(
-          `INSERT INTO ${dbName}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) RETURNING _id`,
+          `INSERT INTO ${this.schema}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) RETURNING _id`,
           values
         );
       });
@@ -94,7 +104,7 @@ class PostgreSqlDbManager {
         const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
         await asyncForEach((item as any)[fieldName], async (subItem: any) => {
           subItem[idFieldName] = _id;
-          await this.createItem(subItem, dbName, (Types as any)[relationEntityName], Types);
+          await this.createItem(subItem, (Types as any)[relationEntityName], Types);
         });
       } else if (
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
@@ -103,10 +113,10 @@ class PostgreSqlDbManager {
         const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
         const subItem = (item as any)[fieldName];
         subItem[idFieldName] = _id;
-        await this.createItem(subItem, dbName, (Types as any)[relationEntityName], Types);
+        await this.createItem(subItem, (Types as any)[relationEntityName], Types);
       } else if (isArray) {
         await asyncForEach((item as any)[fieldName], async (subItem: any) => {
-          const insertStatement = `INSERT INTO ${dbName}.${entityClass.name +
+          const insertStatement = `INSERT INTO ${this.schema}.${entityClass.name +
             fieldName.slice(0, -1)} (${idFieldName}, ${fieldName}) VALUES($1, $2)`;
           await this.execute((pool: Pool) => {
             return pool.query(insertStatement, [_id, subItem]);
@@ -123,14 +133,13 @@ class PostgreSqlDbManager {
   async getItems<T>(
     filters: object,
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
-    dbName: string,
     entityClass: Function
   ): Promise<T[]> {
     try {
       const columns = this.getProjection(projection, entityClass.name);
       const whereStatement = this.getWhereStatement(filters);
       const processedFilters = this.getProcessedFilters(filters);
-      const joinStatement = this.getJoinStatement(dbName, entityClass);
+      const joinStatement = this.getJoinStatement(entityClass);
 
       let sortStatement = '';
       if (sortBy && sortDirection) {
@@ -149,7 +158,7 @@ class PostgreSqlDbManager {
       const result = await this.execute((pool: Pool) => {
         return pool.query(
           pg(
-            `SELECT ${columns} FROM ${dbName}.${entityClass.name} ${joinStatement} ${whereStatement} 
+            `SELECT ${columns} FROM ${this.schema}.${entityClass.name} ${joinStatement} ${whereStatement} 
             ${sortStatement} ${limitAndOffsetStatement}`
           )(processedFilters)
         );
@@ -160,15 +169,16 @@ class PostgreSqlDbManager {
     }
   }
 
-  async getItemById<T>(_id: string, dbName: string, entityClass: Function): Promise<T | ErrorResponse> {
-    const joinStatement = this.getJoinStatement(dbName, entityClass);
+  async getItemById<T>(_id: string, entityClass: Function): Promise<T | ErrorResponse> {
+    const joinStatement = this.getJoinStatement(entityClass);
     let result;
 
     try {
       result = await this.execute((pool: Pool) => {
-        return pool.query(`SELECT * FROM ${dbName}.${entityClass.name} ${joinStatement} WHERE _id = $1`, [
-          _id
-        ]);
+        return pool.query(
+          `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id = $1`,
+          [_id]
+        );
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -181,12 +191,8 @@ class PostgreSqlDbManager {
     return result.rows[0];
   }
 
-  async getItemsByIds<T>(
-    _ids: string[],
-    dbName: string,
-    entityClass: Function
-  ): Promise<T[] | ErrorResponse> {
-    const joinStatement = this.getJoinStatement(dbName, entityClass);
+  async getItemsByIds<T>(_ids: string[], entityClass: Function): Promise<T[] | ErrorResponse> {
+    const joinStatement = this.getJoinStatement(entityClass);
     let result;
 
     try {
@@ -195,7 +201,7 @@ class PostgreSqlDbManager {
       );
       result = await this.execute((pool: Pool) => {
         return pool.query(
-          `SELECT * FROM ${dbName}.${entityClass.name} ${joinStatement} WHERE _id IN ${idPlaceholders}`,
+          `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id IN ${idPlaceholders}`,
           [_ids]
         );
       });
@@ -213,16 +219,15 @@ class PostgreSqlDbManager {
   async getItemBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    dbName: string,
     entityClass: Function
   ): Promise<T | ErrorResponse> {
-    const joinStatement = this.getJoinStatement(dbName, entityClass);
+    const joinStatement = this.getJoinStatement(entityClass);
     let result;
 
     try {
       result = await this.execute((pool: Pool) => {
         return pool.query(
-          `SELECT * FROM ${dbName}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
+          `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
           [fieldValue]
         );
       });
@@ -240,16 +245,15 @@ class PostgreSqlDbManager {
   async getItemsBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    dbName: string,
     entityClass: Function
   ): Promise<T[] | ErrorResponse> {
-    const joinStatement = this.getJoinStatement(dbName, entityClass);
+    const joinStatement = this.getJoinStatement(entityClass);
     let result;
 
     try {
       result = await this.execute((pool: Pool) => {
         return pool.query(
-          `SELECT * FROM ${dbName}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
+          `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
           [fieldValue]
         );
       });
@@ -264,9 +268,8 @@ class PostgreSqlDbManager {
     return result.rows;
   }
 
-  async updateItem<T extends { _id: string | undefined; id: string | undefined }>(
+  async updateItem<T extends { _id?: string; id?: string }>(
     { _id, ...restOfItem }: T,
-    dbName: string,
     entityClass: Function,
     Types: object
   ): Promise<void | ErrorResponse> {
@@ -291,22 +294,17 @@ class PostgreSqlDbManager {
       ) {
         const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
         await asyncForEach((restOfItem as any)[fieldName], async (subItem: any) => {
-          await this.updateItem(subItem, dbName, (Types as any)[relationEntityName], Types);
+          await this.updateItem(subItem, (Types as any)[relationEntityName], Types);
         });
       } else if (
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
         baseFieldTypeName[0] !== '('
       ) {
         const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-        await this.updateItem(
-          (restOfItem as any)[fieldName],
-          dbName,
-          (Types as any)[relationEntityName],
-          Types
-        );
+        await this.updateItem((restOfItem as any)[fieldName], (Types as any)[relationEntityName], Types);
       } else if (isArray) {
         await asyncForEach((restOfItem as any)[fieldName], async (subItem: any) => {
-          const insertStatement = `UPDATE ${dbName}.${entityClass.name +
+          const insertStatement = `UPDATE ${this.schema}.${entityClass.name +
             fieldName.slice(0, -1)} SET ${fieldName} = $1 WHERE ${idFieldName} = $2`;
           await this.execute((pool: Pool) => {
             return pool.query(insertStatement, [subItem, _id]);
@@ -327,7 +325,7 @@ class PostgreSqlDbManager {
       const idFieldName = _id === undefined ? 'id' : '_id';
       await this.execute((pool: Pool) => {
         return pool.query(
-          `UPDATE ${dbName}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
+          `UPDATE ${this.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
           [_id === undefined ? restOfItem.id : _id, ...values]
         );
       });
@@ -336,14 +334,14 @@ class PostgreSqlDbManager {
     }
   }
 
-  async deleteItemById(_id: string, dbName: string, entityClass: Function): Promise<void | ErrorResponse> {
+  async deleteItemById(_id: string, entityClass: Function): Promise<void | ErrorResponse> {
     await asyncForEach(
       Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
       async (joinSpec: JoinSpec) => {
         try {
           await this.execute((pool: Pool) => {
             return pool.query(
-              `DELETE FROM ${dbName}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} = $1`,
+              `DELETE FROM ${this.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} = $1`,
               [_id]
             );
           });
@@ -355,20 +353,20 @@ class PostgreSqlDbManager {
 
     try {
       await this.execute((pool: Pool) => {
-        return pool.query(`DELETE FROM ${dbName}.${entityClass.name} WHERE _id = $1`, [_id]);
+        return pool.query(`DELETE FROM ${this.schema}.${entityClass.name} WHERE _id = $1`, [_id]);
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async deleteAllItems(dbName: string, entityClass: Function): Promise<void | ErrorResponse> {
+  async deleteAllItems(entityClass: Function): Promise<void | ErrorResponse> {
     await asyncForEach(
       Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
       async (joinSpec: JoinSpec) => {
         try {
           await this.execute((pool: Pool) => {
-            return pool.query(`DELETE FROM ${dbName}.${joinSpec.joinTableName}`);
+            return pool.query(`DELETE FROM ${this.schema}.${joinSpec.joinTableName}`);
           });
         } catch (error) {
           throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -378,7 +376,7 @@ class PostgreSqlDbManager {
 
     try {
       await this.execute((pool: Pool) => {
-        return pool.query(`DELETE FROM ${dbName}.${entityClass.name}`);
+        return pool.query(`DELETE FROM ${this.schema}.${entityClass.name}`);
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -430,7 +428,7 @@ class PostgreSqlDbManager {
     return processedFilters;
   }
 
-  private getJoinStatement(dbName: string, entityClass: Function) {
+  private getJoinStatement(entityClass: Function) {
     let joinStatement = '';
 
     Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]).forEach((joinSpec, index) => {
@@ -439,16 +437,16 @@ class PostgreSqlDbManager {
       }
 
       joinStatement += 'JOIN ';
-      joinStatement += dbName + '.' + joinSpec.joinTableName;
+      joinStatement += this.schema + '.' + joinSpec.joinTableName;
       joinStatement += ' ON ';
       joinStatement +=
-        dbName +
+        this.schema +
         '.' +
         entityClass.name +
         '.' +
         joinSpec.fieldName +
         ' = ' +
-        dbName +
+        this.schema +
         '.' +
         joinSpec.joinTableName +
         '.' +
@@ -458,5 +456,3 @@ class PostgreSqlDbManager {
     return joinStatement;
   }
 }
-
-export default new PostgreSqlDbManager();

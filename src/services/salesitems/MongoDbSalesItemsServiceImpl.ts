@@ -1,26 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import SalesItemsService from './SalesItemsService';
-import dbManager from '../../backk/dbmanager/mongoDbManager';
-import { ErrorResponse, getMongoDbProjection, IdsWrapper, IdWrapper } from '../../backk/Backk';
+import dbManager from '../../backk/dbmanager/MongoDbManager';
+import { ErrorResponse, IdsWrapper, IdWrapper } from '../../backk/Backk';
 import SalesItemsFilters from './types/SalesItemsFilters';
 import { SalesItem } from './types/SalesItem';
 import SalesItemWithoutId from './types/SalesItemWithoutId';
 import UserIdWrapper from '../users/types/UserIdWrapper';
-
-const DB_NAME = 'vitja';
-const COLL_NAME = 'salesItems';
+import DbManager from '../../backk/dbmanager/DbManager';
 
 @Injectable()
 export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
+  constructor(private readonly dbManager: DbManager) {
+    super();
+  }
+
   async deleteAllSalesItems(): Promise<void | ErrorResponse> {
-    return await dbManager.deleteAllItems(DB_NAME, COLL_NAME);
+    return await this.dbManager.deleteAllItems(SalesItem);
   }
 
   async createSalesItem(salesItemWithoutId: SalesItemWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await dbManager.createItem(
+    return await this.dbManager.createItem(
       { ...salesItemWithoutId, createdTimestampInMillis: Date.now() },
-      DB_NAME,
-      COLL_NAME
+      SalesItem
     );
   }
 
@@ -34,7 +35,7 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
     maxPrice,
     ...postQueryOperations
   }: SalesItemsFilters): Promise<Array<Partial<SalesItem>> | ErrorResponse> {
-    return await dbManager.getItems(
+    return await this.dbManager.getItems(
       {
         ...(textFilter
           ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
@@ -52,27 +53,28 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
             }
           : {})
       },
-      postQueryOperations, DB_NAME, COLL_NAME
+      postQueryOperations,
+      SalesItem
     );
   }
 
   async getSalesItemsByUserId({ userId }: UserIdWrapper): Promise<SalesItem[] | ErrorResponse> {
-    return await dbManager.getItemsBy<SalesItem>('userId', userId, DB_NAME, COLL_NAME);
+    return await this.dbManager.getItemsBy<SalesItem>('userId', userId, SalesItem);
   }
 
   async getSalesItemsByIds({ _ids }: IdsWrapper): Promise<SalesItem[] | ErrorResponse> {
-    return await dbManager.getItemsByIds(_ids, DB_NAME, COLL_NAME);
+    return await dbManager.getItemsByIds(_ids, DB_NAME, SalesItem);
   }
 
   async getSalesItemById({ _id }: IdWrapper): Promise<SalesItem | ErrorResponse> {
-    return await dbManager.getItemById(_id, DB_NAME, COLL_NAME);
+    return await dbManager.getItemById(_id, DB_NAME, SalesItem);
   }
 
   async updateSalesItem(salesItem: SalesItem): Promise<void | ErrorResponse> {
-    await dbManager.updateItem(salesItem, DB_NAME, COLL_NAME);
+    await dbManager.updateItem(salesItem, DB_NAME, SalesItem);
   }
 
   async deleteSalesItemById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
-    await dbManager.deleteItemById(_id, DB_NAME, COLL_NAME);
+    await dbManager.deleteItemById(_id, DB_NAME, SalesItem);
   }
 }

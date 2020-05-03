@@ -1,4 +1,4 @@
-import postgreSqlDbManager from './dbmanager/postgreSqlDbManager';
+import postgreSqlDbManager from './dbmanager/PostgreSqlDbManager';
 import { Pool } from 'pg';
 import { getTypeMetadata } from './generateServicesMetadata';
 import asyncForEach from './asyncForEach';

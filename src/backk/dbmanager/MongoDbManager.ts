@@ -2,11 +2,14 @@ import { MongoClient, ObjectId } from 'mongodb';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOperations } from '../Backk';
 import { SalesItem } from '../../services/salesitems/types/SalesItem';
+import DbManager from './DbManager';
 
-const uri = 'mongodb+srv://admin:admin@vitja-tjdze.mongodb.net/test?retryWrites=true&w=majority';
+export default class MongoDbManager implements DbManager {
+  private mongoClient: MongoClient;
 
-class MongoDbManager {
-  mongoClient = new MongoClient(uri, { useNewUrlParser: true });
+  constructor(uri: string, private dbName: string) {
+    this.mongoClient = new MongoClient(uri, { useNewUrlParser: true });
+  }
 
   async execute<T>(dbOperationFunction: (client: MongoClient) => Promise<T>): Promise<T> {
     try {
@@ -19,16 +22,31 @@ class MongoDbManager {
     }
   }
 
+  async createItem<T>(
+    item: Omit<T, '_id'>,
+    entityClass: new () => T
+  ): Promise<IdWrapper | ErrorResponse> {
+    const writeOperationResult = await this.execute((client) =>
+      client
+        .db(this.dbName)
+        .collection(entityClass.name.toLowerCase())
+        .insertOne(item)
+    );
+
+    return {
+      _id: writeOperationResult.insertedId.toHexString()
+    };
+  }
+
   async getItems<T>(
     filters: object,
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
-    dbName: string,
-    tableName: string
-  ): Promise<T[]> {
+    entityClass: new () => T
+  ): Promise<T[] | ErrorResponse> {
     return await this.execute((client) => {
       let cursor = client
-        .db(dbName)
-        .collection<SalesItem>(tableName)
+        .db(this.dbName)
+        .collection<SalesItem>(entityClass.name.toLowerCase())
         .find<T>(filters)
         .project(getMongoDbProjection(projection));
 
@@ -44,11 +62,11 @@ class MongoDbManager {
     });
   }
 
-  async getItemById<T>(_id: string, dbName: string, tableName: string): Promise<T | ErrorResponse> {
+  async getItemById<T>(_id: string, entityClass: new () => T): Promise<T | ErrorResponse> {
     const foundItem = await this.execute((client) =>
       client
-        .db(dbName)
-        .collection(tableName)
+        .db(this.dbName)
+        .collection(entityClass.name.toLowerCase())
         .findOne<T>({ _id: new ObjectId(_id) })
     );
 
@@ -59,11 +77,14 @@ class MongoDbManager {
     throw new HttpException(`Item with _id: ${_id} not found`, HttpStatus.NOT_FOUND);
   }
 
-  async getItemsByIds<T>(_ids: string[], dbName: string, tableName: string): Promise<T[] | ErrorResponse> {
+  async getItemsByIds<T>(
+    _ids: string[],
+    entityClass: new () => T
+  ): Promise<T[] | ErrorResponse> {
     const foundItems = await this.execute((client) =>
       client
-        .db(dbName)
-        .collection(tableName)
+        .db(this.dbName)
+        .collection(entityClass.name.toLowerCase())
         .find<T>({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } })
         .toArray()
     );
@@ -78,13 +99,12 @@ class MongoDbManager {
   async getItemBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    dbName: string,
-    tableName: string
+    entityClass: new () => T
   ): Promise<T | ErrorResponse> {
     const foundItem = await this.execute((client) =>
       client
-        .db(dbName)
-        .collection(tableName)
+        .db(this.dbName)
+        .collection(entityClass.name.toLowerCase())
         .findOne<T>({ [fieldName]: fieldValue })
     );
 
@@ -98,13 +118,12 @@ class MongoDbManager {
   async getItemsBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    dbName: string,
-    tableName: string
+    entityClass: new () => T
   ): Promise<T[] | ErrorResponse> {
     const foundItem = await this.execute((client) =>
       client
-        .db(dbName)
-        .collection(tableName)
+        .db(this.dbName)
+        .collection(entityClass.name.toLowerCase())
         .find<T>({ [fieldName]: fieldValue })
         .toArray()
     );
@@ -116,24 +135,30 @@ class MongoDbManager {
     throw new HttpException(`Item with ${fieldName}: ${fieldValue} not found`, HttpStatus.NOT_FOUND);
   }
 
-  async createItem<T>(item: T, dbName: string, tableName: string): Promise<IdWrapper | ErrorResponse> {
-    const writeOperationResult = await this.execute((client) =>
+  async updateItem<T extends { _id?: string; id?: string }>(
+    { _id, ...restOfItem }: T,
+    entityClass: new () => T
+  ): Promise<void | ErrorResponse> {
+    const updateOperationResult = await this.execute((client) =>
       client
-        .db(dbName)
-        .collection(tableName)
-        .insertOne(item)
+        .db(this.dbName)
+        .collection(entityClass.name.toLowerCase())
+        .updateOne({ _id: new ObjectId(_id) }, { $set: restOfItem })
     );
 
-    return {
-      _id: writeOperationResult.insertedId.toHexString()
-    };
+    if (updateOperationResult.matchedCount !== 1) {
+      throw new HttpException(`Item with _id: ${_id} not found`, HttpStatus.NOT_FOUND);
+    }
   }
 
-  async deleteItemById(_id: string, dbName: string, tableName: string): Promise<void | ErrorResponse> {
+  async deleteItemById<T>(
+    _id: string,
+    entityClass: new () => T
+  ): Promise<void | ErrorResponse> {
     const deleteOperationResult = await this.execute((client) =>
       client
-        .db(dbName)
-        .collection(tableName)
+        .db(this.dbName)
+        .collection(entityClass.name.toLowerCase())
         .deleteOne({ _id: new ObjectId(_id) })
     );
 
@@ -142,31 +167,12 @@ class MongoDbManager {
     }
   }
 
-  async deleteAllItems(dbName: string, tableName: string): Promise<void | ErrorResponse> {
+  async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
     await this.execute((client) =>
       client
-        .db(dbName)
-        .collection(tableName)
+        .db(this.dbName)
+        .collection(entityClass.name.toLowerCase())
         .deleteMany({})
     );
   }
-
-  async updateItem<T extends { _id: string }>(
-    { _id, ...restOfItem }: T,
-    dbName: string,
-    tableName: string
-  ): Promise<void | ErrorResponse> {
-    const updateOperationResult = await this.execute((client) =>
-      client
-        .db(dbName)
-        .collection(tableName)
-        .updateOne({ _id: new ObjectId(_id) }, { $set: restOfItem })
-    );
-
-    if (updateOperationResult.matchedCount !== 1) {
-      throw new HttpException(`Item with _id: ${_id} not found`, HttpStatus.NOT_FOUND);
-    }
-  }
 }
-
-export default new MongoDbManager();
