@@ -1,30 +1,34 @@
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import UsersService from './UsersService';
-import dbManager from '../../backk/dbmanager/MongoDbManager';
 import UserNameWrapper from './types/UserNameWrapper';
 import User from './types/User';
 import UserWithoutId from './types/UserWithoutId';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import { Injectable } from "@nestjs/common";
 
-const DB_NAME = 'vitja';
-
+@Injectable()
 export default class MongoDbUsersServiceImpl extends UsersService {
+  constructor(private readonly abstractDbManager: AbstractDbManager) {
+    super();
+  }
+
   async deleteAllUsers(): Promise<void | ErrorResponse> {
-    return await dbManager.deleteAllItems(DB_NAME, User);
+    return await this.abstractDbManager.deleteAllItems(User);
   }
 
   async createUser(userWithoutId: UserWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await dbManager.createItem(userWithoutId, DB_NAME, User);
+    return await this.abstractDbManager.createItem(userWithoutId, User);
   }
 
   async getUserByUserName(userNameWrapper: UserNameWrapper): Promise<User | ErrorResponse> {
-    return await dbManager.getItemBy('userName', userNameWrapper.userName, DB_NAME, User);
+    return await this.abstractDbManager.getItemBy('userName', userNameWrapper.userName, User);
   }
 
   async updateUser(user: User): Promise<void | ErrorResponse> {
-    await dbManager.updateItem(user, DB_NAME, User);
+    await this.abstractDbManager.updateItem(user, User);
   }
 
   async deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse> {
-    await dbManager.deleteItemById(idWrapper._id, DB_NAME, User);
+    await this.abstractDbManager.deleteItemById(idWrapper._id, User);
   }
 }

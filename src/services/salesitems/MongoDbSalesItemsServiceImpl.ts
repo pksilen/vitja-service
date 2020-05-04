@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import SalesItemsService from './SalesItemsService';
-import dbManager from '../../backk/dbmanager/MongoDbManager';
 import { ErrorResponse, IdsWrapper, IdWrapper } from '../../backk/Backk';
 import SalesItemsFilters from './types/SalesItemsFilters';
 import { SalesItem } from './types/SalesItem';
 import SalesItemWithoutId from './types/SalesItemWithoutId';
 import UserIdWrapper from '../users/types/UserIdWrapper';
-import DbManager from '../../backk/dbmanager/DbManager';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import SalesItemsService from "./SalesItemsService";
 
 @Injectable()
 export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
-  constructor(private readonly dbManager: DbManager) {
+  constructor(private readonly dbManager: AbstractDbManager) {
     super();
   }
 
@@ -63,18 +62,18 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
   }
 
   async getSalesItemsByIds({ _ids }: IdsWrapper): Promise<SalesItem[] | ErrorResponse> {
-    return await dbManager.getItemsByIds(_ids, DB_NAME, SalesItem);
+    return await this.dbManager.getItemsByIds(_ids, SalesItem);
   }
 
   async getSalesItemById({ _id }: IdWrapper): Promise<SalesItem | ErrorResponse> {
-    return await dbManager.getItemById(_id, DB_NAME, SalesItem);
+    return await this.dbManager.getItemById(_id, SalesItem);
   }
 
   async updateSalesItem(salesItem: SalesItem): Promise<void | ErrorResponse> {
-    await dbManager.updateItem(salesItem, DB_NAME, SalesItem);
+    await this.dbManager.updateItem(salesItem, SalesItem);
   }
 
   async deleteSalesItemById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
-    await dbManager.deleteItemById(_id, DB_NAME, SalesItem);
+    await this.dbManager.deleteItemById(_id, SalesItem);
   }
 }

@@ -1,13 +1,15 @@
 import { MongoClient, ObjectId } from 'mongodb';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOperations } from '../Backk';
 import { SalesItem } from '../../services/salesitems/types/SalesItem';
-import DbManager from './DbManager';
+import AbstractDbManager from './AbstractDbManager';
 
-export default class MongoDbManager implements DbManager {
-  private mongoClient: MongoClient;
+@Injectable()
+export default class MongoDbManager extends AbstractDbManager {
+  private readonly mongoClient: MongoClient;
 
-  constructor(uri: string, private dbName: string) {
+  constructor(uri: string, public readonly dbName: string) {
+    super();
     this.mongoClient = new MongoClient(uri, { useNewUrlParser: true });
   }
 
@@ -22,10 +24,11 @@ export default class MongoDbManager implements DbManager {
     }
   }
 
-  async createItem<T>(
-    item: Omit<T, '_id'>,
-    entityClass: new () => T
-  ): Promise<IdWrapper | ErrorResponse> {
+  executeSql<T>(): Promise<import("./AbstractDbManager").Field[]> {
+    throw new Error("Method not allowed.");
+  }
+
+  async createItem<T>(item: Omit<T, '_id'>, entityClass: new () => T): Promise<IdWrapper | ErrorResponse> {
     const writeOperationResult = await this.execute((client) =>
       client
         .db(this.dbName)
@@ -77,10 +80,7 @@ export default class MongoDbManager implements DbManager {
     throw new HttpException(`Item with _id: ${_id} not found`, HttpStatus.NOT_FOUND);
   }
 
-  async getItemsByIds<T>(
-    _ids: string[],
-    entityClass: new () => T
-  ): Promise<T[] | ErrorResponse> {
+  async getItemsByIds<T>(_ids: string[], entityClass: new () => T): Promise<T[] | ErrorResponse> {
     const foundItems = await this.execute((client) =>
       client
         .db(this.dbName)
@@ -151,10 +151,7 @@ export default class MongoDbManager implements DbManager {
     }
   }
 
-  async deleteItemById<T>(
-    _id: string,
-    entityClass: new () => T
-  ): Promise<void | ErrorResponse> {
+  async deleteItemById<T>(_id: string, entityClass: new () => T): Promise<void | ErrorResponse> {
     const deleteOperationResult = await this.execute((client) =>
       client
         .db(this.dbName)

@@ -4,11 +4,11 @@ import OrdersService from './OrdersService';
 import Order from './types/Order';
 import OrderWithoutId from './types/OrderWithoutId';
 import UserIdWrapper from '../users/types/UserIdWrapper';
-import DbManager from 'src/backk/dbmanager/DbManager';
+import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 
 @Injectable()
 export default class MongoDbOrdersServiceImpl extends OrdersService {
-  constructor(private readonly dbManager: DbManager) {
+  constructor(private readonly dbManager: AbstractDbManager) {
     super();
   }
 

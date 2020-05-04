@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { pg } from 'yesql';
 import { ErrorResponse, IdWrapper, PostQueryOperations, Projection } from '../Backk';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
@@ -7,9 +7,10 @@ import SqlExpression from '../sqlexpression/SqlExpression';
 import { getTypeMetadata } from '../generateServicesMetadata';
 import asyncForEach from '../asyncForEach';
 import entityContainer, { JoinSpec } from '../entityContainer';
-import DbManager from './DbManager';
+import AbstractDbManager, { Field } from "./AbstractDbManager";
 
-export default class PostgreSqlDbManager implements DbManager {
+@Injectable()
+export default class PostgreSqlDbManager extends AbstractDbManager {
   private pool: Pool;
 
   constructor(
@@ -18,8 +19,9 @@ export default class PostgreSqlDbManager implements DbManager {
     user: string,
     password: string,
     database: string,
-    private schema: string
+    public readonly schema: string
   ) {
+    super();
     this.pool = new Pool({
       user,
       host,
@@ -32,6 +34,15 @@ export default class PostgreSqlDbManager implements DbManager {
   async execute<T>(dbOperationFunction: (pool: Pool) => Promise<T>): Promise<T> {
     try {
       return await dbOperationFunction(this.pool);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async executeSql<T>(sqlStatement: string): Promise<Field[]> {
+    try {
+      const result = await this.pool.query(sqlStatement);
+      return result.fields;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -431,27 +442,29 @@ export default class PostgreSqlDbManager implements DbManager {
   private getJoinStatement(entityClass: Function) {
     let joinStatement = '';
 
-    Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]).forEach((joinSpec, index) => {
-      if (index !== 0) {
-        joinStatement += ' ';
-      }
+    Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]).forEach(
+      (joinSpec: any, index: number) => {
+        if (index !== 0) {
+          joinStatement += ' ';
+        }
 
-      joinStatement += 'JOIN ';
-      joinStatement += this.schema + '.' + joinSpec.joinTableName;
-      joinStatement += ' ON ';
-      joinStatement +=
-        this.schema +
-        '.' +
-        entityClass.name +
-        '.' +
-        joinSpec.fieldName +
-        ' = ' +
-        this.schema +
-        '.' +
-        joinSpec.joinTableName +
-        '.' +
-        joinSpec.joinTableFieldName;
-    });
+        joinStatement += 'JOIN ';
+        joinStatement += this.schema + '.' + joinSpec.joinTableName;
+        joinStatement += ' ON ';
+        joinStatement +=
+          this.schema +
+          '.' +
+          entityClass.name +
+          '.' +
+          joinSpec.fieldName +
+          ' = ' +
+          this.schema +
+          '.' +
+          joinSpec.joinTableName +
+          '.' +
+          joinSpec.joinTableFieldName;
+      }
+    );
 
     return joinStatement;
   }

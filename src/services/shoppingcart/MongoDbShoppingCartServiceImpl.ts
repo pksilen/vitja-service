@@ -1,30 +1,34 @@
-import ShoppingCartService from './ShoppingCartService';
-import { ErrorResponse, IdWrapper } from '../../backk/Backk';
-import ShoppingCartWithoutId from './types/ShoppingCartWithoutId';
-import UserIdWrapper from '../users/types/UserIdWrapper';
-import ShoppingCart from './types/ShoppingCart';
-import dbManager from '../../backk/dbmanager/MongoDbManager';
+import { Injectable } from "@nestjs/common";
+import ShoppingCartService from "./ShoppingCartService";
+import { ErrorResponse, IdWrapper } from "../../backk/Backk";
+import ShoppingCartWithoutId from "./types/ShoppingCartWithoutId";
+import UserIdWrapper from "../users/types/UserIdWrapper";
+import ShoppingCart from "./types/ShoppingCart";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 
-const DB_NAME = 'vitja';
-
+@Injectable()
 export default class MongoDbShoppingCartServiceImpl extends ShoppingCartService {
+  constructor(private readonly dbManager: AbstractDbManager) {
+    super();
+  }
+
   async deleteAllShoppingCarts(): Promise<void | ErrorResponse> {
-    return await dbManager.deleteAllItems(DB_NAME, ShoppingCart);
+    return await this.dbManager.deleteAllItems(ShoppingCart);
   }
 
   async createShoppingCart(shoppingCartWithoutId: ShoppingCartWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await dbManager.createItem(shoppingCartWithoutId, DB_NAME, ShoppingCart);
+    return await this.dbManager.createItem(shoppingCartWithoutId, ShoppingCart);
   }
 
   async getShoppingCartByUserId({ userId }: UserIdWrapper): Promise<ShoppingCart | ErrorResponse> {
-    return await dbManager.getItemBy('userId', userId, DB_NAME, ShoppingCart);
+    return await this.dbManager.getItemBy('userId', userId, ShoppingCart);
   }
 
   async updateShoppingCart(shoppingCart: ShoppingCart): Promise<void | ErrorResponse> {
-    await dbManager.updateItem(shoppingCart, DB_NAME, ShoppingCart);
+    await this.dbManager.updateItem(shoppingCart, ShoppingCart);
   }
 
   async deleteShoppingCartById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
-    await dbManager.deleteItemById(_id, DB_NAME, ShoppingCart);
+    await this.dbManager.deleteItemById(_id, ShoppingCart);
   }
 }

@@ -1,7 +1,6 @@
-import postgreSqlDbManager from './dbmanager/PostgreSqlDbManager';
-import { Pool } from 'pg';
 import { getTypeMetadata } from './generateServicesMetadata';
 import asyncForEach from './asyncForEach';
+import AbstractDbManager from './dbmanager/AbstractDbManager';
 
 export interface ManyToManyRelationTableSpec {
   tableName: string;
@@ -19,7 +18,6 @@ class EntityContainer {
   private entityNameToClassMap: { [key: string]: Function } = {};
   private entityNameToAdditionalPropertyNamesMap: { [key: string]: string[] } = {};
   private manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
-
   entityNameToJoinsMap: { [key: string]: JoinSpec[] } = {};
 
   addEntityNameAndClass(entityName: string, entityClass: Function) {
@@ -38,12 +36,12 @@ class EntityContainer {
     this.manyToManyRelationTableSpecs.push(manyToManyRelationTableSpec);
   }
 
-  async createTables(schema: string) {
+  async createTables(dbManager: AbstractDbManager) {
     await asyncForEach(
       Object.entries(this.entityNameToClassMap),
       async ([entityName, entityClass]: [any, any]) => {
         try {
-          await this.createTable(entityName, entityClass, schema);
+          await this.createTable(dbManager, entityName, entityClass, dbManager.schema);
         } catch (error) {
           // NOOP
         }
@@ -54,29 +52,21 @@ class EntityContainer {
       Object.entries(this.entityNameToAdditionalPropertyNamesMap),
       async ([entityName, additionalPropertyNames]: [any, any]) => {
         await asyncForEach(additionalPropertyNames, async (additionalPropertyName: any) => {
-          const result = await postgreSqlDbManager.execute((pool: Pool) => {
-            return pool.query(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
-          });
-          if (
-            !result.fields.find((field) => field.name.toLowerCase() === additionalPropertyName.toLowerCase())
-          ) {
-            let alterTableStatement = `ALTER TABLE ${schema}.${entityName} ADD `;
+          const fields = await dbManager.executeSql(`SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`);
+          if (!fields.find((field) => field.name.toLowerCase() === additionalPropertyName.toLowerCase())) {
+            let alterTableStatement = `ALTER TABLE ${dbManager.schema}.${entityName} ADD `;
             alterTableStatement += additionalPropertyName + ' VARCHAR';
-            await postgreSqlDbManager.execute((pool: Pool) => {
-              return pool.query(alterTableStatement);
-            });
+            await dbManager.executeSql(alterTableStatement);
           }
         });
       }
     );
   }
 
-  private async createTable(entityName: string, entityClass: Function, schema: string) {
-    const response = postgreSqlDbManager.execute((pool: Pool) => {
-      return pool.query(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
-    });
+  private async createTable(dbManager: AbstractDbManager, entityName: string, entityClass: Function, schema: string | undefined) {
+    const fields = dbManager.executeSql(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
 
-    response.catch(async () => {
+    fields.catch(async () => {
       const entityMetadata = getTypeMetadata(entityClass as any);
       let createTableStatement = `CREATE TABLE ${schema}.${entityName} (`;
       let fieldCnt = 0;
@@ -163,17 +153,20 @@ class EntityContainer {
         } else if (isArray) {
           let createAdditionalTableStatement = `CREATE TABLE IF NOT EXISTS ${schema}.${entityName +
             fieldName.slice(0, -1)} (`;
+
           const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
+
           createAdditionalTableStatement +=
             idFieldName + ' VARCHAR, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
-          await postgreSqlDbManager.execute((pool: Pool) => {
-            return pool.query(createAdditionalTableStatement);
-          });
+
+          await dbManager.executeSql(createAdditionalTableStatement);
+
           const joinSpec = {
             joinTableName: schema + '.' + entityName + fieldName.slice(0, -1),
             fieldName: '_id',
             joinTableFieldName: idFieldName
           };
+
           if (this.entityNameToJoinsMap[entityName]) {
             this.entityNameToJoinsMap[entityName].push(joinSpec);
           } else {
@@ -189,15 +182,13 @@ class EntityContainer {
       });
 
       createTableStatement += ')';
-      await postgreSqlDbManager.execute((pool: Pool) => {
-        return pool.query(createTableStatement);
-      });
+      await dbManager.executeSql(createTableStatement);
     });
 
-    response.then(async (result) => {
+    fields.then(async (fields) => {
       const entityMetadata = getTypeMetadata(entityClass as any);
       await asyncForEach(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]: [any, any]) => {
-        if (!result.fields.find((field) => field.name.toLowerCase() === fieldName.toLowerCase())) {
+        if (!fields.find((field) => field.name.toLowerCase() === fieldName.toLowerCase())) {
           let alterTableStatement = `ALTER TABLE ${schema}.${entityName} ADD `;
           let baseFieldTypeName = fieldTypeName;
           let isArray = false;
@@ -283,9 +274,8 @@ class EntityContainer {
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
             createAdditionalTableStatement +=
               idFieldName + ' VARCHAR, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
-            await postgreSqlDbManager.execute((pool: Pool) => {
-              return pool.query(createAdditionalTableStatement);
-            });
+            await dbManager.executeSql(createAdditionalTableStatement);
+
             const joinSpec = {
               joinTableName: schema + '.' + entityName + fieldName.slice(0, -1),
               fieldName: '_id',
@@ -298,15 +288,13 @@ class EntityContainer {
             }
           } else {
             alterTableStatement += fieldName + ' ' + sqlColumnType;
-            await postgreSqlDbManager.execute((pool: Pool) => {
-              return pool.query(alterTableStatement);
-            });
+            await dbManager.executeSql(alterTableStatement);
           }
         }
       });
     });
 
-    return response;
+    return fields;
   }
 }
 
