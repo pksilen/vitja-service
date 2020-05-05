@@ -81,19 +81,24 @@ class EntityContainer {
           isArray = true;
         }
 
-        switch (baseFieldTypeName) {
-          case 'integer':
-            sqlColumnType = 'INTEGER';
-            break;
-          case 'number':
-            sqlColumnType = 'DOUBLE PRECISION';
-            break;
-          case 'boolean':
-            sqlColumnType = 'BOOLEAN';
-            break;
-          case 'string':
-            sqlColumnType = 'VARCHAR';
-            break;
+        if (fieldName === '_id') {
+          sqlColumnType = 'SERIAL PRIMARY KEY';
+        }
+        else {
+          switch (baseFieldTypeName) {
+            case 'integer':
+              sqlColumnType = 'INTEGER';
+              break;
+            case 'number':
+              sqlColumnType = 'DOUBLE PRECISION';
+              break;
+            case 'boolean':
+              sqlColumnType = 'BOOLEAN';
+              break;
+            case 'string':
+              sqlColumnType = 'VARCHAR';
+              break;
+          }
         }
 
         if (!sqlColumnType && baseFieldTypeName[0] === '(') {

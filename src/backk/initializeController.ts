@@ -65,7 +65,7 @@ function getSampleArg(
     return undefined;
   }
 
-  Object.entries(typeProperties).map(([propertyName, propertyTypeName]: [string, string]) => {
+  Object.entries(typeProperties).forEach(([propertyName, propertyTypeName]: [string, string]) => {
     let finalPropertyTypeName = propertyTypeName.startsWith('?')
       ? propertyTypeName.slice(1)
       : propertyTypeName;

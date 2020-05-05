@@ -1,13 +1,16 @@
 import { Pool } from 'pg';
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { pg } from 'yesql';
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// @ts-ignore
+import joinjs from 'join-js';
 import { ErrorResponse, IdWrapper, PostQueryOperations, Projection } from '../Backk';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
 import SqlExpression from '../sqlexpression/SqlExpression';
 import { getTypeMetadata } from '../generateServicesMetadata';
 import asyncForEach from '../asyncForEach';
 import entityContainer, { JoinSpec } from '../entityContainer';
-import AbstractDbManager, { Field } from "./AbstractDbManager";
+import AbstractDbManager, { Field } from './AbstractDbManager';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -92,7 +95,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         );
       });
 
-      _id = result.rows[0]._id;
+      _id = result.rows[0]._id.toString();
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -144,13 +147,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async getItems<T>(
     filters: object,
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
-    entityClass: Function
+    entityClass: Function,
+    Types: object
   ): Promise<T[]> {
     try {
       const columns = this.getProjection(projection, entityClass.name);
       const whereStatement = this.getWhereStatement(filters);
       const processedFilters = this.getProcessedFilters(filters);
-      const joinStatement = this.getJoinStatement(entityClass);
+      const joinStatement = this.getJoinStatement(entityClass, Types);
 
       let sortStatement = '';
       if (sortBy && sortDirection) {
@@ -174,14 +178,15 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           )(processedFilters)
         );
       });
-      return result.rows;
+      const resultMaps = this.createResultMaps(entityClass, Types);
+      return joinjs.map(result.rows, resultMaps, entityClass.name + 'Map', entityClass.name + '.');
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async getItemById<T>(_id: string, entityClass: Function): Promise<T | ErrorResponse> {
-    const joinStatement = this.getJoinStatement(entityClass);
+  async getItemById<T>(_id: string, entityClass: Function, Types: object): Promise<T | ErrorResponse> {
+    const joinStatement = this.getJoinStatement(entityClass, Types);
     let result;
 
     try {
@@ -199,11 +204,12 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       throw new HttpException(`Item with _id: ${_id} not found`, HttpStatus.NOT_FOUND);
     }
 
-    return result.rows[0];
+    const resultMaps = this.createResultMaps(entityClass, Types);
+    return joinjs.map(result.rows, resultMaps, entityClass.name + 'Map', entityClass.name + '.');
   }
 
-  async getItemsByIds<T>(_ids: string[], entityClass: Function): Promise<T[] | ErrorResponse> {
-    const joinStatement = this.getJoinStatement(entityClass);
+  async getItemsByIds<T>(_ids: string[], entityClass: Function, Types: object): Promise<T[] | ErrorResponse> {
+    const joinStatement = this.getJoinStatement(entityClass, Types);
     let result;
 
     try {
@@ -224,15 +230,17 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       throw new HttpException(`Item with _ids: ${_ids} not found`, HttpStatus.NOT_FOUND);
     }
 
-    return result.rows;
+    const resultMaps = this.createResultMaps(entityClass, Types);
+    return joinjs.map(result.rows, resultMaps, entityClass.name + 'Map', entityClass.name + '.');
   }
 
   async getItemBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: Function
+    entityClass: Function,
+    Types: object
   ): Promise<T | ErrorResponse> {
-    const joinStatement = this.getJoinStatement(entityClass);
+    const joinStatement = this.getJoinStatement(entityClass, Types);
     let result;
 
     try {
@@ -250,15 +258,17 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       throw new HttpException(`Item with ${fieldName}: ${fieldValue} not found`, HttpStatus.NOT_FOUND);
     }
 
-    return result.rows[0];
+    const resultMaps = this.createResultMaps(entityClass, Types);
+    return joinjs.map(result.rows, resultMaps, entityClass.name + 'Map', entityClass.name + '.');
   }
 
   async getItemsBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: Function
+    entityClass: Function,
+    Types: object
   ): Promise<T[] | ErrorResponse> {
-    const joinStatement = this.getJoinStatement(entityClass);
+    const joinStatement = this.getJoinStatement(entityClass, Types);
     let result;
 
     try {
@@ -276,7 +286,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       throw new HttpException(`Item with ${fieldName}: ${fieldValue} not found`, HttpStatus.NOT_FOUND);
     }
 
-    return result.rows;
+    const resultMaps = this.createResultMaps(entityClass, Types);
+    return joinjs.map(result.rows, resultMaps, entityClass.name + 'Map', entityClass.name + '.');
   }
 
   async updateItem<T extends { _id?: string; id?: string }>(
@@ -439,7 +450,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return processedFilters;
   }
 
-  private getJoinStatement(entityClass: Function) {
+  private getJoinStatement(entityClass: Function, Types: object) {
     let joinStatement = '';
 
     Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]).forEach(
@@ -466,6 +477,106 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       }
     );
 
+    const entityMetadata = getTypeMetadata(entityClass as any);
+
+    Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [any, any]) => {
+      let baseFieldTypeName = fieldTypeName;
+      let isArray = false;
+
+      if (fieldTypeName.endsWith('[]')) {
+        baseFieldTypeName = fieldTypeName.slice(0, -2);
+        isArray = true;
+      }
+
+      if (
+        isArray &&
+        baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+        baseFieldTypeName[0] !== '('
+      ) {
+        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+        joinStatement += this.getJoinStatement((Types as any)[relationEntityName], Types);
+      } else if (
+        baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+        baseFieldTypeName[0] !== '('
+      ) {
+        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+        joinStatement += this.getJoinStatement((Types as any)[relationEntityName], Types);
+      } else if (isArray) {
+        const relationEntityName = entityClass.name + fieldName.slice(0, -1);
+        joinStatement += this.getJoinStatement((Types as any)[relationEntityName], Types);
+      }
+    });
+
     return joinStatement;
+  }
+
+  private createResultMaps(entityClass: Function, Types: object): object[] {
+    const resultMaps: any[] = [];
+    this.updateResultMaps(entityClass, Types, resultMaps);
+    return resultMaps;
+  }
+
+  private updateResultMaps(entityClass: Function, Types: object, resultMaps: any[]) {
+    const entityMetadata = getTypeMetadata(entityClass as any);
+
+    const resultMap = {
+      mapId: entityClass.name + 'Map',
+      idProperty: '_id',
+      properties: [] as string[],
+      collections: [] as object[]
+    };
+
+    Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [any, any]) => {
+      let baseFieldTypeName = fieldTypeName;
+      let isArray = false;
+
+      if (fieldTypeName.endsWith('[]')) {
+        baseFieldTypeName = fieldTypeName.slice(0, -2);
+        isArray = true;
+      }
+
+      if (
+        isArray &&
+        baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+        baseFieldTypeName[0] !== '('
+      ) {
+        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+
+        resultMap.collections.push({
+          name: relationEntityName,
+          mapId: relationEntityName + 'Map',
+          columnPrefix: relationEntityName + '.'
+        });
+
+        this.updateResultMaps((Types as any)[relationEntityName], Types, resultMaps);
+      } else if (
+        baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+        baseFieldTypeName[0] !== '('
+      ) {
+        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+
+        resultMap.collections.push({
+          name: relationEntityName,
+          mapId: relationEntityName + 'Map',
+          columnPrefix: relationEntityName + '.'
+        });
+
+        this.updateResultMaps((Types as any)[relationEntityName], Types, resultMaps);
+      } else if (isArray) {
+        const relationEntityName = entityClass.name + fieldName.slice(0, -1);
+
+        resultMap.collections.push({
+          name: relationEntityName,
+          mapId: relationEntityName + 'Map',
+          columnPrefix: relationEntityName + '.'
+        });
+
+        this.updateResultMaps((Types as any)[relationEntityName], Types, resultMaps);
+      } else {
+        resultMap.properties.push(fieldName);
+      }
+    });
+
+    resultMaps.push();
   }
 }

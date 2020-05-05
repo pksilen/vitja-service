@@ -1,77 +1,54 @@
 import { ErrorResponse, IdWrapper, PostQueryOperations } from '../Backk';
 import { Pool } from 'pg';
 import { MongoClient } from 'mongodb';
-import { Injectable } from '@nestjs/common';
 
 export interface Field {
   name: string;
 }
 
-export default class AbstractDbManager {
+export default abstract class AbstractDbManager {
   readonly dbName?: string;
   readonly schema?: string;
 
-  execute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T> {
-    throw new Error('Abstract method');
-  }
+  abstract execute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T>;
+  abstract executeSql<T>(sqlStatement: string): Promise<Field[]>;
 
-  executeSql<T>(sqlStatement: string): Promise<Field[]> {
-    throw new Error('Abstract method');
-  }
-
-  createItem<T>(
+  abstract createItem<T>(
     item: Omit<T, '_id'>,
     entityClass: new () => T,
     Types?: object
-  ): Promise<IdWrapper | ErrorResponse> {
-    throw new Error('Abstract method');
-  }
+  ): Promise<IdWrapper | ErrorResponse>;
 
-  getItems<T>(
+  abstract getItems<T>(
     filters: object,
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
-    entityClass: new () => T
-  ): Promise<T[] | ErrorResponse> {
-    throw new Error('Abstract method');
-  }
+    entityClass: new () => T,
+    Types?: object
+  ): Promise<T[] | ErrorResponse>;
 
-  getItemById<T>(_id: string, entityClass: new () => T): Promise<T | ErrorResponse> {
-    throw new Error('Abstract method');
-  }
+  abstract getItemById<T>(_id: string, entityClass: new () => T, Types?: object): Promise<T | ErrorResponse>;
+  abstract getItemsByIds<T>(_ids: string[], entityClass: Function, Types?: object): Promise<T[] | ErrorResponse>;
 
-  getItemsByIds<T>(_ids: string[], entityClass: Function): Promise<T[] | ErrorResponse> {
-    throw new Error('Abstract method');
-  }
-
-  getItemBy<T>(
+  abstract getItemBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: Function
-  ): Promise<T | ErrorResponse> {
-    throw new Error('Abstract method');
-  }
+    entityClass: Function,
+    Types?: object
+  ): Promise<T | ErrorResponse>;
 
-  getItemsBy<T>(
+  abstract getItemsBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: Function
-  ): Promise<T[] | ErrorResponse> {
-    throw new Error('Abstract method');
-  }
+    entityClass: Function,
+    Types?: object
+  ): Promise<T[] | ErrorResponse>;
 
-  updateItem<T extends { _id?: string; id?: string }>(
+  abstract updateItem<T extends { _id?: string; id?: string }>(
     { _id, ...restOfItem }: T,
     entityClass: Function,
     Types?: object
-  ): Promise<void | ErrorResponse> {
-    throw new Error('Abstract method');
-  }
+  ): Promise<void | ErrorResponse>;
 
-  deleteItemById(_id: string, entityClass: Function): Promise<void | ErrorResponse> {
-    throw new Error('Abstract method');
-  }
-
-  deleteAllItems(entityClass: Function): Promise<void | ErrorResponse> {
-    throw new Error('Abstract method');
-  }
+  abstract deleteItemById(_id: string, entityClass: Function): Promise<void | ErrorResponse>;
+  abstract deleteAllItems(entityClass: Function): Promise<void | ErrorResponse>;
 }

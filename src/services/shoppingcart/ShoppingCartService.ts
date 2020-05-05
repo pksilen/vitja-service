@@ -1,5 +1,4 @@
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
-import Order from '../orders/types/Order';
 import UserIdWrapper from '../users/types/UserIdWrapper';
 import ShoppingCartWithoutId from './types/ShoppingCartWithoutId';
 import ShoppingCart from './types/ShoppingCart';
