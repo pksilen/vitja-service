@@ -7,8 +7,8 @@ import { postgreSqlDbManager } from "./database/postgreSqlDbManager";
 
 async function bootstrap() {
   generateDocs();
-  await entityContainer.createTables(postgreSqlDbManager);
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  await entityContainer.createTables(postgreSqlDbManager);
   await app.listen(3000);
 }
 

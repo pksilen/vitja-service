@@ -16,7 +16,7 @@ export interface JoinSpec {
 
 class EntityContainer {
   private entityNameToClassMap: { [key: string]: Function } = {};
-  private entityNameToAdditionalPropertyNamesMap: { [key: string]: string[] } = {};
+  private entityNameToAdditionalIdPropertyNamesMap: { [key: string]: string[] } = {};
   private manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
   entityNameToJoinsMap: { [key: string]: JoinSpec[] } = {};
 
@@ -25,10 +25,10 @@ class EntityContainer {
   }
 
   addEntityAdditionalPropertyName(entityName: string, propertyName: string) {
-    if (this.entityNameToAdditionalPropertyNamesMap[entityName]) {
-      this.entityNameToAdditionalPropertyNamesMap[entityName].push(propertyName);
+    if (this.entityNameToAdditionalIdPropertyNamesMap[entityName]) {
+      this.entityNameToAdditionalIdPropertyNamesMap[entityName].push(propertyName);
     } else {
-      this.entityNameToAdditionalPropertyNamesMap[entityName] = [propertyName];
+      this.entityNameToAdditionalIdPropertyNamesMap[entityName] = [propertyName];
     }
   }
 
@@ -49,13 +49,13 @@ class EntityContainer {
     );
 
     await asyncForEach(
-      Object.entries(this.entityNameToAdditionalPropertyNamesMap),
+      Object.entries(this.entityNameToAdditionalIdPropertyNamesMap),
       async ([entityName, additionalPropertyNames]: [any, any]) => {
         await asyncForEach(additionalPropertyNames, async (additionalPropertyName: any) => {
           const fields = await dbManager.executeSql(`SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`);
           if (!fields.find((field) => field.name.toLowerCase() === additionalPropertyName.toLowerCase())) {
             let alterTableStatement = `ALTER TABLE ${dbManager.schema}.${entityName} ADD `;
-            alterTableStatement += additionalPropertyName + ' VARCHAR';
+            alterTableStatement += additionalPropertyName + ' INTEGER';
             await dbManager.executeSql(alterTableStatement);
           }
         });
@@ -70,7 +70,6 @@ class EntityContainer {
       const entityMetadata = getTypeMetadata(entityClass as any);
       let createTableStatement = `CREATE TABLE ${schema}.${entityName} (`;
       let fieldCnt = 0;
-
       await asyncForEach(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]: [any, any]) => {
         let baseFieldTypeName = fieldTypeName;
         let isArray = false;
@@ -96,7 +95,11 @@ class EntityContainer {
               sqlColumnType = 'BOOLEAN';
               break;
             case 'string':
-              sqlColumnType = 'VARCHAR';
+              if (fieldName.endsWith('Id') || fieldName === 'id') {
+                sqlColumnType = 'INTEGER';
+              } else {
+                sqlColumnType = 'VARCHAR';
+              }
               break;
           }
         }
@@ -119,10 +122,10 @@ class EntityContainer {
         ) {
           const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
           const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
-          if (this.entityNameToAdditionalPropertyNamesMap[relationEntityName]) {
-            this.entityNameToAdditionalPropertyNamesMap[relationEntityName].push(idFieldName);
+          if (this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName]) {
+            this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName].push(idFieldName);
           } else {
-            this.entityNameToAdditionalPropertyNamesMap[relationEntityName] = [idFieldName];
+            this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName] = [idFieldName];
           }
           const joinSpec = {
             joinTableName: schema + '.' + relationEntityName,
@@ -140,10 +143,10 @@ class EntityContainer {
         ) {
           const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
           const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-          if (this.entityNameToAdditionalPropertyNamesMap[relationEntityName]) {
-            this.entityNameToAdditionalPropertyNamesMap[relationEntityName].push(idFieldName);
+          if (this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName]) {
+            this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName].push(idFieldName);
           } else {
-            this.entityNameToAdditionalPropertyNamesMap[relationEntityName] = [idFieldName];
+            this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName] = [idFieldName];
           }
           const joinSpec = {
             joinTableName: schema + '.' + relationEntityName,
@@ -162,7 +165,7 @@ class EntityContainer {
           const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
 
           createAdditionalTableStatement +=
-            idFieldName + ' VARCHAR, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
+            idFieldName + ' INTEGER, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
 
           await dbManager.executeSql(createAdditionalTableStatement);
 
@@ -215,7 +218,11 @@ class EntityContainer {
               sqlColumnType = 'BOOLEAN';
               break;
             case 'string':
-              sqlColumnType = 'VARCHAR';
+              if (fieldName.endsWith('Id') || fieldName === 'id') {
+                sqlColumnType = 'INTEGER';
+              } else {
+                sqlColumnType = 'VARCHAR';
+              }
               break;
           }
 
@@ -237,10 +244,10 @@ class EntityContainer {
           ) {
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
             const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
-            if (this.entityNameToAdditionalPropertyNamesMap[relationEntityName]) {
-              this.entityNameToAdditionalPropertyNamesMap[relationEntityName].push(idFieldName);
+            if (this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName]) {
+              this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName].push(idFieldName);
             } else {
-              this.entityNameToAdditionalPropertyNamesMap[relationEntityName] = [idFieldName];
+              this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName] = [idFieldName];
             }
             const joinSpec = {
               joinTableName: relationEntityName,
@@ -258,10 +265,10 @@ class EntityContainer {
           ) {
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
             const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-            if (this.entityNameToAdditionalPropertyNamesMap[relationEntityName]) {
-              this.entityNameToAdditionalPropertyNamesMap[relationEntityName].push(idFieldName);
+            if (this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName]) {
+              this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName].push(idFieldName);
             } else {
-              this.entityNameToAdditionalPropertyNamesMap[relationEntityName] = [idFieldName];
+              this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName] = [idFieldName];
             }
             const joinSpec = {
               joinTableName: relationEntityName,
@@ -278,7 +285,7 @@ class EntityContainer {
               fieldName.slice(0, -1)} (`;
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
             createAdditionalTableStatement +=
-              idFieldName + ' VARCHAR, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
+              idFieldName + ' INTEGER, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
             await dbManager.executeSql(createAdditionalTableStatement);
 
             const joinSpec = {

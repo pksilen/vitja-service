@@ -518,10 +518,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   private updateResultMaps(entityClass: Function, Types: object, resultMaps: any[]) {
     const entityMetadata = getTypeMetadata(entityClass as any);
+    
+    const idFieldName = Object.keys(entityMetadata).find(
+      (fieldName) => fieldName === '_id' || fieldName === 'id'
+    );
 
     const resultMap = {
       mapId: entityClass.name + 'Map',
-      idProperty: '_id',
+      idProperty: idFieldName,
       properties: [] as string[],
       collections: [] as object[]
     };
