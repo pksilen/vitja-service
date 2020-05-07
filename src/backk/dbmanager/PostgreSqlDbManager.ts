@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, QueryConfig, QueryResult } from 'pg';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { pg } from 'yesql';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -42,10 +42,35 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async executeSql<T>(sqlStatement: string): Promise<Field[]> {
+  async executeSql<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
     try {
-      const result = await this.pool.query(sqlStatement);
+      if (process.env.LOG_LEVEL === 'DEBUG') {
+        console.log(sqlStatement, values ?? '');
+      }
+      const result = await this.pool.query(sqlStatement, values);
       return result.fields;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async executeQuery(sqlStatement: string, values?: any[]): Promise<QueryResult<any>> {
+    try {
+      if (process.env.LOG_LEVEL === 'DEBUG') {
+        console.log(sqlStatement, values ?? '');
+      }
+      return await this.pool.query(sqlStatement, values);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async executeQueryWithConfig(queryConfig: QueryConfig): Promise<QueryResult<any>> {
+    try {
+      if (process.env.LOG_LEVEL === 'DEBUG') {
+        console.log(queryConfig.text, queryConfig.values);
+      }
+      return await this.pool.query(queryConfig);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -88,13 +113,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
     let _id: string;
     try {
-      const result = await this.execute((pool: Pool) => {
-        return pool.query(
-          `INSERT INTO ${this.schema}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) RETURNING _id`,
-          values
-        );
-      });
-
+      const result = await this.executeQuery(
+        `INSERT INTO ${this.schema}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) RETURNING _id`,
+        values
+      );
       _id = result.rows[0]._id.toString();
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -132,9 +154,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         await asyncForEach((item as any)[fieldName], async (subItem: any) => {
           const insertStatement = `INSERT INTO ${this.schema}.${entityClass.name +
             fieldName.slice(0, -1)} (${idFieldName}, ${fieldName}) VALUES($1, $2)`;
-          await this.execute((pool: Pool) => {
-            return pool.query(insertStatement, [_id, subItem]);
-          });
+          await this.executeSql(insertStatement, [_id, subItem]);
         });
       }
     });
@@ -170,14 +190,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         limitAndOffsetStatement = `LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`;
       }
 
-      const result = await this.execute((pool: Pool) => {
-        return pool.query(
-          pg(
-            `SELECT ${columns} FROM ${this.schema}.${entityClass.name} ${joinStatement} ${whereStatement} 
+      const result = await this.executeQueryWithConfig(
+        pg(
+          `SELECT ${columns} FROM ${this.schema}.${entityClass.name} ${joinStatement} ${whereStatement} 
             ${sortStatement} ${limitAndOffsetStatement}`
-          )(processedFilters)
-        );
-      });
+        )(processedFilters)
+      );
+
       const resultMaps = this.createResultMaps(entityClass, Types);
       return joinjs.map(result.rows, resultMaps, entityClass.name + 'Map', entityClass.name + '.');
     } catch (error) {
@@ -190,12 +209,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     let result;
 
     try {
-      result = await this.execute((pool: Pool) => {
-        return pool.query(
-          `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id = $1`,
-          [_id]
-        );
-      });
+      result = await this.executeQuery(
+        `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id = $1`,
+        [_id]
+      );
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -216,12 +233,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const idPlaceholders = _ids.map(
         (id, index) => `$${index + 1}` + (index === _ids.length - 1 ? '' : ', ')
       );
-      result = await this.execute((pool: Pool) => {
-        return pool.query(
-          `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id IN ${idPlaceholders}`,
-          [_ids]
-        );
-      });
+      result = await this.executeQuery(
+        `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id IN ${idPlaceholders}`,
+        [_ids]
+      );
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -244,12 +259,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     let result;
 
     try {
-      result = await this.execute((pool: Pool) => {
-        return pool.query(
-          `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
-          [fieldValue]
-        );
-      });
+      result = await this.executeQuery(
+        `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
+        [fieldValue]
+      );
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -272,12 +285,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     let result;
 
     try {
-      result = await this.execute((pool: Pool) => {
-        return pool.query(
-          `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
-          [fieldValue]
-        );
-      });
+      result = await this.executeQuery(
+        `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
+        [fieldValue]
+      );
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -328,9 +339,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         await asyncForEach((restOfItem as any)[fieldName], async (subItem: any) => {
           const insertStatement = `UPDATE ${this.schema}.${entityClass.name +
             fieldName.slice(0, -1)} SET ${fieldName} = $1 WHERE ${idFieldName} = $2`;
-          await this.execute((pool: Pool) => {
-            return pool.query(insertStatement, [subItem, _id]);
-          });
+          await this.executeSql(insertStatement, [subItem, _id]);
         });
       } else {
         columns.push(fieldName);
@@ -345,12 +354,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       const idFieldName = _id === undefined ? 'id' : '_id';
-      await this.execute((pool: Pool) => {
-        return pool.query(
-          `UPDATE ${this.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
-          [_id === undefined ? restOfItem.id : _id, ...values]
-        );
-      });
+      await this.executeSql(
+        `UPDATE ${this.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
+        [_id === undefined ? restOfItem.id : _id, ...values]
+      );
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -361,12 +368,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
       async (joinSpec: JoinSpec) => {
         try {
-          await this.execute((pool: Pool) => {
-            return pool.query(
-              `DELETE FROM ${this.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} = $1`,
-              [_id]
-            );
-          });
+          await this.executeSql(
+            `DELETE FROM ${this.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} = $1`,
+            [_id]
+          );
         } catch (error) {
           throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -374,9 +379,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     );
 
     try {
-      await this.execute((pool: Pool) => {
-        return pool.query(`DELETE FROM ${this.schema}.${entityClass.name} WHERE _id = $1`, [_id]);
-      });
+      await this.executeSql(`DELETE FROM ${this.schema}.${entityClass.name} WHERE _id = $1`, [_id]);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -387,9 +390,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
       async (joinSpec: JoinSpec) => {
         try {
-          await this.execute((pool: Pool) => {
-            return pool.query(`DELETE FROM ${this.schema}.${joinSpec.joinTableName}`);
-          });
+          await this.executeSql(`DELETE FROM ${this.schema}.${joinSpec.joinTableName}`);
         } catch (error) {
           throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -518,7 +519,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   private updateResultMaps(entityClass: Function, Types: object, resultMaps: any[]) {
     const entityMetadata = getTypeMetadata(entityClass as any);
-    
+
     const idFieldName = Object.keys(entityMetadata).find(
       (fieldName) => fieldName === '_id' || fieldName === 'id'
     );

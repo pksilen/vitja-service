@@ -17,15 +17,15 @@ export default class MongoDbShoppingCartServiceImpl extends ShoppingCartService 
   }
 
   async createShoppingCart(shoppingCartWithoutId: ShoppingCartWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await this.dbManager.createItem(shoppingCartWithoutId, ShoppingCart);
+    return await this.dbManager.createItem(shoppingCartWithoutId, ShoppingCart, this.Types);
   }
 
   async getShoppingCartByUserId({ userId }: UserIdWrapper): Promise<ShoppingCart | ErrorResponse> {
-    return await this.dbManager.getItemBy('userId', userId, ShoppingCart);
+    return await this.dbManager.getItemBy('userId', userId, ShoppingCart, this.Types);
   }
 
   async updateShoppingCart(shoppingCart: ShoppingCart): Promise<void | ErrorResponse> {
-    await this.dbManager.updateItem(shoppingCart, ShoppingCart);
+    await this.dbManager.updateItem(shoppingCart, ShoppingCart, this.Types);
   }
 
   async deleteShoppingCartById({ _id }: IdWrapper): Promise<void | ErrorResponse> {

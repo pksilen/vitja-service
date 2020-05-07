@@ -9,7 +9,7 @@ import OrdersService from '../services/orders/OrdersService';
 import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
 import MongoDbShoppingCartServiceImpl from '../services/shoppingcart/MongoDbShoppingCartServiceImpl';
 import AbstractDbManager from '../backk/dbmanager/AbstractDbManager';
-import { mongoDbManager } from "../database/mongoDbManager";
+import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
 
 @Module({
   imports: [],
@@ -19,7 +19,7 @@ import { mongoDbManager } from "../database/mongoDbManager";
     { provide: UsersService, useClass: MongoDbUsersServiceImpl },
     { provide: OrdersService, useClass: MongoDbOrdersServiceImpl },
     { provide: ShoppingCartService, useClass: MongoDbShoppingCartServiceImpl },
-    { provide: AbstractDbManager, useValue: mongoDbManager }
+    { provide: AbstractDbManager, useValue: postgreSqlDbManager }
   ]
 })
 export class AppModule {}

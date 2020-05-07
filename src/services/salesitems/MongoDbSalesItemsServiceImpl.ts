@@ -5,7 +5,7 @@ import { SalesItem } from './types/SalesItem';
 import SalesItemWithoutId from './types/SalesItemWithoutId';
 import UserIdWrapper from '../users/types/UserIdWrapper';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import SalesItemsService from "./SalesItemsService";
+import SalesItemsService from './SalesItemsService';
 
 @Injectable()
 export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
@@ -20,7 +20,8 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
   async createSalesItem(salesItemWithoutId: SalesItemWithoutId): Promise<IdWrapper | ErrorResponse> {
     return await this.dbManager.createItem(
       { ...salesItemWithoutId, createdTimestampInMillis: Date.now() },
-      SalesItem
+      SalesItem,
+      this.Types
     );
   }
 
@@ -53,12 +54,12 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
           : {})
       },
       postQueryOperations,
-      SalesItem
+      SalesItem, this.Types
     );
   }
 
   async getSalesItemsByUserId({ userId }: UserIdWrapper): Promise<SalesItem[] | ErrorResponse> {
-    return await this.dbManager.getItemsBy<SalesItem>('userId', userId, SalesItem);
+    return await this.dbManager.getItemsBy<SalesItem>('userId', userId, SalesItem, this.Types);
   }
 
   async getSalesItemsByIds({ _ids }: IdsWrapper): Promise<SalesItem[] | ErrorResponse> {
@@ -70,7 +71,7 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
   }
 
   async updateSalesItem(salesItem: SalesItem): Promise<void | ErrorResponse> {
-    await this.dbManager.updateItem(salesItem, SalesItem);
+    await this.dbManager.updateItem(salesItem, SalesItem, this.Types);
   }
 
   async deleteSalesItemById({ _id }: IdWrapper): Promise<void | ErrorResponse> {

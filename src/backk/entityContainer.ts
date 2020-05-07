@@ -128,7 +128,7 @@ class EntityContainer {
             this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName] = [idFieldName];
           }
           const joinSpec = {
-            joinTableName: schema + '.' + relationEntityName,
+            joinTableName: relationEntityName,
             fieldName: '_id',
             joinTableFieldName: idFieldName
           };
@@ -149,7 +149,7 @@ class EntityContainer {
             this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName] = [idFieldName];
           }
           const joinSpec = {
-            joinTableName: schema + '.' + relationEntityName,
+            joinTableName: relationEntityName,
             fieldName: '_id',
             joinTableFieldName: idFieldName
           };
@@ -170,7 +170,7 @@ class EntityContainer {
           await dbManager.executeSql(createAdditionalTableStatement);
 
           const joinSpec = {
-            joinTableName: schema + '.' + entityName + fieldName.slice(0, -1),
+            joinTableName: entityName + fieldName.slice(0, -1),
             fieldName: '_id',
             joinTableFieldName: idFieldName
           };
@@ -289,7 +289,7 @@ class EntityContainer {
             await dbManager.executeSql(createAdditionalTableStatement);
 
             const joinSpec = {
-              joinTableName: schema + '.' + entityName + fieldName.slice(0, -1),
+              joinTableName: entityName + fieldName.slice(0, -1),
               fieldName: '_id',
               joinTableFieldName: idFieldName
             };

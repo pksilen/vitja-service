@@ -17,7 +17,7 @@ export default class MongoDbOrdersServiceImpl extends OrdersService {
   }
 
   async createOrder(orderWithoutId: OrderWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await this.dbManager.createItem(orderWithoutId, Order);
+    return await this.dbManager.createItem(orderWithoutId, Order, this.Types);
   }
 
   async getOrderById({ _id }: IdWrapper): Promise<Order | ErrorResponse> {
@@ -25,11 +25,11 @@ export default class MongoDbOrdersServiceImpl extends OrdersService {
   }
 
   async getOrderByUserId({ userId }: UserIdWrapper): Promise<Order | ErrorResponse> {
-    return await this.dbManager.getItemBy<Order>('userId', userId, Order);
+    return await this.dbManager.getItemBy<Order>('userId', userId, Order, this.Types);
   }
 
   async updateOrder(order: Order): Promise<void | ErrorResponse> {
-    return await this.dbManager.updateItem(order, Order);
+    return await this.dbManager.updateItem(order, Order, this.Types);
   }
 
   async deleteOrderById({ _id }: IdWrapper): Promise<void | ErrorResponse> {

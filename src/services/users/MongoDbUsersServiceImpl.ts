@@ -4,7 +4,7 @@ import UserNameWrapper from './types/UserNameWrapper';
 import User from './types/User';
 import UserWithoutId from './types/UserWithoutId';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export default class MongoDbUsersServiceImpl extends UsersService {
@@ -17,15 +17,15 @@ export default class MongoDbUsersServiceImpl extends UsersService {
   }
 
   async createUser(userWithoutId: UserWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await this.abstractDbManager.createItem(userWithoutId, User);
+    return await this.abstractDbManager.createItem(userWithoutId, User, this.Types);
   }
 
   async getUserByUserName(userNameWrapper: UserNameWrapper): Promise<User | ErrorResponse> {
-    return await this.abstractDbManager.getItemBy('userName', userNameWrapper.userName, User);
+    return await this.abstractDbManager.getItemBy('userName', userNameWrapper.userName, User, this.Types);
   }
 
   async updateUser(user: User): Promise<void | ErrorResponse> {
-    await this.abstractDbManager.updateItem(user, User);
+    await this.abstractDbManager.updateItem(user, User, this.Types);
   }
 
   async deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse> {

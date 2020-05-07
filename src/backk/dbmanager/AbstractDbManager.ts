@@ -16,14 +16,14 @@ export default abstract class AbstractDbManager {
   abstract createItem<T>(
     item: Omit<T, '_id'>,
     entityClass: new () => T,
-    Types?: object
+    Types: object
   ): Promise<IdWrapper | ErrorResponse>;
 
   abstract getItems<T>(
     filters: object,
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
     entityClass: new () => T,
-    Types?: object
+    Types: object
   ): Promise<T[] | ErrorResponse>;
 
   abstract getItemById<T>(_id: string, entityClass: new () => T, Types?: object): Promise<T | ErrorResponse>;
@@ -33,20 +33,20 @@ export default abstract class AbstractDbManager {
     fieldName: keyof T,
     fieldValue: T[keyof T],
     entityClass: Function,
-    Types?: object
+    Types: object
   ): Promise<T | ErrorResponse>;
 
   abstract getItemsBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
     entityClass: Function,
-    Types?: object
+    Types: object
   ): Promise<T[] | ErrorResponse>;
 
   abstract updateItem<T extends { _id?: string; id?: string }>(
     { _id, ...restOfItem }: T,
     entityClass: Function,
-    Types?: object
+    Types: object
   ): Promise<void | ErrorResponse>;
 
   abstract deleteItemById(_id: string, entityClass: Function): Promise<void | ErrorResponse>;
