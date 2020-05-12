@@ -89,6 +89,8 @@ function getSampleArg(
       sampleArg[propertyName] = `{{${serviceEntityName}Id}}`;
     } else if (propertyName.endsWith('Id')) {
       sampleArg[propertyName] = `{{${propertyName}}}`;
+    } else if (propertyName === 'id') {
+      sampleArg[propertyName] = '123';
     } else if (finalPropertyTypeName.startsWith('integer')) {
       sampleArg[propertyName] =
         defaultValue === undefined ? (isUpdate ? 1234 : 123) : JSON.parse(defaultValue);
@@ -145,7 +147,7 @@ function getReturnValueTests(
   let javascriptLines =
     responsePath === '[0].' || responsePath === '.' ? ['const response = pm.response.json();'] : [];
 
-  Object.entries(returnValueMetadata).map(([propertyName, propertyTypeName]) => {
+  Object.entries(returnValueMetadata).forEach(([propertyName, propertyTypeName]) => {
     const isOptionalProperty = propertyTypeName.startsWith('?') || isOptional;
     const isArray = propertyTypeName.endsWith('[]');
     let finalPropertyTypeName = propertyTypeName;

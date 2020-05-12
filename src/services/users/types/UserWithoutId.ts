@@ -15,5 +15,7 @@ export default class UserWithoutId {
   city!: string;
   defaultPaymentMethod!: DefaultPaymentMethod;
   paymentMethods!: PaymentMethod[];
+
+  @TestValue('123')
   favoriteSalesItemIds!: string[];
 }

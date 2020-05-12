@@ -82,6 +82,11 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     Types: object
   ): Promise<IdWrapper | ErrorResponse> {
     const entityMetadata = getTypeMetadata(entityClass as any);
+    Object.keys(item)
+      .filter((itemKey) => itemKey.endsWith('Id'))
+      .forEach((itemKey) => {
+        entityMetadata[itemKey] = 'integer';
+      });
     const columns: any = [];
     const values: any = [];
 
@@ -96,28 +101,29 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       if (
         !isArray &&
-        (baseFieldTypeName[0] !== baseFieldTypeName[0].toUpperCase() || baseFieldTypeName[0] === '(')
+        (baseFieldTypeName[0] !== baseFieldTypeName[0].toUpperCase() || baseFieldTypeName[0] === '(') &&
+        fieldName !== '_id'
       ) {
         columns.push(fieldName);
-        values.push((item as any)[fieldName]);
+        if (fieldName === 'id' || fieldName.endsWith('Id')) {
+          values.push(parseInt((item as any)[fieldName], 10));
+        } else {
+          values.push((item as any)[fieldName]);
+        }
       }
     });
 
-    const sqlColumns = Object.keys(columns).map(
-      (fieldName, index) => fieldName + (index === Object.keys(item).length - 1 ? '' : ', ')
-    );
-
-    const sqlValuePlaceholders = Object.keys(columns).map(
-      (_, index) => `${index + 1}` + (index === Object.keys(item).length - 1 ? '' : ', ')
-    );
-
+    const sqlColumns = columns.map((fieldName: any) => fieldName).join(', ');
+    const sqlValuePlaceholders = columns.map((_: any, index: number) => `$${index + 1}`).join(', ');
     let _id: string;
+    const getIdSqlStatement = Object.keys(entityMetadata).includes('_id') ? 'RETURNING _id' : '';
+
     try {
       const result = await this.executeQuery(
-        `INSERT INTO ${this.schema}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) RETURNING _id`,
+        `INSERT INTO ${this.schema}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`,
         values
       );
-      _id = result.rows[0]._id.toString();
+      _id = result.rows[0]?._id?.toString();
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -153,7 +159,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       } else if (isArray) {
         await asyncForEach((item as any)[fieldName], async (subItem: any) => {
           const insertStatement = `INSERT INTO ${this.schema}.${entityClass.name +
-            fieldName.slice(0, -1)} (${idFieldName}, ${fieldName}) VALUES($1, $2)`;
+            fieldName.slice(0, -1)} (${idFieldName}, ${fieldName.slice(0, -1)}) VALUES($1, $2)`;
           await this.executeSql(insertStatement, [_id, subItem]);
         });
       }
@@ -171,7 +177,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     Types: object
   ): Promise<T[]> {
     try {
-      const columns = this.getProjection(projection, entityClass.name);
+      const columns = this.getProjection(projection, entityClass, Types);
       const whereStatement = this.getWhereStatement(filters);
       const processedFilters = this.getProcessedFilters(filters);
       const joinStatement = this.getJoinStatement(entityClass, Types);
@@ -192,7 +198,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       const result = await this.executeQueryWithConfig(
         pg(
-          `SELECT ${columns} FROM ${this.schema}.${entityClass.name} ${joinStatement} ${whereStatement} 
+          `SELECT ${columns} FROM ${this.schema}.${entityClass.name} AS ${entityClass.name} ${joinStatement} ${whereStatement} 
             ${sortStatement} ${limitAndOffsetStatement}`
         )(processedFilters)
       );
@@ -210,7 +216,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
     try {
       result = await this.executeQuery(
-        `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id = $1`,
+        `SELECT * FROM ${this.schema}.${entityClass.name} AS ${entityClass.name} ${joinStatement} WHERE _id = $1`,
         [_id]
       );
     } catch (error) {
@@ -230,11 +236,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     let result;
 
     try {
-      const idPlaceholders = _ids.map(
-        (id, index) => `$${index + 1}` + (index === _ids.length - 1 ? '' : ', ')
-      );
+      const idPlaceholders = _ids.map((_, index) => `$${index + 1}`).join(', ');
+
       result = await this.executeQuery(
-        `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id IN ${idPlaceholders}`,
+        `SELECT * FROM ${this.schema}.${entityClass.name} AS ${entityClass.name} ${joinStatement} WHERE _id IN (${idPlaceholders})`,
         [_ids]
       );
     } catch (error) {
@@ -260,7 +265,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
     try {
       result = await this.executeQuery(
-        `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
+        `SELECT * FROM ${this.schema}.${entityClass.name} AS ${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
         [fieldValue]
       );
     } catch (error) {
@@ -272,6 +277,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
 
     const resultMaps = this.createResultMaps(entityClass, Types);
+    console.log(result.rows);
     return joinjs.map(result.rows, resultMaps, entityClass.name + 'Map', entityClass.name + '.');
   }
 
@@ -286,7 +292,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
     try {
       result = await this.executeQuery(
-        `SELECT * FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
+        `SELECT * FROM ${this.schema}.${entityClass.name} AS ${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
         [fieldValue]
       );
     } catch (error) {
@@ -348,10 +354,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     });
 
     try {
-      const setStatements = Object.keys(columns).map(
-        (fieldName, index) =>
-          fieldName + ' = $${index + 2}' + (index === Object.keys(columns).length - 1 ? '' : ', ')
-      );
+      const setStatements = Object.keys(columns)
+        .map((fieldName, index) => fieldName + ' = $${index + 2}')
+        .join(', ');
 
       const idFieldName = _id === undefined ? 'id' : '_id';
       await this.executeSql(
@@ -390,7 +395,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
       async (joinSpec: JoinSpec) => {
         try {
-          await this.executeSql(`DELETE FROM ${this.schema}.${joinSpec.joinTableName}`);
+          await this.executeSql(`DELETE FROM ${this.schema}.${joinSpec.joinTableName} `);
         } catch (error) {
           throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -398,24 +403,81 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     );
 
     try {
-      await this.execute((pool: Pool) => {
-        return pool.query(`DELETE FROM ${this.schema}.${entityClass.name}`);
-      });
+      await this.executeSql(`DELETE FROM ${this.schema}.${entityClass.name}`);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  private getProjection({ includeResponseFields }: Projection, tableName: string) {
+  private getProjection({ includeResponseFields }: Projection, entityClass: Function, Types: object) {
+    let projection;
+
     if (includeResponseFields && includeResponseFields.length > 0) {
-      return includeResponseFields.map(
-        (fieldName, index) =>
-          (fieldName.includes('.') ? fieldName : `${tableName}.${fieldName}`) +
-          (index === includeResponseFields.length - 1 ? '' : ', ')
-      );
+      const allFields: string[] = [];
+      this.getFieldsForEntity(allFields, entityClass as any, Types);
+      const allFieldsStr = allFields.join(', ');
+
+      projection = includeResponseFields
+        .filter((includeResponseFieldName) =>
+          allFieldsStr.includes(
+            includeResponseFieldName.includes('.')
+              ? includeResponseFieldName.replace('.', '_')
+              : `${entityClass.name}_${includeResponseFieldName}`
+          )
+        )
+        .map((includeResponseFieldName) =>
+          includeResponseFieldName.includes('.')
+            ? this.schema +
+              '.' +
+              includeResponseFieldName +
+              ' AS ' +
+              includeResponseFieldName.replace('.', '_')
+            : `${this.schema}.${entityClass.name}.${includeResponseFieldName} AS ${entityClass.name}_${includeResponseFieldName}`
+        )
+        .join(', ');
+    } else {
+      const fields: string[] = [];
+      this.getFieldsForEntity(fields, entityClass as any, Types);
+      projection = fields.join(', ')
     }
 
-    return '*';
+    return projection;
+  }
+
+  private getFieldsForEntity(fields: string[], entityClass: Function, Types: object) {
+    const entityMetadata = getTypeMetadata(entityClass as any);
+
+    Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [string, any]) => {
+      let baseFieldTypeName = fieldTypeName;
+      let isArray = false;
+
+      if (fieldTypeName.endsWith('[]')) {
+        baseFieldTypeName = fieldTypeName.slice(0, -2);
+        isArray = true;
+      }
+
+      if (
+        isArray &&
+        baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+        baseFieldTypeName[0] !== '('
+      ) {
+        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+        this.getFieldsForEntity(fields, (Types as any)[relationEntityName], Types);
+      } else if (
+        baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+        baseFieldTypeName[0] !== '('
+      ) {
+        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+        this.getFieldsForEntity(fields, (Types as any)[relationEntityName], Types);
+      } else if (isArray) {
+        const relationEntityName = entityClass.name + fieldName.slice(0, -1);
+        const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+        fields.push(`${this.schema}.${relationEntityName}.${idFieldName} AS ${relationEntityName}_${idFieldName}`);
+        fields.push(`${this.schema}.${relationEntityName}.${fieldName} AS ${relationEntityName}_${fieldName}`);
+      } else {
+        fields.push(`${this.schema}.${entityClass.name}.${fieldName} AS ${entityClass.name}_${fieldName}`);
+      }
+    });
   }
 
   private getWhereStatement(filters: object) {
@@ -454,14 +516,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   private getJoinStatement(entityClass: Function, Types: object) {
     let joinStatement = '';
 
-    Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]).forEach(
-      (joinSpec: any, index: number) => {
+    if (entityContainer.entityNameToJoinsMap[entityClass.name]) {
+      entityContainer.entityNameToJoinsMap[entityClass.name].forEach((joinSpec, index) => {
         if (index !== 0) {
           joinStatement += ' ';
         }
 
         joinStatement += 'JOIN ';
-        joinStatement += this.schema + '.' + joinSpec.joinTableName;
+        joinStatement += this.schema + '.' + joinSpec.joinTableName + ' AS ' + joinSpec.joinTableName;
         joinStatement += ' ON ';
         joinStatement +=
           this.schema +
@@ -475,8 +537,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           joinSpec.joinTableName +
           '.' +
           joinSpec.joinTableFieldName;
-      }
-    );
+      });
+    }
 
     const entityMetadata = getTypeMetadata(entityClass as any);
 
@@ -502,30 +564,38 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       ) {
         const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
         joinStatement += this.getJoinStatement((Types as any)[relationEntityName], Types);
-      } else if (isArray) {
-        const relationEntityName = entityClass.name + fieldName.slice(0, -1);
-        joinStatement += this.getJoinStatement((Types as any)[relationEntityName], Types);
       }
     });
 
     return joinStatement;
   }
 
-  private createResultMaps(entityClass: Function, Types: object): object[] {
+  private createResultMaps(entityClass: Function, Types: object) {
     const resultMaps: any[] = [];
     this.updateResultMaps(entityClass, Types, resultMaps);
     return resultMaps;
   }
 
-  private updateResultMaps(entityClass: Function, Types: object, resultMaps: any[]) {
-    const entityMetadata = getTypeMetadata(entityClass as any);
+  private updateResultMaps(
+    entityClassOrName: Function | string,
+    Types: object,
+    resultMaps: any[],
+    suppliedEntityMetadata: { [key: string]: string } = {},
+    parentEntityClass?: Function
+  ) {
+    const entityMetadata =
+      typeof entityClassOrName === 'function'
+        ? getTypeMetadata(entityClassOrName as any)
+        : suppliedEntityMetadata;
 
-    const idFieldName = Object.keys(entityMetadata).find(
-      (fieldName) => fieldName === '_id' || fieldName === 'id'
-    );
+    const entityName = typeof entityClassOrName === 'function' ? entityClassOrName.name : entityClassOrName;
+
+    const idFieldName = parentEntityClass
+      ? parentEntityClass.name.charAt(0).toLowerCase() + parentEntityClass.name.slice(1) + 'Id'
+      : Object.keys(entityMetadata).find((fieldName) => fieldName === '_id');
 
     const resultMap = {
-      mapId: entityClass.name + 'Map',
+      mapId: entityName + 'Map',
       idProperty: idFieldName,
       properties: [] as string[],
       collections: [] as object[]
@@ -553,7 +623,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           columnPrefix: relationEntityName + '.'
         });
 
-        this.updateResultMaps((Types as any)[relationEntityName], Types, resultMaps);
+        this.updateResultMaps(
+          (Types as any)[relationEntityName],
+          Types,
+          resultMaps,
+          {},
+          entityClassOrName as Function
+        );
       } else if (
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
         baseFieldTypeName[0] !== '('
@@ -566,9 +642,15 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           columnPrefix: relationEntityName + '.'
         });
 
-        this.updateResultMaps((Types as any)[relationEntityName], Types, resultMaps);
+        this.updateResultMaps(
+          (Types as any)[relationEntityName],
+          Types,
+          resultMaps,
+          {},
+          entityClassOrName as Function
+        );
       } else if (isArray) {
-        const relationEntityName = entityClass.name + fieldName.slice(0, -1);
+        const relationEntityName = entityName + fieldName.slice(0, -1);
 
         resultMap.collections.push({
           name: relationEntityName,
@@ -576,12 +658,25 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           columnPrefix: relationEntityName + '.'
         });
 
-        this.updateResultMaps((Types as any)[relationEntityName], Types, resultMaps);
+        const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
+
+        this.updateResultMaps(
+          relationEntityName,
+          Types,
+          resultMaps,
+          {
+            [idFieldName]: 'integer',
+            [fieldName]: 'integer'
+          },
+          entityClassOrName as Function
+        );
       } else {
-        resultMap.properties.push(fieldName);
+        if (fieldName !== idFieldName && fieldName !== '_id') {
+          resultMap.properties.push(fieldName);
+        }
       }
     });
 
-    resultMaps.push();
+    resultMaps.push(resultMap);
   }
 }

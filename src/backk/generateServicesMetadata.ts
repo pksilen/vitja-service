@@ -1,7 +1,7 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 
-export function getTypeMetadata<T>(typeClass: new () => T): object {
+export function getTypeMetadata<T>(typeClass: new () => T): {  [key: string]: string } {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
   const propNameToIsOptionalMap: { [key: string]: boolean } = {};
   const propNameToPropTypeMap: { [key: string]: string } = {};

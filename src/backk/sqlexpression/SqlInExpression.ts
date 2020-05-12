@@ -1,17 +1,17 @@
-import SqlExpression from "./SqlExpression";
+import SqlExpression from './SqlExpression';
 
 export default class SqlInExpression extends SqlExpression {
   constructor(private fieldName: string, private values: any[]) {
-    super('')
+    super('');
   }
 
   toSqlString(): string {
-    let sqlExpression = 'IN (';
+    const values = this.values
+      .map((_, index) => {
+        this.fieldName + (index + 1).toString();
+      })
+      .join(', ');
 
-    this.values.forEach((_, index) => {
-      sqlExpression += this.fieldName + (index + 1).toString() + (index === this.values.length - 1 ? '' : ', ');
-    });
-
-    return sqlExpression + ')';
+    return 'IN (' + values + ')';
   }
 }
