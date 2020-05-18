@@ -1,13 +1,13 @@
 import { Matches } from 'class-validator';
 import PaymentMethod from './PaymentMethod';
-import { TestValue } from '../../../backk/TestValue';
+import { UseTestValue } from '../../../backk/UseTestValue';
 import DefaultPaymentMethod from "./DefaultPaymentMethod";
 
 export default class UserWithoutId {
   userName!: string;
 
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/)
-  @TestValue('Jepulis0!')
+  @UseTestValue('Jepulis0!')
   password!: string;
 
   streetAddress!: string;
@@ -16,6 +16,6 @@ export default class UserWithoutId {
   defaultPaymentMethod!: DefaultPaymentMethod;
   paymentMethods!: PaymentMethod[];
 
-  @TestValue('123')
+  @UseTestValue('123')
   favoriteSalesItemIds!: string[];
 }

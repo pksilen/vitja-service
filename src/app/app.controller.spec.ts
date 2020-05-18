@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
-import MongodbSalesItemsServiceImpl from '../services/salesitems/MongoDbSalesItemsServiceImpl';
+import SalesItemsServiceImpl from '../services/salesitems/MongoDbSalesItemsServiceImpl';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -8,7 +8,7 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [MongodbSalesItemsServiceImpl],
+      providers: [SalesItemsServiceImpl],
     }).compile();
 
     appController = app.get<AppController>(AppController);

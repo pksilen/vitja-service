@@ -6,9 +6,11 @@ import SalesItemWithoutId from './types/SalesItemWithoutId';
 import UserIdWrapper from '../users/types/UserIdWrapper';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import SalesItemsService from './SalesItemsService';
+import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
+import SqlInExpression from '../../backk/sqlexpression/SqlInExpression';
 
 @Injectable()
-export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
+export default class SalesItemsServiceImpl extends SalesItemsService {
   constructor(private readonly dbManager: AbstractDbManager) {
     super();
   }
@@ -35,8 +37,9 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
     maxPrice,
     ...postQueryOperations
   }: SalesItemsFilters): Promise<Array<Partial<SalesItem>> | ErrorResponse> {
-    return await this.dbManager.getItems(
-      {
+    let filters;
+    if (this.dbManager instanceof MongoDbManager) {
+      filters = {
         ...(textFilter
           ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
           : {}),
@@ -52,10 +55,22 @@ export default class MongodbSalesItemsServiceImpl extends SalesItemsService {
               ]
             }
           : {})
-      },
-      postQueryOperations,
-      SalesItem, this.Types
-    );
+      };
+    } else {
+      filters = {
+        textFilter: ['title LIKE :textFilter OR description LIKE :textFilter', { textFilter }],
+        areas: new SqlInExpression(areas),
+        productDepartments: new SqlInExpression(productDepartments),
+        productCategories: new SqlInExpression(productCategories),
+        productSubCategories: new SqlInExpression(productSubCategories),
+        priceRange: [
+          'price >= :minPrice AND price <= :maxPrice',
+          { minPrice: minPrice || 0, maxPrice: maxPrice || Number.MAX_SAFE_INTEGER }
+        ]
+      };
+    }
+
+    return await this.dbManager.getItems(filters, postQueryOperations, SalesItem, this.Types);
   }
 
   async getSalesItemsByUserId({ userId }: UserIdWrapper): Promise<SalesItem[] | ErrorResponse> {

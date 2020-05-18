@@ -7,7 +7,7 @@ import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export default class MongoDbUsersServiceImpl extends UsersService {
+export default class UsersServiceImpl extends UsersService {
   constructor(private readonly abstractDbManager: AbstractDbManager) {
     super();
   }

@@ -7,7 +7,7 @@ import ShoppingCart from "./types/ShoppingCart";
 import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 
 @Injectable()
-export default class MongoDbShoppingCartServiceImpl extends ShoppingCartService {
+export default class ShoppingCartServiceImpl extends ShoppingCartService {
   constructor(private readonly dbManager: AbstractDbManager) {
     super();
   }

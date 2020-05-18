@@ -521,21 +521,15 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   private getWhereStatement(filters: object) {
-    let whereStatement = 'WHERE ';
-
-    Object.entries(filters).forEach(([fieldName, filter], index) => {
-      if (filter instanceof SqlExpression) {
-        whereStatement += filter.toSqlString();
-      } else {
-        whereStatement += fieldName + ' = ' + `:${fieldName}`;
-      }
-
-      if (index !== Object.keys(filters).length - 1) {
-        whereStatement += ' AND ';
-      }
-    });
-
-    return whereStatement;
+    return Object.entries(filters)
+      .filter(([, filter]) => filter)
+      .map(([fieldName, filter]) => {
+        if (filter instanceof SqlExpression) {
+          return filter.toSqlString();
+        }
+        return fieldName + ' = ' + `:${fieldName}`;
+      })
+      .join(' AND ');
   }
 
   private getProcessedFilters(filters: object) {

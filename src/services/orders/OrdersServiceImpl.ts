@@ -7,7 +7,7 @@ import UserIdWrapper from '../users/types/UserIdWrapper';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 
 @Injectable()
-export default class MongoDbOrdersServiceImpl extends OrdersService {
+export default class OrdersServiceImpl extends OrdersService {
   constructor(private readonly dbManager: AbstractDbManager) {
     super();
   }
