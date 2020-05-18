@@ -177,6 +177,8 @@ function getReturnValueTests(
       expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
     } else if (propertyName.endsWith('Id')) {
       expectedValue = `pm.collectionVariables.get('${propertyName}')`;
+    } else if (propertyName === 'id') {
+      expectedValue = "'123'";
     } else {
       switch (finalPropertyTypeName) {
         case 'string':
