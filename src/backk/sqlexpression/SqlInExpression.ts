@@ -1,8 +1,8 @@
 import SqlExpression from './SqlExpression';
 
 export default class SqlInExpression extends SqlExpression {
-  constructor(private values?: any[]) {
-    super('');
+  constructor(readonly values?: any[]) {
+    super();
   }
 
   toSqlString(fieldName: string): string {

@@ -1,7 +1,3 @@
-export default class SqlExpression {
-  constructor(private sqlExpression: string) {}
-
-  toSqlString(fieldName: string): string {
-    return this.sqlExpression;
-  }
+export default abstract class SqlExpression {
+  abstract toSqlString(fieldName: string): string;
 }
