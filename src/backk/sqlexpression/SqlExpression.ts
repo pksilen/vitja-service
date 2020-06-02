@@ -1,3 +1,3 @@
 export default abstract class SqlExpression {
-  abstract toSqlString(fieldName: string): string;
+  abstract toSqlString(schema: string, entityName: string, fieldName: string): string;
 }

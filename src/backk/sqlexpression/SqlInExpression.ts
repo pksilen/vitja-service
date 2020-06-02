@@ -1,16 +1,24 @@
 import SqlExpression from './SqlExpression';
 
 export default class SqlInExpression extends SqlExpression {
-  constructor(readonly values?: any[]) {
+  constructor(readonly inExpressionValues?: any[]) {
     super();
   }
 
-  toSqlString(fieldName: string): string {
-    if (!this.values) {
+  toSqlString(schema: string, entityName: string, fieldName: string): string {
+    if (!this.inExpressionValues) {
       return '';
     }
 
-    const values = this.values.map((_, index) => ':' + fieldName + (index + 1).toString()).join(', ');
-    return fieldName + ' IN (' + values + ')';
+    const values = this.inExpressionValues
+      .map((_, index) => ':' + fieldName + (index + 1).toString())
+      .join(', ');
+
+    return (
+      (fieldName.includes('.') ? fieldName : schema + '.' + entityName + '.' + fieldName) +
+      ' IN (' +
+      values +
+      ')'
+    );
   }
 }

@@ -11,7 +11,7 @@ import { getTypeMetadata } from '../generateServicesMetadata';
 import asyncForEach from '../asyncForEach';
 import entityContainer, { JoinSpec } from '../entityContainer';
 import AbstractDbManager, { Field } from './AbstractDbManager';
-import SqlInExpression from "../sqlexpression/SqlInExpression";
+import SqlInExpression from '../sqlexpression/SqlInExpression';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -179,7 +179,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   ): Promise<T[]> {
     try {
       const columns = this.getProjection(projection, entityClass, Types);
-      const whereStatement = this.getWhereStatement(filters);
+      const whereStatement = this.getWhereStatement(filters, entityClass);
       const filterValues = this.getFilterValues(filters);
       const joinStatement = this.getJoinStatement(entityClass, Types);
 
@@ -521,37 +521,42 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     });
   }
 
-  private getWhereStatement(filters: object) {
-    return Object.entries(filters)
-      .filter(([, filter]) => filter)
-      .map(([filterName, filter]) => {
-        if (filter instanceof SqlExpression) {
-          return filter.toSqlString(filterName);
-        } else if (Array.isArray(filter)) {
-          return filter[0];
-        }
+  private getWhereStatement(filters: object, entityClass: Function) {
+    return (
+      'WHERE ' +
+      Object.entries(filters)
+        .filter(([, filter]) => filter)
+        .map(([filterName, filter]) => {
+          if (filter instanceof SqlExpression) {
+            return filter.toSqlString(this.schema, entityClass.name, filterName);
+          } else if (Array.isArray(filter)) {
+            return filter[0];
+          }
 
-        return filterName + ' = ' + `:${filterName}`;
-      })
-      .join(' AND ');
+          return filterName + ' = ' + `:${filterName}`;
+        })
+        .join(' AND ')
+    );
   }
 
   private getFilterValues(filters: object) {
     const filterValues: { [key: string]: any } = {};
 
     Object.entries(filters).forEach(([filterName, filter]) => {
-      if (filter instanceof SqlInExpression) {
-
-      }
-      if (Array.isArray(filter)) {
-        value.forEach((v, index) => {
-          filterValues[`${fieldName}${index + 1}`] = v;
+      if (filter instanceof SqlInExpression && filter.inExpressionValues) {
+        filter.inExpressionValues.forEach((value, index) => {
+          filterValues[`${filterName}${index + 1}`] = value;
+        });
+      } else if (Array.isArray(filter)) {
+        Object.entries(filter[1]).forEach(([fieldName, value]) => {
+          filterValues[fieldName] = value;
         });
       } else {
         filterValues[filterName] = filter;
       }
     });
-    return processedFilters;
+
+    return filterValues;
   }
 
   private getJoinStatement(entityClass: Function, Types: object) {

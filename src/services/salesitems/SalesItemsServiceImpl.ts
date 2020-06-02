@@ -38,6 +38,8 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     ...postQueryOperations
   }: SalesItemsFilters): Promise<Array<Partial<SalesItem>> | ErrorResponse> {
     let filters;
+    const schema = this.dbManager.schema;
+
     if (this.dbManager instanceof MongoDbManager) {
       filters = {
         ...(textFilter
@@ -58,13 +60,13 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       };
     } else {
       filters = {
-        textFilter: ['title LIKE :textFilter OR description LIKE :textFilter', { textFilter }],
-        areas: new SqlInExpression(areas),
-        productDepartments: new SqlInExpression(productDepartments),
-        productCategories: new SqlInExpression(productCategories),
-        productSubCategories: new SqlInExpression(productSubCategories),
+        textFilter: [`${schema}.SalesItem.title LIKE :textFilter OR ${schema}.SalesItem.description LIKE :textFilter`, { textFilter }],
+        area: new SqlInExpression(areas),
+        productDepartment: new SqlInExpression(productDepartments),
+        productCategory: new SqlInExpression(productCategories),
+        productSubCategory: new SqlInExpression(productSubCategories),
         priceRange: [
-          'price >= :minPrice AND price <= :maxPrice',
+          `${schema}.SalesItem.price >= :minPrice AND ${schema}.SalesItem.price <= :maxPrice`,
           { minPrice: minPrice || 0, maxPrice: maxPrice || Number.MAX_SAFE_INTEGER }
         ]
       };
