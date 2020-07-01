@@ -187,7 +187,12 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       if (sortBy && sortDirection) {
         assertIsColumnName('sortBy', sortBy);
         assertIsSortDirection(sortDirection);
-        sortStatement = `ORDER BY ${sortBy} ${sortDirection}`;
+
+        const sortColumn = sortBy.includes('.')
+          ? sortBy
+          : this.schema + '.' + entityClass.name + '.' + sortBy;
+
+        sortStatement = `ORDER BY ${sortColumn} ${sortDirection}`;
       }
 
       let limitAndOffsetStatement = '';
