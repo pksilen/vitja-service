@@ -209,13 +209,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         )(filterValues)
       );
 
-      const resultMaps = this.createResultMaps(entityClass, Types);
+      const resultMaps = this.createResultMaps(entityClass, Types, projection);
       const rows = joinjs.map(
         result.rows,
         resultMaps,
         entityClass.name + 'Map',
         entityClass.name.toLowerCase() + '_'
       );
+      console.log(rows);
       this.transformResults(rows, entityClass, Types);
       return rows;
     } catch (error) {
@@ -652,16 +653,16 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
 
         this.transformResult(result[fieldName], (Types as any)[relationEntityName], Types);
-      } else if (isArray) {
+      } else if (isArray && result[fieldName]) {
         const singularFieldName = fieldName.slice(0, -1);
         result[fieldName] = result[fieldName].map((obj: any) => obj[singularFieldName]);
       }
-    });
+    }); 
   }
 
-  private createResultMaps(entityClass: Function, Types: object) {
+  private createResultMaps(entityClass: Function, Types: object, projection?: Projection) {
     const resultMaps: any[] = [];
-    this.updateResultMaps(entityClass, Types, resultMaps);
+    this.updateResultMaps(entityClass, Types, resultMaps, projection);
     return resultMaps;
   }
 
@@ -669,6 +670,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClassOrName: Function | string,
     Types: object,
     resultMaps: any[],
+    projection?: Projection,
     suppliedEntityMetadata: { [key: string]: string } = {},
     parentEntityClass?: Function
   ) {
@@ -705,58 +707,67 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
         baseFieldTypeName[0] !== '('
       ) {
-        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+        if (!projection || projection.includeResponseFields?.includes(fieldName)) {
+          const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
 
-        resultMap.collections.push({
-          name: fieldName,
-          mapId: relationEntityName + 'Map',
-          columnPrefix: relationEntityName.toLowerCase() + '_'
-        });
+          resultMap.collections.push({
+            name: fieldName,
+            mapId: relationEntityName + 'Map',
+            columnPrefix: relationEntityName.toLowerCase() + '_'
+          });
 
-        this.updateResultMaps(
-          (Types as any)[relationEntityName],
-          Types,
-          resultMaps,
-          {},
-          entityClassOrName as Function
-        );
+          this.updateResultMaps(
+            (Types as any)[relationEntityName],
+            Types,
+            resultMaps,
+            projection,
+            {},
+            entityClassOrName as Function
+          );
+        }
       } else if (
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
         baseFieldTypeName[0] !== '('
       ) {
-        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+        if (!projection || projection.includeResponseFields?.includes(fieldName)) {
+          const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
 
-        resultMap.associations.push({
-          name: fieldName,
-          mapId: relationEntityName + 'Map',
-          columnPrefix: relationEntityName.toLowerCase() + '_'
-        });
+          resultMap.associations.push({
+            name: fieldName,
+            mapId: relationEntityName + 'Map',
+            columnPrefix: relationEntityName.toLowerCase() + '_'
+          });
 
-        this.updateResultMaps(
-          (Types as any)[relationEntityName],
-          Types,
-          resultMaps,
-          {},
-          entityClassOrName as Function
-        );
+          this.updateResultMaps(
+            (Types as any)[relationEntityName],
+            Types,
+            resultMaps,
+            projection,
+            {},
+            entityClassOrName as Function
+          );
+        }
       } else if (isArray) {
-        const relationEntityName = entityName + fieldName.slice(0, -1);
+        if (!projection || projection.includeResponseFields?.includes(fieldName)) {
+          const relationEntityName = entityName + fieldName.slice(0, -1);
 
-        resultMap.collections.push({
-          name: fieldName,
-          mapId: relationEntityName + 'Map',
-          columnPrefix: relationEntityName.toLowerCase() + '_'
-        });
+          resultMap.collections.push({
+            name: fieldName,
+            mapId: relationEntityName + 'Map',
+            columnPrefix: relationEntityName.toLowerCase() + '_'
+          });
 
-        this.updateResultMaps(
-          relationEntityName,
-          Types,
-          resultMaps,
-          {
-            [fieldName.slice(0, -1)]: 'integer'
-          },
-          entityClassOrName as Function
-        );
+          this.updateResultMaps(
+            relationEntityName,
+            Types,
+            resultMaps,
+            projection,
+            {
+              [fieldName.slice(0, -1)]: 'integer'
+            },
+            entityClassOrName as Function
+          );
+        }
       } else {
         if (fieldName !== idFieldName && fieldName !== '_id') {
           resultMap.properties.push({ name: fieldName, column: fieldName.toLowerCase() });
