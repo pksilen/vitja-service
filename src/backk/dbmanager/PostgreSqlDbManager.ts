@@ -216,11 +216,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name + 'Map',
         entityClass.name.toLowerCase() + '_'
       );
-      console.log(rows);
       this.transformResults(rows, entityClass, Types);
       return rows;
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      console.log(error);
+      throw new HttpException(
+        { status: HttpStatus.INTERNAL_SERVER_ERROR, message: error.message, stackTrace: error.stack },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
@@ -657,7 +660,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         const singularFieldName = fieldName.slice(0, -1);
         result[fieldName] = result[fieldName].map((obj: any) => obj[singularFieldName]);
       }
-    }); 
+    });
   }
 
   private createResultMaps(entityClass: Function, Types: object, projection?: Projection) {
