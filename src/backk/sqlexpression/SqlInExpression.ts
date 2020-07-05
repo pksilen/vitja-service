@@ -1,21 +1,39 @@
 import SqlExpression from './SqlExpression';
 
 export default class SqlInExpression extends SqlExpression {
-  constructor(readonly inExpressionValues?: any[]) {
-    super();
+  constructor(readonly fieldName: string, readonly inExpressionValues?: any[]) {
+    super('', {});
   }
 
-  toSqlString(schema: string, entityName: string, fieldName: string): string {
+  getValues(): object {
+    if (this.inExpressionValues) {
+      return this.inExpressionValues.reduce(
+        (filterValues, value, index) => ({
+          ...filterValues,
+          [`${this.fieldName}${index + 1}`]: value
+        }),
+        {}
+      );
+    }
+
+    return {};
+  }
+
+  hasValues(): boolean {
+    return this.inExpressionValues !== undefined && this.inExpressionValues.length > 0;
+  }
+
+  toSqlString(schema: string, entityName: string): string {
     if (!this.inExpressionValues) {
       return '';
     }
 
     const values = this.inExpressionValues
-      .map((_, index) => ':' + fieldName + (index + 1).toString())
+      .map((_, index) => ':' + this.fieldName + (index + 1).toString())
       .join(', ');
 
     return (
-      (fieldName.includes('.') ? fieldName : schema + '.' + entityName + '.' + fieldName) +
+      (this.fieldName.includes('.') ? this.fieldName : schema + '.' + entityName + '.' + this.fieldName) +
       ' IN (' +
       values +
       ')'

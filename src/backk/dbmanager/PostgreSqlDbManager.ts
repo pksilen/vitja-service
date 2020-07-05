@@ -11,7 +11,6 @@ import { getTypeMetadata } from '../generateServicesMetadata';
 import asyncForEach from '../asyncForEach';
 import entityContainer, { JoinSpec } from '../entityContainer';
 import AbstractDbManager, { Field } from './AbstractDbManager';
-import SqlInExpression from '../sqlexpression/SqlInExpression';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -172,7 +171,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async getItems<T>(
-    filters: object,
+    filters: SqlExpression[],
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
     entityClass: Function,
     Types: object
@@ -204,8 +203,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       const result = await this.executeQueryWithConfig(
         pg(
-          `SELECT ${columns} FROM ${this.schema}.${entityClass.name} ${joinStatement} ${whereStatement} 
-            ${sortStatement} ${limitAndOffsetStatement}`
+          `SELECT ${columns} FROM ${this.schema}.${entityClass.name} ${joinStatement} ${whereStatement} ${sortStatement} ${limitAndOffsetStatement}`
         )(filterValues)
       );
 
@@ -235,7 +233,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     try {
       result = await this.executeQuery(
         `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id = $1`,
-        [_id]
+        [parseInt(_id, 10)]
       );
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -253,20 +251,21 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       entityClass.name.toLowerCase() + '_'
     );
     this.transformResults(rows, entityClass, Types);
-    return rows;
+    return rows[0];
   }
 
   async getItemsByIds<T>(_ids: string[], entityClass: Function, Types: object): Promise<T[] | ErrorResponse> {
     const sqlColumns = this.getProjection({}, entityClass, Types);
     const joinStatement = this.getJoinStatement(entityClass, Types);
     let result;
+    const numericIds = _ids.map((id) => parseInt(id, 10));
 
     try {
       const idPlaceholders = _ids.map((_, index) => `$${index + 1}`).join(', ');
 
       result = await this.executeQuery(
         `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id IN (${idPlaceholders})`,
-        [_ids]
+        numericIds
       );
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -530,42 +529,21 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     });
   }
 
-  private getWhereStatement(filters: object, entityClass: Function) {
+  private getWhereStatement(filters: SqlExpression[], entityClass: Function) {
     return (
       'WHERE ' +
-      Object.entries(filters)
-        .filter(([, filter]) => filter)
-        .map(([filterName, filter]) => {
-          if (filter instanceof SqlExpression) {
-            return filter.toSqlString(this.schema, entityClass.name, filterName);
-          } else if (Array.isArray(filter)) {
-            return filter[0];
-          }
-
-          return filterName + ' = ' + `:${filterName}`;
-        })
+      filters
+        .filter((sqlExpression) => sqlExpression.hasValues())
+        .map((sqlExpression) => sqlExpression.toSqlString(this.schema, entityClass.name))
         .join(' AND ')
     );
   }
 
-  private getFilterValues(filters: object) {
-    const filterValues: { [key: string]: any } = {};
-
-    Object.entries(filters).forEach(([filterName, filter]) => {
-      if (filter instanceof SqlInExpression && filter.inExpressionValues) {
-        filter.inExpressionValues.forEach((value, index) => {
-          filterValues[`${filterName}${index + 1}`] = value;
-        });
-      } else if (Array.isArray(filter)) {
-        Object.entries(filter[1]).forEach(([fieldName, value]) => {
-          filterValues[fieldName] = value;
-        });
-      } else {
-        filterValues[filterName] = filter;
-      }
-    });
-
-    return filterValues;
+  private getFilterValues(filters: SqlExpression[]) {
+    return filters.reduce(
+      (filterValues, sqlExpression) => ({ ...filterValues, ...sqlExpression.getValues() }),
+      {}
+    );
   }
 
   private getJoinStatement(entityClass: Function, Types: object) {

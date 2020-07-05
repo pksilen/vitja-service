@@ -9,5 +9,5 @@ export class SalesItem extends SalesItemWithoutId {
 
   @IsInt()
   @ExpectTestValueOfType('number')
-  createdTimestampInMillis!: number;
+  createdTimestampInSecs!: number;
 }

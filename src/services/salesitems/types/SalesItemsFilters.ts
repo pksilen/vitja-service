@@ -14,7 +14,7 @@ export default class SalesItemsFilters implements Projection {
   @Min(0)
   maxPrice?: number;
 
-  sortBy: 'price' | 'priceWhenPreviousPrice' | 'createdTimestampInMillis' = 'createdTimestampInMillis';
+  sortBy: 'price' | 'priceWhenPreviousPrice' | 'createdTimestampInSecs' = 'createdTimestampInSecs';
   sortDirection: 'ASC' | 'DESC' = 'DESC';
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];
   excludeResponseFields?: string[] = [];

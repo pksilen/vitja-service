@@ -8,6 +8,7 @@ import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import SalesItemsService from './SalesItemsService';
 import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
 import SqlInExpression from '../../backk/sqlexpression/SqlInExpression';
+import SqlExpression from '../../backk/sqlexpression/SqlExpression';
 
 @Injectable()
 export default class SalesItemsServiceImpl extends SalesItemsService {
@@ -21,7 +22,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
 
   async createSalesItem(salesItemWithoutId: SalesItemWithoutId): Promise<IdWrapper | ErrorResponse> {
     return await this.dbManager.createItem(
-      { ...salesItemWithoutId, createdTimestampInMillis: Date.now() },
+      { ...salesItemWithoutId, createdTimestampInSecs: Math.round(Date.now() / 1000) },
       SalesItem,
       this.Types
     );
@@ -59,17 +60,15 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
           : {})
       };
     } else {
-      filters = {
-        textFilter: [`${schema}.SalesItem.title LIKE :textFilter OR ${schema}.SalesItem.description LIKE :textFilter`, { textFilter }],
-        area: new SqlInExpression(areas),
-        productDepartment: new SqlInExpression(productDepartments),
-        productCategory: new SqlInExpression(productCategories),
-        productSubCategory: new SqlInExpression(productSubCategories),
-        priceRange: [
-          `${schema}.SalesItem.price >= :minPrice AND ${schema}.SalesItem.price <= :maxPrice`,
-          { minPrice: minPrice || 0, maxPrice: maxPrice || Number.MAX_SAFE_INTEGER }
-        ]
-      };
+      filters = [
+        new SqlExpression('title LIKE :textFilter OR description LIKE :textFilter', { textFilter }),
+        new SqlInExpression('area', areas),
+        new SqlInExpression('productDepartment', productDepartments),
+        new SqlInExpression('productCategory', productCategories),
+        new SqlInExpression('productSubCategory', productSubCategories),
+        new SqlExpression('price >= :minPrice', { minPrice }),
+        new SqlExpression('price <= :maxPrice', { maxPrice })
+      ];
     }
 
     return await this.dbManager.getItems(filters, postQueryOperations, SalesItem, this.Types);

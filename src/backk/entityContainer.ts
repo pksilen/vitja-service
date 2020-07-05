@@ -55,7 +55,7 @@ class EntityContainer {
           const fields = await dbManager.executeSql(`SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`);
           if (!fields.find((field) => field.name.toLowerCase() === additionalPropertyName.toLowerCase())) {
             let alterTableStatement = `ALTER TABLE ${dbManager.schema}.${entityName} ADD `;
-            alterTableStatement += additionalPropertyName + ' BIGINT';
+            alterTableStatement += additionalPropertyName + ' INTEGER';
             await dbManager.executeSql(alterTableStatement);
           }
         });
@@ -86,7 +86,7 @@ class EntityContainer {
         else {
           switch (baseFieldTypeName) {
             case 'integer':
-              sqlColumnType = 'BIGINT';
+              sqlColumnType = 'INTEGER';
               break;
             case 'number':
               sqlColumnType = 'DOUBLE PRECISION';
@@ -96,7 +96,7 @@ class EntityContainer {
               break;
             case 'string':
               if (fieldName.endsWith('Id') || fieldName === 'id') {
-                sqlColumnType = 'BIGINT';
+                sqlColumnType = 'INTEGER';
               } else {
                 sqlColumnType = 'VARCHAR';
               }
@@ -111,7 +111,7 @@ class EntityContainer {
           } else if (parseInt(firstEnumValue, 10).toString().length !== firstEnumValue.length) {
             sqlColumnType = 'DOUBLE PRECISION';
           } else {
-            sqlColumnType = 'BIGINT';
+            sqlColumnType = 'INTEGER';
           }
         }
 
@@ -165,7 +165,7 @@ class EntityContainer {
           const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
 
           createAdditionalTableStatement +=
-            idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
+            idFieldName + ' INTEGER, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
 
           await dbManager.executeSql(createAdditionalTableStatement);
 
@@ -209,7 +209,7 @@ class EntityContainer {
 
           switch (baseFieldTypeName) {
             case 'integer':
-              sqlColumnType = 'BIGINT';
+              sqlColumnType = 'INTEGER';
               break;
             case 'number':
               sqlColumnType = 'DOUBLE PRECISION';
@@ -219,7 +219,7 @@ class EntityContainer {
               break;
             case 'string':
               if (fieldName.endsWith('Id') || fieldName === 'id') {
-                sqlColumnType = 'BIGINT';
+                sqlColumnType = 'INTEGER';
               } else {
                 sqlColumnType = 'VARCHAR';
               }
@@ -233,7 +233,7 @@ class EntityContainer {
             } else if (parseInt(firstEnumValue, 10).toString().length !== firstEnumValue.length) {
               sqlColumnType = 'DOUBLE PRECISION';
             } else {
-              sqlColumnType = 'BIGINT';
+              sqlColumnType = 'INTEGER';
             }
           }
 
@@ -285,7 +285,7 @@ class EntityContainer {
               fieldName.slice(0, -1)} (`;
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
             createAdditionalTableStatement +=
-              idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
+              idFieldName + ' INTEGER, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
             await dbManager.executeSql(createAdditionalTableStatement);
 
             const joinSpec = {

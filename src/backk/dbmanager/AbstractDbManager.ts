@@ -1,6 +1,7 @@
 import { ErrorResponse, IdWrapper, PostQueryOperations } from '../Backk';
 import { Pool } from 'pg';
 import { MongoClient } from 'mongodb';
+import SqlExpression from "../sqlexpression/SqlExpression";
 
 export interface Field {
   name: string;
@@ -20,7 +21,7 @@ export default abstract class AbstractDbManager {
   ): Promise<IdWrapper | ErrorResponse>;
 
   abstract getItems<T>(
-    filters: object,
+    filters: object | SqlExpression[],
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
     entityClass: new () => T,
     Types: object
