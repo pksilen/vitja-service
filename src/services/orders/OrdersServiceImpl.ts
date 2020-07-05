@@ -21,7 +21,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   async getOrderById({ _id }: IdWrapper): Promise<Order | ErrorResponse> {
-    return await this.dbManager.getItemById(_id, Order);
+    return await this.dbManager.getItemById(_id, Order, this.Types);
   }
 
   async getOrderByUserId({ userId }: UserIdWrapper): Promise<Order | ErrorResponse> {

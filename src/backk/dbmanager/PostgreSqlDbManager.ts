@@ -1,16 +1,18 @@
-import { Pool, QueryConfig, QueryResult } from 'pg';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { pg } from 'yesql';
+import { notEqual } from "assert";
+import { Pool, QueryConfig, QueryResult } from "pg";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { pg } from "yesql";
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import joinjs from 'join-js';
-import { ErrorResponse, IdWrapper, PostQueryOperations, Projection } from '../Backk';
-import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
-import SqlExpression from '../sqlexpression/SqlExpression';
-import { getTypeMetadata } from '../generateServicesMetadata';
-import asyncForEach from '../asyncForEach';
-import entityContainer, { JoinSpec } from '../entityContainer';
-import AbstractDbManager, { Field } from './AbstractDbManager';
+import joinjs from "join-js";
+import { ErrorResponse, IdWrapper, PostQueryOperations, Projection } from "../Backk";
+import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from "../assert";
+import SqlExpression from "../sqlexpression/SqlExpression";
+import { getTypeMetadata } from "../generateServicesMetadata";
+import asyncForEach from "../asyncForEach";
+import entityContainer, { JoinSpec } from "../entityContainer";
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -530,13 +532,12 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   private getWhereStatement(filters: SqlExpression[], entityClass: Function) {
-    return (
-      'WHERE ' +
-      filters
-        .filter((sqlExpression) => sqlExpression.hasValues())
-        .map((sqlExpression) => sqlExpression.toSqlString(this.schema, entityClass.name))
-        .join(' AND ')
-    );
+    const filtersSql = filters
+      .filter((sqlExpression) => sqlExpression.hasValues())
+      .map((sqlExpression) => sqlExpression.toSqlString(this.schema, entityClass.name))
+      .join(' AND ');
+
+    return filtersSql ? `WHERE ${filtersSql}` : '';
   }
 
   private getFilterValues(filters: SqlExpression[]) {

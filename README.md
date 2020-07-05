@@ -56,6 +56,9 @@ TODO:
     - Geo position/location
     - latitude/longitude
     
+- In sql statement logging remove values part
+- Make Types a mandatory parameter in AbstractDbManager
+    
 TODO NEXT RELEASE:
 - Service aggregation and composition
     - Parallel
