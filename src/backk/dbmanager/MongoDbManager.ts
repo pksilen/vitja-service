@@ -2,7 +2,8 @@ import { MongoClient, ObjectId } from 'mongodb';
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOperations } from '../Backk';
 import { SalesItem } from '../../services/salesitems/types/SalesItem';
-import AbstractDbManager from './AbstractDbManager';
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import throwInternalServerError from "../throwInternalServerError";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -13,23 +14,23 @@ export default class MongoDbManager extends AbstractDbManager {
     this.mongoClient = new MongoClient(uri, { useNewUrlParser: true });
   }
 
-  async execute<T>(dbOperationFunction: (client: MongoClient) => Promise<T>): Promise<T> {
+  async tryExecute<T>(dbOperationFunction: (client: MongoClient) => Promise<T>): Promise<T> {
     try {
       if (!this.mongoClient.isConnected()) {
         await this.mongoClient.connect();
       }
       return await dbOperationFunction(this.mongoClient);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throwInternalServerError(error)
     }
   }
 
-  executeSql<T>(): Promise<import("./AbstractDbManager").Field[]> {
+  tryExecuteSql<T>(): Promise<Field[]> {
     throw new Error("Method not allowed.");
   }
 
   async createItem<T>(item: Omit<T, '_id'>, entityClass: new () => T): Promise<IdWrapper | ErrorResponse> {
-    const writeOperationResult = await this.execute((client) =>
+    const writeOperationResult = await this.tryExecute((client) =>
       client
         .db(this.dbName)
         .collection(entityClass.name.toLowerCase())
@@ -46,7 +47,7 @@ export default class MongoDbManager extends AbstractDbManager {
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
     entityClass: new () => T
   ): Promise<T[] | ErrorResponse> {
-    return await this.execute((client) => {
+    return await this.tryExecute((client) => {
       let cursor = client
         .db(this.dbName)
         .collection<SalesItem>(entityClass.name.toLowerCase())
@@ -66,7 +67,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getItemById<T>(_id: string, entityClass: new () => T): Promise<T | ErrorResponse> {
-    const foundItem = await this.execute((client) =>
+    const foundItem = await this.tryExecute((client) =>
       client
         .db(this.dbName)
         .collection(entityClass.name.toLowerCase())
@@ -81,7 +82,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getItemsByIds<T>(_ids: string[], entityClass: new () => T): Promise<T[] | ErrorResponse> {
-    const foundItems = await this.execute((client) =>
+    const foundItems = await this.tryExecute((client) =>
       client
         .db(this.dbName)
         .collection(entityClass.name.toLowerCase())
@@ -101,7 +102,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entityClass: new () => T
   ): Promise<T | ErrorResponse> {
-    const foundItem = await this.execute((client) =>
+    const foundItem = await this.tryExecute((client) =>
       client
         .db(this.dbName)
         .collection(entityClass.name.toLowerCase())
@@ -120,7 +121,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entityClass: new () => T
   ): Promise<T[] | ErrorResponse> {
-    const foundItem = await this.execute((client) =>
+    const foundItem = await this.tryExecute((client) =>
       client
         .db(this.dbName)
         .collection(entityClass.name.toLowerCase())
@@ -139,7 +140,7 @@ export default class MongoDbManager extends AbstractDbManager {
     { _id, ...restOfItem }: T,
     entityClass: new () => T
   ): Promise<void | ErrorResponse> {
-    const updateOperationResult = await this.execute((client) =>
+    const updateOperationResult = await this.tryExecute((client) =>
       client
         .db(this.dbName)
         .collection(entityClass.name.toLowerCase())
@@ -152,7 +153,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async deleteItemById<T>(_id: string, entityClass: new () => T): Promise<void | ErrorResponse> {
-    const deleteOperationResult = await this.execute((client) =>
+    const deleteOperationResult = await this.tryExecute((client) =>
       client
         .db(this.dbName)
         .collection(entityClass.name.toLowerCase())
@@ -165,7 +166,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
-    await this.execute((client) =>
+    await this.tryExecute((client) =>
       client
         .db(this.dbName)
         .collection(entityClass.name.toLowerCase())

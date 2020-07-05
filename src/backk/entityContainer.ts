@@ -52,11 +52,11 @@ class EntityContainer {
       Object.entries(this.entityNameToAdditionalIdPropertyNamesMap),
       async ([entityName, additionalPropertyNames]: [any, any]) => {
         await asyncForEach(additionalPropertyNames, async (additionalPropertyName: any) => {
-          const fields = await dbManager.executeSql(`SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`);
+          const fields = await dbManager.tryExecuteSql(`SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`);
           if (!fields.find((field) => field.name.toLowerCase() === additionalPropertyName.toLowerCase())) {
             let alterTableStatement = `ALTER TABLE ${dbManager.schema}.${entityName} ADD `;
             alterTableStatement += additionalPropertyName + ' INTEGER';
-            await dbManager.executeSql(alterTableStatement);
+            await dbManager.tryExecuteSql(alterTableStatement);
           }
         });
       }
@@ -64,7 +64,7 @@ class EntityContainer {
   }
 
   private async createTable(dbManager: AbstractDbManager, entityName: string, entityClass: Function, schema: string | undefined) {
-    const fields = dbManager.executeSql(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
+    const fields = dbManager.tryExecuteSql(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
 
     fields.catch(async () => {
       const entityMetadata = getTypeMetadata(entityClass as any);
@@ -167,7 +167,7 @@ class EntityContainer {
           createAdditionalTableStatement +=
             idFieldName + ' INTEGER, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
 
-          await dbManager.executeSql(createAdditionalTableStatement);
+          await dbManager.tryExecuteSql(createAdditionalTableStatement);
 
           const joinSpec = {
             joinTableName: entityName + fieldName.slice(0, -1),
@@ -190,7 +190,7 @@ class EntityContainer {
       });
 
       createTableStatement += ')';
-      await dbManager.executeSql(createTableStatement);
+      await dbManager.tryExecuteSql(createTableStatement);
     });
 
     fields.then(async (fields) => {
@@ -286,7 +286,7 @@ class EntityContainer {
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
             createAdditionalTableStatement +=
               idFieldName + ' INTEGER, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
-            await dbManager.executeSql(createAdditionalTableStatement);
+            await dbManager.tryExecuteSql(createAdditionalTableStatement);
 
             const joinSpec = {
               joinTableName: entityName + fieldName.slice(0, -1),
@@ -300,7 +300,7 @@ class EntityContainer {
             }
           } else {
             alterTableStatement += fieldName + ' ' + sqlColumnType;
-            await dbManager.executeSql(alterTableStatement);
+            await dbManager.tryExecuteSql(alterTableStatement);
           }
         }
       });

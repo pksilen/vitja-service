@@ -79,11 +79,11 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }
 
   async getSalesItemsByIds({ _ids }: IdsWrapper): Promise<SalesItem[] | ErrorResponse> {
-    return await this.dbManager.getItemsByIds(_ids, SalesItem);
+    return await this.dbManager.getItemsByIds(_ids, SalesItem, this.Types);
   }
 
   async getSalesItemById({ _id }: IdWrapper): Promise<SalesItem | ErrorResponse> {
-    return await this.dbManager.getItemById(_id, SalesItem);
+    return await this.dbManager.getItemById(_id, SalesItem, this.Types);
   }
 
   async updateSalesItem(salesItem: SalesItem): Promise<void | ErrorResponse> {

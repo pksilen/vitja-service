@@ -1,12 +1,6 @@
 # Vitja service
 
 TODO:
-- Implement error handling like in Posstgre getItems:
-    console.log(error);
-          throw new HttpException(
-            { status: HttpStatus.INTERNAL_SERVER_ERROR, message: error.message, stackTrace: error.stack },
-            HttpStatus.INTERNAL_SERVER_ERROR
-          );
 - DTO mapping
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
 - All array returning functions' input parameters must extend from Paging
@@ -57,7 +51,6 @@ TODO:
     - latitude/longitude
     
 - In sql statement logging remove values part
-- Make Types a mandatory parameter in AbstractDbManager
     
 TODO NEXT RELEASE:
 - Service aggregation and composition

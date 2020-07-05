@@ -20,6 +20,7 @@ export class IdsWrapper {
 export type ErrorResponse = {
   statusCode: number;
   message: string;
+  stackTrace?: string;
 };
 
 export interface Projection {

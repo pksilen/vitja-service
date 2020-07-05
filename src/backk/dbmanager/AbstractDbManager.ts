@@ -11,8 +11,8 @@ export default abstract class AbstractDbManager {
   readonly dbName?: string;
   readonly schema?: string;
 
-  abstract execute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T>;
-  abstract executeSql<T>(sqlStatement: string): Promise<Field[]>;
+  abstract tryExecute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T>;
+  abstract tryExecuteSql<T>(sqlStatement: string): Promise<Field[]>;
 
   abstract createItem<T>(
     item: Omit<T, '_id'>,
@@ -27,8 +27,8 @@ export default abstract class AbstractDbManager {
     Types: object
   ): Promise<T[] | ErrorResponse>;
 
-  abstract getItemById<T>(_id: string, entityClass: new () => T, Types?: object): Promise<T | ErrorResponse>;
-  abstract getItemsByIds<T>(_ids: string[], entityClass: Function, Types?: object): Promise<T[] | ErrorResponse>;
+  abstract getItemById<T>(_id: string, entityClass: new () => T, Types: object): Promise<T | ErrorResponse>;
+  abstract getItemsByIds<T>(_ids: string[], entityClass: Function, Types: object): Promise<T[] | ErrorResponse>;
 
   abstract getItemBy<T>(
     fieldName: keyof T,
