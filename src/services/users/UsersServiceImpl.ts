@@ -5,6 +5,8 @@ import User from './types/User';
 import UserWithoutId from './types/UserWithoutId';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { Injectable } from '@nestjs/common';
+import UserWithExtraInfo from './types/UserWithExtraInfo';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export default class UsersServiceImpl extends UsersService {
@@ -20,8 +22,16 @@ export default class UsersServiceImpl extends UsersService {
     return await this.abstractDbManager.createItem(userWithoutId, User, this.Types);
   }
 
-  async getUserByUserName(userNameWrapper: UserNameWrapper): Promise<User | ErrorResponse> {
-    return await this.abstractDbManager.getItemBy('userName', userNameWrapper.userName, User, this.Types);
+  async getUserByUserName(userNameWrapper: UserNameWrapper): Promise<UserWithExtraInfo | ErrorResponse> {
+    const user = await this.abstractDbManager.getItemBy(
+      'userName',
+      userNameWrapper.userName,
+      User,
+      this.Types
+    ) as UserWithExtraInfo;
+
+    user.extraInfo = 'Some extra info';
+    return user;
   }
 
   async updateUser(user: User): Promise<void | ErrorResponse> {

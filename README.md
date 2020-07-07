@@ -2,6 +2,9 @@
 
 TODO:
 - DTO mapping
+    - remove properties from return value
+    - add properties to input arg
+    - remove properties to input arg
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
 - All array returning functions' input parameters must extend from Paging
 - PostQueryOperations: Projection, Sorting, Paging
@@ -15,6 +18,7 @@ TODO:
 -AnyRole/Role() annotation
 -AnyUser/User(userFieldName) annotation
 -UserOrRole('userName', 'admin')
+-Give error when unknown service/function is called
 
 - MariaDb/MySql
 - SQL Server

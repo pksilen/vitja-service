@@ -4,6 +4,7 @@ import User from './types/User';
 import UserNameWrapper from './types/UserNameWrapper';
 import UserWithoutId from './types/UserWithoutId';
 import DefaultPaymentMethod from "./types/DefaultPaymentMethod";
+import UserWithExtraInfo from "./types/UserWithExtraInfo";
 
 export default abstract class UsersService {
   readonly Types = {
@@ -12,12 +13,13 @@ export default abstract class UsersService {
     PaymentMethod,
     User,
     UserNameWrapper,
-    UserWithoutId
+    UserWithoutId,
+    UserWithExtraInfo
   };
 
   abstract deleteAllUsers(): Promise<void | ErrorResponse>;
   abstract createUser(userWithoutId: UserWithoutId): Promise<IdWrapper | ErrorResponse>;
-  abstract getUserByUserName(userNameWrapper: UserNameWrapper): Promise<User | ErrorResponse>;
+  abstract getUserByUserName(userNameWrapper: UserNameWrapper): Promise<UserWithExtraInfo | ErrorResponse>;
   abstract updateUser(user: User): Promise<void | ErrorResponse>;
   abstract deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
 }
