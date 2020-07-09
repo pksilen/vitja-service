@@ -58,7 +58,10 @@ export class AppController {
       );
 
       try {
-        await validateOrReject(validatableParamObject as object, { whitelist: true });
+        await validateOrReject(validatableParamObject as object, {
+          whitelist: true,
+          forbidNonWhitelisted: true
+        });
       } catch (validationErrors) {
         const errorStr = this.getValidationErrors(validationErrors);
         throw new HttpException(errorStr, HttpStatus.BAD_REQUEST);

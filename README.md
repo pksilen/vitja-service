@@ -1,10 +1,6 @@
 # Vitja service
 
 TODO:
-- DTO mapping
-    - remove properties from return value
-    - add properties to input arg
-    - remove properties to input arg
 - Refacktoroi ettei service callit heitä poikkeusta vaan palauttaa errorResponsen
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
 - All array returning functions' input parameters must extend from Paging

@@ -16,7 +16,7 @@
         "category": "Clothes"
       }
     ],
-    "testName": "salesItemsService.createSalesItem ({{price}})",
+    "testName": "salesItemsService.createSalesItem (price = {{price}})",
     "serviceName": "salesItemsService",
     "functionName": "createSalesItem",
     "argument": {

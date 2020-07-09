@@ -22,16 +22,22 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   async getUserByUserName(userNameWrapper: UserNameWrapper): Promise<UserResponse | ErrorResponse> {
-    const user = await this.abstractDbManager.getItemBy(
+    const userOrError = await this.abstractDbManager.getItemBy<User>(
       'userName',
       userNameWrapper.userName,
       User,
       this.Types
-    ) as UserResponse;
+    );
 
-    delete user.password;
-    user.extraInfo = 'Some extra info';
-    return user;
+
+    if ('_id' in userOrError) {
+      delete userOrError.password;
+      const userResponse = userOrError as unknown as UserResponse;
+      userResponse.extraInfo = 'Some extra info';
+      return userResponse;
+    }
+
+    return userOrError;
   }
 
   async updateUser(user: User): Promise<void | ErrorResponse> {

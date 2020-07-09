@@ -588,13 +588,24 @@ function writePostmanCollectionExportFile<T>(controller: T) {
                 });
 
                 Object.keys(instantiatedWrittenTest.argument).forEach((argumentKey: string) => {
+                  let isArgumentTemplateReplaced = false;
+
                   Object.entries(templateValueMap).forEach(([key, templateValue]: [string, any]) => {
                     if (argumentKey === `{{${key}[0]}}`) {
                       const argumentValue = instantiatedWrittenTest.argument[argumentKey];
                       delete instantiatedWrittenTest.argument[argumentKey];
                       instantiatedWrittenTest.argument[templateValue[0]] = argumentValue;
+                      isArgumentTemplateReplaced = true;
                     }
                   });
+
+                  if (
+                    !isArgumentTemplateReplaced &&
+                    argumentKey.startsWith('{{') &&
+                    argumentKey.endsWith('}}')
+                  ) {
+                    delete instantiatedWrittenTest.argument[argumentKey];
+                  }
                 });
 
                 items.push(createPostmanCollectionItemFromWrittenTest(instantiatedWrittenTest));

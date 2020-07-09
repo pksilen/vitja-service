@@ -1,11 +1,9 @@
-import User from "./User";
 import { ExpectTestValueOfType } from "../../../backk/ExpectTestValueOfType";
-import { Matches } from "class-validator";
 import { UseTestValue } from "../../../backk/UseTestValue";
 import DefaultPaymentMethod from "./DefaultPaymentMethod";
 import PaymentMethod from "./PaymentMethod";
 
-export default class UserResponse extends User {
+export default class UserResponse {
   _id!: string;
   userName!: string;
   streetAddress!: string;
