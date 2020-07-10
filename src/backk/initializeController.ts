@@ -559,8 +559,8 @@ function writePostmanCollectionExportFile<T>(controller: T) {
         writtenTests
           .filter((writtenTest) => writtenTest.serviceName === serviceMetadata.serviceName)
           .forEach((writtenTest) => {
-            if (writtenTest.templateValues) {
-              writtenTest.templateValues.forEach((templateValueMap: any) => {
+            if (writtenTest.testValues) {
+              writtenTest.testValues.forEach((templateValueMap: any) => {
                 const instantiatedWrittenTest = _.cloneDeepWith(writtenTest, (value: any) => {
                   let newValue = value;
                   Object.entries(templateValueMap).forEach(([key, templateValue]: [string, any]) => {

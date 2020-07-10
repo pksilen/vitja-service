@@ -1,21 +1,5 @@
 [
   {
-    "templateValues": [
-      {
-        "price": 1.0,
-        "title": "firstTitle",
-        "description": "firstDescription",
-        "area": "Area1",
-        "category": "Vehicles"
-      },
-      {
-        "price": 2.0,
-        "title": "secondTitle",
-        "description": "secondDescription",
-        "area": "Area2",
-        "category": "Clothes"
-      }
-    ],
     "testName": "salesItemsService.createSalesItem (price = {{price}})",
     "serviceName": "salesItemsService",
     "functionName": "createSalesItem",
@@ -34,10 +18,47 @@
     },
     "response": {
       "statusCode": 200
-    }
+    },
+    "testValues": [
+      {
+        "price": 1.0,
+        "title": "firstTitle",
+        "description": "firstDescription",
+        "area": "Area1",
+        "category": "Vehicles"
+      },
+      {
+        "price": 2.0,
+        "title": "secondTitle",
+        "description": "secondDescription",
+        "area": "Area2",
+        "category": "Clothes"
+      }
+    ]
   },
   {
-    "templateValues": [
+    "testName": "salesItemsService.getSalesItems ({{argumentProperty1[0]}} = {{argumentProperty1[1]}})",
+    "serviceName": "salesItemsService",
+    "functionName": "getSalesItems",
+    "argument": {
+      "{{argumentProperty1[0]}}": "{{argumentProperty1[1]}}",
+      "{{argumentProperty2[0]}}": "{{argumentProperty2[1]}}",
+      "{{argumentProperty3[0]}}": "{{argumentProperty3[1]}}",
+      "includeResponseFields": []
+    },
+    "response": {
+      "statusCode": 200,
+      "tests": [
+        {
+          "name": "{{responseProperty[0]}} is {{responseProperty[1]}}",
+          "exec": [
+            "pm.expect(response[0].{{responseProperty[0]}}).to.eql({{responseProperty[1]}});",
+            "pm.expect(response.length).to.eql({{responseLength}});"
+          ]
+        }
+      ]
+    },
+    "testValues": [
       {
         "argumentProperty1": ["textFilter", "secondTitle"],
         "responseProperty": ["title", "'secondTitle'"],
@@ -83,29 +104,10 @@
       {
         "argumentProperty1": ["pageNumber", 2],
         "argumentProperty2": ["pageSize", 1],
-        "responseProperty": ["price", "2"],
+        "argumentProperty3": ["sortBy", "price"],
+        "responseProperty": ["price", "1"],
         "responseLength": "1"
       }
-    ],
-    "testName": "salesItemsService.getSalesItems ({{argumentProperty1[0]}} = {{argumentProperty1[1]}})",
-    "serviceName": "salesItemsService",
-    "functionName": "getSalesItems",
-    "argument": {
-      "{{argumentProperty1[0]}}": "{{argumentProperty1[1]}}",
-      "{{argumentProperty2[0]}}": "{{argumentProperty2[1]}}",
-      "includeResponseFields": []
-    },
-    "response": {
-      "statusCode": 200,
-      "tests": [
-        {
-          "name": "{{responseProperty[0]}} is {{responseProperty[1]}}",
-          "exec": [
-            "pm.expect(response[0].{{responseProperty[0]}}).to.eql({{responseProperty[1]}});",
-            "pm.expect(response.length).to.eql({{responseLength}});"
-          ]
-        }
-      ]
-    }
+    ]
   }
 ]
