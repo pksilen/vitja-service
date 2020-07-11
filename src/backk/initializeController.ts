@@ -373,19 +373,21 @@ function createPostmanCollectionItem(
   };
 }
 
-function createPostmanCollectionItemFromWrittenTest(writtenTest: any) {
-  const checkResponseCode = writtenTest.response.statusCode
-    ? `pm.test("Status code is ${writtenTest.response.statusCode} OK", function () {
-  pm.response.to.have.status(${writtenTest.response.statusCode});
+function createPostmanCollectionItemFromWrittenTest({
+  testTemplate: { name, serviceName, functionName, argument, response }
+}: any) {
+  const checkResponseCode = response.statusCode
+    ? `pm.test("Status code is ${response.statusCode} OK", function () {
+  pm.response.to.have.status(${response.statusCode});
 });`
     : '';
 
   return {
-    name: writtenTest.testName,
+    name,
     request: {
       method: 'POST',
       header:
-        writtenTest.argument === undefined
+        argument === undefined
           ? []
           : [
               {
@@ -396,11 +398,11 @@ function createPostmanCollectionItemFromWrittenTest(writtenTest: any) {
               }
             ],
       body:
-        writtenTest.argument === undefined
+        argument === undefined
           ? undefined
           : {
               mode: 'raw',
-              raw: JSON.stringify(writtenTest.argument, null, 4),
+              raw: JSON.stringify(argument, null, 4),
               options: {
                 raw: {
                   language: 'json'
@@ -408,25 +410,25 @@ function createPostmanCollectionItemFromWrittenTest(writtenTest: any) {
               }
             },
       url: {
-        raw: 'http://localhost:3000/' + writtenTest.serviceName + '.' + writtenTest.functionName,
+        raw: 'http://localhost:3000/' + serviceName + '.' + functionName,
         protocol: 'http',
         host: ['localhost'],
         port: '3000',
-        path: [writtenTest.serviceName + '.' + writtenTest.functionName]
+        path: [serviceName + '.' + functionName]
       }
     },
     response: [],
     event: [
       {
-        id: writtenTest.serviceName + '.' + writtenTest.functionName,
+        id: serviceName + '.' + functionName,
         listen: 'test',
         script: {
-          id: writtenTest.serviceName + '.' + writtenTest.functionName,
+          id: serviceName + '.' + functionName,
           exec: [
             checkResponseCode,
             'const response = pm.response.json();',
-            ...(writtenTest.response.tests
-              ? writtenTest.response.tests.map(
+            ...(response.tests
+              ? response.tests.map(
                   (test: any) =>
                     `pm.test("${test.name}", function () {
   ${test.exec.join('\n  ')} 
@@ -557,44 +559,44 @@ function writePostmanCollectionExportFile<T>(controller: T) {
 
       if (index === serviceMetadata.functions.length - 1) {
         writtenTests
-          .filter((writtenTest) => writtenTest.serviceName === serviceMetadata.serviceName)
+          .filter(({ testTemplate: { serviceName } }) => serviceName === serviceMetadata.serviceName)
           .forEach((writtenTest) => {
-            if (writtenTest.testValues) {
-              writtenTest.testValues.forEach((templateValueMap: any) => {
+            if (writtenTest.tests) {
+              writtenTest.tests.forEach((test: any) => {
                 const instantiatedWrittenTest = _.cloneDeepWith(writtenTest, (value: any) => {
                   let newValue = value;
-                  Object.entries(templateValueMap).forEach(([key, templateValue]: [string, any]) => {
-                    if (Array.isArray(templateValue)) {
+                  Object.entries(test.values).forEach(([key, value]: [string, any]) => {
+                    if (Array.isArray(value)) {
                       Array(2)
                         .fill(0)
                         .forEach((_, index) => {
                           if (newValue === `{{${key}[${index}]}}`) {
-                            newValue = templateValue[index];
+                            newValue = value[index];
                           }
                           if (typeof newValue === 'string' && newValue.includes(`{{${key}[${index}]}}`)) {
-                            newValue = newValue.replace(`{{${key}[${index}]}}`, templateValue[index]);
+                            newValue = newValue.replace(`{{${key}[${index}]}}`, value[index]);
                           }
                         });
                     } else {
                       if (newValue === `{{${key}}}`) {
-                        newValue = templateValue;
+                        newValue = value;
                       }
                       if (typeof newValue === 'string' && newValue.includes(`{{${key}}}`)) {
-                        newValue = newValue.replace(`{{${key}}}`, templateValue);
+                        newValue = newValue.replace(`{{${key}}}`, value);
                       }
                     }
                   });
                   return newValue === value ? undefined : newValue;
                 });
 
-                Object.keys(instantiatedWrittenTest.argument).forEach((argumentKey: string) => {
+                Object.keys(instantiatedWrittenTest.testTemplate.argument).forEach((argumentKey: string) => {
                   let isArgumentTemplateReplaced = false;
 
-                  Object.entries(templateValueMap).forEach(([key, templateValue]: [string, any]) => {
+                  Object.entries(test.values).forEach(([key, value]: [string, any]) => {
                     if (argumentKey === `{{${key}[0]}}`) {
-                      const argumentValue = instantiatedWrittenTest.argument[argumentKey];
-                      delete instantiatedWrittenTest.argument[argumentKey];
-                      instantiatedWrittenTest.argument[templateValue[0]] = argumentValue;
+                      const argumentValue = instantiatedWrittenTest.testTemplate.argument[argumentKey];
+                      delete instantiatedWrittenTest.testTemplate.argument[argumentKey];
+                      instantiatedWrittenTest.testTemplate.argument[value[0]] = argumentValue;
                       isArgumentTemplateReplaced = true;
                     }
                   });
@@ -604,9 +606,12 @@ function writePostmanCollectionExportFile<T>(controller: T) {
                     argumentKey.startsWith('{{') &&
                     argumentKey.endsWith('}}')
                   ) {
-                    delete instantiatedWrittenTest.argument[argumentKey];
+                    delete instantiatedWrittenTest.testTemplate.argument[argumentKey];
                   }
                 });
+
+                instantiatedWrittenTest.testTemplate.name =
+                  instantiatedWrittenTest.testTemplate.name + ' (' + test.name + ')';
 
                 items.push(createPostmanCollectionItemFromWrittenTest(instantiatedWrittenTest));
               });
