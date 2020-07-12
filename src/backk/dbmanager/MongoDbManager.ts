@@ -1,9 +1,8 @@
 import { MongoClient, ObjectId } from 'mongodb';
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOperations } from '../Backk';
 import { SalesItem } from '../../services/salesitems/types/SalesItem';
-import AbstractDbManager, { Field } from "./AbstractDbManager";
-import throwInternalServerError from "../throwInternalServerError";
+import AbstractDbManager, { Field } from './AbstractDbManager';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -15,31 +14,36 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async tryExecute<T>(dbOperationFunction: (client: MongoClient) => Promise<T>): Promise<T> {
-    try {
-      if (!this.mongoClient.isConnected()) {
-        await this.mongoClient.connect();
-      }
-      return await dbOperationFunction(this.mongoClient);
-    } catch (error) {
-      throwInternalServerError(error)
+    if (!this.mongoClient.isConnected()) {
+      await this.mongoClient.connect();
     }
+
+    return await dbOperationFunction(this.mongoClient);
   }
 
   tryExecuteSql<T>(): Promise<Field[]> {
-    throw new Error("Method not allowed.");
+    throw new Error('Method not allowed.');
   }
 
   async createItem<T>(item: Omit<T, '_id'>, entityClass: new () => T): Promise<IdWrapper | ErrorResponse> {
-    const writeOperationResult = await this.tryExecute((client) =>
-      client
-        .db(this.dbName)
-        .collection(entityClass.name.toLowerCase())
-        .insertOne(item)
-    );
+    try {
+      const writeOperationResult = await this.tryExecute((client) =>
+        client
+          .db(this.dbName)
+          .collection(entityClass.name.toLowerCase())
+          .insertOne(item)
+      );
 
-    return {
-      _id: writeOperationResult.insertedId.toHexString()
-    };
+      return {
+        _id: writeOperationResult.insertedId.toHexString()
+      };
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        stackTrace: error.stack
+      };
+    }
   }
 
   async getItems<T>(
@@ -47,54 +51,84 @@ export default class MongoDbManager extends AbstractDbManager {
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
     entityClass: new () => T
   ): Promise<T[] | ErrorResponse> {
-    return await this.tryExecute((client) => {
-      let cursor = client
-        .db(this.dbName)
-        .collection<SalesItem>(entityClass.name.toLowerCase())
-        .find<T>(filters)
-        .project(getMongoDbProjection(projection));
+    try {
+      return await this.tryExecute((client) => {
+        let cursor = client
+          .db(this.dbName)
+          .collection<SalesItem>(entityClass.name.toLowerCase())
+          .find<T>(filters)
+          .project(getMongoDbProjection(projection));
 
-      if (sortBy && sortDirection) {
-        cursor = cursor.sort(sortBy, sortDirection === 'ASC' ? 1 : -1);
-      }
+        if (sortBy && sortDirection) {
+          cursor = cursor.sort(sortBy, sortDirection === 'ASC' ? 1 : -1);
+        }
 
-      if (pageNumber && pageSize) {
-        cursor = cursor.skip((pageNumber - 1) * pageSize).limit(pageSize);
-      }
+        if (pageNumber && pageSize) {
+          cursor = cursor.skip((pageNumber - 1) * pageSize).limit(pageSize);
+        }
 
-      return cursor.toArray();
-    });
+        return cursor.toArray();
+      });
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        stackTrace: error.stack
+      };
+    }
   }
 
   async getItemById<T>(_id: string, entityClass: new () => T): Promise<T | ErrorResponse> {
-    const foundItem = await this.tryExecute((client) =>
-      client
-        .db(this.dbName)
-        .collection(entityClass.name.toLowerCase())
-        .findOne<T>({ _id: new ObjectId(_id) })
-    );
+    try {
+      const foundItem = await this.tryExecute((client) =>
+        client
+          .db(this.dbName)
+          .collection(entityClass.name.toLowerCase())
+          .findOne<T>({ _id: new ObjectId(_id) })
+      );
 
-    if (foundItem) {
-      return foundItem;
+      if (foundItem) {
+        return foundItem;
+      }
+
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        errorMessage: `Item with _id: ${_id} not found`
+      };
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        stackTrace: error.stack
+      };
     }
-
-    throw new HttpException(`Item with _id: ${_id} not found`, HttpStatus.NOT_FOUND);
   }
 
   async getItemsByIds<T>(_ids: string[], entityClass: new () => T): Promise<T[] | ErrorResponse> {
-    const foundItems = await this.tryExecute((client) =>
-      client
-        .db(this.dbName)
-        .collection(entityClass.name.toLowerCase())
-        .find<T>({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } })
-        .toArray()
-    );
+    try {
+      const foundItems = await this.tryExecute((client) =>
+        client
+          .db(this.dbName)
+          .collection(entityClass.name.toLowerCase())
+          .find<T>({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } })
+          .toArray()
+      );
 
-    if (foundItems) {
-      return foundItems;
+      if (foundItems) {
+        return foundItems;
+      }
+
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        errorMessage: `Item with _ids: ${_ids} not found`
+      };
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        stackTrace: error.stack
+      };
     }
-
-    throw new HttpException(`Item with _ids: ${_ids} not found`, HttpStatus.NOT_FOUND);
   }
 
   async getItemBy<T>(
@@ -102,18 +136,29 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entityClass: new () => T
   ): Promise<T | ErrorResponse> {
-    const foundItem = await this.tryExecute((client) =>
-      client
-        .db(this.dbName)
-        .collection(entityClass.name.toLowerCase())
-        .findOne<T>({ [fieldName]: fieldValue })
-    );
+    try {
+      const foundItem = await this.tryExecute((client) =>
+        client
+          .db(this.dbName)
+          .collection(entityClass.name.toLowerCase())
+          .findOne<T>({ [fieldName]: fieldValue })
+      );
 
-    if (foundItem) {
-      return foundItem;
+      if (foundItem) {
+        return foundItem;
+      }
+
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        errorMessage: `Item with ${fieldName}: ${fieldValue} not found`
+      };
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        stackTrace: error.stack
+      };
     }
-
-    throw new HttpException(`Item with ${fieldName}: ${fieldValue} not found`, HttpStatus.NOT_FOUND);
   }
 
   async getItemsBy<T>(
@@ -121,56 +166,97 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entityClass: new () => T
   ): Promise<T[] | ErrorResponse> {
-    const foundItem = await this.tryExecute((client) =>
-      client
-        .db(this.dbName)
-        .collection(entityClass.name.toLowerCase())
-        .find<T>({ [fieldName]: fieldValue })
-        .toArray()
-    );
+    try {
+      const foundItem = await this.tryExecute((client) =>
+        client
+          .db(this.dbName)
+          .collection(entityClass.name.toLowerCase())
+          .find<T>({ [fieldName]: fieldValue })
+          .toArray()
+      );
 
-    if (foundItem) {
-      return foundItem;
+      if (foundItem) {
+        return foundItem;
+      }
+
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        errorMessage: `Item with ${fieldName}: ${fieldValue} not found`
+      };
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        stackTrace: error.stack
+      };
     }
-
-    throw new HttpException(`Item with ${fieldName}: ${fieldValue} not found`, HttpStatus.NOT_FOUND);
   }
 
   async updateItem<T extends { _id?: string; id?: string }>(
     { _id, ...restOfItem }: T,
     entityClass: new () => T
   ): Promise<void | ErrorResponse> {
-    const updateOperationResult = await this.tryExecute((client) =>
-      client
-        .db(this.dbName)
-        .collection(entityClass.name.toLowerCase())
-        .updateOne({ _id: new ObjectId(_id) }, { $set: restOfItem })
-    );
+    try {
+      const updateOperationResult = await this.tryExecute((client) =>
+        client
+          .db(this.dbName)
+          .collection(entityClass.name.toLowerCase())
+          .updateOne({ _id: new ObjectId(_id) }, { $set: restOfItem })
+      );
 
-    if (updateOperationResult.matchedCount !== 1) {
-      throw new HttpException(`Item with _id: ${_id} not found`, HttpStatus.NOT_FOUND);
+      if (updateOperationResult.matchedCount !== 1) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          errorMessage: `Item with _id: ${_id} not found`
+        };
+      }
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        stackTrace: error.stack
+      };
     }
   }
 
   async deleteItemById<T>(_id: string, entityClass: new () => T): Promise<void | ErrorResponse> {
-    const deleteOperationResult = await this.tryExecute((client) =>
-      client
-        .db(this.dbName)
-        .collection(entityClass.name.toLowerCase())
-        .deleteOne({ _id: new ObjectId(_id) })
-    );
+    try {
+      const deleteOperationResult = await this.tryExecute((client) =>
+        client
+          .db(this.dbName)
+          .collection(entityClass.name.toLowerCase())
+          .deleteOne({ _id: new ObjectId(_id) })
+      );
 
-    if (deleteOperationResult.deletedCount !== 1) {
-      throw new HttpException(`Item with _id: ${_id} not found`, HttpStatus.NOT_FOUND);
+      if (deleteOperationResult.deletedCount !== 1) {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          errorMessage: `Item with _id: ${_id} not found`
+        };
+      }
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        stackTrace: error.stack
+      };
     }
   }
 
   async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
-    await this.tryExecute((client) =>
-      client
-        .db(this.dbName)
-        .collection(entityClass.name.toLowerCase())
-        .deleteMany({})
-    );
+    try {
+      await this.tryExecute((client) =>
+        client
+          .db(this.dbName)
+          .collection(entityClass.name.toLowerCase())
+          .deleteMany({})
+      );
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        stackTrace: error.stack
+      };
+    }
   }
 }

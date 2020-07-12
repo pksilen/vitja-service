@@ -68,7 +68,6 @@
         ]
       }
     },
-
     "tests": [
       {
         "name": "textFilter for title",

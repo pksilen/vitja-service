@@ -1,4 +1,14 @@
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Res,
+  Response
+} from '@nestjs/common';
 import { validateOrReject, ValidationError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import SalesItemsService from '../services/salesitems/SalesItemsService';
@@ -68,7 +78,13 @@ export class AppController {
       }
     }
 
-    return (this as any)[serviceName][functionName](validatableParamObject);
+    const response = await (this as any)[serviceName][functionName](validatableParamObject);
+    
+    if (response && response.statusCode && response.errorMessage) {
+      throw new HttpException(response, response.statusCode);
+    }
+
+    return response;
   }
 
   private getValidationErrors(validationErrors: ValidationError[]): string {

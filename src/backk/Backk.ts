@@ -19,7 +19,7 @@ export class IdsWrapper {
 
 export type ErrorResponse = {
   statusCode: number;
-  message: string;
+  errorMessage: string;
   stackTrace?: string;
 };
 
