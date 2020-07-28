@@ -60,8 +60,7 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
         (propNameToIsOptionalMap[propName] ? '?' + propType : propType) +
         (propNameToDefaultValueMap[propName] === undefined
           ? ''
-          : ` = ${JSON.stringify(propNameToDefaultValueMap[propName])}`)
-    };
+          : ` = ${JSON.stringify(propNameToDefaultValueMap[propName])}`) };
   }, {});
 }
 
@@ -152,10 +151,21 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           throw new Error('Type: ' + paramTypeName + ' is not declared in Types of ' + serviceName);
         }
 
-        let finalReturnValueTypeName = returnValueTypeName.split('|')[0].trim();
+        const returnValueParts = returnValueTypeName.split('|');
+        if (returnValueParts.length > 1) {
+          const errorResponseType = returnValueParts[1].trim();
+          if (errorResponseType !== 'ErrorResponse') {
+            throw new Error(serviceName + '.' + functionName + ": return type's right hand side type must be ErrorResponse")
+          }
+        }
+        let finalReturnValueTypeName = returnValueParts[0].trim();
         let isArrayReturnType = false;
         if (finalReturnValueTypeName.endsWith('[]')) {
           finalReturnValueTypeName = finalReturnValueTypeName.slice(0, -2);
+          isArrayReturnType = true;
+        }
+        if (finalReturnValueTypeName.startsWith('Array<')) {
+          finalReturnValueTypeName = finalReturnValueTypeName.slice(6, -1);
           isArrayReturnType = true;
         }
 

@@ -1,10 +1,8 @@
 # Vitja service
 
 TODO:
-- Input arg must be object
 - Return value arg can have only one OR type and it is ErrorResponse after the success type. 
     Return value type must be void, object or object[] or Array<object>
-- PostQueryOperations: Projection, Sorting, Paging
 - When returning response JSON and input parameter contains pageSize, ensure it is enforced
 - For number fields, it must have @Min and @Max annotations
 - For string fields, it must have @MaxLength annotation 
