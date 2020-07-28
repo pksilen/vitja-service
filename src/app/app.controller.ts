@@ -79,7 +79,7 @@ export class AppController {
     }
 
     const response = await (this as any)[serviceName][functionName](validatableParamObject);
-    
+
     if (response && response.statusCode && response.errorMessage) {
       throw new HttpException(response, response.statusCode);
     }

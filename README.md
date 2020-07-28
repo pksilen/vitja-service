@@ -1,20 +1,28 @@
 # Vitja service
 
 TODO:
-- Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
-- All array returning functions' input parameters must extend from Paging
+- Input arg must be object
+- Return value arg can have only one OR type and it is ErrorResponse after the success type.
 - PostQueryOperations: Projection, Sorting, Paging
 - When returning response JSON and input parameter contains pageSize, ensure it is enforced
 - For number fields, it must have @Min and @Max annotations
 - For string fields, it must have @MaxLength annotation 
 - Handle exclude response fields in getProjection and createResultMaps
-- @ManyToMany
 -Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
 -Create functions should have captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 -AnyRole/Role() annotation
 -AnyUser/User(userFieldName) annotation
 -UserOrRole('userName', 'admin')
 -Give error when unknown service/function is called
+- Liveness probe
+- Readiness probe
+- Prometheus metrics
+- Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
+- include/exclude to support wildcards: property1.property2.*
+- @ManyToMany
+-Optimoi sivutus, jos order by:tä ei ole annettu:
+ https://en.wikipedia.org/wiki/Select_(SQL)#Method_with_filter_(it_is_more_sophisticated_but_necessary_for_very_big_dataset)
+
 
 - MariaDb/MySql
 - SQL Server

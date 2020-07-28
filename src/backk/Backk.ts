@@ -1,6 +1,6 @@
 import pick from 'lodash/pick';
 import omit from 'lodash/omit';
-import { IsArray, IsString } from 'class-validator';
+import { IsArray, IsInt, IsString, Max, Min } from "class-validator";
 
 export function getSourceFileName(fileName: string, distFolderName = 'dist'): string {
   return fileName.replace(distFolderName, 'src');
@@ -11,10 +11,20 @@ export class IdWrapper {
   _id!: string;
 }
 
-export class IdsWrapper {
+export class IdsAndPaging implements Paging {
   @IsString({ each: true })
   @IsArray()
   _ids!: string[];
+
+  @IsInt()
+  @Min(1)
+  @Max(10000)
+  pageNumber: number = 1;
+
+  @IsInt()
+  @Min(0)
+  @Max(10000)
+  pageSize: number = 50;
 }
 
 export type ErrorResponse = {
@@ -28,11 +38,17 @@ export interface Projection {
   excludeResponseFields?: string[];
 }
 
-export interface PostQueryOperations extends Projection {
-  sortBy?: string;
-  sortDirection: 'ASC' | 'DESC';
+export interface Paging {
   pageNumber: number;
   pageSize: number;
+}
+
+export interface Sorting {
+  sortBy?: string;
+  sortDirection: 'ASC' | 'DESC';
+}
+
+export interface PostQueryOperations extends Projection, Sorting, Paging {
 }
 
 export function transformResponse<T extends object>(

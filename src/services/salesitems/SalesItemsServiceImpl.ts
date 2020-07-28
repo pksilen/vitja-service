@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorResponse, IdsWrapper, IdWrapper } from '../../backk/Backk';
+import { ErrorResponse, IdsAndPaging, IdWrapper } from '../../backk/Backk';
 import SalesItemsFilters from './types/SalesItemsFilters';
 import { SalesItem } from './types/SalesItem';
 import SalesItemWithoutId from './types/SalesItemWithoutId';
-import UserIdWrapper from '../users/types/UserIdWrapper';
+import UserIdAndPaging from '../users/types/UserIdAndPaging';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import SalesItemsService from './SalesItemsService';
 import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
@@ -39,7 +39,6 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     ...postQueryOperations
   }: SalesItemsFilters): Promise<Array<Partial<SalesItem>> | ErrorResponse> {
     let filters;
-    const schema = this.dbManager.schema;
 
     if (this.dbManager instanceof MongoDbManager) {
       filters = {
@@ -74,11 +73,11 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return await this.dbManager.getItems(filters, postQueryOperations, SalesItem, this.Types);
   }
 
-  async getSalesItemsByUserId({ userId }: UserIdWrapper): Promise<SalesItem[] | ErrorResponse> {
+  async getSalesItemsByUserId({ userId }: UserIdAndPaging): Promise<SalesItem[] | ErrorResponse> {
     return await this.dbManager.getItemsBy<SalesItem>('userId', userId, SalesItem, this.Types);
   }
 
-  async getSalesItemsByIds({ _ids }: IdsWrapper): Promise<SalesItem[] | ErrorResponse> {
+  async getSalesItemsByIds({ _ids }: IdsAndPaging): Promise<SalesItem[] | ErrorResponse> {
     return await this.dbManager.getItemsByIds(_ids, SalesItem, this.Types);
   }
 

@@ -3,7 +3,7 @@ import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import OrdersService from './OrdersService';
 import Order from './types/Order';
 import OrderWithoutId from './types/OrderWithoutId';
-import UserIdWrapper from '../users/types/UserIdWrapper';
+import UserIdAndPaging from '../users/types/UserIdAndPaging';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 
 @Injectable()
@@ -24,7 +24,7 @@ export default class OrdersServiceImpl extends OrdersService {
     return await this.dbManager.getItemById(_id, Order, this.Types);
   }
 
-  async getOrderByUserId({ userId }: UserIdWrapper): Promise<Order | ErrorResponse> {
+  async getOrderByUserId({ userId }: UserIdAndPaging): Promise<Order | ErrorResponse> {
     return await this.dbManager.getItemBy<Order>('userId', userId, Order, this.Types);
   }
 

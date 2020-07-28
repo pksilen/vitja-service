@@ -1,7 +1,7 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 
-export function getTypeMetadata<T>(typeClass: new () => T): {  [key: string]: string } {
+export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: string } {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
   const propNameToIsOptionalMap: { [key: string]: boolean } = {};
   const propNameToPropTypeMap: { [key: string]: string } = {};
@@ -153,8 +153,10 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
         }
 
         let finalReturnValueTypeName = returnValueTypeName.split('|')[0].trim();
+        let isArrayReturnType = false;
         if (finalReturnValueTypeName.endsWith('[]')) {
           finalReturnValueTypeName = finalReturnValueTypeName.slice(0, -2);
+          isArrayReturnType = true;
         }
 
         if (finalReturnValueTypeName.startsWith('Partial<')) {
@@ -168,6 +170,19 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           throw new Error(
             'Type: ' + finalReturnValueTypeName + ' is not declared in Types of ' + serviceName
           );
+        }
+
+        if (isArrayReturnType) {
+          const argTypeClass = (controller as any)[serviceName].Types[paramTypeName];
+          const argTypeMetadata = getTypeMetadata(argTypeClass);
+          if (!argTypeMetadata.pageNumber || !argTypeMetadata.pageSize) {
+            throw new Error(
+              serviceName +
+                '.' +
+                functionName +
+                ': argument type must implement Paging because function returns an array'
+            );
+          }
         }
 
         return {
