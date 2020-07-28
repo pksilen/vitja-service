@@ -10,7 +10,7 @@ TODO:
 - For string fields, it must have @MaxLength annotation 
 - Handle exclude response fields in getProjection and createResultMaps
 -Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
--Create functions should have captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
+-Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 -AnyRole/Role() annotation
 -AnyUser/User(userFieldName) annotation
 -UserOrRole('userName', 'admin')
