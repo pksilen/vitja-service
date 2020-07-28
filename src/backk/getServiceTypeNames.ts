@@ -28,13 +28,24 @@ export default function getServiceTypeNames(
       for (const classBodyNode of node.declaration.body.body) {
         if (classBodyNode.type === 'TSDeclareMethod') {
           const functionName = classBodyNode.key.name;
-          if (classBodyNode.params.length === 1) {
+          if (classBodyNode.params.length >= 1) {
+
+            if (classBodyNode.params.length > 1) {
+              throw new Error(serviceName + '.' + functionName + ': must have zero or one input argument');
+            }
+
             const paramTypeNameStart = classBodyNode.params[0].typeAnnotation.loc.start;
             const paramTypeNameEnd = classBodyNode.params[0].typeAnnotation.loc.end;
-            functionNameToParamTypeNameMap[functionName] = fileRows[paramTypeNameStart.line - 1].slice(
+            const paramTypeName = fileRows[paramTypeNameStart.line - 1].slice(
               paramTypeNameStart.column + 2,
               paramTypeNameEnd.column
             );
+
+            if (paramTypeName === 'number' || paramTypeName === 'string' || paramTypeName === 'boolean' || paramTypeName.endsWith('[]') || paramTypeName.startsWith('Array<')) {
+              throw new Error(serviceName + '.' + functionName + ': input argument must have class type');
+            }
+
+            functionNameToParamTypeNameMap[functionName] = paramTypeName;
           }
           const returnTypeNameStart = classBodyNode.returnType.typeAnnotation.loc.start;
           const returnTypeNameEnd = classBodyNode.returnType.typeAnnotation.loc.end;
