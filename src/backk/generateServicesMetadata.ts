@@ -51,6 +51,30 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
           (propNameToPropTypeMap[validationMetadata.propertyName] ?? '') + '[]';
         break;
     }
+
+    if (validationMetadata.type === 'isInt' || validationMetadata.type === 'isNumber') {
+      const minValidationMetadata = validationMetadatas.find(
+        (otherValidationMetadata: ValidationMetadata) =>
+          otherValidationMetadata.propertyName === validationMetadata.propertyName &&
+          otherValidationMetadata.type === 'min'
+      );
+
+      const maxValidationMetadata = validationMetadatas.find(
+        (otherValidationMetadata: ValidationMetadata) =>
+          otherValidationMetadata.propertyName === validationMetadata.propertyName &&
+          otherValidationMetadata.type === 'max'
+      );
+
+      if (minValidationMetadata === undefined || maxValidationMetadata === undefined) {
+        throw new Error(
+          'Property ' +
+            typeClass.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' has numeric type and must have @Min and @Max annotations'
+        );
+      }
+    }
   });
 
   return Object.entries(propNameToPropTypeMap).reduce((accumulatedTypeObject, [propName, propType]) => {
@@ -60,7 +84,8 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
         (propNameToIsOptionalMap[propName] ? '?' + propType : propType) +
         (propNameToDefaultValueMap[propName] === undefined
           ? ''
-          : ` = ${JSON.stringify(propNameToDefaultValueMap[propName])}`) };
+          : ` = ${JSON.stringify(propNameToDefaultValueMap[propName])}`)
+    };
   }, {});
 }
 
@@ -155,7 +180,9 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
         if (returnValueParts.length > 1) {
           const errorResponseType = returnValueParts[1].trim();
           if (errorResponseType !== 'ErrorResponse') {
-            throw new Error(serviceName + '.' + functionName + ": return type's right hand side type must be ErrorResponse")
+            throw new Error(
+              serviceName + '.' + functionName + ": return type's right hand side type must be ErrorResponse"
+            );
           }
         }
         let finalReturnValueTypeName = returnValueParts[0].trim();

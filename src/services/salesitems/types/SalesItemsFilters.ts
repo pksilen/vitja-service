@@ -1,5 +1,5 @@
 import { Projection } from '../../../backk/Backk';
-import { IsInt, IsPositive, Min } from 'class-validator';
+import { IsInt, IsPositive, Max, Min } from "class-validator";
 
 export default class SalesItemsFilters implements Projection {
   textFilter?: string;
@@ -9,9 +9,11 @@ export default class SalesItemsFilters implements Projection {
   productSubCategories?: ('Vehicles' | 'Clothes')[];
 
   @Min(0)
+  @Max(1000000000)
   minPrice?: number;
 
   @Min(0)
+  @Max(1000000000)
   maxPrice?: number;
 
   sortBy: 'price' | 'priceWhenPreviousPrice' | 'createdTimestampInSecs' = 'createdTimestampInSecs';
@@ -20,10 +22,12 @@ export default class SalesItemsFilters implements Projection {
   excludeResponseFields?: string[] = [];
 
   @IsInt()
-  @IsPositive()
+  @Min(1)
+  @Max(1000)
   pageNumber: number = 1;
 
   @IsInt()
-  @IsPositive()
+  @Min(1)
+  @Max(100)
   pageSize: number = 50;
 }

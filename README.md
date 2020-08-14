@@ -1,11 +1,10 @@
 # Vitja service
 
 TODO:
-- When returning response JSON and input parameter contains pageSize, ensure it is enforced
 - For number fields, it must have @Min and @Max annotations
+- For Min and Max, assert max >= min
 - For string fields, it must have @MaxLength annotation 
-- Handle exclude respo
-nse fields in getProjection and createResultMaps
+- Handle exclude response fields in getProjection and createResultMaps
 -Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
 -Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 -AnyRole/Role() annotation
