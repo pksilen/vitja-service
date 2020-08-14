@@ -60,7 +60,7 @@ export class AppController {
       functionName
     ];
 
-    let validatableParamObject;
+    let validatableParamObject: any;
     if (paramObjectTypeName) {
       validatableParamObject = plainToClass(
         (this as any)[serviceName]['Types'][paramObjectTypeName],
@@ -82,6 +82,14 @@ export class AppController {
 
     if (response && response.statusCode && response.errorMessage) {
       throw new HttpException(response, response.statusCode);
+    }
+
+    if (validatableParamObject &&
+      validatableParamObject.pageSize &&
+      Array.isArray(response) &&
+      response.length > validatableParamObject.pageSize
+    ) {
+      return response.slice(0, validatableParamObject.pageSize);
     }
 
     return response;

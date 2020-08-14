@@ -1,12 +1,11 @@
 # Vitja service
 
 TODO:
-- Return value arg can have only one OR type and it is ErrorResponse after the success type. 
-    Return value type must be void, object or object[] or Array<object>
 - When returning response JSON and input parameter contains pageSize, ensure it is enforced
 - For number fields, it must have @Min and @Max annotations
 - For string fields, it must have @MaxLength annotation 
-- Handle exclude response fields in getProjection and createResultMaps
+- Handle exclude respo
+nse fields in getProjection and createResultMaps
 -Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
 -Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 -AnyRole/Role() annotation
@@ -19,14 +18,7 @@ TODO:
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
 - include/exclude to support wildcards: property1.property2.*
 - @ManyToMany
--Optimoi sivutus, jos order by:tä ei ole annettu:
- https://en.wikipedia.org/wiki/Select_(SQL)#Method_with_filter_(it_is_more_sophisticated_but_necessary_for_very_big_dataset)
-
-
-- MariaDb/MySql
-- SQL Server
-- Oracle
-
+- Enable sql statement logging for TRACE level only
 
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password
@@ -57,11 +49,19 @@ TODO:
     - Geo position/location
     - latitude/longitude
     
-- In sql statement logging remove values part
+- MariaDb/MySql
+- SQL Server
+- Oracle
     
 TODO NEXT RELEASE:
-- Service aggregation and composition
-    - Parallel
-    - In sequence
-    - For loops, if clauses
-    - remote service execution
+- Own remote service function executor (Http)
+    - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
+- Own remote service function executor (kafka)
+    - send('kafka://kafka-service-dns-name/app-service-dns-name/serviceName.functionName', inputArgObj)
+    - app-service-dns-name is a topic eg. 'my-service.my-namespace' and message key is serviceName.functionName and message body is argument
+    - By default creates topic if not existing, if you want service to creates its own topics, 
+      create a readiness probe that returns true when needed topics are available
+- Optimoi sivutus, jos order by:tä ei ole annettu:
+ https://en.wikipedia.org/wiki/Select_(SQL)#Method_with_filter_(it_is_more_sophisticated_but_necessary_for_very_big_dataset)
+ 
+- Kafka service, create function(s) in Kafkacontroller for processing different topic(s)
