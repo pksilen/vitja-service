@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- For number fields, it must have @Min and @Max annotations
 - For Min and Max, assert max >= min
 - For string fields, it must have @MaxLength annotation 
 - Handle exclude response fields in getProjection and createResultMaps

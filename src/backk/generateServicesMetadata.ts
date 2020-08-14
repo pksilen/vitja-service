@@ -74,6 +74,16 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
             ' has numeric type and must have @Min and @Max annotations'
         );
       }
+
+      if (minValidationMetadata.constraints[0] > maxValidationMetadata.constraints[0]) {
+        throw new Error(
+          'Property ' +
+          typeClass.name +
+          '.' +
+          validationMetadata.propertyName +
+          ' has @Min validation that is greater than @Max validation'
+        );
+      }
     }
   });
 
