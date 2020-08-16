@@ -9,7 +9,7 @@ export class SalesItem extends SalesItemWithoutId {
 
   @IsInt()
   @Min(0)
-  @Max(Number.MAX_SAFE_INTEGER)
+  @Max(2147483647 )
   @ExpectTestValueOfType('number')
   createdTimestampInSecs!: number;
 }

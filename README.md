@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- For Min and Max, assert max >= min
 - For string fields, it must have @MaxLength annotation 
 - Handle exclude response fields in getProjection and createResultMaps
 -Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
@@ -17,6 +16,8 @@ TODO:
 - include/exclude to support wildcards: property1.property2.*
 - @ManyToMany
 - Enable sql statement logging for TRACE level only
+- Enable Error response's stacktrace when TRACE level only
+- Date/Timestamp type support
 
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password

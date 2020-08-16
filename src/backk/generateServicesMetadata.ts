@@ -84,6 +84,46 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
           ' has @Min validation that is greater than @Max validation'
         );
       }
+
+      if (validationMetadata.type === 'isInt' && minValidationMetadata.constraints[0] < -2147483648) {
+        throw new Error(
+          'Property ' +
+          typeClass.name +
+          '.' +
+          validationMetadata.propertyName +
+          ' has @Min validation value must be equal or greater than -2147483648'
+        );
+      }
+
+      if (validationMetadata.type === 'isInt' && maxValidationMetadata.constraints[0] > 2147483647) {
+        throw new Error(
+          'Property ' +
+          typeClass.name +
+          '.' +
+          validationMetadata.propertyName +
+          ' @Max validation value must be equal or less than 2147483647'
+        );
+      }
+
+      if (validationMetadata.type === 'isNumber' && minValidationMetadata.constraints[0] < -(10 ** 308)) {
+        throw new Error(
+          'Property ' +
+          typeClass.name +
+          '.' +
+          validationMetadata.propertyName +
+          ' @Min validation value must be equal or greater than -1E308'
+        );
+      }
+
+      if (validationMetadata.type === 'isNumber' && maxValidationMetadata.constraints[0] > 10 ** 308) {
+        throw new Error(
+          'Property ' +
+          typeClass.name +
+          '.' +
+          validationMetadata.propertyName +
+          ' @Max validation value must be equal or less than 1E308'
+        );
+      }
     }
   });
 
