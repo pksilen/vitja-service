@@ -16,7 +16,7 @@ import UsersService from '../services/users/UsersService';
 import OrdersService from '../services/orders/OrdersService';
 import initializeController from '../backk/initializeController';
 import getServiceTypeNames from '../backk/getServiceTypeNames';
-import generateServicesMetadata from '../backk/generateServicesMetadata';
+import generateServicesMetadata, { ServiceMetadata } from "../backk/generateServicesMetadata";
 import getSrcFilenameForTypeName from '../backk/getSrcFilenameForTypeName';
 import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
 
@@ -26,6 +26,8 @@ type Params = {
 
 @Controller()
 export class AppController {
+  private readonly servicesMetadata: ServiceMetadata[];
+
   constructor(
     private readonly usersService: UsersService,
     private readonly salesItemsService: SalesItemsService,
@@ -44,12 +46,12 @@ export class AppController {
       };
     });
 
-    initializeController(this);
+    this.servicesMetadata = initializeController(this);
   }
 
   @Post('/metadata')
   processMetadataRequests(): any {
-    return generateServicesMetadata(this);
+    return this.servicesMetadata;
   }
 
   @Post(':serviceCall')

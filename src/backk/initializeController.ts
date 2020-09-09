@@ -655,7 +655,7 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
   writeFileSync(process.cwd() + '/postman/postman_collection.json', JSON.stringify(postmanMetadata, null, 4));
 }
 
-export default function initializeController<T>(controller: T) {
+export default function initializeController<T>(controller: T): ServiceMetadata[] {
   let servicesMetadata = generateServicesMetadata(controller);
 
   Object.entries(controller)
@@ -670,4 +670,5 @@ export default function initializeController<T>(controller: T) {
 
   servicesMetadata = generateServicesMetadata(controller);
   writePostmanCollectionExportFile(controller, servicesMetadata);
+  return servicesMetadata;
 }
