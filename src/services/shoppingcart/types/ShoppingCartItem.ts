@@ -1,10 +1,12 @@
-import { IsInt, IsPositive, Max, Min } from "class-validator";
+import { IsInt, Max, MaxLength, Min } from "class-validator";
 import Entity from "../../../backk/Entity";
 
 @Entity
 export default class ShoppingCartItem {
+  @MaxLength(24)
   id!: string;
 
+  @MaxLength(24)
   salesItemId!: string;
 
   @IsInt()

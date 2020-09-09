@@ -442,8 +442,7 @@ function createPostmanCollectionItemFromWrittenTest({
   };
 }
 
-function writePostmanCollectionExportFile<T>(controller: T) {
-  const servicesMetadata = generateServicesMetadata(controller);
+function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: ServiceMetadata[]) {
   const items: any[] = [];
   let lastGetFunctionMetadata: FunctionMetadata;
   const testFilePathNames = getFileNamesRecursively(process.cwd() + '/integrationtests');
@@ -657,6 +656,8 @@ function writePostmanCollectionExportFile<T>(controller: T) {
 }
 
 export default function initializeController<T>(controller: T) {
+  let servicesMetadata = generateServicesMetadata(controller);
+
   Object.entries(controller)
     .filter(([, value]: [string, any]) => typeof value === 'object' && value.constructor !== Object)
     .forEach(([serviceName]: [string, any]) => {
@@ -667,5 +668,6 @@ export default function initializeController<T>(controller: T) {
       }, {});
     });
 
-  writePostmanCollectionExportFile(controller);
+  servicesMetadata = generateServicesMetadata(controller);
+  writePostmanCollectionExportFile(controller, servicesMetadata);
 }

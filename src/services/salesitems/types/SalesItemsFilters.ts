@@ -1,8 +1,10 @@
-import { Projection } from '../../../backk/Backk';
-import { IsInt, IsPositive, Max, Min } from "class-validator";
+import { PostQueryOperations } from "../../../backk/Backk";
+import { IsInt,  Max, MaxLength, Min } from "class-validator";
 
-export default class SalesItemsFilters implements Projection {
+export default class SalesItemsFilters implements PostQueryOperations {
+  @MaxLength(512)
   textFilter?: string;
+
   areas?: ('Area1' | 'Area2' | 'Area3')[];
   productDepartments?: ('Vehicles' | 'Clothes')[];
   productCategories?: ('Vehicles' | 'Clothes')[];
@@ -18,7 +20,11 @@ export default class SalesItemsFilters implements Projection {
 
   sortBy: 'price' | 'priceWhenPreviousPrice' | 'createdTimestampInSecs' = 'createdTimestampInSecs';
   sortDirection: 'ASC' | 'DESC' = 'DESC';
+
+  @MaxLength(256, {each: true})
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];
+
+  @MaxLength(256, {each: true})
   excludeResponseFields?: string[] = [];
 
   @IsInt()

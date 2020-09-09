@@ -1,6 +1,6 @@
 import pick from 'lodash/pick';
 import omit from 'lodash/omit';
-import { IsArray, IsInt, IsString, Max, Min } from "class-validator";
+import { IsArray, IsInt, IsString, Max, MaxLength, Min } from "class-validator";
 
 export function getSourceFileName(fileName: string, distFolderName = 'dist'): string {
   return fileName.replace(distFolderName, 'src');
@@ -8,11 +8,13 @@ export function getSourceFileName(fileName: string, distFolderName = 'dist'): st
 
 export class IdWrapper {
   @IsString()
+  @MaxLength(24)
   _id!: string;
 }
 
 export class IdsAndPaging implements Paging {
   @IsString({ each: true })
+  @MaxLength(24, { each: true})
   @IsArray()
   _ids!: string[];
 
@@ -44,7 +46,7 @@ export interface Paging {
 }
 
 export interface Sorting {
-  sortBy?: string;
+  sortBy: string;
   sortDirection: 'ASC' | 'DESC';
 }
 

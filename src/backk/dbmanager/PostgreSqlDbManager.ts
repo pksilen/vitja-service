@@ -466,6 +466,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       await this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name}`);
     } catch(error) {
+      console.log(error);
       return {
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,

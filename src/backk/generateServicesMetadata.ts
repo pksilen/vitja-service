@@ -125,6 +125,24 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
         );
       }
     }
+
+    if (validationMetadata.type === 'isString') {
+      const maxLengthValidationMetadata = validationMetadatas.find(
+        (otherValidationMetadata: ValidationMetadata) =>
+          otherValidationMetadata.propertyName === validationMetadata.propertyName &&
+          otherValidationMetadata.type === 'maxLength'
+      );
+
+      if (maxLengthValidationMetadata === undefined) {
+        throw new Error(
+          'Property ' +
+          typeClass.name +
+          '.' +
+          validationMetadata.propertyName +
+          ' has string type and must have @MaxLength annotation'
+        );
+      }
+    }
   });
 
   return Object.entries(propNameToPropTypeMap).reduce((accumulatedTypeObject, [propName, propType]) => {
@@ -223,7 +241,17 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           .functionNameToReturnTypeNameMap[functionName];
 
         if (paramTypeName !== undefined && !(controller as any)[serviceName].Types[paramTypeName]) {
-          throw new Error('Type: ' + paramTypeName + ' is not declared in Types of ' + serviceName);
+          throw new Error('Type: ' + paramTypeName + ' is not found in ' + serviceName + '.Types');
+        }
+
+        if (paramTypeName !== undefined) {
+          let proto = Object.getPrototypeOf(new ((controller as any)[serviceName].Types[paramTypeName] as new () => any)());
+          while (proto !== Object.prototype) {
+            if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
+              (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
+            }
+            proto = Object.getPrototypeOf(proto);
+          }
         }
 
         const returnValueParts = returnValueTypeName.split('|');
@@ -255,8 +283,18 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           !(controller as any)[serviceName].Types[finalReturnValueTypeName]
         ) {
           throw new Error(
-            'Type: ' + finalReturnValueTypeName + ' is not declared in Types of ' + serviceName
+            'Type: ' + finalReturnValueTypeName + ' is not found in ' + serviceName + '.Types'
           );
+        }
+
+        if (finalReturnValueTypeName !== 'void') {
+          let proto = Object.getPrototypeOf(new ((controller as any)[serviceName].Types[finalReturnValueTypeName] as new () => any)());
+          while (proto !== Object.prototype) {
+            if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
+              (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
+            }
+            proto = Object.getPrototypeOf(proto);
+          }
         }
 
         if (isArrayReturnType) {
@@ -305,7 +343,7 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           ...typeMetadatas,
           ErrorResponse: {
             statusCode: 'integer',
-            message: 'string'
+            errorMessage: 'string'
           }
         },
         validations: validationMetadatas

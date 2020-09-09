@@ -1,21 +1,10 @@
-import { Matches } from 'class-validator';
-import PaymentMethod from './PaymentMethod';
+import { Matches, MaxLength } from "class-validator";
 import { UseTestValue } from '../../../backk/UseTestValue';
-import DefaultPaymentMethod from "./DefaultPaymentMethod";
+import UserWithoutIdAndPassword from "./UserWithoutIdAndPassword";
 
-export default class UserWithoutId {
-  userName!: string;
-
+export default class UserWithoutId extends UserWithoutIdAndPassword {
+  @MaxLength(512)
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/)
   @UseTestValue('Jepulis0!')
   password!: string;
-
-  streetAddress!: string;
-  postalCode!: string;
-  city!: string;
-  defaultPaymentMethod!: DefaultPaymentMethod;
-  paymentMethods!: PaymentMethod[];
-
-  @UseTestValue('123')
-  favoriteSalesItemIds!: string[];
 }

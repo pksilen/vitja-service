@@ -20,7 +20,7 @@ function doesPropertyContainValidation(typeClass: Function, propertyName: string
 export default function setPropertyTypeValidationDecorators(
   typeClass: Function,
   serviceName: string,
-  types: { [key: string]: object }
+  Types: { [key: string]: new () => any }
 ) {
   const typeClassName = typeClass.name;
 
@@ -76,9 +76,9 @@ export default function setPropertyTypeValidationDecorators(
           } else if (finalPropertyTypeName === 'string') {
             validationType = ValidationTypes.IS_STRING;
           } else if (finalPropertyTypeName.charAt(0).match(/^[_$A-Z]$/)) {
-            if (types[finalPropertyTypeName]) {
+            if (Types[finalPropertyTypeName]) {
               validationType = ValidationTypes.IS_INSTANCE;
-              constraints = [types[finalPropertyTypeName]];
+              constraints = [Types[finalPropertyTypeName]];
             } else {
               throw new Error(
                 'Type: ' +

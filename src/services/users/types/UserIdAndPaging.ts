@@ -1,7 +1,8 @@
 import { Paging } from "../../../backk/Backk";
-import { IsInt, IsPositive, Max, Min } from "class-validator";
+import { IsInt, IsPositive, Max, MaxLength, Min } from "class-validator";
 
 export default class UserIdAndPaging implements Paging {
+  @MaxLength(24)
   userId!: string;
 
   @IsInt()
