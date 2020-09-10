@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Give error when unknown service/function is called
 - Liveness probe
 - Readiness probe
 - Error message when update fails due to not found

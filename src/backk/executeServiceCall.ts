@@ -24,6 +24,8 @@ export default async function executeServiceCall(
 ): Promise<void | object> {
   if (serviceCall === 'metadata') {
     return controller.servicesMetadata;
+  } else if (serviceCall === 'livenessChecker.isAlive') {
+    return;
   }
 
   const [serviceName, functionName] = serviceCall.split('.');
