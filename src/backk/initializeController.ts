@@ -7,7 +7,8 @@ import generateServicesMetadata, { FunctionMetadata, ServiceMetadata } from './g
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import setPropertyTypeValidationDecorators from './setPropertyTypeValidationDecorators';
 import testValueContainer from './testValueContainer';
-import { getFileNamesRecursively } from './getSrcFilenameForTypeName';
+import getSrcFilenameForTypeName, { getFileNamesRecursively } from './getSrcFilenameForTypeName';
+import getServiceTypeNames from './getServiceTypeNames';
 
 function setNestedTypeAndValidationDecorators(
   typeClass: Function,
@@ -655,20 +656,32 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
   writeFileSync(process.cwd() + '/postman/postman_collection.json', JSON.stringify(postmanMetadata, null, 4));
 }
 
-export default function initializeController<T>(controller: T): ServiceMetadata[] {
-  let servicesMetadata = generateServicesMetadata(controller);
+export default function initializeController(controller: any) {
+  Object.keys(controller).forEach((serviceName) => {
+    const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(
+      serviceName,
+      getSrcFilenameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
+    );
+
+    controller[`${serviceName}Types`] = {
+      functionNameToParamTypeNameMap,
+      functionNameToReturnTypeNameMap
+    };
+  });
+
+  generateServicesMetadata(controller);
 
   Object.entries(controller)
     .filter(([, value]: [string, any]) => typeof value === 'object' && value.constructor !== Object)
     .forEach(([serviceName]: [string, any]) => {
       const targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean } = {};
-      Object.entries((controller as any)[serviceName].Types).forEach(([, typeClass]: [string, any]) => {
-        setPropertyTypeValidationDecorators(typeClass, serviceName, (controller as any)[serviceName].Types);
+      Object.entries(controller[serviceName].Types).forEach(([, typeClass]: [string, any]) => {
+        setPropertyTypeValidationDecorators(typeClass, serviceName, controller[serviceName].Types);
         setNestedTypeAndValidationDecorators(typeClass, targetAndPropNameToHasNestedValidationMap);
       }, {});
     });
 
-  servicesMetadata = generateServicesMetadata(controller);
+  const servicesMetadata = generateServicesMetadata(controller);
+  controller.servicesMetadata = servicesMetadata;
   writePostmanCollectionExportFile(controller, servicesMetadata);
-  return servicesMetadata;
 }

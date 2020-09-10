@@ -1,113 +1,29 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-  Param,
-  Post,
-  Res,
-  Response
-} from '@nestjs/common';
-import { validateOrReject, ValidationError } from 'class-validator';
-import { plainToClass } from 'class-transformer';
-import SalesItemsService from '../services/salesitems/SalesItemsService';
-import UsersService from '../services/users/UsersService';
-import OrdersService from '../services/orders/OrdersService';
-import initializeController from '../backk/initializeController';
-import getServiceTypeNames from '../backk/getServiceTypeNames';
-import generateServicesMetadata, { ServiceMetadata } from "../backk/generateServicesMetadata";
-import getSrcFilenameForTypeName from '../backk/getSrcFilenameForTypeName';
-import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
+import { Body, Controller, HttpCode, HttpStatus, Param, Post } from "@nestjs/common";
+import SalesItemsService from "../services/salesitems/SalesItemsService";
+import UsersService from "../services/users/UsersService";
+import OrdersService from "../services/orders/OrdersService";
+import initializeController from "../backk/initializeController";
+import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
+import executeServiceCall from "../backk/processServiceCall";
 
-type Params = {
-  serviceCall: string;
-};
-
+// noinspection JSUnusedLocalSymbols
 @Controller()
 export class AppController {
-  private readonly servicesMetadata: ServiceMetadata[];
-
   constructor(
     private readonly usersService: UsersService,
     private readonly salesItemsService: SalesItemsService,
     private readonly shoppingCartService: ShoppingCartService,
     private readonly ordersService: OrdersService
   ) {
-    Object.entries(this).forEach(([serviceName]: [string, object]) => {
-      const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(
-        serviceName,
-        getSrcFilenameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
-      );
-
-      (this as any)[`${serviceName}Types`] = {
-        functionNameToParamTypeNameMap,
-        functionNameToReturnTypeNameMap
-      };
-    });
-
-    this.servicesMetadata = initializeController(this);
-  }
-
-  @Post('/metadata')
-  processMetadataRequests(): any {
-    return this.servicesMetadata;
+    initializeController(this);
   }
 
   @Post(':serviceCall')
-  @HttpCode(200)
-  async processRequests(@Param() params: Params, @Body() paramObject: object): Promise<object | void> {
-    const [serviceName, functionName] = params.serviceCall.split('.');
-    const paramObjectTypeName = (this as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
-      functionName
-    ];
-
-    let validatableParamObject: any;
-    if (paramObjectTypeName) {
-      validatableParamObject = plainToClass(
-        (this as any)[serviceName]['Types'][paramObjectTypeName],
-        paramObject
-      );
-
-      try {
-        await validateOrReject(validatableParamObject as object, {
-          whitelist: true,
-          forbidNonWhitelisted: true
-        });
-      } catch (validationErrors) {
-        const errorStr = this.getValidationErrors(validationErrors);
-        throw new HttpException(errorStr, HttpStatus.BAD_REQUEST);
-      }
-    }
-
-    const response = await (this as any)[serviceName][functionName](validatableParamObject);
-
-    if (response && response.statusCode && response.errorMessage) {
-      throw new HttpException(response, response.statusCode);
-    }
-
-    if (validatableParamObject &&
-      validatableParamObject.pageSize &&
-      Array.isArray(response) &&
-      response.length > validatableParamObject.pageSize
-    ) {
-      return response.slice(0, validatableParamObject.pageSize);
-    }
-
-    return response;
-  }
-
-  private getValidationErrors(validationErrors: ValidationError[]): string {
-    return validationErrors
-      .map((validationError: ValidationError) => {
-        if (validationError.constraints) {
-          return Object.values(validationError.constraints)
-            .map((constraint) => constraint)
-            .join(', ');
-        } else {
-          return validationError.property + ': ' + this.getValidationErrors(validationError.children);
-        }
-      })
-      .join(', ');
+  @HttpCode(HttpStatus.OK)
+  async processRequests(
+    @Param() params: { serviceCall: string },
+    @Body() serviceCallArgument: object
+  ): Promise<object | void> {
+    return executeServiceCall(this, params.serviceCall, serviceCallArgument);
   }
 }
