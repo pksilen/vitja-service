@@ -317,7 +317,7 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
         };
       });
 
-      const typeMetadatas = Object.entries((controller as any)[serviceName].Types).reduce(
+      const typeMetadatas = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
           const typeObject = getTypeMetadata(typeClass);
           return { ...accumulatedTypes, [typeName]: typeObject };
@@ -325,7 +325,7 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
         {}
       );
 
-      const validationMetadatas = Object.entries((controller as any)[serviceName].Types).reduce(
+      const validationMetadatas = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
           const validationMetadata = getValidationMetadata(typeClass);
           if (Object.keys(validationMetadata).length > 0) {

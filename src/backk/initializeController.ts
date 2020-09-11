@@ -633,15 +633,15 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
     },
     item: [
       {
-        name: 'http://localhost:3000/metdata',
+        name: 'metadataService.getServicesMetadata',
         request: {
           method: 'POST',
           url: {
-            raw: 'http://localhost:3000/metadata',
+            raw: 'http://localhost:3000/metadataService.getServicesMetadata',
             protocol: 'http',
             host: ['localhost'],
             port: '3000',
-            path: ['metadata']
+            path: ['metadataService.getServicesMetadata']
           }
         }
       },
@@ -658,6 +658,12 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
 
 export default function initializeController(controller: any) {
   Object.keys(controller).forEach((serviceName) => {
+    if (serviceName === 'metadataService') {
+      throw new Error('metadataService is a reserved internal service name.')
+    } else if (serviceName === 'livenessCheckService') {
+      throw new Error('livenessCheckService is a reserved internal service name.')
+    }
+
     const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(
       serviceName,
       getSrcFilenameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
@@ -675,7 +681,7 @@ export default function initializeController(controller: any) {
     .filter(([, value]: [string, any]) => typeof value === 'object' && value.constructor !== Object)
     .forEach(([serviceName]: [string, any]) => {
       const targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean } = {};
-      Object.entries(controller[serviceName].Types).forEach(([, typeClass]: [string, any]) => {
+      Object.entries(controller[serviceName].Types ?? {}).forEach(([, typeClass]: [string, any]) => {
         setPropertyTypeValidationDecorators(typeClass, serviceName, controller[serviceName].Types);
         setNestedTypeAndValidationDecorators(typeClass, targetAndPropNameToHasNestedValidationMap);
       }, {});

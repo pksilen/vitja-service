@@ -22,9 +22,14 @@ export default async function executeServiceCall(
   serviceCall: string,
   serviceCallArgument: object
 ): Promise<void | object> {
-  if (serviceCall === 'metadata') {
+  if (serviceCall === 'metadataService.getServicesMetadata') {
     return controller.servicesMetadata;
-  } else if (serviceCall === 'livenessChecker.isAlive') {
+  } else if (serviceCall === 'livenessCheckService.isAlive') {
+    return;
+  } else if (
+    serviceCall === 'readinessCheckService.isReady' &&
+    (!controller.readinessCheckService || !controller.readinessCheckService.isReady)
+  ) {
     return;
   }
 
@@ -36,7 +41,7 @@ export default async function executeServiceCall(
     });
   }
 
-  if(!controller[serviceName][functionName]) {
+  if (!controller[serviceName][functionName]) {
     throwHttpException({
       statusCode: HttpStatus.BAD_REQUEST,
       errorMessage: `Unknown function: ${serviceName}.${functionName}`

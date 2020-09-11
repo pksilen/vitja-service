@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Liveness probe
 - Readiness probe
 - Error message when update fails due to not found
 - OrderWithoutId state voi createssa olla vain yksi, mutta muuten joku 3:sta

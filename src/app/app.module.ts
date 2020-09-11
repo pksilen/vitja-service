@@ -10,11 +10,14 @@ import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
 import ShoppingCartServiceImpl from '../services/shoppingcart/ShoppingCartServiceImpl';
 import AbstractDbManager from '../backk/dbmanager/AbstractDbManager';
 import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
+import ReadinessCheckService from "../services/readinesscheck/ReadinessCheckService";
+import ReadinessCheckServiceImpl from "../services/readinesscheck/ReadinessCheckServiceImpl";
 
 @Module({
   imports: [],
   controllers: [AppController],
   providers: [
+    { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },
     { provide: SalesItemsService, useClass: SalesItemsServiceImpl },
     { provide: UsersService, useClass: UsersServiceImpl },
     { provide: OrdersService, useClass: OrdersServiceImpl },
