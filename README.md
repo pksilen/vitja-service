@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- isBigInt datatype, validation
 - ID fields are bigint
 - sampleArg should use @Min value, and in update @Max value
 - TestValue() and ExpectAnyTestValue()  implemented using class-validator

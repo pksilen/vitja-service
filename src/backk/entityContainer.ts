@@ -57,7 +57,7 @@ class EntityContainer {
           );
           if (!fields.find((field) => field.name.toLowerCase() === additionalPropertyName.toLowerCase())) {
             let alterTableStatement = `ALTER TABLE ${dbManager.schema}.${entityName} ADD `;
-            alterTableStatement += additionalPropertyName + ' INTEGER';
+            alterTableStatement += additionalPropertyName + ' BIGINT';
             await dbManager.tryExecuteSql(alterTableStatement);
           }
         });
@@ -88,7 +88,7 @@ class EntityContainer {
         }
 
         if (fieldName === '_id') {
-          sqlColumnType = 'SERIAL PRIMARY KEY';
+          sqlColumnType = 'BIGSERIAL PRIMARY KEY';
         } else {
           switch (baseFieldTypeName) {
             case 'integer':
@@ -105,7 +105,7 @@ class EntityContainer {
               break;
             case 'string':
               if (fieldName.endsWith('Id') || fieldName === 'id') {
-                sqlColumnType = 'INTEGER';
+                sqlColumnType = 'BIGINT';
               } else {
                 sqlColumnType = 'VARCHAR';
               }
@@ -174,7 +174,7 @@ class EntityContainer {
           const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
 
           createAdditionalTableStatement +=
-            idFieldName + ' INTEGER, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
+            idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
 
           await dbManager.tryExecuteSql(createAdditionalTableStatement);
 
@@ -231,7 +231,7 @@ class EntityContainer {
               break;
             case 'string':
               if (fieldName.endsWith('Id') || fieldName === 'id') {
-                sqlColumnType = 'INTEGER';
+                sqlColumnType = 'BIGINT';
               } else {
                 sqlColumnType = 'VARCHAR';
               }
@@ -297,7 +297,7 @@ class EntityContainer {
               fieldName.slice(0, -1)} (`;
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
             createAdditionalTableStatement +=
-              idFieldName + ' INTEGER, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
+              idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
             await dbManager.tryExecuteSql(createAdditionalTableStatement);
 
             const joinSpec = {
