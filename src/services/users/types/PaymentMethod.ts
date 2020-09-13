@@ -6,6 +6,7 @@ import Entity from "../../../backk/Entity";
 export default class PaymentMethod {
   @MaxLength(24)
   id!: string;
+
   paymentMethodType!: 'creditCard';
 
   @IsCreditCard()

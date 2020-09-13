@@ -92,7 +92,7 @@ function getSampleArg(
       sampleArg[propertyName] = `{{${propertyName}}}`;
     } else if (propertyName === 'id') {
       sampleArg[propertyName] = '123';
-    } else if (finalPropertyTypeName.startsWith('integer')) {
+    } else if (finalPropertyTypeName.startsWith('integer') || finalPropertyTypeName.startsWith('bigint')) {
       sampleArg[propertyName] =
         defaultValue === undefined ? (isUpdate ? 1234 : 123) : JSON.parse(defaultValue);
     } else if (finalPropertyTypeName.startsWith('number')) {
@@ -189,6 +189,7 @@ function getReturnValueTests(
           expectedValue = !isUpdate;
           break;
         case 'integer':
+        case 'bigint':
           expectedValue = isUpdate ? 1234 : 123;
           break;
         case 'number':
@@ -659,9 +660,9 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
 export default function initializeController(controller: any) {
   Object.keys(controller).forEach((serviceName) => {
     if (serviceName === 'metadataService') {
-      throw new Error('metadataService is a reserved internal service name.')
+      throw new Error('metadataService is a reserved internal service name.');
     } else if (serviceName === 'livenessCheckService') {
-      throw new Error('livenessCheckService is a reserved internal service name.')
+      throw new Error('livenessCheckService is a reserved internal service name.');
     }
 
     const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(

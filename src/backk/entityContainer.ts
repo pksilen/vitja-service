@@ -52,7 +52,9 @@ class EntityContainer {
       Object.entries(this.entityNameToAdditionalIdPropertyNamesMap),
       async ([entityName, additionalPropertyNames]: [any, any]) => {
         await asyncForEach(additionalPropertyNames, async (additionalPropertyName: any) => {
-          const fields = await dbManager.tryExecuteSql(`SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`);
+          const fields = await dbManager.tryExecuteSql(
+            `SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`
+          );
           if (!fields.find((field) => field.name.toLowerCase() === additionalPropertyName.toLowerCase())) {
             let alterTableStatement = `ALTER TABLE ${dbManager.schema}.${entityName} ADD `;
             alterTableStatement += additionalPropertyName + ' INTEGER';
@@ -63,7 +65,12 @@ class EntityContainer {
     );
   }
 
-  private async createTable(dbManager: AbstractDbManager, entityName: string, entityClass: Function, schema: string | undefined) {
+  private async createTable(
+    dbManager: AbstractDbManager,
+    entityName: string,
+    entityClass: Function,
+    schema: string | undefined
+  ) {
     const fields = dbManager.tryExecuteSql(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
 
     fields.catch(async () => {
@@ -82,11 +89,13 @@ class EntityContainer {
 
         if (fieldName === '_id') {
           sqlColumnType = 'SERIAL PRIMARY KEY';
-        }
-        else {
+        } else {
           switch (baseFieldTypeName) {
             case 'integer':
               sqlColumnType = 'INTEGER';
+              break;
+            case 'bigint':
+              sqlColumnType = 'BIGINT';
               break;
             case 'number':
               sqlColumnType = 'DOUBLE PRECISION';
@@ -209,7 +218,10 @@ class EntityContainer {
 
           switch (baseFieldTypeName) {
             case 'integer':
-              sqlColumnType = 'INTEGER';
+                sqlColumnType = 'INTEGER';
+              break;
+            case 'bigint':
+              sqlColumnType = 'BIGINT';
               break;
             case 'number':
               sqlColumnType = 'DOUBLE PRECISION';

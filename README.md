@@ -1,7 +1,14 @@
 # Vitja service
 
 TODO:
-- Readiness probe
+- isBigInt datatype, validation
+- ID fields are bigint
+- sampleArg should use @Min value, and in update @Max value
+- TestValue() and ExpectAnyTestValue()  implemented using class-validator
+- Default readinessProbe should check db availability
+- Add try catch to entityContainer await dbManager calls
+- Enable sql statement logging for TRACE level only
+- Enable Error response's stacktrace when TRACE level only
 - Error message when update fails due to not found
 - OrderWithoutId state voi createssa olla vain yksi, mutta muuten joku 3:sta
 - Add state to SalesItem: active, inactive, sold
@@ -9,6 +16,7 @@ TODO:
   - SalesItem can be created for same userName and state: active only 100 maxItemCount
 -Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
 - Handle exclude response fields in getProjection and createResultMaps
+-entityContainer should modify datatypes
 -Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 -AnyRole/Role() annotation
 -AnyUser/User(userFieldName) annotation
@@ -18,9 +26,8 @@ TODO:
 - Logger
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
 - include/exclude to support wildcards: property1.property2.*
-- Enable sql statement logging for TRACE level only
-- Enable Error response's stacktrace when TRACE level only
-- Date/Timestamp type support
+- include/exclude to support JSON and GraphQl
+
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password
 - By default following fields are encrypted, or use @NotEncrypted annotation
@@ -51,7 +58,6 @@ TODO:
     - Company
     - Geo position/location
     - latitude/longitude
-    
 - MariaDb/MySql
 - GDPR logging
   -audit log should go to separate server
@@ -59,9 +65,13 @@ TODO:
 - Response headers added Api gateway:
   - X-content-type-options: nosniff
   - Strict-Transport-Security: max-age 
-    
+  - Own remote service function executor (Http)
+      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
+      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
+- Custom readinessProbe should use defaultReadinessProbe plus all other services it is using
     
 TODO NEXT RELEASE:
+- Date/Timestamp type support
 - SQL Server
 - Oracle
 - Default loginService, signUpService, passwordReset service
@@ -70,8 +80,6 @@ TODO NEXT RELEASE:
 - userName should be capitalized when comparing existence
 - userName should checked first that it does not exist (case-insensitive)
 - loginService hook to perform eg. account validation email sending
-- Own remote service function executor (Http)
-    - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
 - Own remote service function executor (kafka)
     - send('kafka://kafka-service-dns-name/app-service-dns-name/serviceName.functionName', inputArgObj)
     - app-service-dns-name is a topic eg. 'my-service.my-namespace' and message key is serviceName.functionName and message body is argument

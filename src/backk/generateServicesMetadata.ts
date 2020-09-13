@@ -34,6 +34,12 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
         propNameToPropTypeMap[validationMetadata.propertyName] =
           'integer' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
         break;
+      case 'customValidation':
+        if (validationMetadata.constraints[0] === 'isBigInt') {
+          propNameToPropTypeMap[validationMetadata.propertyName] =
+            'bigint' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+        }
+        break;
       case 'isIn':
         propNameToPropTypeMap[validationMetadata.propertyName] =
           '(' +
@@ -52,7 +58,11 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
         break;
     }
 
-    if (validationMetadata.type === 'isInt' || validationMetadata.type === 'isNumber') {
+    if (
+      validationMetadata.type === 'isInt' ||
+      validationMetadata.type === 'isNumber' ||
+      (validationMetadata.type === 'customValidation' && validationMetadata.constraints[0] === 'isBigInt')
+    ) {
       const minValidationMetadata = validationMetadatas.find(
         (otherValidationMetadata: ValidationMetadata) =>
           otherValidationMetadata.propertyName === validationMetadata.propertyName &&
@@ -78,50 +88,79 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
       if (minValidationMetadata.constraints[0] > maxValidationMetadata.constraints[0]) {
         throw new Error(
           'Property ' +
-          typeClass.name +
-          '.' +
-          validationMetadata.propertyName +
-          ' has @Min validation that is greater than @Max validation'
+            typeClass.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' has @Min validation that is greater than @Max validation'
         );
       }
 
       if (validationMetadata.type === 'isInt' && minValidationMetadata.constraints[0] < -2147483648) {
         throw new Error(
           'Property ' +
-          typeClass.name +
-          '.' +
-          validationMetadata.propertyName +
-          ' has @Min validation value must be equal or greater than -2147483648'
+            typeClass.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' has @Min validation value must be equal or greater than -2147483648'
         );
       }
 
       if (validationMetadata.type === 'isInt' && maxValidationMetadata.constraints[0] > 2147483647) {
         throw new Error(
           'Property ' +
-          typeClass.name +
-          '.' +
-          validationMetadata.propertyName +
-          ' @Max validation value must be equal or less than 2147483647'
+            typeClass.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' @Max validation value must be equal or less than 2147483647'
+        );
+      }
+
+      if (
+        validationMetadata.type === 'customValidation' &&
+        validationMetadata.constraints[0] === 'isBigInt' &&
+        minValidationMetadata.constraints[0] < Number.MIN_SAFE_INTEGER
+      ) {
+        throw new Error(
+          'Property ' +
+            typeClass.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' has @Min validation value must be equal or greater than ' +
+            Number.MIN_SAFE_INTEGER.toString()
+        );
+      }
+
+      if (
+        validationMetadata.type === 'customValidation' &&
+        validationMetadata.constraints[0] === 'isBigInt' &&
+        maxValidationMetadata.constraints[0] > Number.MAX_SAFE_INTEGER
+      ) {
+        throw new Error(
+          'Property ' +
+            typeClass.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' @Max validation value must be equal or less than ' + Number.MAX_SAFE_INTEGER
         );
       }
 
       if (validationMetadata.type === 'isNumber' && minValidationMetadata.constraints[0] < -(10 ** 308)) {
         throw new Error(
           'Property ' +
-          typeClass.name +
-          '.' +
-          validationMetadata.propertyName +
-          ' @Min validation value must be equal or greater than -1E308'
+            typeClass.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' @Min validation value must be equal or greater than -1E308'
         );
       }
 
       if (validationMetadata.type === 'isNumber' && maxValidationMetadata.constraints[0] > 10 ** 308) {
         throw new Error(
           'Property ' +
-          typeClass.name +
-          '.' +
-          validationMetadata.propertyName +
-          ' @Max validation value must be equal or less than 1E308'
+            typeClass.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' @Max validation value must be equal or less than 1E308'
         );
       }
     }
@@ -136,10 +175,10 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
       if (maxLengthValidationMetadata === undefined) {
         throw new Error(
           'Property ' +
-          typeClass.name +
-          '.' +
-          validationMetadata.propertyName +
-          ' has string type and must have @MaxLength annotation'
+            typeClass.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' has string type and must have @MaxLength annotation'
         );
       }
     }
@@ -245,7 +284,9 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
         }
 
         if (paramTypeName !== undefined) {
-          let proto = Object.getPrototypeOf(new ((controller as any)[serviceName].Types[paramTypeName] as new () => any)());
+          let proto = Object.getPrototypeOf(
+            new ((controller as any)[serviceName].Types[paramTypeName] as new () => any)()
+          );
           while (proto !== Object.prototype) {
             if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
               (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
@@ -282,13 +323,13 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           finalReturnValueTypeName !== 'void' &&
           !(controller as any)[serviceName].Types[finalReturnValueTypeName]
         ) {
-          throw new Error(
-            'Type: ' + finalReturnValueTypeName + ' is not found in ' + serviceName + '.Types'
-          );
+          throw new Error('Type: ' + finalReturnValueTypeName + ' is not found in ' + serviceName + '.Types');
         }
 
         if (finalReturnValueTypeName !== 'void') {
-          let proto = Object.getPrototypeOf(new ((controller as any)[serviceName].Types[finalReturnValueTypeName] as new () => any)());
+          let proto = Object.getPrototypeOf(
+            new ((controller as any)[serviceName].Types[finalReturnValueTypeName] as new () => any)()
+          );
           while (proto !== Object.prototype) {
             if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
               (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;

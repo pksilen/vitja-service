@@ -16,6 +16,23 @@ function doesPropertyContainValidation(typeClass: Function, propertyName: string
   return foundValidation !== undefined;
 }
 
+function doesPropertyContainCustomValidation(
+  typeClass: Function,
+  propertyName: string,
+  validationType: string
+) {
+  const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
+
+  const foundValidation = validationMetadatas.find(
+    (validationMetadata: ValidationMetadata) =>
+      validationMetadata.propertyName === propertyName &&
+      validationMetadata.type === 'customValidation' &&
+      validationMetadata.constraints[0] === validationType
+  );
+
+  return foundValidation !== undefined;
+}
+
 // noinspection FunctionWithMultipleLoopsJS,OverlyComplexFunctionJS,FunctionTooLongJS,FunctionWithMoreThanThreeNegationsJS
 export default function setPropertyTypeValidationDecorators(
   typeClass: Function,
@@ -51,7 +68,9 @@ export default function setPropertyTypeValidationDecorators(
         if (classBodyNode.type === 'ClassProperty') {
           const propertyName = classBodyNode.key.name;
           if (classBodyNode.typeAnnotation === undefined) {
-            throw new Error('Missing type annotation for property: ' + propertyName + ' in ' + typeClass.name)
+            throw new Error(
+              'Missing type annotation for property: ' + propertyName + ' in ' + typeClass.name
+            );
           }
           const propertyTypeNameStart = classBodyNode.typeAnnotation.loc.start;
           const propertyTypeNameEnd = classBodyNode.typeAnnotation.loc.end;
@@ -69,7 +88,10 @@ export default function setPropertyTypeValidationDecorators(
           if (finalPropertyTypeName === 'boolean') {
             validationType = ValidationTypes.IS_BOOLEAN;
           } else if (finalPropertyTypeName === 'number') {
-            if (!doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.IS_INT)) {
+            if (
+              !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.IS_INT) &&
+              !doesPropertyContainCustomValidation(typeClass, propertyName, 'isBigInt')
+            ) {
               validationType = ValidationTypes.IS_NUMBER;
               constraints = [{}];
             }

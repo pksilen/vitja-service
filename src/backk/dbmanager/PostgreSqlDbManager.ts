@@ -1,4 +1,4 @@
-import { Pool, QueryConfig, QueryResult } from 'pg';
+import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { pg } from 'yesql';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -25,6 +25,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     public readonly schema: string
   ) {
     super();
+    types.setTypeParser(20, 'text', parseInt);
     this.pool = new Pool({
       user,
       host,
