@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- ID fields are bigint
 - sampleArg should use @Min value, and in update @Max value
 - TestValue() and ExpectAnyTestValue()  implemented using class-validator
 - Default readinessProbe should check db availability
@@ -13,7 +12,8 @@ TODO:
 - Add state to SalesItem: active, inactive, sold
 - Constraint for creating entity based on filter and given max value
   - SalesItem can be created for same userName and state: active only 100 maxItemCount
--Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
+- Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
+- In production, don't generate typedocs and postman tests
 - Handle exclude response fields in getProjection and createResultMaps
 -entityContainer should modify datatypes
 -Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request

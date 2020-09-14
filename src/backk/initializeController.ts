@@ -9,6 +9,7 @@ import setPropertyTypeValidationDecorators from './setPropertyTypeValidationDeco
 import testValueContainer from './testValueContainer';
 import getSrcFilenameForTypeName, { getFileNamesRecursively } from './getSrcFilenameForTypeName';
 import getServiceTypeNames from './getServiceTypeNames';
+import getValidationConstraint from './getValidationConstraint';
 
 function setNestedTypeAndValidationDecorators(
   typeClass: Function,
@@ -49,7 +50,6 @@ function setNestedTypeAndValidationDecorators(
 
 function getSampleArg(
   serviceTypes: { [key: string]: Function },
-  serviceBaseName: string,
   argTypeName: string,
   serviceMetadata: ServiceMetadata,
   isUpdate: boolean
@@ -57,6 +57,7 @@ function getSampleArg(
   const sampleArg: { [key: string]: any } = {};
   const typeProperties = serviceMetadata.types[argTypeName];
   const types = serviceMetadata.types;
+  const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
   const serviceEntityName =
     serviceBaseName.charAt(serviceBaseName.length - 1) === 's'
       ? serviceBaseName.slice(0, -1)
@@ -81,6 +82,8 @@ function getSampleArg(
       : finalPropertyTypeName;
 
     const testValue = testValueContainer.getTestValue(serviceTypes[argTypeName], propertyName);
+    const minValue = getValidationConstraint(serviceTypes[argTypeName], propertyName, 'min');
+    const maxValue = getValidationConstraint(serviceTypes[argTypeName], propertyName, 'max');
 
     if (testValue !== undefined) {
       sampleArg[propertyName] = testValue;
@@ -94,10 +97,14 @@ function getSampleArg(
       sampleArg[propertyName] = '123';
     } else if (finalPropertyTypeName.startsWith('integer') || finalPropertyTypeName.startsWith('bigint')) {
       sampleArg[propertyName] =
-        defaultValue === undefined ? (isUpdate ? 1234 : 123) : JSON.parse(defaultValue);
+        defaultValue === undefined ? (isUpdate ? maxValue : minValue) : JSON.parse(defaultValue);
     } else if (finalPropertyTypeName.startsWith('number')) {
       sampleArg[propertyName] =
-        defaultValue === undefined ? (isUpdate ? 1234.12 : 123.12) : JSON.parse(defaultValue);
+        defaultValue === undefined
+          ? isUpdate
+            ? parseFloat(maxValue.toFixed(2))
+            : parseFloat(minValue.toFixed(2))
+          : JSON.parse(defaultValue);
     } else if (finalPropertyTypeName.startsWith('boolean')) {
       sampleArg[propertyName] = defaultValue === undefined ? !isUpdate : JSON.parse(defaultValue);
     } else if (finalPropertyTypeName.startsWith('string')) {
@@ -114,7 +121,6 @@ function getSampleArg(
     } else if (types[finalPropertyTypeNameWithoutArraySuffix]) {
       sampleArg[propertyName] = getSampleArg(
         serviceTypes,
-        serviceBaseName,
         finalPropertyTypeNameWithoutArraySuffix,
         serviceMetadata,
         isUpdate
@@ -165,6 +171,8 @@ function getReturnValueTests(
       serviceTypes[returnValueTypeName],
       propertyName
     );
+    const minValue = getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'min');
+    const maxValue = getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'max');
 
     if (testValue !== undefined) {
       if (typeof testValue === 'string') {
@@ -190,10 +198,10 @@ function getReturnValueTests(
           break;
         case 'integer':
         case 'bigint':
-          expectedValue = isUpdate ? 1234 : 123;
+          expectedValue = isUpdate ? maxValue : minValue;
           break;
         case 'number':
-          expectedValue = isUpdate ? 1234.12 : 123.12;
+          expectedValue = isUpdate ? parseFloat(maxValue.toFixed(2)) : parseFloat(minValue.toFixed(2));
           break;
       }
     }
@@ -488,11 +496,8 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
         }
       }
 
-      const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
-
       const sampleArg = getSampleArg(
         (controller as any)[serviceMetadata.serviceName].Types,
-        serviceBaseName,
         functionMetadata.argType,
         serviceMetadata,
         isUpdate
@@ -510,7 +515,6 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
 
         const getFunctionSampleArg = getSampleArg(
           (controller as any)[serviceMetadata.serviceName].Types,
-          serviceBaseName,
           lastGetFunctionMetadata.argType,
           serviceMetadata,
           isUpdate
@@ -542,7 +546,6 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
 
         const getFunctionSampleArg = getSampleArg(
           (controller as any)[serviceMetadata.serviceName].Types,
-          serviceBaseName,
           lastGetFunctionMetadata.argType,
           serviceMetadata,
           true
