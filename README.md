@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Add try catch to entityContainer await dbManager calls
-- Enable sql statement logging for TRACE level only
 - Enable Error response's stacktrace when TRACE level only
 - Error message when update fails due to not found
 - OrderWithoutId state voi createssa olla vain yksi, mutta muuten joku 3:sta
@@ -61,10 +59,11 @@ TODO:
 - Response headers added Api gateway:
   - X-content-type-options: nosniff
   - Strict-Transport-Security: max-age 
-  - Own remote service function executor (Http)
-      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
-      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
+ - Own remote service function executor (Http)
+     - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
+     - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
 - Custom readinessProbe should use defaultReadinessProbe plus all other services it is using
+- Add Avro schema generation and content type support (avro-js)
     
 TODO NEXT RELEASE:
 - Date/Timestamp type support

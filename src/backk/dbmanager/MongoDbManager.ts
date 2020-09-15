@@ -1,5 +1,5 @@
 import { MongoClient, ObjectId } from 'mongodb';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOperations } from '../Backk';
 import { SalesItem } from '../../services/salesitems/types/SalesItem';
 import AbstractDbManager, { Field } from './AbstractDbManager';
