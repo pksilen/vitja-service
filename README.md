@@ -1,8 +1,7 @@
 # Vitja service
 
 TODO:
-- sampleArg should use @Min value, and in update @Max value
-- TestValue() and ExpectAnyTestValue()  implemented using class-validator
+- TestValue() and ExpectAnyTestValue() implemented using class-validator
 - Default readinessProbe should check db availability
 - Add try catch to entityContainer await dbManager calls
 - Enable sql statement logging for TRACE level only

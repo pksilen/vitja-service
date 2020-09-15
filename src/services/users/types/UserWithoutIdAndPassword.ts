@@ -1,5 +1,5 @@
 import { MaxLength } from "class-validator";
-import { UseTestValue } from "../../../backk/UseTestValue";
+import { ValueUsedInTests } from "../../../backk/ValueUsedInTests";
 import DefaultPaymentMethod from "./DefaultPaymentMethod";
 import PaymentMethod from "./PaymentMethod";
 
@@ -20,6 +20,6 @@ export default class UserWithoutIdAndPassword {
   paymentMethods!: PaymentMethod[];
 
   @MaxLength(24, { each: true})
-  @UseTestValue('123')
+  @ValueUsedInTests('123')
   favoriteSalesItemIds!: string[];
 }

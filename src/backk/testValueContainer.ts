@@ -1,13 +1,13 @@
 class TestValueContainer {
   private testValues: { [key: string]: any } = {};
-  private testValueTypes: { [key: string]: string } = {};
+  private expectAnyTestValue: { [key: string]: boolean } = {};
 
   addTestValue(type: Function, propertyName: string, testValue: any) {
     this.testValues[`${type.name}${propertyName}`] = testValue;
   }
 
-  addTestValueType(type: Function, propertyName: string, testValueType: string) {
-    this.testValueTypes[`${type.name}${propertyName}`] = testValueType;
+  addExpectAnyTestValue(type: Function, propertyName: string) {
+    this.expectAnyTestValue[`${type.name}${propertyName}`] = true;
   }
 
   getTestValue(type: Function, propertyName: string) {
@@ -20,11 +20,11 @@ class TestValueContainer {
     }
   }
 
-  getTestValueType(type: Function, propertyName: string) {
+  getExpectAnyTestValue(type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.testValueTypes[`${proto.constructor.name}${propertyName}`] !== undefined) {
-        return this.testValueTypes[`${proto.constructor.name}${propertyName}`];
+      if (this.expectAnyTestValue[`${proto.constructor.name}${propertyName}`] !== undefined) {
+        return this.expectAnyTestValue[`${proto.constructor.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }

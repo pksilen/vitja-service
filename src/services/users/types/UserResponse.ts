@@ -1,4 +1,4 @@
-import { ExpectTestValueOfType } from "../../../backk/ExpectTestValueOfType";
+import { ExpectAnyValueInTests } from "../../../backk/ExpectAnyValueInTests";
 import UserWithoutIdAndPassword from "./UserWithoutIdAndPassword";
 import { MaxLength } from "class-validator";
 
@@ -7,6 +7,6 @@ export default class UserResponse extends UserWithoutIdAndPassword {
   _id!: string;
 
   @MaxLength(16)
-  @ExpectTestValueOfType('string')
+  @ExpectAnyValueInTests()
   extraInfo!: string;
 }

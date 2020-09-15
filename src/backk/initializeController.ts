@@ -164,10 +164,10 @@ function getReturnValueTests(
     }
 
     let expectedValue: any;
-    let expectedType;
+    let allowAnyValue;
 
     const testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
-    const testValueType = testValueContainer.getTestValueType(
+    const expectAnyTestValue = testValueContainer.getExpectAnyTestValue(
       serviceTypes[returnValueTypeName],
       propertyName
     );
@@ -180,8 +180,8 @@ function getReturnValueTests(
       } else {
         expectedValue = testValue;
       }
-    } else if (testValueType !== undefined) {
-      expectedType = testValueType;
+    } else if (expectAnyTestValue !== undefined) {
+      allowAnyValue = true;
     } else if (propertyName === '_id') {
       expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
     } else if (propertyName.endsWith('Id')) {
@@ -224,44 +224,43 @@ function getReturnValueTests(
       }
     }
 
-    const expectation =
-      expectedType === undefined
-        ? `pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});`
-        : `pm.expect(response${responsePath}${propertyName}).to.be.a('${expectedType}');`;
+    const expectation = `pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});`;
 
-    if (isOptionalProperty) {
-      if (isArray) {
-        javascriptLines.push(
-          `pm.test("response${responsePath}${propertyName}", function () {
+    if (!allowAnyValue) {
+      if (isOptionalProperty) {
+        if (isArray) {
+          javascriptLines.push(
+            `pm.test("response${responsePath}${propertyName}", function () {
   if (response${responsePath}${propertyName} !== undefined) 
     return pm.expect(response${responsePath}${propertyName}).to.have.members([${expectedValue}]);
   else 
     return true; 
 })`
-        );
-      } else {
-        javascriptLines.push(
-          `pm.test("response${responsePath}${propertyName}", function () {
+          );
+        } else {
+          javascriptLines.push(
+            `pm.test("response${responsePath}${propertyName}", function () {
   if (response${responsePath}${propertyName} !== undefined) 
    return ${expectation}
   else 
     return true; 
 })`
-        );
-      }
-    } else {
-      if (isArray) {
-        javascriptLines.push(
-          `pm.test("response${responsePath}${propertyName}", function () {
+          );
+        }
+      } else {
+        if (isArray) {
+          javascriptLines.push(
+            `pm.test("response${responsePath}${propertyName}", function () {
   pm.expect(response${responsePath}${propertyName}).to.have.members([${expectedValue}]); 
 })`
-        );
-      } else {
-        javascriptLines.push(
-          `pm.test("response${responsePath}${propertyName}", function () {
+          );
+        } else {
+          javascriptLines.push(
+            `pm.test("response${responsePath}${propertyName}", function () {
   ${expectation}
 })`
-        );
+          );
+        }
       }
     }
   });
