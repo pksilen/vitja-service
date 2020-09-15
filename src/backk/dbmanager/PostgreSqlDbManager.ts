@@ -25,7 +25,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     public readonly schema: string
   ) {
     super();
+
     types.setTypeParser(20, 'text', parseInt);
+
     this.pool = new Pool({
       user,
       host,
@@ -37,6 +39,17 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async tryExecute<T>(dbOperationFunction: (pool: Pool) => Promise<T>): Promise<T> {
     return await dbOperationFunction(this.pool);
+  }
+
+  async isDbReady(): Promise<boolean> {
+    const createTableStatement = `CREATE TABLE IF NOT EXISTS ${this.schema}.__BACKK__ (dummy INT)`;
+
+    try {
+      await this.tryExecuteSql(createTableStatement);
+      return true;
+    } catch(error) {
+      return false;
+    }
   }
 
   async tryExecuteSql<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {

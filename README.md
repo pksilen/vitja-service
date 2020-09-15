@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- TestValue() and ExpectAnyTestValue() implemented using class-validator
 - Default readinessProbe should check db availability
 - Add try catch to entityContainer await dbManager calls
 - Enable sql statement logging for TRACE level only

@@ -25,6 +25,19 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Method not allowed.');
   }
 
+  async isDbReady(): Promise<boolean> {
+    try {
+      await this.tryExecute((client) =>
+        client
+          .db(this.dbName)
+          .collection('__backk__').findOne({})
+      );
+      return true;
+    } catch(error) {
+      return false;
+    }
+  }
+
   async createItem<T>(item: Omit<T, '_id'>, entityClass: new () => T): Promise<IdWrapper | ErrorResponse> {
     try {
       const writeOperationResult = await this.tryExecute((client) =>

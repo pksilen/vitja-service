@@ -1,7 +1,7 @@
-import { plainToClass } from 'class-transformer';
-import { validateOrReject, ValidationError } from 'class-validator';
-import { HttpException, HttpStatus } from '@nestjs/common';
-import throwHttpException from './throwHttpException';
+import { plainToClass } from "class-transformer";
+import { validateOrReject, ValidationError } from "class-validator";
+import { HttpException, HttpStatus } from "@nestjs/common";
+import throwHttpException from "./throwHttpException";
 
 function getValidationErrors(validationErrors: ValidationError[]): string {
   return validationErrors
@@ -25,11 +25,6 @@ export default async function executeServiceCall(
   if (serviceCall === 'metadataService.getServicesMetadata') {
     return controller.servicesMetadata;
   } else if (serviceCall === 'livenessCheckService.isAlive') {
-    return;
-  } else if (
-    serviceCall === 'readinessCheckService.isReady' &&
-    (!controller.readinessCheckService || !controller.readinessCheckService.isReady)
-  ) {
     return;
   }
 

@@ -1,5 +1,5 @@
 import { ErrorResponse } from '../../backk/Backk';
-import ReadinessCheckService from './ReadinessCheckService';
+import ReadinessCheckService from '../../backk/ReadinessCheckService';
 import { HttpStatus } from '@nestjs/common';
 
 export default class ReadinessCheckServiceImpl extends ReadinessCheckService {

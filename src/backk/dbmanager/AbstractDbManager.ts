@@ -13,6 +13,7 @@ export default abstract class AbstractDbManager {
 
   abstract tryExecute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T>;
   abstract tryExecuteSql<T>(sqlStatement: string): Promise<Field[]>;
+  abstract isDbReady(): Promise<boolean>;
 
   abstract createItem<T>(
     item: Omit<T, '_id'>,

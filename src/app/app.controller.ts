@@ -5,7 +5,7 @@ import OrdersService from "../services/orders/OrdersService";
 import initializeController from "../backk/initializeController";
 import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
 import executeServiceCall from "../backk/executeServiceCall";
-import ReadinessCheckService from "../services/readinesscheck/ReadinessCheckService";
+import ReadinessCheckService from "../backk/ReadinessCheckService";
 
 // noinspection JSUnusedLocalSymbols
 @Controller()
