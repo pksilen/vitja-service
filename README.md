@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Default readinessProbe should check db availability
 - Add try catch to entityContainer await dbManager calls
 - Enable sql statement logging for TRACE level only
 - Enable Error response's stacktrace when TRACE level only
