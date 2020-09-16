@@ -2,7 +2,7 @@ import ShoppingCartItem from '../../shoppingcart/types/ShoppingCartItem';
 import { Max, MaxLength, Min } from "class-validator";
 import IsBigInt from "../../../backk/IsBigInt";
 
-export default class OrderWithoutId {
+export default class OrderWithoutIdAndState {
   @MaxLength(24)
   userId!: string;
 
@@ -12,5 +12,4 @@ export default class OrderWithoutId {
   value!: number;
 
   shoppingCartItems!: ShoppingCartItem[];
-  state!: 'toBeDelivered' | 'delivering' | 'delivered';
 }

@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import OrdersService from './OrdersService';
 import Order from './types/Order';
-import OrderWithoutId from './types/OrderWithoutId';
+import OrderWithoutIdAndState from './types/OrderWithoutIdAndState';
 import UserIdAndPaging from '../users/types/UserIdAndPaging';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 
@@ -16,8 +16,12 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.deleteAllItems(Order);
   }
 
-  createOrder(orderWithoutId: OrderWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return this.dbManager.createItem(orderWithoutId, Order, this.Types);
+  createOrder(orderWithoutIdAndState: OrderWithoutIdAndState): Promise<IdWrapper | ErrorResponse> {
+    return this.dbManager.createItem(
+      { ...orderWithoutIdAndState, state: 'toBeDelivered' },
+      Order,
+      this.Types
+    );
   }
 
   getOrderById({ _id }: IdWrapper): Promise<Order | ErrorResponse> {

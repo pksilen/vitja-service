@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Error message when delete item fails due to not found
 - OrderWithoutId state voi createssa olla vain yksi, mutta muuten joku 3:sta
 - Add state to SalesItem: active, inactive, sold
 - Constraint for creating entity based on filter and given max value
