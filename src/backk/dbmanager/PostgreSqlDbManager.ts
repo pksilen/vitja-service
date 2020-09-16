@@ -1,5 +1,5 @@
 import { Pool, QueryConfig, QueryResult, types } from 'pg';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { pg } from 'yesql';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
@@ -11,6 +11,8 @@ import { getTypeMetadata } from '../generateServicesMetadata';
 import asyncForEach from '../asyncForEach';
 import entityContainer, { JoinSpec } from '../entityContainer';
 import AbstractDbManager, { Field } from './AbstractDbManager';
+import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
+import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -47,7 +49,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     try {
       await this.tryExecuteSql(createTableStatement);
       return true;
-    } catch(error) {
+    } catch (error) {
       return false;
     }
   }
@@ -167,11 +169,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         _id
       };
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -222,11 +220,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       this.transformResults(rows, entityClass, Types);
       return rows;
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -241,10 +235,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       if (result.rows.length === 0) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          errorMessage: `Item with _id: ${_id} not found`
-        };
+        return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
       }
 
       const resultMaps = this.createResultMaps(entityClass, Types);
@@ -257,11 +248,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       this.transformResults(rows, entityClass, Types);
       return rows[0];
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -278,10 +265,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       if (result.rows.length === 0) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          errorMessage: `Item with _ids: ${_ids} not found`
-        };
+        return getNotFoundErrorResponse(`Item with _ids: ${_ids} not found`);
       }
 
       const resultMaps = this.createResultMaps(entityClass, Types);
@@ -294,11 +278,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       this.transformResults(rows, entityClass, Types);
       return rows;
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -318,10 +298,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       if (result.rows.length === 0) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          errorMessage: `Item with ${fieldName}: ${fieldValue} not found`
-        };
+        return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
       }
 
       const resultMaps = this.createResultMaps(entityClass, Types);
@@ -334,11 +311,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       this.transformResults(rows, entityClass, Types);
       return rows[0];
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -358,10 +331,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       if (result.rows.length === 0) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          errorMessage: `Item with ${fieldName}: ${fieldValue} not found`
-        };
+        return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
       }
 
       const resultMaps = this.createResultMaps(entityClass, Types);
@@ -374,11 +344,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       this.transformResults(rows, entityClass, Types);
       return rows;
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -420,7 +386,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         } else if (isArray) {
           await asyncForEach((restOfItem as any)[fieldName], async (subItem: any) => {
             const insertStatement = `UPDATE ${this.schema}.${entityClass.name +
-            fieldName.slice(0, -1)} SET ${fieldName.slice(0, -1)} = $1 WHERE ${idFieldName} = $2`;
+              fieldName.slice(0, -1)} SET ${fieldName.slice(0, -1)} = $1 WHERE ${idFieldName} = $2`;
             await this.tryExecuteSql(insertStatement, [subItem, _id]);
           });
         } else if (fieldName !== '_id') {
@@ -438,12 +404,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         `UPDATE ${this.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
         [_id === undefined ? restOfItem.id : _id, ...values]
       );
-    } catch(error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+    } catch (error) {
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -461,11 +423,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       await this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name} WHERE _id = $1`, [_id]);
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -479,13 +437,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       await this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name}`);
-    } catch(error) {
-      console.log(error);
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+    } catch (error) {
+      return getInternalServerErrorResponse(error);
     }
   }
 

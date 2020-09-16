@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- Enable Error response's stacktrace when TRACE level only
+- Enable Error response's stacktrace when Debug level only
 - Error message when update fails due to not found
 - OrderWithoutId state voi createssa olla vain yksi, mutta muuten joku 3:sta
 - Add state to SalesItem: active, inactive, sold
@@ -63,6 +63,7 @@ TODO:
      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
 - Custom readinessProbe should use defaultReadinessProbe plus all other services it is using
+- executeMultipleInParallel endpoint, to execute multiple serviceCalls in parallel
 - Add Avro schema generation and content type support (avro-js)
     
 TODO NEXT RELEASE:

@@ -3,6 +3,8 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOperations } from '../Backk';
 import { SalesItem } from '../../services/salesitems/types/SalesItem';
 import AbstractDbManager, { Field } from './AbstractDbManager';
+import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
+import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -30,10 +32,11 @@ export default class MongoDbManager extends AbstractDbManager {
       await this.tryExecute((client) =>
         client
           .db(this.dbName)
-          .collection('__backk__').findOne({})
+          .collection('__backk__')
+          .findOne({})
       );
       return true;
-    } catch(error) {
+    } catch (error) {
       return false;
     }
   }
@@ -51,11 +54,7 @@ export default class MongoDbManager extends AbstractDbManager {
         _id: writeOperationResult.insertedId.toHexString()
       };
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -83,11 +82,7 @@ export default class MongoDbManager extends AbstractDbManager {
         return cursor.toArray();
       });
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -104,16 +99,9 @@ export default class MongoDbManager extends AbstractDbManager {
         return foundItem;
       }
 
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        errorMessage: `Item with _id: ${_id} not found`
-      };
+      return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -131,16 +119,9 @@ export default class MongoDbManager extends AbstractDbManager {
         return foundItems;
       }
 
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        errorMessage: `Item with _ids: ${_ids} not found`
-      };
+      return getNotFoundErrorResponse(`Item with _ids: ${_ids} not found`);
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -161,16 +142,9 @@ export default class MongoDbManager extends AbstractDbManager {
         return foundItem;
       }
 
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        errorMessage: `Item with ${fieldName}: ${fieldValue} not found`
-      };
+      return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -192,16 +166,9 @@ export default class MongoDbManager extends AbstractDbManager {
         return foundItem;
       }
 
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        errorMessage: `Item with ${fieldName}: ${fieldValue} not found`
-      };
+      return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -218,17 +185,10 @@ export default class MongoDbManager extends AbstractDbManager {
       );
 
       if (updateOperationResult.matchedCount !== 1) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          errorMessage: `Item with _id: ${_id} not found`
-        };
+        return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
       }
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -242,17 +202,10 @@ export default class MongoDbManager extends AbstractDbManager {
       );
 
       if (deleteOperationResult.deletedCount !== 1) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          errorMessage: `Item with _id: ${_id} not found`
-        };
+        return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
       }
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -265,11 +218,7 @@ export default class MongoDbManager extends AbstractDbManager {
           .deleteMany({})
       );
     } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-        stackTrace: error.stack
-      };
+      return getInternalServerErrorResponse(error);
     }
   }
 }
