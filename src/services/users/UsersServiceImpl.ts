@@ -13,12 +13,12 @@ export default class UsersServiceImpl extends UsersService {
     super();
   }
 
-  async deleteAllUsers(): Promise<void | ErrorResponse> {
-    return await this.abstractDbManager.deleteAllItems(User);
+  deleteAllUsers(): Promise<void | ErrorResponse> {
+    return this.abstractDbManager.deleteAllItems(User);
   }
 
-  async createUser(userWithoutId: UserWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await this.abstractDbManager.createItem(userWithoutId, User, this.Types);
+  createUser(userWithoutId: UserWithoutId): Promise<IdWrapper | ErrorResponse> {
+    return this.abstractDbManager.createItem(userWithoutId, User, this.Types);
   }
 
   async getUserByUserName(userNameWrapper: UserNameWrapper): Promise<UserResponse | ErrorResponse> {
@@ -40,11 +40,11 @@ export default class UsersServiceImpl extends UsersService {
     return userOrError;
   }
 
-  async updateUser(user: User): Promise<void | ErrorResponse> {
-    await this.abstractDbManager.updateItem(user, User, this.Types);
+  updateUser(user: User): Promise<void | ErrorResponse> {
+    return this.abstractDbManager.updateItem(user, User, this.Types);
   }
 
-  async deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse> {
-    await this.abstractDbManager.deleteItemById(idWrapper._id, User);
+  deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse> {
+    return this.abstractDbManager.deleteItemById(idWrapper._id, User);
   }
 }

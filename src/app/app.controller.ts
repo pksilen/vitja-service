@@ -22,7 +22,7 @@ export class AppController {
 
   @Post(':serviceCall')
   @HttpCode(HttpStatus.OK)
-  async processRequests(
+  processRequests(
     @Param() params: { serviceCall: string },
     @Body() serviceCallArgument: object
   ): Promise<object | void> {

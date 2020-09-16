@@ -45,7 +45,7 @@ export default abstract class AbstractDbManager {
     Types: object
   ): Promise<T[] | ErrorResponse>;
 
-  abstract updateItem<T extends { _id?: string; id?: string }>(
+  abstract updateItem<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: T,
     entityClass: Function,
     Types: object

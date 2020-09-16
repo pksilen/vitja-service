@@ -348,11 +348,20 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async updateItem<T extends { _id?: string; id?: string }>(
+  async updateItem<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: T,
     entityClass: Function,
-    Types: object
+    Types: object,
+    shouldCheckIfItemExists: boolean = true
   ): Promise<void | ErrorResponse> {
+    if (shouldCheckIfItemExists) {
+      const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
+      if ('errorMessage' in itemOrErrorResponse) {
+        console.log(itemOrErrorResponse);
+        return itemOrErrorResponse;
+      }
+    }
+
     try {
       const entityMetadata = getTypeMetadata(entityClass as any);
       const columns: any = [];
@@ -375,14 +384,19 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         ) {
           const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
           await asyncForEach((restOfItem as any)[fieldName], async (subItem: any) => {
-            await this.updateItem(subItem, (Types as any)[relationEntityName], Types);
+            await this.updateItem(subItem, (Types as any)[relationEntityName], Types, false);
           });
         } else if (
           baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
           baseFieldTypeName[0] !== '('
         ) {
           const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-          await this.updateItem((restOfItem as any)[fieldName], (Types as any)[relationEntityName], Types);
+          await this.updateItem(
+            (restOfItem as any)[fieldName],
+            (Types as any)[relationEntityName],
+            Types,
+            false
+          );
         } else if (isArray) {
           await asyncForEach((restOfItem as any)[fieldName], async (subItem: any) => {
             const insertStatement = `UPDATE ${this.schema}.${entityClass.name +

@@ -172,7 +172,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async updateItem<T extends { _id?: string; id?: string }>(
+  async updateItem<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: T,
     entityClass: new () => T
   ): Promise<void | ErrorResponse> {

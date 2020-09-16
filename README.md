@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Enable Error response's stacktrace when Debug level only
 - Error message when update fails due to not found
 - OrderWithoutId state voi createssa olla vain yksi, mutta muuten joku 3:sta
 - Add state to SalesItem: active, inactive, sold
