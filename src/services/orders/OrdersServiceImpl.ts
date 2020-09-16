@@ -12,27 +12,27 @@ export default class OrdersServiceImpl extends OrdersService {
     super();
   }
 
-  async deleteAllOrders(): Promise<void | ErrorResponse> {
-    return await this.dbManager.deleteAllItems(Order);
+  deleteAllOrders(): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteAllItems(Order);
   }
 
-  async createOrder(orderWithoutId: OrderWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await this.dbManager.createItem(orderWithoutId, Order, this.Types);
+  createOrder(orderWithoutId: OrderWithoutId): Promise<IdWrapper | ErrorResponse> {
+    return this.dbManager.createItem(orderWithoutId, Order, this.Types);
   }
 
-  async getOrderById({ _id }: IdWrapper): Promise<Order | ErrorResponse> {
-    return await this.dbManager.getItemById(_id, Order, this.Types);
+  getOrderById({ _id }: IdWrapper): Promise<Order | ErrorResponse> {
+    return this.dbManager.getItemById(_id, Order, this.Types);
   }
 
-  async getOrderByUserId({ userId }: UserIdAndPaging): Promise<Order | ErrorResponse> {
-    return await this.dbManager.getItemBy<Order>('userId', userId, Order, this.Types);
+  getOrderByUserId({ userId }: UserIdAndPaging): Promise<Order | ErrorResponse> {
+    return this.dbManager.getItemBy<Order>('userId', userId, Order, this.Types);
   }
 
-  async updateOrder(order: Order): Promise<void | ErrorResponse> {
-    return await this.dbManager.updateItem(order, Order, this.Types);
+  updateOrder(order: Order): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(order, Order, this.Types);
   }
 
-  async deleteOrderById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
-    await this.dbManager.deleteItemById(_id, Order);
+  deleteOrderById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteItemById(_id, Order);
   }
 }

@@ -16,19 +16,19 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     super();
   }
 
-  async deleteAllSalesItems(): Promise<void | ErrorResponse> {
-    return await this.dbManager.deleteAllItems(SalesItem);
+  deleteAllSalesItems(): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteAllItems(SalesItem);
   }
 
-  async createSalesItem(salesItemWithoutId: SalesItemWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await this.dbManager.createItem(
+  createSalesItem(salesItemWithoutId: SalesItemWithoutId): Promise<IdWrapper | ErrorResponse> {
+    return this.dbManager.createItem(
       { ...salesItemWithoutId, createdTimestampInSecs: Math.round(Date.now() / 1000) },
       SalesItem,
       this.Types
     );
   }
 
-  async getSalesItems({
+  getSalesItems({
     textFilter,
     areas,
     productDepartments,
@@ -70,26 +70,26 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       ];
     }
 
-    return await this.dbManager.getItems(filters, postQueryOperations, SalesItem, this.Types);
+    return this.dbManager.getItems(filters, postQueryOperations, SalesItem, this.Types);
   }
 
-  async getSalesItemsByUserId({ userId }: UserIdAndPaging): Promise<SalesItem[] | ErrorResponse> {
-    return await this.dbManager.getItemsBy<SalesItem>('userId', userId, SalesItem, this.Types);
+  getSalesItemsByUserId({ userId }: UserIdAndPaging): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getItemsBy<SalesItem>('userId', userId, SalesItem, this.Types);
   }
 
-  async getSalesItemsByIds({ _ids }: IdsAndPaging): Promise<SalesItem[] | ErrorResponse> {
-    return await this.dbManager.getItemsByIds(_ids, SalesItem, this.Types);
+  getSalesItemsByIds({ _ids }: IdsAndPaging): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getItemsByIds(_ids, SalesItem, this.Types);
   }
 
-  async getSalesItemById({ _id }: IdWrapper): Promise<SalesItem | ErrorResponse> {
-    return await this.dbManager.getItemById(_id, SalesItem, this.Types);
+  getSalesItemById({ _id }: IdWrapper): Promise<SalesItem | ErrorResponse> {
+    return this.dbManager.getItemById(_id, SalesItem, this.Types);
   }
 
-  async updateSalesItem(salesItem: SalesItem): Promise<void | ErrorResponse> {
-    await this.dbManager.updateItem(salesItem, SalesItem, this.Types);
+  updateSalesItem(salesItem: SalesItem): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(salesItem, SalesItem, this.Types);
   }
 
-  async deleteSalesItemById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
-    await this.dbManager.deleteItemById(_id, SalesItem);
+  deleteSalesItemById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteItemById(_id, SalesItem);
   }
 }

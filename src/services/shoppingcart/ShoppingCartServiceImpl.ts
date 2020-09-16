@@ -12,23 +12,23 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     super();
   }
 
-  async deleteAllShoppingCarts(): Promise<void | ErrorResponse> {
-    return await this.dbManager.deleteAllItems(ShoppingCart);
+  deleteAllShoppingCarts(): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteAllItems(ShoppingCart);
   }
 
-  async createShoppingCart(shoppingCartWithoutId: ShoppingCartWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return await this.dbManager.createItem(shoppingCartWithoutId, ShoppingCart, this.Types);
+  createShoppingCart(shoppingCartWithoutId: ShoppingCartWithoutId): Promise<IdWrapper | ErrorResponse> {
+    return this.dbManager.createItem(shoppingCartWithoutId, ShoppingCart, this.Types);
   }
 
-  async getShoppingCartByUserId({ userId }: UserIdAndPaging): Promise<ShoppingCart | ErrorResponse> {
-    return await this.dbManager.getItemBy('userId', userId, ShoppingCart, this.Types);
+  getShoppingCartByUserId({ userId }: UserIdAndPaging): Promise<ShoppingCart | ErrorResponse> {
+    return this.dbManager.getItemBy('userId', userId, ShoppingCart, this.Types);
   }
 
-  async updateShoppingCart(shoppingCart: ShoppingCart): Promise<void | ErrorResponse> {
-    await this.dbManager.updateItem(shoppingCart, ShoppingCart, this.Types);
+  updateShoppingCart(shoppingCart: ShoppingCart): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(shoppingCart, ShoppingCart, this.Types);
   }
 
-  async deleteShoppingCartById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
-    await this.dbManager.deleteItemById(_id, ShoppingCart);
+  deleteShoppingCartById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteItemById(_id, ShoppingCart);
   }
 }
