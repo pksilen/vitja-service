@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import OrdersService from './OrdersService';
 import Order from './types/Order';
-import OrderWithoutIdAndState from './types/OrderWithoutIdAndState';
+import OrderWithoutIdAndCreatedTimestampAndState from './types/OrderWithoutIdAndCreatedTimestampAndState';
 import UserIdAndPaging from '../users/types/UserIdAndPaging';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
-import OrderWithoutState from "./types/OrderWithoutState";
-import OrderIdAndState from "./types/OrderIdAndState";
+import OrderWithoutCreatedTimestampAndState from './types/OrderWithoutCreatedTimestampAndState';
+import OrderIdAndState from './types/OrderIdAndState';
 
 @Injectable()
 export default class OrdersServiceImpl extends OrdersService {
@@ -18,9 +18,15 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.deleteAllItems(Order);
   }
 
-  createOrder(orderWithoutIdAndState: OrderWithoutIdAndState): Promise<IdWrapper | ErrorResponse> {
+  createOrder(
+    orderWithoutIdAndCreatedTimestampAndState: OrderWithoutIdAndCreatedTimestampAndState
+  ): Promise<IdWrapper | ErrorResponse> {
     return this.dbManager.createItem(
-      { ...orderWithoutIdAndState, state: 'toBeDelivered' },
+      {
+        ...orderWithoutIdAndCreatedTimestampAndState,
+        createdTimestampInSecs: Math.round(Date.now() / 1000),
+        state: 'toBeDelivered'
+      },
       Order,
       this.Types
     );
@@ -34,8 +40,10 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.getItemById(_id, Order, this.Types);
   }
 
-  updateOrder(order: OrderWithoutState): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(order, Order, this.Types);
+  updateOrder(
+    orderWithoutCreatedTimestampAndState: OrderWithoutCreatedTimestampAndState
+  ): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(orderWithoutCreatedTimestampAndState, Order, this.Types);
   }
 
   updateOrderState(orderIdAndState: OrderIdAndState): Promise<void | ErrorResponse> {

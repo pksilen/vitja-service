@@ -2,7 +2,7 @@ import ShoppingCartItem from '../../shoppingcart/types/ShoppingCartItem';
 import { Max, MaxLength, Min } from "class-validator";
 import IsBigInt from "../../../backk/IsBigInt";
 
-export default class OrderWithoutIdAndState {
+export default class OrderWithoutIdAndCreatedTimestampAndState {
   @MaxLength(24)
   userId!: string;
 
