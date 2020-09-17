@@ -3,6 +3,7 @@
 TODO:
 - Add state to SalesItem: forSale, sold
 - Add @Private annotation for Service/Function
+- Add projection, paging, sorting for other get multi methods
 - Constraint for creating entity based on filter and given max value
   - SalesItem can be created for same userName and state: active only 100 maxItemCount
 - Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin

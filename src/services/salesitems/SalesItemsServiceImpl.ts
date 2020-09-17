@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { ErrorResponse, IdsAndPaging, IdWrapper } from '../../backk/Backk';
 import SalesItemsFilters from './types/SalesItemsFilters';
 import { SalesItem } from './types/SalesItem';
-import SalesItemWithoutId from './types/SalesItemWithoutId';
+import SalesItemWithoutIdAndCreatedTimestampAndState from './types/SalesItemWithoutIdAndCreatedTimestampAndState';
 import UserIdAndPaging from '../users/types/UserIdAndPaging';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import SalesItemsService from './SalesItemsService';
 import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
 import SqlInExpression from '../../backk/sqlexpression/SqlInExpression';
 import SqlExpression from '../../backk/sqlexpression/SqlExpression';
+import SalesItemWithoutCreatedTimestampAndState from './types/SalesItemWithoutCreatedTimestampAndState';
+import SalesItemIdAndState from './types/SalesItemIdAndState';
 
 @Injectable()
 export default class SalesItemsServiceImpl extends SalesItemsService {
@@ -20,9 +22,15 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.deleteAllItems(SalesItem);
   }
 
-  createSalesItem(salesItemWithoutId: SalesItemWithoutId): Promise<IdWrapper | ErrorResponse> {
+  createSalesItem(
+    salesItemWithoutIdAndCreatedTimestampAndState: SalesItemWithoutIdAndCreatedTimestampAndState
+  ): Promise<IdWrapper | ErrorResponse> {
     return this.dbManager.createItem(
-      { ...salesItemWithoutId, createdTimestampInSecs: Math.round(Date.now() / 1000) },
+      {
+        ...salesItemWithoutIdAndCreatedTimestampAndState,
+        createdTimestampInSecs: Math.round(Date.now() / 1000),
+        state: 'forSale'
+      },
       SalesItem,
       this.Types
     );
@@ -85,8 +93,14 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.getItemById(_id, SalesItem, this.Types);
   }
 
-  updateSalesItem(salesItem: SalesItem): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(salesItem, SalesItem, this.Types);
+  updateSalesItem(
+    salesItemWithoutCreatedTimestampAndState: SalesItemWithoutCreatedTimestampAndState
+  ): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(salesItemWithoutCreatedTimestampAndState, SalesItem, this.Types);
+  }
+
+  updateSalesItemState(salesItemIdAndState: SalesItemIdAndState): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(salesItemIdAndState, SalesItem, this.Types);
   }
 
   deleteSalesItemById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
