@@ -5,6 +5,8 @@ import Order from './types/Order';
 import OrderWithoutIdAndState from './types/OrderWithoutIdAndState';
 import UserIdAndPaging from '../users/types/UserIdAndPaging';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
+import OrderWithoutState from "./types/OrderWithoutState";
+import OrderIdAndState from "./types/OrderIdAndState";
 
 @Injectable()
 export default class OrdersServiceImpl extends OrdersService {
@@ -24,16 +26,20 @@ export default class OrdersServiceImpl extends OrdersService {
     );
   }
 
+  getOrdersByUserId({ userId }: UserIdAndPaging): Promise<Order[] | ErrorResponse> {
+    return this.dbManager.getItemsBy<Order>('userId', userId, Order, this.Types);
+  }
+
   getOrderById({ _id }: IdWrapper): Promise<Order | ErrorResponse> {
     return this.dbManager.getItemById(_id, Order, this.Types);
   }
 
-  getOrderByUserId({ userId }: UserIdAndPaging): Promise<Order | ErrorResponse> {
-    return this.dbManager.getItemBy<Order>('userId', userId, Order, this.Types);
+  updateOrder(order: OrderWithoutState): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(order, Order, this.Types);
   }
 
-  updateOrder(order: Order): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(order, Order, this.Types);
+  updateOrderState(orderIdAndState: OrderIdAndState): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(orderIdAndState, Order, this.Types);
   }
 
   deleteOrderById({ _id }: IdWrapper): Promise<void | ErrorResponse> {

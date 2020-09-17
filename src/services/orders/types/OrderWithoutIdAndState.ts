@@ -9,7 +9,7 @@ export default class OrderWithoutIdAndState {
   @IsBigInt()
   @Min(0)
   @Max(10000)
-  value!: number;
+  testValue!: number;
 
   shoppingCartItems!: ShoppingCartItem[];
 }

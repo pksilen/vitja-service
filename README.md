@@ -1,15 +1,16 @@
 # Vitja service
 
 TODO:
-- OrderWithoutId state voi createssa olla vain yksi, mutta muuten joku 3:sta
-- Add state to SalesItem: active, inactive, sold
+- Add state to SalesItem: forSale, sold
+- Add @Private annotation for Service/Function
 - Constraint for creating entity based on filter and given max value
   - SalesItem can be created for same userName and state: active only 100 maxItemCount
 - Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
 - In production, don't generate typedocs and postman tests
 - Handle exclude response fields in getProjection and createResultMaps
--entityContainer should modify datatypes
+- Check enum values integer/number
 -Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
+- @NoAutoTests annotation for service
 -AnyRole/Role() annotation
 -AnyUser/User(userFieldName) annotation
 -UserOrRole('userName', 'admin')

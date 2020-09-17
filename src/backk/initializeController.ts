@@ -96,28 +96,20 @@ function getSampleArg(
     } else if (propertyName === 'id') {
       sampleArg[propertyName] = '123';
     } else if (finalPropertyTypeName.startsWith('integer') || finalPropertyTypeName.startsWith('bigint')) {
-      sampleArg[propertyName] =
-        defaultValue === undefined ? (isUpdate ? maxValue : minValue) : JSON.parse(defaultValue);
+      sampleArg[propertyName] = isUpdate ? maxValue : minValue;
     } else if (finalPropertyTypeName.startsWith('number')) {
-      sampleArg[propertyName] =
-        defaultValue === undefined
-          ? isUpdate
-            ? parseFloat(maxValue.toFixed(2))
-            : parseFloat(minValue.toFixed(2))
-          : JSON.parse(defaultValue);
+      sampleArg[propertyName] = isUpdate ? parseFloat(maxValue.toFixed(2)) : parseFloat(minValue.toFixed(2));
     } else if (finalPropertyTypeName.startsWith('boolean')) {
-      sampleArg[propertyName] = defaultValue === undefined ? !isUpdate : JSON.parse(defaultValue);
+      sampleArg[propertyName] = !isUpdate;
     } else if (finalPropertyTypeName.startsWith('string')) {
-      sampleArg[propertyName] =
-        defaultValue === undefined ? (isUpdate ? 'abcd' : 'abc') : JSON.parse(defaultValue);
+      sampleArg[propertyName] = isUpdate ? 'abcd' : 'abc';
     } else if (finalPropertyTypeName.startsWith('(')) {
-      sampleArg[propertyName] =
-        defaultValue === undefined
-          ? finalPropertyTypeName
-              .slice(1)
-              .split(/[|)]/)[0]
-              .split("'")[1]
-          : JSON.parse(defaultValue);
+      const enumValues = finalPropertyTypeName.slice(1).split(/[|)]/);
+      if (isUpdate && enumValues.length >= 3) {
+        sampleArg[propertyName] = enumValues[1].split("'")[1];
+      } else {
+        sampleArg[propertyName] = enumValues[0].split("'")[1];
+      }
     } else if (types[finalPropertyTypeNameWithoutArraySuffix]) {
       sampleArg[propertyName] = getSampleArg(
         serviceTypes,
@@ -142,7 +134,8 @@ function getReturnValueTests(
   serviceMetadata: ServiceMetadata,
   responsePath: string,
   isOptional: boolean,
-  isUpdate: boolean
+  isUpdate: boolean,
+  sampleArg: object | undefined
 ): string[] {
   const returnValueMetadata = serviceMetadata.types[returnValueTypeName];
   const types = serviceMetadata.types;
@@ -155,6 +148,10 @@ function getReturnValueTests(
     responsePath === '[0].' || responsePath === '.' ? ['const response = pm.response.json();'] : [];
 
   Object.entries(returnValueMetadata).forEach(([propertyName, propertyTypeName]) => {
+    if (sampleArg && (sampleArg as any)[propertyName] === undefined) {
+      return;
+    }
+
     const isOptionalProperty = propertyTypeName.startsWith('?') || isOptional;
     const isArray = propertyTypeName.endsWith('[]');
     let finalPropertyTypeName = propertyTypeName;
@@ -207,7 +204,8 @@ function getReturnValueTests(
     }
 
     if (finalPropertyTypeName.startsWith('(')) {
-      expectedValue = finalPropertyTypeName.slice(1).split(/[|)]/)[0];
+      const enumValues = finalPropertyTypeName.slice(1).split(/[|)]/);
+      expectedValue = isUpdate && enumValues.length >= 3 ? enumValues[1] : enumValues[0];
     } else if (types[finalPropertyTypeName]) {
       const finalResponsePath = responsePath + propertyName + (isArray ? '[0]' : '') + '.';
       if (!isOptionalProperty) {
@@ -217,7 +215,8 @@ function getReturnValueTests(
           serviceMetadata,
           finalResponsePath,
           isOptional,
-          isUpdate
+          isUpdate,
+          sampleArg ? (sampleArg as any)[propertyName] : undefined
         );
         javascriptLines = javascriptLines.concat(returnValueTests);
         return javascriptLines;
@@ -273,7 +272,8 @@ function getTests(
   serviceMetadata: ServiceMetadata,
   functionMetadata: FunctionMetadata,
   isUpdate: boolean,
-  expectedResponseStatusCode = 200
+  expectedResponseStatusCode = 200,
+  sampleArg: object | undefined = undefined
 ): object | undefined {
   const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
   const serviceEntityName =
@@ -329,7 +329,8 @@ function getTests(
                 serviceMetadata,
                 isArray ? '[0].' : '.',
                 isOptional,
-                isUpdate
+                isUpdate,
+                sampleArg
               )
             ]
     }
@@ -490,7 +491,7 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
         isUpdate = true;
         if (lastGetFunctionMetadata === undefined) {
           throw new Error(
-            'There must be a get function defined before update function in: ' + serviceMetadata.serviceName
+            'There must be a get function defined before update/modify/change function in: ' + serviceMetadata.serviceName
           );
         }
       }
@@ -509,7 +510,9 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
           (controller as any)[serviceMetadata.serviceName].Types,
           serviceMetadata,
           lastGetFunctionMetadata,
-          true
+          true,
+          200,
+          sampleArg
         );
 
         const getFunctionSampleArg = getSampleArg(

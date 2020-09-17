@@ -368,6 +368,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const values: any = [];
 
       await asyncForEach(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]: [any, any]) => {
+        if((restOfItem as any)[fieldName] === undefined) {
+          return;
+        }
+
         let baseFieldTypeName = fieldTypeName;
         let isArray = false;
         const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
