@@ -18,7 +18,15 @@
         "secondaryImageDataUris": ["abc"]
       },
       "response": {
-        "statusCode": 200
+        "statusCode": 200,
+        "tests": [
+          {
+            "name": "set salesItemId",
+            "exec": [
+              "pm.collectionVariables.set(\"salesItemId\", pm.response.json()._id)"
+            ]
+          }
+        ]
       }
     },
     "tests": [

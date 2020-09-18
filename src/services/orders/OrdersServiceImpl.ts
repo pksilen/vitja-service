@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import OrdersService from './OrdersService';
 import Order from './types/Order';
@@ -7,10 +7,17 @@ import UserIdAndPaging from '../users/types/UserIdAndPaging';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 import OrderWithoutCreatedTimestampAndState from './types/OrderWithoutCreatedTimestampAndState';
 import OrderIdAndState from './types/OrderIdAndState';
+import SalesItemsService from '../salesitems/SalesItemsService';
+import asyncForEach from '../../backk/asyncForEach';
+import ShoppingCartItem from '../shoppingcart/types/ShoppingCartItem';
+import getInternalServerErrorResponse from '../../backk/getInternalServerErrorResponse';
 
 @Injectable()
 export default class OrdersServiceImpl extends OrdersService {
-  constructor(private readonly dbManager: AbstractDbManager) {
+  constructor(
+    private readonly dbManager: AbstractDbManager,
+    private readonly salesItemsService: SalesItemsService
+  ) {
     super();
   }
 
@@ -18,18 +25,33 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.deleteAllItems(Order);
   }
 
-  createOrder(
+  async createOrder(
     orderWithoutIdAndCreatedTimestampAndState: OrderWithoutIdAndCreatedTimestampAndState
   ): Promise<IdWrapper | ErrorResponse> {
-    return this.dbManager.createItem(
-      {
-        ...orderWithoutIdAndCreatedTimestampAndState,
-        createdTimestampInSecs: Math.round(Date.now() / 1000),
-        state: 'toBeDelivered'
+    const errorResponse = await orderWithoutIdAndCreatedTimestampAndState.shoppingCartItems.reduce(
+      async (errorResponseAccumulator: Promise<void | ErrorResponse>, shoppingCartItem) => {
+        return (
+          (await errorResponseAccumulator) ||
+          (await this.salesItemsService.updateSalesItemState({
+            _id: shoppingCartItem.salesItemId,
+            state: 'sold'
+          }))
+        );
       },
-      Order,
-      this.Types
+      Promise.resolve(undefined)
     );
+
+    return errorResponse
+      ? errorResponse
+      : await this.dbManager.createItem(
+          {
+            ...orderWithoutIdAndCreatedTimestampAndState,
+            createdTimestampInSecs: Math.round(Date.now() / 1000),
+            state: 'toBeDelivered'
+          },
+          Order,
+          this.Types
+        );
   }
 
   getOrdersByUserId({ userId }: UserIdAndPaging): Promise<Order[] | ErrorResponse> {

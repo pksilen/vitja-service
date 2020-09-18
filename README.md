@@ -1,8 +1,10 @@
 # Vitja service
 
 TODO:
-- Add @Private annotation for Service/Function
+- Add update to check first if value is certain (e.g forSale)
 - Add projection, paging, sorting for other get multi methods
+- Default transactional methods: update/delete/create in dbManager
+- Transactional annotation
 - Constraint for creating entity based on filter and given max value
   - SalesItem can be created for same userName and state: active only 100 maxItemCount
 - Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
@@ -63,7 +65,7 @@ TODO:
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
 - Custom readinessProbe should use defaultReadinessProbe plus all other services it is using
 - executeMultipleInParallel endpoint, to execute multiple serviceCalls in parallel
-- Add Avro schema generation and content type support (avro-js)
+- Mongodb transactions
     
 TODO NEXT RELEASE:
 - Date/Timestamp type support
@@ -84,3 +86,4 @@ TODO NEXT RELEASE:
  https://en.wikipedia.org/wiki/Select_(SQL)#Method_with_filter_(it_is_more_sophisticated_but_necessary_for_very_big_dataset)
  
 - Kafka service, create function(s) in Kafkacontroller for processing different topic(s)
+- Add Avro schema generation and content type support (avro-js)
