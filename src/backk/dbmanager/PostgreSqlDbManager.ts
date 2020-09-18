@@ -8,11 +8,12 @@ import { ErrorResponse, IdWrapper, PostQueryOperations, Projection } from '../Ba
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
 import SqlExpression from '../sqlexpression/SqlExpression';
 import { getTypeMetadata } from '../generateServicesMetadata';
-import asyncForEach from '../asyncForEach';
+import forEachAsyncSequential from '../forEachAsyncSequential';
 import entityContainer, { JoinSpec } from '../entityContainer';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
+import forEachAsyncParallel from '../forEachAsyncParallel';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -128,42 +129,45 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       const _id = result.rows[0]?._id?.toString();
 
-      await asyncForEach(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]: [any, any]) => {
-        let baseFieldTypeName = fieldTypeName;
-        let isArray = false;
-        const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+      await forEachAsyncParallel(
+        Object.entries(entityMetadata),
+        async ([fieldName, fieldTypeName]: [any, any]) => {
+          let baseFieldTypeName = fieldTypeName;
+          let isArray = false;
+          const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
 
-        if (fieldTypeName.endsWith('[]')) {
-          baseFieldTypeName = fieldTypeName.slice(0, -2);
-          isArray = true;
-        }
+          if (fieldTypeName.endsWith('[]')) {
+            baseFieldTypeName = fieldTypeName.slice(0, -2);
+            isArray = true;
+          }
 
-        if (
-          isArray &&
-          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-          baseFieldTypeName[0] !== '('
-        ) {
-          const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
-          await asyncForEach((item as any)[fieldName], async (subItem: any) => {
+          if (
+            isArray &&
+            baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+            baseFieldTypeName[0] !== '('
+          ) {
+            const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+            await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
+              subItem[idFieldName] = _id;
+              await this.createItem(subItem, (Types as any)[relationEntityName], Types);
+            });
+          } else if (
+            baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+            baseFieldTypeName[0] !== '('
+          ) {
+            const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+            const subItem = (item as any)[fieldName];
             subItem[idFieldName] = _id;
             await this.createItem(subItem, (Types as any)[relationEntityName], Types);
-          });
-        } else if (
-          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-          baseFieldTypeName[0] !== '('
-        ) {
-          const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-          const subItem = (item as any)[fieldName];
-          subItem[idFieldName] = _id;
-          await this.createItem(subItem, (Types as any)[relationEntityName], Types);
-        } else if (isArray) {
-          await asyncForEach((item as any)[fieldName], async (subItem: any) => {
-            const insertStatement = `INSERT INTO ${this.schema}.${entityClass.name +
-              fieldName.slice(0, -1)} (${idFieldName}, ${fieldName.slice(0, -1)}) VALUES($1, $2)`;
-            await this.tryExecuteSql(insertStatement, [_id, subItem]);
-          });
+          } else if (isArray) {
+            await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
+              const insertStatement = `INSERT INTO ${this.schema}.${entityClass.name +
+                fieldName.slice(0, -1)} (${idFieldName}, ${fieldName.slice(0, -1)}) VALUES($1, $2)`;
+              await this.tryExecuteSql(insertStatement, [_id, subItem]);
+            });
+          }
         }
-      });
+      );
 
       return {
         _id
@@ -356,7 +360,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   ): Promise<void | ErrorResponse> {
     if (shouldCheckIfItemExists) {
       const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
-      if ('errorMessage' in itemOrErrorResponse) {
+      if ('errorMessage' in itemOrErrorResponse && 'statusCode' in itemOrErrorResponse) {
         console.log(itemOrErrorResponse);
         return itemOrErrorResponse;
       }
@@ -366,62 +370,75 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const entityMetadata = getTypeMetadata(entityClass as any);
       const columns: any = [];
       const values: any = [];
+      const promises: Array<Promise<any>> = [];
 
-      await asyncForEach(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]: [any, any]) => {
-        if((restOfItem as any)[fieldName] === undefined) {
-          return;
+      await forEachAsyncSequential(
+        Object.entries(entityMetadata),
+        async ([fieldName, fieldTypeName]: [any, any]) => {
+          if ((restOfItem as any)[fieldName] === undefined) {
+            return;
+          }
+
+          let baseFieldTypeName = fieldTypeName;
+          let isArray = false;
+          const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+
+          if (fieldTypeName.endsWith('[]')) {
+            baseFieldTypeName = fieldTypeName.slice(0, -2);
+            isArray = true;
+          }
+
+          if (
+            isArray &&
+            baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+            baseFieldTypeName[0] !== '('
+          ) {
+            const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+            promises.push(
+              forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
+                await this.updateItem(subItem, (Types as any)[relationEntityName], Types, false);
+              })
+            );
+          } else if (
+            baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+            baseFieldTypeName[0] !== '('
+          ) {
+            const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+            promises.push(
+              this.updateItem(
+                (restOfItem as any)[fieldName],
+                (Types as any)[relationEntityName],
+                Types,
+                false
+              )
+            );
+          } else if (isArray) {
+            promises.push(
+              forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
+                const updateStatement = `UPDATE ${this.schema}.${entityClass.name +
+                  fieldName.slice(0, -1)} SET ${fieldName.slice(0, -1)} = $1 WHERE ${idFieldName} = $2`;
+                await this.tryExecuteSql(updateStatement, [subItem, _id]);
+              })
+            );
+          } else if (fieldName !== '_id') {
+            columns.push(fieldName);
+            values.push((restOfItem as any)[fieldName]);
+          }
         }
-
-        let baseFieldTypeName = fieldTypeName;
-        let isArray = false;
-        const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
-
-        if (fieldTypeName.endsWith('[]')) {
-          baseFieldTypeName = fieldTypeName.slice(0, -2);
-          isArray = true;
-        }
-
-        if (
-          isArray &&
-          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-          baseFieldTypeName[0] !== '('
-        ) {
-          const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
-          await asyncForEach((restOfItem as any)[fieldName], async (subItem: any) => {
-            await this.updateItem(subItem, (Types as any)[relationEntityName], Types, false);
-          });
-        } else if (
-          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-          baseFieldTypeName[0] !== '('
-        ) {
-          const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-          await this.updateItem(
-            (restOfItem as any)[fieldName],
-            (Types as any)[relationEntityName],
-            Types,
-            false
-          );
-        } else if (isArray) {
-          await asyncForEach((restOfItem as any)[fieldName], async (subItem: any) => {
-            const insertStatement = `UPDATE ${this.schema}.${entityClass.name +
-              fieldName.slice(0, -1)} SET ${fieldName.slice(0, -1)} = $1 WHERE ${idFieldName} = $2`;
-            await this.tryExecuteSql(insertStatement, [subItem, _id]);
-          });
-        } else if (fieldName !== '_id') {
-          columns.push(fieldName);
-          values.push((restOfItem as any)[fieldName]);
-        }
-      });
+      );
 
       const setStatements = columns
         .map((fieldName: any, index: number) => fieldName + ' = ' + `$${index + 2}`)
         .join(', ');
 
       const idFieldName = _id === undefined ? 'id' : '_id';
-      await this.tryExecuteSql(
-        `UPDATE ${this.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
-        [_id === undefined ? restOfItem.id : _id, ...values]
+      promises.push(
+        this.tryExecuteSql(
+          `UPDATE ${this.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
+          [_id === undefined ? restOfItem.id : _id, ...values]
+        )
       );
+      await Promise.all(promises);
     } catch (error) {
       return getInternalServerErrorResponse(error);
     }
@@ -429,17 +446,18 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async deleteItemById(_id: string, entityClass: Function): Promise<void | ErrorResponse> {
     try {
-      await asyncForEach(
-        Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
-        async (joinSpec: JoinSpec) => {
-          await this.tryExecuteSql(
-            `DELETE FROM ${this.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} = $1`,
-            [_id]
-          );
-        }
-      );
-
-      await this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name} WHERE _id = $1`, [_id]);
+      await Promise.all([
+        forEachAsyncParallel(
+          Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
+          async (joinSpec: JoinSpec) => {
+            await this.tryExecuteSql(
+              `DELETE FROM ${this.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} = $1`,
+              [_id]
+            );
+          }
+        ),
+        this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name} WHERE _id = $1`, [_id])
+      ]);
     } catch (error) {
       return getInternalServerErrorResponse(error);
     }
@@ -447,14 +465,15 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async deleteAllItems(entityClass: Function): Promise<void | ErrorResponse> {
     try {
-      await asyncForEach(
-        Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
-        async (joinSpec: JoinSpec) => {
-          await this.tryExecuteSql(`DELETE FROM ${this.schema}.${joinSpec.joinTableName} `);
-        }
-      );
-
-      await this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name}`);
+      await Promise.all([
+        forEachAsyncParallel(
+          Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
+          async (joinSpec: JoinSpec) => {
+            await this.tryExecuteSql(`DELETE FROM ${this.schema}.${joinSpec.joinTableName} `);
+          }
+        ),
+        this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name}`)
+      ]);
     } catch (error) {
       return getInternalServerErrorResponse(error);
     }

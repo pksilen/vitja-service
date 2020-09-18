@@ -8,7 +8,7 @@ import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 import OrderWithoutCreatedTimestampAndState from './types/OrderWithoutCreatedTimestampAndState';
 import OrderIdAndState from './types/OrderIdAndState';
 import SalesItemsService from '../salesitems/SalesItemsService';
-import asyncForEach from '../../backk/asyncForEach';
+import forEachAsyncSequential from '../../backk/forEachAsyncSequential';
 import ShoppingCartItem from '../shoppingcart/types/ShoppingCartItem';
 import getInternalServerErrorResponse from '../../backk/getInternalServerErrorResponse';
 

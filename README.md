@@ -4,7 +4,7 @@ TODO:
 - Add update to check first if value is certain (e.g forSale)
 - Add projection, paging, sorting for other get multi methods
 - Default transactional methods: update/delete/create in dbManager
-- Transactional annotation
+- executeInsideTransaction method in dbManager
 - Constraint for creating entity based on filter and given max value
   - SalesItem can be created for same userName and state: active only 100 maxItemCount
 - Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
@@ -22,6 +22,7 @@ TODO:
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
 - include/exclude to support wildcards: property1.property2.*
 - include/exclude to support JSON and GraphQl
+- Table column indexing annotation
 
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password

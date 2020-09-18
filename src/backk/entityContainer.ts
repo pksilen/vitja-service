@@ -1,5 +1,5 @@
 import { getTypeMetadata } from './generateServicesMetadata';
-import asyncForEach from './asyncForEach';
+import forEachAsyncSequential from './forEachAsyncSequential';
 import AbstractDbManager from './dbmanager/AbstractDbManager';
 
 export interface ManyToManyRelationTableSpec {
@@ -37,7 +37,7 @@ class EntityContainer {
   }
 
   async createTables(dbManager: AbstractDbManager) {
-    await asyncForEach(
+    await forEachAsyncSequential(
       Object.entries(this.entityNameToClassMap),
       async ([entityName, entityClass]: [any, any]) => {
         try {
@@ -48,10 +48,10 @@ class EntityContainer {
       }
     );
 
-    await asyncForEach(
+    await forEachAsyncSequential(
       Object.entries(this.entityNameToAdditionalIdPropertyNamesMap),
       async ([entityName, additionalPropertyNames]: [any, any]) => {
-        await asyncForEach(additionalPropertyNames, async (additionalPropertyName: any) => {
+        await forEachAsyncSequential(additionalPropertyNames, async (additionalPropertyName: any) => {
           try {
             const fields = await dbManager.tryExecuteSql(
               `SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`
@@ -79,7 +79,7 @@ class EntityContainer {
     try {
       const fields = await dbManager.tryExecuteSql(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
       const entityMetadata = getTypeMetadata(entityClass as any);
-      await asyncForEach(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]: [any, any]) => {
+      await forEachAsyncSequential(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]: [any, any]) => {
         if (!fields.find((field) => field.name.toLowerCase() === fieldName.toLowerCase())) {
           let alterTableStatement = `ALTER TABLE ${schema}.${entityName} ADD `;
           let baseFieldTypeName = fieldTypeName;
@@ -195,7 +195,7 @@ class EntityContainer {
       const entityMetadata = getTypeMetadata(entityClass as any);
       let createTableStatement = `CREATE TABLE ${schema}.${entityName} (`;
       let fieldCnt = 0;
-      await asyncForEach(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]: [any, any]) => {
+      await forEachAsyncSequential(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]: [any, any]) => {
         let baseFieldTypeName = fieldTypeName;
         let isArray = false;
         let sqlColumnType: string = '';
