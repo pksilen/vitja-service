@@ -1,6 +1,7 @@
 import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import { Injectable } from '@nestjs/common';
 import { pg } from 'yesql';
+import { Parser } from 'expr-eval';
 import _ from 'lodash';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
@@ -182,7 +183,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async getItems<T>(
     filters: SqlExpression[],
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
-    entityClass: Function,
+    entityClass: new() => T,
     Types: object
   ): Promise<T[] | ErrorResponse> {
     try {
@@ -230,7 +231,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async getItemById<T>(_id: string, entityClass: Function, Types: object): Promise<T | ErrorResponse> {
+  async getItemById<T>(_id: string, entityClass: new() => T, Types: object): Promise<T | ErrorResponse> {
     try {
       const sqlColumns = this.getProjection({}, entityClass, Types);
       const joinStatement = this.getJoinStatement(entityClass, Types);
@@ -258,7 +259,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async getItemsByIds<T>(_ids: string[], entityClass: Function, Types: object): Promise<T[] | ErrorResponse> {
+  async getItemsByIds<T>(_ids: string[], entityClass: new() => T, Types: object): Promise<T[] | ErrorResponse> {
     try {
       const sqlColumns = this.getProjection({}, entityClass, Types);
       const joinStatement = this.getJoinStatement(entityClass, Types);
@@ -291,7 +292,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async getItemBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: Function,
+    entityClass: new() => T,
     Types: object
   ): Promise<T | ErrorResponse> {
     try {
@@ -324,7 +325,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async getItemsBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: Function,
+    entityClass: new() => T,
     Types: object
   ): Promise<T[] | ErrorResponse> {
     try {
@@ -356,9 +357,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async updateItem<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: T,
-    entityClass: Function,
+    entityClass: new() => T,
     Types: object,
-    preCondition?: Partial<T>,
+    preCondition?: Partial<T> | [string, Partial<T>],
     shouldCheckIfItemExists: boolean = true
   ): Promise<void | ErrorResponse> {
     if (shouldCheckIfItemExists) {
@@ -368,8 +369,20 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         return itemOrErrorResponse;
       }
 
-      if (preCondition && !_.isMatch(itemOrErrorResponse, preCondition)) {
-        return getConflictErrorResponse(`Update precondition ${JSON.stringify(preCondition)} was not satisfied`);
+      if (preCondition && !Array.isArray(preCondition) && !_.isMatch(itemOrErrorResponse, preCondition)) {
+        return getConflictErrorResponse(
+          `Update precondition ${JSON.stringify(preCondition)} was not satisfied`
+        );
+      } else if (
+        preCondition &&
+        Array.isArray(preCondition) &&
+        !Parser.evaluate(preCondition[0], preCondition[1] as any)
+      ) {
+        return getConflictErrorResponse(
+          `Update precondition ${preCondition[0]} with values ${JSON.stringify(
+            preCondition[1]
+          )} was not satisfied`
+        );
       }
     }
 
@@ -456,8 +469,11 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     _id: string,
     entityClass: new () => T,
     Types?: object,
-    preCondition?: Partial<T>
+    preCondition?: Partial<T> | [string, Partial<T>]
   ): Promise<void | ErrorResponse> {
+    if (preCondition && !Types) {
+      throw new Error('Types argument must be given if preCondition argument is given');
+    }
     try {
       if (Types && preCondition) {
         const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
@@ -466,9 +482,15 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           return itemOrErrorResponse;
         }
 
-        if (!_.isMatch(itemOrErrorResponse, preCondition)) {
+        if (!Array.isArray(preCondition) && !_.isMatch(itemOrErrorResponse, preCondition)) {
           return getConflictErrorResponse(
             `Delete precondition ${JSON.stringify(preCondition)} was not satisfied`
+          );
+        } else if (Array.isArray(preCondition) && !Parser.evaluate(preCondition[0], preCondition[1] as any)) {
+          return getConflictErrorResponse(
+            `Delete precondition ${preCondition[0]} with values ${JSON.stringify(
+              preCondition[1]
+            )} was not satisfied`
           );
         }
       }
@@ -490,7 +512,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async deleteAllItems(entityClass: Function): Promise<void | ErrorResponse> {
+  async deleteAllItems<T>(entityClass: new() => T): Promise<void | ErrorResponse> {
     try {
       await Promise.all([
         forEachAsyncParallel(

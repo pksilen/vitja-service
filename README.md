@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Add delete precondition
 - Add update check (eval-expr)
 - Add projection, paging, sorting for other get multi methods
 - Default transactional methods: update/delete/create in dbManager
@@ -14,6 +13,7 @@ TODO:
 - Check enum values integer/number
 -Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 - @NoAutoTests annotation for service
+- AllowForTests annotation
 - AllowForAnyRole/AllowForRole() annotation
 - Allow user to access only own resources
 - Prometheus metrics (Opentelemetry)

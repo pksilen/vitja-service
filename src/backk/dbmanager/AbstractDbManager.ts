@@ -31,36 +31,37 @@ export default abstract class AbstractDbManager {
   abstract getItemById<T>(_id: string, entityClass: new () => T, Types: object): Promise<T | ErrorResponse>;
   abstract getItemsByIds<T>(
     _ids: string[],
-    entityClass: Function,
+    entityClass: new() => T,
     Types: object
   ): Promise<T[] | ErrorResponse>;
 
   abstract getItemBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: Function,
+    entityClass: new() => T,
     Types: object
   ): Promise<T | ErrorResponse>;
 
   abstract getItemsBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: Function,
+    entityClass: new() => T,
     Types: object
   ): Promise<T[] | ErrorResponse>;
 
   abstract updateItem<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: T,
-    entityClass: Function,
+    entityClass: new() => T,
     Types: object,
-    preCondition?: Partial<T>
+    preCondition?: Partial<T> | [string, Partial<T>]
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteItemById(
+  abstract deleteItemById<T extends object>(
     _id: string,
-    entityClass: Function,
+    entityClass: new() => T,
     Types?: object,
-    preCondition?: object
+    preCondition?: Partial<T> | [string, Partial<T>]
   ): Promise<void | ErrorResponse>;
-  abstract deleteAllItems(entityClass: Function): Promise<void | ErrorResponse>;
+
+  abstract deleteAllItems<T>(entityClass: new() => T): Promise<void | ErrorResponse>;
 }
