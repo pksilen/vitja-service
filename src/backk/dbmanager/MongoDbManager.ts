@@ -193,7 +193,12 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async deleteItemById<T>(_id: string, entityClass: new () => T): Promise<void | ErrorResponse> {
+  async deleteItemById<T>(
+    _id: string,
+    entityClass: new () => T,
+    Types?: object,
+    preCondition?: Partial<T>
+  ): Promise<void | ErrorResponse> {
     try {
       const deleteOperationResult = await this.tryExecute((client) =>
         client

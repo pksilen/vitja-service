@@ -15,7 +15,7 @@ import AbstractDbManager, { Field } from './AbstractDbManager';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 import forEachAsyncParallel from '../forEachAsyncParallel';
-import getBadRequestErrorResponse from '../sqlexpression/getBadRequestErrorResponse';
+import getConflictErrorResponse from '../getConflictErrorResponse';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -368,13 +368,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         return itemOrErrorResponse;
       }
 
-      if (
-        preCondition &&
-        !_.isMatch(itemOrErrorResponse, preCondition)
-      ) {
-        return getBadRequestErrorResponse(
-          `Update precondition ${JSON.stringify(preCondition)} did not match`
-        );
+      if (preCondition && !_.isMatch(itemOrErrorResponse, preCondition)) {
+        return getConflictErrorResponse(`Update precondition ${JSON.stringify(preCondition)} was not satisfied`);
       }
     }
 
@@ -457,8 +452,27 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async deleteItemById(_id: string, entityClass: Function): Promise<void | ErrorResponse> {
+  async deleteItemById<T extends object>(
+    _id: string,
+    entityClass: new () => T,
+    Types?: object,
+    preCondition?: Partial<T>
+  ): Promise<void | ErrorResponse> {
     try {
+      if (Types && preCondition) {
+        const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
+        if ('errorMessage' in itemOrErrorResponse && 'statusCode' in itemOrErrorResponse) {
+          console.log(itemOrErrorResponse);
+          return itemOrErrorResponse;
+        }
+
+        if (!_.isMatch(itemOrErrorResponse, preCondition)) {
+          return getConflictErrorResponse(
+            `Delete precondition ${JSON.stringify(preCondition)} was not satisfied`
+          );
+        }
+      }
+
       await Promise.all([
         forEachAsyncParallel(
           Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),

@@ -1,9 +1,8 @@
 # Vitja service
 
 TODO:
-- Add update precondition to check first if value is certain (e.g forSale)
-- Add update check (eval-expr)
 - Add delete precondition
+- Add update check (eval-expr)
 - Add projection, paging, sorting for other get multi methods
 - Default transactional methods: update/delete/create in dbManager
 - executeInsideTransaction method in dbManager
