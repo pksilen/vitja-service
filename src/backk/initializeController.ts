@@ -384,7 +384,7 @@ function createPostmanCollectionItem(
 }
 
 function createPostmanCollectionItemFromWrittenTest({
-  testTemplate: { name, serviceName, functionName, argument, response }
+  testTemplate: { testTemplateName, serviceName, functionName, functionArgument, response }
 }: any) {
   const checkResponseCode = response.statusCode
     ? `pm.test("Status code is ${response.statusCode} OK", function () {
@@ -393,11 +393,11 @@ function createPostmanCollectionItemFromWrittenTest({
     : '';
 
   return {
-    name,
+    name: testTemplateName,
     request: {
       method: 'POST',
       header:
-        argument === undefined
+        functionArgument === undefined
           ? []
           : [
               {
@@ -408,11 +408,11 @@ function createPostmanCollectionItemFromWrittenTest({
               }
             ],
       body:
-        argument === undefined
+        functionArgument === undefined
           ? undefined
           : {
               mode: 'raw',
-              raw: JSON.stringify(argument, null, 4),
+              raw: JSON.stringify(functionArgument, null, 4),
               options: {
                 raw: {
                   language: 'json'
@@ -450,6 +450,64 @@ function createPostmanCollectionItemFromWrittenTest({
       }
     ]
   };
+}
+
+function addWrittenTest(writtenTest: any, items: any[]) {
+  if (writtenTest.tests) {
+    writtenTest.tests.forEach((test: any) => {
+      const instantiatedWrittenTest = _.cloneDeepWith(writtenTest, (value: any) => {
+        let newValue = value;
+        Object.entries(test.testValues || {}).forEach(([key, value]: [string, any]) => {
+          if (Array.isArray(value)) {
+            Array(2)
+              .fill(0)
+              .forEach((_, index) => {
+                if (newValue === `{{${key}[${index}]}}`) {
+                  newValue = value[index];
+                }
+                if (typeof newValue === 'string' && newValue.includes(`{{${key}[${index}]}}`)) {
+                  newValue = newValue.replace(`{{${key}[${index}]}}`, value[index]);
+                }
+              });
+          } else {
+            if (newValue === `{{${key}}}`) {
+              newValue = value;
+            }
+            if (typeof newValue === 'string' && newValue.includes(`{{${key}}}`)) {
+              newValue = newValue.replace(`{{${key}}}`, value);
+            }
+          }
+        });
+        return newValue === value ? undefined : newValue;
+      });
+
+      Object.keys(instantiatedWrittenTest.testTemplate.functionArgument || {}).forEach(
+        (argumentKey: string) => {
+          let isArgumentTemplateReplaced = false;
+
+          Object.entries(test.testValues || {}).forEach(([key, value]: [string, any]) => {
+            if (argumentKey === `{{${key}[0]}}`) {
+              const argumentValue = instantiatedWrittenTest.testTemplate.functionArgument[argumentKey];
+              delete instantiatedWrittenTest.testTemplate.functionArgument[argumentKey];
+              instantiatedWrittenTest.testTemplate.functionArgument[value[0]] = argumentValue;
+              isArgumentTemplateReplaced = true;
+            }
+          });
+
+          if (!isArgumentTemplateReplaced && argumentKey.startsWith('{{') && argumentKey.endsWith('}}')) {
+            delete instantiatedWrittenTest.testTemplate.functionArgument[argumentKey];
+          }
+        }
+      );
+
+      instantiatedWrittenTest.testTemplate.testTemplateName =
+        instantiatedWrittenTest.testTemplate.testTemplateName + ' (' + test.testName + ')';
+
+      items.push(createPostmanCollectionItemFromWrittenTest(instantiatedWrittenTest));
+    });
+  } else {
+    items.push(createPostmanCollectionItemFromWrittenTest(writtenTest));
+  }
 }
 
 function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: ServiceMetadata[]) {
@@ -491,7 +549,8 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
         isUpdate = true;
         if (lastGetFunctionMetadata === undefined) {
           throw new Error(
-            'There must be a get function defined before update/modify/change function in: ' + serviceMetadata.serviceName
+            'There must be a get function defined before update/modify/change function in: ' +
+              serviceMetadata.serviceName
           );
         }
       }
@@ -563,67 +622,23 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
         );
       }
 
+      writtenTests
+        .filter(
+          ({ testTemplate: { executeAfter } }) =>
+            executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
+        )
+        .forEach((writtenTest) => {
+          addWrittenTest(writtenTest, items);
+        });
+
       if (index === serviceMetadata.functions.length - 1) {
         writtenTests
-          .filter(({ testTemplate: { serviceName } }) => serviceName === serviceMetadata.serviceName)
+          .filter(
+            ({ testTemplate: { serviceName, executeAfter } }) =>
+              serviceName === serviceMetadata.serviceName && !executeAfter
+          )
           .forEach((writtenTest) => {
-            if (writtenTest.tests) {
-              writtenTest.tests.forEach((test: any) => {
-                const instantiatedWrittenTest = _.cloneDeepWith(writtenTest, (value: any) => {
-                  let newValue = value;
-                  Object.entries(test.values).forEach(([key, value]: [string, any]) => {
-                    if (Array.isArray(value)) {
-                      Array(2)
-                        .fill(0)
-                        .forEach((_, index) => {
-                          if (newValue === `{{${key}[${index}]}}`) {
-                            newValue = value[index];
-                          }
-                          if (typeof newValue === 'string' && newValue.includes(`{{${key}[${index}]}}`)) {
-                            newValue = newValue.replace(`{{${key}[${index}]}}`, value[index]);
-                          }
-                        });
-                    } else {
-                      if (newValue === `{{${key}}}`) {
-                        newValue = value;
-                      }
-                      if (typeof newValue === 'string' && newValue.includes(`{{${key}}}`)) {
-                        newValue = newValue.replace(`{{${key}}}`, value);
-                      }
-                    }
-                  });
-                  return newValue === value ? undefined : newValue;
-                });
-
-                Object.keys(instantiatedWrittenTest.testTemplate.argument).forEach((argumentKey: string) => {
-                  let isArgumentTemplateReplaced = false;
-
-                  Object.entries(test.values).forEach(([key, value]: [string, any]) => {
-                    if (argumentKey === `{{${key}[0]}}`) {
-                      const argumentValue = instantiatedWrittenTest.testTemplate.argument[argumentKey];
-                      delete instantiatedWrittenTest.testTemplate.argument[argumentKey];
-                      instantiatedWrittenTest.testTemplate.argument[value[0]] = argumentValue;
-                      isArgumentTemplateReplaced = true;
-                    }
-                  });
-
-                  if (
-                    !isArgumentTemplateReplaced &&
-                    argumentKey.startsWith('{{') &&
-                    argumentKey.endsWith('}}')
-                  ) {
-                    delete instantiatedWrittenTest.testTemplate.argument[argumentKey];
-                  }
-                });
-
-                instantiatedWrittenTest.testTemplate.name =
-                  instantiatedWrittenTest.testTemplate.name + ' (' + test.name + ')';
-
-                items.push(createPostmanCollectionItemFromWrittenTest(instantiatedWrittenTest));
-              });
-            } else {
-              items.push(createPostmanCollectionItemFromWrittenTest(writtenTest));
-            }
+            addWrittenTest(writtenTest, items);
           });
       }
     })

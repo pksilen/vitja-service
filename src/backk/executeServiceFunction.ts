@@ -17,7 +17,7 @@ function getValidationErrors(validationErrors: ValidationError[]): string {
     .join(', ');
 }
 
-export default async function executeServiceCall(
+export default async function executeServiceFunction(
   controller: any,
   serviceCall: string,
   serviceCallArgument: object
@@ -51,6 +51,13 @@ export default async function executeServiceCall(
       controller[serviceName]['Types'][paramObjectTypeName],
       serviceCallArgument
     );
+
+    if (!validatableParamObject) {
+      throwHttpException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        errorMessage: `Missing service function argument`
+      });
+    }
 
     try {
       await validateOrReject(validatableParamObject as object, {

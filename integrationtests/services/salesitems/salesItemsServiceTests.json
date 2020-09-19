@@ -1,10 +1,10 @@
 [
   {
     "testTemplate": {
-      "name": "salesItemsService.createSalesItem",
+      "testTemplateName": "salesItemsService.createSalesItem",
       "serviceName": "salesItemsService",
       "functionName": "createSalesItem",
-      "argument": {
+      "functionArgument": {
         "price": "{{price}}",
         "previousPrice": "{{price}}",
         "userId": "{{userId}}",
@@ -22,17 +22,15 @@
         "tests": [
           {
             "name": "set salesItemId",
-            "exec": [
-              "pm.collectionVariables.set(\"salesItemId\", pm.response.json()._id)"
-            ]
+            "exec": ["pm.collectionVariables.set(\"salesItemId\", response._id)"]
           }
         ]
       }
     },
     "tests": [
       {
-        "name": "price = 1",
-        "values": {
+        "testName": "price = 1",
+        "testValues": {
           "price": 1.0,
           "title": "firstTitle",
           "description": "firstDescription",
@@ -41,8 +39,8 @@
         }
       },
       {
-        "name": "price = 2",
-        "values": {
+        "testName": "price = 2",
+        "testValues": {
           "price": 2.0,
           "title": "secondTitle",
           "description": "secondDescription",
@@ -54,10 +52,10 @@
   },
   {
     "testTemplate": {
-      "name": "salesItemsService.getSalesItems",
+      "testTemplateName": "salesItemsService.getSalesItems",
       "serviceName": "salesItemsService",
       "functionName": "getSalesItems",
-      "argument": {
+      "functionArgument": {
         "{{argumentProperty1[0]}}": "{{argumentProperty1[1]}}",
         "{{argumentProperty2[0]}}": "{{argumentProperty2[1]}}",
         "{{argumentProperty3[0]}}": "{{argumentProperty3[1]}}",
@@ -78,56 +76,56 @@
     },
     "tests": [
       {
-        "name": "textFilter for title",
-        "values": {
+        "testName": "textFilter for title",
+        "testValues": {
           "argumentProperty1": ["textFilter", "secondTitle"],
           "responseProperty": ["title", "'secondTitle'"],
           "responseLength": "1"
         }
       },
       {
-        "name": "textFilter for description",
-        "values": {
+        "testName": "textFilter for description",
+        "testValues": {
           "argumentProperty1": ["textFilter", "secondDescription"],
           "responseProperty": ["description", "'secondDescription'"],
           "responseLength": "1"
         }
       },
       {
-        "name": "areas contains Area2",
-        "values": {
+        "testName": "areas contains Area2",
+        "testValues": {
           "argumentProperty1": ["areas", ["Area2"]],
           "responseProperty": ["area", "'Area2'"],
           "responseLength": "1"
         }
       },
       {
-        "name": "productDepartments contains 'Clothes'",
-        "values": {
+        "testName": "productDepartments contains 'Clothes'",
+        "testValues": {
           "argumentProperty1": ["productDepartments", ["Clothes"]],
           "responseProperty": ["productDepartment", "'Clothes'"],
           "responseLength": "1"
         }
       },
       {
-        "name": "productCategories contains 'Clothes'",
-        "values": {
+        "testName": "productCategories contains 'Clothes'",
+        "testValues": {
           "argumentProperty1": ["productCategories", ["Clothes"]],
           "responseProperty": ["productCategory", "'Clothes'"],
           "responseLength": "1"
         }
       },
       {
-        "name": "productSubCategories contains 'Clothes'",
-        "values": {
+        "testName": "productSubCategories contains 'Clothes'",
+        "testValues": {
           "argumentProperty1": ["productSubCategories", ["Clothes"]],
           "responseProperty": ["productSubCategory", "'Clothes'"],
           "responseLength": "1"
         }
       },
       {
-        "name": "price is between minPrice and maxPrice",
-        "values": {
+        "testName": "price is between minPrice and maxPrice",
+        "testValues": {
           "argumentProperty1": ["minPrice", 2],
           "argumentProperty2": ["maxPrice", 2],
           "responseProperty": ["price", "2"],
@@ -135,8 +133,8 @@
         }
       },
       {
-        "name": "sorting",
-        "values": {
+        "testName": "sorting",
+        "testValues": {
           "argumentProperty1": ["sortBy", "price"],
           "argumentProperty2": ["sortDirection", "DESC"],
           "responseProperty": ["price", "2"],
@@ -144,14 +142,49 @@
         }
       },
       {
-        "name": "paging",
-        "values": {
+        "testName": "paging",
+        "testValues": {
           "argumentProperty1": ["pageNumber", 2],
           "argumentProperty2": ["pageSize", 1],
           "argumentProperty3": ["sortBy", "price"],
           "responseProperty": ["price", "1"],
           "responseLength": "1"
         }
+      }
+    ]
+  },
+  {
+    "testTemplate": {
+      "testTemplateName": "salesItemsService.getSalesItemById",
+      "serviceName": "salesItemsService",
+      "functionName": "getSalesItemById",
+      "functionArgument": {
+        "_id": "{{salesItemId}}"
+      },
+      "executeAfter": "ordersService.createOrder",
+      "response": {
+        "statusCode": 200,
+        "tests": [
+          {
+            "name": "state is sold",
+            "exec": [
+              "pm.expect(response.state).to.eql('sold');",
+              "pm.expect(response.userId).to.eql(pm.collectionVariables.get('userId'));",
+              "pm.expect(response.price).to.eql(2.0);",
+              "pm.expect(response.title).to.eql('secondTitle');",
+              "pm.expect(response.description).to.eql('secondDescription');",
+              "pm.expect(response.area).to.eql('Area2');",
+              "pm.expect(response.productDepartment).to.eql('Clothes');",
+              "pm.expect(response.productCategory).to.eql('Clothes');",
+              "pm.expect(response.productSubCategory).to.eql('Clothes');"
+            ]
+          }
+        ]
+      }
+    },
+    "tests": [
+      {
+        "testName": "state = sold"
       }
     ]
   }
