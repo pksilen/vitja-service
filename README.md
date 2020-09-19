@@ -17,9 +17,8 @@ TODO:
 - Check enum values integer/number
 -Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 - @NoAutoTests annotation for service
--AnyRole/Role() annotation
--AnyUser/User(userFieldName) annotation
--UserOrRole('userName', 'admin')
+- AllowForAnyRole/AllowForRole() annotation
+- Allow user to access only own resources
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
 - Logger
