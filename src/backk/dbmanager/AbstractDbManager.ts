@@ -48,7 +48,8 @@ export default abstract class AbstractDbManager {
   abstract updateItem<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: T,
     entityClass: Function,
-    Types: object
+    Types: object,
+    preCondition?: Partial<T>,
   ): Promise<void | ErrorResponse>;
 
   abstract deleteItemById(_id: string, entityClass: Function): Promise<void | ErrorResponse>;

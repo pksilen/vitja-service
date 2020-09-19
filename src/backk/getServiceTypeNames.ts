@@ -29,11 +29,6 @@ export default function getServiceTypeNames(
         if (classBodyNode.type === 'TSDeclareMethod') {
           const functionName = classBodyNode.key.name;
           if (classBodyNode.params.length >= 1) {
-
-            if (classBodyNode.params.length > 1) {
-              throw new Error(serviceName + '.' + functionName + ': must have zero or one input argument');
-            }
-
             const paramTypeNameStart = classBodyNode.params[0].typeAnnotation.loc.start;
             const paramTypeNameEnd = classBodyNode.params[0].typeAnnotation.loc.end;
             const paramTypeName = fileRows[paramTypeNameStart.line - 1].slice(

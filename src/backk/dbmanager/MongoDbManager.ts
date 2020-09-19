@@ -174,7 +174,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async updateItem<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: T,
-    entityClass: new () => T
+    entityClass: new () => T,
+    preCondition?: Partial<T>
   ): Promise<void | ErrorResponse> {
     try {
       const updateOperationResult = await this.tryExecute((client) =>

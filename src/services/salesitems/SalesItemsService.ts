@@ -29,6 +29,6 @@ export default abstract class SalesItemsService {
   abstract updateSalesItem(
     salesItemWithoutCreatedTimestampAndState: SalesItemWithoutCreatedTimestampAndState
   ): Promise<void | ErrorResponse>;
-  abstract updateSalesItemState(salesItemIdAndState: SalesItemIdAndState): Promise<void | ErrorResponse>;
+  abstract updateSalesItemState(salesItemIdAndState: SalesItemIdAndState, requiredCurrentState: undefined | 'forSale' | 'sold'): Promise<void | ErrorResponse>;
   abstract deleteSalesItemById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
 }

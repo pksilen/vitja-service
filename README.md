@@ -1,9 +1,9 @@
 # Vitja service
 
 TODO:
-- lisää manual test, että forSale -> sold toimii
-- Add update to check first if value is certain (e.g forSale)
+- Add update precondition to check first if value is certain (e.g forSale)
 - Add update check (eval-expr)
+- Add delete precondition
 - Add projection, paging, sorting for other get multi methods
 - Default transactional methods: update/delete/create in dbManager
 - executeInsideTransaction method in dbManager
@@ -67,7 +67,8 @@ TODO:
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
 - Custom readinessProbe should use defaultReadinessProbe plus all other services it is using
 - executeMultipleInParallel endpoint, to execute multiple serviceCalls in parallel
-- Mongodb transactions
+- Mongodb transactions, update/delete preconditions
+- Handle order modification and delete to reflect in salesItem states
     
 TODO NEXT RELEASE:
 - Date/Timestamp type support

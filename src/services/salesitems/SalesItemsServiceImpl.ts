@@ -99,8 +99,20 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.updateItem(salesItemWithoutCreatedTimestampAndState, SalesItem, this.Types);
   }
 
-  updateSalesItemState(salesItemIdAndState: SalesItemIdAndState): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(salesItemIdAndState, SalesItem, this.Types);
+  updateSalesItemState(
+    salesItemIdAndState: SalesItemIdAndState,
+    requiredCurrentState: undefined | 'forSale' | 'sold' = undefined
+  ): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(
+      salesItemIdAndState,
+      SalesItem,
+      this.Types,
+      requiredCurrentState
+        ? {
+            state: requiredCurrentState
+          }
+        : undefined
+    );
   }
 
   deleteSalesItemById({ _id }: IdWrapper): Promise<void | ErrorResponse> {

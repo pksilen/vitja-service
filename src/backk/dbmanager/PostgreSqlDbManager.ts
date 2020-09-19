@@ -1,6 +1,7 @@
 import { Pool, QueryConfig, QueryResult, types } from 'pg';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { pg } from 'yesql';
+import _ from 'lodash';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import joinjs from 'join-js';
@@ -14,6 +15,7 @@ import AbstractDbManager, { Field } from './AbstractDbManager';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 import forEachAsyncParallel from '../forEachAsyncParallel';
+import getBadRequestErrorResponse from '../sqlexpression/getBadRequestErrorResponse';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -356,6 +358,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     { _id, ...restOfItem }: T,
     entityClass: Function,
     Types: object,
+    preCondition?: Partial<T>,
     shouldCheckIfItemExists: boolean = true
   ): Promise<void | ErrorResponse> {
     if (shouldCheckIfItemExists) {
@@ -363,6 +366,15 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       if ('errorMessage' in itemOrErrorResponse && 'statusCode' in itemOrErrorResponse) {
         console.log(itemOrErrorResponse);
         return itemOrErrorResponse;
+      }
+
+      if (
+        preCondition &&
+        !_.isMatch(itemOrErrorResponse, preCondition)
+      ) {
+        return getBadRequestErrorResponse(
+          `Update precondition ${JSON.stringify(preCondition)} did not match`
+        );
       }
     }
 
@@ -396,7 +408,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
             promises.push(
               forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
-                await this.updateItem(subItem, (Types as any)[relationEntityName], Types, false);
+                await this.updateItem(subItem, (Types as any)[relationEntityName], Types, undefined, false);
               })
             );
           } else if (
@@ -409,6 +421,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
                 (restOfItem as any)[fieldName],
                 (Types as any)[relationEntityName],
                 Types,
+                undefined,
                 false
               )
             );

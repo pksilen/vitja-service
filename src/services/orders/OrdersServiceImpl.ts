@@ -35,7 +35,7 @@ export default class OrdersServiceImpl extends OrdersService {
           (await this.salesItemsService.updateSalesItemState({
             _id: shoppingCartItem.salesItemId,
             state: 'sold'
-          }))
+          }, 'forSale'))
         );
       },
       Promise.resolve(undefined)
