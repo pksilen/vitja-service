@@ -1,6 +1,7 @@
 import { getTypeMetadata } from './generateServicesMetadata';
 import forEachAsyncSequential from './forEachAsyncSequential';
 import AbstractDbManager from './dbmanager/AbstractDbManager';
+import forEachAsyncParallel from "./forEachAsyncParallel";
 
 export interface ManyToManyRelationTableSpec {
   tableName: string;
@@ -37,7 +38,7 @@ class EntityContainer {
   }
 
   async createTables(dbManager: AbstractDbManager) {
-    await forEachAsyncSequential(
+    await forEachAsyncParallel(
       Object.entries(this.entityNameToClassMap),
       async ([entityName, entityClass]: [any, any]) => {
         try {

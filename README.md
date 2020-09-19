@@ -1,6 +1,10 @@
 # Vitja service
 
 TODO:
+- entityContainer check if asyncParallel instead of Sequential
+- createOrder voidaanko ajaa in parallel
+- manual tests, possible to define expected response object (isEqualBy lodash)
+- lisää manual test, että forSale -> sold toimii
 - Add update to check first if value is certain (e.g forSale)
 - Add projection, paging, sorting for other get multi methods
 - Default transactional methods: update/delete/create in dbManager

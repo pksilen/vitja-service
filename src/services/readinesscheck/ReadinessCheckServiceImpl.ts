@@ -1,13 +1,18 @@
+import { HttpStatus, Injectable } from '@nestjs/common';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { ErrorResponse } from '../../backk/Backk';
-import ReadinessCheckService from '../../backk/ReadinessCheckService';
-import { HttpStatus } from '@nestjs/common';
+import getServiceUnavailableErrorResponse from '../../backk/getServiceUnavailableErrorResponse';
 
-export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
-  isReady(): Promise<void | ErrorResponse> {
-    if (process.env.NODE_ENV === 'development') {
-      return Promise.resolve();
+@Injectable()
+export default class ReadinessCheckServiceImpl {
+  constructor(private readonly abstractDbManager: AbstractDbManager) {}
+
+  async isReady(): Promise<void | ErrorResponse> {
+    const isDbReady = await this.abstractDbManager.isDbReady();
+    if (isDbReady) {
+      return;
     }
 
-    return Promise.resolve({ statusCode: HttpStatus.SERVICE_UNAVAILABLE, errorMessage: 'Service not ready' });
+    return Promise.resolve(getServiceUnavailableErrorResponse('Database not ready'));
   }
 }
