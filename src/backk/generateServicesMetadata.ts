@@ -1,5 +1,6 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import { IdsAndOptPostQueryOps, IdWrapper } from './Backk';
 
 export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: string } {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -140,7 +141,8 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
             typeClass.name +
             '.' +
             validationMetadata.propertyName +
-            ' @Max validation value must be equal or less than ' + Number.MAX_SAFE_INTEGER
+            ' @Max validation value must be equal or less than ' +
+            Number.MAX_SAFE_INTEGER
         );
       }
 
@@ -280,7 +282,13 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           .functionNameToReturnTypeNameMap[functionName];
 
         if (paramTypeName !== undefined && !(controller as any)[serviceName].Types[paramTypeName]) {
-          throw new Error('Type: ' + paramTypeName + ' is not found in ' + serviceName + '.Types');
+          if (paramTypeName === 'IdWrapper') {
+            (controller as any)[serviceName].Types[paramTypeName] = IdWrapper;
+          } else if (paramTypeName === 'IdsAndOptPostQueryOps') {
+            (controller as any)[serviceName].Types[paramTypeName] = IdsAndOptPostQueryOps;
+          } else {
+            throw new Error('Type: ' + paramTypeName + ' is not found in ' + serviceName + '.Types');
+          }
         }
 
         if (paramTypeName !== undefined) {
@@ -323,7 +331,13 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           finalReturnValueTypeName !== 'void' &&
           !(controller as any)[serviceName].Types[finalReturnValueTypeName]
         ) {
-          throw new Error('Type: ' + finalReturnValueTypeName + ' is not found in ' + serviceName + '.Types');
+          if (finalReturnValueTypeName === 'IdWrapper') {
+            (controller as any)[serviceName].Types[finalReturnValueTypeName] = IdWrapper;
+          } else if (finalReturnValueTypeName === 'IdsAndOptPostQueryOps') {
+            (controller as any)[serviceName].Types[finalReturnValueTypeName] = IdsAndOptPostQueryOps;
+          } else {
+            throw new Error('Type: ' + finalReturnValueTypeName + ' is not found in ' + serviceName + '.Types');
+          }
         }
 
         if (finalReturnValueTypeName !== 'void') {

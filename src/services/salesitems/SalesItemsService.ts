@@ -1,16 +1,14 @@
-import { ErrorResponse, IdsAndOptPostQueryOps, IdWrapper } from '../../backk/Backk';
-import SalesItemsFilters from './types/SalesItemsFilters';
-import SalesItemCreateDto from './types/SalesItemCreateDto';
-import { SalesItem } from './types/SalesItem';
-import SalesItemUpdateDto from './types/SalesItemUpdateDto';
-import SalesItemIdAndState from './types/SalesItemIdAndState';
-import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
+import { ErrorResponse, IdsAndOptPostQueryOps, IdWrapper } from "../../backk/Backk";
+import SalesItemsFilters from "./types/SalesItemsFilters";
+import SalesItemCreateDto from "./types/SalesItemCreateDto";
+import { SalesItem } from "./types/SalesItem";
+import SalesItemUpdateDto from "./types/SalesItemUpdateDto";
+import SalesItemIdAndState from "./types/SalesItemIdAndState";
+import UserIdAndOptPostQueryOps from "../users/types/UserIdAndOptPostQueryOps";
 
 export default abstract class SalesItemsService {
   readonly Types = {
-    IdWrapper,
     UserIdAndOptPostQueryOps,
-    IdsAndOptPostQueryOps,
     SalesItemsFilters,
     SalesItemCreateDto,
     SalesItemUpdateDto,
@@ -20,7 +18,7 @@ export default abstract class SalesItemsService {
 
   abstract deleteAllSalesItems(): Promise<void | ErrorResponse>;
   abstract createSalesItem(salesItemCreateDto: SalesItemCreateDto): Promise<IdWrapper | ErrorResponse>;
-  abstract getSalesItems(salesItemsFilters: SalesItemsFilters): Promise<Partial<SalesItem>[] | ErrorResponse>;
+  abstract getSalesItems(salesItemsFilters: SalesItemsFilters): Promise<SalesItem[] | ErrorResponse>;
 
   abstract getSalesItemsByUserId(
     userIdAndOptPostQueryOps: UserIdAndOptPostQueryOps

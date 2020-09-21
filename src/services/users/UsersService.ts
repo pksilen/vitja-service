@@ -9,7 +9,6 @@ import UserResponse from "./types/UserResponse";
 export default abstract class UsersService {
   readonly Types = {
     DefaultPaymentMethod,
-    IdWrapper,
     PaymentMethod,
     User,
     UserNameWrapper,

@@ -8,7 +8,6 @@ import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
 
 export default abstract class OrdersService {
   readonly Types = {
-    IdWrapper,
     UserIdAndOptPostQueryOps,
     OrderIdAndState,
     OrderCreateDto,

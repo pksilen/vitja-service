@@ -210,7 +210,7 @@ function getReturnValueTests(
       expectedValue = isUpdate && enumValues.length >= 3 ? enumValues[1] : enumValues[0];
     } else if (types[finalPropertyTypeName]) {
       const finalResponsePath = responsePath + propertyName + (isArray ? '[0]' : '') + '.';
-      if (!isOptionalProperty) {
+      //if (!isOptionalProperty) {
         const returnValueTests = getReturnValueTests(
           serviceTypes,
           finalPropertyTypeName,
@@ -222,7 +222,7 @@ function getReturnValueTests(
         );
         javascriptLines = javascriptLines.concat(returnValueTests);
         return javascriptLines;
-      }
+      // }
     }
 
     const expectation = `pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});`;
@@ -290,12 +290,6 @@ function getTests(
     returnValueTypeName = returnValueTypeName.slice(0, -2);
   }
 
-  let isOptional = false;
-  if (returnValueTypeName.startsWith('Partial<')) {
-    returnValueTypeName = returnValueTypeName.slice(8, -1);
-    isOptional = true;
-  }
-
   const checkResponseCode = `pm.test("Status code is ${expectedResponseStatusCode} OK", function () {
   pm.response.to.have.status(${expectedResponseStatusCode});
 });`;
@@ -330,7 +324,7 @@ function getTests(
                 returnValueTypeName,
                 serviceMetadata,
                 isArray ? '[0].' : '.',
-                isOptional,
+                true,
                 isUpdate,
                 sampleArg
               )

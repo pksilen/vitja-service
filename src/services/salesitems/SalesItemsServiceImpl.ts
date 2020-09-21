@@ -43,7 +43,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     minPrice,
     maxPrice,
     ...postQueryOps
-  }: SalesItemsFilters): Promise<Array<Partial<SalesItem>> | ErrorResponse> {
+  }: SalesItemsFilters): Promise<SalesItem[] | ErrorResponse> {
     let filters;
 
     if (this.dbManager instanceof MongoDbManager) {

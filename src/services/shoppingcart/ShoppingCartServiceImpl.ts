@@ -4,6 +4,8 @@ import { ErrorResponse, IdWrapper } from '../../backk/Backk';
 import ShoppingCartCreateDto from './types/ShoppingCartCreateDto';
 import ShoppingCart from './types/ShoppingCart';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
+import UserIdWrapper from '../users/types/UserIdWrapper';
 
 @Injectable()
 export default class ShoppingCartServiceImpl extends ShoppingCartService {
@@ -19,8 +21,8 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     return this.dbManager.createItem(shoppingCartCreateDto, ShoppingCart, this.Types);
   }
 
-  getShoppingCartByUserId({ _id }: IdWrapper): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.getItemBy('userId', _id, ShoppingCart, this.Types);
+  getShoppingCartByUserId({ userId }: UserIdWrapper): Promise<ShoppingCart | ErrorResponse> {
+    return this.dbManager.getItemBy('userId', userId, ShoppingCart, this.Types);
   }
 
   updateShoppingCart(shoppingCart: ShoppingCart): Promise<void | ErrorResponse> {

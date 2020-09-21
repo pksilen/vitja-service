@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Rename Id(s)OptionalPostQueryOperations to Id(s)PostQueryOps
-- Rename to OrderCreateDto and OrderUpdateDto
 - Add automatically Backk.ts types to types of a Service
 - Add automatically superclasses to Service Types
 - Default transactional methods: update/delete/create in dbManager
