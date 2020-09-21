@@ -1,31 +1,29 @@
-import { ErrorResponse, IdWrapper } from "../../backk/Backk";
-import OrderWithoutIdAndCreatedTimestampAndState from "./types/OrderWithoutIdAndCreatedTimestampAndState";
-import Order from "./types/Order";
-import ShoppingCartItem from "../shoppingcart/types/ShoppingCartItem";
-import OrderWithoutCreatedTimestampAndState from "./types/OrderWithoutCreatedTimestampAndState";
-import OrderIdAndState from "./types/OrderIdAndState";
-import UserIdAndOptionalPostQueryOperations from "../users/types/UserIdAndOptionalPostQueryOperations";
+import { ErrorResponse, IdWrapper } from '../../backk/Backk';
+import OrderCreateDto from './types/OrderCreateDto';
+import Order from './types/Order';
+import ShoppingCartItem from '../shoppingcart/types/ShoppingCartItem';
+import OrderUpdateDto from './types/OrderUpdateDto';
+import OrderIdAndState from './types/OrderIdAndState';
+import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
 
 export default abstract class OrdersService {
   readonly Types = {
     IdWrapper,
-    UserIdAndOptionalPostQueryOperations,
+    UserIdAndOptPostQueryOps,
     OrderIdAndState,
-    OrderWithoutIdAndCreatedTimestampAndState,
-    OrderWithoutCreatedTimestampAndState,
+    OrderCreateDto,
+    OrderUpdateDto,
     Order,
     ShoppingCartItem
   };
 
   abstract deleteAllOrders(): Promise<void | ErrorResponse>;
-  abstract createOrder(
-    orderWithoutIdAndCreatedTimestampAndState: OrderWithoutIdAndCreatedTimestampAndState
-  ): Promise<IdWrapper | ErrorResponse>;
-  abstract getOrdersByUserId({ userId }: UserIdAndOptionalPostQueryOperations): Promise<Order[] | ErrorResponse>;
-  abstract getOrderById({ _id }: IdWrapper): Promise<Order | ErrorResponse>;
-  abstract updateOrder(
-    orderWithoutCreatedTimestampAndState: OrderWithoutCreatedTimestampAndState
-  ): Promise<void | ErrorResponse>;
+  abstract createOrder(orderCreateDto: OrderCreateDto): Promise<IdWrapper | ErrorResponse>;
+  abstract getOrdersByUserId(
+    userIdAndOptPostQueryOps: UserIdAndOptPostQueryOps
+  ): Promise<Order[] | ErrorResponse>;
+  abstract getOrderById(idWrapper: IdWrapper): Promise<Order | ErrorResponse>;
+  abstract updateOrder(orderUpdateDto: OrderUpdateDto): Promise<void | ErrorResponse>;
   abstract updateOrderState(orderIdAndState: OrderIdAndState): Promise<void | ErrorResponse>;
-  abstract deleteOrderById({ _id }: IdWrapper): Promise<void | ErrorResponse>;
+  abstract deleteOrderById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
 }

@@ -9,9 +9,9 @@ import joinjs from 'join-js';
 import {
   ErrorResponse,
   IdWrapper,
-  PostQueryOperations,
+  PostQueryOps,
   OptionalProjection,
-  OptionalPostQueryOperations
+  OptPostQueryOps
 } from '../Backk';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
 import SqlExpression from '../sqlexpression/SqlExpression';
@@ -188,7 +188,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async getItems<T>(
     filters: SqlExpression[],
-    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
+    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOps,
     entityClass: new () => T,
     Types: object
   ): Promise<T[] | ErrorResponse> {
@@ -283,7 +283,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     _ids: string[],
     entityClass: new () => T,
     Types: object,
-    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: OptionalPostQueryOperations
+    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: OptPostQueryOps
   ): Promise<T[] | ErrorResponse> {
     try {
       const sqlColumns = this.getProjection(projection, entityClass, Types);
@@ -354,7 +354,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entityClass: new () => T,
     Types: object,
-    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: OptionalPostQueryOperations
+    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: OptPostQueryOps
   ): Promise<T[] | ErrorResponse> {
     try {
       const sqlColumns = this.getProjection(projection, entityClass, Types);

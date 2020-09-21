@@ -1,11 +1,10 @@
 # Vitja service
 
 TODO:
-- Add projection, paging, sorting for other get multi methods
-- Add automatically Backk.ts types to types of a Service
-- Add automatically subclasses to Service Types
 - Rename Id(s)OptionalPostQueryOperations to Id(s)PostQueryOps
 - Rename to OrderCreateDto and OrderUpdateDto
+- Add automatically Backk.ts types to types of a Service
+- Add automatically superclasses to Service Types
 - Default transactional methods: update/delete/create in dbManager
 - executeInsideTransaction method in dbManager
 - Constraint for creating entity based on filter and given max value

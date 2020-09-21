@@ -1,19 +1,23 @@
-import { ErrorResponse, IdWrapper } from "../../backk/Backk";
-import ShoppingCartWithoutId from "./types/ShoppingCartWithoutId";
-import ShoppingCart from "./types/ShoppingCart";
-import ShoppingCartItem from "./types/ShoppingCartItem";
+import { ErrorResponse, IdWrapper } from '../../backk/Backk';
+import ShoppingCartCreateDto from './types/ShoppingCartCreateDto';
+import ShoppingCart from './types/ShoppingCart';
+import ShoppingCartItem from './types/ShoppingCartItem';
 
 export default abstract class ShoppingCartService {
   Types = {
     IdWrapper,
     ShoppingCart,
     ShoppingCartItem,
-    ShoppingCartWithoutId
+    ShoppingCartCreateDto
   };
 
   abstract deleteAllShoppingCarts(): Promise<void | ErrorResponse>;
-  abstract createShoppingCart(shoppingCartWithoutId: ShoppingCartWithoutId): Promise<IdWrapper | ErrorResponse>;
-  abstract getShoppingCartByUserId({ _id}: IdWrapper ): Promise<ShoppingCart | ErrorResponse>;
+
+  abstract createShoppingCart(
+    shoppingCartCreateDto: ShoppingCartCreateDto
+  ): Promise<IdWrapper | ErrorResponse>;
+
+  abstract getShoppingCartByUserId(idWrapper: IdWrapper): Promise<ShoppingCart | ErrorResponse>;
   abstract updateShoppingCart(shoppingCart: ShoppingCart): Promise<void | ErrorResponse>;
-  abstract deleteShoppingCartById({ _id }: IdWrapper): Promise<void | ErrorResponse>;
+  abstract deleteShoppingCartById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
 }

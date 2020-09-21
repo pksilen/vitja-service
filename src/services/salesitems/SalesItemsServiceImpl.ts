@@ -1,17 +1,16 @@
-import { Injectable } from "@nestjs/common";
-import { ErrorResponse, IdsAndOptionalPostQueryOperations, IdWrapper } from "../../backk/Backk";
-import SalesItemsFilters from "./types/SalesItemsFilters";
-import { SalesItem } from "./types/SalesItem";
-import SalesItemWithoutIdAndCreatedTimestampAndState
-  from "./types/SalesItemWithoutIdAndCreatedTimestampAndState";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import SalesItemsService from "./SalesItemsService";
-import MongoDbManager from "../../backk/dbmanager/MongoDbManager";
-import SqlInExpression from "../../backk/sqlexpression/SqlInExpression";
-import SqlExpression from "../../backk/sqlexpression/SqlExpression";
-import SalesItemWithoutCreatedTimestampAndState from "./types/SalesItemWithoutCreatedTimestampAndState";
-import SalesItemIdAndState from "./types/SalesItemIdAndState";
-import UserIdAndOptionalPostQueryOperations from "../users/types/UserIdAndOptionalPostQueryOperations";
+import { Injectable } from '@nestjs/common';
+import { ErrorResponse, IdsAndOptPostQueryOps, IdWrapper } from '../../backk/Backk';
+import SalesItemsFilters from './types/SalesItemsFilters';
+import { SalesItem } from './types/SalesItem';
+import SalesItemCreateDto from './types/SalesItemCreateDto';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import SalesItemsService from './SalesItemsService';
+import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
+import SqlInExpression from '../../backk/sqlexpression/SqlInExpression';
+import SqlExpression from '../../backk/sqlexpression/SqlExpression';
+import SalesItemUpdateDto from './types/SalesItemUpdateDto';
+import SalesItemIdAndState from './types/SalesItemIdAndState';
+import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
 
 @Injectable()
 export default class SalesItemsServiceImpl extends SalesItemsService {
@@ -23,12 +22,10 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.deleteAllItems(SalesItem);
   }
 
-  createSalesItem(
-    salesItemWithoutIdAndCreatedTimestampAndState: SalesItemWithoutIdAndCreatedTimestampAndState
-  ): Promise<IdWrapper | ErrorResponse> {
+  createSalesItem(salesItemCreateDto: SalesItemCreateDto): Promise<IdWrapper | ErrorResponse> {
     return this.dbManager.createItem(
       {
-        ...salesItemWithoutIdAndCreatedTimestampAndState,
+        ...salesItemCreateDto,
         createdTimestampInSecs: Math.round(Date.now() / 1000),
         state: 'forSale'
       },
@@ -45,7 +42,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     productSubCategories,
     minPrice,
     maxPrice,
-    ...postQueryOperations
+    ...postQueryOps
   }: SalesItemsFilters): Promise<Array<Partial<SalesItem>> | ErrorResponse> {
     let filters;
 
@@ -79,36 +76,31 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       ];
     }
 
-    return this.dbManager.getItems(filters, postQueryOperations, SalesItem, this.Types);
+    return this.dbManager.getItems(filters, postQueryOps, SalesItem, this.Types);
   }
 
   getSalesItemsByUserId({
     userId,
-    ...postQueryOperations
-  }: UserIdAndOptionalPostQueryOperations): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getItemsBy('userId', userId, SalesItem, this.Types, postQueryOperations);
+    ...postQueryOps
+  }: UserIdAndOptPostQueryOps): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getItemsBy('userId', userId, SalesItem, this.Types, postQueryOps);
   }
 
-  getSalesItemsByIds({
-    _ids,
-    ...postQueryOperations
-  }: IdsAndOptionalPostQueryOperations): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getItemsByIds(_ids, SalesItem, this.Types, postQueryOperations);
+  getSalesItemsByIds({ _ids, ...postQueryOps }: IdsAndOptPostQueryOps): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getItemsByIds(_ids, SalesItem, this.Types, postQueryOps);
   }
 
   getSalesItemById({ _id }: IdWrapper): Promise<SalesItem | ErrorResponse> {
     return this.dbManager.getItemById(_id, SalesItem, this.Types);
   }
 
-  updateSalesItem(
-    salesItemWithoutCreatedTimestampAndState: SalesItemWithoutCreatedTimestampAndState
-  ): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(salesItemWithoutCreatedTimestampAndState, SalesItem, this.Types);
+  updateSalesItem(salesItemUpdateDto: SalesItemUpdateDto): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(salesItemUpdateDto, SalesItem, this.Types);
   }
 
   updateSalesItemState(
     salesItemIdAndState: SalesItemIdAndState,
-    requiredCurrentState: undefined | 'forSale' | 'sold' = undefined
+    requiredCurrentState?: 'forSale' | 'sold'
   ): Promise<void | ErrorResponse> {
     return this.dbManager.updateItem(
       salesItemIdAndState,

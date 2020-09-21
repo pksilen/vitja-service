@@ -1,10 +1,10 @@
 import Entity from "../../../backk/Entity";
-import OrderWithoutCreatedTimestampAndState from "./OrderWithoutCreatedTimestampAndState";
+import OrderUpdateDto from "./OrderUpdateDto";
 import { IsInt, Max, Min } from "class-validator";
 import { ExpectAnyValueInTests } from "../../../backk/ExpectAnyValueInTests";
 
 @Entity
-export default class Order extends OrderWithoutCreatedTimestampAndState {
+export default class Order extends OrderUpdateDto {
   state!: 'toBeDelivered' | 'delivering' | 'delivered';
 
   @IsInt()

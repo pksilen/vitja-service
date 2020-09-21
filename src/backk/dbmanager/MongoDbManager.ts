@@ -1,6 +1,6 @@
 import { MongoClient, ObjectId } from 'mongodb';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOperations } from '../Backk';
+import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOps } from '../Backk';
 import { SalesItem } from '../../services/salesitems/types/SalesItem';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
@@ -60,7 +60,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getItems<T>(
     filters: object,
-    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
+    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOps,
     entityClass: new () => T
   ): Promise<T[] | ErrorResponse> {
     try {

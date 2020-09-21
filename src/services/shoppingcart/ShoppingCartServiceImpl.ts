@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
-import ShoppingCartService from "./ShoppingCartService";
-import { ErrorResponse, IdWrapper } from "../../backk/Backk";
-import ShoppingCartWithoutId from "./types/ShoppingCartWithoutId";
-import ShoppingCart from "./types/ShoppingCart";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import { Injectable } from '@nestjs/common';
+import ShoppingCartService from './ShoppingCartService';
+import { ErrorResponse, IdWrapper } from '../../backk/Backk';
+import ShoppingCartCreateDto from './types/ShoppingCartCreateDto';
+import ShoppingCart from './types/ShoppingCart';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 
 @Injectable()
 export default class ShoppingCartServiceImpl extends ShoppingCartService {
@@ -15,8 +15,8 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     return this.dbManager.deleteAllItems(ShoppingCart);
   }
 
-  createShoppingCart(shoppingCartWithoutId: ShoppingCartWithoutId): Promise<IdWrapper | ErrorResponse> {
-    return this.dbManager.createItem(shoppingCartWithoutId, ShoppingCart, this.Types);
+  createShoppingCart(shoppingCartCreateDto: ShoppingCartCreateDto): Promise<IdWrapper | ErrorResponse> {
+    return this.dbManager.createItem(shoppingCartCreateDto, ShoppingCart, this.Types);
   }
 
   getShoppingCartByUserId({ _id }: IdWrapper): Promise<ShoppingCart | ErrorResponse> {

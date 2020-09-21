@@ -43,9 +43,8 @@ export default function setPropertyTypeValidationDecorators(
 
   if (
     typeClassName === 'IdWrapper' ||
-    typeClassName === 'OptionalPostQueryOperations' ||
-    typeClassName === 'IdAndOptionalPostQueryOperations' ||
-    typeClassName === 'IdsAndOptionalPostQueryOperations'
+    typeClassName === 'OptPostQueryOps' ||
+    typeClassName === 'IdsAndOptPostQueryOps'
   ) {
     return;
   }

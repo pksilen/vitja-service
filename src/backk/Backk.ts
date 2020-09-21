@@ -12,7 +12,7 @@ export class IdWrapper {
   _id!: string;
 }
 
-export class OptionalPostQueryOperations implements Partial<Paging>, Partial<Sorting>, OptionalProjection {
+export class OptPostQueryOps implements Partial<Paging>, Partial<Sorting>, OptionalProjection {
   @IsOptional()
   @IsString({ each: true })
   @MaxLength(1024, { each: true})
@@ -47,7 +47,7 @@ export class OptionalPostQueryOperations implements Partial<Paging>, Partial<Sor
   sortDirection?: 'ASC' | 'DESC';
 }
 
-export class IdsAndOptionalPostQueryOperations extends OptionalPostQueryOperations{
+export class IdsAndOptPostQueryOps extends OptPostQueryOps{
   @IsString({ each: true })
   @MaxLength(24, { each: true})
   @IsArray()
@@ -75,15 +75,12 @@ export interface Sorting {
   sortDirection: 'ASC' | 'DESC';
 }
 
-export interface PostQueryOperations extends OptionalProjection, Sorting, Paging {
-}
-
-export interface PostQueryOperations extends OptionalProjection, Sorting, Paging {
+export interface PostQueryOps extends OptionalProjection, Sorting, Paging {
 }
 
 export function transformResponse<T extends object>(
   responseObjects: T[],
-  args: PostQueryOperations
+  args: PostQueryOps
 ): Array<Partial<T>> {
   return responseObjects.map((responseObject) => {
     let newResponseObject: Partial<T> = responseObject;
