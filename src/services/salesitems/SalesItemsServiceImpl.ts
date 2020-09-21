@@ -1,16 +1,17 @@
-import { Injectable } from '@nestjs/common';
-import { ErrorResponse, IdsAndPaging, IdWrapper } from '../../backk/Backk';
-import SalesItemsFilters from './types/SalesItemsFilters';
-import { SalesItem } from './types/SalesItem';
-import SalesItemWithoutIdAndCreatedTimestampAndState from './types/SalesItemWithoutIdAndCreatedTimestampAndState';
-import UserIdAndPaging from '../users/types/UserIdAndPaging';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import SalesItemsService from './SalesItemsService';
-import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
-import SqlInExpression from '../../backk/sqlexpression/SqlInExpression';
-import SqlExpression from '../../backk/sqlexpression/SqlExpression';
-import SalesItemWithoutCreatedTimestampAndState from './types/SalesItemWithoutCreatedTimestampAndState';
-import SalesItemIdAndState from './types/SalesItemIdAndState';
+import { Injectable } from "@nestjs/common";
+import { ErrorResponse, IdsAndOptionalPostQueryOperations, IdWrapper } from "../../backk/Backk";
+import SalesItemsFilters from "./types/SalesItemsFilters";
+import { SalesItem } from "./types/SalesItem";
+import SalesItemWithoutIdAndCreatedTimestampAndState
+  from "./types/SalesItemWithoutIdAndCreatedTimestampAndState";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import SalesItemsService from "./SalesItemsService";
+import MongoDbManager from "../../backk/dbmanager/MongoDbManager";
+import SqlInExpression from "../../backk/sqlexpression/SqlInExpression";
+import SqlExpression from "../../backk/sqlexpression/SqlExpression";
+import SalesItemWithoutCreatedTimestampAndState from "./types/SalesItemWithoutCreatedTimestampAndState";
+import SalesItemIdAndState from "./types/SalesItemIdAndState";
+import UserIdAndOptionalPostQueryOperations from "../users/types/UserIdAndOptionalPostQueryOperations";
 
 @Injectable()
 export default class SalesItemsServiceImpl extends SalesItemsService {
@@ -81,12 +82,18 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.getItems(filters, postQueryOperations, SalesItem, this.Types);
   }
 
-  getSalesItemsByUserId({ userId }: UserIdAndPaging): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getItemsBy<SalesItem>('userId', userId, SalesItem, this.Types);
+  getSalesItemsByUserId({
+    userId,
+    ...postQueryOperations
+  }: UserIdAndOptionalPostQueryOperations): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getItemsBy('userId', userId, SalesItem, this.Types, postQueryOperations);
   }
 
-  getSalesItemsByIds({ _ids }: IdsAndPaging): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getItemsByIds(_ids, SalesItem, this.Types);
+  getSalesItemsByIds({
+    _ids,
+    ...postQueryOperations
+  }: IdsAndOptionalPostQueryOperations): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getItemsByIds(_ids, SalesItem, this.Types, postQueryOperations);
   }
 
   getSalesItemById({ _id }: IdWrapper): Promise<SalesItem | ErrorResponse> {

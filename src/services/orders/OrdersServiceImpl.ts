@@ -1,16 +1,13 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { ErrorResponse, IdWrapper } from '../../backk/Backk';
+import { Injectable } from '@nestjs/common';
+import { ErrorResponse, IdWrapper } from "../../backk/Backk";
 import OrdersService from './OrdersService';
 import Order from './types/Order';
 import OrderWithoutIdAndCreatedTimestampAndState from './types/OrderWithoutIdAndCreatedTimestampAndState';
-import UserIdAndPaging from '../users/types/UserIdAndPaging';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 import OrderWithoutCreatedTimestampAndState from './types/OrderWithoutCreatedTimestampAndState';
 import OrderIdAndState from './types/OrderIdAndState';
 import SalesItemsService from '../salesitems/SalesItemsService';
-import forEachAsyncSequential from '../../backk/forEachAsyncSequential';
-import ShoppingCartItem from '../shoppingcart/types/ShoppingCartItem';
-import getInternalServerErrorResponse from '../../backk/getInternalServerErrorResponse';
+import UserIdAndOptionalPostQueryOperations from "../users/types/UserIdAndOptionalPostQueryOperations";
 
 @Injectable()
 export default class OrdersServiceImpl extends OrdersService {
@@ -32,10 +29,13 @@ export default class OrdersServiceImpl extends OrdersService {
       async (errorResponseAccumulator: Promise<void | ErrorResponse>, shoppingCartItem) => {
         return (
           (await errorResponseAccumulator) ||
-          (await this.salesItemsService.updateSalesItemState({
-            _id: shoppingCartItem.salesItemId,
-            state: 'sold'
-          }, 'forSale'))
+          (await this.salesItemsService.updateSalesItemState(
+            {
+              _id: shoppingCartItem.salesItemId,
+              state: 'sold'
+            },
+            'forSale'
+          ))
         );
       },
       Promise.resolve(undefined)
@@ -54,8 +54,11 @@ export default class OrdersServiceImpl extends OrdersService {
         );
   }
 
-  getOrdersByUserId({ userId }: UserIdAndPaging): Promise<Order[] | ErrorResponse> {
-    return this.dbManager.getItemsBy<Order>('userId', userId, Order, this.Types);
+  getOrdersByUserId({
+    userId,
+    ...postQueryOperations
+  }: UserIdAndOptionalPostQueryOperations): Promise<Order[] | ErrorResponse> {
+    return this.dbManager.getItemsBy('userId', userId, Order, this.Types, postQueryOperations);
   }
 
   getOrderById({ _id }: IdWrapper): Promise<Order | ErrorResponse> {

@@ -21,10 +21,10 @@ export default class SalesItemsFilters implements PostQueryOperations {
   sortBy: 'price' | 'priceWhenPreviousPrice' | 'createdTimestampInSecs' = 'createdTimestampInSecs';
   sortDirection: 'ASC' | 'DESC' = 'DESC';
 
-  @MaxLength(256, {each: true})
+  @MaxLength(512, {each: true})
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];
 
-  @MaxLength(256, {each: true})
+  @MaxLength(512, {each: true})
   excludeResponseFields?: string[] = [];
 
   @IsInt()

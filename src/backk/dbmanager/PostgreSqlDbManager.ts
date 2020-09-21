@@ -6,7 +6,13 @@ import _ from 'lodash';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import joinjs from 'join-js';
-import { ErrorResponse, IdWrapper, PostQueryOperations, Projection } from '../Backk';
+import {
+  ErrorResponse,
+  IdWrapper,
+  PostQueryOperations,
+  OptionalProjection,
+  OptionalPostQueryOperations
+} from '../Backk';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
 import SqlExpression from '../sqlexpression/SqlExpression';
 import { getTypeMetadata } from '../generateServicesMetadata';
@@ -183,7 +189,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async getItems<T>(
     filters: SqlExpression[],
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOperations,
-    entityClass: new() => T,
+    entityClass: new () => T,
     Types: object
   ): Promise<T[] | ErrorResponse> {
     try {
@@ -191,29 +197,12 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const whereStatement = this.getWhereStatement(filters, entityClass);
       const filterValues = this.getFilterValues(filters);
       const joinStatement = this.getJoinStatement(entityClass, Types);
-
-      let sortStatement = '';
-      if (sortBy && sortDirection) {
-        assertIsColumnName('sortBy', sortBy);
-        assertIsSortDirection(sortDirection);
-
-        const sortColumn = sortBy.includes('.')
-          ? sortBy
-          : this.schema + '.' + entityClass.name + '.' + sortBy;
-
-        sortStatement = `ORDER BY ${sortColumn} ${sortDirection}`;
-      }
-
-      let limitAndOffsetStatement = '';
-      if (pageNumber && pageSize) {
-        assertIsNumber('pageNumber', pageNumber);
-        assertIsNumber('pageSize', pageSize);
-        limitAndOffsetStatement = `LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`;
-      }
+      const sortStatement = this.getSortStatement(sortBy, sortDirection, entityClass);
+      const pagingStatement = PostgreSqlDbManager.getPagingStatement(pageNumber, pageSize);
 
       const result = await this.tryExecuteQueryWithConfig(
         pg(
-          `SELECT ${columns} FROM ${this.schema}.${entityClass.name} ${joinStatement} ${whereStatement} ${sortStatement} ${limitAndOffsetStatement}`
+          `SELECT ${columns} FROM ${this.schema}.${entityClass.name} ${joinStatement} ${whereStatement} ${sortStatement} ${pagingStatement}`
         )(filterValues)
       );
 
@@ -231,7 +220,38 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async getItemById<T>(_id: string, entityClass: new() => T, Types: object): Promise<T | ErrorResponse> {
+  private static getPagingStatement(pageNumber?: number, pageSize?: number) {
+    let limitAndOffsetStatement = '';
+
+    if (pageNumber && pageSize) {
+      assertIsNumber('pageNumber', pageNumber);
+      assertIsNumber('pageSize', pageSize);
+      limitAndOffsetStatement = `LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`;
+    }
+
+    return limitAndOffsetStatement;
+  }
+
+  private getSortStatement<T>(
+    sortBy: string | undefined,
+    sortDirection: undefined | 'ASC' | 'DESC',
+    entityClass: { new (): T }
+  ) {
+    let sortStatement = '';
+
+    if (sortBy && sortDirection) {
+      assertIsColumnName('sortBy', sortBy);
+      assertIsSortDirection(sortDirection);
+
+      const sortColumn = sortBy.includes('.') ? sortBy : this.schema + '.' + entityClass.name + '.' + sortBy;
+
+      sortStatement = `ORDER BY ${sortColumn} ${sortDirection}`;
+    }
+
+    return sortStatement;
+  }
+
+  async getItemById<T>(_id: string, entityClass: new () => T, Types: object): Promise<T | ErrorResponse> {
     try {
       const sqlColumns = this.getProjection({}, entityClass, Types);
       const joinStatement = this.getJoinStatement(entityClass, Types);
@@ -259,15 +279,22 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async getItemsByIds<T>(_ids: string[], entityClass: new() => T, Types: object): Promise<T[] | ErrorResponse> {
+  async getItemsByIds<T>(
+    _ids: string[],
+    entityClass: new () => T,
+    Types: object,
+    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: OptionalPostQueryOperations
+  ): Promise<T[] | ErrorResponse> {
     try {
-      const sqlColumns = this.getProjection({}, entityClass, Types);
+      const sqlColumns = this.getProjection(projection, entityClass, Types);
       const joinStatement = this.getJoinStatement(entityClass, Types);
+      const sortStatement = this.getSortStatement(sortBy, sortDirection, entityClass);
+      const pagingStatement = PostgreSqlDbManager.getPagingStatement(pageNumber, pageSize);
       const numericIds = _ids.map((id) => parseInt(id, 10));
       const idPlaceholders = _ids.map((_, index) => `$${index + 1}`).join(', ');
 
       const result = await this.tryExecuteQuery(
-        `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id IN (${idPlaceholders})`,
+        `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id IN (${idPlaceholders}) ${sortStatement} ${pagingStatement}`,
         numericIds
       );
 
@@ -292,7 +319,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async getItemBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: new() => T,
+    entityClass: new () => T,
     Types: object
   ): Promise<T | ErrorResponse> {
     try {
@@ -325,20 +352,23 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async getItemsBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: new() => T,
-    Types: object
+    entityClass: new () => T,
+    Types: object,
+    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: OptionalPostQueryOperations
   ): Promise<T[] | ErrorResponse> {
     try {
-      const sqlColumns = this.getProjection({}, entityClass, Types);
+      const sqlColumns = this.getProjection(projection, entityClass, Types);
       const joinStatement = this.getJoinStatement(entityClass, Types);
+      const sortStatement = this.getSortStatement(sortBy, sortDirection, entityClass);
+      const pagingStatement = PostgreSqlDbManager.getPagingStatement(pageNumber, pageSize);
 
       const result = await this.tryExecuteQuery(
-        `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
+        `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1 ${sortStatement} ${pagingStatement}`,
         [fieldValue]
       );
 
       if (result.rows.length === 0) {
-        return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
+        return getNotFoundErrorResponse(`Item(s) with ${fieldName}: ${fieldValue} not found`);
       }
 
       const resultMaps = this.createResultMaps(entityClass, Types);
@@ -357,7 +387,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async updateItem<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: T,
-    entityClass: new() => T,
+    entityClass: new () => T,
     Types: object,
     preCondition?: Partial<T> | [string, Partial<T>],
     shouldCheckIfItemExists: boolean = true
@@ -474,6 +504,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     if (preCondition && !Types) {
       throw new Error('Types argument must be given if preCondition argument is given');
     }
+
     try {
       if (Types && preCondition) {
         const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
@@ -512,7 +543,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async deleteAllItems<T>(entityClass: new() => T): Promise<void | ErrorResponse> {
+  async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
     try {
       await Promise.all([
         forEachAsyncParallel(
@@ -528,7 +559,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  private getProjection({ includeResponseFields }: Projection, entityClass: Function, Types: object) {
+  private getProjection({ includeResponseFields }: OptionalProjection, entityClass: Function, Types: object) {
     let projection;
 
     if (includeResponseFields && includeResponseFields.length > 0) {
@@ -712,7 +743,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     });
   }
 
-  private createResultMaps(entityClass: Function, Types: object, projection?: Projection) {
+  private createResultMaps(entityClass: Function, Types: object, projection?: OptionalProjection) {
     const resultMaps: any[] = [];
     this.updateResultMaps(entityClass, Types, resultMaps, projection);
     return resultMaps;
@@ -722,7 +753,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClassOrName: Function | string,
     Types: object,
     resultMaps: any[],
-    projection?: Projection,
+    projection?: OptionalProjection,
     suppliedEntityMetadata: { [key: string]: string } = {},
     parentEntityClass?: Function
   ) {

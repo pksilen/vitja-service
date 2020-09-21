@@ -68,14 +68,16 @@ function getSampleArg(
   }
 
   Object.entries(typeProperties).forEach(([propertyName, propertyTypeName]: [string, string]) => {
-    let finalPropertyTypeName = propertyTypeName.startsWith('?')
-      ? propertyTypeName.slice(1)
-      : propertyTypeName;
+    const isOptionalProperty = propertyTypeName.startsWith('?');
+    let finalPropertyTypeName = isOptionalProperty ? propertyTypeName.slice(1) : propertyTypeName;
 
     const propertyTypeNameAndDefaultValue = finalPropertyTypeName.split(' = ');
     // noinspection ReuseOfLocalVariableJS
     finalPropertyTypeName = propertyTypeNameAndDefaultValue[0];
     const defaultValue = propertyTypeNameAndDefaultValue[1];
+    if (isOptionalProperty && defaultValue === undefined) {
+      return;
+    }
 
     const finalPropertyTypeNameWithoutArraySuffix = finalPropertyTypeName.endsWith('[]')
       ? finalPropertyTypeName.slice(0, -2)

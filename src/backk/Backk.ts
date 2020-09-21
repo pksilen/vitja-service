@@ -1,6 +1,6 @@
 import pick from 'lodash/pick';
 import omit from 'lodash/omit';
-import { IsArray, IsInt, IsString, Max, MaxLength, Min } from "class-validator";
+import { IsArray, IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from "class-validator";
 
 export function getSourceFileName(fileName: string, distFolderName = 'dist'): string {
   return fileName.replace(distFolderName, 'src');
@@ -12,21 +12,46 @@ export class IdWrapper {
   _id!: string;
 }
 
-export class IdsAndPaging implements Paging {
+export class OptionalPostQueryOperations implements Partial<Paging>, Partial<Sorting>, OptionalProjection {
+  @IsOptional()
+  @IsString({ each: true })
+  @MaxLength(1024, { each: true})
+  @IsArray()
+  includeResponseFields?: string[] = [];
+
+  @IsOptional()
+  @IsString({ each: true })
+  @MaxLength(1024, { each: true})
+  @IsArray()
+  excludeResponseFields?: string[] = [];
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(10000)
+  pageNumber?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10000)
+  pageSize?: number;
+
+  @IsOptional()
+  @MaxLength(512)
+  @IsString()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['ASC', 'DESC'])
+  sortDirection?: 'ASC' | 'DESC';
+}
+
+export class IdsAndOptionalPostQueryOperations extends OptionalPostQueryOperations{
   @IsString({ each: true })
   @MaxLength(24, { each: true})
   @IsArray()
   _ids!: string[];
-
-  @IsInt()
-  @Min(1)
-  @Max(10000)
-  pageNumber: number = 1;
-
-  @IsInt()
-  @Min(0)
-  @Max(10000)
-  pageSize: number = 50;
 }
 
 export type ErrorResponse = {
@@ -35,7 +60,7 @@ export type ErrorResponse = {
   stackTrace?: string;
 };
 
-export interface Projection {
+export interface OptionalProjection {
   includeResponseFields?: string[];
   excludeResponseFields?: string[];
 }
@@ -50,7 +75,10 @@ export interface Sorting {
   sortDirection: 'ASC' | 'DESC';
 }
 
-export interface PostQueryOperations extends Projection, Sorting, Paging {
+export interface PostQueryOperations extends OptionalProjection, Sorting, Paging {
+}
+
+export interface PostQueryOperations extends OptionalProjection, Sorting, Paging {
 }
 
 export function transformResponse<T extends object>(
@@ -93,7 +121,7 @@ function getExcludeFieldsMap(excludeResponseFields?: string[]): object {
     : {};
 }
 
-export function getMongoDbProjection(args: Projection): object {
+export function getMongoDbProjection(args: OptionalProjection): object {
   const includeFieldsMap = getIncludeFieldsMap(args.includeResponseFields);
   const excludeFieldsMap = getExcludeFieldsMap(args.excludeResponseFields);
   return { ...includeFieldsMap, ...excludeFieldsMap };

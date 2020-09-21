@@ -1,4 +1,4 @@
-import { ErrorResponse, IdWrapper, PostQueryOperations } from '../Backk';
+import { ErrorResponse, IdWrapper, OptionalPostQueryOperations, PostQueryOperations } from "../Backk";
 import { Pool } from 'pg';
 import { MongoClient } from 'mongodb';
 import SqlExpression from '../sqlexpression/SqlExpression';
@@ -32,7 +32,8 @@ export default abstract class AbstractDbManager {
   abstract getItemsByIds<T>(
     _ids: string[],
     entityClass: new() => T,
-    Types: object
+    Types: object,
+    postQueryOperations: OptionalPostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
   abstract getItemBy<T>(
@@ -46,7 +47,8 @@ export default abstract class AbstractDbManager {
     fieldName: keyof T,
     fieldValue: T[keyof T],
     entityClass: new() => T,
-    Types: object
+    Types: object,
+    postQueryOperations: OptionalPostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
   abstract updateItem<T extends { _id: string; id?: string }>(

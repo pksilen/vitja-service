@@ -41,7 +41,12 @@ export default function setPropertyTypeValidationDecorators(
 ) {
   const typeClassName = typeClass.name;
 
-  if (typeClassName === 'IdWrapper' || typeClassName === 'IdsAndPaging') {
+  if (
+    typeClassName === 'IdWrapper' ||
+    typeClassName === 'OptionalPostQueryOperations' ||
+    typeClassName === 'IdAndOptionalPostQueryOperations' ||
+    typeClassName === 'IdsAndOptionalPostQueryOperations'
+  ) {
     return;
   }
 
