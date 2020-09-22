@@ -1,22 +1,22 @@
-import { Pool, QueryConfig, QueryResult, types } from "pg";
-import { Injectable } from "@nestjs/common";
-import { pg } from "yesql";
-import { Parser } from "expr-eval";
-import _ from "lodash";
+import { Pool, QueryConfig, QueryResult, types } from 'pg';
+import { Injectable } from '@nestjs/common';
+import { pg } from 'yesql';
+import { Parser } from 'expr-eval';
+import _ from 'lodash';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import joinjs from "join-js";
-import { ErrorResponse, IdWrapper, OptionalProjection, OptPostQueryOps, PostQueryOps } from "../Backk";
-import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from "../assert";
-import SqlExpression from "../sqlexpression/SqlExpression";
-import { getTypeMetadata } from "../generateServicesMetadata";
-import forEachAsyncSequential from "../forEachAsyncSequential";
-import entityContainer, { JoinSpec } from "../entityContainer";
-import AbstractDbManager, { Field } from "./AbstractDbManager";
-import getInternalServerErrorResponse from "../getInternalServerErrorResponse";
-import getNotFoundErrorResponse from "../getNotFoundErrorResponse";
-import forEachAsyncParallel from "../forEachAsyncParallel";
-import getConflictErrorResponse from "../getConflictErrorResponse";
+import joinjs from 'join-js';
+import { ErrorResponse, IdWrapper, OptionalProjection, OptPostQueryOps, PostQueryOps } from '../Backk';
+import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
+import SqlExpression from '../sqlexpression/SqlExpression';
+import { getTypeMetadata } from '../generateServicesMetadata';
+import forEachAsyncSequential from '../forEachAsyncSequential';
+import entityContainer, { JoinSpec } from '../entityContainer';
+import AbstractDbManager, { Field } from './AbstractDbManager';
+import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
+import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
+import forEachAsyncParallel from '../forEachAsyncParallel';
+import getConflictErrorResponse from '../getConflictErrorResponse';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -60,24 +60,33 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async reserveDbConnectionFromPool(): Promise<void> {
     this.getClsNamespace()?.set('connection', await this.pool.connect());
-    this.getClsNamespace()?.set('transaction', false);
+    this.getClsNamespace()?.set('localTransaction', false);
+    this.getClsNamespace()?.set('globalTransaction', false);
   }
 
   releaseDbConnectionBackToPool() {
-    this.getClsNamespace()?.get('connection').release();
+    this.getClsNamespace()
+      ?.get('connection')
+      .release();
     this.getClsNamespace()?.set('connection', null);
   }
 
   async beginTransaction(): Promise<void> {
-    await this.getClsNamespace()?.get('connection').query('BEGIN');
+    await this.getClsNamespace()
+      ?.get('connection')
+      .query('BEGIN');
   }
 
   async commitTransaction(): Promise<void> {
-    await this.getClsNamespace()?.get('connection').query('COMMIT');
+    await this.getClsNamespace()
+      ?.get('connection')
+      .query('COMMIT');
   }
 
   async rollbackTransaction(): Promise<void> {
-    await this.getClsNamespace()?.get('connection').query('ROLLBACK');
+    await this.getClsNamespace()
+      ?.get('connection')
+      .query('ROLLBACK');
   }
 
   async tryExecuteSql<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
@@ -85,7 +94,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       console.log(sqlStatement);
     }
 
-    const result = await this.getClsNamespace()?.get('connection').query(sqlStatement, values);
+    const result = await this.getClsNamespace()
+      ?.get('connection')
+      .query(sqlStatement, values);
     return result.fields;
   }
 
@@ -103,7 +114,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       console.log(sqlStatement);
     }
 
-    return await this.getClsNamespace()?.get('connection').query(sqlStatement, values);
+    return await this.getClsNamespace()
+      ?.get('connection')
+      .query(sqlStatement, values);
   }
 
   async tryExecuteQueryWithConfig(queryConfig: QueryConfig): Promise<QueryResult<any>> {
@@ -111,7 +124,26 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       console.log(queryConfig.text);
     }
 
-    return await this.getClsNamespace()?.get('connection').query(queryConfig);
+    return await this.getClsNamespace()
+      ?.get('connection')
+      .query(queryConfig);
+  }
+
+  async executeInsideTransaction<T>(
+    executable: () => Promise<T | ErrorResponse>
+  ): Promise<T | ErrorResponse> {
+    await this.beginTransaction();
+    this.getClsNamespace()?.set('globalTransaction', true);
+
+    const result = await executable();
+
+    if ('statusCode' in result && 'errorMessage' in result) {
+      await this.rollbackTransaction();
+    } else {
+      await this.commitTransaction();
+    }
+
+    return result;
   }
 
   async createItem<T>(
@@ -121,9 +153,12 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     isRecursiveCall = false
   ): Promise<IdWrapper | ErrorResponse> {
     try {
-      if (!this.getClsNamespace()?.get('transaction')) {
+      if (
+        !this.getClsNamespace()?.get('localTransaction') &&
+        !this.getClsNamespace()?.get('globalTransaction')
+      ) {
         await this.beginTransaction();
-        this.getClsNamespace()?.set('transaction', true);
+        this.getClsNamespace()?.set('localTransaction', true);
       }
 
       const entityMetadata = getTypeMetadata(entityClass as any);
@@ -209,7 +244,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         }
       );
 
-      if (!isRecursiveCall) {
+      if (!isRecursiveCall && !this.getClsNamespace()?.get('globalTransaction')) {
         await this.commitTransaction();
       }
 
@@ -217,7 +252,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         _id
       };
     } catch (error) {
-      await this.rollbackTransaction();
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.rollbackTransaction();
+      }
+
       return getInternalServerErrorResponse(error);
     }
   }
@@ -430,9 +468,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     isRecursiveCall = false
   ): Promise<void | ErrorResponse> {
     try {
-      if (!this.getClsNamespace()?.get('transaction')) {
+      if (!this.getClsNamespace()?.get('transaction') && !this.getClsNamespace()?.get('globalTransaction')) {
         await this.beginTransaction();
-        this.getClsNamespace()?.set('transaction', true);
+        this.getClsNamespace()?.set('localTransaction', true);
       }
 
       if (shouldCheckIfItemExists) {
@@ -543,11 +581,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       await Promise.all(promises);
 
-      if (!isRecursiveCall) {
+      if (!isRecursiveCall && !this.getClsNamespace()?.get('globalTransaction')) {
         await this.commitTransaction();
       }
     } catch (error) {
-      await this.rollbackTransaction();
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.rollbackTransaction();
+      }
       return getInternalServerErrorResponse(error);
     }
   }
@@ -563,7 +603,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
 
     try {
-      await this.beginTransaction();
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.beginTransaction();
+      }
 
       if (Types && preCondition) {
         const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
@@ -598,16 +640,23 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name} WHERE _id = $1`, [_id])
       ]);
 
-      await this.commitTransaction();
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.commitTransaction();
+      }
     } catch (error) {
-      await this.rollbackTransaction();
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.rollbackTransaction();
+      }
+
       return getInternalServerErrorResponse(error);
     }
   }
 
   async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
     try {
-      await this.beginTransaction();
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.beginTransaction();
+      }
 
       await Promise.all([
         forEachAsyncParallel(
@@ -619,9 +668,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name}`)
       ]);
 
-      await this.commitTransaction();
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.commitTransaction();
+      }
     } catch (error) {
-      await this.rollbackTransaction();
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.rollbackTransaction();
+      }
       return getInternalServerErrorResponse(error);
     }
   }

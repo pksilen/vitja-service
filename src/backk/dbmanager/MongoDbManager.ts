@@ -31,6 +31,10 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Method not allowed.');
   }
 
+  executeInsideTransaction<T>(): Promise<T | ErrorResponse> {
+    throw new Error('Method not allowed.');
+  }
+
   async isDbReady(): Promise<boolean> {
     try {
       await this.tryExecute((client) =>

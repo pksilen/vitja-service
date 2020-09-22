@@ -20,33 +20,35 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   async createOrder(orderCreateDto: OrderCreateDto): Promise<IdWrapper | ErrorResponse> {
-    const errorResponse = await orderCreateDto.shoppingCartItems.reduce(
-      async (errorResponseAccumulator: Promise<void | ErrorResponse>, shoppingCartItem) => {
-        return (
-          (await errorResponseAccumulator) ||
-          (await this.salesItemsService.updateSalesItemState(
-            {
-              _id: shoppingCartItem.salesItemId,
-              state: 'sold'
-            },
-            'forSale'
-          ))
-        );
-      },
-      Promise.resolve(undefined)
-    );
+    return this.dbManager.executeInsideTransaction(async () => {
+      const errorResponse = await orderCreateDto.shoppingCartItems.reduce(
+        async (errorResponseAccumulator: Promise<void | ErrorResponse>, shoppingCartItem) => {
+          return (
+            (await errorResponseAccumulator) ||
+            (await this.salesItemsService.updateSalesItemState(
+              {
+                _id: shoppingCartItem.salesItemId,
+                state: 'sold'
+              },
+              'forSale'
+            ))
+          );
+        },
+        Promise.resolve(undefined)
+      );
 
-    return errorResponse
-      ? errorResponse
-      : await this.dbManager.createItem(
-          {
-            ...orderCreateDto,
-            createdTimestampInSecs: Math.round(Date.now() / 1000),
-            state: 'toBeDelivered'
-          },
-          Order,
-          this.Types
-        );
+      return errorResponse
+        ? errorResponse
+        : await this.dbManager.createItem(
+            {
+              ...orderCreateDto,
+              createdTimestampInSecs: Math.round(Date.now() / 1000),
+              state: 'toBeDelivered'
+            },
+            Order,
+            this.Types
+          );
+    });
   }
 
   getOrdersByUserId({ userId, ...postQueryOps }: UserIdAndOptPostQueryOps): Promise<Order[] | ErrorResponse> {
