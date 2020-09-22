@@ -10,6 +10,7 @@ import testValueContainer from './testValueContainer';
 import getSrcFilenameForTypeName, { getFileNamesRecursively } from './getSrcFilenameForTypeName';
 import getServiceTypeNames from './getServiceTypeNames';
 import getValidationConstraint from './getValidationConstraint';
+import BaseService from './BaseService';
 
 function setNestedTypeAndValidationDecorators(
   typeClass: Function,
@@ -211,17 +212,17 @@ function getReturnValueTests(
     } else if (types[finalPropertyTypeName]) {
       const finalResponsePath = responsePath + propertyName + (isArray ? '[0]' : '') + '.';
       //if (!isOptionalProperty) {
-        const returnValueTests = getReturnValueTests(
-          serviceTypes,
-          finalPropertyTypeName,
-          serviceMetadata,
-          finalResponsePath,
-          isOptional,
-          isUpdate,
-          sampleArg ? (sampleArg as any)[propertyName] : undefined
-        );
-        javascriptLines = javascriptLines.concat(returnValueTests);
-        return javascriptLines;
+      const returnValueTests = getReturnValueTests(
+        serviceTypes,
+        finalPropertyTypeName,
+        serviceMetadata,
+        finalResponsePath,
+        isOptional,
+        isUpdate,
+        sampleArg ? (sampleArg as any)[propertyName] : undefined
+      );
+      javascriptLines = javascriptLines.concat(returnValueTests);
+      return javascriptLines;
       // }
     }
 
@@ -674,7 +675,10 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
 }
 
 export default function initializeController(controller: any) {
-  Object.keys(controller).forEach((serviceName) => {
+  Object.entries(controller).forEach(([serviceName, service]: [string, any]) => {
+    if (!(service instanceof BaseService)) {
+      throw new Error('Service: ' + serviceName + ' must be extended from BaseService');
+    }
     if (serviceName === 'metadataService') {
       throw new Error('metadataService is a reserved internal service name.');
     } else if (serviceName === 'livenessCheckService') {
