@@ -1,19 +1,24 @@
 # Vitja service
 
 TODO:
-- Default transactional methods: update/delete/create in dbManager
 - executeInsideTransaction method in dbManager
+- Services must extends BaseService
 - Constraint for creating entity based on filter and given max value
   - SalesItem can be created for same userName and state: active only 100 maxItemCount
 - Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
 - In production, don't generate typedocs and postman tests
 - Handle exclude response fields in getProjection and createResultMaps
 - Check enum values integer/number
--Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
+- Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 - @NoAutoTests annotation for service
-- AllowForTests annotation
-- AllowForAnyRole/AllowForRole() annotation
-- Allow user to access only own resources
+- AllowForEveryone annotation
+- AllowForRole(s)() annotation
+- AllowForUserGroup(s)() annotation
+- AllowForSelf
+- AllowForResourceOwner Allow user to access only own resources
+    -eg. in Orders service almost all have annotation allowForResourceOwner
+- Each above authorization annotation can be supplied at service class level, which propagates them to all functions
+- Each service function must have atleast one auth annotation
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
 - Logger
@@ -66,6 +71,7 @@ TODO:
 - executeMultipleInParallel endpoint, to execute multiple serviceCalls in parallel
 - Mongodb transactions, update/delete preconditions
 - Handle order modification and delete to reflect in salesItem states
+-getDbManager support for multiple dbmanagers
     
 TODO NEXT RELEASE:
 - Date/Timestamp type support

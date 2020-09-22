@@ -1,10 +1,10 @@
-import { MongoClient, ObjectId } from 'mongodb';
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOps } from '../Backk';
-import { SalesItem } from '../../services/salesitems/types/SalesItem';
-import AbstractDbManager, { Field } from './AbstractDbManager';
-import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
-import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
+import { MongoClient, ObjectId } from "mongodb";
+import { Injectable } from "@nestjs/common";
+import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOps } from "../Backk";
+import { SalesItem } from "../../services/salesitems/types/SalesItem";
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import getInternalServerErrorResponse from "../getInternalServerErrorResponse";
+import getNotFoundErrorResponse from "../getNotFoundErrorResponse";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -24,6 +24,10 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   tryExecuteSql<T>(): Promise<Field[]> {
+    throw new Error('Method not allowed.');
+  }
+
+  tryExecuteSqlWithoutCls<T>(): Promise<Field[]> {
     throw new Error('Method not allowed.');
   }
 
@@ -226,5 +230,13 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (error) {
       return getInternalServerErrorResponse(error);
     }
+  }
+
+  releaseDbConnectionBackToPool() {
+    // NOOP
+  }
+
+  reserveDbConnectionFromPool(): Promise<void> {
+    return Promise.resolve(undefined);
   }
 }

@@ -1,16 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import ShoppingCartService from './ShoppingCartService';
-import { ErrorResponse, IdWrapper } from '../../backk/Backk';
-import ShoppingCartCreateDto from './types/ShoppingCartCreateDto';
-import ShoppingCart from './types/ShoppingCart';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
-import UserIdWrapper from '../users/types/UserIdWrapper';
+import { Injectable } from "@nestjs/common";
+import ShoppingCartService from "./ShoppingCartService";
+import { ErrorResponse, IdWrapper } from "../../backk/Backk";
+import ShoppingCartCreateDto from "./types/ShoppingCartCreateDto";
+import ShoppingCart from "./types/ShoppingCart";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import UserIdWrapper from "../users/types/UserIdWrapper";
 
 @Injectable()
 export default class ShoppingCartServiceImpl extends ShoppingCartService {
-  constructor(private readonly dbManager: AbstractDbManager) {
-    super();
+  constructor(dbManager: AbstractDbManager) {
+    super(dbManager);
   }
 
   deleteAllShoppingCarts(): Promise<void | ErrorResponse> {

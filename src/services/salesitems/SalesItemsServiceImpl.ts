@@ -14,8 +14,8 @@ import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
 
 @Injectable()
 export default class SalesItemsServiceImpl extends SalesItemsService {
-  constructor(private readonly dbManager: AbstractDbManager) {
-    super();
+  constructor(dbManager: AbstractDbManager) {
+    super(dbManager);
   }
 
   deleteAllSalesItems(): Promise<void | ErrorResponse> {

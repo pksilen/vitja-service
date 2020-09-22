@@ -3,10 +3,11 @@ import PaymentMethod from './types/PaymentMethod';
 import User from './types/User';
 import UserNameWrapper from './types/UserNameWrapper';
 import UserCreateDto from './types/UserCreateDto';
-import DefaultPaymentMethod from "./types/DefaultPaymentMethod";
-import UserResponse from "./types/UserResponse";
+import DefaultPaymentMethod from './types/DefaultPaymentMethod';
+import UserResponse from './types/UserResponse';
+import BaseService from '../../backk/BaseService';
 
-export default abstract class UsersService {
+export default abstract class UsersService extends BaseService {
   readonly Types = {
     DefaultPaymentMethod,
     PaymentMethod,

@@ -5,8 +5,9 @@ import ShoppingCartItem from '../shoppingcart/types/ShoppingCartItem';
 import OrderUpdateDto from './types/OrderUpdateDto';
 import OrderIdAndState from './types/OrderIdAndState';
 import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
+import BaseService from '../../backk/BaseService';
 
-export default abstract class OrdersService {
+export default abstract class OrdersService extends BaseService {
   readonly Types = {
     UserIdAndOptPostQueryOps,
     OrderIdAndState,

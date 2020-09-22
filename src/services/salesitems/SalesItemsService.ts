@@ -1,12 +1,13 @@
-import { ErrorResponse, IdsAndOptPostQueryOps, IdWrapper } from "../../backk/Backk";
-import SalesItemsFilters from "./types/SalesItemsFilters";
-import SalesItemCreateDto from "./types/SalesItemCreateDto";
-import { SalesItem } from "./types/SalesItem";
-import SalesItemUpdateDto from "./types/SalesItemUpdateDto";
-import SalesItemIdAndState from "./types/SalesItemIdAndState";
-import UserIdAndOptPostQueryOps from "../users/types/UserIdAndOptPostQueryOps";
+import { ErrorResponse, IdsAndOptPostQueryOps, IdWrapper } from '../../backk/Backk';
+import SalesItemsFilters from './types/SalesItemsFilters';
+import SalesItemCreateDto from './types/SalesItemCreateDto';
+import { SalesItem } from './types/SalesItem';
+import SalesItemUpdateDto from './types/SalesItemUpdateDto';
+import SalesItemIdAndState from './types/SalesItemIdAndState';
+import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
+import BaseService from '../../backk/BaseService';
 
-export default abstract class SalesItemsService {
+export default abstract class SalesItemsService extends BaseService {
   readonly Types = {
     UserIdAndOptPostQueryOps,
     SalesItemsFilters,

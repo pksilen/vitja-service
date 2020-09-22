@@ -53,7 +53,7 @@ class EntityContainer {
       Object.entries(this.entityNameToAdditionalIdPropertyNamesMap),
       async ([entityName, additionalPropertyNames]: [any, any]) => {
         try {
-          const fields = await dbManager.tryExecuteSql(
+          const fields = await dbManager.tryExecuteSqlWithoutCls(
             `SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`
           );
 
@@ -61,7 +61,7 @@ class EntityContainer {
             if (!fields.find((field) => field.name.toLowerCase() === additionalPropertyName.toLowerCase())) {
               let alterTableStatement = `ALTER TABLE ${dbManager.schema}.${entityName} ADD `;
               alterTableStatement += additionalPropertyName + ' BIGINT';
-              await dbManager.tryExecuteSql(alterTableStatement);
+              await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
             }
           });
         } catch (error) {
@@ -78,7 +78,7 @@ class EntityContainer {
     schema: string | undefined
   ) {
     try {
-      const fields = await dbManager.tryExecuteSql(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
+      const fields = await dbManager.tryExecuteSqlWithoutCls(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
       const entityMetadata = getTypeMetadata(entityClass as any);
 
       await forEachAsyncParallel(
@@ -177,7 +177,7 @@ class EntityContainer {
               const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
               createAdditionalTableStatement +=
                 idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
-              await dbManager.tryExecuteSql(createAdditionalTableStatement);
+              await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
 
               const joinSpec = {
                 joinTableName: entityName + fieldName.slice(0, -1),
@@ -191,7 +191,7 @@ class EntityContainer {
               }
             } else {
               alterTableStatement += fieldName + ' ' + sqlColumnType;
-              await dbManager.tryExecuteSql(alterTableStatement);
+              await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
             }
           }
         }
@@ -302,7 +302,7 @@ class EntityContainer {
             createAdditionalTableStatement +=
               idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
 
-            await dbManager.tryExecuteSql(createAdditionalTableStatement);
+            await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
 
             const joinSpec = {
               joinTableName: entityName + fieldName.slice(0, -1),
@@ -325,8 +325,7 @@ class EntityContainer {
         }
       );
 
-      createTableStatement += ')';
-      await dbManager.tryExecuteSql(createTableStatement);
+      await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
     }
   }
 }

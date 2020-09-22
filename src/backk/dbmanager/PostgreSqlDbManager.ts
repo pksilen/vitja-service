@@ -1,22 +1,22 @@
-import { Pool, PoolClient, QueryConfig, QueryResult, types } from 'pg';
-import { Injectable } from '@nestjs/common';
-import { pg } from 'yesql';
-import { Parser } from 'expr-eval';
-import _ from 'lodash';
+import { Pool, QueryConfig, QueryResult, types } from "pg";
+import { Injectable } from "@nestjs/common";
+import { pg } from "yesql";
+import { Parser } from "expr-eval";
+import _ from "lodash";
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import joinjs from 'join-js';
-import { ErrorResponse, IdWrapper, PostQueryOps, OptionalProjection, OptPostQueryOps } from '../Backk';
-import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
-import SqlExpression from '../sqlexpression/SqlExpression';
-import { getTypeMetadata } from '../generateServicesMetadata';
-import forEachAsyncSequential from '../forEachAsyncSequential';
-import entityContainer, { JoinSpec } from '../entityContainer';
-import AbstractDbManager, { Field } from './AbstractDbManager';
-import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
-import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
-import forEachAsyncParallel from '../forEachAsyncParallel';
-import getConflictErrorResponse from '../getConflictErrorResponse';
+import joinjs from "join-js";
+import { ErrorResponse, IdWrapper, OptionalProjection, OptPostQueryOps, PostQueryOps } from "../Backk";
+import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from "../assert";
+import SqlExpression from "../sqlexpression/SqlExpression";
+import { getTypeMetadata } from "../generateServicesMetadata";
+import forEachAsyncSequential from "../forEachAsyncSequential";
+import entityContainer, { JoinSpec } from "../entityContainer";
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import getInternalServerErrorResponse from "../getInternalServerErrorResponse";
+import getNotFoundErrorResponse from "../getNotFoundErrorResponse";
+import forEachAsyncParallel from "../forEachAsyncParallel";
+import getConflictErrorResponse from "../getConflictErrorResponse";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -58,48 +58,52 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async reserveDbConnectionFromPool(): Promise<PoolClient> {
-    return await this.pool.connect();
+  async reserveDbConnectionFromPool(): Promise<void> {
+    this.getClsNamespace()?.set('connection', await this.pool.connect());
+    this.getClsNamespace()?.set('transaction', false);
   }
 
-  releaseDbConnectionBackToPool(connection: PoolClient) {
-    connection.release();
+  releaseDbConnectionBackToPool() {
+    this.getClsNamespace()?.get('connection').release();
+    this.getClsNamespace()?.set('connection', null);
   }
 
-  async beginTransaction(connection: PoolClient) {
-    await connection.query('BEGIN');
+  async beginTransaction(): Promise<void> {
+    await this.getClsNamespace()?.get('connection').query('BEGIN');
   }
 
-  async commitTransaction(connection: PoolClient) {
-    await connection.query('COMMIT');
+  async commitTransaction(): Promise<void> {
+    await this.getClsNamespace()?.get('connection').query('COMMIT');
   }
 
-  async rollbackTransaction(connection: PoolClient) {
-    await connection.query('ROLLBACK');
+  async rollbackTransaction(): Promise<void> {
+    await this.getClsNamespace()?.get('connection').query('ROLLBACK');
   }
 
-  async tryExecuteSql<T>(sqlStatement: string, values?: any[], client?: PoolClient): Promise<Field[]> {
+  async tryExecuteSql<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
     if (process.env.LOG_LEVEL === 'DEBUG') {
       console.log(sqlStatement);
     }
 
-    const result = client
-      ? await client.query(sqlStatement, values)
-      : await this.pool.query(sqlStatement, values);
-
+    const result = await this.getClsNamespace()?.get('connection').query(sqlStatement, values);
     return result.fields;
   }
 
-  async tryExecuteQuery(
-    sqlStatement: string,
-    values?: any[],
-    client?: PoolClient
-  ): Promise<QueryResult<any>> {
+  async tryExecuteSqlWithoutCls<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
     if (process.env.LOG_LEVEL === 'DEBUG') {
       console.log(sqlStatement);
     }
 
-    return client ? await client.query(sqlStatement, values) : await this.pool.query(sqlStatement, values);
+    const result = await this.pool.query(sqlStatement, values);
+    return result.fields;
+  }
+
+  async tryExecuteQuery(sqlStatement: string, values?: any[]): Promise<QueryResult<any>> {
+    if (process.env.LOG_LEVEL === 'DEBUG') {
+      console.log(sqlStatement);
+    }
+
+    return await this.getClsNamespace()?.get('connection').query(sqlStatement, values);
   }
 
   async tryExecuteQueryWithConfig(queryConfig: QueryConfig): Promise<QueryResult<any>> {
@@ -107,20 +111,19 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       console.log(queryConfig.text);
     }
 
-    return await this.pool.query(queryConfig);
+    return await this.getClsNamespace()?.get('connection').query(queryConfig);
   }
 
   async createItem<T>(
     item: Omit<T, '_id'>,
     entityClass: new () => T,
     Types: object,
-    suppliedConnection?: PoolClient
+    isRecursiveCall = false
   ): Promise<IdWrapper | ErrorResponse> {
-    const connection = suppliedConnection || (await this.reserveDbConnectionFromPool());
-
     try {
-      if (!suppliedConnection) {
-        await this.beginTransaction(connection);
+      if (!this.getClsNamespace()?.get('transaction')) {
+        await this.beginTransaction();
+        this.getClsNamespace()?.set('transaction', true);
       }
 
       const entityMetadata = getTypeMetadata(entityClass as any);
@@ -161,8 +164,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       const result = await this.tryExecuteQuery(
         `INSERT INTO ${this.schema}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`,
-        values,
-        connection
+        values
       );
 
       const _id = result.rows[0]?._id?.toString();
@@ -187,7 +189,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
             await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
               subItem[idFieldName] = _id;
-              await this.createItem(subItem, (Types as any)[relationEntityName], Types, connection);
+              await this.createItem(subItem, (Types as any)[relationEntityName], Types, true);
             });
           } else if (
             baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
@@ -196,33 +198,27 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
             const subItem = (item as any)[fieldName];
             subItem[idFieldName] = _id;
-            await this.createItem(subItem, (Types as any)[relationEntityName], Types, connection);
+            await this.createItem(subItem, (Types as any)[relationEntityName], Types, true);
           } else if (isArray) {
             await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
               const insertStatement = `INSERT INTO ${this.schema}.${entityClass.name +
                 fieldName.slice(0, -1)} (${idFieldName}, ${fieldName.slice(0, -1)}) VALUES($1, $2)`;
-              await this.tryExecuteSql(insertStatement, [_id, subItem], connection);
+              await this.tryExecuteSql(insertStatement, [_id, subItem]);
             });
           }
         }
       );
 
-      if (!suppliedConnection) {
-        await this.commitTransaction(connection);
+      if (!isRecursiveCall) {
+        await this.commitTransaction();
       }
 
       return {
         _id
       };
     } catch (error) {
-      if (!suppliedConnection) {
-        await this.rollbackTransaction(connection);
-      }
+      await this.rollbackTransaction();
       return getInternalServerErrorResponse(error);
-    } finally {
-      if (!suppliedConnection) {
-        this.releaseDbConnectionBackToPool(connection);
-      }
     }
   }
 
@@ -291,20 +287,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return sortStatement;
   }
 
-  async getItemById<T>(
-    _id: string,
-    entityClass: new () => T,
-    Types: object,
-    connection?: PoolClient
-  ): Promise<T | ErrorResponse> {
+  async getItemById<T>(_id: string, entityClass: new () => T, Types: object): Promise<T | ErrorResponse> {
     try {
       const sqlColumns = this.getProjection({}, entityClass, Types);
       const joinStatement = this.getJoinStatement(entityClass, Types);
 
       const result = await this.tryExecuteQuery(
         `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id = $1`,
-        [parseInt(_id, 10)],
-        connection
+        [parseInt(_id, 10)]
       );
 
       if (result.rows.length === 0) {
@@ -437,17 +427,16 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     Types: object,
     preCondition?: Partial<T> | [string, Partial<T>],
     shouldCheckIfItemExists: boolean = true,
-    suppliedConnection?: PoolClient
+    isRecursiveCall = false
   ): Promise<void | ErrorResponse> {
-    const connection = suppliedConnection || (await this.reserveDbConnectionFromPool());
-
     try {
-      if (!suppliedConnection) {
-        await this.beginTransaction(connection);
+      if (!this.getClsNamespace()?.get('transaction')) {
+        await this.beginTransaction();
+        this.getClsNamespace()?.set('transaction', true);
       }
 
       if (shouldCheckIfItemExists) {
-        const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types, connection);
+        const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
         if ('errorMessage' in itemOrErrorResponse && 'statusCode' in itemOrErrorResponse) {
           console.log(itemOrErrorResponse);
           return itemOrErrorResponse;
@@ -505,7 +494,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
                   Types,
                   undefined,
                   false,
-                  connection
+                  true
                 );
               })
             );
@@ -521,7 +510,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
                 Types,
                 undefined,
                 false,
-                connection
+                true
               )
             );
           } else if (isArray) {
@@ -529,7 +518,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
               forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
                 const updateStatement = `UPDATE ${this.schema}.${entityClass.name +
                   fieldName.slice(0, -1)} SET ${fieldName.slice(0, -1)} = $1 WHERE ${idFieldName} = $2`;
-                await this.tryExecuteSql(updateStatement, [subItem, _id], connection);
+                await this.tryExecuteSql(updateStatement, [subItem, _id]);
               })
             );
           } else if (fieldName !== '_id') {
@@ -548,25 +537,18 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       promises.push(
         this.tryExecuteSql(
           `UPDATE ${this.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
-          [_id === undefined ? restOfItem.id : _id, ...values],
-          connection
+          [_id === undefined ? restOfItem.id : _id, ...values]
         )
       );
 
       await Promise.all(promises);
 
-      if (!suppliedConnection) {
-        await this.commitTransaction(connection);
+      if (!isRecursiveCall) {
+        await this.commitTransaction();
       }
     } catch (error) {
-      if (!suppliedConnection) {
-        await this.rollbackTransaction(connection);
-      }
+      await this.rollbackTransaction();
       return getInternalServerErrorResponse(error);
-    } finally {
-      if (!suppliedConnection) {
-        this.releaseDbConnectionBackToPool(connection);
-      }
     }
   }
 
@@ -579,13 +561,12 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     if (preCondition && !Types) {
       throw new Error('Types argument must be given if preCondition argument is given');
     }
-    const connection = await this.reserveDbConnectionFromPool();
 
     try {
-      await this.beginTransaction(connection);
+      await this.beginTransaction();
 
       if (Types && preCondition) {
-        const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types, connection);
+        const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
         if ('errorMessage' in itemOrErrorResponse && 'statusCode' in itemOrErrorResponse) {
           console.log(itemOrErrorResponse);
           return itemOrErrorResponse;
@@ -610,49 +591,38 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           async (joinSpec: JoinSpec) => {
             await this.tryExecuteSql(
               `DELETE FROM ${this.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} = $1`,
-              [_id],
-              connection
+              [_id]
             );
           }
         ),
-        this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name} WHERE _id = $1`, [_id], connection)
+        this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name} WHERE _id = $1`, [_id])
       ]);
 
-      await this.commitTransaction(connection);
+      await this.commitTransaction();
     } catch (error) {
-      await this.rollbackTransaction(connection);
+      await this.rollbackTransaction();
       return getInternalServerErrorResponse(error);
-    } finally {
-      this.releaseDbConnectionBackToPool(connection);
     }
   }
 
   async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
-    const connection = await this.reserveDbConnectionFromPool();
-
     try {
-      await this.beginTransaction(connection);
+      await this.beginTransaction();
 
       await Promise.all([
         forEachAsyncParallel(
           Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
           async (joinSpec: JoinSpec) => {
-            await this.tryExecuteSql(
-              `DELETE FROM ${this.schema}.${joinSpec.joinTableName} `,
-              undefined,
-              connection
-            );
+            await this.tryExecuteSql(`DELETE FROM ${this.schema}.${joinSpec.joinTableName}`);
           }
         ),
-        this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name}`, undefined, connection)
+        this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name}`)
       ]);
 
-      await this.commitTransaction(connection);
+      await this.commitTransaction();
     } catch (error) {
-      await this.rollbackTransaction(connection);
+      await this.rollbackTransaction();
       return getInternalServerErrorResponse(error);
-    } finally {
-      this.releaseDbConnectionBackToPool(connection);
     }
   }
 

@@ -290,7 +290,7 @@ function getTests(
     returnValueTypeName = returnValueTypeName.slice(0, -2);
   }
 
-  const checkResponseCode = `pm.test("Status code is ${expectedResponseStatusCode} OK", function () {
+  const checkResponseCode = `pm.test("Status code is ${expectedResponseStatusCode}", function () {
   pm.response.to.have.status(${expectedResponseStatusCode});
 });`;
 

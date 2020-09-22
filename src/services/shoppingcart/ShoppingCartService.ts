@@ -3,8 +3,9 @@ import ShoppingCartCreateDto from './types/ShoppingCartCreateDto';
 import ShoppingCart from './types/ShoppingCart';
 import ShoppingCartItem from './types/ShoppingCartItem';
 import UserIdWrapper from "../users/types/UserIdWrapper";
+import BaseService from "../../backk/BaseService";
 
-export default abstract class ShoppingCartService {
+export default abstract class ShoppingCartService extends BaseService {
   Types = {
     ShoppingCart,
     ShoppingCartItem,

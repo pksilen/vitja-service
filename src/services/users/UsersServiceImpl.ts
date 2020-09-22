@@ -9,8 +9,8 @@ import UserResponse from './types/UserResponse';
 
 @Injectable()
 export default class UsersServiceImpl extends UsersService {
-  constructor(private readonly dbManager: AbstractDbManager) {
-    super();
+  constructor(dbManager: AbstractDbManager) {
+    super(dbManager);
   }
 
   deleteAllUsers(): Promise<void | ErrorResponse> {
