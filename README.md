@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- executeInsideTransaction method in dbManager
 - Services must extends BaseService
 - Constraint for creating entity based on filter and given max value
   - SalesItem can be created for same userName and state: active only 100 maxItemCount

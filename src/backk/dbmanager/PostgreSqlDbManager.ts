@@ -143,6 +143,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       await this.commitTransaction();
     }
 
+    this.getClsNamespace()?.set('globalTransaction', false);
+
     return result;
   }
 
@@ -257,6 +259,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       }
 
       return getInternalServerErrorResponse(error);
+    } finally {
+      this.getClsNamespace()?.set('localTransaction', false);
     }
   }
 
@@ -589,6 +593,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         await this.rollbackTransaction();
       }
       return getInternalServerErrorResponse(error);
+    } finally {
+      this.getClsNamespace()?.set('localTransaction', false);
     }
   }
 
