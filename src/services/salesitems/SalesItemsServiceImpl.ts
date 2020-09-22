@@ -48,6 +48,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
 
     if (this.dbManager instanceof MongoDbManager) {
       filters = {
+        state: 'forSale',
         ...(textFilter
           ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
           : {}),
@@ -66,6 +67,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       };
     } else {
       filters = [
+        new SqlExpression("state = 'forSale'"),
         new SqlExpression('title LIKE :textFilter OR description LIKE :textFilter', { textFilter }),
         new SqlInExpression('area', areas),
         new SqlInExpression('productDepartment', productDepartments),

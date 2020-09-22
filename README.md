@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Services must extends BaseService
 - Constraint for creating entity based on filter and given max value
   - SalesItem can be created for same userName and state: active only 100 maxItemCount
 - Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
@@ -17,7 +16,7 @@ TODO:
 - AllowForResourceOwner Allow user to access only own resources
     -eg. in Orders service almost all have annotation allowForResourceOwner
 - Each above authorization annotation can be supplied at service class level, which propagates them to all functions
-- Each service function must have atleast one auth annotation
+- Each service function must have at least one auth annotation
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
 - Logger
@@ -25,6 +24,7 @@ TODO:
 - include/exclude to support wildcards: property1.property2.*
 - include/exclude to support JSON and GraphQl
 - Table column indexing annotation
+- includeResponseFields and excludeResponseFields must checked that they contain only allowed field names
 
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password
