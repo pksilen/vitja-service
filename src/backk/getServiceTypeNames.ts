@@ -28,6 +28,7 @@ export default function getServiceTypeNames(
       for (const classBodyNode of node.declaration.body.body) {
         if (classBodyNode.type === 'TSDeclareMethod') {
           const functionName = classBodyNode.key.name;
+          console.log(functionName);
           if (classBodyNode.params.length >= 1) {
             const paramTypeNameStart = classBodyNode.params[0].typeAnnotation.loc.start;
             const paramTypeNameEnd = classBodyNode.params[0].typeAnnotation.loc.end;
@@ -42,15 +43,18 @@ export default function getServiceTypeNames(
 
             functionNameToParamTypeNameMap[functionName] = paramTypeName;
           }
+
           const returnTypeNameStart = classBodyNode.returnType.typeAnnotation.loc.start;
           const returnTypeNameEnd = classBodyNode.returnType.typeAnnotation.loc.end;
           let returnTypeName = fileRows[returnTypeNameStart.line - 1].slice(
             returnTypeNameStart.column,
             returnTypeNameEnd.column
           );
+
           if (returnTypeName.startsWith('Promise')) {
             returnTypeName = returnTypeName.slice(8, -1);
           }
+
           functionNameToReturnTypeNameMap[functionName] = returnTypeName;
         }
       }

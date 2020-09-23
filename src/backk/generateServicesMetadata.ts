@@ -267,12 +267,7 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
       ([, propValue]: [string, any]) => typeof propValue === 'object' && propValue.constructor !== Object
     )
     .map(([serviceName]: [string, any]) => {
-      const servicePrototype = Object.getPrototypeOf((controller as any)[serviceName]);
-
-      const functionNames = Object.getOwnPropertyNames(servicePrototype).filter(
-        (ownPropertyName: string) => ownPropertyName !== 'constructor'
-      );
-
+      const functionNames = Object.keys((controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap);
       const functions: FunctionMetadata[] = functionNames.map((functionName: string) => {
         const paramTypeName = (controller as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
           functionName

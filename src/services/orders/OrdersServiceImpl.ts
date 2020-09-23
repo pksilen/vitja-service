@@ -21,21 +21,7 @@ export default class OrdersServiceImpl extends OrdersService {
 
   async createOrder(orderCreateDto: OrderCreateDto): Promise<IdWrapper | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
-      const errorResponse = await orderCreateDto.shoppingCartItems.reduce(
-        async (errorResponseAccumulator: Promise<void | ErrorResponse>, shoppingCartItem) => {
-          return (
-            (await errorResponseAccumulator) ||
-            (await this.salesItemsService.updateSalesItemState(
-              {
-                _id: shoppingCartItem.salesItemId,
-                state: 'sold'
-              },
-              'forSale'
-            ))
-          );
-        },
-        Promise.resolve(undefined)
-      );
+      const errorResponse = await this.updateSalesItemStatesToSold(orderCreateDto);
 
       return errorResponse
         ? errorResponse
@@ -69,5 +55,23 @@ export default class OrdersServiceImpl extends OrdersService {
 
   deleteOrderById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
     return this.dbManager.deleteItemById(_id, Order);
+  }
+
+  private async updateSalesItemStatesToSold(orderCreateDto: OrderCreateDto): Promise<void | ErrorResponse> {
+    return await orderCreateDto.shoppingCartItems.reduce(
+      async (errorResponseAccumulator: Promise<void | ErrorResponse>, shoppingCartItem) => {
+        return (
+          (await errorResponseAccumulator) ||
+          (await this.salesItemsService.updateSalesItemState(
+            {
+              _id: shoppingCartItem.salesItemId,
+              state: 'sold'
+            },
+            'forSale'
+          ))
+        );
+      },
+      Promise.resolve(undefined)
+    );
   }
 }
