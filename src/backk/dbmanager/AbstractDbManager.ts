@@ -1,6 +1,6 @@
 import { ErrorResponse, IdWrapper, OptPostQueryOps, PostQueryOps } from '../Backk';
 import { Pool } from 'pg';
-import { MongoClient } from 'mongodb';
+import { FilterQuery, MongoClient } from "mongodb";
 import SqlExpression from '../sqlexpression/SqlExpression';
 import { getNamespace, Namespace } from 'cls-hooked';
 
@@ -42,18 +42,25 @@ export default abstract class AbstractDbManager {
   ): Promise<IdWrapper | ErrorResponse>;
 
   abstract getItems<T>(
-    filters: object | SqlExpression[],
+    filters: FilterQuery<T> | Partial<T> | SqlExpression[],
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOps,
     entityClass: new () => T,
     Types: object
   ): Promise<T[] | ErrorResponse>;
 
+  abstract getItemsCount<T>(
+    filters: Partial<T> | SqlExpression[],
+    entityClass: new () => T,
+    Types: object
+  ): Promise<number | ErrorResponse>;
+
   abstract getItemById<T>(_id: string, entityClass: new () => T, Types: object): Promise<T | ErrorResponse>;
+
   abstract getItemsByIds<T>(
     _ids: string[],
     entityClass: new () => T,
     Types: object,
-    postQueryOperations: OptPostQueryOps
+    postQueryOperations?: OptPostQueryOps
   ): Promise<T[] | ErrorResponse>;
 
   abstract getItemBy<T>(
@@ -68,7 +75,7 @@ export default abstract class AbstractDbManager {
     fieldValue: T[keyof T],
     entityClass: new () => T,
     Types: object,
-    postQueryOperations: OptPostQueryOps
+    postQueryOperations?: OptPostQueryOps
   ): Promise<T[] | ErrorResponse>;
 
   abstract updateItem<T extends { _id: string; id?: string }>(

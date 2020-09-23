@@ -11,6 +11,7 @@ import SqlExpression from '../../backk/sqlexpression/SqlExpression';
 import SalesItemUpdateDto from './types/SalesItemUpdateDto';
 import SalesItemIdAndState from './types/SalesItemIdAndState';
 import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
+import getBadRequestErrorResponse from "../../backk/getBadRequestErrorResponse";
 
 @Injectable()
 export default class SalesItemsServiceImpl extends SalesItemsService {
@@ -22,7 +23,17 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.deleteAllItems(SalesItem);
   }
 
-  createSalesItem(salesItemCreateDto: SalesItemCreateDto): Promise<IdWrapper | ErrorResponse> {
+  async createSalesItem(salesItemCreateDto: SalesItemCreateDto): Promise<IdWrapper | ErrorResponse> {
+    const salesItemCountForUser = await this.dbManager.getItemsCount(
+      { userId: salesItemCreateDto.userId, state: 'forSale' },
+      SalesItem,
+      this.Types
+    );
+
+    if(salesItemCountForUser > 100) {
+      return getBadRequestErrorResponse('User can have maximum 100 sales items')
+    }
+
     return this.dbManager.createItem(
       {
         ...salesItemCreateDto,
@@ -48,7 +59,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
 
     if (this.dbManager instanceof MongoDbManager) {
       filters = {
-        state: 'forSale',
+        state: 'forSale' as 'forSale',
         ...(textFilter
           ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
           : {}),

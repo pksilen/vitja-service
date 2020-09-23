@@ -28,7 +28,7 @@ export default function getServiceTypeNames(
       for (const classBodyNode of node.declaration.body.body) {
         if (classBodyNode.type === 'TSDeclareMethod') {
           const functionName = classBodyNode.key.name;
-          console.log(functionName);
+
           if (classBodyNode.params.length >= 1) {
             const paramTypeNameStart = classBodyNode.params[0].typeAnnotation.loc.start;
             const paramTypeNameEnd = classBodyNode.params[0].typeAnnotation.loc.end;

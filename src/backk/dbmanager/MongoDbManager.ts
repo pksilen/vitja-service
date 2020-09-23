@@ -1,10 +1,11 @@
-import { MongoClient, ObjectId } from "mongodb";
+import { FilterQuery, MongoClient, ObjectId } from "mongodb";
 import { Injectable } from "@nestjs/common";
-import { ErrorResponse, getMongoDbProjection, IdWrapper, PostQueryOps } from "../Backk";
+import { ErrorResponse, getMongoDbProjection, IdWrapper, OptPostQueryOps, PostQueryOps } from "../Backk";
 import { SalesItem } from "../../services/salesitems/types/SalesItem";
 import AbstractDbManager, { Field } from "./AbstractDbManager";
 import getInternalServerErrorResponse from "../getInternalServerErrorResponse";
 import getNotFoundErrorResponse from "../getNotFoundErrorResponse";
+import SqlExpression from "../sqlexpression/SqlExpression";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -67,7 +68,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getItems<T>(
-    filters: object,
+    filters: FilterQuery<T>,
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOps,
     entityClass: new () => T
   ): Promise<T[] | ErrorResponse> {
@@ -94,6 +95,15 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
+  async getItemsCount<T>(
+    filters: Partial<T> | SqlExpression[],
+    entityClass: new () => T,
+    Types: object
+  ): Promise<number | ErrorResponse> {
+    // TODO implement
+    return Promise.resolve(0);
+  }
+
   async getItemById<T>(_id: string, entityClass: new () => T): Promise<T | ErrorResponse> {
     try {
       const foundItem = await this.tryExecute((client) =>
@@ -113,7 +123,8 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async getItemsByIds<T>(_ids: string[], entityClass: new () => T): Promise<T[] | ErrorResponse> {
+  async getItemsByIds<T>(_ids: string[], entityClass: new () => T, postQueryOperations?: OptPostQueryOps): Promise<T[] | ErrorResponse> {
+    // TODO implemennt postqueryOps
     try {
       const foundItems = await this.tryExecute((client) =>
         client
@@ -159,8 +170,10 @@ export default class MongoDbManager extends AbstractDbManager {
   async getItemsBy<T>(
     fieldName: keyof T,
     fieldValue: T[keyof T],
-    entityClass: new () => T
+    entityClass: new () => T,
+    postQueryOperations?: OptPostQueryOps
   ): Promise<T[] | ErrorResponse> {
+    // TODO implement postQueryOps
     try {
       const foundItem = await this.tryExecute((client) =>
         client
@@ -237,10 +250,11 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   releaseDbConnectionBackToPool() {
-    // NOOP
+    // TODO inmplement
   }
 
   reserveDbConnectionFromPool(): Promise<void> {
+    // TODO inmplement
     return Promise.resolve(undefined);
   }
 }
