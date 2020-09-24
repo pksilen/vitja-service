@@ -11,7 +11,8 @@ import SqlExpression from '../../backk/sqlexpression/SqlExpression';
 import SalesItemUpdateDto from './types/SalesItemUpdateDto';
 import SalesItemIdAndState from './types/SalesItemIdAndState';
 import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
-import getBadRequestErrorResponse from "../../backk/getBadRequestErrorResponse";
+import getBadRequestErrorResponse from '../../backk/getBadRequestErrorResponse';
+import SqlEquals from '../../backk/sqlexpression/SqlEquals';
 
 @Injectable()
 export default class SalesItemsServiceImpl extends SalesItemsService {
@@ -30,8 +31,8 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       this.Types
     );
 
-    if(salesItemCountForUser > 100) {
-      return getBadRequestErrorResponse('User can have maximum 100 sales items')
+    if (salesItemCountForUser > 100) {
+      return getBadRequestErrorResponse('User can have maximum 100 sales items');
     }
 
     return this.dbManager.createItem(
@@ -78,7 +79,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       };
     } else {
       filters = [
-        new SqlExpression("state = 'forSale'"),
+        new SqlEquals({ state: 'forSale' }),
         new SqlExpression('title LIKE :textFilter OR description LIKE :textFilter', { textFilter }),
         new SqlInExpression('area', areas),
         new SqlInExpression('productDepartment', productDepartments),
