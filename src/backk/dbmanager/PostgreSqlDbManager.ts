@@ -265,7 +265,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async getItems<T>(
-    filters: Partial<T>| SqlExpression[],
+    filters: Partial<T> | SqlExpression[],
     { pageNumber, pageSize, sortBy, sortDirection, ...projection }: OptPostQueryOps,
     entityClass: new () => T,
     Types: object
@@ -814,10 +814,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     });
   }
 
-  private getWhereStatement<T>(
-    filters: Partial<T> | SqlExpression[],
-    entityClass: Function
-  ) {
+  private getWhereStatement<T>(filters: Partial<T> | SqlExpression[], entityClass: Function) {
     let filtersSql;
 
     if (Array.isArray(filters)) {
@@ -826,8 +823,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         .map((sqlExpression) => sqlExpression.toSqlString(this.schema, entityClass.name))
         .join(' AND ');
     } else {
-      filtersSql = Object.keys(filters)
-        .map((fieldName) => `${fieldName} = :${fieldName}`)
+      filtersSql = Object.entries(filters)
+        .filter(([, fieldValue]) => fieldValue !== undefined)
+        .map(([fieldName]) => `${fieldName} = :${fieldName}`)
         .join(' AND ');
     }
 

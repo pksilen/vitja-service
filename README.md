@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- entityContainer create fields with NOT NULL
 - Partial<T> type filters, check that filter value not null
 - Partial<T> filters can be inside SqlExpression array
 - In production, don't generate typedocs and postman tests
