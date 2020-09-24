@@ -43,7 +43,7 @@ export default abstract class AbstractDbManager {
 
   abstract getItems<T>(
     filters: FilterQuery<T> | Partial<T> | SqlExpression[],
-    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOps,
+    postQueryOps: PostQueryOps,
     entityClass: new () => T,
     Types: object
   ): Promise<T[] | ErrorResponse>;

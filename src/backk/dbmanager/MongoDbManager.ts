@@ -1,11 +1,11 @@
-import { FilterQuery, MongoClient, ObjectId } from "mongodb";
-import { Injectable } from "@nestjs/common";
-import { ErrorResponse, getMongoDbProjection, IdWrapper, OptPostQueryOps, PostQueryOps } from "../Backk";
-import { SalesItem } from "../../services/salesitems/types/SalesItem";
-import AbstractDbManager, { Field } from "./AbstractDbManager";
-import getInternalServerErrorResponse from "../getInternalServerErrorResponse";
-import getNotFoundErrorResponse from "../getNotFoundErrorResponse";
-import SqlExpression from "../sqlexpression/SqlExpression";
+import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
+import { Injectable } from '@nestjs/common';
+import { ErrorResponse, getMongoDbProjection, IdWrapper, OptPostQueryOps, PostQueryOps } from '../Backk';
+import { SalesItem } from '../../services/salesitems/types/SalesItem';
+import AbstractDbManager, { Field } from './AbstractDbManager';
+import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
+import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
+import SqlExpression from '../sqlexpression/SqlExpression';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -69,7 +69,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getItems<T>(
     filters: FilterQuery<T>,
-    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: PostQueryOps,
+    { pageNumber, pageSize, sortings, ...projection }: PostQueryOps,
     entityClass: new () => T
   ): Promise<T[] | ErrorResponse> {
     try {
@@ -80,8 +80,17 @@ export default class MongoDbManager extends AbstractDbManager {
           .find<T>(filters)
           .project(getMongoDbProjection(projection));
 
-        if (sortBy && sortDirection) {
-          cursor = cursor.sort(sortBy, sortDirection === 'ASC' ? 1 : -1);
+        if (sortings) {
+          const sortObj = sortings.reduce(
+            (accumulatedSortObj, { sortBy, sortDirection }) => ({
+              ...accumulatedSortObj,
+              sortBy,
+              sortDirection: sortDirection === 'ASC' ? 1 : -1
+            }),
+            {}
+          );
+
+          cursor = cursor.sort(sortObj);
         }
 
         if (pageNumber && pageSize) {
@@ -123,7 +132,11 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async getItemsByIds<T>(_ids: string[], entityClass: new () => T, postQueryOperations?: OptPostQueryOps): Promise<T[] | ErrorResponse> {
+  async getItemsByIds<T>(
+    _ids: string[],
+    entityClass: new () => T,
+    postQueryOperations?: OptPostQueryOps
+  ): Promise<T[] | ErrorResponse> {
     // TODO implemennt postqueryOps
     try {
       const foundItems = await this.tryExecute((client) =>

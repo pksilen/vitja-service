@@ -1,6 +1,6 @@
 import pick from 'lodash/pick';
 import omit from 'lodash/omit';
-import { IsArray, IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from "class-validator";
+import { IsArray, IsIn, IsInstance, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export function getSourceFileName(fileName: string, distFolderName = 'dist'): string {
   return fileName.replace(distFolderName, 'src');
@@ -12,16 +12,30 @@ export class IdWrapper {
   _id!: string;
 }
 
-export class OptPostQueryOps implements Partial<Paging>, Partial<Sorting>, OptionalProjection {
+export class Sorting implements ISorting {
+  constructor(sortBy: string, sortDirection: 'ASC' | 'DESC') {
+    this.sortBy = sortBy;
+    this.sortDirection = sortDirection;
+  }
+
+  @MaxLength(512)
+  @IsString()
+  sortBy!: string;
+
+  @IsIn(['ASC', 'DESC'])
+  sortDirection!: 'ASC' | 'DESC';
+}
+
+export class OptPostQueryOps implements Partial<Paging>, OptionalProjection {
   @IsOptional()
   @IsString({ each: true })
-  @MaxLength(1024, { each: true})
+  @MaxLength(1024, { each: true })
   @IsArray()
   includeResponseFields?: string[] = [];
 
   @IsOptional()
   @IsString({ each: true })
-  @MaxLength(1024, { each: true})
+  @MaxLength(1024, { each: true })
   @IsArray()
   excludeResponseFields?: string[] = [];
 
@@ -38,18 +52,14 @@ export class OptPostQueryOps implements Partial<Paging>, Partial<Sorting>, Optio
   pageSize?: number;
 
   @IsOptional()
-  @MaxLength(512)
-  @IsString()
-  sortBy?: string;
-
-  @IsOptional()
-  @IsIn(['ASC', 'DESC'])
-  sortDirection?: 'ASC' | 'DESC';
+  @IsInstance(Sorting, { each: true })
+  @IsArray()
+  sortings?: Sorting[];
 }
 
-export class IdsAndOptPostQueryOps extends OptPostQueryOps{
+export class IdsAndOptPostQueryOps extends OptPostQueryOps {
   @IsString({ each: true })
-  @MaxLength(24, { each: true})
+  @MaxLength(24, { each: true })
   @IsArray()
   _ids!: string[];
 }
@@ -70,12 +80,13 @@ export interface Paging {
   pageSize: number;
 }
 
-export interface Sorting {
+export interface ISorting {
   sortBy: string;
   sortDirection: 'ASC' | 'DESC';
 }
 
-export interface PostQueryOps extends OptionalProjection, Sorting, Paging {
+export interface PostQueryOps extends OptionalProjection, Paging {
+  sortings: ISorting[];
 }
 
 export function transformResponse<T extends object>(

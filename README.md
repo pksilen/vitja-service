@@ -1,9 +1,9 @@
 # Vitja service
 
 TODO:
-- Create SqlEquals type
 - Change sorting to [{fieldName: 'fieldName', direction: 'ASC'}, ...]
-- Handle exclude response fields in getProjection and createResultMaps
+- mahdollista antaa default valuena plain obj josta tehdään class (sorting)
+- Move previousPrice away from CreateSalesItemDto, make field default value -1
 - Check enum values integer/number
 - Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 - @NoAutoTests annotation for service
@@ -14,6 +14,7 @@ TODO:
     -eg. in Orders service almost all have annotation allowForResourceOwner
 - Each above authorization annotation can be supplied at service class level, which propagates them to all functions
 - Each service function must have at least one auth annotation
+- Handle exclude response fields in getProjection and createResultMaps
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
 - Logger
@@ -21,7 +22,7 @@ TODO:
 - include/exclude to support wildcards: property1.property2.*
 - include/exclude to support JSON and GraphQl
 - Table column indexing annotation
-- includeResponseFields and excludeResponseFields must checked that they contain only allowed field names
+- sorting, includeResponseFields and excludeResponseFields must checked that they contain only allowed field names
 
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password

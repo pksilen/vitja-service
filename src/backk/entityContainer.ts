@@ -88,17 +88,11 @@ class EntityContainer {
             let alterTableStatement = `ALTER TABLE ${schema}.${entityName} ADD `;
             let baseFieldTypeName = fieldTypeName;
             let isArray = false;
-            let isOptional = false;
             let sqlColumnType: string = '';
 
             if (fieldTypeName.endsWith('[]')) {
               baseFieldTypeName = fieldTypeName.slice(0, -2);
               isArray = true;
-            }
-
-            if (baseFieldTypeName[0] === '?') {
-              baseFieldTypeName = baseFieldTypeName.slice(1);
-              isOptional = true;
             }
 
             switch (baseFieldTypeName) {
@@ -182,7 +176,7 @@ class EntityContainer {
                 fieldName.slice(0, -1)} (`;
               const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
               createAdditionalTableStatement +=
-                idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ' NOT NULL)';
+                idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
               await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
 
               const joinSpec = {
@@ -196,7 +190,7 @@ class EntityContainer {
                 this.entityNameToJoinsMap[entityName] = [joinSpec];
               }
             } else {
-              alterTableStatement += fieldName + ' ' + sqlColumnType + (isOptional ? '' : ' NOT NULL');
+              alterTableStatement += fieldName + ' ' + sqlColumnType;
               await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
             }
           }
@@ -212,17 +206,11 @@ class EntityContainer {
         async ([fieldName, fieldTypeName]: [any, any]) => {
           let baseFieldTypeName = fieldTypeName;
           let isArray = false;
-          let isOptional = false;
           let sqlColumnType: string = '';
 
           if (fieldTypeName.endsWith('[]')) {
             baseFieldTypeName = fieldTypeName.slice(0, -2);
             isArray = true;
-          }
-
-          if (baseFieldTypeName[0] === '?') {
-            baseFieldTypeName = baseFieldTypeName.slice(1);
-            isOptional = true;
           }
 
           if (fieldName === '_id') {
@@ -312,7 +300,7 @@ class EntityContainer {
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
 
             createAdditionalTableStatement +=
-              idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ' NOT NULL)';
+              idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
 
             await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
 
@@ -331,7 +319,7 @@ class EntityContainer {
             if (fieldCnt > 0) {
               createTableStatement += ', ';
             }
-            createTableStatement += fieldName + ' ' + sqlColumnType + (isOptional ? '' : ' NOT NULL');
+            createTableStatement += fieldName + ' ' + sqlColumnType;
             fieldCnt++;
           }
         }

@@ -6,7 +6,14 @@ import _ from 'lodash';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import joinjs from 'join-js';
-import { ErrorResponse, IdWrapper, OptionalProjection, OptPostQueryOps, PostQueryOps } from '../Backk';
+import {
+  ErrorResponse,
+  IdWrapper,
+  OptionalProjection,
+  OptPostQueryOps,
+  PostQueryOps,
+  Sorting
+} from '../Backk';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
 import SqlExpression from '../sqlexpression/SqlExpression';
 import { getTypeMetadata } from '../generateServicesMetadata';
@@ -266,7 +273,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async getItems<T>(
     filters: Partial<T> | SqlExpression[],
-    { pageNumber, pageSize, sortBy, sortDirection, ...projection }: OptPostQueryOps,
+    { pageNumber, pageSize, sortings, ...projection }: OptPostQueryOps,
     entityClass: new () => T,
     Types: object
   ): Promise<T[] | ErrorResponse> {
@@ -275,7 +282,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const whereStatement = this.getWhereStatement(filters, entityClass);
       const filterValues = this.getFilterValues(filters);
       const joinStatement = this.getJoinStatement(entityClass, Types);
-      const sortStatement = this.getSortStatement(sortBy, sortDirection, entityClass);
+      const sortStatement = this.getSortStatement(sortings, entityClass);
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(pageNumber, pageSize);
 
       const result = await this.tryExecuteQueryWithConfig(
@@ -332,20 +339,20 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return limitAndOffsetStatement;
   }
 
-  private getSortStatement<T>(
-    sortBy: string | undefined,
-    sortDirection: undefined | 'ASC' | 'DESC',
-    entityClass: { new (): T }
-  ) {
+  private getSortStatement<T>(sortings: Sorting[] | undefined, entityClass: { new (): T }) {
     let sortStatement = '';
 
-    if (sortBy && sortDirection) {
-      assertIsColumnName('sortBy', sortBy);
-      assertIsSortDirection(sortDirection);
+    if (sortings) {
+      const sortingsStr = sortings.map(({ sortBy, sortDirection }) => {
+        assertIsColumnName('sortBy', sortBy);
+        assertIsSortDirection(sortDirection);
+        const sortColumn = sortBy.includes('.')
+          ? sortBy
+          : this.schema + '.' + entityClass.name + '.' + sortBy;
+        return sortColumn + ' ' + sortDirection;
+      });
 
-      const sortColumn = sortBy.includes('.') ? sortBy : this.schema + '.' + entityClass.name + '.' + sortBy;
-
-      sortStatement = `ORDER BY ${sortColumn} ${sortDirection}`;
+      sortStatement = `ORDER BY ${sortingsStr}`;
     }
 
     return sortStatement;
@@ -396,12 +403,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       const joinStatement = this.getJoinStatement(entityClass, Types);
-
-      const sortStatement = this.getSortStatement(
-        postQueryOps?.sortBy,
-        postQueryOps?.sortDirection,
-        entityClass
-      );
+      const sortStatement = this.getSortStatement(postQueryOps?.sortings, entityClass);
 
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(
         postQueryOps?.pageNumber,
@@ -484,12 +486,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       const joinStatement = this.getJoinStatement(entityClass, Types);
-
-      const sortStatement = this.getSortStatement(
-        postQueryOps?.sortBy,
-        postQueryOps?.sortDirection,
-        entityClass
-      );
+      const sortStatement = this.getSortStatement(postQueryOps?.sortings, entityClass);
 
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(
         postQueryOps?.pageNumber,

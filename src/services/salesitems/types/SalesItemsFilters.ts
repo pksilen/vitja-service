@@ -1,5 +1,5 @@
-import { PostQueryOps } from "../../../backk/Backk";
-import { IsInt,  Max, MaxLength, Min } from "class-validator";
+import { PostQueryOps, Sorting } from '../../../backk/Backk';
+import { IsInt, Max, MaxLength, Min } from 'class-validator';
 
 export default class SalesItemsFilters implements PostQueryOps {
   @MaxLength(512)
@@ -18,13 +18,12 @@ export default class SalesItemsFilters implements PostQueryOps {
   @Max(1000000000)
   maxPrice?: number;
 
-  sortBy: 'price' | 'priceWhenPreviousPrice' | 'createdTimestampInSecs' = 'createdTimestampInSecs';
-  sortDirection: 'ASC' | 'DESC' = 'DESC';
+  sortings: Sorting[] = [new Sorting('createdTimestampInSecs', 'DESC')];
 
-  @MaxLength(512, {each: true})
+  @MaxLength(512, { each: true })
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];
 
-  @MaxLength(512, {each: true})
+  @MaxLength(512, { each: true })
   excludeResponseFields?: string[] = [];
 
   @IsInt()
