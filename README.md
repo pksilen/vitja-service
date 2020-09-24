@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Testaa, että tulee virhe jos joku input arg property puuttuu
-- Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
 - entityContainer create fields with NOT NULL
 - Partial<T> type filters, check that filter value not null
 - Partial<T> filters can be inside SqlExpression array
