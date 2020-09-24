@@ -710,5 +710,8 @@ export default function initializeController(controller: any) {
 
   const servicesMetadata = generateServicesMetadata(controller);
   controller.servicesMetadata = servicesMetadata;
-  writePostmanCollectionExportFile(controller, servicesMetadata);
+
+  if (process.env.NODE_ENV === 'development') {
+    writePostmanCollectionExportFile(controller, servicesMetadata);
+  }
 }

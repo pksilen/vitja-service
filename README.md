@@ -1,9 +1,7 @@
 # Vitja service
 
 TODO:
-- Partial<T> type filters, check that filter value not null
-- Partial<T> filters can be inside SqlExpression array
-- In production, don't generate typedocs and postman tests
+- Create SqlEquals type
 - Change sorting to [{fieldName: 'fieldName', direction: 'ASC'}, ...]
 - Handle exclude response fields in getProjection and createResultMaps
 - Check enum values integer/number
