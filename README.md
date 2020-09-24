@@ -1,17 +1,19 @@
 # Vitja service
 
 TODO:
-- Constraint for creating entity based on filter and given max value
-  - SalesItem can be created for same userName and state: active only 100 maxItemCount
+- Testaa, että tulee virhe jos joku input arg property puuttuu
 - Testaa että JSON response eka objecti validoituu funktion paluu tyyppiin
+- entityContainer create fields with NOT NULL
+- Partial<T> type filters, check that filter value not null
+- Partial<T> filters can be inside SqlExpression array
 - In production, don't generate typedocs and postman tests
+- Change sorting to [{fieldName: 'fieldName', direction: 'ASC'}, ...]
 - Handle exclude response fields in getProjection and createResultMaps
 - Check enum values integer/number
 - Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 - @NoAutoTests annotation for service
 - AllowForEveryone annotation
 - AllowForRole(s)() annotation
-- AllowForUserGroup(s)() annotation
 - AllowForSelf
 - AllowForResourceOwner Allow user to access only own resources
     -eg. in Orders service almost all have annotation allowForResourceOwner
@@ -70,7 +72,9 @@ TODO:
 - executeMultipleInParallel endpoint, to execute multiple serviceCalls in parallel
 - Mongodb transactions, update/delete preconditions
 - Handle order modification and delete to reflect in salesItem states
--getDbManager support for multiple dbmanagers
+- getDbManager support for multiple dbmanagers
+- Support for analytics aggregated queries, aggregations (function name, fieldname), group by, filters
+    - Put analytics query inside its service and enabled for 'management' role for use
     
 TODO NEXT RELEASE:
 - Date/Timestamp type support

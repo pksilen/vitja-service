@@ -3,7 +3,7 @@ import { validateOrReject, ValidationError } from 'class-validator';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import throwHttpException from './throwHttpException';
 import BaseService from './BaseService';
-import { createNamespace } from "cls-hooked";
+import { createNamespace } from 'cls-hooked';
 
 function getValidationErrors(validationErrors: ValidationError[]): string {
   return validationErrors
@@ -78,9 +78,9 @@ export default async function executeServiceFunction(
   let response;
 
   if (dbManager) {
-    const continuationLocalStore = createNamespace('dbManager');
+    const clsNamespace = createNamespace('dbManager');
     dbManager.setClsNamespaceName('dbManager');
-    response = await continuationLocalStore.runAndReturn(async () => {
+    response = await clsNamespace.runAndReturn(async () => {
       await dbManager.reserveDbConnectionFromPool();
       const response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
       dbManager.releaseDbConnectionBackToPool();
