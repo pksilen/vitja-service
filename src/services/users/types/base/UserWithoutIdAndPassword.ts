@@ -16,6 +16,8 @@ export default class UserWithoutIdAndPassword {
   @MaxLength(256)
   city!: string;
 
+  loyaltyDiscountLevel!: 0.0 | 2.5 | 5.0;
+
   defaultPaymentMethod!: DefaultPaymentMethod;
   paymentMethods!: PaymentMethod[];
 

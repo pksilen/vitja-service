@@ -1,7 +1,7 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import { IdsAndOptPostQueryOps, Id, SortBy } from "./Backk";
-import BaseService from "./BaseService";
+import { IdsAndOptPostQueryOps, Id, SortBy } from './Backk';
+import BaseService from './BaseService';
 
 export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: string } {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -45,7 +45,9 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
       case 'isIn':
         propNameToPropTypeMap[validationMetadata.propertyName] =
           '(' +
-          validationMetadata.constraints[0].map((value: any) => `'${value}'`).join('|') +
+          validationMetadata.constraints[0]
+            .map((value: any) => (typeof value === 'string' ? `'${value}'` : `${value}`))
+            .join('|') +
           ')' +
           (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
         break;
@@ -264,11 +266,11 @@ export type ServiceMetadata = {
 
 export default function generateServicesMetadata<T>(controller: T): ServiceMetadata[] {
   return Object.entries(controller)
-    .filter(
-      ([, propValue]: [string, any]) => propValue instanceof BaseService
-    )
+    .filter(([, propValue]: [string, any]) => propValue instanceof BaseService)
     .map(([serviceName]: [string, any]) => {
-      const functionNames = Object.keys((controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap);
+      const functionNames = Object.keys(
+        (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
+      );
       const functions: FunctionMetadata[] = functionNames.map((functionName: string) => {
         const paramTypeName = (controller as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
           functionName
@@ -334,7 +336,9 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           } else if (finalReturnValueTypeName === 'IdsAndOptPostQueryOps') {
             (controller as any)[serviceName].Types[finalReturnValueTypeName] = IdsAndOptPostQueryOps;
           } else {
-            throw new Error('Type: ' + finalReturnValueTypeName + ' is not found in ' + serviceName + '.Types');
+            throw new Error(
+              'Type: ' + finalReturnValueTypeName + ' is not found in ' + serviceName + '.Types'
+            );
           }
         }
 

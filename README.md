@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO:
-- ExpectAnyValueInTest => ExpectValueInTest("value > 0")
 - Check enum values integer/number
+- Enum values must of same type, eg. all string or floats
 - Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 - @NoAutoTests annotation for service
 - AllowForEveryone annotation

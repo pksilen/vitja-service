@@ -109,9 +109,19 @@ function getSampleArg(
     } else if (finalPropertyTypeName.startsWith('(')) {
       const enumValues = finalPropertyTypeName.slice(1).split(/[|)]/);
       if (isUpdate && enumValues.length >= 3) {
-        sampleArg[propertyName] = enumValues[1].split("'")[1];
+        sampleArg[propertyName] =
+          enumValues[1][0] === "'"
+            ? enumValues[1].split("'")[1]
+            : enumValues[1].includes('.')
+            ? parseFloat(enumValues[1])
+            : parseInt(enumValues[1]);
       } else {
-        sampleArg[propertyName] = enumValues[0].split("'")[1];
+        sampleArg[propertyName] =
+          enumValues[0][0] === "'"
+            ? enumValues[0].split("'")[1]
+            : enumValues[0].includes('.')
+            ? parseFloat(enumValues[0])
+            : parseInt(enumValues[0]);
       }
     } else if (types[finalPropertyTypeNameWithoutArraySuffix]) {
       sampleArg[propertyName] = getSampleArg(

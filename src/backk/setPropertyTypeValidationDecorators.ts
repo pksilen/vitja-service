@@ -118,17 +118,24 @@ export default function setPropertyTypeValidationDecorators(
             }
           } else if (finalPropertyTypeName !== 'any') {
             validationType = ValidationTypes.IS_IN;
+
             if (
               finalPropertyTypeName[0] === '(' &&
               finalPropertyTypeName[finalPropertyTypeName.length - 1] === ')'
             ) {
               finalPropertyTypeName = finalPropertyTypeName.slice(1, -1);
             }
+
+            let enumType: any;
             const enumValues = finalPropertyTypeName.split('|').map((enumValue) => {
               const trimmedEnumValue = enumValue.trim();
               const validator = new Validator();
 
               if (validator.isNumberString(trimmedEnumValue)) {
+                if (enumType === 'string') {
+                  throw new Error('All enum values must be of same type: ' + finalPropertyTypeName + ' in ' + typeClassName + '.' + propertyName)
+                }
+                enumType = 'number';
                 return parseFloat(trimmedEnumValue);
               } else if (
                 (trimmedEnumValue.charAt(0) === "'" &&
@@ -136,6 +143,10 @@ export default function setPropertyTypeValidationDecorators(
                 (trimmedEnumValue.charAt(0) === '"' &&
                   trimmedEnumValue.charAt(trimmedEnumValue.length - 1) === '"')
               ) {
+                if (enumType === 'number') {
+                  throw new Error('All enum values must be of same type: ' + finalPropertyTypeName + ' in ' + typeClassName + '.' + propertyName)
+                }
+                enumType = 'string';
                 return trimmedEnumValue.slice(1, -1);
               } else {
                 throw new Error(

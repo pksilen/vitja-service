@@ -118,13 +118,22 @@ class EntityContainer {
             }
 
             if (!sqlColumnType && baseFieldTypeName[0] === '(') {
-              const firstEnumValue = baseFieldTypeName.slice(1).split(/[|)]/)[0];
+              const enumValues = baseFieldTypeName.slice(1).split(/[|)]/);
+              const firstEnumValue = enumValues[0];
+
               if (firstEnumValue[0] === "'") {
                 sqlColumnType = 'VARCHAR';
-              } else if (parseInt(firstEnumValue, 10).toString().length !== firstEnumValue.length) {
-                sqlColumnType = 'DOUBLE PRECISION';
               } else {
-                sqlColumnType = 'INTEGER';
+                const hasFloat = enumValues.reduce(
+                  (hasFloat: boolean, enumValue: string) =>
+                    hasFloat || parseInt(enumValue, 10).toString().length !== enumValue.length,
+                  false
+                );
+                if (hasFloat) {
+                  sqlColumnType = 'DOUBLE PRECISION';
+                } else {
+                  sqlColumnType = 'INTEGER';
+                }
               }
             }
 
@@ -240,13 +249,21 @@ class EntityContainer {
           }
 
           if (!sqlColumnType && baseFieldTypeName[0] === '(') {
-            const firstEnumValue = baseFieldTypeName.slice(1).split(/[|)]/)[0];
+            const enumValues = baseFieldTypeName.slice(1).split(/[|)]/);
+            const firstEnumValue = enumValues[0];
             if (firstEnumValue[0] === "'") {
               sqlColumnType = 'VARCHAR';
-            } else if (parseInt(firstEnumValue, 10).toString().length !== firstEnumValue.length) {
-              sqlColumnType = 'DOUBLE PRECISION';
             } else {
-              sqlColumnType = 'INTEGER';
+              const hasFloat = enumValues.reduce(
+                (hasFloat: boolean, enumValue: string) =>
+                  hasFloat || parseInt(enumValue, 10).toString().length !== enumValue.length,
+                false
+              );
+              if (hasFloat) {
+                sqlColumnType = 'DOUBLE PRECISION';
+              } else {
+                sqlColumnType = 'INTEGER';
+              }
             }
           }
 
