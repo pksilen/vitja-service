@@ -6,7 +6,6 @@
       "functionName": "createSalesItem",
       "functionArgument": {
         "price": "{{price}}",
-        "previousPrice": "{{price}}",
         "userId": "{{userId}}",
         "title": "{{title}}",
         "description": "{{description}}",

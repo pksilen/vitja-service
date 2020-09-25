@@ -39,7 +39,8 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       {
         ...salesItemCreateDto,
         createdTimestampInSecs: Math.round(Date.now() / 1000),
-        state: 'forSale'
+        state: 'forSale',
+        previousPrice: -1
       },
       SalesItem,
       this.Types

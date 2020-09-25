@@ -20,11 +20,6 @@ export default class SalesItemCreateDto {
   @Max(1000000000)
   price!: number;
 
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  @Max(1000000000)
-  previousPrice!: number;
-
   @MaxLength(2097152)
   primaryImageDataUri!: string;
 

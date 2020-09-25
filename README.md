@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- sorting => sortBy muutokset
 - Move previousPrice away from CreateSalesItemDto, make field default value -1
 - Set previousPrice in UpdateSalesItem func
 - Check enum values integer/number
