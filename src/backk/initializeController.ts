@@ -147,6 +147,7 @@ function getReturnValueTests(
     serviceBaseName.charAt(serviceBaseName.length - 1) === 's'
       ? serviceBaseName.slice(0, -1)
       : serviceBaseName;
+
   let javascriptLines =
     responsePath === '[0].' || responsePath === '.' ? ['const response = pm.response.json();'] : [];
 
@@ -167,10 +168,17 @@ function getReturnValueTests(
     let allowAnyValue;
 
     const testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
+
     const expectAnyTestValue = testValueContainer.getExpectAnyTestValue(
       serviceTypes[returnValueTypeName],
       propertyName
     );
+
+    const testValueToMatch = testValueContainer.getTestValueToMatch(
+      serviceTypes[returnValueTypeName],
+      propertyName
+    );
+
     const minValue = getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'min');
     const maxValue = getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'max');
 
@@ -226,7 +234,16 @@ function getReturnValueTests(
       // }
     }
 
-    const expectation = `pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});`;
+    let expectation;
+    if (testValueToMatch) {
+      const expectedValue = testValueToMatch.replace(
+        new RegExp(propertyName, 'g'),
+        `response${responsePath}${propertyName}`
+      );
+      expectation = `pm.expect(${expectedValue}).to.eql(true);`;
+    } else {
+      expectation = `pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});`;
+    }
 
     if (!allowAnyValue) {
       if (isOptionalProperty) {

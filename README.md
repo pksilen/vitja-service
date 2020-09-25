@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- Set previousPrice in UpdateSalesItem func
+- ExpectAnyValueInTest => ExpectValueInTest("value > 0")
 - Check enum values integer/number
 - Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 - @NoAutoTests annotation for service
@@ -88,6 +88,7 @@ TODO NEXT RELEASE:
       create a readiness probe that returns true when needed topics are available
 - Optimoi sivutus, jos order by:tä ei ole annettu:
  https://en.wikipedia.org/wiki/Select_(SQL)#Method_with_filter_(it_is_more_sophisticated_but_necessary_for_very_big_dataset)
- 
 - Kafka service, create function(s) in Kafkacontroller for processing different topic(s)
+- ExpectInTestsToMatch annotation to include support for import libraries like lodash or moment
+- ExpectInTestToMatch annotation to include support for other properties in response object
 - Add Avro schema generation and content type support (avro-js)
