@@ -1,7 +1,7 @@
 import { MaxLength } from "class-validator";
-import { ValueUsedInTests } from "../../../backk/ValueUsedInTests";
-import DefaultPaymentMethod from "./DefaultPaymentMethod";
-import PaymentMethod from "./PaymentMethod";
+import { ValueUsedInTests } from "../../../../backk/ValueUsedInTests";
+import DefaultPaymentMethod from "../entities/DefaultPaymentMethod";
+import PaymentMethod from "../entities/PaymentMethod";
 
 export default class UserWithoutIdAndPassword {
   @MaxLength(512)

@@ -1,29 +1,27 @@
-import { ErrorResponse, IdWrapper } from '../../backk/Backk';
-import OrderCreateDto from './types/OrderCreateDto';
-import Order from './types/Order';
-import ShoppingCartItem from '../shoppingcart/types/ShoppingCartItem';
-import OrderUpdateDto from './types/OrderUpdateDto';
-import OrderIdAndState from './types/OrderIdAndState';
-import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
+import { ErrorResponse, Id } from '../../backk/Backk';
+import CreateOrderArg from './types/args/CreateOrderArg';
+import Order from './types/entity/Order';
+import ShoppingCartItem from '../shoppingcart/types/entities/ShoppingCartItem';
+import UpdateOrderArg from './types/args/UpdateOrderArg';
+import UpdateOrderStateArg from './types/args/UpdateOrderStateArg';
+import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import BaseService from '../../backk/BaseService';
 
 export default abstract class OrdersService extends BaseService {
   readonly Types = {
-    UserIdAndOptPostQueryOps,
-    OrderIdAndState,
-    OrderCreateDto,
-    OrderUpdateDto,
+    GetByUserIdArg,
+    UpdateOrderStateArg,
+    CreateOrderArg,
+    UpdateOrderArg,
     Order,
     ShoppingCartItem
   };
 
   abstract deleteAllOrders(): Promise<void | ErrorResponse>;
-  abstract createOrder(orderCreateDto: OrderCreateDto): Promise<IdWrapper | ErrorResponse>;
-  abstract getOrdersByUserId(
-    userIdAndOptPostQueryOps: UserIdAndOptPostQueryOps
-  ): Promise<Order[] | ErrorResponse>;
-  abstract getOrderById(idWrapper: IdWrapper): Promise<Order | ErrorResponse>;
-  abstract updateOrder(orderUpdateDto: OrderUpdateDto): Promise<void | ErrorResponse>;
-  abstract updateOrderState(orderIdAndState: OrderIdAndState): Promise<void | ErrorResponse>;
-  abstract deleteOrderById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
+  abstract createOrder(arg: CreateOrderArg): Promise<Id | ErrorResponse>;
+  abstract getOrdersByUserId(arg: GetByUserIdArg): Promise<Order[] | ErrorResponse>;
+  abstract getOrderById(id: Id): Promise<Order | ErrorResponse>;
+  abstract updateOrder(arg: UpdateOrderArg): Promise<void | ErrorResponse>;
+  abstract updateOrderState(arg: UpdateOrderStateArg): Promise<void | ErrorResponse>;
+  abstract deleteOrderById(id: Id): Promise<void | ErrorResponse>;
 }

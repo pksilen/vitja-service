@@ -1,11 +1,11 @@
-import { ErrorResponse, IdWrapper } from '../../backk/Backk';
+import { ErrorResponse, Id } from '../../backk/Backk';
 import UsersService from './UsersService';
-import UserNameWrapper from './types/UserNameWrapper';
-import User from './types/User';
-import UserCreateDto from './types/UserCreateDto';
+import UserName from './types/args/UserName';
+import User from './types/entities/User';
+import CreateUserArg from './types/args/CreateUserArg';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { Injectable } from '@nestjs/common';
-import UserResponse from './types/UserResponse';
+import UserResponse from './types/responses/UserResponse';
 
 @Injectable()
 export default class UsersServiceImpl extends UsersService {
@@ -17,11 +17,11 @@ export default class UsersServiceImpl extends UsersService {
     return this.dbManager.deleteAllItems(User);
   }
 
-  createUser(userCreateDto: UserCreateDto): Promise<IdWrapper | ErrorResponse> {
-    return this.dbManager.createItem(userCreateDto, User, this.Types);
+  createUser(arg: CreateUserArg): Promise<Id | ErrorResponse> {
+    return this.dbManager.createItem(arg, User, this.Types);
   }
 
-  async getUserByUserName({ userName }: UserNameWrapper): Promise<UserResponse | ErrorResponse> {
+  async getUserByUserName({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
     const userOrError = await this.dbManager.getItemBy('userName', userName, User, this.Types);
 
     if ('_id' in userOrError) {
@@ -38,7 +38,7 @@ export default class UsersServiceImpl extends UsersService {
     return this.dbManager.updateItem(user, User, this.Types);
   }
 
-  deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteItemById(idWrapper._id, User);
+  deleteUserById({ _id }: Id): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteItemById(_id, User);
   }
 }

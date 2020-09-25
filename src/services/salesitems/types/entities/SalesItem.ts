@@ -1,10 +1,10 @@
 import { IsInt, IsNumber, Max, Min } from "class-validator";
-import SalesItemUpdateDto from "./SalesItemUpdateDto";
-import { ExpectAnyValueInTests } from "../../../backk/ExpectAnyValueInTests";
-import Entity from "../../../backk/Entity";
+import UpdateSalesItemArg from "../args/UpdateSalesItemArg";
+import { ExpectAnyValueInTests } from "../../../../backk/ExpectAnyValueInTests";
+import Entity from "../../../../backk/Entity";
 
 @Entity
-export class SalesItem extends SalesItemUpdateDto {
+export class SalesItem extends UpdateSalesItemArg {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(-1)
   @Max(1000000000)

@@ -1,42 +1,35 @@
-import { ErrorResponse, IdsAndOptPostQueryOps, IdWrapper, SortBy } from "../../backk/Backk";
-import SalesItemsFilters from './types/SalesItemsFilters';
-import SalesItemCreateDto from './types/SalesItemCreateDto';
-import { SalesItem } from './types/SalesItem';
-import SalesItemUpdateDto from './types/SalesItemUpdateDto';
-import SalesItemIdAndState from './types/SalesItemIdAndState';
-import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
+import { ErrorResponse, IdsAndOptPostQueryOps, Id, SortBy } from '../../backk/Backk';
+import GetSalesItemsArg from './types/args/GetSalesItemsArg';
+import CreateSalesItemArg from './types/args/CreateSalesItemArg';
+import { SalesItem } from './types/entities/SalesItem';
+import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
+import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
+import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import BaseService from '../../backk/BaseService';
 
 export default abstract class SalesItemsService extends BaseService {
   readonly Types = {
-    UserIdAndOptPostQueryOps,
-    SalesItemsFilters,
-    SalesItemCreateDto,
-    SalesItemUpdateDto,
-    SalesItemIdAndState,
+    GetByUserIdArg,
+    GetSalesItemsArg,
+    CreateSalesItemArg,
+    UpdateSalesItemArg,
+    UpdateSalesItemStateArg,
     SalesItem,
     SortBy
   };
 
   abstract deleteAllSalesItems(): Promise<void | ErrorResponse>;
-  abstract createSalesItem(salesItemCreateDto: SalesItemCreateDto): Promise<IdWrapper | ErrorResponse>;
-  abstract getSalesItems(salesItemsFilters: SalesItemsFilters): Promise<SalesItem[] | ErrorResponse>;
-
-  abstract getSalesItemsByUserId(
-    userIdAndOptPostQueryOps: UserIdAndOptPostQueryOps
-  ): Promise<SalesItem[] | ErrorResponse>;
-
-  abstract getSalesItemsByIds(
-    idsAndOptPostQueryOps: IdsAndOptPostQueryOps
-  ): Promise<SalesItem[] | ErrorResponse>;
-
-  abstract getSalesItemById(idWrapper: IdWrapper): Promise<SalesItem | ErrorResponse>;
-  abstract updateSalesItem(salesItemUpdateDto: SalesItemUpdateDto): Promise<void | ErrorResponse>;
+  abstract createSalesItem(arg: CreateSalesItemArg): Promise<Id | ErrorResponse>;
+  abstract getSalesItems(arg: GetSalesItemsArg): Promise<SalesItem[] | ErrorResponse>;
+  abstract getSalesItemsByUserId(arg: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse>;
+  abstract getSalesItemsByIds(arg: IdsAndOptPostQueryOps): Promise<SalesItem[] | ErrorResponse>;
+  abstract getSalesItemById(arg: Id): Promise<SalesItem | ErrorResponse>;
+  abstract updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse>;
 
   abstract updateSalesItemState(
-    salesItemIdAndState: SalesItemIdAndState,
+    arg: UpdateSalesItemStateArg,
     requiredCurrentState?: 'forSale' | 'sold'
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteSalesItemById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
+  abstract deleteSalesItemById(id: Id): Promise<void | ErrorResponse>;
 }

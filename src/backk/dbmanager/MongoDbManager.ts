@@ -1,7 +1,7 @@
 import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
 import { Injectable } from '@nestjs/common';
-import { ErrorResponse, getMongoDbProjection, IdWrapper, OptPostQueryOps, PostQueryOps } from '../Backk';
-import { SalesItem } from '../../services/salesitems/types/SalesItem';
+import { ErrorResponse, getMongoDbProjection, Id, OptPostQueryOps, PostQueryOps } from '../Backk';
+import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
@@ -50,7 +50,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async createItem<T>(item: Omit<T, '_id'>, entityClass: new () => T): Promise<IdWrapper | ErrorResponse> {
+  async createItem<T>(item: Omit<T, '_id'>, entityClass: new () => T): Promise<Id | ErrorResponse> {
     try {
       const writeOperationResult = await this.tryExecute((client) =>
         client

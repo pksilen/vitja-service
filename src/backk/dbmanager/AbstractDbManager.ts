@@ -1,4 +1,4 @@
-import { ErrorResponse, IdWrapper, OptPostQueryOps, PostQueryOps } from '../Backk';
+import { ErrorResponse, Id, OptPostQueryOps, PostQueryOps } from '../Backk';
 import { Pool } from 'pg';
 import { FilterQuery, MongoClient } from "mongodb";
 import SqlExpression from '../sqlexpression/SqlExpression';
@@ -39,7 +39,7 @@ export default abstract class AbstractDbManager {
     item: Omit<T, '_id'>,
     entityClass: new () => T,
     Types: object
-  ): Promise<IdWrapper | ErrorResponse>;
+  ): Promise<Id | ErrorResponse>;
 
   abstract getItems<T>(
     filters: FilterQuery<T> | Partial<T> | SqlExpression[],

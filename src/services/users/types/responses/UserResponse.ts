@@ -1,5 +1,5 @@
-import { ExpectAnyValueInTests } from "../../../backk/ExpectAnyValueInTests";
-import UserWithoutIdAndPassword from "./UserWithoutIdAndPassword";
+import { ExpectAnyValueInTests } from "../../../../backk/ExpectAnyValueInTests";
+import UserWithoutIdAndPassword from "../base/UserWithoutIdAndPassword";
 import { MaxLength } from "class-validator";
 
 export default class UserResponse extends UserWithoutIdAndPassword {

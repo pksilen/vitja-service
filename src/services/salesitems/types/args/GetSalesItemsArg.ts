@@ -1,7 +1,7 @@
-import { PostQueryOps, SortBy } from "../../../backk/Backk";
+import { PostQueryOps, SortBy } from "../../../../backk/Backk";
 import { IsInt, Max, MaxLength, Min } from 'class-validator';
 
-export default class SalesItemsFilters implements PostQueryOps {
+export default class GetSalesItemsArg implements PostQueryOps {
   @MaxLength(512)
   textFilter?: string;
 

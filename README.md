@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Move previousPrice away from CreateSalesItemDto, make field default value -1
 - Set previousPrice in UpdateSalesItem func
 - Check enum values integer/number
 - Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request

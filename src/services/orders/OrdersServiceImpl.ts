@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorResponse, IdWrapper } from '../../backk/Backk';
+import { ErrorResponse, Id } from '../../backk/Backk';
 import OrdersService from './OrdersService';
-import Order from './types/Order';
-import OrderCreateDto from './types/OrderCreateDto';
+import Order from './types/entity/Order';
+import CreateOrderArg from './types/args/CreateOrderArg';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
-import OrderUpdateDto from './types/OrderUpdateDto';
-import OrderIdAndState from './types/OrderIdAndState';
+import UpdateOrderArg from './types/args/UpdateOrderArg';
+import UpdateOrderStateArg from './types/args/UpdateOrderStateArg';
 import SalesItemsService from '../salesitems/SalesItemsService';
-import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
+import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 
 @Injectable()
 export default class OrdersServiceImpl extends OrdersService {
@@ -19,15 +19,15 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.deleteAllItems(Order);
   }
 
-  async createOrder(orderCreateDto: OrderCreateDto): Promise<IdWrapper | ErrorResponse> {
+  async createOrder(arg: CreateOrderArg): Promise<Id | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
-      const errorResponse = await this.updateSalesItemStatesToSold(orderCreateDto);
+      const errorResponse = await this.updateSalesItemStatesToSold(arg);
 
       return errorResponse
         ? errorResponse
         : await this.dbManager.createItem(
             {
-              ...orderCreateDto,
+              ...arg,
               createdTimestampInSecs: Math.round(Date.now() / 1000),
               state: 'toBeDelivered'
             },
@@ -37,28 +37,28 @@ export default class OrdersServiceImpl extends OrdersService {
     });
   }
 
-  getOrdersByUserId({ userId, ...postQueryOps }: UserIdAndOptPostQueryOps): Promise<Order[] | ErrorResponse> {
+  getOrdersByUserId({ userId, ...postQueryOps }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
     return this.dbManager.getItemsBy('userId', userId, Order, this.Types, postQueryOps);
   }
 
-  getOrderById({ _id }: IdWrapper): Promise<Order | ErrorResponse> {
+  getOrderById({ _id }: Id): Promise<Order | ErrorResponse> {
     return this.dbManager.getItemById(_id, Order, this.Types);
   }
 
-  updateOrder(orderUpdateDto: OrderUpdateDto): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(orderUpdateDto, Order, this.Types);
+  updateOrder(arg: UpdateOrderArg): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(arg, Order, this.Types);
   }
 
-  updateOrderState(orderIdAndState: OrderIdAndState): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(orderIdAndState, Order, this.Types);
+  updateOrderState(arg: UpdateOrderStateArg): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(arg, Order, this.Types);
   }
 
-  deleteOrderById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
+  deleteOrderById({ _id }: Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteItemById(_id, Order);
   }
 
-  private async updateSalesItemStatesToSold(orderCreateDto: OrderCreateDto): Promise<void | ErrorResponse> {
-    return await orderCreateDto.shoppingCartItems.reduce(
+  private async updateSalesItemStatesToSold(createOrderArg: CreateOrderArg): Promise<void | ErrorResponse> {
+    return await createOrderArg.shoppingCartItems.reduce(
       async (errorResponseAccumulator: Promise<void | ErrorResponse>, shoppingCartItem) => {
         return (
           (await errorResponseAccumulator) ||

@@ -1,6 +1,6 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import { IdsAndOptPostQueryOps, IdWrapper, SortBy } from "./Backk";
+import { IdsAndOptPostQueryOps, Id, SortBy } from "./Backk";
 import BaseService from "./BaseService";
 
 export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: string } {
@@ -278,8 +278,8 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           .functionNameToReturnTypeNameMap[functionName];
 
         if (paramTypeName !== undefined && !(controller as any)[serviceName].Types[paramTypeName]) {
-          if (paramTypeName === 'IdWrapper') {
-            (controller as any)[serviceName].Types[paramTypeName] = IdWrapper;
+          if (paramTypeName === 'Id') {
+            (controller as any)[serviceName].Types[paramTypeName] = Id;
           } else if (paramTypeName === 'IdsAndOptPostQueryOps') {
             (controller as any)[serviceName].Types[paramTypeName] = IdsAndOptPostQueryOps;
           } else if (paramTypeName === 'SortBy') {
@@ -329,8 +329,8 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           finalReturnValueTypeName !== 'void' &&
           !(controller as any)[serviceName].Types[finalReturnValueTypeName]
         ) {
-          if (finalReturnValueTypeName === 'IdWrapper') {
-            (controller as any)[serviceName].Types[finalReturnValueTypeName] = IdWrapper;
+          if (finalReturnValueTypeName === 'Id') {
+            (controller as any)[serviceName].Types[finalReturnValueTypeName] = Id;
           } else if (finalReturnValueTypeName === 'IdsAndOptPostQueryOps') {
             (controller as any)[serviceName].Types[finalReturnValueTypeName] = IdsAndOptPostQueryOps;
           } else {

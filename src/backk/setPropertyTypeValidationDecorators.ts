@@ -42,7 +42,7 @@ export default function setPropertyTypeValidationDecorators(
   const typeClassName = typeClass.name;
 
   if (
-    typeClassName === 'IdWrapper' ||
+    typeClassName === 'Id' ||
     typeClassName === 'OptPostQueryOps' ||
     typeClassName === 'IdsAndOptPostQueryOps' ||
     typeClassName === 'SortBy'

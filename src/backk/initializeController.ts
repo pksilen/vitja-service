@@ -295,7 +295,7 @@ function getTests(
   pm.response.to.have.status(${expectedResponseStatusCode});
 });`;
 
-  if (returnValueTypeName === 'IdWrapper') {
+  if (returnValueTypeName === 'Id') {
     return {
       id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
       listen: 'test',

@@ -1,6 +1,6 @@
 import { MaxLength } from "class-validator";
 
-export default class UserNameWrapper {
+export default class UserName {
   @MaxLength(512)
   userName!: string;
 }

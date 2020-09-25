@@ -1,7 +1,7 @@
-import ShoppingCartItem from './ShoppingCartItem';
+import ShoppingCartItem from '../entities/ShoppingCartItem';
 import { MaxLength } from "class-validator";
 
-export default class ShoppingCartCreateDto {
+export default class CreateShoppingCartArg {
   @MaxLength(24)
   userId!: string;
 

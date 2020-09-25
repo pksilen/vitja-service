@@ -1,6 +1,6 @@
 import { IsNumber, Max, MaxLength, Min } from "class-validator";
 
-export default class SalesItemCreateDto {
+export default class CreateSalesItemArg {
   @MaxLength(24)
   userId!: string;
 

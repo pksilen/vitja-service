@@ -6,7 +6,7 @@ export function getSourceFileName(fileName: string, distFolderName = 'dist'): st
   return fileName.replace(distFolderName, 'src');
 }
 
-export class IdWrapper {
+export class Id {
   @IsString()
   @MaxLength(24)
   _id!: string;

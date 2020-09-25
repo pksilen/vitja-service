@@ -1,5 +1,5 @@
 import { IsInt, Max, MaxLength, Min } from "class-validator";
-import Entity from "../../../backk/Entity";
+import Entity from "../../../../backk/Entity";
 
 @Entity
 export default class ShoppingCartItem {

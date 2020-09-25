@@ -6,7 +6,7 @@ import _ from "lodash";
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import joinjs from "join-js";
-import { ErrorResponse, IdWrapper, OptionalProjection, OptPostQueryOps, SortBy } from "../Backk";
+import { ErrorResponse, Id, OptionalProjection, OptPostQueryOps, SortBy } from "../Backk";
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from "../assert";
 import SqlExpression from "../sqlexpression/SqlExpression";
 import { getTypeMetadata } from "../generateServicesMetadata";
@@ -153,7 +153,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     Types: object,
     isRecursiveCall = false
-  ): Promise<IdWrapper | ErrorResponse> {
+  ): Promise<Id | ErrorResponse> {
     try {
       if (
         !this.getClsNamespace()?.get('localTransaction') &&

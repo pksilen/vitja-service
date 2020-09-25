@@ -1,10 +1,10 @@
-import { ErrorResponse, IdWrapper } from '../../backk/Backk';
-import PaymentMethod from './types/PaymentMethod';
-import User from './types/User';
-import UserNameWrapper from './types/UserNameWrapper';
-import UserCreateDto from './types/UserCreateDto';
-import DefaultPaymentMethod from './types/DefaultPaymentMethod';
-import UserResponse from './types/UserResponse';
+import { ErrorResponse, Id } from '../../backk/Backk';
+import PaymentMethod from './types/entities/PaymentMethod';
+import User from './types/entities/User';
+import UserName from './types/args/UserName';
+import CreateUserArg from './types/args/CreateUserArg';
+import DefaultPaymentMethod from './types/entities/DefaultPaymentMethod';
+import UserResponse from './types/responses/UserResponse';
 import BaseService from '../../backk/BaseService';
 
 export default abstract class UsersService extends BaseService {
@@ -12,14 +12,14 @@ export default abstract class UsersService extends BaseService {
     DefaultPaymentMethod,
     PaymentMethod,
     User,
-    UserNameWrapper,
-    UserCreateDto,
+    UserName,
+    CreateUserArg,
     UserResponse
   };
 
   abstract deleteAllUsers(): Promise<void | ErrorResponse>;
-  abstract createUser(userWithoutId: UserCreateDto): Promise<IdWrapper | ErrorResponse>;
-  abstract getUserByUserName(userNameWrapper: UserNameWrapper): Promise<UserResponse | ErrorResponse>;
+  abstract createUser(arg: CreateUserArg): Promise<Id | ErrorResponse>;
+  abstract getUserByUserName(userName: UserName): Promise<UserResponse | ErrorResponse>;
   abstract updateUser(user: User): Promise<void | ErrorResponse>;
-  abstract deleteUserById(idWrapper: IdWrapper): Promise<void | ErrorResponse>;
+  abstract deleteUserById(id: Id): Promise<void | ErrorResponse>;
 }

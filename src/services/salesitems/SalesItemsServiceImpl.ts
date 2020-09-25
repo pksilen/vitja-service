@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorResponse, IdsAndOptPostQueryOps, IdWrapper } from '../../backk/Backk';
-import SalesItemsFilters from './types/SalesItemsFilters';
-import { SalesItem } from './types/SalesItem';
-import SalesItemCreateDto from './types/SalesItemCreateDto';
+import { ErrorResponse, IdsAndOptPostQueryOps, Id } from '../../backk/Backk';
+import GetSalesItemsArg from './types/args/GetSalesItemsArg';
+import { SalesItem } from './types/entities/SalesItem';
+import CreateSalesItemArg from './types/args/CreateSalesItemArg';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import SalesItemsService from './SalesItemsService';
 import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
 import SqlInExpression from '../../backk/sqlexpression/SqlInExpression';
 import SqlExpression from '../../backk/sqlexpression/SqlExpression';
-import SalesItemUpdateDto from './types/SalesItemUpdateDto';
-import SalesItemIdAndState from './types/SalesItemIdAndState';
-import UserIdAndOptPostQueryOps from '../users/types/UserIdAndOptPostQueryOps';
+import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
+import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
+import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import getBadRequestErrorResponse from '../../backk/getBadRequestErrorResponse';
 import SqlEquals from '../../backk/sqlexpression/SqlEquals';
 
@@ -24,9 +24,9 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.deleteAllItems(SalesItem);
   }
 
-  async createSalesItem(salesItemCreateDto: SalesItemCreateDto): Promise<IdWrapper | ErrorResponse> {
+  async createSalesItem(arg: CreateSalesItemArg): Promise<Id | ErrorResponse> {
     const salesItemCountForUser = await this.dbManager.getItemsCount(
-      { userId: salesItemCreateDto.userId, state: 'forSale' },
+      { userId: arg.userId, state: 'forSale' },
       SalesItem,
       this.Types
     );
@@ -37,7 +37,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
 
     return this.dbManager.createItem(
       {
-        ...salesItemCreateDto,
+        ...arg,
         createdTimestampInSecs: Math.round(Date.now() / 1000),
         state: 'forSale',
         previousPrice: -1
@@ -56,7 +56,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     minPrice,
     maxPrice,
     ...postQueryOps
-  }: SalesItemsFilters): Promise<SalesItem[] | ErrorResponse> {
+  }: GetSalesItemsArg): Promise<SalesItem[] | ErrorResponse> {
     let filters;
 
     if (this.dbManager instanceof MongoDbManager) {
@@ -97,7 +97,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   getSalesItemsByUserId({
     userId,
     ...postQueryOps
-  }: UserIdAndOptPostQueryOps): Promise<SalesItem[] | ErrorResponse> {
+  }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
     return this.dbManager.getItemsBy('userId', userId, SalesItem, this.Types, postQueryOps);
   }
 
@@ -105,20 +105,20 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.getItemsByIds(_ids, SalesItem, this.Types, postQueryOps);
   }
 
-  getSalesItemById({ _id }: IdWrapper): Promise<SalesItem | ErrorResponse> {
+  getSalesItemById({ _id }: Id): Promise<SalesItem | ErrorResponse> {
     return this.dbManager.getItemById(_id, SalesItem, this.Types);
   }
 
-  updateSalesItem(salesItemUpdateDto: SalesItemUpdateDto): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(salesItemUpdateDto, SalesItem, this.Types);
+  updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(arg, SalesItem, this.Types);
   }
 
   updateSalesItemState(
-    salesItemIdAndState: SalesItemIdAndState,
+    arg: UpdateSalesItemStateArg,
     requiredCurrentState?: 'forSale' | 'sold'
   ): Promise<void | ErrorResponse> {
     return this.dbManager.updateItem(
-      salesItemIdAndState,
+      arg,
       SalesItem,
       this.Types,
       requiredCurrentState
@@ -129,7 +129,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     );
   }
 
-  deleteSalesItemById({ _id }: IdWrapper): Promise<void | ErrorResponse> {
+  deleteSalesItemById({ _id }: Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteItemById(_id, SalesItem);
   }
 }
