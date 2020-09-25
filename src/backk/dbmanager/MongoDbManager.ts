@@ -69,7 +69,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getItems<T>(
     filters: FilterQuery<T>,
-    { pageNumber, pageSize, sortings, ...projection }: PostQueryOps,
+    { pageNumber, pageSize, sortBys, ...projection }: PostQueryOps,
     entityClass: new () => T
   ): Promise<T[] | ErrorResponse> {
     try {
@@ -80,12 +80,11 @@ export default class MongoDbManager extends AbstractDbManager {
           .find<T>(filters)
           .project(getMongoDbProjection(projection));
 
-        if (sortings) {
-          const sortObj = sortings.reduce(
-            (accumulatedSortObj, { sortBy, sortDirection }) => ({
+        if (sortBys) {
+          const sortObj = sortBys.reduce(
+            (accumulatedSortObj, { sortField, sortDirection }) => ({
               ...accumulatedSortObj,
-              sortBy,
-              sortDirection: sortDirection === 'ASC' ? 1 : -1
+              sortField: sortDirection === 'ASC' ? 1 : -1
             }),
             {}
           );

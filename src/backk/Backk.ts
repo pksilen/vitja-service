@@ -12,15 +12,15 @@ export class IdWrapper {
   _id!: string;
 }
 
-export class Sorting implements ISorting {
-  constructor(sortBy: string, sortDirection: 'ASC' | 'DESC') {
-    this.sortBy = sortBy;
+export class SortBy implements ISortBy {
+  constructor(sortField: string, sortDirection: 'ASC' | 'DESC') {
+    this.sortField = sortField;
     this.sortDirection = sortDirection;
   }
 
   @MaxLength(512)
   @IsString()
-  sortBy!: string;
+  sortField!: string;
 
   @IsIn(['ASC', 'DESC'])
   sortDirection!: 'ASC' | 'DESC';
@@ -52,9 +52,9 @@ export class OptPostQueryOps implements Partial<Paging>, OptionalProjection {
   pageSize?: number;
 
   @IsOptional()
-  @IsInstance(Sorting, { each: true })
+  @IsInstance(SortBy, { each: true })
   @IsArray()
-  sortings?: Sorting[];
+  sortBys?: SortBy[];
 }
 
 export class IdsAndOptPostQueryOps extends OptPostQueryOps {
@@ -80,13 +80,13 @@ export interface Paging {
   pageSize: number;
 }
 
-export interface ISorting {
-  sortBy: string;
+export interface ISortBy {
+  sortField: string;
   sortDirection: 'ASC' | 'DESC';
 }
 
 export interface PostQueryOps extends OptionalProjection, Paging {
-  sortings: ISorting[];
+  sortBys: ISortBy[];
 }
 
 export function transformResponse<T extends object>(

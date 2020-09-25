@@ -1,4 +1,4 @@
-import { ErrorResponse, IdsAndOptPostQueryOps, IdWrapper, Sorting } from "../../backk/Backk";
+import { ErrorResponse, IdsAndOptPostQueryOps, IdWrapper, SortBy } from "../../backk/Backk";
 import SalesItemsFilters from './types/SalesItemsFilters';
 import SalesItemCreateDto from './types/SalesItemCreateDto';
 import { SalesItem } from './types/SalesItem';
@@ -15,7 +15,7 @@ export default abstract class SalesItemsService extends BaseService {
     SalesItemUpdateDto,
     SalesItemIdAndState,
     SalesItem,
-    Sorting
+    SortBy
   };
 
   abstract deleteAllSalesItems(): Promise<void | ErrorResponse>;

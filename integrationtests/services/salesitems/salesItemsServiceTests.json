@@ -135,7 +135,7 @@
       {
         "testName": "sorting",
         "testValues": {
-          "argumentProperty1": ["sortings", [{ "sortBy": "price", "sortDirection": "DESC" }]],
+          "argumentProperty1": ["sortBys", [{ "sortField": "price", "sortDirection": "DESC" }]],
           "responseProperty": ["price", "2"],
           "responseLength": "2"
         }
@@ -145,7 +145,7 @@
         "testValues": {
           "argumentProperty1": ["pageNumber", 2],
           "argumentProperty2": ["pageSize", 1],
-          "argumentProperty3": ["sortings", [{ "sortBy": "price", "sortDirection": "DESC" }]],
+          "argumentProperty3": ["sortBys", [{ "sortField": "price", "sortDirection": "DESC" }]],
           "responseProperty": ["price", "1"],
           "responseLength": "1"
         }

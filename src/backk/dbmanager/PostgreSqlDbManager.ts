@@ -1,29 +1,22 @@
-import { Pool, QueryConfig, QueryResult, types } from 'pg';
-import { Injectable } from '@nestjs/common';
-import { pg } from 'yesql';
-import { Parser } from 'expr-eval';
-import _ from 'lodash';
+import { Pool, QueryConfig, QueryResult, types } from "pg";
+import { Injectable } from "@nestjs/common";
+import { pg } from "yesql";
+import { Parser } from "expr-eval";
+import _ from "lodash";
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import joinjs from 'join-js';
-import {
-  ErrorResponse,
-  IdWrapper,
-  OptionalProjection,
-  OptPostQueryOps,
-  PostQueryOps,
-  Sorting
-} from '../Backk';
-import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
-import SqlExpression from '../sqlexpression/SqlExpression';
-import { getTypeMetadata } from '../generateServicesMetadata';
-import forEachAsyncSequential from '../forEachAsyncSequential';
-import entityContainer, { JoinSpec } from '../entityContainer';
-import AbstractDbManager, { Field } from './AbstractDbManager';
-import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
-import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
-import forEachAsyncParallel from '../forEachAsyncParallel';
-import getConflictErrorResponse from '../getConflictErrorResponse';
+import joinjs from "join-js";
+import { ErrorResponse, IdWrapper, OptionalProjection, OptPostQueryOps, SortBy } from "../Backk";
+import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from "../assert";
+import SqlExpression from "../sqlexpression/SqlExpression";
+import { getTypeMetadata } from "../generateServicesMetadata";
+import forEachAsyncSequential from "../forEachAsyncSequential";
+import entityContainer, { JoinSpec } from "../entityContainer";
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import getInternalServerErrorResponse from "../getInternalServerErrorResponse";
+import getNotFoundErrorResponse from "../getNotFoundErrorResponse";
+import forEachAsyncParallel from "../forEachAsyncParallel";
+import getConflictErrorResponse from "../getConflictErrorResponse";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -273,7 +266,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async getItems<T>(
     filters: Partial<T> | SqlExpression[],
-    { pageNumber, pageSize, sortings, ...projection }: OptPostQueryOps,
+    { pageNumber, pageSize, sortBys, ...projection }: OptPostQueryOps,
     entityClass: new () => T,
     Types: object
   ): Promise<T[] | ErrorResponse> {
@@ -282,7 +275,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const whereStatement = this.getWhereStatement(filters, entityClass);
       const filterValues = this.getFilterValues(filters);
       const joinStatement = this.getJoinStatement(entityClass, Types);
-      const sortStatement = this.getSortStatement(sortings, entityClass);
+      const sortStatement = this.getSortStatement(sortBys, entityClass);
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(pageNumber, pageSize);
 
       const result = await this.tryExecuteQueryWithConfig(
@@ -339,20 +332,20 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return limitAndOffsetStatement;
   }
 
-  private getSortStatement<T>(sortings: Sorting[] | undefined, entityClass: { new (): T }) {
+  private getSortStatement<T>(sortBys: SortBy[] | undefined, entityClass: { new (): T }) {
     let sortStatement = '';
 
-    if (sortings) {
-      const sortingsStr = sortings.map(({ sortBy, sortDirection }) => {
-        assertIsColumnName('sortBy', sortBy);
+    if (sortBys) {
+      const sortBysStr = sortBys.map(({ sortField, sortDirection }) => {
+        assertIsColumnName('sortBy', sortField);
         assertIsSortDirection(sortDirection);
-        const sortColumn = sortBy.includes('.')
-          ? sortBy
-          : this.schema + '.' + entityClass.name + '.' + sortBy;
+        const sortColumn = sortField.includes('.')
+          ? sortField
+          : this.schema + '.' + entityClass.name + '.' + sortField;
         return sortColumn + ' ' + sortDirection;
       });
 
-      sortStatement = `ORDER BY ${sortingsStr}`;
+      sortStatement = `ORDER BY ${sortBysStr}`;
     }
 
     return sortStatement;
@@ -403,7 +396,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       const joinStatement = this.getJoinStatement(entityClass, Types);
-      const sortStatement = this.getSortStatement(postQueryOps?.sortings, entityClass);
+      const sortStatement = this.getSortStatement(postQueryOps?.sortBys, entityClass);
 
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(
         postQueryOps?.pageNumber,
@@ -486,7 +479,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       const joinStatement = this.getJoinStatement(entityClass, Types);
-      const sortStatement = this.getSortStatement(postQueryOps?.sortings, entityClass);
+      const sortStatement = this.getSortStatement(postQueryOps?.sortBys, entityClass);
 
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(
         postQueryOps?.pageNumber,

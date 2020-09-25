@@ -45,7 +45,7 @@ export default function setPropertyTypeValidationDecorators(
     typeClassName === 'IdWrapper' ||
     typeClassName === 'OptPostQueryOps' ||
     typeClassName === 'IdsAndOptPostQueryOps' ||
-    typeClassName === 'Sorting'
+    typeClassName === 'SortBy'
   ) {
     return;
   }

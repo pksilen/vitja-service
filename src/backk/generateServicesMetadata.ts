@@ -1,6 +1,6 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import { IdsAndOptPostQueryOps, IdWrapper, Sorting } from "./Backk";
+import { IdsAndOptPostQueryOps, IdWrapper, SortBy } from "./Backk";
 import BaseService from "./BaseService";
 
 export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: string } {
@@ -282,8 +282,8 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
             (controller as any)[serviceName].Types[paramTypeName] = IdWrapper;
           } else if (paramTypeName === 'IdsAndOptPostQueryOps') {
             (controller as any)[serviceName].Types[paramTypeName] = IdsAndOptPostQueryOps;
-          } else if (paramTypeName === 'Sorting') {
-            (controller as any)[serviceName].Types[paramTypeName] = Sorting;
+          } else if (paramTypeName === 'SortBy') {
+            (controller as any)[serviceName].Types[paramTypeName] = SortBy;
           } else {
             throw new Error('Type: ' + paramTypeName + ' is not found in ' + serviceName + '.Types');
           }

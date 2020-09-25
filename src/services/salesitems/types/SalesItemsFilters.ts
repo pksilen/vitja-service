@@ -1,4 +1,4 @@
-import { PostQueryOps, Sorting } from '../../../backk/Backk';
+import { PostQueryOps, SortBy } from "../../../backk/Backk";
 import { IsInt, Max, MaxLength, Min } from 'class-validator';
 
 export default class SalesItemsFilters implements PostQueryOps {
@@ -18,7 +18,7 @@ export default class SalesItemsFilters implements PostQueryOps {
   @Max(1000000000)
   maxPrice?: number;
 
-  sortings: Sorting[] = [{ sortBy: 'createdTimestampInSecs', sortDirection: 'DESC' }];
+  sortBys: SortBy[] = [{ sortField: 'createdTimestampInSecs', sortDirection: 'DESC' }];
   // or alternatively [new Sorting('createdTimestampInSecs', 'DESC')];
 
   @MaxLength(512, { each: true })

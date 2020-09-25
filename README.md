@@ -1,10 +1,9 @@
 # Vitja service
 
 TODO:
-- mahdollista antaa default valuena plain obj josta tehdään class (sorting)
-- metadata interger/bigint => Number
 - sorting => sortBy muutokset
 - Move previousPrice away from CreateSalesItemDto, make field default value -1
+- Set previousPrice in UpdateSalesItem func
 - Check enum values integer/number
 - Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
 - @NoAutoTests annotation for service
