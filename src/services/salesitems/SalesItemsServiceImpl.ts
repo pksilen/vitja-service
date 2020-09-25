@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorResponse, IdsAndOptPostQueryOps, Id } from '../../backk/Backk';
+import { ErrorResponse, Id, IdsAndOptPostQueryOps } from '../../backk/Backk';
 import GetSalesItemsArg from './types/args/GetSalesItemsArg';
 import { SalesItem } from './types/entities/SalesItem';
 import CreateSalesItemArg from './types/args/CreateSalesItemArg';
@@ -94,10 +94,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.getItems(filters, postQueryOps, SalesItem, this.Types);
   }
 
-  getSalesItemsByUserId({
-    userId,
-    ...postQueryOps
-  }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
+  getSalesItemsByUserId({ userId, ...postQueryOps }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
     return this.dbManager.getItemsBy('userId', userId, SalesItem, this.Types, postQueryOps);
   }
 
@@ -109,8 +106,18 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.getItemById(_id, SalesItem, this.Types);
   }
 
-  updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(arg, SalesItem, this.Types);
+  async updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse> {
+    return this.dbManager.executeInsideTransaction(async () => {
+      const currentSalesItemOrErrorResponse = await this.getSalesItemById({ _id: arg._id });
+
+      return 'errorMessage' in currentSalesItemOrErrorResponse
+        ? Promise.resolve(currentSalesItemOrErrorResponse)
+        : this.dbManager.updateItem(
+            { ...arg, previousPrice: currentSalesItemOrErrorResponse.price },
+            SalesItem,
+            this.Types
+          );
+    });
   }
 
   updateSalesItemState(

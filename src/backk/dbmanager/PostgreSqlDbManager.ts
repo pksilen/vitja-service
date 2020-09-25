@@ -137,7 +137,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
     const result = await executable();
 
-    if ('statusCode' in result && 'errorMessage' in result) {
+    if (result && 'statusCode' in result && 'errorMessage' in result) {
       await this.rollbackTransaction();
     } else {
       await this.commitTransaction();
@@ -510,7 +510,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async updateItem<T extends { _id: string; id?: string }>(
-    { _id, ...restOfItem }: T,
+    { _id, ...restOfItem }: Partial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
     preCondition?: Partial<T> | [string, Partial<T>],

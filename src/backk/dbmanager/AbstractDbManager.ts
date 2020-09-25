@@ -36,7 +36,7 @@ export default abstract class AbstractDbManager {
   ): Promise<T | ErrorResponse>;
 
   abstract createItem<T>(
-    item: Omit<T, '_id'>,
+    item: Partial<Omit<T, '_id'>>,
     entityClass: new () => T,
     Types: object
   ): Promise<Id | ErrorResponse>;
@@ -79,7 +79,7 @@ export default abstract class AbstractDbManager {
   ): Promise<T[] | ErrorResponse>;
 
   abstract updateItem<T extends { _id: string; id?: string }>(
-    { _id, ...restOfItem }: T,
+    { _id, ...restOfItem }: Partial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
     preCondition?: Partial<T> | [string, Partial<T>]
