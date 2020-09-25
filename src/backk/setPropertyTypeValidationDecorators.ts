@@ -150,7 +150,7 @@ export default function setPropertyTypeValidationDecorators(
                 return trimmedEnumValue.slice(1, -1);
               } else {
                 throw new Error(
-                  'Incompatible type: ' + finalPropertyTypeName + ' in ' + typeClassName + '.' + propertyName
+                  'Enum values cannot contain | character' + finalPropertyTypeName + ' in ' + typeClassName + '.' + propertyName
                 );
               }
             });

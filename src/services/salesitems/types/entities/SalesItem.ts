@@ -10,7 +10,7 @@ export class SalesItem extends UpdateSalesItemArg {
   @Max(1000000000)
   previousPrice!: number;
 
-  state!: 'forSale' | 'sold';
+  state!: 'forSale' | 'sold' | 's|';
 
   @IsInt()
   @Min(0)
