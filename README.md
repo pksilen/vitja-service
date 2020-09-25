@@ -1,8 +1,9 @@
 # Vitja service
 
 TODO:
-- Change sorting to [{fieldName: 'fieldName', direction: 'ASC'}, ...]
 - mahdollista antaa default valuena plain obj josta tehdään class (sorting)
+- metadata interger/bigint => Number
+- sorting => sortBy muutokset
 - Move previousPrice away from CreateSalesItemDto, make field default value -1
 - Check enum values integer/number
 - Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
@@ -69,6 +70,7 @@ TODO:
 - Mongodb transactions, update/delete preconditions
 - Handle order modification and delete to reflect in salesItem states
 - getDbManager support for multiple dbmanagers
+- Null value support for fields
 - Support for analytics aggregated queries, aggregations (function name, fieldname), group by, filters
     - Put analytics query inside its service and enabled for 'management' role for use
     

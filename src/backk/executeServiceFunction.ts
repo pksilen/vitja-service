@@ -1,9 +1,12 @@
 import { plainToClass } from 'class-transformer';
+import _ from 'lodash';
 import { validateOrReject, ValidationError } from 'class-validator';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import throwHttpException from './throwHttpException';
 import BaseService from './BaseService';
 import { createNamespace } from 'cls-hooked';
+import { ServiceMetadata } from './generateServicesMetadata';
+import getPropertyBaseTypeName from './getPropertyBaseTypeName';
 
 function getValidationErrors(validationErrors: ValidationError[]): string {
   return validationErrors
@@ -55,6 +58,40 @@ export default async function executeServiceFunction(
       controller[serviceName]['Types'][serviceFunctionArgumentTypeName],
       serviceFunctionArgument
     );
+
+    Object.entries(instantiatedServiceFunctionArgument).forEach(([propName, propValue]: [string, any]) => {
+      if (Array.isArray(propValue) && propValue.length > 0) {
+        instantiatedServiceFunctionArgument[propName] = propValue.map((pv) => {
+          if (_.isPlainObject(pv)) {
+            const serviceMetadata = controller.servicesMetadata.find(
+              (serviceMetadata: ServiceMetadata) => serviceMetadata.serviceName === serviceName
+            );
+
+            const baseTypeName = getPropertyBaseTypeName(
+              serviceMetadata.types[serviceFunctionArgumentTypeName][propName]
+            );
+
+            return plainToClass(controller[serviceName]['Types'][baseTypeName], pv);
+          }
+          return pv;
+        });
+      } else {
+        if (_.isPlainObject(propValue)) {
+          const serviceMetadata = controller.servicesMetadata.find(
+            (serviceMetadata: ServiceMetadata) => serviceMetadata.serviceName === serviceName
+          );
+
+          const baseTypeName = getPropertyBaseTypeName(
+            serviceMetadata.types[serviceFunctionArgumentTypeName][propName]
+          );
+
+          instantiatedServiceFunctionArgument[propName] = plainToClass(
+            controller[serviceName]['Types'][baseTypeName],
+            propValue
+          );
+        }
+      }
+    });
 
     if (!instantiatedServiceFunctionArgument) {
       throwHttpException({

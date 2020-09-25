@@ -18,7 +18,8 @@ export default class SalesItemsFilters implements PostQueryOps {
   @Max(1000000000)
   maxPrice?: number;
 
-  sortings: Sorting[] = [new Sorting('createdTimestampInSecs', 'DESC')];
+  sortings: Sorting[] = [{ sortBy: 'createdTimestampInSecs', sortDirection: 'DESC' }];
+  // or alternatively [new Sorting('createdTimestampInSecs', 'DESC')];
 
   @MaxLength(512, { each: true })
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];

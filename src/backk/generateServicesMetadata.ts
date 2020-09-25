@@ -1,6 +1,7 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import { IdsAndOptPostQueryOps, IdWrapper, Sorting } from "./Backk";
+import BaseService from "./BaseService";
 
 export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: string } {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -264,7 +265,7 @@ export type ServiceMetadata = {
 export default function generateServicesMetadata<T>(controller: T): ServiceMetadata[] {
   return Object.entries(controller)
     .filter(
-      ([, propValue]: [string, any]) => typeof propValue === 'object' && propValue.constructor !== Object
+      ([, propValue]: [string, any]) => propValue instanceof BaseService
     )
     .map(([serviceName]: [string, any]) => {
       const functionNames = Object.keys((controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap);
