@@ -1,5 +1,5 @@
 import CreateShoppingCartArg from '../args/CreateShoppingCartArg';
-import Entity from "../../../../backk/Entity";
+import Entity from "../../../../backk/annotations/entity/Entity";
 import { MaxLength } from "class-validator";
 
 @Entity

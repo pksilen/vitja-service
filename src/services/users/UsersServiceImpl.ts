@@ -1,11 +1,11 @@
-import { ErrorResponse, Id } from '../../backk/Backk';
-import UsersService from './UsersService';
-import UserName from './types/args/UserName';
-import User from './types/entities/User';
-import CreateUserArg from './types/args/CreateUserArg';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import { Injectable } from '@nestjs/common';
-import UserResponse from './types/responses/UserResponse';
+import { ErrorResponse, Id } from "../../backk/Backk";
+import UsersService from "./UsersService";
+import UserName from "./types/args/UserName";
+import User from "./types/entities/User";
+import CreateUserArg from "./types/args/CreateUserArg";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import { Injectable } from "@nestjs/common";
+import UserResponse from "./types/responses/UserResponse";
 
 @Injectable()
 export default class UsersServiceImpl extends UsersService {

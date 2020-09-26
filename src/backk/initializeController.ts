@@ -11,6 +11,7 @@ import getSrcFilenameForTypeName, { getFileNamesRecursively } from './getSrcFile
 import getServiceTypeNames from './getServiceTypeNames';
 import getValidationConstraint from './getValidationConstraint';
 import BaseService from './BaseService';
+import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
 
 function setNestedTypeAndValidationDecorators(
   typeClass: Function,
@@ -545,7 +546,15 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
     })
   );
 
-  servicesMetadata.forEach((serviceMetadata: ServiceMetadata) =>
+  servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
+    if (
+      serviceAnnotationContainer.hasNoAutoTestsAnnotationForServiceClass(
+        (controller as any)[serviceMetadata.serviceName].constructor
+      )
+    ) {
+      return;
+    }
+
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
       if (
         functionMetadata.functionName.startsWith('get') ||
@@ -665,8 +674,8 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
             addWrittenTest(writtenTest, items);
           });
       }
-    })
-  );
+    });
+  });
 
   const cwd = process.cwd();
   const appName = cwd.split('/').reverse()[0];

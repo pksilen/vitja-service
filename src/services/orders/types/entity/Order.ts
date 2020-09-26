@@ -1,4 +1,4 @@
-import Entity from "../../../../backk/Entity";
+import Entity from "../../../../backk/annotations/entity/Entity";
 import UpdateOrderArg from "../args/UpdateOrderArg";
 import { IsInt, Max, Min } from "class-validator";
 import { ExpectAnyValueInTests } from "../../../../backk/ExpectAnyValueInTests";

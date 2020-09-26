@@ -11,7 +11,7 @@ import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from "../as
 import SqlExpression from "../sqlexpression/SqlExpression";
 import { getTypeMetadata } from "../generateServicesMetadata";
 import forEachAsyncSequential from "../forEachAsyncSequential";
-import entityContainer, { JoinSpec } from "../entityContainer";
+import entityContainer, { JoinSpec } from "../annotations/entity/entityContainer";
 import AbstractDbManager, { Field } from "./AbstractDbManager";
 import getInternalServerErrorResponse from "../getInternalServerErrorResponse";
 import getNotFoundErrorResponse from "../getNotFoundErrorResponse";

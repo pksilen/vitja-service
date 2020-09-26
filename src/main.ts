@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from './app/app.module';
 import generateDocs from './backk/generateDocs';
-import entityContainer from './backk/entityContainer';
+import entityContainer from './backk/annotations/entity/entityContainer';
 import { postgreSqlDbManager } from "./database/postgreSqlDbManager";
 
 async function bootstrap() {

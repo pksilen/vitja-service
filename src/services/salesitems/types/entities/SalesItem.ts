@@ -1,6 +1,6 @@
 import { IsInt, IsNumber, Max, Min } from 'class-validator';
 import UpdateSalesItemArg from '../args/UpdateSalesItemArg';
-import Entity from '../../../../backk/Entity';
+import Entity from '../../../../backk/annotations/entity/Entity';
 import { ExpectInTestsToMatch } from '../../../../backk/ExpectInTestsToMatch';
 
 @Entity
@@ -10,7 +10,7 @@ export class SalesItem extends UpdateSalesItemArg {
   @Max(1000000000)
   previousPrice!: number;
 
-  state!: 'forSale' | 'sold' | 's|';
+  state!: 'forSale' | 'sold';
 
   @IsInt()
   @Min(0)

@@ -1,7 +1,7 @@
-import { getTypeMetadata } from './generateServicesMetadata';
-import forEachAsyncSequential from './forEachAsyncSequential';
-import AbstractDbManager from './dbmanager/AbstractDbManager';
-import forEachAsyncParallel from './forEachAsyncParallel';
+import { getTypeMetadata } from '../../generateServicesMetadata';
+import forEachAsyncSequential from '../../forEachAsyncSequential';
+import AbstractDbManager from '../../dbmanager/AbstractDbManager';
+import forEachAsyncParallel from '../../forEachAsyncParallel';
 
 export interface ManyToManyRelationTableSpec {
   tableName: string;
