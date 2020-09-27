@@ -711,26 +711,25 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
 }
 
 export default function initializeController(controller: any) {
-  Object.entries(controller).forEach(([serviceName, service]: [string, any]) => {
-    if (!(service instanceof BaseService)) {
-      throw new Error('Service: ' + serviceName + ' must be extended from BaseService');
-    }
-    if (serviceName === 'metadataService') {
-      throw new Error('metadataService is a reserved internal service name.');
-    } else if (serviceName === 'livenessCheckService') {
-      throw new Error('livenessCheckService is a reserved internal service name.');
-    }
+  Object.entries(controller)
+    .filter(([, service]: [string, any]) => service instanceof BaseService)
+    .forEach(([serviceName]: [string, any]) => {
+      if (serviceName === 'metadataService') {
+        throw new Error('metadataService is a reserved internal service name.');
+      } else if (serviceName === 'livenessCheckService') {
+        throw new Error('livenessCheckService is a reserved internal service name.');
+      }
 
-    const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(
-      serviceName,
-      getSrcFilenameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
-    );
+      const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(
+        serviceName,
+        getSrcFilenameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
+      );
 
-    controller[`${serviceName}Types`] = {
-      functionNameToParamTypeNameMap,
-      functionNameToReturnTypeNameMap
-    };
-  });
+      controller[`${serviceName}Types`] = {
+        functionNameToParamTypeNameMap,
+        functionNameToReturnTypeNameMap
+      };
+    });
 
   generateServicesMetadata(controller, true);
 

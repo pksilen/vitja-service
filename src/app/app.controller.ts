@@ -6,11 +6,13 @@ import initializeController from '../backk/initializeController';
 import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
 import executeServiceFunction from '../backk/executeServiceFunction';
 import ReadinessCheckService from '../backk/ReadinessCheckService';
+import CaptchaVerifierService from "../backk/captcha/CaptchaVerifierService";
 
 // noinspection JSUnusedLocalSymbols
 @Controller()
 export class AppController {
   constructor(
+    private readonly captchaVerifierService: CaptchaVerifierService,
     private readonly readinessCheckService: ReadinessCheckService,
     private readonly usersService: UsersService,
     private readonly salesItemsService: SalesItemsService,

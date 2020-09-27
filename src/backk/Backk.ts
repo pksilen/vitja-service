@@ -13,7 +13,7 @@ export class Id {
 }
 
 export interface Captcha {
-  captcha_token: string;
+  captchaToken: string;
 }
 
 export class SortBy implements ISortBy {

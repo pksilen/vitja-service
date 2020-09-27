@@ -290,7 +290,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
           !isFirstRound &&
           functionName.startsWith('create') &&
           paramTypeName &&
-          !(typesMetadata as any)[paramTypeName].captcha_token &&
+          !(typesMetadata as any)[paramTypeName].captchaToken &&
           !serviceFunctionAnnotationContainer.hasNoCaptchaAnnotationForServiceFunction(
             service.constructor,
             functionName

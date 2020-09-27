@@ -25,7 +25,7 @@ function getValidationErrors(validationErrors: ValidationError[]): string {
 export default async function executeServiceFunction(
   controller: any,
   serviceFunction: string,
-  serviceFunctionArgument: object
+  serviceFunctionArgument: any
 ): Promise<void | object> {
   const [serviceName, functionName] = serviceFunction.split('.');
 
@@ -38,6 +38,20 @@ export default async function executeServiceFunction(
     (!controller[serviceName] || !controller[serviceName][functionName])
   ) {
     return;
+  } else if (serviceFunctionArgument?.captchaToken) {
+    if (controller['captchaVerifierService']?.['verifyCaptcha']) {
+      const isCaptchaVerified = await controller['captchaVerifierService']['verifyCaptcha'](
+        serviceFunctionArgument.captchaToken
+      );
+      if (!isCaptchaVerified) {
+        throwHttpException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          errorMessage: 'Invalid captcha token'
+        });
+      }
+    } else {
+      throw new Error('captchaVerifierService is missing');
+    }
   }
 
   if (!controller[serviceName]) {
