@@ -1,10 +1,8 @@
-import { Matches, MaxLength } from "class-validator";
-import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
-import UserWithoutIdAndPassword from "../base/UserWithoutIdAndPassword";
+import { MaxLength } from "class-validator";
+import UserWithoutId from "../base/UserWithoutId";
+import { Captcha } from "../../../../backk/Backk";
 
-export default class CreateUserArg extends UserWithoutIdAndPassword {
+export default class CreateUserArg extends UserWithoutId implements Captcha {
   @MaxLength(512)
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/)
-  @ValueUsedInTests('Jepulis0!')
-  password!: string;
+  captcha_token!: string;
 }

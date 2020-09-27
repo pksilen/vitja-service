@@ -3,7 +3,7 @@ import UpdateOrderArg from "../args/UpdateOrderArg";
 import { IsInt, Max, Min } from "class-validator";
 import { ExpectAnyValueInTests } from "../../../../backk/ExpectAnyValueInTests";
 
-@Entity
+@Entity()
 export default class Order extends UpdateOrderArg {
   state!: 'toBeDelivered' | 'delivering' | 'delivered';
 

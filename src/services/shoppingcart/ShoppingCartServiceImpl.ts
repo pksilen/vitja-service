@@ -5,6 +5,7 @@ import CreateShoppingCartArg from "./types/args/CreateShoppingCartArg";
 import ShoppingCart from "./types/entities/ShoppingCart";
 import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import UserId from "../users/types/args/UserId";
+import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
 
 @Injectable()
 export default class ShoppingCartServiceImpl extends ShoppingCartService {
@@ -16,6 +17,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     return this.dbManager.deleteAllItems(ShoppingCart);
   }
 
+  @NoCaptcha()
   createShoppingCart(arg: CreateShoppingCartArg): Promise<Id | ErrorResponse> {
     return this.dbManager.createItem(arg, ShoppingCart, this.Types);
   }

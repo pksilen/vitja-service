@@ -732,7 +732,7 @@ export default function initializeController(controller: any) {
     };
   });
 
-  generateServicesMetadata(controller);
+  generateServicesMetadata(controller, true);
 
   Object.entries(controller)
     .filter(([, value]: [string, any]) => typeof value === 'object' && value.constructor !== Object)
@@ -744,7 +744,7 @@ export default function initializeController(controller: any) {
       }, {});
     });
 
-  const servicesMetadata = generateServicesMetadata(controller);
+  const servicesMetadata = generateServicesMetadata(controller, false);
   controller.servicesMetadata = servicesMetadata;
 
   if (process.env.NODE_ENV === 'development') {

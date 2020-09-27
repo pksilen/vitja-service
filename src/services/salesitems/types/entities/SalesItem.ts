@@ -3,7 +3,7 @@ import UpdateSalesItemArg from '../args/UpdateSalesItemArg';
 import Entity from '../../../../backk/annotations/entity/Entity';
 import { ExpectInTestsToMatch } from '../../../../backk/ExpectInTestsToMatch';
 
-@Entity
+@Entity()
 export class SalesItem extends UpdateSalesItemArg {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(-1)

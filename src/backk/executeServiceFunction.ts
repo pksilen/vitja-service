@@ -27,13 +27,18 @@ export default async function executeServiceFunction(
   serviceFunction: string,
   serviceFunctionArgument: object
 ): Promise<void | object> {
+  const [serviceName, functionName] = serviceFunction.split('.');
+
   if (serviceFunction === 'metadataService.getServicesMetadata') {
     return controller.servicesMetadata;
   } else if (serviceFunction === 'livenessCheckService.isAlive') {
     return;
+  } else if (
+    serviceFunction === 'readinessCheckService.isReady' &&
+    (!controller[serviceName] || !controller[serviceName][functionName])
+  ) {
+    return;
   }
-
-  const [serviceName, functionName] = serviceFunction.split('.');
 
   if (!controller[serviceName]) {
     throwHttpException({

@@ -13,6 +13,7 @@ import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import getBadRequestErrorResponse from '../../backk/getBadRequestErrorResponse';
 import SqlEquals from '../../backk/sqlexpression/SqlEquals';
+import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
 
 @Injectable()
 export default class SalesItemsServiceImpl extends SalesItemsService {
@@ -24,6 +25,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.deleteAllItems(SalesItem);
   }
 
+  @NoCaptcha()
   async createSalesItem(arg: CreateSalesItemArg): Promise<Id | ErrorResponse> {
     const salesItemCountForUser = await this.dbManager.getItemsCount(
       { userId: arg.userId, state: 'forSale' },

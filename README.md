@@ -1,8 +1,9 @@
 # Vitja service
 
 TODO:
-- @NoAutoTests annotation for service
 - Create functions should havegit s captcha_token in input arg or @NoCaptcha annotation, captchaChecker is used to validate request
+- Automatically verify captcha if it is present in captcha_token
+- AllowForInternalUse annotation
 - AllowForEveryone annotation
 - AllowForRole(s)() annotation
 - AllowForSelf

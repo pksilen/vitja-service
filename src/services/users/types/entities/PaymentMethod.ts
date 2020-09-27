@@ -2,7 +2,7 @@ import { IsCreditCard, Matches, MaxLength } from "class-validator";
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
 import Entity from "../../../../backk/annotations/entity/Entity";
 
-@Entity
+@Entity()
 export default class PaymentMethod {
   @MaxLength(24)
   id!: string;

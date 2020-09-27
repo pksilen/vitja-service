@@ -12,6 +12,10 @@ export class Id {
   _id!: string;
 }
 
+export interface Captcha {
+  captcha_token: string;
+}
+
 export class SortBy implements ISortBy {
   constructor(sortField: string, sortDirection: 'ASC' | 'DESC') {
     this.sortField = sortField;

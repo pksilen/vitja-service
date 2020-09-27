@@ -8,6 +8,7 @@ import UpdateOrderArg from './types/args/UpdateOrderArg';
 import UpdateOrderStateArg from './types/args/UpdateOrderStateArg';
 import SalesItemsService from '../salesitems/SalesItemsService';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
+import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
 
 @Injectable()
 export default class OrdersServiceImpl extends OrdersService {
@@ -19,6 +20,7 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.deleteAllItems(Order);
   }
 
+  @NoCaptcha()
   async createOrder(arg: CreateOrderArg): Promise<Id | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
       const errorResponse = await this.updateSalesItemStatesToSold(arg);

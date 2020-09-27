@@ -1,7 +1,8 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import { IdsAndOptPostQueryOps, Id, SortBy } from './Backk';
+import { Id, IdsAndOptPostQueryOps, SortBy } from './Backk';
 import BaseService from './BaseService';
+import serviceFunctionAnnotationContainer from './annotations/service/function/serviceFunctionAnnotationContainer';
 
 export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: string } {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -264,17 +265,44 @@ export type ServiceMetadata = {
   validations: { [p: string]: any[] };
 };
 
-export default function generateServicesMetadata<T>(controller: T): ServiceMetadata[] {
+export default function generateServicesMetadata<T>(controller: T, isFirstRound = true): ServiceMetadata[] {
   return Object.entries(controller)
-    .filter(([, propValue]: [string, any]) => propValue instanceof BaseService)
-    .map(([serviceName]: [string, any]) => {
+    .filter(([, service]: [string, any]) => service instanceof BaseService)
+    .map(([serviceName, service]: [string, any]) => {
       const functionNames = Object.keys(
         (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
       );
+
+      const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
+        (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
+          const typeObject = getTypeMetadata(typeClass);
+          return { ...accumulatedTypes, [typeName]: typeObject };
+        },
+        {}
+      );
+
       const functions: FunctionMetadata[] = functionNames.map((functionName: string) => {
         const paramTypeName = (controller as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
           functionName
         ];
+
+        if (
+          !isFirstRound &&
+          functionName.startsWith('create') &&
+          paramTypeName &&
+          !(typesMetadata as any)[paramTypeName].captcha_token &&
+          !serviceFunctionAnnotationContainer.hasNoCaptchaAnnotationForServiceFunction(
+            service.constructor,
+            functionName
+          )
+        ) {
+          throw new Error(
+            serviceName +
+              '.' +
+              functionName +
+              ': argument type must implement Captcha or service function must be annotated with NoCaptcha annotation'
+          );
+        }
 
         const returnValueTypeName: string = (controller as any)[`${serviceName}Types`]
           .functionNameToReturnTypeNameMap[functionName];
@@ -374,14 +402,6 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
         };
       });
 
-      const typeMetadatas = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
-        (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
-          const typeObject = getTypeMetadata(typeClass);
-          return { ...accumulatedTypes, [typeName]: typeObject };
-        },
-        {}
-      );
-
       const validationMetadatas = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
           const validationMetadata = getValidationMetadata(typeClass);
@@ -397,7 +417,7 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
         serviceName,
         functions,
         types: {
-          ...typeMetadatas,
+          ...typesMetadata,
           ErrorResponse: {
             statusCode: 'integer',
             errorMessage: 'string'
