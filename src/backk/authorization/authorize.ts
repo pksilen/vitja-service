@@ -7,33 +7,42 @@ import serviceFunctionAnnotationContainer from '../annotations/service/function/
 export default function authorize(
   serviceClass: Function,
   functionName: string,
-  authHeader: string,
+  authHeader: string | undefined,
   authorizationService: any
 ): Promise<void> {
   if (!authorizationService || !(authorizationService instanceof AuthorizationService)) {
     throw new Error('Authorization service missing');
   }
 
-  if (
-    serviceAnnotationContainer.isServiceAllowedForEveryUser(serviceClass) ||
-    serviceFunctionAnnotationContainer.isServiceFunctionAllowedForEveryUser(serviceClass, functionName)
-  ) {
-    return Promise.resolve(undefined);
-  }
+  if (authHeader === undefined) {
+    if (
+      serviceAnnotationContainer.isServiceAllowedForInternalUse(serviceClass) ||
+      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(serviceClass, functionName)
+    ) {
+      return Promise.resolve(undefined);
+    }
+  } else {
+    if (
+      serviceAnnotationContainer.isServiceAllowedForEveryUser(serviceClass) ||
+      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForEveryUser(serviceClass, functionName)
+    ) {
+      return Promise.resolve(undefined);
+    }
 
-  let allowedRoles: string[] = [];
-  allowedRoles = allowedRoles.concat(serviceAnnotationContainer.getAllowedUserRoles(serviceClass));
-  allowedRoles = allowedRoles.concat(
-    serviceFunctionAnnotationContainer.getAllowedUserRoles(serviceClass, functionName)
-  );
+    let allowedRoles: string[] = [];
+    allowedRoles = allowedRoles.concat(serviceAnnotationContainer.getAllowedUserRoles(serviceClass));
+    allowedRoles = allowedRoles.concat(
+      serviceFunctionAnnotationContainer.getAllowedUserRoles(serviceClass, functionName)
+    );
 
-  if (authorizationService.hasUserRoleIn(allowedRoles, authHeader)) {
-    return Promise.resolve(undefined);
+    if (authorizationService.hasUserRoleIn(allowedRoles, authHeader)) {
+      return Promise.resolve(undefined);
+    }
   }
 
   throwHttpException({
     statusCode: HttpStatus.FORBIDDEN,
-    errorMessage: 'Attempted operation not authorized'
+    errorMessage: 'Attempted service function call not authorized'
   });
 
   // Unreachable code

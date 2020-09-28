@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- AllowForEveryone annotation
 - AllowForInternalUse annotation
 - AllowForSelf (AllowForResourceOwner)
 - Each above authorization annotation can be supplied at service class level, which propagates them to all functions
