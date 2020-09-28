@@ -7,4 +7,8 @@ export default class BaseService implements Service {
   getDbManager(): AbstractDbManager {
     return this.dbManager;
   }
+
+  isUsersService(): boolean {
+    return false;
+  }
 }

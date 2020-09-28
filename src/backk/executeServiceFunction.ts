@@ -57,16 +57,17 @@ export default async function executeServiceFunction(
     });
   }
 
-  if (serviceFunctionArgument?.captchaToken) {
-    verifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
-  }
-
   await authorize(
-    controller[serviceName].constructor,
+    controller[serviceName],
     functionName,
+    serviceFunctionArgument,
     authHeader,
     controller['authorizationService']
   );
+
+  if (serviceFunctionArgument?.captchaToken) {
+    verifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
+  }
 
   const serviceFunctionArgumentTypeName =
     controller[`${serviceName}Types`].functionNameToParamTypeNameMap[functionName];

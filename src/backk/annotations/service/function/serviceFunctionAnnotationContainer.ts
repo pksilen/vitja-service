@@ -2,6 +2,7 @@ class ServiceFunctionAnnotationContainer {
   private serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
   private serviceFunctionNameToIsAllowedForEveryUserMap: { [key: string]: boolean } = {};
   private serviceFunctionNameToIsAllowedForInternalUseMap: { [key: string]: boolean } = {};
+  private serviceFunctionNameToIsAllowedForSelfMap: { [key: string]: boolean } = {};
   private serviceFunctionNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
@@ -18,6 +19,10 @@ class ServiceFunctionAnnotationContainer {
 
   addServiceFunctionAllowedForInternalUse(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToIsAllowedForInternalUseMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
+  addServiceFunctionAllowedForSelf(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToIsAllowedForSelfMap[`${serviceClass.name}${functionName}`] = true;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -55,6 +60,21 @@ class ServiceFunctionAnnotationContainer {
     while (proto !== Object.prototype) {
       if (
         this.serviceFunctionNameToIsAllowedForInternalUseMap[`${serviceClass.name}${functionName}`] !==
+        undefined
+      ) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isServiceFunctionAllowedForSelf(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToIsAllowedForSelfMap[`${serviceClass.name}${functionName}`] !==
         undefined
       ) {
         return true;

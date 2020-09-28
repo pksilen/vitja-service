@@ -5,9 +5,9 @@ import UserName from "./types/args/UserName";
 import CreateUserArg from "./types/args/CreateUserArg";
 import DefaultPaymentMethod from "./types/entities/DefaultPaymentMethod";
 import UserResponse from "./types/responses/UserResponse";
-import BaseService from "../../backk/BaseService";
+import UsersBaseService from "../../backk/UsersBaseService";
 
-export default abstract class UsersService extends BaseService {
+export default abstract class UsersService extends UsersBaseService {
   readonly Types = {
     DefaultPaymentMethod,
     PaymentMethod,

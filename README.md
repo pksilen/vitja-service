@@ -1,10 +1,9 @@
 # Vitja service
 
 TODO:
-- AllowForInternalUse annotation
 - AllowForSelf (AllowForResourceOwner)
-- Each above authorization annotation can be supplied at service class level, which propagates them to all functions
 - Each service function must have at least one auth annotation
+- userName is not allowed to be changed in updateUser
 - Handle exclude response fields in getProjection and createResultMaps
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
