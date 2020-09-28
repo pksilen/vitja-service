@@ -1,13 +1,10 @@
 # Vitja service
 
 TODO:
-- Automatically verify captcha if it is present in captcha_token
-- AllowForInternalUse annotation
+- AllowForRoles() annotation
 - AllowForEveryone annotation
-- AllowForRole(s)() annotation
-- AllowForSelf
-- AllowForResourceOwner Allow user to access only own resources
-    -eg. in Orders service almost all have annotation allowForResourceOwner
+- AllowForInternalUse annotation
+- AllowForSelf (AllowForResourceOwner)
 - Each above authorization annotation can be supplied at service class level, which propagates them to all functions
 - Each service function must have at least one auth annotation
 - Handle exclude response fields in getProjection and createResultMaps

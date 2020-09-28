@@ -12,15 +12,18 @@ import AbstractDbManager from '../backk/dbmanager/AbstractDbManager';
 import { postgreSqlDbManager } from '../database/postgreSqlDbManager';
 import ReadinessCheckService from '../backk/ReadinessCheckService';
 import ReadinessCheckServiceImpl from '../services/readinesscheck/ReadinessCheckServiceImpl';
-import CaptchaVerifierService from '../backk/captcha/CaptchaVerifierService';
-import CaptchaVerifierServiceImpl from '../services/captchaverifier/CatpchaVerifierServiceImpl';
+import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
+import CaptchaVerifierServiceImpl from '../services/captchaverify/CatpchaVerifyServiceImpl';
+import AuthorizationService from '../backk/authorization/AuthorizationService';
+import AuthorizationServiceImpl from '../services/authorization/AuthorizationServiceImpl';
 
 @Module({
   imports: [],
   controllers: [AppController],
   providers: [
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },
-    { provide: CaptchaVerifierService, useClass: CaptchaVerifierServiceImpl },
+    { provide: CaptchaVerifyService, useClass: CaptchaVerifierServiceImpl },
+    { provide: AuthorizationService, useClass: AuthorizationServiceImpl },
     { provide: SalesItemsService, useClass: SalesItemsServiceImpl },
     { provide: UsersService, useClass: UsersServiceImpl },
     { provide: OrdersService, useClass: OrdersServiceImpl },

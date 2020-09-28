@@ -6,7 +6,9 @@ import CreateUserArg from "./types/args/CreateUserArg";
 import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import { Injectable } from "@nestjs/common";
 import UserResponse from "./types/responses/UserResponse";
+import AllowForUserRoles from "../../backk/annotations/service/AllowForUserRoles";
 
+@AllowForUserRoles(['admin'])
 @Injectable()
 export default class UsersServiceImpl extends UsersService {
   constructor(dbManager: AbstractDbManager) {

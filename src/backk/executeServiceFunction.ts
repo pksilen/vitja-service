@@ -7,6 +7,8 @@ import BaseService from './BaseService';
 import { createNamespace } from 'cls-hooked';
 import { ServiceMetadata } from './generateServicesMetadata';
 import getPropertyBaseTypeName from './getPropertyBaseTypeName';
+import verifyCaptchaToken from './captcha/verifyCaptchaToken';
+import authorize from './authorization/authorize';
 
 function getValidationErrors(validationErrors: ValidationError[]): string {
   return validationErrors
@@ -25,7 +27,8 @@ function getValidationErrors(validationErrors: ValidationError[]): string {
 export default async function executeServiceFunction(
   controller: any,
   serviceFunction: string,
-  serviceFunctionArgument: any
+  serviceFunctionArgument: any,
+  authHeader: string
 ): Promise<void | object> {
   const [serviceName, functionName] = serviceFunction.split('.');
 
@@ -38,20 +41,6 @@ export default async function executeServiceFunction(
     (!controller[serviceName] || !controller[serviceName][functionName])
   ) {
     return;
-  } else if (serviceFunctionArgument?.captchaToken) {
-    if (controller['captchaVerifierService']?.['verifyCaptcha']) {
-      const isCaptchaVerified = await controller['captchaVerifierService']['verifyCaptcha'](
-        serviceFunctionArgument.captchaToken
-      );
-      if (!isCaptchaVerified) {
-        throwHttpException({
-          statusCode: HttpStatus.BAD_REQUEST,
-          errorMessage: 'Invalid captcha token'
-        });
-      }
-    } else {
-      throw new Error('captchaVerifierService is missing');
-    }
   }
 
   if (!controller[serviceName]) {
@@ -67,6 +56,17 @@ export default async function executeServiceFunction(
       errorMessage: `Unknown function: ${serviceName}.${functionName}`
     });
   }
+
+  if (serviceFunctionArgument?.captchaToken) {
+    verifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
+  }
+
+  await authorize(
+    controller[serviceName].constructor,
+    functionName,
+    authHeader,
+    controller['authorizationService']
+  );
 
   const serviceFunctionArgumentTypeName =
     controller[`${serviceName}Types`].functionNameToParamTypeNameMap[functionName];
