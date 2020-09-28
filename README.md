@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- AllowForRoles() annotation
 - AllowForEveryone annotation
 - AllowForInternalUse annotation
 - AllowForSelf (AllowForResourceOwner)

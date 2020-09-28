@@ -1,7 +1,7 @@
 import serviceAnnotationContainer from "./serviceAnnotationContainer";
 
-export default function AllowForUserRoles(roles: string[]) {
+export default function AllowServiceForUserRoles(roles: string[]) {
   return function(serviceClass: Function) {
-    serviceAnnotationContainer.addAllowedUserRoles(serviceClass, roles);
+    serviceAnnotationContainer.addAllowedUserRolesForService(serviceClass, roles);
   }
 }

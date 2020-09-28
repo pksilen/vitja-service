@@ -14,8 +14,14 @@ export default function authorize(
     throw new Error('Authorization service missing');
   }
 
-  let allowedRoles: string[] = [];
+  if (
+    serviceAnnotationContainer.isServiceAllowedForEveryUser(serviceClass) ||
+    serviceFunctionAnnotationContainer.isServiceFunctionAllowedForEveryUser(serviceClass, functionName)
+  ) {
+    return Promise.resolve(undefined);
+  }
 
+  let allowedRoles: string[] = [];
   allowedRoles = allowedRoles.concat(serviceAnnotationContainer.getAllowedUserRoles(serviceClass));
   allowedRoles = allowedRoles.concat(
     serviceFunctionAnnotationContainer.getAllowedUserRoles(serviceClass, functionName)
