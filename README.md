@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- AllowForSelf (AllowForResourceOwner)
 - Each service function must have at least one auth annotation
 - userName is not allowed to be changed in updateUser
 - Handle exclude response fields in getProjection and createResultMaps

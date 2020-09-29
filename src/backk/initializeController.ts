@@ -685,6 +685,16 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
       name: appName,
       schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'
     },
+    auth: {
+      type: 'bearer',
+      bearer: [
+        {
+          key: 'token',
+          value: 'ABCD45',
+          type: 'string'
+        }
+      ]
+    },
     item: [
       {
         name: 'metadataService.getServicesMetadata',

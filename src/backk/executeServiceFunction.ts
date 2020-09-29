@@ -9,6 +9,7 @@ import { ServiceMetadata } from './generateServicesMetadata';
 import getPropertyBaseTypeName from './getPropertyBaseTypeName';
 import verifyCaptchaToken from './captcha/verifyCaptchaToken';
 import authorize from './authorization/authorize';
+import serviceFunctionAnnotationContainer from './annotations/service/function/serviceFunctionAnnotationContainer';
 
 function getValidationErrors(validationErrors: ValidationError[]): string {
   return validationErrors
@@ -50,7 +51,13 @@ export default async function executeServiceFunction(
     });
   }
 
-  if (!controller[serviceName][functionName]) {
+  if (
+    !controller[serviceName][functionName] ||
+    serviceFunctionAnnotationContainer.isServiceFunctionPrivate(
+      controller[serviceName].constructor,
+      functionName
+    )
+  ) {
     throwHttpException({
       statusCode: HttpStatus.BAD_REQUEST,
       errorMessage: `Unknown function: ${serviceName}.${functionName}`

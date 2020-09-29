@@ -271,6 +271,9 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
     .map(([serviceName, service]: [string, any]) => {
       const functionNames = Object.keys(
         (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
+      ).filter(
+        (functionName) =>
+          !serviceFunctionAnnotationContainer.isServiceFunctionPrivate(service.constructor, functionName)
       );
 
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
