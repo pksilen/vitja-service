@@ -1,8 +1,9 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import { Id, IdsAndOptPostQueryOps, SortBy } from './Backk';
+import { Id, IdAndUserId, IdsAndOptPostQueryOps, SortBy } from "./Backk";
 import BaseService from './BaseService';
 import serviceFunctionAnnotationContainer from './annotations/service/function/serviceFunctionAnnotationContainer';
+import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
 
 export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: string } {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -269,11 +270,12 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
   return Object.entries(controller)
     .filter(([, service]: [string, any]) => service instanceof BaseService)
     .map(([serviceName, service]: [string, any]) => {
+      const ServiceClass = service.constructor;
       const functionNames = Object.keys(
         (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
       ).filter(
         (functionName) =>
-          !serviceFunctionAnnotationContainer.isServiceFunctionPrivate(service.constructor, functionName)
+          !serviceFunctionAnnotationContainer.isServiceFunctionPrivate(ServiceClass, functionName)
       );
 
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
@@ -285,6 +287,24 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
       );
 
       const functions: FunctionMetadata[] = functionNames.map((functionName: string) => {
+        if (
+          !serviceAnnotationContainer.isServiceAllowedForInternalUse(ServiceClass) &&
+          !serviceAnnotationContainer.isServiceAllowedForEveryUser(ServiceClass) &&
+          serviceAnnotationContainer.getAllowedUserRoles(ServiceClass).length === 0 &&
+          !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForSelf(ServiceClass, functionName) &&
+          !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(
+            ServiceClass,
+            functionName
+          ) &&
+          !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForEveryUser(
+            ServiceClass,
+            functionName
+          ) &&
+          serviceFunctionAnnotationContainer.getAllowedUserRoles(ServiceClass, functionName).length === 0
+        ) {
+          throw new Error(serviceName + '.' + functionName + ': is missing authorization annotation');
+        }
+
         const paramTypeName = (controller as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
           functionName
         ];
@@ -317,6 +337,8 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             (controller as any)[serviceName].Types[paramTypeName] = IdsAndOptPostQueryOps;
           } else if (paramTypeName === 'SortBy') {
             (controller as any)[serviceName].Types[paramTypeName] = SortBy;
+          } else if (paramTypeName === 'IdAndUserId') {
+              (controller as any)[serviceName].Types[paramTypeName] = IdAndUserId;
           } else {
             throw new Error('Type: ' + paramTypeName + ' is not found in ' + serviceName + '.Types');
           }

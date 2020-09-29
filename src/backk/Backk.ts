@@ -12,6 +12,12 @@ export class Id {
   _id!: string;
 }
 
+export class IdAndUserId extends Id {
+  @IsString()
+  @MaxLength(24)
+  userId!: string;
+}
+
 export interface Captcha {
   captchaToken: string;
 }

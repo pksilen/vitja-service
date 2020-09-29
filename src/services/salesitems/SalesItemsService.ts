@@ -1,4 +1,4 @@
-import { ErrorResponse, IdsAndOptPostQueryOps, Id, SortBy } from '../../backk/Backk';
+import { ErrorResponse, IdsAndOptPostQueryOps, Id, SortBy, IdAndUserId } from "../../backk/Backk";
 import GetSalesItemsArg from './types/args/GetSalesItemsArg';
 import CreateSalesItemArg from './types/args/CreateSalesItemArg';
 import { SalesItem } from './types/entities/SalesItem';
@@ -31,5 +31,5 @@ export default abstract class SalesItemsService extends BaseService {
     requiredCurrentState?: 'forSale' | 'sold'
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteSalesItemById(id: Id): Promise<void | ErrorResponse>;
+  abstract deleteSalesItemById(idAndUserId: IdAndUserId): Promise<void | ErrorResponse>;
 }

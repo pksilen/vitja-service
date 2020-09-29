@@ -21,7 +21,8 @@ export default function authorize(
   if (authHeader === undefined) {
     if (
       serviceAnnotationContainer.isServiceAllowedForInternalUse(ServiceClass) ||
-      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(ServiceClass, functionName)
+      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(ServiceClass, functionName) ||
+      serviceAnnotationContainer.isServiceAllowedForEveryUser(ServiceClass)
     ) {
       return Promise.resolve(undefined);
     }

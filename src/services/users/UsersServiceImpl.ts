@@ -7,6 +7,8 @@ import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import { Injectable } from "@nestjs/common";
 import UserResponse from "./types/responses/UserResponse";
 import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/annotations/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
 
 @AllowServiceForUserRoles(['admin'])
 @Injectable()
@@ -19,10 +21,12 @@ export default class UsersServiceImpl extends UsersService {
     return this.dbManager.deleteAllItems(User);
   }
 
+  @AllowForEveryUser()
   createUser(arg: CreateUserArg): Promise<Id | ErrorResponse> {
     return this.dbManager.createItem(arg, User, this.Types);
   }
 
+  @AllowForSelf()
   async getUserByUserName({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
     const userOrError = await this.dbManager.getItemBy('userName', userName, User, this.Types);
 
@@ -36,10 +40,12 @@ export default class UsersServiceImpl extends UsersService {
     return userOrError;
   }
 
+  @AllowForSelf()
   updateUser(user: User): Promise<void | ErrorResponse> {
     return this.dbManager.updateItem(user, User, this.Types);
   }
 
+  @AllowForSelf()
   deleteUserById({ _id }: Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteItemById(_id, User);
   }

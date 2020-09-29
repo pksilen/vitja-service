@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorResponse, Id } from '../../backk/Backk';
+import { ErrorResponse, Id, IdAndUserId } from "../../backk/Backk";
 import OrdersService from './OrdersService';
 import Order from './types/entity/Order';
 import CreateOrderArg from './types/args/CreateOrderArg';
@@ -9,8 +9,11 @@ import UpdateOrderStateArg from './types/args/UpdateOrderStateArg';
 import SalesItemsService from '../salesitems/SalesItemsService';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
+import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
 
 @Injectable()
+@AllowServiceForUserRoles(['vitjaAdmin'])
 export default class OrdersServiceImpl extends OrdersService {
   constructor(dbManager: AbstractDbManager, private readonly salesItemsService: SalesItemsService) {
     super(dbManager);
@@ -20,6 +23,7 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.deleteAllItems(Order);
   }
 
+  @AllowForSelf()
   @NoCaptcha()
   async createOrder(arg: CreateOrderArg): Promise<Id | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
@@ -39,14 +43,17 @@ export default class OrdersServiceImpl extends OrdersService {
     });
   }
 
+  @AllowForSelf()
   getOrdersByUserId({ userId, ...postQueryOps }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
     return this.dbManager.getItemsBy('userId', userId, Order, this.Types, postQueryOps);
   }
 
-  getOrderById({ _id }: Id): Promise<Order | ErrorResponse> {
+  @AllowForSelf()
+  getOrderById({ _id }: IdAndUserId): Promise<Order | ErrorResponse> {
     return this.dbManager.getItemById(_id, Order, this.Types);
   }
 
+  @AllowForSelf()
   updateOrder(arg: UpdateOrderArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateItem(arg, Order, this.Types);
   }
@@ -55,7 +62,8 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.updateItem(arg, Order, this.Types);
   }
 
-  deleteOrderById({ _id }: Id): Promise<void | ErrorResponse> {
+  @AllowForSelf()
+  deleteOrderById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteItemById(_id, Order);
   }
 

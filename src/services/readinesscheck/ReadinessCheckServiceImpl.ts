@@ -3,6 +3,7 @@ import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { ErrorResponse } from '../../backk/Backk';
 import getServiceUnavailableErrorResponse from '../../backk/getServiceUnavailableErrorResponse';
 import ReadinessCheckService from '../../backk/ReadinessCheckService';
+import { AllowForEveryUser } from "../../backk/annotations/service/function/AllowForEveryUser";
 
 @Injectable()
 export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
@@ -10,6 +11,7 @@ export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
     super(dbManager);
   }
 
+  @AllowForEveryUser()
   async isReady(): Promise<void | ErrorResponse> {
     const isDbReady = await this.dbManager.isDbReady();
     if (isDbReady) {

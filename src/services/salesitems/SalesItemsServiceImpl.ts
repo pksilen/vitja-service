@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorResponse, Id, IdsAndOptPostQueryOps } from '../../backk/Backk';
+import { ErrorResponse, Id, IdAndUserId, IdsAndOptPostQueryOps } from "../../backk/Backk";
 import GetSalesItemsArg from './types/args/GetSalesItemsArg';
 import { SalesItem } from './types/entities/SalesItem';
 import CreateSalesItemArg from './types/args/CreateSalesItemArg';
@@ -14,8 +14,13 @@ import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import getBadRequestErrorResponse from '../../backk/getBadRequestErrorResponse';
 import SqlEquals from '../../backk/sqlexpression/SqlEquals';
 import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
+import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
+import { AllowForEveryUser } from "../../backk/annotations/service/function/AllowForEveryUser";
+import { Private } from "../../backk/annotations/service/function/Private";
 
 @Injectable()
+@AllowServiceForUserRoles(['vitjaAdmin'])
 export default class SalesItemsServiceImpl extends SalesItemsService {
   constructor(dbManager: AbstractDbManager) {
     super(dbManager);
@@ -26,6 +31,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }
 
   @NoCaptcha()
+  @AllowForSelf()
   async createSalesItem(arg: CreateSalesItemArg): Promise<Id | ErrorResponse> {
     const salesItemCountForUser = await this.dbManager.getItemsCount(
       { userId: arg.userId, state: 'forSale' },
@@ -49,6 +55,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     );
   }
 
+  @AllowForEveryUser()
   getSalesItems({
     textFilter,
     areas,
@@ -96,18 +103,22 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.getItems(filters, postQueryOps, SalesItem, this.Types);
   }
 
+  @AllowForSelf()
   getSalesItemsByUserId({ userId, ...postQueryOps }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
     return this.dbManager.getItemsBy('userId', userId, SalesItem, this.Types, postQueryOps);
   }
 
+  @AllowForEveryUser()
   getSalesItemsByIds({ _ids, ...postQueryOps }: IdsAndOptPostQueryOps): Promise<SalesItem[] | ErrorResponse> {
     return this.dbManager.getItemsByIds(_ids, SalesItem, this.Types, postQueryOps);
   }
 
+  @AllowForEveryUser()
   getSalesItemById({ _id }: Id): Promise<SalesItem | ErrorResponse> {
     return this.dbManager.getItemById(_id, SalesItem, this.Types);
   }
 
+  @AllowForSelf()
   async updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
       const currentSalesItemOrErrorResponse = await this.getSalesItemById({ _id: arg._id });
@@ -122,6 +133,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     });
   }
 
+  @Private()
   updateSalesItemState(
     arg: UpdateSalesItemStateArg,
     requiredCurrentState?: 'forSale' | 'sold'
@@ -138,7 +150,8 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     );
   }
 
-  deleteSalesItemById({ _id }: Id): Promise<void | ErrorResponse> {
+  @AllowForSelf()
+  deleteSalesItemById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteItemById(_id, SalesItem);
   }
 }

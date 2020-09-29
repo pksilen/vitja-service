@@ -1,4 +1,4 @@
-import { ErrorResponse, Id } from '../../backk/Backk';
+import { ErrorResponse, Id, IdAndUserId } from "../../backk/Backk";
 import CreateShoppingCartArg from './types/args/CreateShoppingCartArg';
 import ShoppingCart from './types/entities/ShoppingCart';
 import ShoppingCartItem from './types/entities/ShoppingCartItem';
@@ -17,5 +17,5 @@ export default abstract class ShoppingCartService extends BaseService {
   abstract createShoppingCart(arg: CreateShoppingCartArg): Promise<Id | ErrorResponse>;
   abstract getShoppingCartByUserId(userId: UserId): Promise<ShoppingCart | ErrorResponse>;
   abstract updateShoppingCart(shoppingCart: ShoppingCart): Promise<void | ErrorResponse>;
-  abstract deleteShoppingCartById(id: Id): Promise<void | ErrorResponse>;
+  abstract deleteShoppingCartById(idAndUserId: IdAndUserId): Promise<void | ErrorResponse>;
 }
