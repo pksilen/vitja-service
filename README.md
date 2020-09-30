@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Each service function must have at least one auth annotation
 - Split updateOrderState to two different functions for user, one for logistics partner
 - userName is not allowed to be changed in updateUser
 - One shopping cart is allowed to be created

@@ -51,13 +51,7 @@ export default async function executeServiceFunction(
     });
   }
 
-  if (
-    !controller[serviceName][functionName] ||
-    serviceFunctionAnnotationContainer.isServiceFunctionPrivate(
-      controller[serviceName].constructor,
-      functionName
-    )
-  ) {
+  if (!controller[serviceName][functionName]) {
     throwHttpException({
       statusCode: HttpStatus.BAD_REQUEST,
       errorMessage: `Unknown function: ${serviceName}.${functionName}`

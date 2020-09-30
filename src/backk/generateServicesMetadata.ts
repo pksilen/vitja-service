@@ -1,6 +1,6 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import { Id, IdAndUserId, IdsAndOptPostQueryOps, SortBy } from "./Backk";
+import { Id, IdAndUserId, IdsAndOptPostQueryOps, SortBy } from './Backk';
 import BaseService from './BaseService';
 import serviceFunctionAnnotationContainer from './annotations/service/function/serviceFunctionAnnotationContainer';
 import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
@@ -273,9 +273,6 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
       const ServiceClass = service.constructor;
       const functionNames = Object.keys(
         (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
-      ).filter(
-        (functionName) =>
-          !serviceFunctionAnnotationContainer.isServiceFunctionPrivate(ServiceClass, functionName)
       );
 
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
@@ -338,7 +335,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
           } else if (paramTypeName === 'SortBy') {
             (controller as any)[serviceName].Types[paramTypeName] = SortBy;
           } else if (paramTypeName === 'IdAndUserId') {
-              (controller as any)[serviceName].Types[paramTypeName] = IdAndUserId;
+            (controller as any)[serviceName].Types[paramTypeName] = IdAndUserId;
           } else {
             throw new Error('Type: ' + paramTypeName + ' is not found in ' + serviceName + '.Types');
           }

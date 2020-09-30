@@ -66,6 +66,10 @@ export default function authorize(
     }
   }
 
+  if(process.env.NODE_ENV === 'development' && serviceFunctionAnnotationContainer.isServiceFunctionPrivate(ServiceClass, functionName)) {
+    return Promise.resolve(undefined);
+  }
+
   throwHttpException({
     statusCode: HttpStatus.FORBIDDEN,
     errorMessage: 'Attempted service function call not authorized'

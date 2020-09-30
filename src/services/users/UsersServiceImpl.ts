@@ -10,7 +10,7 @@ import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServi
 import { AllowForEveryUser } from "../../backk/annotations/service/function/AllowForEveryUser";
 import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
 
-@AllowServiceForUserRoles(['admin'])
+@AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
 export default class UsersServiceImpl extends UsersService {
   constructor(dbManager: AbstractDbManager) {
