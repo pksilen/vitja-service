@@ -36,7 +36,7 @@ export default abstract class AbstractDbManager {
   ): Promise<T | ErrorResponse>;
 
   abstract createItem<T>(
-    item: Partial<Omit<T, '_id'>>,
+    item: Omit<T, '_id'>,
     entityClass: new () => T,
     Types: object
   ): Promise<Id | ErrorResponse>;

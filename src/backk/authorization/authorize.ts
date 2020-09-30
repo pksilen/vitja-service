@@ -55,6 +55,15 @@ export default function authorize(
       const userIdTypeInServiceFunctionArgument = userId ? 'userId' : 'userName';
       const userIdInServiceFunctionArgument = userId ?? userName;
 
+      if (!userId && !userName) {
+        throw new Error(
+          ServiceClass.name +
+            '.' +
+            functionName +
+            ': must have userId or userName property present in function argument'
+        );
+      }
+
       if (
         authorizationService.areSameIdentities(
           userIdTypeInServiceFunctionArgument,
@@ -66,7 +75,10 @@ export default function authorize(
     }
   }
 
-  if(process.env.NODE_ENV === 'development' && serviceFunctionAnnotationContainer.isServiceFunctionPrivate(ServiceClass, functionName)) {
+  if (
+    process.env.NODE_ENV === 'development' &&
+    serviceFunctionAnnotationContainer.isServiceFunctionPrivate(ServiceClass, functionName)
+  ) {
     return Promise.resolve(undefined);
   }
 

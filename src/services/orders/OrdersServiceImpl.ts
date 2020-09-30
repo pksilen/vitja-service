@@ -1,16 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 import { ErrorResponse, Id, IdAndUserId } from "../../backk/Backk";
-import OrdersService from './OrdersService';
-import Order from './types/entity/Order';
-import CreateOrderArg from './types/args/CreateOrderArg';
-import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
-import UpdateOrderArg from './types/args/UpdateOrderArg';
-import UpdateOrderStateArg from './types/args/UpdateOrderStateArg';
-import SalesItemsService from '../salesitems/SalesItemsService';
-import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
+import OrdersService from "./OrdersService";
+import Order from "./types/entity/Order";
+import CreateOrderArg from "./types/args/CreateOrderArg";
+import AbstractDbManager from "src/backk/dbmanager/AbstractDbManager";
+import UpdateOrderArg from "./types/args/UpdateOrderArg";
+import SalesItemsService from "../salesitems/SalesItemsService";
+import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
 import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
 import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
 import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
+import UpdateOrderDeliveryStateArg from "./types/args/UpdateOrderDeliveryStateArg";
+import { AllowForUserRoles } from "../../backk/annotations/service/function/AllowForUserRoles";
+import DeliverOrderArg from "./types/args/DeliverOrderArg";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -35,7 +37,9 @@ export default class OrdersServiceImpl extends OrdersService {
             {
               ...arg,
               createdTimestampInSecs: Math.round(Date.now() / 1000),
-              state: 'toBeDelivered'
+              state: 'toBeDelivered',
+              trackingUrl: 'abc',
+              deliveryTimestampInSecs: 123
             },
             Order,
             this.Types
@@ -58,7 +62,13 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.updateItem(arg, Order, this.Types);
   }
 
-  updateOrderState(arg: UpdateOrderStateArg): Promise<void | ErrorResponse> {
+  @AllowForUserRoles(['vitjaLogisticsPartner'])
+  deliverOrder(arg: DeliverOrderArg): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem({ ...arg, state: 'delivered' }, Order, this.Types);
+  }
+
+  @AllowForUserRoles(['vitjaLogisticsPartner'])
+  updateOrderDeliveryState(arg: UpdateOrderDeliveryStateArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateItem(arg, Order, this.Types);
   }
 

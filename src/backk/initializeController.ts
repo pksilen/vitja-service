@@ -555,6 +555,7 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
       return;
     }
 
+    let previousFunctionType: string;
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
       if (
         functionMetadata.functionName.startsWith('get') ||
@@ -577,9 +578,14 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
       if (
         functionMetadata.functionName.startsWith('update') ||
         functionMetadata.functionName.startsWith('modify') ||
-        functionMetadata.functionName.startsWith('change')
+        functionMetadata.functionName.startsWith('change') ||
+        previousFunctionType === 'update' &&
+        !functionMetadata.functionName.startsWith('delete') &&
+        !functionMetadata.functionName.startsWith('remove') &&
+        !functionMetadata.functionName.startsWith('erase')
       ) {
         isUpdate = true;
+        previousFunctionType = 'update';
         if (lastGetFunctionMetadata === undefined) {
           throw new Error(
             'There must be a get function defined before update/modify/change function in: ' +

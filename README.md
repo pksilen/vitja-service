@@ -4,6 +4,9 @@ TODO:
 - Split updateOrderState to two different functions for user, one for logistics partner
 - userName is not allowed to be changed in updateUser
 - One shopping cart is allowed to be created
+- Delivered order cannot be deleted or updated by user
+- UpdateDeliveryState, set preconditions at different allowed state changes
+- Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
 - Handle exclude response fields in getProjection and createResultMaps
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
@@ -59,7 +62,6 @@ TODO:
 - Mongodb transactions, update/delete preconditions
 - Handle order modification and delete to reflect in salesItem states
 - getDbManager support for multiple dbmanagers
-- Null value support for fields
 - Support for analytics aggregated queries, aggregations (function name, fieldname), group by, filters
     - Put analytics query inside its service and enabled for 'management' role for use
     

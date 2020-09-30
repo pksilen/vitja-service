@@ -199,6 +199,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const sqlValuePlaceholders = columns.map((_: any, index: number) => `$${index + 1}`).join(', ');
       const getIdSqlStatement = Object.keys(entityMetadata).includes('_id') ? 'RETURNING _id' : '';
 
+      console.log(values);
       const result = await this.tryExecuteQuery(
         `INSERT INTO ${this.schema}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`,
         values
