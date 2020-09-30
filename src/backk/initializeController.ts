@@ -54,7 +54,8 @@ function getSampleArg(
   serviceTypes: { [key: string]: Function },
   argTypeName: string,
   serviceMetadata: ServiceMetadata,
-  isUpdate: boolean
+  isInitialUpdate: boolean,
+  previousUpdateSampleArg?: { [key: string]: any }
 ): object | undefined {
   const sampleArg: { [key: string]: any } = {};
   const typeProperties = serviceMetadata.types[argTypeName];
@@ -70,6 +71,14 @@ function getSampleArg(
   }
 
   Object.entries(typeProperties).forEach(([propertyName, propertyTypeName]: [string, string]) => {
+    let isUpdate = isInitialUpdate;
+    if (
+      previousUpdateSampleArg !== undefined &&
+      (previousUpdateSampleArg as any)[propertyName] === undefined
+    ) {
+      isUpdate = false;
+    }
+
     const isOptionalProperty = propertyTypeName.startsWith('?');
     let finalPropertyTypeName = isOptionalProperty ? propertyTypeName.slice(1) : propertyTypeName;
 
@@ -579,10 +588,10 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
         functionMetadata.functionName.startsWith('update') ||
         functionMetadata.functionName.startsWith('modify') ||
         functionMetadata.functionName.startsWith('change') ||
-        previousFunctionType === 'update' &&
-        !functionMetadata.functionName.startsWith('delete') &&
-        !functionMetadata.functionName.startsWith('remove') &&
-        !functionMetadata.functionName.startsWith('erase')
+        (previousFunctionType === 'update' &&
+          !functionMetadata.functionName.startsWith('delete') &&
+          !functionMetadata.functionName.startsWith('remove') &&
+          !functionMetadata.functionName.startsWith('erase'))
       ) {
         isUpdate = true;
         previousFunctionType = 'update';
@@ -617,7 +626,8 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
           (controller as any)[serviceMetadata.serviceName].Types,
           lastGetFunctionMetadata.argType,
           serviceMetadata,
-          isUpdate
+          isUpdate,
+          sampleArg
         );
 
         items.push(

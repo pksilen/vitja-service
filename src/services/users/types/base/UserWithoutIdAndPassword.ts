@@ -1,27 +1,7 @@
 import { MaxLength } from "class-validator";
-import { ValueUsedInTests } from "../../../../backk/ValueUsedInTests";
-import DefaultPaymentMethod from "../entities/DefaultPaymentMethod";
-import PaymentMethod from "../entities/PaymentMethod";
+import UserWithoutIdAndPasswordAndUserName from "./UserWithoutIdAndPasswordAndUserName";
 
-export default class UserWithoutIdAndPassword {
+export default class UserWithoutIdAndPassword extends UserWithoutIdAndPasswordAndUserName{
   @MaxLength(512)
   userName!: string;
-
-  @MaxLength(512)
-  streetAddress!: string;
-
-  @MaxLength(32)
-  postalCode!: string;
-
-  @MaxLength(256)
-  city!: string;
-
-  loyaltyDiscountLevel!: 0 | 25 | 50;
-
-  defaultPaymentMethod!: DefaultPaymentMethod;
-  paymentMethods!: PaymentMethod[];
-
-  @MaxLength(24, { each: true})
-  @ValueUsedInTests('123')
-  favoriteSalesItemIds!: string[];
 }

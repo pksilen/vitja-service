@@ -1,14 +1,15 @@
-import { ErrorResponse, Id } from "../../backk/Backk";
-import UsersService from "./UsersService";
-import UserName from "./types/args/UserName";
-import User from "./types/entities/User";
-import CreateUserArg from "./types/args/CreateUserArg";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import { Injectable } from "@nestjs/common";
-import UserResponse from "./types/responses/UserResponse";
-import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
-import { AllowForEveryUser } from "../../backk/annotations/service/function/AllowForEveryUser";
-import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
+import { ErrorResponse, Id } from '../../backk/Backk';
+import UsersService from './UsersService';
+import UserName from './types/args/UserName';
+import User from './types/entities/User';
+import CreateUserArg from './types/args/CreateUserArg';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import { Injectable } from '@nestjs/common';
+import UserResponse from './types/responses/UserResponse';
+import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
+import { AllowForEveryUser } from '../../backk/annotations/service/function/AllowForEveryUser';
+import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
+import UpdateUserArg from "./types/args/UpdateUserArg";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -41,8 +42,8 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
-  updateUser(user: User): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(user, User, this.Types);
+  updateUser(arg: UpdateUserArg): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(arg, User, this.Types);
   }
 
   @AllowForSelf()

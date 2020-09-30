@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Split updateOrderState to two different functions for user, one for logistics partner
 - userName is not allowed to be changed in updateUser
 - One shopping cart is allowed to be created
 - Delivered order cannot be deleted or updated by user

@@ -611,8 +611,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
               })
             );
           } else if (fieldName !== '_id') {
-            columns.push(fieldName);
-            values.push((restOfItem as any)[fieldName]);
+            if ((restOfItem as any)[fieldName] !== undefined) {
+              columns.push(fieldName);
+              values.push((restOfItem as any)[fieldName]);
+            }
           }
         }
       );
