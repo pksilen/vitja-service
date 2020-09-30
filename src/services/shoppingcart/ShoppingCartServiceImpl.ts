@@ -1,13 +1,14 @@
-import { Injectable } from "@nestjs/common";
-import ShoppingCartService from "./ShoppingCartService";
-import { ErrorResponse, Id, IdAndUserId } from "../../backk/Backk";
-import CreateShoppingCartArg from "./types/args/CreateShoppingCartArg";
-import ShoppingCart from "./types/entities/ShoppingCart";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import UserId from "../users/types/args/UserId";
-import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
-import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
-import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
+import { Injectable } from '@nestjs/common';
+import ShoppingCartService from './ShoppingCartService';
+import { ErrorResponse, Id, IdAndUserId } from '../../backk/Backk';
+import CreateShoppingCartArg from './types/args/CreateShoppingCartArg';
+import ShoppingCart from './types/entities/ShoppingCart';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import UserId from '../users/types/args/UserId';
+import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
+import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
+import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
+import getBadRequestErrorResponse from '../../backk/getBadRequestErrorResponse';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -22,7 +23,23 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @NoCaptcha()
   @AllowForSelf()
-  createShoppingCart(arg: CreateShoppingCartArg): Promise<Id | ErrorResponse> {
+  async createShoppingCart(arg: CreateShoppingCartArg): Promise<Id | ErrorResponse> {
+    const shoppingCartCountForUserOrErrorResponse = await this.dbManager.getItemsCount(
+      { userId: arg.userId },
+      ShoppingCart,
+      this.Types
+    );
+
+    if (typeof shoppingCartCountForUserOrErrorResponse === 'number') {
+      if (shoppingCartCountForUserOrErrorResponse > 0) {
+        return getBadRequestErrorResponse(
+          'Shopping cart already exists. Only one shopping cart per user is allowed'
+        );
+      }
+    } else {
+      return shoppingCartCountForUserOrErrorResponse;
+    }
+
     return this.dbManager.createItem(arg, ShoppingCart, this.Types);
   }
 

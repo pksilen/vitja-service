@@ -1,11 +1,15 @@
 # Vitja service
 
 TODO:
-- userName is not allowed to be changed in updateUser
 - One shopping cart is allowed to be created
-- Delivered order cannot be deleted or updated by user
-- UpdateDeliveryState, set preconditions at different allowed state changes
+- ordersService: Delivered order cannot be deleted or updated by user
+- orderService: UpdateDeliveryState, set preconditions at different allowed state changes
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
+- Class spread operator support in parsing class files
+    class Jee {
+        ...Id
+        ...Password
+    }
 - Handle exclude response fields in getProjection and createResultMaps
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)

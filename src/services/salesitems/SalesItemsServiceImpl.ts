@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorResponse, Id, IdAndUserId, IdsAndOptPostQueryOps } from "../../backk/Backk";
+import { ErrorResponse, Id, IdAndUserId, IdsAndOptPostQueryOps } from '../../backk/Backk';
 import GetSalesItemsArg from './types/args/GetSalesItemsArg';
 import { SalesItem } from './types/entities/SalesItem';
 import CreateSalesItemArg from './types/args/CreateSalesItemArg';
@@ -13,11 +13,11 @@ import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import getBadRequestErrorResponse from '../../backk/getBadRequestErrorResponse';
 import SqlEquals from '../../backk/sqlexpression/SqlEquals';
-import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
-import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
-import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
-import { AllowForEveryUser } from "../../backk/annotations/service/function/AllowForEveryUser";
-import { Private } from "../../backk/annotations/service/function/Private";
+import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
+import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
+import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
+import { AllowForEveryUser } from '../../backk/annotations/service/function/AllowForEveryUser';
+import { Private } from '../../backk/annotations/service/function/Private';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -33,14 +33,18 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @NoCaptcha()
   @AllowForSelf()
   async createSalesItem(arg: CreateSalesItemArg): Promise<Id | ErrorResponse> {
-    const salesItemCountForUser = await this.dbManager.getItemsCount(
+    const salesItemCountForUserOrErrorResponse = await this.dbManager.getItemsCount(
       { userId: arg.userId, state: 'forSale' },
       SalesItem,
       this.Types
     );
 
-    if (salesItemCountForUser > 100) {
-      return getBadRequestErrorResponse('User can have maximum 100 sales items');
+    if (typeof salesItemCountForUserOrErrorResponse === 'number') {
+      if (salesItemCountForUserOrErrorResponse > 100) {
+        return getBadRequestErrorResponse('User can have maximum 100 sales items');
+      }
+    } else {
+      return salesItemCountForUserOrErrorResponse;
     }
 
     return this.dbManager.createItem(
