@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Timestamp tests
 - DefaultJwtAuthenticationService
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
 - Class spread operator support in parsing class files

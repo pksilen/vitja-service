@@ -12,6 +12,8 @@ import getServiceTypeNames from './getServiceTypeNames';
 import getValidationConstraint from './getValidationConstraint';
 import BaseService from './BaseService';
 import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
+import { sign } from 'jsonwebtoken';
+import { Base64 } from "js-base64";
 
 function setNestedTypeAndValidationDecorators(
   typeClass: Function,
@@ -696,6 +698,11 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
   const cwd = process.cwd();
   const appName = cwd.split('/').reverse()[0];
 
+  const jwt = sign(
+    { userName: 'abc', roles: [process.env.TEST_USER_ROLE] },
+    process.env.JWT_SIGN_SECRET || 'abcdef'
+  );
+
   const postmanMetadata = {
     info: {
       name: appName,
@@ -706,7 +713,7 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
       bearer: [
         {
           key: 'token',
-          value: 'ABCD45',
+          value: Base64.encode(jwt),
           type: 'string'
         }
       ]

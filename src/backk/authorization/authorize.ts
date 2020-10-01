@@ -4,13 +4,15 @@ import serviceAnnotationContainer from '../annotations/service/serviceAnnotation
 import AuthorizationService from './AuthorizationService';
 import serviceFunctionAnnotationContainer from '../annotations/service/function/serviceFunctionAnnotationContainer';
 import BaseService from '../BaseService';
+import UsersBaseService from "../UsersBaseService";
 
-export default function authorize(
+export default async function authorize(
   service: BaseService,
   functionName: string,
   serviceFunctionArgument: any,
   authHeader: string | undefined,
-  authorizationService: any
+  authorizationService: any,
+  usersService: UsersBaseService | undefined
 ): Promise<void> {
   const ServiceClass = service.constructor;
 
@@ -24,14 +26,14 @@ export default function authorize(
       serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(ServiceClass, functionName) ||
       serviceAnnotationContainer.isServiceAllowedForEveryUser(ServiceClass)
     ) {
-      return Promise.resolve(undefined);
+      return;
     }
   } else {
     if (
       serviceAnnotationContainer.isServiceAllowedForEveryUser(ServiceClass) ||
       serviceFunctionAnnotationContainer.isServiceFunctionAllowedForEveryUser(ServiceClass, functionName)
     ) {
-      return Promise.resolve(undefined);
+      return;
     }
 
     let allowedRoles: string[] = [];
@@ -40,20 +42,18 @@ export default function authorize(
       serviceFunctionAnnotationContainer.getAllowedUserRoles(ServiceClass, functionName)
     );
 
-    if (authorizationService.hasUserRoleIn(allowedRoles, authHeader)) {
-      return Promise.resolve(undefined);
+    if (await authorizationService.hasUserRoleIn(allowedRoles, authHeader)) {
+      return;
     }
 
     if (
       serviceFunctionAnnotationContainer.isServiceFunctionAllowedForSelf(ServiceClass, functionName) &&
       serviceFunctionArgument
     ) {
-      const userName = serviceFunctionArgument.userName;
+      let userName = serviceFunctionArgument.userName;
       const userId =
         serviceFunctionArgument.userId ||
         (service.isUsersService() ? serviceFunctionArgument._id : undefined);
-      const userIdTypeInServiceFunctionArgument = userId ? 'userId' : 'userName';
-      const userIdInServiceFunctionArgument = userId ?? userName;
 
       if (!userId && !userName) {
         throw new Error(
@@ -64,14 +64,16 @@ export default function authorize(
         );
       }
 
-      if (
-        authorizationService.areSameIdentities(
-          userIdTypeInServiceFunctionArgument,
-          userIdInServiceFunctionArgument,
-          authHeader
-        )
-      )
-        return Promise.resolve(undefined);
+      if (!userName && userId && usersService) {
+        const userOrErrorResponse = await usersService.getUserById(userId);
+        if ('_id' in userOrErrorResponse) {
+          userName = userOrErrorResponse.userName;
+        }
+      }
+
+      if (await authorizationService.areSameIdentities(userName, authHeader)){
+        return;
+      }
     }
   }
 
@@ -79,14 +81,11 @@ export default function authorize(
     process.env.NODE_ENV === 'development' &&
     serviceFunctionAnnotationContainer.isServiceFunctionPrivate(ServiceClass, functionName)
   ) {
-    return Promise.resolve(undefined);
+    return;
   }
 
   throwHttpException({
     statusCode: HttpStatus.FORBIDDEN,
     errorMessage: 'Attempted service function call not authorized'
   });
-
-  // Unreachable code
-  return Promise.resolve(undefined);
 }

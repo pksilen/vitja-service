@@ -1,21 +1,21 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import SalesItemsService from '../services/salesitems/SalesItemsService';
-import SalesItemsServiceImpl from '../services/salesitems/SalesItemsServiceImpl';
-import UsersService from '../services/users/UsersService';
-import UsersServiceImpl from '../services/users/UsersServiceImpl';
-import OrdersServiceImpl from '../services/orders/OrdersServiceImpl';
-import OrdersService from '../services/orders/OrdersService';
-import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
-import ShoppingCartServiceImpl from '../services/shoppingcart/ShoppingCartServiceImpl';
-import AbstractDbManager from '../backk/dbmanager/AbstractDbManager';
-import { postgreSqlDbManager } from '../database/postgreSqlDbManager';
-import ReadinessCheckService from '../backk/ReadinessCheckService';
-import ReadinessCheckServiceImpl from '../services/readinesscheck/ReadinessCheckServiceImpl';
-import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
-import CaptchaVerifierServiceImpl from '../services/captchaverify/CatpchaVerifyServiceImpl';
-import AuthorizationService from '../backk/authorization/AuthorizationService';
-import AuthorizationServiceImpl from '../services/authorization/AuthorizationServiceImpl';
+import { Module } from "@nestjs/common";
+import { AppController } from "./app.controller";
+import SalesItemsService from "../services/salesitems/SalesItemsService";
+import SalesItemsServiceImpl from "../services/salesitems/SalesItemsServiceImpl";
+import UsersService from "../services/users/UsersService";
+import UsersServiceImpl from "../services/users/UsersServiceImpl";
+import OrdersServiceImpl from "../services/orders/OrdersServiceImpl";
+import OrdersService from "../services/orders/OrdersService";
+import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
+import ShoppingCartServiceImpl from "../services/shoppingcart/ShoppingCartServiceImpl";
+import AbstractDbManager from "../backk/dbmanager/AbstractDbManager";
+import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
+import ReadinessCheckService from "../backk/ReadinessCheckService";
+import ReadinessCheckServiceImpl from "../services/readinesscheck/ReadinessCheckServiceImpl";
+import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
+import CaptchaVerifierServiceImpl from "../services/captchaverify/CatpchaVerifyServiceImpl";
+import AuthorizationService from "../backk/authorization/AuthorizationService";
+import DefaultJwtAuthorizationServiceImpl from "../backk/authorization/DefaultJwtAuthorizationServiceImpl";
 
 @Module({
   imports: [],
@@ -23,7 +23,14 @@ import AuthorizationServiceImpl from '../services/authorization/AuthorizationSer
   providers: [
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },
     { provide: CaptchaVerifyService, useClass: CaptchaVerifierServiceImpl },
-    { provide: AuthorizationService, useClass: AuthorizationServiceImpl },
+    {
+      provide: AuthorizationService,
+      useValue: new DefaultJwtAuthorizationServiceImpl(
+        process.env.JWT_SIGN_SECRET || 'abcdef',
+        'userName',
+        'roles'
+      )
+    },
     { provide: SalesItemsService, useClass: SalesItemsServiceImpl },
     { provide: UsersService, useClass: UsersServiceImpl },
     { provide: OrdersService, useClass: OrdersServiceImpl },

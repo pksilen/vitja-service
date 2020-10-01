@@ -9,7 +9,7 @@ import { ServiceMetadata } from './generateServicesMetadata';
 import getPropertyBaseTypeName from './getPropertyBaseTypeName';
 import verifyCaptchaToken from './captcha/verifyCaptchaToken';
 import authorize from './authorization/authorize';
-import serviceFunctionAnnotationContainer from './annotations/service/function/serviceFunctionAnnotationContainer';
+import UsersBaseService from './UsersBaseService';
 
 function getValidationErrors(validationErrors: ValidationError[]): string {
   return validationErrors
@@ -57,13 +57,15 @@ export default async function executeServiceFunction(
       errorMessage: `Unknown function: ${serviceName}.${functionName}`
     });
   }
+  const usersService = Object.values(controller).find((service) => service instanceof UsersBaseService);
 
   await authorize(
     controller[serviceName],
     functionName,
     serviceFunctionArgument,
     authHeader,
-    controller['authorizationService']
+    controller['authorizationService'],
+    usersService as UsersBaseService | undefined
   );
 
   if (serviceFunctionArgument?.captchaToken) {

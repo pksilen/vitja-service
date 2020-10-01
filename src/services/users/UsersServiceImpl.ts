@@ -9,7 +9,8 @@ import UserResponse from './types/responses/UserResponse';
 import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
 import { AllowForEveryUser } from '../../backk/annotations/service/function/AllowForEveryUser';
 import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
-import UpdateUserArg from "./types/args/UpdateUserArg";
+import UpdateUserArg from './types/args/UpdateUserArg';
+import { Private } from "../../backk/annotations/service/function/Private";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -29,16 +30,20 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   async getUserByUserName({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
-    const userOrError = await this.dbManager.getItemBy('userName', userName, User, this.Types);
-
-    if ('_id' in userOrError) {
-      delete userOrError.password;
-      const userResponse = (userOrError as unknown) as UserResponse;
-      userResponse.extraInfo = 'Some extra info';
-      return userResponse;
+    const userOrErrorResponse = await this.dbManager.getItemBy('userName', userName, User, this.Types);
+    if ('_id' in userOrErrorResponse) {
+      return UsersServiceImpl.getUserResponse(userOrErrorResponse);
     }
+    return userOrErrorResponse;
+  }
 
-    return userOrError;
+  @Private()
+  async getUserById({ _id }: Id): Promise<UserResponse | ErrorResponse> {
+    const userOrErrorResponse = await this.dbManager.getItemById(_id, User, this.Types);
+    if ('_id' in userOrErrorResponse) {
+      return UsersServiceImpl.getUserResponse(userOrErrorResponse);
+    }
+    return userOrErrorResponse;
   }
 
   @AllowForSelf()
@@ -49,5 +54,12 @@ export default class UsersServiceImpl extends UsersService {
   @AllowForSelf()
   deleteUserById({ _id }: Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteItemById(_id, User);
+  }
+
+  private static getUserResponse(userOrErrorResponse: User) {
+    delete userOrErrorResponse.password;
+    const userResponse = (userOrErrorResponse as unknown) as UserResponse;
+    userResponse.extraInfo = "Some extra info";
+    return userResponse;
   }
 }
