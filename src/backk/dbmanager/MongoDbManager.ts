@@ -217,6 +217,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entityClass: new () => T,
     preCondition?: Partial<T> | [string, Partial<T>]
   ): Promise<void | ErrorResponse> {
+    // TODO add precondition check
     try {
       const updateOperationResult = await this.tryExecute((client) =>
         client

@@ -1,9 +1,7 @@
 # Vitja service
 
 TODO:
-- ordersService: Delivered order cannot be deleted or updated by user
 - orderService: UpdateDeliveryState, set preconditions at different allowed state changes
-- AllowedCount annotation, eg, 1 shopping cart, 100 sales items for sale
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
 - Class spread operator support in parsing class files
     class Jee {
@@ -11,6 +9,8 @@ TODO:
         ...Password
     }
 - @Documentation annotation for service, function and type properties
+- Move order delivery status to shopping cart item
+- Possible to delete shopping cart item from order if it is not yet delivered
 - Handle exclude response fields in getProjection and createResultMaps
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)

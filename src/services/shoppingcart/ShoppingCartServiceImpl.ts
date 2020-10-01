@@ -1,14 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import ShoppingCartService from './ShoppingCartService';
-import { ErrorResponse, Id, IdAndUserId } from '../../backk/Backk';
-import CreateShoppingCartArg from './types/args/CreateShoppingCartArg';
-import ShoppingCart from './types/entities/ShoppingCart';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import UserId from '../users/types/args/UserId';
-import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
-import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
-import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
-import getBadRequestErrorResponse from '../../backk/getBadRequestErrorResponse';
+import { Injectable } from "@nestjs/common";
+import ShoppingCartService from "./ShoppingCartService";
+import { ErrorResponse, Id, IdAndUserId } from "../../backk/Backk";
+import CreateShoppingCartArg from "./types/args/CreateShoppingCartArg";
+import ShoppingCart from "./types/entities/ShoppingCart";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import UserId from "../users/types/args/UserId";
+import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
+import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])

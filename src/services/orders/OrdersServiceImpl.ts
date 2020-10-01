@@ -72,9 +72,8 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.updateItem(arg, Order, this.Types);
   }
 
-  @AllowForSelf()
   deleteOrderById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteItemById(_id, Order);
+    return this.dbManager.deleteItemById(_id, Order, this.Types);
   }
 
   private async updateSalesItemStatesToSold(createOrderArg: CreateOrderArg): Promise<void | ErrorResponse> {
