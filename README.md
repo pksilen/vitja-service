@@ -2,15 +2,16 @@
 
 TODO:
 - orderService: UpdateDeliveryState, set preconditions at different allowed state changes
+- Timestamp tests
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
 - Class spread operator support in parsing class files
     class Jee {
         ...Id
         ...Password
+        Omit<User , 'password'>
+        Pick<Order, 'deliveryTimestamp' | 'trackingUrl'>
     }
 - @Documentation annotation for service, function and type properties
-- Move order delivery status to shopping cart item
-- Possible to delete shopping cart item from order if it is not yet delivered
 - Handle exclude response fields in getProjection and createResultMaps
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
@@ -18,6 +19,8 @@ TODO:
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
 - include/exclude to support wildcards: property1.property2.*
 - include/exclude to support JSON and GraphQl
+- Move order delivery status to shopping cart item
+- Possible to delete shopping cart item from order if it is not yet delivered
 - Table column indexing annotation
 - sorting, includeResponseFields and excludeResponseFields must checked that they contain only allowed field names
 

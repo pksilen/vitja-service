@@ -64,16 +64,21 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   deliverOrder(arg: DeliverOrderArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem({ ...arg, state: 'delivered' }, Order, this.Types);
+    return this.dbManager.updateItem({ ...arg, state: 'delivering' }, Order, this.Types);
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   updateOrderDeliveryState(arg: UpdateOrderDeliveryStateArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(arg, Order, this.Types);
+    return this.dbManager.updateItem(
+      arg,
+      Order,
+      this.Types,
+      OrdersServiceImpl.getPreConditionForNewDeliveryState(arg.state)
+    );
   }
 
   deleteOrderById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteItemById(_id, Order, this.Types);
+    return this.dbManager.deleteItemById(_id, Order);
   }
 
   private async updateSalesItemStatesToSold(createOrderArg: CreateOrderArg): Promise<void | ErrorResponse> {
@@ -92,5 +97,20 @@ export default class OrdersServiceImpl extends OrdersService {
       },
       Promise.resolve(undefined)
     );
+  }
+
+  private static getPreConditionForNewDeliveryState(
+    newDeliveryState: 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned'
+  ): object {
+    switch (newDeliveryState) {
+      case 'delivered':
+        return { state: 'delivering' };
+      case 'returning':
+        return { state: 'delivered' };
+      case 'returned':
+        return { state: 'returning' };
+      default:
+        return { state: newDeliveryState };
+    }
   }
 }
