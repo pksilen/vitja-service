@@ -50,7 +50,14 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async createItem<T>(item: Omit<T, '_id'>, entityClass: new () => T): Promise<Id | ErrorResponse> {
+  async createItem<T>(
+    item: Omit<T, '_id'>,
+    entityClass: new () => T,
+    Types: object,
+    maxItemCount?: number,
+    itemCountQueryFilter?: FilterQuery<T>
+  ): Promise<Id | ErrorResponse> {
+    // TODO implement maxItemCount
     try {
       const writeOperationResult = await this.tryExecute((client) =>
         client

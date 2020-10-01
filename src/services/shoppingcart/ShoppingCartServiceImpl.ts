@@ -24,23 +24,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @NoCaptcha()
   @AllowForSelf()
   async createShoppingCart(arg: CreateShoppingCartArg): Promise<Id | ErrorResponse> {
-    const shoppingCartCountForUserOrErrorResponse = await this.dbManager.getItemsCount(
-      { userId: arg.userId },
-      ShoppingCart,
-      this.Types
-    );
-
-    if (typeof shoppingCartCountForUserOrErrorResponse === 'number') {
-      if (shoppingCartCountForUserOrErrorResponse > 0) {
-        return getBadRequestErrorResponse(
-          'Shopping cart already exists. Only one shopping cart per user is allowed'
-        );
-      }
-    } else {
-      return shoppingCartCountForUserOrErrorResponse;
-    }
-
-    return this.dbManager.createItem(arg, ShoppingCart, this.Types);
+    return this.dbManager.createItem(arg, ShoppingCart, this.Types, 1, { userId: arg.userId });
   }
 
   @AllowForSelf()

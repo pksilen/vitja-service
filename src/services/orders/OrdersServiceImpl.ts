@@ -1,18 +1,18 @@
-import { Injectable } from "@nestjs/common";
-import { ErrorResponse, Id, IdAndUserId } from "../../backk/Backk";
-import OrdersService from "./OrdersService";
-import Order from "./types/entity/Order";
-import CreateOrderArg from "./types/args/CreateOrderArg";
-import AbstractDbManager from "src/backk/dbmanager/AbstractDbManager";
-import UpdateOrderArg from "./types/args/UpdateOrderArg";
-import SalesItemsService from "../salesitems/SalesItemsService";
-import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
-import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
-import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
-import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
-import UpdateOrderDeliveryStateArg from "./types/args/UpdateOrderDeliveryStateArg";
-import { AllowForUserRoles } from "../../backk/annotations/service/function/AllowForUserRoles";
-import DeliverOrderArg from "./types/args/DeliverOrderArg";
+import { Injectable } from '@nestjs/common';
+import { ErrorResponse, Id, IdAndUserId } from '../../backk/Backk';
+import OrdersService from './OrdersService';
+import Order from './types/entity/Order';
+import CreateOrderArg from './types/args/CreateOrderArg';
+import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
+import UpdateOrderArg from './types/args/UpdateOrderArg';
+import SalesItemsService from '../salesitems/SalesItemsService';
+import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
+import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
+import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
+import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
+import UpdateOrderDeliveryStateArg from './types/args/UpdateOrderDeliveryStateArg';
+import { AllowForUserRoles } from '../../backk/annotations/service/function/AllowForUserRoles';
+import DeliverOrderArg from './types/args/DeliverOrderArg';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -59,7 +59,7 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForSelf()
   updateOrder(arg: UpdateOrderArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(arg, Order, this.Types);
+    return this.dbManager.updateItem(arg, Order, this.Types, { state: 'toBeDelivered' });
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])

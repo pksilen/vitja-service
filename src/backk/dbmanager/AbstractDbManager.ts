@@ -38,7 +38,9 @@ export default abstract class AbstractDbManager {
   abstract createItem<T>(
     item: Omit<T, '_id'>,
     entityClass: new () => T,
-    Types: object
+    Types: object,
+    maxAllowedItemCount?: number,
+    itemCountQueryFilter?: Partial<T>
   ): Promise<Id | ErrorResponse>;
 
   abstract getItems<T>(

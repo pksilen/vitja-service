@@ -17,6 +17,9 @@ import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 import forEachAsyncParallel from '../forEachAsyncParallel';
 import getConflictErrorResponse from '../getConflictErrorResponse';
+import { max } from 'rxjs/operators';
+import ShoppingCart from '../../services/shoppingcart/types/entities/ShoppingCart';
+import getBadRequestErrorResponse from '../getBadRequestErrorResponse';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -152,6 +155,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     item: Omit<T, '_id'>,
     entityClass: new () => T,
     Types: object,
+    maxAllowedItemCount?: number,
+    itemCountQueryFilter?: Partial<T>,
     isRecursiveCall = false
   ): Promise<Id | ErrorResponse> {
     try {
@@ -161,6 +166,20 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       ) {
         await this.beginTransaction();
         this.getClsNamespace()?.set('localTransaction', true);
+      }
+
+      if (!isRecursiveCall && maxAllowedItemCount !== undefined) {
+        const itemCountOrErrorResponse = await this.getItemsCount(itemCountQueryFilter, entityClass, Types);
+
+        if (typeof itemCountOrErrorResponse === 'number') {
+          if (itemCountOrErrorResponse >= maxAllowedItemCount) {
+            return getBadRequestErrorResponse(
+              'Cannot create new resource. Maximum resource count would be exceeded'
+            );
+          }
+        } else {
+          return itemCountOrErrorResponse;
+        }
       }
 
       const entityMetadata = getTypeMetadata(entityClass as any);
@@ -226,7 +245,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
             await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
               subItem[idFieldName] = _id;
-              await this.createItem(subItem, (Types as any)[relationEntityName], Types, true);
+              await this.createItem(
+                subItem,
+                (Types as any)[relationEntityName],
+                Types,
+                maxAllowedItemCount,
+                itemCountQueryFilter,
+                true
+              );
             });
           } else if (
             baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
@@ -235,7 +261,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
             const subItem = (item as any)[fieldName];
             subItem[idFieldName] = _id;
-            await this.createItem(subItem, (Types as any)[relationEntityName], Types, true);
+            await this.createItem(
+              subItem,
+              (Types as any)[relationEntityName],
+              Types,
+              maxAllowedItemCount,
+              itemCountQueryFilter,
+              true
+            );
           } else if (isArray) {
             await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
               const insertStatement = `INSERT INTO ${this.schema}.${entityClass.name +
@@ -299,13 +332,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async getItemsCount<T>(
-    filters: Partial<T> | SqlExpression[],
+    filters: Partial<T> | SqlExpression[] | undefined,
     entityClass: new () => T,
     Types: object
   ): Promise<number | ErrorResponse> {
     try {
-      const whereStatement = this.getWhereStatement(filters, entityClass);
-      const filterValues = this.getFilterValues(filters);
+      const whereStatement = this.getWhereStatement(filters ?? {}, entityClass);
+      const filterValues = this.getFilterValues(filters ?? {});
       const joinStatement = this.getJoinStatement(entityClass, Types);
 
       const result = await this.tryExecuteQueryWithConfig(

@@ -33,20 +33,6 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @NoCaptcha()
   @AllowForSelf()
   async createSalesItem(arg: CreateSalesItemArg): Promise<Id | ErrorResponse> {
-    const salesItemCountForUserOrErrorResponse = await this.dbManager.getItemsCount(
-      { userId: arg.userId, state: 'forSale' },
-      SalesItem,
-      this.Types
-    );
-
-    if (typeof salesItemCountForUserOrErrorResponse === 'number') {
-      if (salesItemCountForUserOrErrorResponse > 100) {
-        return getBadRequestErrorResponse('User can have maximum 100 sales items');
-      }
-    } else {
-      return salesItemCountForUserOrErrorResponse;
-    }
-
     return this.dbManager.createItem(
       {
         ...arg,
@@ -55,7 +41,9 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
         previousPrice: -1
       },
       SalesItem,
-      this.Types
+      this.Types,
+      100,
+      { userId: arg.userId, state: 'forSale' }
     );
   }
 
