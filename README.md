@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO:
-- orderService: UpdateDeliveryState, set preconditions at different allowed state changes
 - Timestamp tests
+- DefaultJwtAuthenticationService
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
 - Class spread operator support in parsing class files
     class Jee {
@@ -13,13 +13,11 @@ TODO:
     }
 - @Documentation annotation for service, function and type properties
 - Handle exclude response fields in getProjection and createResultMaps
-- Prometheus metrics (Opentelemetry)
-- Jaeger tracing (Opentelemetry)
-- Logger
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
 - include/exclude to support wildcards: property1.property2.*
 - include/exclude to support JSON and GraphQl
-- Move order delivery status to shopping cart item
+- Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
+- Test deliveredTimestamp to be either null or value depending on delivery status field
 - Possible to delete shopping cart item from order if it is not yet delivered
 - Table column indexing annotation
 - sorting, includeResponseFields and excludeResponseFields must checked that they contain only allowed field names
@@ -54,6 +52,9 @@ TODO:
     - Company
     - Geo position/location
     - latitude/longitude
+- Prometheus metrics (Opentelemetry)
+- Jaeger tracing (Opentelemetry)
+- Logger
 - MariaDb/MySql
 - GDPR logging
   -audit log should go to separate server
