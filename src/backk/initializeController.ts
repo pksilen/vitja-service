@@ -259,14 +259,12 @@ function getReturnValueTests(
     let expectation;
     if (testValueToMatch) {
       let expectedValue = testValueToMatch;
-
       Object.keys(returnValueMetadata).forEach((propertyName) => {
-        expectedValue = testValueToMatch.replace(
+        expectedValue = expectedValue.replace(
           new RegExp(propertyName, 'g'),
           `response${responsePath}${propertyName}`
         );
       });
-
       expectation = `pm.expect(${expectedValue}).to.eql(true);`;
     } else {
       expectation = `pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});`;

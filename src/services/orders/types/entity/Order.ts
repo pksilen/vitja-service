@@ -18,11 +18,16 @@ export default class Order extends UpdateOrderArg implements DeliverOrderArg {
   @IsInt()
   @Min(0)
   @Max(2147483647)
-  @ExpectAnyValueInTests()
+  @ExpectInTestsToMatch(
+    "state === 'toBeDelivered' && deliveryTimestampInSecs === 0 || state !== 'toBeDelivered' && deliveryTimestampInSecs !== 0"
+  )
   deliveryTimestampInSecs!: number;
 
   state!: 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned';
 
   @MaxLength(1024)
+  @ExpectInTestsToMatch(
+    "state === 'toBeDelivered' && trackingUrl === '' || state !== 'toBeDelivered' && trackingUrl !== ''"
+  )
   trackingUrl!: string;
 }

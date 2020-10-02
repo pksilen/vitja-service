@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- ExpectInTestToMatch annotation to include support for other properties in response object
 - Test deliveredTimestamp to be either null or value depending on delivery status field
 - Class spread operator support in parsing class files
     class Jee {

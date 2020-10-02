@@ -38,8 +38,8 @@ export default class OrdersServiceImpl extends OrdersService {
               ...arg,
               createdTimestampInSecs: Math.round(Date.now() / 1000),
               state: 'toBeDelivered',
-              trackingUrl: 'abc',
-              deliveryTimestampInSecs: 123
+              trackingUrl: '',
+              deliveryTimestampInSecs: 0
             },
             Order,
             this.Types
