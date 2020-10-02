@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO:
-- DefaultJwtAuthenticationService
-- Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
+- ExpectInTestToMatch annotation to include support for other properties in response object
+- Test deliveredTimestamp to be either null or value depending on delivery status field
 - Class spread operator support in parsing class files
     class Jee {
         ...Id
@@ -16,7 +16,6 @@ TODO:
 - include/exclude to support wildcards: property1.property2.*
 - include/exclude to support JSON and GraphQl
 - Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
-- Test deliveredTimestamp to be either null or value depending on delivery status field
 - Possible to delete shopping cart item from order if it is not yet delivered
 - Table column indexing annotation
 - sorting, includeResponseFields and excludeResponseFields must checked that they contain only allowed field names
@@ -69,11 +68,15 @@ TODO:
 - Mongodb transactions, update/delete preconditions
 - Handle order modification and delete to reflect in salesItem states
 - getDbManager support for multiple dbmanagers
-- Support for analytics aggregated queries, aggregations (function name, fieldname), group by, filters
-    - Put analytics query inside its service and enabled for 'management' role for use
+- Date/Timestamp type support
+- Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
+  - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)
+  - Use @ValidateIf(o => o.propertyName !== null)
+  - Add | null also to type's metadata
+  - if type metadata does not have | null after array checking, make SQL field NOT NULL
     
 TODO NEXT RELEASE:
-- Date/Timestamp type support
+
 - SQL Server
 - Oracle
 - Default loginService, signUpService, passwordReset service
@@ -90,6 +93,7 @@ TODO NEXT RELEASE:
 - Optimoi sivutus, jos order by:tä ei ole annettu:
  https://en.wikipedia.org/wiki/Select_(SQL)#Method_with_filter_(it_is_more_sophisticated_but_necessary_for_very_big_dataset)
 - Kafka service, create function(s) in Kafkacontroller for processing different topic(s)
+- Support for analytics aggregated queries, aggregations (function name, fieldname), group by, filters
+    - Put analytics query inside its service and enabled for 'management' role for use
 - ExpectInTestsToMatch annotation to include support for import libraries like lodash or moment
-- ExpectInTestToMatch annotation to include support for other properties in response object
 - Add Avro schema generation and content type support (avro-js)
