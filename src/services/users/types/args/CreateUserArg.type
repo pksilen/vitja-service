@@ -1,0 +1,8 @@
+import { Captcha } from "../../../../backk/Backk";
+
+export default class CreateUserArg {
+  ...Omit<User, '_id'>;
+
+  @MaxLength(512)
+  captchaToken!: string;
+}

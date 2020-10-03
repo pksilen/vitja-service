@@ -1,0 +1,5 @@
+import { OptPostQueryOps } from "../../../../backk/Backk";
+
+export default class GetByUserIdArg extends OptPostQueryOps {
+  ...UserId;
+}

@@ -1,0 +1,3 @@
+export default class UpdateSalesItemArg {
+  ...Omit<SalesItem, 'previousPrice' | 'state' | 'createdTimestampInSecs'>;
+}

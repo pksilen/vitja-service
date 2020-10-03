@@ -1,4 +1,4 @@
-import { MaxLength } from "class-validator";
+import { MaxLength } from 'class-validator';
 
 export default class UserId {
   @MaxLength(24)

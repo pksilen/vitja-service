@@ -1,12 +1,18 @@
-import Entity from '../../../../backk/annotations/entity/Entity';
-import UpdateOrderArg from '../args/UpdateOrderArg';
 import { IsInt, Max, MaxLength, Min } from 'class-validator';
-import { ExpectAnyValueInTests } from '../../../../backk/ExpectAnyValueInTests';
-import DeliverOrderArg from '../args/DeliverOrderArg';
+import Entity from '../../../../backk/annotations/entity/Entity';
 import { ExpectInTestsToMatch } from '../../../../backk/ExpectInTestsToMatch';
+import ShoppingCartItem from '../../../shoppingcart/types/common/ShoppingCartItem';
 
 @Entity()
-export default class Order extends UpdateOrderArg implements DeliverOrderArg {
+export default class Order {
+  @MaxLength(24)
+  _id!: string;
+
+  @MaxLength(24)
+  userId!: string;
+
+  shoppingCartItems!: ShoppingCartItem[];
+
   @IsInt()
   @Min(0)
   @Max(2147483647)

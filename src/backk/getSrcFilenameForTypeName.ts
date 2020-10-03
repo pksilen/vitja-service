@@ -12,13 +12,21 @@ export function getFileNamesRecursively(directory: string): string[] {
   return Array.prototype.concat(...files);
 }
 
+export function hasSrcFilenameForTypeName(typeName: string) {
+  const filePathNames = getFileNamesRecursively(process.cwd() + '/src');
+
+  const foundFilePathName = filePathNames.find((filePathName: string) => {
+    return filePathName.endsWith('/' + typeName + '.ts');
+  });
+
+  return !!foundFilePathName;
+}
+
 export default function getSrcFilenameForTypeName(typeName: string): string {
   const filePathNames = getFileNamesRecursively(process.cwd() + '/src');
 
   const foundFilePathNames = filePathNames.filter((filePathName: string) => {
-    const filePathNameParts = filePathName.split('/');
-    const fileNameBase = filePathNameParts[filePathNameParts.length - 1].split('.')[0];
-    return fileNameBase === typeName;
+    return filePathName.endsWith('/' + typeName + '.ts');
   });
 
   if (foundFilePathNames.length === 0) {
@@ -26,7 +34,6 @@ export default function getSrcFilenameForTypeName(typeName: string): string {
   } else if (foundFilePathNames.length > 1) {
     throw new Error('Multiple types with same name not supported: ' + typeName);
   }
-
 
   return foundFilePathNames[0];
 }

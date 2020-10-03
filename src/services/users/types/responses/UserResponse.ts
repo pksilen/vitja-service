@@ -1,10 +1,41 @@
-import { ExpectAnyValueInTests } from "../../../../backk/ExpectAnyValueInTests";
-import UserWithoutIdAndPassword from "../base/UserWithoutIdAndPassword";
-import { MaxLength } from "class-validator";
+// This is an auto-generated file from the respective .type file
+// DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
+// This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-export default class UserResponse extends UserWithoutIdAndPassword {
+import { MaxLength } from 'class-validator';
+import { ExpectAnyValueInTests } from '../../../../backk/ExpectAnyValueInTests';
+import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
+import DefaultPaymentMethod from '../common/DefaultPaymentMethod';
+import PaymentMethod from '../common/PaymentMethod';
+
+
+export default class UserResponse {
   @MaxLength(24)
   _id!: string;
+
+  @MaxLength(512)
+  userName!: string;
+
+  @MaxLength(512)
+  streetAddress!: string;
+
+  @MaxLength(32)
+  postalCode!: string;
+
+  @MaxLength(256)
+  city!: string;
+
+  loyaltyDiscountLevel!: 0 | 25 | 50;
+
+  defaultPaymentMethod!: DefaultPaymentMethod;
+
+  paymentMethods!: PaymentMethod[];
+
+  @MaxLength(24, {
+    each: true
+  })
+  @ValueUsedInTests('123')
+  favoriteSalesItemIds!: string[];
 
   @MaxLength(16)
   @ExpectAnyValueInTests()

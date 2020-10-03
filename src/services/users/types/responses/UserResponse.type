@@ -1,0 +1,10 @@
+import { ExpectAnyValueInTests } from "../../../../backk/ExpectAnyValueInTests";
+import { MaxLength } from "class-validator";
+
+export default class UserResponse {
+  ...Omit<User, 'password'>;
+
+  @MaxLength(16)
+  @ExpectAnyValueInTests()
+  extraInfo!: string;
+}
