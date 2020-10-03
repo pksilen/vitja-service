@@ -1,13 +1,6 @@
 # Vitja service
 
 TODO:
-- Class spread operator support in parsing class files
-    class Jee {
-        ...Id
-        ...Password
-        Omit<User , 'password'>
-        Pick<Order, 'deliveryTimestamp' | 'trackingUrl'>
-    }
 - @Documentation annotation for service, function and type properties
 - Handle exclude response fields in getProjection and createResultMaps
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
