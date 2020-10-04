@@ -1,7 +1,8 @@
 # Vitja service
 
 TODO:
-- Output all validation decorators to service metadata
+- IsExprTrue custom validation
+- Replace eval-expr with Function constructor, disallow all imports
 - Handle exclude response fields in getProjection and createResultMaps
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
 - include/exclude to support wildcards: property1.property2.*

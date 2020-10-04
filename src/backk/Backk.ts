@@ -1,6 +1,6 @@
-import pick from 'lodash/pick';
-import omit from 'lodash/omit';
 import { IsArray, IsIn, IsInstance, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import omit from 'lodash/omit';
+import pick from 'lodash/pick';
 
 export function getSourceFileName(fileName: string, distFolderName = 'dist'): string {
   return fileName.replace(distFolderName, 'src');
@@ -140,6 +140,7 @@ function getExcludeFieldsMap(excludeResponseFields?: string[]): object {
 }
 
 export function getMongoDbProjection(args: OptionalProjection): object {
+  // TODO handle nested projection
   const includeFieldsMap = getIncludeFieldsMap(args.includeResponseFields);
   const excludeFieldsMap = getExcludeFieldsMap(args.excludeResponseFields);
   return { ...includeFieldsMap, ...excludeFieldsMap };

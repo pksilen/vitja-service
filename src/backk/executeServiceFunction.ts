@@ -1,28 +1,30 @@
-import { plainToClass } from 'class-transformer';
-import _ from 'lodash';
-import { validateOrReject, ValidationError } from 'class-validator';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import throwHttpException from './throwHttpException';
-import BaseService from './BaseService';
+import { plainToClass } from 'class-transformer';
+import { validateOrReject, ValidationError } from 'class-validator';
 import { createNamespace } from 'cls-hooked';
+import _ from 'lodash';
+import authorize from './authorization/authorize';
+import BaseService from './BaseService';
+import verifyCaptchaToken from './captcha/verifyCaptchaToken';
 import { ServiceMetadata } from './generateServicesMetadata';
 import getPropertyBaseTypeName from './getPropertyBaseTypeName';
-import verifyCaptchaToken from './captcha/verifyCaptchaToken';
-import authorize from './authorization/authorize';
+import throwHttpException from './throwHttpException';
 import UsersBaseService from './UsersBaseService';
 
-function getValidationErrors(validationErrors: ValidationError[]): string {
-  return validationErrors
-    .map((validationError: ValidationError) => {
-      if (validationError.constraints) {
-        return Object.values(validationError.constraints)
-          .map((constraint) => constraint)
-          .join(', ');
-      } else {
-        return validationError.property + ': ' + getValidationErrors(validationError.children);
-      }
-    })
-    .join(', ');
+function getValidationErrors(errorOrValidationErrors: ValidationError[] | Error): string {
+  return errorOrValidationErrors instanceof Error
+    ? errorOrValidationErrors.message
+    : errorOrValidationErrors
+        .map((validationError: ValidationError) => {
+          if (validationError.constraints) {
+            return Object.values(validationError.constraints)
+              .map((constraint) => constraint)
+              .join(', ');
+          } else {
+            return validationError.property + ': ' + getValidationErrors(validationError.children);
+          }
+        })
+        .join(', ');
 }
 
 export default async function executeServiceFunction(

@@ -1,6 +1,7 @@
 import { Matches, MaxLength } from 'class-validator';
 import Entity from '../../../../backk/annotations/entity/Entity';
 import { Documentation } from '../../../../backk/annotations/type/Documentation';
+import { IsExprTrue } from '../../../../backk/annotations/type/IsExprTrue';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
 import DefaultPaymentMethod from './DefaultPaymentMethod';
 import PaymentMethod from './PaymentMethod';
@@ -11,6 +12,7 @@ export default class User {
   _id!: string;
 
   @MaxLength(512)
+  @IsExprTrue('password.length >= 8')
   userName!: string;
 
   @Documentation('Password doc goes here...')

@@ -42,7 +42,6 @@ export default function getTypescriptLinesFor(
         );
 
         if (newRelativeImportPathName !== relativeImportPathName) {
-          console.log(newRelativeImportPathName);
           node.source.value = newRelativeImportPathName;
         }
       }
