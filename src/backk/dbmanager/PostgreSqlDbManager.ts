@@ -1,25 +1,22 @@
-import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import { Injectable } from '@nestjs/common';
-import { pg } from 'yesql';
-import { Parser } from 'expr-eval';
-import _ from 'lodash';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import joinjs from 'join-js';
-import { ErrorResponse, Id, OptionalProjection, OptPostQueryOps, SortBy } from '../Backk';
-import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
-import SqlExpression from '../sqlexpression/SqlExpression';
-import { getTypeMetadata } from '../generateServicesMetadata';
-import forEachAsyncSequential from '../forEachAsyncSequential';
+import _ from 'lodash';
+import { Pool, QueryConfig, QueryResult, types } from 'pg';
+import { pg } from 'yesql';
 import entityContainer, { JoinSpec } from '../annotations/entity/entityContainer';
-import AbstractDbManager, { Field } from './AbstractDbManager';
+import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
+import { ErrorResponse, Id, OptionalProjection, OptPostQueryOps, SortBy } from '../Backk';
+import forEachAsyncParallel from '../forEachAsyncParallel';
+import forEachAsyncSequential from '../forEachAsyncSequential';
+import { getTypeMetadata } from '../generateServicesMetadata';
+import getBadRequestErrorResponse from '../getBadRequestErrorResponse';
+import getConflictErrorResponse from '../getConflictErrorResponse';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
-import forEachAsyncParallel from '../forEachAsyncParallel';
-import getConflictErrorResponse from '../getConflictErrorResponse';
-import { max } from 'rxjs/operators';
-import ShoppingCart from '../../services/shoppingcart/types/entities/ShoppingCart';
-import getBadRequestErrorResponse from '../getBadRequestErrorResponse';
+import SqlExpression from '../sqlexpression/SqlExpression';
+import AbstractDbManager, { Field } from './AbstractDbManager';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -563,20 +560,30 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           return itemOrErrorResponse;
         }
 
+        if (
+          Array.isArray(preCondition) &&
+          (preCondition[0].match(/require\s*\(/) || preCondition[0].match(/import\s*\(/))
+        ) {
+          return getBadRequestErrorResponse('Update precondition expression cannot use require or import');
+        }
+
         if (preCondition && !Array.isArray(preCondition) && !_.isMatch(itemOrErrorResponse, preCondition)) {
           return getConflictErrorResponse(
             `Update precondition ${JSON.stringify(preCondition)} was not satisfied`
           );
-        } else if (
-          preCondition &&
-          Array.isArray(preCondition) &&
-          !Parser.evaluate(preCondition[0], preCondition[1] as any)
-        ) {
-          return getConflictErrorResponse(
-            `Update precondition ${preCondition[0]} with values ${JSON.stringify(
-              preCondition[1]
-            )} was not satisfied`
-          );
+        } else {
+          // noinspection DynamicallyGeneratedCodeJS
+          if (
+            preCondition &&
+            Array.isArray(preCondition) &&
+            !new Function('const obj = arguments[0]; return ' + preCondition[0]).call(null, preCondition[1])
+          ) {
+            return getConflictErrorResponse(
+              `Update precondition ${preCondition[0]} with values ${JSON.stringify(
+                preCondition[1]
+              )} was not satisfied`
+            );
+          }
         }
       }
 
@@ -701,16 +708,29 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           return itemOrErrorResponse;
         }
 
+        if (
+          Array.isArray(preCondition) &&
+          (preCondition[0].match(/require\s*\(/) || preCondition[0].match(/import\s*\(/))
+        ) {
+          return getBadRequestErrorResponse('Delete precondition expression cannot use require or import');
+        }
+
         if (!Array.isArray(preCondition) && !_.isMatch(itemOrErrorResponse, preCondition)) {
           return getConflictErrorResponse(
             `Delete precondition ${JSON.stringify(preCondition)} was not satisfied`
           );
-        } else if (Array.isArray(preCondition) && !Parser.evaluate(preCondition[0], preCondition[1] as any)) {
-          return getConflictErrorResponse(
-            `Delete precondition ${preCondition[0]} with values ${JSON.stringify(
-              preCondition[1]
-            )} was not satisfied`
-          );
+        } else {
+          // noinspection DynamicallyGeneratedCodeJS
+          if (
+            Array.isArray(preCondition) &&
+            !new Function('const obj = arguments[0]; return ' + preCondition[0]).call(null, preCondition[1])
+          ) {
+            return getConflictErrorResponse(
+              `Delete precondition ${preCondition[0]} with values ${JSON.stringify(
+                preCondition[1]
+              )} was not satisfied`
+            );
+          }
         }
       }
 
