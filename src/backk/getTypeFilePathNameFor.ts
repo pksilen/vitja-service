@@ -1,4 +1,4 @@
-import { getFileNamesRecursively } from './getSrcFilenameForTypeName';
+import { getFileNamesRecursively } from './getSrcFilePathNameForTypeName';
 
 export default function getTypeFilePathNameFor(typeName: string) {
   const filePathNames = getFileNamesRecursively(process.cwd() + '/src');

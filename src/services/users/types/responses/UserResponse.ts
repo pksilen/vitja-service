@@ -5,8 +5,8 @@
 import { MaxLength } from 'class-validator';
 import { ExpectAnyValueInTests } from '../../../../backk/ExpectAnyValueInTests';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
-import DefaultPaymentMethod from '../common/DefaultPaymentMethod';
-import PaymentMethod from '../common/PaymentMethod';
+import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
+import PaymentMethod from '../entities/PaymentMethod';
 
 
 export default class UserResponse {

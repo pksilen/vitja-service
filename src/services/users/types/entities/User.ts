@@ -1,8 +1,8 @@
 import { Matches, MaxLength } from 'class-validator';
 import Entity from '../../../../backk/annotations/entity/Entity';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
-import DefaultPaymentMethod from '../common/DefaultPaymentMethod';
-import PaymentMethod from '../common/PaymentMethod';
+import DefaultPaymentMethod from './DefaultPaymentMethod';
+import PaymentMethod from './PaymentMethod';
 
 @Entity()
 export default class User {

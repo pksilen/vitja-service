@@ -22,7 +22,7 @@ export function hasSrcFilenameForTypeName(typeName: string) {
   return !!foundFilePathName;
 }
 
-export default function getSrcFilenameForTypeName(typeName: string): string {
+export default function getSrcFilePathNameForTypeName(typeName: string): string {
   const filePathNames = getFileNamesRecursively(process.cwd() + '/src');
 
   const foundFilePathNames = filePathNames.filter((filePathName: string) => {

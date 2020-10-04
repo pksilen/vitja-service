@@ -1,12 +1,14 @@
 import { parseSync } from '@babel/core';
 import generate from '@babel/generator';
 import { readFileSync } from 'fs';
-import getSrcFilenameForTypeName, { hasSrcFilenameForTypeName } from './getSrcFilenameForTypeName';
+import path from 'path';
+import getSrcFilePathNameForTypeName, { hasSrcFilenameForTypeName } from './getSrcFilePathNameForTypeName';
 
 export default function getTypescriptLinesFor(
   typeName: string,
   keys: string[],
-  keyType: 'omit' | 'pick'
+  keyType: 'omit' | 'pick',
+  originatingTypeFilePathName: string
 ): [string[], string[]] {
   if (!hasSrcFilenameForTypeName(typeName)) {
     if (typeName === 'Id') {
@@ -14,8 +16,8 @@ export default function getTypescriptLinesFor(
     }
   }
 
-  const typeFile = getSrcFilenameForTypeName(typeName);
-  const fileContentsStr = readFileSync(typeFile, { encoding: 'UTF-8' });
+  const typeFilePathName = getSrcFilePathNameForTypeName(typeName);
+  const fileContentsStr = readFileSync(typeFilePathName, { encoding: 'UTF-8' });
 
   const ast = parseSync(fileContentsStr, {
     plugins: [
@@ -31,6 +33,20 @@ export default function getTypescriptLinesFor(
 
   for (const node of nodes) {
     if (node.type === 'ImportDeclaration') {
+      if (node.source.value.startsWith('.')) {
+        const relativeImportPathName = node.source.value;
+        const importAbsolutePathName = path.resolve(path.dirname(typeFilePathName), relativeImportPathName);
+        const newRelativeImportPathName = path.relative(
+          path.dirname(originatingTypeFilePathName),
+          importAbsolutePathName
+        );
+
+        if (newRelativeImportPathName !== relativeImportPathName) {
+          console.log(newRelativeImportPathName);
+          node.source.value = newRelativeImportPathName;
+        }
+      }
+
       importLines.push(generate(node).code);
     }
     if (

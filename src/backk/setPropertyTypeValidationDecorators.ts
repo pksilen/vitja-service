@@ -1,9 +1,9 @@
-import { readFileSync } from 'fs';
 import { parseSync } from '@babel/core';
-import getSrcFilenameForTypeName from './getSrcFilenameForTypeName';
 import { getFromContainer, MetadataStorage, ValidationTypes, Validator } from 'class-validator';
-import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
+import { readFileSync } from 'fs';
+import getSrcFilePathNameForTypeName from './getSrcFilePathNameForTypeName';
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -51,7 +51,7 @@ export default function setPropertyTypeValidationDecorators(
     return;
   }
 
-  const fileContentsStr = readFileSync(getSrcFilenameForTypeName(typeClassName), { encoding: 'UTF-8' });
+  const fileContentsStr = readFileSync(getSrcFilePathNameForTypeName(typeClassName), { encoding: 'UTF-8' });
   const fileRows = fileContentsStr.split('\n');
 
   const ast = parseSync(fileContentsStr, {
@@ -134,7 +134,14 @@ export default function setPropertyTypeValidationDecorators(
 
               if (validator.isNumberString(trimmedEnumValue)) {
                 if (enumType === 'string') {
-                  throw new Error('All enum values must be of same type: ' + finalPropertyTypeName + ' in ' + typeClassName + '.' + propertyName)
+                  throw new Error(
+                    'All enum values must be of same type: ' +
+                      finalPropertyTypeName +
+                      ' in ' +
+                      typeClassName +
+                      '.' +
+                      propertyName
+                  );
                 }
                 enumType = 'number';
                 return parseFloat(trimmedEnumValue);
@@ -145,7 +152,14 @@ export default function setPropertyTypeValidationDecorators(
                   trimmedEnumValue.charAt(trimmedEnumValue.length - 1) === '"')
               ) {
                 if (enumType === 'number') {
-                  throw new Error('All enum values must be of same type: ' + finalPropertyTypeName + ' in ' + typeClassName + '.' + propertyName)
+                  throw new Error(
+                    'All enum values must be of same type: ' +
+                      finalPropertyTypeName +
+                      ' in ' +
+                      typeClassName +
+                      '.' +
+                      propertyName
+                  );
                 }
                 enumType = 'string';
                 return trimmedEnumValue.slice(1, -1);

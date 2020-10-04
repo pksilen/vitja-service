@@ -1,7 +1,7 @@
 import { IsInt, Max, MaxLength, Min } from 'class-validator';
 import Entity from '../../../../backk/annotations/entity/Entity';
 import { ExpectInTestsToMatch } from '../../../../backk/ExpectInTestsToMatch';
-import ShoppingCartItem from '../../../shoppingcart/types/common/ShoppingCartItem';
+import ShoppingCartItem from '../../../shoppingcart/types/entities/ShoppingCartItem';
 
 @Entity()
 export default class Order {

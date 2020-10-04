@@ -1,19 +1,19 @@
-import { getFromContainer, MetadataStorage, ValidationTypes } from 'class-validator';
 import { Type } from 'class-transformer';
-import _ from 'lodash';
+import { getFromContainer, MetadataStorage, ValidationTypes } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
-import generateServicesMetadata, { FunctionMetadata, ServiceMetadata } from './generateServicesMetadata';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { Base64 } from "js-base64";
+import { sign } from 'jsonwebtoken';
+import _ from 'lodash';
+import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
+import BaseService from './BaseService';
+import generateServicesMetadata, { FunctionMetadata, ServiceMetadata } from './generateServicesMetadata';
+import getServiceTypeNames from './getServiceTypeNames';
+import getSrcFilePathNameForTypeName, { getFileNamesRecursively } from './getSrcFilePathNameForTypeName';
+import getValidationConstraint from './getValidationConstraint';
 import setPropertyTypeValidationDecorators from './setPropertyTypeValidationDecorators';
 import testValueContainer from './testValueContainer';
-import getSrcFilenameForTypeName, { getFileNamesRecursively } from './getSrcFilenameForTypeName';
-import getServiceTypeNames from './getServiceTypeNames';
-import getValidationConstraint from './getValidationConstraint';
-import BaseService from './BaseService';
-import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
-import { sign } from 'jsonwebtoken';
-import { Base64 } from "js-base64";
 
 function setNestedTypeAndValidationDecorators(
   typeClass: Function,
@@ -758,7 +758,7 @@ export default function initializeController(controller: any) {
 
       const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(
         serviceName,
-        getSrcFilenameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
+        getSrcFilePathNameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
       );
 
       controller[`${serviceName}Types`] = {

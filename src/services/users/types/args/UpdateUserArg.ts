@@ -5,8 +5,8 @@
 import { Matches, MaxLength } from 'class-validator';
 import Entity from '../../../../backk/annotations/entity/Entity';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
-import DefaultPaymentMethod from '../common/DefaultPaymentMethod';
-import PaymentMethod from '../common/PaymentMethod';
+import DefaultPaymentMethod from "../entities/DefaultPaymentMethod";
+import PaymentMethod from "../entities/PaymentMethod";
 
 export default class UpdateUserArg {
 @MaxLength(24)

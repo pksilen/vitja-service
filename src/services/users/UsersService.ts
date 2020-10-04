@@ -3,8 +3,8 @@ import UsersBaseService from '../../backk/UsersBaseService';
 import CreateUserArg from './types/args/CreateUserArg';
 import UpdateUserArg from './types/args/UpdateUserArg';
 import UserName from './types/args/UserName';
-import DefaultPaymentMethod from './types/common/DefaultPaymentMethod';
-import PaymentMethod from './types/common/PaymentMethod';
+import DefaultPaymentMethod from './types/entities/DefaultPaymentMethod';
+import PaymentMethod from './types/entities/PaymentMethod';
 import User from './types/entities/User';
 import UserResponse from './types/responses/UserResponse';
 

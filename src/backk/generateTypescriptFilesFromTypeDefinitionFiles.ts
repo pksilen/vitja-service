@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'fs';
-import { getFileNamesRecursively } from './getSrcFilenameForTypeName';
+import { getFileNamesRecursively } from './getSrcFilePathNameForTypeName';
 import getTypeFilePathNameFor from './getTypeFilePathNameFor';
 import getTypescriptLinesFor from './getTypescriptLinesFor';
 
@@ -31,7 +31,12 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
           generateTypescriptFileFor(baseTypeFilePathName, handledTypeFilePathNames);
         }
 
-        const [importLines, classPropertyLines] = getTypescriptLinesFor(baseType, omittedKeys, 'omit');
+        const [importLines, classPropertyLines] = getTypescriptLinesFor(
+          baseType,
+          omittedKeys,
+          'omit',
+          typeFilePathName
+        );
         outputImportLines = outputImportLines.concat(importLines);
         outputClassPropertyLines = outputClassPropertyLines.concat(classPropertyLines);
       } else if (spreadType.startsWith('Pick<')) {
@@ -54,7 +59,12 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
           generateTypescriptFileFor(baseTypeFilePathName, handledTypeFilePathNames);
         }
 
-        const [importLines, classPropertyLines] = getTypescriptLinesFor(baseType, pickedKeys, 'pick');
+        const [importLines, classPropertyLines] = getTypescriptLinesFor(
+          baseType,
+          pickedKeys,
+          'pick',
+          typeFilePathName
+        );
         outputImportLines = outputImportLines.concat(importLines);
         outputClassPropertyLines = outputClassPropertyLines.concat(classPropertyLines);
       } else {
@@ -64,7 +74,12 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
           generateTypescriptFileFor(spreadTypeFilePathName, handledTypeFilePathNames);
         }
 
-        const [importLines, classPropertyLines] = getTypescriptLinesFor(spreadType, [], 'omit');
+        const [importLines, classPropertyLines] = getTypescriptLinesFor(
+          spreadType,
+          [],
+          'omit',
+          typeFilePathName
+        );
         outputImportLines = outputImportLines.concat(importLines);
         outputClassPropertyLines = outputClassPropertyLines.concat(classPropertyLines);
       }

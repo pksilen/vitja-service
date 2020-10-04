@@ -1,6 +1,6 @@
 import { ErrorResponse, Id, IdAndUserId } from '../../backk/Backk';
 import BaseService from '../../backk/BaseService';
-import ShoppingCartItem from '../shoppingcart/types/common/ShoppingCartItem';
+import ShoppingCartItem from '../shoppingcart/types/entities/ShoppingCartItem';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import CreateOrderArg from './types/args/CreateOrderArg';
 import DeliverOrderArg from './types/args/DeliverOrderArg';

@@ -2,6 +2,7 @@
 
 TODO:
 - @Documentation annotation for service, function and type properties
+- Output all validation decorators to service metadata
 - Handle exclude response fields in getProjection and createResultMaps
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
 - include/exclude to support wildcards: property1.property2.*
@@ -67,7 +68,6 @@ TODO:
   - if type metadata does not have | null after array checking, make SQL field NOT NULL
     
 TODO NEXT RELEASE:
-
 - SQL Server
 - Oracle
 - Default loginService, signUpService, passwordReset service
@@ -88,3 +88,5 @@ TODO NEXT RELEASE:
     - Put analytics query inside its service and enabled for 'management' role for use
 - ExpectInTestsToMatch annotation to include support for import libraries like lodash or moment
 - Add Avro schema generation and content type support (avro-js)
+- Backk-frontend automatically create a frontend for one or more backends
+  - backend metadata fetch urls are given in env variable as parameter
