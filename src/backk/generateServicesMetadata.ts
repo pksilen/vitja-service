@@ -1,9 +1,29 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import { Id, IdAndUserId, IdsAndOptPostQueryOps, SortBy } from './Backk';
-import BaseService from './BaseService';
 import serviceFunctionAnnotationContainer from './annotations/service/function/serviceFunctionAnnotationContainer';
 import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
+import typeAnnotationContainer from './annotations/type/typeAnnotationContainer';
+import { Id, IdAndUserId, IdsAndOptPostQueryOps, SortBy } from './Backk';
+import BaseService from './BaseService';
+
+function getTypeDocumentation<T>(
+  typeMetadata: { [key: string]: string } | undefined,
+  TypeClass: new () => T
+): { [key: string]: string } {
+  return Object.keys(typeMetadata ?? {}).reduce((accumulatedTypeDocs, propertyName) => {
+    const typePropertyDocumentation = typeAnnotationContainer.getDocumentationForTypeProperty(
+      TypeClass,
+      propertyName
+    );
+
+    return typePropertyDocumentation
+      ? {
+          ...accumulatedTypeDocs,
+          [propertyName]: typePropertyDocumentation
+        }
+      : accumulatedTypeDocs;
+  }, {});
+}
 
 export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: string } {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -419,6 +439,10 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
 
         return {
           functionName,
+          functionDocumentation: serviceFunctionAnnotationContainer.getDocumentationForServiceFunction(
+            service.constructor,
+            functionName
+          ),
           argType: paramTypeName,
           returnValueType: returnValueTypeName
         };
@@ -435,8 +459,19 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
         {}
       );
 
+      const typesDocumentation = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
+        (accumulatedTypesDocumentation, [typeName, typeClass]: [string, any]) => {
+          const typeDocumentation = getTypeDocumentation((typesMetadata as any)[typeName], typeClass);
+          return Object.keys(typeDocumentation).length > 0
+            ? { ...accumulatedTypesDocumentation, [typeName]: typeDocumentation }
+            : accumulatedTypesDocumentation;
+        },
+        {}
+      );
+
       return {
         serviceName,
+        serviceDocumentation: serviceAnnotationContainer.getDocumentationForService(service.constructor),
         functions,
         types: {
           ...typesMetadata,
@@ -445,6 +480,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             errorMessage: 'string'
           }
         },
+        typesDocumentation,
         validations: validationMetadatas
       };
     });

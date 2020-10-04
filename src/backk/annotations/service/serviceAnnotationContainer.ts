@@ -3,6 +3,7 @@ class ServiceAnnotationContainer {
   private serviceClassNameToIsAllowedForEveryUserMap: { [key: string]: boolean } = {};
   private serviceClassNameToIsAllowedForInternalUseMap: { [key: string]: boolean } = {};
   private serviceClassNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
+  private serviceClassNameToDocStringMap: { [key: string]: string } = {};
 
   addNoAutoTestsAnnotationToServiceClass(serviceClass: Function) {
     this.serviceClassNameToHasNoAutoTestsAnnotationMap[serviceClass.name] = true;
@@ -18,6 +19,10 @@ class ServiceAnnotationContainer {
 
   addServiceAllowedForInternalUse(serviceClass: Function) {
     this.serviceClassNameToIsAllowedForInternalUseMap[serviceClass.name] = true;
+  }
+
+  addDocumentationForService(serviceClass: Function, docString: string) {
+    this.serviceClassNameToDocStringMap[serviceClass.name] = docString;
   }
 
   getAllowedUserRoles(serviceClass: Function) {
@@ -66,6 +71,18 @@ class ServiceAnnotationContainer {
     }
 
     return false;
+  }
+
+  getDocumentationForService(serviceClass: Function) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.serviceClassNameToDocStringMap[proto.constructor.name] !== undefined) {
+        return this.serviceClassNameToDocStringMap[proto.constructor.name];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return undefined;
   }
 }
 

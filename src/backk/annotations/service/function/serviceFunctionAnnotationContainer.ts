@@ -5,6 +5,7 @@ class ServiceFunctionAnnotationContainer {
   private serviceFunctionNameToIsAllowedForSelfMap: { [key: string]: boolean } = {};
   private serviceFunctionNameToIsPrivateMap: { [key: string]: boolean } = {};
   private serviceFunctionNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
+  private serviceFunctionNameToDocStringMap: { [key: string]: string } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -30,12 +31,15 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToIsPrivateMap[`${serviceClass.name}${functionName}`] = true;
   }
 
+  addDocumentationForServiceFunction(serviceClass: Function, functionName: string, docString: string) {
+    this.serviceFunctionNameToDocStringMap[`${serviceClass.name}${functionName}`] = docString;
+  }
+
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToAllowedUserRolesMap[`${serviceClass.name}${functionName}`] !==
-        undefined
+        this.serviceFunctionNameToAllowedUserRolesMap[`${serviceClass.name}${functionName}`] !== undefined
       ) {
         return this.serviceFunctionNameToAllowedUserRolesMap[`${serviceClass.name}${functionName}`];
       }
@@ -79,8 +83,7 @@ class ServiceFunctionAnnotationContainer {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToIsAllowedForSelfMap[`${serviceClass.name}${functionName}`] !==
-        undefined
+        this.serviceFunctionNameToIsAllowedForSelfMap[`${serviceClass.name}${functionName}`] !== undefined
       ) {
         return true;
       }
@@ -93,10 +96,7 @@ class ServiceFunctionAnnotationContainer {
   isServiceFunctionPrivate(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (
-        this.serviceFunctionNameToIsPrivateMap[`${serviceClass.name}${functionName}`] !==
-        undefined
-      ) {
+      if (this.serviceFunctionNameToIsPrivateMap[`${serviceClass.name}${functionName}`] !== undefined) {
         return true;
       }
       proto = Object.getPrototypeOf(proto);
@@ -118,6 +118,18 @@ class ServiceFunctionAnnotationContainer {
     }
 
     return false;
+  }
+
+  getDocumentationForServiceFunction(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.serviceFunctionNameToDocStringMap[`${serviceClass.name}${functionName}`] !== undefined) {
+        return this.serviceFunctionNameToDocStringMap[`${serviceClass.name}${functionName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return undefined;
   }
 }
 

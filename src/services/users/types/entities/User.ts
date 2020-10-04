@@ -1,5 +1,6 @@
 import { Matches, MaxLength } from 'class-validator';
 import Entity from '../../../../backk/annotations/entity/Entity';
+import { Documentation } from '../../../../backk/annotations/type/Documentation';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
 import DefaultPaymentMethod from './DefaultPaymentMethod';
 import PaymentMethod from './PaymentMethod';
@@ -12,6 +13,7 @@ export default class User {
   @MaxLength(512)
   userName!: string;
 
+  @Documentation('Password doc goes here...')
   @MaxLength(512)
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/)
   @ValueUsedInTests('Jepulis0!')

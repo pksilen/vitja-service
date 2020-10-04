@@ -1,17 +1,20 @@
-import { ErrorResponse, Id } from '../../backk/Backk';
-import UsersService from './UsersService';
-import UserName from './types/args/UserName';
-import User from './types/entities/User';
-import CreateUserArg from './types/args/CreateUserArg';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { Injectable } from '@nestjs/common';
-import UserResponse from './types/responses/UserResponse';
 import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
 import { AllowForEveryUser } from '../../backk/annotations/service/function/AllowForEveryUser';
 import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
+import { FunctionDocumentation } from '../../backk/annotations/service/function/FunctionDocumentation';
+import { Private } from '../../backk/annotations/service/function/Private';
+import ServiceDocumentation from '../../backk/annotations/service/ServiceDocumentation';
+import { ErrorResponse, Id } from '../../backk/Backk';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import CreateUserArg from './types/args/CreateUserArg';
 import UpdateUserArg from './types/args/UpdateUserArg';
-import { Private } from "../../backk/annotations/service/function/Private";
+import UserName from './types/args/UserName';
+import User from './types/entities/User';
+import UserResponse from './types/responses/UserResponse';
+import UsersService from './UsersService';
 
+@ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
 export default class UsersServiceImpl extends UsersService {
@@ -23,6 +26,7 @@ export default class UsersServiceImpl extends UsersService {
     return this.dbManager.deleteAllItems(User);
   }
 
+  @FunctionDocumentation('createUser function doc goes here...')
   @AllowForEveryUser()
   createUser(arg: CreateUserArg): Promise<Id | ErrorResponse> {
     return this.dbManager.createItem(arg, User, this.Types);
@@ -59,7 +63,7 @@ export default class UsersServiceImpl extends UsersService {
   private static getUserResponse(userOrErrorResponse: User) {
     delete userOrErrorResponse.password;
     const userResponse = (userOrErrorResponse as unknown) as UserResponse;
-    userResponse.extraInfo = "Some extra info";
+    userResponse.extraInfo = 'Some extra info';
     return userResponse;
   }
 }
