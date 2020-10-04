@@ -12,7 +12,7 @@ export function IsExprTrue(expression: string, validationOptions?: ValidationOpt
       name: 'isExprTrue',
       target: object.constructor,
       propertyName: propertyName,
-      constraints: [new Function('with(arguments[0]) return ' + expression)],
+      constraints: [new Function('const obj = arguments[0]; return ' + expression)],
       options: validationOptions,
       validator: {
         validate(value: any, args: ValidationArguments) {

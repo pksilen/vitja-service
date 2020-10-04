@@ -12,7 +12,7 @@ export default class User {
   _id!: string;
 
   @MaxLength(512)
-  @IsExprTrue('password.length >= 8')
+  @IsExprTrue('obj.password && obj.password.length >= 8 || true')
   userName!: string;
 
   @Documentation('Password doc goes here...')

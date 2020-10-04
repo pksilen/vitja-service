@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- IsExprTrue custom validation
 - Replace eval-expr with Function constructor, disallow all imports
 - Handle exclude response fields in getProjection and createResultMaps
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
@@ -88,5 +87,6 @@ TODO NEXT RELEASE:
     - Put analytics query inside its service and enabled for 'management' role for use
 - ExpectInTestsToMatch annotation to include support for import libraries like lodash or moment
 - Add Avro schema generation and content type support (avro-js)
+- IsExprTrue annotation should be documented in servicemetadata with the function, so that frontend can use same functiongit 
 - Backk-frontend automatically create a frontend for one or more backends
   - backend metadata fetch urls are given in env variable as parameter

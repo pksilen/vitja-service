@@ -15,7 +15,7 @@ export default class UserResponse {
   _id!: string;
 
   @MaxLength(512)
-  @IsExprTrue('password.length >= 8')
+  @IsExprTrue('obj.password && obj.password.length >= 8 || true')
   userName!: string;
 
   @MaxLength(512)
