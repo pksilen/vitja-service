@@ -232,15 +232,7 @@ function getValidationMetadata<T>(typeClass: new () => T): object {
     if (
       validationMetadata.type !== 'conditionalValidation' &&
       validationMetadata.type !== 'nestedValidation' &&
-      validationMetadata.type !== 'isBoolean' &&
-      validationMetadata.type !== 'isBoolean' &&
-      (validationMetadata.type !== 'isNumber' ||
-        (validationMetadata.type === 'isNumber' && validationMetadata.constraints?.[0])) &&
-      validationMetadata.type !== 'isString' &&
-      validationMetadata.type !== 'isInt' &&
-      validationMetadata.type !== 'isIn' &&
-      validationMetadata.type !== 'isInstance' &&
-      validationMetadata.type !== 'isArray'
+      validationMetadata.type !== 'isInstance'
     ) {
       const validationExpr = `${validationMetadata.type}${
         validationMetadata.constraints?.[0] !== undefined

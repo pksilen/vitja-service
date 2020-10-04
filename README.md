@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- @Documentation annotation for service, function and type properties
 - Output all validation decorators to service metadata
 - Handle exclude response fields in getProjection and createResultMaps
 - Correct includes('.') fields name, eg. in sort field name and includeResponseField, SqlInExpression
