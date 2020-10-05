@@ -239,7 +239,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
             baseFieldTypeName[0] !== '('
           ) {
-            const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+            const relationEntityName = baseFieldTypeName;
             await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
               subItem[idFieldName] = _id;
               await this.createItem(
@@ -255,7 +255,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
             baseFieldTypeName[0] !== '('
           ) {
-            const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+            const relationEntityName = baseFieldTypeName;
             const subItem = (item as any)[fieldName];
             subItem[idFieldName] = _id;
             await this.createItem(
@@ -607,7 +607,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
             baseFieldTypeName[0] !== '('
           ) {
-            const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+            const relationEntityName = baseFieldTypeName;
             promises.push(
               forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
                 await this.updateItem(
@@ -624,7 +624,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
             baseFieldTypeName[0] !== '('
           ) {
-            const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+            const relationEntityName = baseFieldTypeName;
             promises.push(
               this.updateItem(
                 (restOfItem as any)[fieldName],
@@ -809,7 +809,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
         baseFieldTypeName[0] !== '('
       ) {
-        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+        const relationEntityName = baseFieldTypeName;
         this.getFieldsForEntity(
           fields,
           (Types as any)[relationEntityName],
@@ -821,7 +821,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
         baseFieldTypeName[0] !== '('
       ) {
-        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+        const relationEntityName = baseFieldTypeName;
         this.getFieldsForEntity(
           fields,
           (Types as any)[relationEntityName],
@@ -958,13 +958,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
         baseFieldTypeName[0] !== '('
       ) {
-        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+        const relationEntityName = baseFieldTypeName;
         joinStatement += this.getJoinStatement((Types as any)[relationEntityName], Types);
       } else if (
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
         baseFieldTypeName[0] !== '('
       ) {
-        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+        const relationEntityName = baseFieldTypeName;
         joinStatement += this.getJoinStatement((Types as any)[relationEntityName], Types);
       }
     });
@@ -993,15 +993,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
         baseFieldTypeName[0] !== '('
       ) {
-        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+        const relationEntityName = baseFieldTypeName;
 
         this.transformResult(result[fieldName], (Types as any)[relationEntityName], Types);
       } else if (
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
         baseFieldTypeName[0] !== '('
       ) {
-        const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-
+        const relationEntityName = baseFieldTypeName;
         this.transformResult(result[fieldName], (Types as any)[relationEntityName], Types);
       } else if (isArray && result[fieldName]) {
         const singularFieldName = fieldName.slice(0, -1);
@@ -1059,7 +1058,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         baseFieldTypeName[0] !== '('
       ) {
         if (this.shouldIncludeField(fieldName, fieldPath, projection)) {
-          const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+          const relationEntityName = baseFieldTypeName;
 
           resultMap.collections.push({
             name: fieldName,
@@ -1082,7 +1081,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         baseFieldTypeName[0] !== '('
       ) {
         if (this.shouldIncludeField(fieldName, fieldPath, projection)) {
-          const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+          const relationEntityName = baseFieldTypeName;
 
           resultMap.associations.push({
             name: fieldName,

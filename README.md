@@ -1,11 +1,9 @@
 # Vitja service
 
 TODO:
-- Handle exclude response fields in getProjection and createResultMaps
 - Korjaa relation entity name muodostukset
 - Correct includes('.') fields name, eg. in sort field name, SqlInExpression
-- include/exclude to support wildcards: property1.property2.*
-- include/exclude to support JSON and GraphQl
+- include/exclude to support GraphQl
 - Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
   - Shopping cart item should have one Delivery item as child
 - Possible to delete shopping cart item from order if it is not yet delivered

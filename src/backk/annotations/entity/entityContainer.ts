@@ -1,7 +1,7 @@
-import { getTypeMetadata } from '../../generateServicesMetadata';
-import forEachAsyncSequential from '../../forEachAsyncSequential';
 import AbstractDbManager from '../../dbmanager/AbstractDbManager';
 import forEachAsyncParallel from '../../forEachAsyncParallel';
+import forEachAsyncSequential from '../../forEachAsyncSequential';
+import { getTypeMetadata } from '../../generateServicesMetadata';
 
 export interface ManyToManyRelationTableSpec {
   tableName: string;
@@ -143,7 +143,7 @@ class EntityContainer {
               baseFieldTypeName[0] !== '('
             ) {
               const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
-              const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+              const relationEntityName = baseFieldTypeName;
               if (this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName]) {
                 this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName].push(idFieldName);
               } else {
@@ -164,7 +164,7 @@ class EntityContainer {
               baseFieldTypeName[0] !== '('
             ) {
               const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
-              const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+              const relationEntityName = baseFieldTypeName;
               if (this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName]) {
                 this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName].push(idFieldName);
               } else {
@@ -273,7 +273,7 @@ class EntityContainer {
             baseFieldTypeName[0] !== '('
           ) {
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
-            const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1, -1);
+            const relationEntityName = baseFieldTypeName;
             if (this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName]) {
               this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName].push(idFieldName);
             } else {
@@ -294,7 +294,7 @@ class EntityContainer {
             baseFieldTypeName[0] !== '('
           ) {
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
-            const relationEntityName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+            const relationEntityName = baseFieldTypeName;
             if (this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName]) {
               this.entityNameToAdditionalIdPropertyNamesMap[relationEntityName].push(idFieldName);
             } else {
@@ -313,12 +313,9 @@ class EntityContainer {
           } else if (isArray) {
             let createAdditionalTableStatement = `CREATE TABLE IF NOT EXISTS ${schema}.${entityName +
               fieldName.slice(0, -1)} (`;
-
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
-
             createAdditionalTableStatement +=
               idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
-
             await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
 
             const joinSpec = {
