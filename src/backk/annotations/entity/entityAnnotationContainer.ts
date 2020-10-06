@@ -15,14 +15,24 @@ export interface JoinSpec {
   joinTableFieldName: string;
 }
 
-class EntityContainer {
+class EntityAnnotationContainer {
   private entityNameToClassMap: { [key: string]: Function } = {};
   private entityNameToAdditionalIdPropertyNamesMap: { [key: string]: string[] } = {};
+  private entityNameToIndexFieldsMap: { [key: string]: string[] } = {};
+  private entityNameToUniqueIndexFieldsMap: { [key: string]: string[] } = {};
   private manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
   entityNameToJoinsMap: { [key: string]: JoinSpec[] } = {};
 
   addEntityNameAndClass(entityName: string, entityClass: Function) {
     this.entityNameToClassMap[entityName] = entityClass;
+  }
+
+  addEntityIndex(entityName: string, indexFields: string[]) {
+    this.entityNameToIndexFieldsMap[entityName] = indexFields;
+  }
+
+  addEntityUniqueIndex(entityName: string, indexFields: string[]) {
+    this.entityNameToUniqueIndexFieldsMap[entityName] = indexFields;
   }
 
   addEntityAdditionalPropertyName(entityName: string, propertyName: string) {
@@ -37,12 +47,34 @@ class EntityContainer {
     this.manyToManyRelationTableSpecs.push(manyToManyRelationTableSpec);
   }
 
-  async createTables(dbManager: AbstractDbManager) {
+  async createTablesAndIndexes(dbManager: AbstractDbManager) {
     await forEachAsyncParallel(
       Object.entries(this.entityNameToClassMap),
       async ([entityName, entityClass]: [any, any]) => {
         try {
           await this.createTable(dbManager, entityName, entityClass, dbManager.schema);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    );
+
+    await forEachAsyncParallel(
+      Object.entries(this.entityNameToIndexFieldsMap),
+      async ([entityName, indexFields]: [any, any]) => {
+        try {
+          await this.createIndex(dbManager, entityName, dbManager.schema, indexFields);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    );
+
+    await forEachAsyncParallel(
+      Object.entries(this.entityNameToUniqueIndexFieldsMap),
+      async ([entityName, indexFields]: [any, any]) => {
+        try {
+          await this.createUniqueIndex(dbManager, entityName, dbManager.schema, indexFields);
         } catch (error) {
           console.log(error);
         }
@@ -342,6 +374,29 @@ class EntityContainer {
       await dbManager.tryExecuteSqlWithoutCls(createTableStatement + ')');
     }
   }
+
+  private async createIndex(
+    dbManager: AbstractDbManager,
+    entityName: string,
+    schema: string | undefined,
+    indexFields: string[],
+    isUnique = false
+  ) {
+    const createIndexStatement = `CREATE ${isUnique ? 'UNIQUE' : ''} INDEX ${entityName}${indexFields.join(
+      ''
+    )} ${schema}.${entityName} (${indexFields.join(', ')})`;
+
+    await dbManager.tryExecuteSqlWithoutCls(createIndexStatement);
+  }
+
+  private async createUniqueIndex(
+    dbManager: AbstractDbManager,
+    entityName: string,
+    schema: string | undefined,
+    indexFields: string[]
+  ) {
+    await this.createIndex(dbManager, entityName, schema, indexFields, true);
+  }
 }
 
-export default new EntityContainer();
+export default new EntityAnnotationContainer();

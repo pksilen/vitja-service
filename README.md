@@ -1,9 +1,7 @@
 # Vitja service
 
 TODO:
-- includeResponseFields and excludeResponseFields must checked that they contain only allowed field names
 - Table column indexing annotation
-
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password
 - By default following fields are encrypted, or use @NotEncrypted annotation

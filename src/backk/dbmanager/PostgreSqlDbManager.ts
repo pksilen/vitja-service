@@ -5,7 +5,7 @@ import joinjs from 'join-js';
 import _ from 'lodash';
 import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import { pg } from 'yesql';
-import entityContainer, { JoinSpec } from '../annotations/entity/entityContainer';
+import entityContainer, { JoinSpec } from '../annotations/entity/entityAnnotationContainer';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
 import { ErrorResponse, Id, OptionalProjection, OptPostQueryOps, SortBy } from '../Backk';
 import forEachAsyncParallel from '../forEachAsyncParallel';
