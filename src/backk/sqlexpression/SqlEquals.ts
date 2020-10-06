@@ -16,7 +16,7 @@ export default class SqlEquals<T> extends SqlExpression {
   toSqlString(): string {
     return Object.entries(this.filters)
       .filter(([, fieldValue]) => fieldValue !== undefined)
-      .map(([fieldName]) => `${fieldName} = :${fieldName}`)
+      .map(([fieldName]) => `{{${fieldName}}} = :${fieldName}`)
       .join(' AND ');
   }
 }

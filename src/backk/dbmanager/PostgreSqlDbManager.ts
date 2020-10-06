@@ -302,7 +302,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   ): Promise<T[] | ErrorResponse> {
     try {
       const columns = this.getProjection(projection, entityClass, Types);
-      const whereStatement = this.getWhereStatement(filters, entityClass);
+      const whereStatement = this.tryGetWhereStatement(filters, entityClass, types);
       const filterValues = this.getFilterValues(filters);
       const joinStatement = this.getJoinStatement(entityClass, Types);
       const sortStatement = this.tryGetSortStatement(sortBys, entityClass, Types);
@@ -334,7 +334,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     Types: object
   ): Promise<number | ErrorResponse> {
     try {
-      const whereStatement = this.getWhereStatement(filters ?? {}, entityClass);
+      const whereStatement = this.tryGetWhereStatement(filters ?? {}, entityClass, Types);
       const filterValues = this.getFilterValues(filters ?? {});
       const joinStatement = this.getJoinStatement(entityClass, Types);
 
@@ -375,7 +375,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           throw new Error('Invalid sort field: ' + sortField);
         }
 
-        const sortColumn = projection.split(' AS ')[0];
+        const sortColumn = this.getSqlColumnFromProjection(projection);
         return sortColumn + ' ' + sortDirection;
       });
 
@@ -890,8 +890,12 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return shouldIncludeField;
   }
 
-  private getWhereStatement<T>(filters: Partial<T> | SqlExpression[], entityClass: Function) {
-    let filtersSql;
+  private tryGetWhereStatement<T>(
+    filters: Partial<T> | SqlExpression[],
+    entityClass: Function,
+    Types: object
+  ) {
+    let filtersSql: string;
 
     if (Array.isArray(filters)) {
       filtersSql = filters
@@ -901,9 +905,27 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     } else {
       filtersSql = Object.entries(filters)
         .filter(([, fieldValue]) => fieldValue !== undefined)
-        .map(([fieldName]) => `${fieldName} = :${fieldName}`)
+        .map(([fieldName]) => `{{${fieldName}}} = :${fieldName}`)
         .join(' AND ');
     }
+
+    const fieldNameTemplates = filtersSql.match(/{{\s*([a-zA-Z_][a-zA-Z0-9_.]*)\s*}}/g);
+    (fieldNameTemplates ?? []).forEach((fieldNameTemplate) => {
+      const fieldName = fieldNameTemplate
+        .split('{{')[1]
+        .split('}}')[0]
+        .trim();
+
+      const projection = this.getProjection({ includeResponseFields: [fieldName] }, entityClass, Types);
+
+      if (!projection) {
+        throw new Error('Invalid filter field: ' + fieldName);
+      }
+
+      const sqlColumn = this.getSqlColumnFromProjection(projection);
+
+      filtersSql = filtersSql.replace(new RegExp(fieldNameTemplate, 'g'), sqlColumn);
+    });
 
     return filtersSql ? `WHERE ${filtersSql}` : '';
   }
@@ -1135,5 +1157,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     });
 
     resultMaps.push(resultMap);
+  }
+
+  private getSqlColumnFromProjection(projection: string) {
+    const leftSideOfAs = projection.split(' AS ')[0];
+    if (leftSideOfAs.startsWith('CAST(')) {
+      return leftSideOfAs.slice(5);
+    }
+    return leftSideOfAs;
   }
 }

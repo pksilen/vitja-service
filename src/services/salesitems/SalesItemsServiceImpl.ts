@@ -1,22 +1,22 @@
-import { Injectable } from "@nestjs/common";
-import { ErrorResponse, Id, IdAndUserId, IdsAndOptPostQueryOps } from "../../backk/Backk";
-import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
-import { SalesItem } from "./types/entities/SalesItem";
-import CreateSalesItemArg from "./types/args/CreateSalesItemArg";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import SalesItemsService from "./SalesItemsService";
-import MongoDbManager from "../../backk/dbmanager/MongoDbManager";
-import SqlInExpression from "../../backk/sqlexpression/SqlInExpression";
-import SqlExpression from "../../backk/sqlexpression/SqlExpression";
-import UpdateSalesItemArg from "./types/args/UpdateSalesItemArg";
-import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
-import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
-import SqlEquals from "../../backk/sqlexpression/SqlEquals";
-import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
-import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
-import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
-import { AllowForEveryUser } from "../../backk/annotations/service/function/AllowForEveryUser";
-import { Private } from "../../backk/annotations/service/function/Private";
+import { Injectable } from '@nestjs/common';
+import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
+import { AllowForEveryUser } from '../../backk/annotations/service/function/AllowForEveryUser';
+import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
+import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
+import { Private } from '../../backk/annotations/service/function/Private';
+import { ErrorResponse, Id, IdAndUserId, IdsAndOptPostQueryOps } from '../../backk/Backk';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
+import SqlEquals from '../../backk/sqlexpression/SqlEquals';
+import SqlExpression from '../../backk/sqlexpression/SqlExpression';
+import SqlInExpression from '../../backk/sqlexpression/SqlInExpression';
+import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
+import SalesItemsService from './SalesItemsService';
+import CreateSalesItemArg from './types/args/CreateSalesItemArg';
+import GetSalesItemsArg from './types/args/GetSalesItemsArg';
+import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
+import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
+import { SalesItem } from './types/entities/SalesItem';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -81,7 +81,9 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     } else {
       filters = [
         new SqlEquals({ state: 'forSale' }),
-        new SqlExpression('title LIKE :textFilter OR description LIKE :textFilter', { textFilter }),
+        new SqlExpression('{{title}} LIKE :textFilter OR {{description}} LIKE :textFilter', {
+          textFilter
+        }),
         new SqlInExpression('area', areas),
         new SqlInExpression('productDepartment', productDepartments),
         new SqlInExpression('productCategory', productCategories),

@@ -32,11 +32,6 @@ export default class SqlInExpression extends SqlExpression {
       .map((_, index) => ':' + this.fieldName + (index + 1).toString())
       .join(', ');
 
-    return (
-      (this.fieldName.includes('.') ? this.fieldName : schema + '.' + entityName + '.' + this.fieldName) +
-      ' IN (' +
-      values +
-      ')'
-    );
+    return '{{' + this.fieldName + '}} ' + ' IN (' + values + ')';
   }
 }
