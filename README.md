@@ -1,13 +1,12 @@
 # Vitja service
 
 TODO:
-- Correct includes('.') fields name, eg. in sort field name, SqlInExpression
 - include/exclude to support GraphQl
+- includeResponseFields and excludeResponseFields must checked that they contain only allowed field names
+- Table column indexing annotation
 - Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
   - Order should have OrderItem array, order item should have one Delivery item as child
 - Possible to delete shopping cart item from order if it is not yet delivered
-- Table column indexing annotation
-- sorting, includeResponseFields and excludeResponseFields must checked that they contain only allowed field names
 
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password
