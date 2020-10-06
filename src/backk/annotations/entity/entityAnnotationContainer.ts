@@ -382,9 +382,11 @@ class EntityAnnotationContainer {
     indexFields: string[],
     isUnique = false
   ) {
-    const createIndexStatement = `CREATE ${isUnique ? 'UNIQUE' : ''} INDEX ${entityName}${indexFields.join(
-      ''
-    )} ${schema}.${entityName} (${indexFields.join(', ')})`;
+    const createIndexStatement = `CREATE ${
+      isUnique ? 'UNIQUE' : ''
+    } INDEX IF NOT EXISTS ${entityName}_${indexFields.join(
+      '_'
+    )} ON ${schema}.${entityName} (${indexFields.join(', ')})`;
 
     await dbManager.tryExecuteSqlWithoutCls(createIndexStatement);
   }

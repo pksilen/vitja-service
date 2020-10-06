@@ -1,5 +1,6 @@
 import { Matches, MaxLength } from 'class-validator';
 import Entity from '../../../../backk/annotations/entity/Entity';
+import UniqueIndex from '../../../../backk/annotations/entity/UniqueIndex';
 import { Documentation } from '../../../../backk/annotations/type/Documentation';
 import { IsExprTrue } from '../../../../backk/annotations/type/IsExprTrue';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
@@ -7,6 +8,7 @@ import DefaultPaymentMethod from './DefaultPaymentMethod';
 import PaymentMethod from './PaymentMethod';
 
 @Entity()
+@UniqueIndex(['userName'])
 export default class User {
   @MaxLength(24)
   _id!: string;
