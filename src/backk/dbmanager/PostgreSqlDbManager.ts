@@ -305,7 +305,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const whereStatement = this.getWhereStatement(filters, entityClass);
       const filterValues = this.getFilterValues(filters);
       const joinStatement = this.getJoinStatement(entityClass, Types);
-      const sortStatement = this.getSortStatement(sortBys, entityClass);
+      const sortStatement = this.tryGetSortStatement(sortBys, entityClass, Types);
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(pageNumber, pageSize);
 
       const result = await this.tryExecuteQueryWithConfig(
@@ -362,16 +362,20 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return limitAndOffsetStatement;
   }
 
-  private getSortStatement<T>(sortBys: SortBy[] | undefined, entityClass: { new (): T }) {
+  private tryGetSortStatement<T>(sortBys: SortBy[] | undefined, entityClass: { new (): T }, Types: object) {
     let sortStatement = '';
 
     if (sortBys) {
       const sortBysStr = sortBys.map(({ sortField, sortDirection }) => {
         assertIsColumnName('sortBy', sortField);
         assertIsSortDirection(sortDirection);
-        const sortColumn = sortField.includes('.')
-          ? sortField
-          : this.schema + '.' + entityClass.name + '.' + sortField;
+        const projection = this.getProjection({ includeResponseFields: [sortField] }, entityClass, Types);
+
+        if (!projection) {
+          throw new Error('Invalid sort field: ' + sortField);
+        }
+
+        const sortColumn = projection.split(' AS ')[0];
         return sortColumn + ' ' + sortDirection;
       });
 
@@ -423,7 +427,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       const sqlColumns = this.getProjection(projection, entityClass, Types);
       const joinStatement = this.getJoinStatement(entityClass, Types);
-      const sortStatement = this.getSortStatement(postQueryOps?.sortBys, entityClass);
+      const sortStatement = this.tryGetSortStatement(postQueryOps?.sortBys, entityClass, types);
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(
         postQueryOps?.pageNumber,
         postQueryOps?.pageSize
@@ -503,7 +507,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const sqlColumns = this.getProjection(projection, entityClass, Types);
 
       const joinStatement = this.getJoinStatement(entityClass, Types);
-      const sortStatement = this.getSortStatement(postQueryOps?.sortBys, entityClass);
+      const sortStatement = this.tryGetSortStatement(postQueryOps?.sortBys, entityClass, Types);
 
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(
         postQueryOps?.pageNumber,
