@@ -39,13 +39,13 @@ export class SortBy implements ISortBy {
 export class OptPostQueryOps implements Partial<Paging>, OptionalProjection {
   @IsOptional()
   @IsString({ each: true })
-  @MaxLength(1024, { each: true })
+  @MaxLength(4096, { each: true })
   @IsArray()
   includeResponseFields?: string[] = [];
 
   @IsOptional()
   @IsString({ each: true })
-  @MaxLength(1024, { each: true })
+  @MaxLength(4096, { each: true })
   @IsArray()
   excludeResponseFields?: string[] = [];
 

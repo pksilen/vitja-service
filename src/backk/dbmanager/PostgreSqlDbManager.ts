@@ -15,7 +15,7 @@ import getBadRequestErrorResponse from '../getBadRequestErrorResponse';
 import getConflictErrorResponse from '../getConflictErrorResponse';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
-import getFieldsFromGraphQl from '../graphql/getFieldsFromGraphQl';
+import getFieldsFromGraphQlOrJson from '../graphql/getFieldsFromGraphQlOrJson';
 import SqlExpression from '../sqlexpression/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 
@@ -788,12 +788,12 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   private getProjection(projection: OptionalProjection, entityClass: Function, Types: object) {
     const fields: string[] = [];
 
-    if (projection.includeResponseFields?.[0]?.[0] === '{') {
-      projection.includeResponseFields = getFieldsFromGraphQl(projection.includeResponseFields[0]);
+    if (projection.includeResponseFields?.[0]?.includes('{')) {
+      projection.includeResponseFields = getFieldsFromGraphQlOrJson(projection.includeResponseFields[0]);
     }
 
-    if (projection.excludeResponseFields?.[0]?.[0] === '{') {
-      projection.excludeResponseFields = getFieldsFromGraphQl(projection.excludeResponseFields[0]);
+    if (projection.excludeResponseFields?.[0]?.includes('{')) {
+      projection.excludeResponseFields = getFieldsFromGraphQlOrJson(projection.excludeResponseFields[0]);
     }
 
     this.getFieldsForEntity(fields, entityClass as any, Types, projection, '');
