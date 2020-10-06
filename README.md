@@ -1,12 +1,8 @@
 # Vitja service
 
 TODO:
-- Support Json type include/excludeFields, support GraphQl style fragments and directives, with object spread or conditional object spread respectively
 - includeResponseFields and excludeResponseFields must checked that they contain only allowed field names
 - Table column indexing annotation
-- Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
-  - Order should have OrderItem array, order item should have one Delivery item as child
-- Possible to delete shopping cart item from order if it is not yet delivered
 
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password
@@ -38,22 +34,22 @@ TODO:
     - Company
     - Geo position/location
     - latitude/longitude
+    
+- Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
+- Order should have OrderItem array, order item should have one Delivery item as child
+- Possible to delete shopping cart item from order if it is not yet delivered
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
 - Logger
-- MariaDb/MySql
 - GDPR logging
   -audit log should go to separate server
+- MariaDb/MySql
 - @ManyToMany
-- Response headers added Api gateway:
-  - X-content-type-options: nosniff
-  - Strict-Transport-Security: max-age 
  - Own remote service function executor (Http)
      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
 - Custom readinessProbe should use defaultReadinessProbe plus all other services it is using
 - executeMultipleInParallel endpoint, to execute multiple serviceCalls in parallel
-- Mongodb transactions, update/delete preconditions
 - Handle order modification and delete to reflect in salesItem states
 - getDbManager support for multiple dbmanagers
 - Date/Timestamp type support
@@ -64,8 +60,17 @@ TODO:
   - if type metadata does not have | null after array checking, make SQL field NOT NULL
   - All array checking must be changed because type name ending can be  | null instead of []
 - Support dynamic filters with Map-type argument property
+  filters: Filter[]
+   Filter : { fieldName: string, operator?: '>=' | '<=' | '!=' ..., value: any }
+   -assert fieldName is a legal column name
+   creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
+- Mongodb transactions, update/delete preconditions
+- Unit testaa: shouldIncludeField eri keissit
 
 TODO NEXT RELEASE:
+- Response headers added Api gateway:
+  - X-content-type-options: nosniff
+  - Strict-Transport-Security: max-age 
 - SQL Server
 - Oracle
 - Default loginService, signUpService, passwordReset service

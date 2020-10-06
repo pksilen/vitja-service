@@ -302,11 +302,19 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     Types: object
   ): Promise<T[] | ErrorResponse> {
     try {
-      const columns = this.getProjection(projection, entityClass, Types);
-      const whereStatement = this.tryGetWhereStatement(filters, entityClass, types);
+      let columns;
+      let whereStatement;
+      let sortStatement;
+      try {
+        columns = this.tryGetProjection(projection, entityClass, Types);
+        whereStatement = this.tryGetWhereStatement(filters, entityClass, types);
+        sortStatement = this.tryGetSortStatement(sortBys, entityClass, Types);
+      } catch (error) {
+        return getBadRequestErrorResponse(error.message);
+      }
+
       const filterValues = this.getFilterValues(filters);
       const joinStatement = this.getJoinStatement(entityClass, Types);
-      const sortStatement = this.tryGetSortStatement(sortBys, entityClass, Types);
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(pageNumber, pageSize);
 
       const result = await this.tryExecuteQueryWithConfig(
@@ -335,7 +343,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     Types: object
   ): Promise<number | ErrorResponse> {
     try {
-      const whereStatement = this.tryGetWhereStatement(filters ?? {}, entityClass, Types);
+      let whereStatement;
+      try {
+        whereStatement = this.tryGetWhereStatement(filters ?? {}, entityClass, Types);
+      } catch (error) {
+        return getBadRequestErrorResponse(error.message);
+      }
+
       const filterValues = this.getFilterValues(filters ?? {});
       const joinStatement = this.getJoinStatement(entityClass, Types);
 
@@ -370,9 +384,11 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const sortBysStr = sortBys.map(({ sortField, sortDirection }) => {
         assertIsColumnName('sortBy', sortField);
         assertIsSortDirection(sortDirection);
-        const projection = this.getProjection({ includeResponseFields: [sortField] }, entityClass, Types);
 
-        if (!projection) {
+        let projection;
+        try {
+          projection = this.tryGetProjection({ includeResponseFields: [sortField] }, entityClass, Types);
+        } catch (error) {
           throw new Error('Invalid sort field: ' + sortField);
         }
 
@@ -388,7 +404,12 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async getItemById<T>(_id: string, entityClass: new () => T, Types: object): Promise<T | ErrorResponse> {
     try {
-      const sqlColumns = this.getProjection({}, entityClass, Types);
+      let sqlColumns;
+      try {
+        sqlColumns = this.tryGetProjection({}, entityClass, Types);
+      } catch (error) {
+        return getBadRequestErrorResponse(error.message);
+      }
       const joinStatement = this.getJoinStatement(entityClass, Types);
 
       const result = await this.tryExecuteQuery(
@@ -426,9 +447,16 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         excludeResponseFields: postQueryOps?.excludeResponseFields
       };
 
-      const sqlColumns = this.getProjection(projection, entityClass, Types);
+      let sqlColumns;
+      let sortStatement;
+      try {
+        sqlColumns = this.tryGetProjection(projection, entityClass, Types);
+        sortStatement = this.tryGetSortStatement(postQueryOps?.sortBys, entityClass, types);
+      } catch (error) {
+        return getBadRequestErrorResponse(error.message);
+      }
+
       const joinStatement = this.getJoinStatement(entityClass, Types);
-      const sortStatement = this.tryGetSortStatement(postQueryOps?.sortBys, entityClass, types);
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(
         postQueryOps?.pageNumber,
         postQueryOps?.pageSize
@@ -466,7 +494,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     Types: object
   ): Promise<T | ErrorResponse> {
     try {
-      const sqlColumns = this.getProjection({}, entityClass, Types);
+      let sqlColumns;
+      try {
+        sqlColumns = this.tryGetProjection({}, entityClass, Types);
+      } catch (error) {
+        return getBadRequestErrorResponse(error.message);
+      }
+
       const joinStatement = this.getJoinStatement(entityClass, Types);
 
       const result = await this.tryExecuteQuery(
@@ -505,11 +539,16 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         excludeResponseFields: postQueryOps?.excludeResponseFields
       };
 
-      const sqlColumns = this.getProjection(projection, entityClass, Types);
+      let sqlColumns;
+      let sortStatement;
+      try {
+        sqlColumns = this.tryGetProjection(projection, entityClass, Types);
+        sortStatement = this.tryGetSortStatement(postQueryOps?.sortBys, entityClass, Types);
+      } catch (error) {
+        return getBadRequestErrorResponse(error.message);
+      }
 
       const joinStatement = this.getJoinStatement(entityClass, Types);
-      const sortStatement = this.tryGetSortStatement(postQueryOps?.sortBys, entityClass, Types);
-
       const pagingStatement = PostgreSqlDbManager.getPagingStatement(
         postQueryOps?.pageNumber,
         postQueryOps?.pageSize
@@ -785,7 +824,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  private getProjection(projection: OptionalProjection, entityClass: Function, Types: object) {
+  private tryGetProjection(projection: OptionalProjection, entityClass: Function, Types: object) {
     const fields: string[] = [];
 
     if (projection.includeResponseFields?.[0]?.includes('{')) {
@@ -794,6 +833,40 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
     if (projection.excludeResponseFields?.[0]?.includes('{')) {
       projection.excludeResponseFields = getFieldsFromGraphQlOrJson(projection.excludeResponseFields[0]);
+    }
+
+    if (projection.includeResponseFields) {
+      const fields: string[] = [];
+      projection.includeResponseFields.forEach((includeResponseField) => {
+        this.getFieldsForEntity(
+          fields,
+          entityClass as any,
+          Types,
+          { includeResponseFields: [includeResponseField] },
+          ''
+        );
+
+        if (fields.length === 0) {
+          throw new Error('Invalid field: ' + includeResponseField + ' in includeResponseFields');
+        }
+      });
+    }
+
+    if (projection.excludeResponseFields) {
+      const fields: string[] = [];
+      projection.excludeResponseFields.forEach((excludeResponseField) => {
+        this.getFieldsForEntity(
+          fields,
+          entityClass as any,
+          Types,
+          { includeResponseFields: [excludeResponseField] },
+          ''
+        );
+
+        if (fields.length === 0) {
+          throw new Error('Invalid field: ' + excludeResponseField + ' in excludeResponseFields');
+        }
+      });
     }
 
     this.getFieldsForEntity(fields, entityClass as any, Types, projection, '');
@@ -883,9 +956,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
     if (includeResponseFields && includeResponseFields.length > 0) {
       shouldIncludeField = !!includeResponseFields.find((includeResponseField) =>
-        fullFieldPath.length >= includeResponseField.length
+        fullFieldPath.length >= includeResponseField.length && fullFieldPath.includes('.')
           ? includeResponseField === fullFieldPath.slice(0, includeResponseField.length)
-          : includeResponseField.startsWith(fullFieldPath)
+          : includeResponseField === fullFieldPath
       );
     }
 
@@ -926,14 +999,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         .split('}}')[0]
         .trim();
 
-      const projection = this.getProjection({ includeResponseFields: [fieldName] }, entityClass, Types);
-
-      if (!projection) {
+      let projection;
+      try {
+        projection = this.tryGetProjection({ includeResponseFields: [fieldName] }, entityClass, Types);
+      } catch (error) {
         throw new Error('Invalid filter field: ' + fieldName);
       }
 
       const sqlColumn = this.getSqlColumnFromProjection(projection);
-
       filtersSql = filtersSql.replace(new RegExp(fieldNameTemplate, 'g'), sqlColumn);
     });
 
