@@ -17,14 +17,26 @@ export interface JoinSpec {
 
 class EntityAnnotationContainer {
   private entityNameToClassMap: { [key: string]: Function } = {};
+  private entityNameToAdditionalSqlCreateTableStatementOptionsMap: { [key: string]: string } = {};
   private entityNameToAdditionalIdPropertyNamesMap: { [key: string]: string[] } = {};
   private entityNameToIndexFieldsMap: { [key: string]: string[] } = {};
   private entityNameToUniqueIndexFieldsMap: { [key: string]: string[] } = {};
+  private indexNameToUsingOptionMap: { [key: string]: string | undefined } = {};
+  private indexNameToAdditionalSqlCreateIndexStatementOptionsMap: { [key: string]: string | undefined } = {};
   private manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
   entityNameToJoinsMap: { [key: string]: JoinSpec[] } = {};
 
   addEntityNameAndClass(entityName: string, entityClass: Function) {
     this.entityNameToClassMap[entityName] = entityClass;
+  }
+
+  addAdditionalSqlCreateTableStatementOptionsForEntity(
+    entityName: string,
+    additionalSqlCreateTableStatementOptions: string
+  ) {
+    this.entityNameToAdditionalSqlCreateTableStatementOptionsMap[
+      entityName
+    ] = additionalSqlCreateTableStatementOptions;
   }
 
   addEntityIndex(entityName: string, indexFields: string[]) {
@@ -33,6 +45,19 @@ class EntityAnnotationContainer {
 
   addEntityUniqueIndex(entityName: string, indexFields: string[]) {
     this.entityNameToUniqueIndexFieldsMap[entityName] = indexFields;
+  }
+
+  addUsingOptionForIndex(indexName: string, usingOption?: string) {
+    this.indexNameToUsingOptionMap[indexName] = usingOption;
+  }
+
+  addAdditionalSqlCreateIndexStatementOptionsForIndex(
+    indexName: string,
+    additionalSqlCreateIndexStatementOptions?: string
+  ) {
+    this.indexNameToAdditionalSqlCreateIndexStatementOptionsMap[
+      indexName
+    ] = additionalSqlCreateIndexStatementOptions;
   }
 
   addEntityAdditionalPropertyName(entityName: string, propertyName: string) {
@@ -371,7 +396,11 @@ class EntityAnnotationContainer {
         }
       );
 
-      await dbManager.tryExecuteSqlWithoutCls(createTableStatement + ')');
+      await dbManager.tryExecuteSqlWithoutCls(
+        createTableStatement + ')' + this.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]
+          ? ' ' + this.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]
+          : ''
+      );
     }
   }
 
@@ -382,11 +411,15 @@ class EntityAnnotationContainer {
     indexFields: string[],
     isUnique = false
   ) {
+    const indexName = entityName + indexFields.join('');
+    const indexUsingOption = this.indexNameToUsingOptionMap[indexName];
+    const additionalSqlCreateIndexStatementOptions = this
+      .indexNameToAdditionalSqlCreateIndexStatementOptionsMap[indexName];
     const createIndexStatement = `CREATE ${
       isUnique ? 'UNIQUE' : ''
-    } INDEX IF NOT EXISTS ${entityName}_${indexFields.join(
-      '_'
-    )} ON ${schema}.${entityName} (${indexFields.join(', ')})`;
+    } INDEX IF NOT EXISTS ${entityName}_${indexFields.join('_')} ON ${schema}.${entityName} ${
+      indexUsingOption ? 'USING ' + indexUsingOption : ''
+    } (${indexFields.join(', ')}) ${additionalSqlCreateIndexStatementOptions ?? ''}`;
 
     await dbManager.tryExecuteSqlWithoutCls(createIndexStatement);
   }

@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- Table column indexing annotation
+- Improve @Index annotation (ASC/DESC, INCLUDE, NULLS FIRST/LAST, WHERE, WITH)
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password
 - By default following fields are encrypted, or use @NotEncrypted annotation
