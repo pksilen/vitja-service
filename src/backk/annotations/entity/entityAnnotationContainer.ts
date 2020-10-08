@@ -2,6 +2,7 @@ import AbstractDbManager from '../../dbmanager/AbstractDbManager';
 import forEachAsyncParallel from '../../forEachAsyncParallel';
 import forEachAsyncSequential from '../../forEachAsyncSequential';
 import { getTypeMetadata } from '../../generateServicesMetadata';
+import typeAnnotationContainer from '../type/typeAnnotationContainer';
 
 export interface ManyToManyRelationTableSpec {
   tableName: string;
@@ -256,7 +257,8 @@ class EntityAnnotationContainer {
                 this.entityNameToJoinsMap[entityName] = [joinSpec];
               }
             } else {
-              alterTableStatement += fieldName + ' ' + sqlColumnType;
+              const isUnique = typeAnnotationContainer.isTypePropertyUnique(entityClass, fieldName);
+              alterTableStatement += fieldName + ' ' + sqlColumnType + (isUnique ? ' UNIQUE' : '');
               await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
             }
           }
@@ -390,16 +392,19 @@ class EntityAnnotationContainer {
             if (fieldCnt > 0) {
               createTableStatement += ', ';
             }
-            createTableStatement += fieldName + ' ' + sqlColumnType;
+            const isUnique = typeAnnotationContainer.isTypePropertyUnique(entityClass, fieldName);
+            createTableStatement += fieldName + ' ' + sqlColumnType + (isUnique ? ' UNIQUE' : '');
             fieldCnt++;
           }
         }
       );
 
       await dbManager.tryExecuteSqlWithoutCls(
-        createTableStatement + ')' + this.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]
-          ? ' ' + this.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]
-          : ''
+        createTableStatement +
+          ')' +
+          (this.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]
+            ? ' ' + this.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]
+            : '')
       );
     }
   }
