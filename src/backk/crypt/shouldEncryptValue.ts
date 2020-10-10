@@ -1,3 +1,5 @@
+import typePropertyAnnotationContainer from '../annotations/typeproperty/typePropertyAnnotationContainer';
+
 const subPropertyNamesWhoseValuesShouldBeEncrypted = [
   'username',
   'user_name',
@@ -129,13 +131,15 @@ export default function shouldEncryptValue(propertyName: string, EntityClass?: F
     return entityPropertyNameToShouldEncryptValueMap[`${EntityClass.name}${propertyName}`];
   }
 
-  const shouldEncryptValue = subPropertyNamesWhoseValuesShouldBeEncrypted.some(
-    (subPropertyName) =>
-      propertyName.toLowerCase().includes(subPropertyName) ||
-      propertyNamesWhoseValuesShouldBeEncrypted.some(
-        (otherPropertyName) => propertyName.toLowerCase() === otherPropertyName
-      )
-  );
+  const shouldEncryptValue =
+    (EntityClass && typePropertyAnnotationContainer.isTypePropertyEncrypted(EntityClass, propertyName)) ||
+    subPropertyNamesWhoseValuesShouldBeEncrypted.some(
+      (subPropertyName) =>
+        propertyName.toLowerCase().includes(subPropertyName) ||
+        propertyNamesWhoseValuesShouldBeEncrypted.some(
+          (otherPropertyName) => propertyName.toLowerCase() === otherPropertyName
+        )
+    );
 
   if (EntityClass && EntityClass.name) {
     entityPropertyNameToShouldEncryptValueMap[`${EntityClass.name}${propertyName}`] = shouldEncryptValue;

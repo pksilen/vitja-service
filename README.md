@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- @Hashed annotation
 - @NotEncrypted annotation
 - @Encrypted annotation
 - On second round, give getEntityMetadata a caching parameter set to true
