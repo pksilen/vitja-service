@@ -1,11 +1,11 @@
-import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
 import { Injectable } from '@nestjs/common';
-import { ErrorResponse, getMongoDbProjection, Id, OptPostQueryOps, PostQueryOps } from '../Backk';
+import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
 import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
-import AbstractDbManager, { Field } from './AbstractDbManager';
+import { ErrorResponse, getMongoDbProjection, Id, OptPostQueryOps, PostQueryOps } from '../Backk';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 import SqlExpression from '../sqlexpression/SqlExpression';
+import AbstractDbManager, { Field } from './AbstractDbManager';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -164,7 +164,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getItemBy<T>(
-    fieldName: keyof T,
+    fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T
   ): Promise<T | ErrorResponse> {
@@ -187,7 +187,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getItemsBy<T>(
-    fieldName: keyof T,
+    fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
     postQueryOperations?: OptPostQueryOps

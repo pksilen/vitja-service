@@ -121,9 +121,12 @@ const propertyNamesWhoseValuesShouldBeEncrypted = [
 
 const entityPropertyNameToShouldEncryptValueMap: { [key: string]: boolean } = {};
 
-export default function shouldEncryptValue(propertyName: string, entityName?: string): boolean {
-  if (entityName && entityPropertyNameToShouldEncryptValueMap[`${entityName}${propertyName}`] !== undefined) {
-    return entityPropertyNameToShouldEncryptValueMap[`${entityName}${propertyName}`];
+export default function shouldEncryptValue(propertyName: string, EntityClass?: Function): boolean {
+  if (
+    EntityClass &&
+    entityPropertyNameToShouldEncryptValueMap[`${EntityClass.name}${propertyName}`] !== undefined
+  ) {
+    return entityPropertyNameToShouldEncryptValueMap[`${EntityClass.name}${propertyName}`];
   }
 
   const shouldEncryptValue = subPropertyNamesWhoseValuesShouldBeEncrypted.some(
@@ -134,8 +137,8 @@ export default function shouldEncryptValue(propertyName: string, entityName?: st
       )
   );
 
-  if (entityName) {
-    entityPropertyNameToShouldEncryptValueMap[`${entityName}${propertyName}`] = shouldEncryptValue;
+  if (EntityClass && EntityClass.name) {
+    entityPropertyNameToShouldEncryptValueMap[`${EntityClass.name}${propertyName}`] = shouldEncryptValue;
   }
 
   return shouldEncryptValue;

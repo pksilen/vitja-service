@@ -9,7 +9,9 @@ import entityContainer, { JoinSpec } from '../annotations/entity/entityAnnotatio
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
 import { ErrorResponse, Id, OptionalProjection, OptPostQueryOps, SortBy } from '../Backk';
 import decryptItems from '../crypt/decryptItems';
+import encrypt from '../crypt/encrypt';
 import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
+import shouldEncryptValue from '../crypt/shouldEncryptValue';
 import shouldUseRandomInitializationVector from '../crypt/shouldUseRandomInitializationVector';
 import forEachAsyncParallel from '../forEachAsyncParallel';
 import forEachAsyncSequential from '../forEachAsyncSequential';
@@ -162,7 +164,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   ): Promise<Id | ErrorResponse> {
     try {
       if (!isRecursiveCall) {
-        await hashAndEncryptItem(item, entityClass);
+        await hashAndEncryptItem(item, entityClass, Types);
       }
 
       if (
@@ -338,7 +340,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name.toLowerCase() + '_'
       );
       this.transformResults(rows, entityClass, Types);
-      decryptItems(rows, entityClass);
+      decryptItems(rows, entityClass, Types);
       return rows;
     } catch (error) {
       return getInternalServerErrorResponse(error);
@@ -437,7 +439,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name.toLowerCase() + '_'
       );
       this.transformResults(rows, entityClass, Types);
-      decryptItems(rows, entityClass);
+      decryptItems(rows, entityClass, Types);
       return rows[0];
     } catch (error) {
       return getInternalServerErrorResponse(error);
@@ -490,7 +492,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name.toLowerCase() + '_'
       );
       this.transformResults(rows, entityClass, Types);
-      decryptItems(rows, entityClass);
+      decryptItems(rows, entityClass, Types);
       return rows;
     } catch (error) {
       return getInternalServerErrorResponse(error);
@@ -498,7 +500,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async getItemBy<T>(
-    fieldName: keyof T,
+    fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
     Types: object
@@ -507,8 +509,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const item = {
         [fieldName]: fieldValue
       };
-      if (!shouldUseRandomInitializationVector(fieldName as any)) {
-        await hashAndEncryptItem(item);
+
+      if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
+        (item as any)[fieldName] = encrypt(fieldValue as any, false);
+        console.log(item);
       }
 
       let sqlColumns;
@@ -537,7 +541,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name.toLowerCase() + '_'
       );
       this.transformResults(rows, entityClass, Types);
-      decryptItems(rows, entityClass);
+      decryptItems(rows, entityClass, Types);
       return rows[0];
     } catch (error) {
       return getInternalServerErrorResponse(error);
@@ -545,7 +549,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async getItemsBy<T>(
-    fieldName: keyof T,
+    fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
     Types: object,
@@ -556,8 +560,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         [fieldName]: fieldValue
       };
 
-      if (!shouldUseRandomInitializationVector(fieldName as any)) {
-        await hashAndEncryptItem(item);
+      if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
+        (item as any)[fieldName] = encrypt(fieldValue as any, false);
       }
 
       const projection = {
@@ -597,7 +601,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name.toLowerCase() + '_'
       );
       this.transformResults(rows, entityClass, Types);
-      decryptItems(rows, entityClass);
+      decryptItems(rows, entityClass, Types);
       return rows;
     } catch (error) {
       return getInternalServerErrorResponse(error);
@@ -614,7 +618,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   ): Promise<void | ErrorResponse> {
     try {
       if (!isRecursiveCall) {
-        await hashAndEncryptItem(restOfItem);
+        await hashAndEncryptItem(restOfItem, entityClass, Types);
       }
 
       if (!this.getClsNamespace()?.get('transaction') && !this.getClsNamespace()?.get('globalTransaction')) {

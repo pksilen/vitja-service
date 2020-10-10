@@ -1,3 +1,8 @@
-export default function shouldHashValue(key: string): boolean {
-  return key.toLowerCase().includes('password');
+import typePropertyAnnotationContainer from '../annotations/typeproperty/typePropertyAnnotationContainer';
+
+export default function shouldHashValue(propertyName: string, EntityClass: Function): boolean {
+  return (
+    propertyName.toLowerCase().includes('password') &&
+    !typePropertyAnnotationContainer.isTypePropertyNotHashed(EntityClass, propertyName)
+  );
 }

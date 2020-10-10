@@ -3,12 +3,11 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { MaxLength } from 'class-validator';
-import { IsExprTrue } from '../../../../backk/annotations/type/IsExprTrue';
+import { IsExprTrue } from '../../../../backk/annotations/typeproperty/IsExprTrue';
 import { ExpectAnyValueInTests } from '../../../../backk/ExpectAnyValueInTests';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
-
 
 export default class UserResponse {
   @MaxLength(24)

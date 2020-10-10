@@ -66,14 +66,14 @@ export default abstract class AbstractDbManager {
   ): Promise<T[] | ErrorResponse>;
 
   abstract getItemBy<T>(
-    fieldName: keyof T,
+    fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
     Types: object
   ): Promise<T | ErrorResponse>;
 
   abstract getItemsBy<T>(
-    fieldName: keyof T,
+    fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
     Types: object,

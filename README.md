@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+_ On second round, give getEntityMetadata a caching parameter set to true
 - By default following fields are Hashed (and salted), or use @NotHashed annotation
     - password
 - By default following fields are encrypted, or use @NotEncrypted annotation

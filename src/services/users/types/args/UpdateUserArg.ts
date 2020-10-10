@@ -3,7 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { Matches, MaxLength } from 'class-validator';
-import { Documentation } from '../../../../backk/annotations/type/Documentation';
+import { Documentation } from '../../../../backk/annotations/typeproperty/Documentation';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';

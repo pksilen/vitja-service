@@ -1,6 +1,7 @@
-class TypeAnnotationContainer {
+class TypePropertyAnnotationContainer {
   private typePropertyNameToDocStringMap: { [key: string]: string } = {};
   private typePropertyNameToIsUniqueMap: { [key: string]: boolean } = {};
+  private typePropertyNameToIsNotHashedMap: { [key: string]: boolean } = {};
 
   addDocumentationForTypeProperty(Type: Function, propertyName: string, docString: string) {
     this.typePropertyNameToDocStringMap[`${Type.name}${propertyName}`] = docString;
@@ -8,6 +9,10 @@ class TypeAnnotationContainer {
 
   setTypePropertyAsUnique(Type: Function, propertyName: string) {
     this.typePropertyNameToIsUniqueMap[`${Type.name}${propertyName}`] = true;
+  }
+
+  setTypePropertyAsNotHashed(Type: Function, propertyName: string) {
+    this.typePropertyNameToIsNotHashedMap[`${Type.name}${propertyName}`] = true;
   }
 
   getDocumentationForTypeProperty(Type: Function, functionName: string) {
@@ -33,6 +38,18 @@ class TypeAnnotationContainer {
 
     return false;
   }
+
+  isTypePropertyNotHashed(Type: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (Type as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.typePropertyNameToIsNotHashedMap[`${Type.name}${functionName}`] !== undefined) {
+        return this.typePropertyNameToIsNotHashedMap[`${Type.name}${functionName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
 }
 
-export default new TypeAnnotationContainer();
+export default new TypePropertyAnnotationContainer();

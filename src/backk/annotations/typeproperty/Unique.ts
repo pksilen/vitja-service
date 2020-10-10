@@ -1,4 +1,4 @@
-import typeAnnotationContainer from './typeAnnotationContainer';
+import typeAnnotationContainer from './typePropertyAnnotationContainer';
 
 export function Unique() {
   // eslint-disable-next-line @typescript-eslint/ban-types

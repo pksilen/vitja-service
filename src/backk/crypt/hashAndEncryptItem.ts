@@ -1,43 +1,54 @@
 import forEachAsyncParallel from '../forEachAsyncParallel';
+import { getTypeMetadata } from '../generateServicesMetadata';
 import encrypt from './encrypt';
 import hash from './hash';
 import shouldEncryptValue from './shouldEncryptValue';
 import shouldHashValue from './shouldHashValue';
 import shouldUseRandomInitializationVector from './shouldUseRandomInitializationVector';
 
-async function hashOrEncryptItemValues(item: { [key: string]: any }, entityName?: string) {
+async function hashOrEncryptItemValues(
+  item: { [key: string]: any },
+  EntityClass: new () => any,
+  Types: object
+) {
   await forEachAsyncParallel(Object.entries(item), async ([propertyName, propertyValue]) => {
     if (Array.isArray(propertyValue) && propertyValue.length > 0) {
       if (typeof propertyValue[0] === 'object') {
+        const entityMetadata = getTypeMetadata(EntityClass);
+        console.log((Types as any)[entityMetadata[propertyName].slice(0, -2)]);
         await forEachAsyncParallel(propertyValue, async (pv: any) => {
-          await hashOrEncryptItemValues(pv, entityName + propertyName);
+          await hashOrEncryptItemValues(pv, (Types as any)[entityMetadata[propertyName].slice(0, -2)], Types);
         });
-      } else if (shouldHashValue(propertyName)) {
+      } else if (shouldHashValue(propertyName, EntityClass)) {
         if (typeof propertyValue[0] !== 'string') {
-          throw new Error(entityName + '.' + propertyName + ' must be string array in order to hash it');
+          throw new Error(
+            EntityClass.name + '.' + propertyName + ' must be string array in order to hash it'
+          );
         }
         await forEachAsyncParallel(propertyValue, async (_, index) => {
           propertyValue[index] = await hash(propertyValue[index]);
         });
-      } else if (shouldEncryptValue(propertyName, propertyName)) {
+      } else if (shouldEncryptValue(propertyName, EntityClass)) {
         if (typeof propertyValue[0] !== 'string') {
-          throw new Error(entityName + '.' + propertyName + ' must be string array in order to encrypt it');
+          throw new Error(
+            EntityClass.name + '.' + propertyName + ' must be string array in order to encrypt it'
+          );
         }
         await forEachAsyncParallel(propertyValue, async (_, index) => {
           propertyValue[index] = encrypt(propertyValue[index]);
         });
       }
-    }
-    if (typeof propertyValue === 'object') {
-      await hashOrEncryptItemValues(propertyValue, propertyName);
-    } else if (shouldHashValue(propertyName)) {
+    } else if (typeof propertyValue === 'object') {
+      const entityMetadata = getTypeMetadata(EntityClass);
+      await hashOrEncryptItemValues(propertyValue, (Types as any)[entityMetadata[propertyName]], Types);
+    } else if (shouldHashValue(propertyName, EntityClass)) {
       if (typeof propertyValue !== 'string') {
-        throw new Error(entityName + '.' + propertyName + ' must be string in order to hash it');
+        throw new Error(EntityClass.name + '.' + propertyName + ' must be string in order to hash it');
       }
       item[propertyName] = await hash(propertyValue);
-    } else if (shouldEncryptValue(propertyName, entityName)) {
+    } else if (shouldEncryptValue(propertyName, EntityClass)) {
       if (typeof propertyValue !== 'string') {
-        throw new Error(entityName + '.' + propertyName + ' must be string in order to encrypt it');
+        throw new Error(EntityClass.name + '.' + propertyName + ' must be string in order to encrypt it');
       }
       item[propertyName] = encrypt(propertyValue, shouldUseRandomInitializationVector(propertyName));
     }
@@ -46,7 +57,8 @@ async function hashOrEncryptItemValues(item: { [key: string]: any }, entityName?
 
 export default async function hashAndEncryptItem<T extends { [key: string]: any }>(
   item: T,
-  entityClass?: new () => T
+  entityClass: new () => T,
+  Types: object
 ) {
-  await hashOrEncryptItemValues(item, entityClass?.name);
+  await hashOrEncryptItemValues(item, entityClass, Types);
 }

@@ -2,7 +2,7 @@ import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import serviceFunctionAnnotationContainer from './annotations/service/function/serviceFunctionAnnotationContainer';
 import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
-import typeAnnotationContainer from './annotations/type/typeAnnotationContainer';
+import typeAnnotationContainer from './annotations/typeproperty/typePropertyAnnotationContainer';
 import { Id, IdAndUserId, IdsAndOptPostQueryOps, SortBy } from './Backk';
 import BaseService from './BaseService';
 

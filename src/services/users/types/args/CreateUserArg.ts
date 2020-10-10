@@ -3,12 +3,11 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { Matches, MaxLength } from 'class-validator';
-import { Documentation } from '../../../../backk/annotations/type/Documentation';
-import { IsExprTrue } from '../../../../backk/annotations/type/IsExprTrue';
+import { Documentation } from '../../../../backk/annotations/typeproperty/Documentation';
+import { IsExprTrue } from '../../../../backk/annotations/typeproperty/IsExprTrue';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
-
 
 export default class CreateUserArg {
   @MaxLength(512)

@@ -2,7 +2,7 @@ import AbstractDbManager from '../../dbmanager/AbstractDbManager';
 import forEachAsyncParallel from '../../forEachAsyncParallel';
 import forEachAsyncSequential from '../../forEachAsyncSequential';
 import { getTypeMetadata } from '../../generateServicesMetadata';
-import typeAnnotationContainer from '../type/typeAnnotationContainer';
+import typeAnnotationContainer from '../typeproperty/typePropertyAnnotationContainer';
 
 export interface ManyToManyRelationTableSpec {
   tableName: string;
