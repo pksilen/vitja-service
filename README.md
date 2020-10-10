@@ -2,9 +2,7 @@
 
 TODO:
 - @NotEncrypted annotation
-- @Encrypted annotation
 - On second round, give getEntityMetadata a caching parameter set to true
-- Create table set varchar length with maxLength annotation
 - in .type files implement if class spread class extends other classes recursively
     
 - Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item

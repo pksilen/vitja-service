@@ -133,13 +133,16 @@ export default function shouldEncryptValue(propertyName: string, EntityClass?: F
 
   const shouldEncryptValue =
     (EntityClass && typePropertyAnnotationContainer.isTypePropertyEncrypted(EntityClass, propertyName)) ||
-    subPropertyNamesWhoseValuesShouldBeEncrypted.some(
+    (subPropertyNamesWhoseValuesShouldBeEncrypted.some(
       (subPropertyName) =>
         propertyName.toLowerCase().includes(subPropertyName) ||
         propertyNamesWhoseValuesShouldBeEncrypted.some(
           (otherPropertyName) => propertyName.toLowerCase() === otherPropertyName
         )
-    );
+    ) &&
+      (!EntityClass ||
+        (EntityClass &&
+          !typePropertyAnnotationContainer.isTypePropertyNotEncrypted(EntityClass, propertyName))));
 
   if (EntityClass && EntityClass.name) {
     entityPropertyNameToShouldEncryptValueMap[`${EntityClass.name}${propertyName}`] = shouldEncryptValue;
