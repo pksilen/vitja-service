@@ -1,3 +1,4 @@
+
 export default class SqlExpression {
   constructor(readonly expression: string, readonly values?: object) {}
 

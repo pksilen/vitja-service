@@ -8,6 +8,9 @@ import { pg } from 'yesql';
 import entityContainer, { JoinSpec } from '../annotations/entity/entityAnnotationContainer';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
 import { ErrorResponse, Id, OptionalProjection, OptPostQueryOps, SortBy } from '../Backk';
+import decryptItems from '../crypt/decryptItems';
+import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
+import shouldUseRandomInitializationVector from '../crypt/shouldUseRandomInitializationVector';
 import forEachAsyncParallel from '../forEachAsyncParallel';
 import forEachAsyncSequential from '../forEachAsyncSequential';
 import { getTypeMetadata } from '../generateServicesMetadata';
@@ -158,6 +161,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     isRecursiveCall = false
   ): Promise<Id | ErrorResponse> {
     try {
+      if (!isRecursiveCall) {
+        await hashAndEncryptItem(item, entityClass);
+      }
+
       if (
         !this.getClsNamespace()?.get('localTransaction') &&
         !this.getClsNamespace()?.get('globalTransaction')
@@ -331,6 +338,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name.toLowerCase() + '_'
       );
       this.transformResults(rows, entityClass, Types);
+      decryptItems(rows, entityClass);
       return rows;
     } catch (error) {
       return getInternalServerErrorResponse(error);
@@ -350,7 +358,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         return getBadRequestErrorResponse(error.message);
       }
 
-      const filterValues = this.getFilterValues(filters ?? {});
+      const filterValues = await this.getFilterValues(filters ?? {});
       const joinStatement = this.getJoinStatement(entityClass, Types);
 
       const result = await this.tryExecuteQueryWithConfig(
@@ -429,6 +437,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name.toLowerCase() + '_'
       );
       this.transformResults(rows, entityClass, Types);
+      decryptItems(rows, entityClass);
       return rows[0];
     } catch (error) {
       return getInternalServerErrorResponse(error);
@@ -481,6 +490,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name.toLowerCase() + '_'
       );
       this.transformResults(rows, entityClass, Types);
+      decryptItems(rows, entityClass);
       return rows;
     } catch (error) {
       return getInternalServerErrorResponse(error);
@@ -494,6 +504,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     Types: object
   ): Promise<T | ErrorResponse> {
     try {
+      const item = {
+        [fieldName]: fieldValue
+      };
+      if (!shouldUseRandomInitializationVector(fieldName as any)) {
+        await hashAndEncryptItem(item);
+      }
+
       let sqlColumns;
       try {
         sqlColumns = this.tryGetProjection({}, entityClass, Types);
@@ -505,7 +522,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       const result = await this.tryExecuteQuery(
         `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
-        [fieldValue]
+        [(item as any)[fieldName]]
       );
 
       if (result.rows.length === 0) {
@@ -520,6 +537,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name.toLowerCase() + '_'
       );
       this.transformResults(rows, entityClass, Types);
+      decryptItems(rows, entityClass);
       return rows[0];
     } catch (error) {
       return getInternalServerErrorResponse(error);
@@ -534,6 +552,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     postQueryOps?: OptPostQueryOps
   ): Promise<T[] | ErrorResponse> {
     try {
+      const item = {
+        [fieldName]: fieldValue
+      };
+
+      if (!shouldUseRandomInitializationVector(fieldName as any)) {
+        await hashAndEncryptItem(item);
+      }
+
       const projection = {
         includeResponseFields: postQueryOps?.includeResponseFields,
         excludeResponseFields: postQueryOps?.excludeResponseFields
@@ -556,7 +582,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       const result = await this.tryExecuteQuery(
         `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1 ${sortStatement} ${pagingStatement}`,
-        [fieldValue]
+        [(item as any)[fieldName]]
       );
 
       if (result.rows.length === 0) {
@@ -571,6 +597,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name.toLowerCase() + '_'
       );
       this.transformResults(rows, entityClass, Types);
+      decryptItems(rows, entityClass);
       return rows;
     } catch (error) {
       return getInternalServerErrorResponse(error);
@@ -586,6 +613,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     isRecursiveCall = false
   ): Promise<void | ErrorResponse> {
     try {
+      if (!isRecursiveCall) {
+        await hashAndEncryptItem(restOfItem);
+      }
+
       if (!this.getClsNamespace()?.get('transaction') && !this.getClsNamespace()?.get('globalTransaction')) {
         await this.beginTransaction();
         this.getClsNamespace()?.set('localTransaction', true);
@@ -1103,7 +1134,6 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         baseFieldTypeName[0] !== '('
       ) {
         const relationEntityName = baseFieldTypeName;
-
         this.transformResult(result[fieldName], (Types as any)[relationEntityName], Types);
       } else if (
         baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&

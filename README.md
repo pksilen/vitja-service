@@ -5,32 +5,8 @@ TODO:
     - password
 - By default following fields are encrypted, or use @NotEncrypted annotation
 - @Encrypted annotation
-- Give an error, if numeric field is of type number, because it cannot be encrypted
-    - Protected Health Information (PHI)
-    - Address
-    - Last Name, First Name, Full Name
-    - Phone number
-    - Email
-    - Account number
-    - Credit Card
-    - CVC
-    - Drivers license
-    - Passport
-    - Social security
-    - Birth Date
-    - City
-    - State
-    - Post(al) code
-    - zip code
-    - Country
-    - Gender
-    - Race
-    - Age
-    - Job title/position/description
-    - Workplace
-    - Company
-    - Geo position/location
-    - latitude/longitude
+- Create table set varchar length with maxLength annotation
+- in .type files implement if class spread class extends other classes recursively
     
 - Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
 - Order should have OrderItem array, order item should have one Delivery item as child
@@ -61,7 +37,7 @@ TODO:
    Filter : { fieldName: string, operator?: '>=' | '<=' | '!=' ..., value: any }
    -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
-- Mongodb transactions, update/delete preconditions
+- Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value
 - Unit testaa: shouldIncludeField eri keissit
 
 TODO NEXT RELEASE:
