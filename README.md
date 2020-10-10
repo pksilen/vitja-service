@@ -1,11 +1,10 @@
 # Vitja service
 
 TODO:
-_ On second round, give getEntityMetadata a caching parameter set to true
-- By default following fields are Hashed (and salted), or use @NotHashed annotation
-    - password
-- By default following fields are encrypted, or use @NotEncrypted annotation
+- @Hashed annotation
+- @NotEncrypted annotation
 - @Encrypted annotation
+- On second round, give getEntityMetadata a caching parameter set to true
 - Create table set varchar length with maxLength annotation
 - in .type files implement if class spread class extends other classes recursively
     
@@ -33,6 +32,7 @@ _ On second round, give getEntityMetadata a caching parameter set to true
   - Add | null also to type's metadata
   - if type metadata does not have | null after array checking, make SQL field NOT NULL
   - All array checking must be changed because type name ending can be  | null instead of []
+  - Find all slice(0, -2) calls also
 - Support dynamic filters with Map-type argument property
   filters: Filter[]
    Filter : { fieldName: string, operator?: '>=' | '<=' | '!=' ..., value: any }

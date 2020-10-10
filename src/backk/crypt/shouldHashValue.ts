@@ -2,7 +2,8 @@ import typePropertyAnnotationContainer from '../annotations/typeproperty/typePro
 
 export default function shouldHashValue(propertyName: string, EntityClass: Function): boolean {
   return (
-    propertyName.toLowerCase().includes('password') &&
+    (propertyName.toLowerCase().includes('password') ||
+      typePropertyAnnotationContainer.isTypePropertyHashed(EntityClass, propertyName)) &&
     !typePropertyAnnotationContainer.isTypePropertyNotHashed(EntityClass, propertyName)
   );
 }
