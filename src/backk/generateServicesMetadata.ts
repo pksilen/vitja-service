@@ -25,7 +25,13 @@ function getTypeDocumentation<T>(
   }, {});
 }
 
-export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: string } {
+const typeNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
+
+export function getTypeMetadata<T>(typeClass: new () => T, isGeneration = false): { [key: string]: string } {
+  if (!isGeneration && typeNameToMetadataMap[typeClass.name]) {
+    return typeNameToMetadataMap[typeClass.name];
+  }
+
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
   const propNameToIsOptionalMap: { [key: string]: boolean } = {};
   const propNameToPropTypeMap: { [key: string]: string } = {};
@@ -211,16 +217,25 @@ export function getTypeMetadata<T>(typeClass: new () => T): { [key: string]: str
     }
   });
 
-  return Object.entries(propNameToPropTypeMap).reduce((accumulatedTypeObject, [propName, propType]) => {
-    return {
-      ...accumulatedTypeObject,
-      [propName]:
-        (propNameToIsOptionalMap[propName] ? '?' + propType : propType) +
-        (propNameToDefaultValueMap[propName] === undefined
-          ? ''
-          : ` = ${JSON.stringify(propNameToDefaultValueMap[propName])}`)
-    };
-  }, {});
+  const metadata = Object.entries(propNameToPropTypeMap).reduce(
+    (accumulatedTypeObject, [propName, propType]) => {
+      return {
+        ...accumulatedTypeObject,
+        [propName]:
+          (propNameToIsOptionalMap[propName] ? '?' + propType : propType) +
+          (propNameToDefaultValueMap[propName] === undefined
+            ? ''
+            : ` = ${JSON.stringify(propNameToDefaultValueMap[propName])}`)
+      };
+    },
+    {}
+  );
+
+  if (!isGeneration) {
+    typeNameToMetadataMap[typeClass.name] = metadata;
+  }
+
+  return metadata;
 }
 
 function getValidationMetadata<T>(typeClass: new () => T): object {
@@ -289,7 +304,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
 
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
-          const typeObject = getTypeMetadata(typeClass);
+          const typeObject = getTypeMetadata(typeClass, true);
           return { ...accumulatedTypes, [typeName]: typeObject };
         },
         {}
@@ -418,7 +433,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
 
         if (isArrayReturnType) {
           const argTypeClass = (controller as any)[serviceName].Types[paramTypeName];
-          const argTypeMetadata = getTypeMetadata(argTypeClass);
+          const argTypeMetadata = getTypeMetadata(argTypeClass, true);
           if (!argTypeMetadata.pageNumber || !argTypeMetadata.pageSize) {
             throw new Error(
               serviceName +

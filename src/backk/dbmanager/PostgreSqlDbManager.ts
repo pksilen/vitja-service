@@ -190,36 +190,36 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       }
 
       const entityMetadata = getTypeMetadata(entityClass as any);
-      Object.keys(item)
+      const additionalMetadata = Object.keys(item)
         .filter((itemKey) => itemKey.endsWith('Id'))
-        .forEach((itemKey) => {
-          entityMetadata[itemKey] = 'integer';
-        });
+        .reduce((accumulatedMetadata, itemKey) => ({ ...accumulatedMetadata, [itemKey]: 'integer' }), {});
       const columns: any = [];
       const values: any = [];
 
-      Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [any, any]) => {
-        let baseFieldTypeName = fieldTypeName;
-        let isArray = false;
+      Object.entries({ ...entityMetadata, ...additionalMetadata }).forEach(
+        ([fieldName, fieldTypeName]: [any, any]) => {
+          let baseFieldTypeName = fieldTypeName;
+          let isArray = false;
 
-        if (fieldTypeName.endsWith('[]')) {
-          baseFieldTypeName = fieldTypeName.slice(0, -2);
-          isArray = true;
-        }
+          if (fieldTypeName.endsWith('[]')) {
+            baseFieldTypeName = fieldTypeName.slice(0, -2);
+            isArray = true;
+          }
 
-        if (
-          !isArray &&
-          (baseFieldTypeName[0] !== baseFieldTypeName[0].toUpperCase() || baseFieldTypeName[0] === '(') &&
-          fieldName !== '_id'
-        ) {
-          columns.push(fieldName);
-          if (fieldName === 'id' || fieldName.endsWith('Id')) {
-            values.push(parseInt((item as any)[fieldName], 10));
-          } else {
-            values.push((item as any)[fieldName]);
+          if (
+            !isArray &&
+            (baseFieldTypeName[0] !== baseFieldTypeName[0].toUpperCase() || baseFieldTypeName[0] === '(') &&
+            fieldName !== '_id'
+          ) {
+            columns.push(fieldName);
+            if (fieldName === 'id' || fieldName.endsWith('Id')) {
+              values.push(parseInt((item as any)[fieldName], 10));
+            } else {
+              values.push((item as any)[fieldName]);
+            }
           }
         }
-      });
+      );
 
       const sqlColumns = columns.map((fieldName: any) => fieldName).join(', ');
       const sqlValuePlaceholders = columns.map((_: any, index: number) => `$${index + 1}`).join(', ');
@@ -252,7 +252,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             const relationEntityName = baseFieldTypeName;
             await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
               subItem[idFieldName] = _id;
-              await this.createItem(
+              const idOrErrorResponse = await this.createItem(
                 subItem,
                 (Types as any)[relationEntityName],
                 Types,
@@ -260,6 +260,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
                 itemCountQueryFilter,
                 true
               );
+              if ('errorMessage' in idOrErrorResponse) {
+                throw new Error(idOrErrorResponse.errorMessage);
+              }
             });
           } else if (
             baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
@@ -268,7 +271,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             const relationEntityName = baseFieldTypeName;
             const subItem = (item as any)[fieldName];
             subItem[idFieldName] = _id;
-            await this.createItem(
+            const idOrErrorResponse = await this.createItem(
               subItem,
               (Types as any)[relationEntityName],
               Types,
@@ -276,6 +279,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
               itemCountQueryFilter,
               true
             );
+            if ('errorMessage' in idOrErrorResponse) {
+              throw new Error(idOrErrorResponse.errorMessage);
+            }
           } else if (isArray) {
             await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
               const insertStatement = `INSERT INTO ${this.schema}.${entityClass.name +
@@ -689,7 +695,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             const relationEntityName = baseFieldTypeName;
             promises.push(
               forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
-                await this.updateItem(
+                const possibleErrorResponse = await this.updateItem(
                   subItem,
                   (Types as any)[relationEntityName],
                   Types,
@@ -697,6 +703,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
                   false,
                   true
                 );
+                if (possibleErrorResponse) {
+                  throw new Error(possibleErrorResponse.errorMessage);
+                }
               })
             );
           } else if (
@@ -704,16 +713,17 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             baseFieldTypeName[0] !== '('
           ) {
             const relationEntityName = baseFieldTypeName;
-            promises.push(
-              this.updateItem(
-                (restOfItem as any)[fieldName],
-                (Types as any)[relationEntityName],
-                Types,
-                undefined,
-                false,
-                true
-              )
+            const possibleErrorResponse = await this.updateItem(
+              (restOfItem as any)[fieldName],
+              (Types as any)[relationEntityName],
+              Types,
+              undefined,
+              false,
+              true
             );
+            if (possibleErrorResponse) {
+              throw new Error(possibleErrorResponse.errorMessage);
+            }
           } else if (isArray) {
             promises.push(
               forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {

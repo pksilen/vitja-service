@@ -1,26 +1,22 @@
 # Vitja service
 
 TODO:
-- @NotEncrypted annotation
 - On second round, give getEntityMetadata a caching parameter set to true
 - in .type files implement if class spread class extends other classes recursively
-    
 - Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
 - Order should have OrderItem array, order item should have one Delivery item as child
 - Possible to delete shopping cart item from order if it is not yet delivered
+- Handle order modification and delete to reflect in salesItem states
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
 - Logger
 - GDPR logging
   -audit log should go to separate server
 - MariaDb/MySql
-- @ManyToMany
- - Own remote service function executor (Http)
+- Own remote service function executor (Http)
      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
-- Custom readinessProbe should use defaultReadinessProbe plus all other services it is using
 - executeMultipleInParallel endpoint, to execute multiple serviceCalls in parallel
-- Handle order modification and delete to reflect in salesItem states
 - getDbManager support for multiple dbmanagers
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
@@ -35,7 +31,8 @@ TODO:
    Filter : { fieldName: string, operator?: '>=' | '<=' | '!=' ..., value: any }
    -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
-- Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value
+- @ManyToMany
+- Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
 - Unit testaa: shouldIncludeField eri keissit
 
 TODO NEXT RELEASE:
