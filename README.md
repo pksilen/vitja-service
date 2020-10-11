@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- On second round, give getEntityMetadata a caching parameter set to true
 - in .type files implement if class spread class extends other classes recursively
 - Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
 - Order should have OrderItem array, order item should have one Delivery item as child
@@ -12,7 +11,6 @@ TODO:
 - Logger
 - GDPR logging
   -audit log should go to separate server
-- MariaDb/MySql
 - Own remote service function executor (Http)
      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
@@ -33,6 +31,7 @@ TODO:
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
 - @ManyToMany
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
+- MariaDb/MySql
 - Unit testaa: shouldIncludeField eri keissit
 
 TODO NEXT RELEASE:

@@ -9,6 +9,7 @@ import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 
+
 export default class UserResponse {
   @MaxLength(24)
   _id!: string;
