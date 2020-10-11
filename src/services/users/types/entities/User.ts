@@ -3,16 +3,14 @@ import Entity from '../../../../backk/annotations/entity/Entity';
 import UniqueIndex from '../../../../backk/annotations/entity/UniqueIndex';
 import { Documentation } from '../../../../backk/annotations/typeproperty/Documentation';
 import { IsExprTrue } from '../../../../backk/annotations/typeproperty/IsExprTrue';
+import { Id } from '../../../../backk/Backk';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
 import DefaultPaymentMethod from './DefaultPaymentMethod';
 import PaymentMethod from './PaymentMethod';
 
 @Entity()
 @UniqueIndex(['userName'])
-export default class User {
-  @MaxLength(24)
-  _id!: string;
-
+export default class User extends Id {
   @MaxLength(512)
   @IsExprTrue('obj.password && obj.password.length >= 8 || true')
   userName!: string;

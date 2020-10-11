@@ -5,6 +5,7 @@
 import { MaxLength } from 'class-validator';
 import Entity from '../../../../backk/annotations/entity/Entity';
 import ShoppingCartItem from "../entities/ShoppingCartItem";
+import { Id } from '../../../../backk/Backk';
 
 export default class CreateShoppingCartArg {
 @MaxLength(24)

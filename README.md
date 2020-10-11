@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- in .type files implement if class spread class extends other classes recursively
 - Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
 - Order should have OrderItem array, order item should have one Delivery item as child
 - Possible to delete shopping cart item from order if it is not yet delivered
