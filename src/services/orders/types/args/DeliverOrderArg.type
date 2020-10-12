@@ -1,3 +1,0 @@
-export default class DeliverOrderArg  {
-  ...Pick<Order, '_id' | 'deliveryTimestampInSecs' | 'trackingUrl'>;
-}

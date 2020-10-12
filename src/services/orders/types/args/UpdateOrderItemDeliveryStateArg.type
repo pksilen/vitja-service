@@ -1,0 +1,9 @@
+export default class UpdateOrderItemDeliveryStateArg {
+  ...Pick<OrderItem, | 'state'>;
+
+  @MaxLength(24)
+  _id!: string;
+
+  @MaxLength(24)
+  orderItemId!: string;
+}

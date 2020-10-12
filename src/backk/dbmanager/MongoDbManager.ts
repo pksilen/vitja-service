@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
 import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
-import { ErrorResponse, getMongoDbProjection, Id, OptPostQueryOps, PostQueryOps } from '../Backk';
+import { ErrorResponse, getMongoDbProjection, OptPostQueryOps, PostQueryOps } from '../Backk';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 import SqlExpression from '../sqlexpression/SqlExpression';
@@ -56,7 +56,7 @@ export default class MongoDbManager extends AbstractDbManager {
     Types: object,
     maxItemCount?: number,
     itemCountQueryFilter?: FilterQuery<T>
-  ): Promise<Id | ErrorResponse> {
+  ): Promise<T | ErrorResponse> {
     // TODO implement maxItemCount
     try {
       const writeOperationResult = await this.tryExecute((client) =>
@@ -66,9 +66,7 @@ export default class MongoDbManager extends AbstractDbManager {
           .insertOne(item)
       );
 
-      return {
-        _id: writeOperationResult.insertedId.toHexString()
-      };
+      return this.getItemById(writeOperationResult.insertedId.toHexString(), entityClass);
     } catch (error) {
       return getInternalServerErrorResponse(error);
     }

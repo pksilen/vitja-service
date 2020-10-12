@@ -20,7 +20,7 @@ export default abstract class UsersService extends UsersBaseService {
   };
 
   abstract deleteAllUsers(): Promise<void | ErrorResponse>;
-  abstract createUser(arg: CreateUserArg): Promise<Id | ErrorResponse>;
+  abstract createUser(arg: CreateUserArg): Promise<UserResponse | ErrorResponse>;
   abstract getUserByUserName(userName: UserName): Promise<UserResponse | ErrorResponse>;
   abstract getUserById(id: Id): Promise<UserResponse | ErrorResponse>;
   abstract updateUser(updateUserArg: UpdateUserArg): Promise<void | ErrorResponse>;

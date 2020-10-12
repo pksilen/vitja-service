@@ -1,3 +1,6 @@
+import CreateOrderItemArg from './CreateOrderItemArg';
+
 export default class CreateOrderArg {
-  ...Pick<Order, 'userId' | 'shoppingCartItems'>;
+  ...Pick<Order, 'userId'>;
+  orderItems!: CreateOrderItemArg[];
 }

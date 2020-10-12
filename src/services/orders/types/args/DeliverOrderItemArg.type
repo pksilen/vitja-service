@@ -1,0 +1,9 @@
+export default class DeliverOrderItemArg  {
+  ...Pick<OrderItem, 'deliveryTimestampInSecs' | 'trackingUrl'>;
+
+  @MaxLength(24)
+  _id!: string
+
+  @MaxLength(24)
+  orderItemId!: string
+}

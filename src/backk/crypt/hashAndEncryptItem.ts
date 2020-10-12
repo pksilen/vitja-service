@@ -15,7 +15,6 @@ async function hashOrEncryptItemValues(
     if (Array.isArray(propertyValue) && propertyValue.length > 0) {
       if (typeof propertyValue[0] === 'object') {
         const entityMetadata = getTypeMetadata(EntityClass);
-        console.log((Types as any)[entityMetadata[propertyName].slice(0, -2)]);
         await forEachAsyncParallel(propertyValue, async (pv: any) => {
           await hashOrEncryptItemValues(pv, (Types as any)[entityMetadata[propertyName].slice(0, -2)], Types);
         });

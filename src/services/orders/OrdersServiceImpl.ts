@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorResponse, Id, IdAndUserId } from '../../backk/Backk';
-import OrdersService from './OrdersService';
-import Order from './types/entity/Order';
-import CreateOrderArg from './types/args/CreateOrderArg';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
-import UpdateOrderArg from './types/args/UpdateOrderArg';
-import SalesItemsService from '../salesitems/SalesItemsService';
-import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
-import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
 import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
 import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
-import UpdateOrderDeliveryStateArg from './types/args/UpdateOrderDeliveryStateArg';
 import { AllowForUserRoles } from '../../backk/annotations/service/function/AllowForUserRoles';
-import DeliverOrderArg from './types/args/DeliverOrderArg';
+import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
+import { ErrorResponse, IdAndUserId } from '../../backk/Backk';
+import SalesItemsService from '../salesitems/SalesItemsService';
+import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
+import OrdersService from './OrdersService';
+import CreateOrderArg from './types/args/CreateOrderArg';
+import CreateOrderItemArg from './types/args/CreateOrderItemArg';
+import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
+import UpdateOrderItemDeliveryStateArg from './types/args/UpdateOrderItemDeliveryStateArg';
+import Order from './types/entity/Order';
+import OrderItem from './types/entity/OrderItem';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -27,9 +28,9 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForSelf()
   @NoCaptcha()
-  async createOrder(arg: CreateOrderArg): Promise<Id | ErrorResponse> {
+  async createOrder(arg: CreateOrderArg): Promise<Order | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
-      const errorResponse = await this.updateSalesItemStatesToSold(arg);
+      const errorResponse = await this.updateSalesItemStatesToSold(arg.orderItems);
 
       return errorResponse
         ? errorResponse
@@ -37,9 +38,13 @@ export default class OrdersServiceImpl extends OrdersService {
             {
               ...arg,
               createdTimestampInSecs: Math.round(Date.now() / 1000),
-              state: 'toBeDelivered',
-              trackingUrl: '',
-              deliveryTimestampInSecs: 0
+              orderItems: arg.orderItems.map((orderItem) => ({
+                ...orderItem,
+                _id: '',
+                state: 'toBeDelivered' as 'toBeDelivered',
+                trackingUrl: '',
+                deliveryTimestampInSecs: 0
+              }))
             },
             Order,
             this.Types
@@ -57,23 +62,28 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.getItemById(_id, Order, this.Types);
   }
 
-  @AllowForSelf()
-  updateOrder(arg: UpdateOrderArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(arg, Order, this.Types, { state: 'toBeDelivered' });
-  }
-
   @AllowForUserRoles(['vitjaLogisticsPartner'])
-  deliverOrder(arg: DeliverOrderArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem({ ...arg, state: 'delivering' }, Order, this.Types);
-  }
-
-  @AllowForUserRoles(['vitjaLogisticsPartner'])
-  updateOrderDeliveryState(arg: UpdateOrderDeliveryStateArg): Promise<void | ErrorResponse> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  deliverOrderItem({ _id, orderItemId, ...restOfArg }: DeliverOrderItemArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateItem(
-      arg,
+      { _id: orderItemId, ...restOfArg, state: 'delivering' },
+      OrderItem,
+      this.Types
+    );
+  }
+
+  @AllowForUserRoles(['vitjaLogisticsPartner'])
+  updateOrderItemDeliveryState({
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _id,
+    orderItemId,
+    ...restOfArg
+  }: UpdateOrderItemDeliveryStateArg): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem(
+      { _id: orderItemId, ...restOfArg },
       Order,
       this.Types,
-      OrdersServiceImpl.getPreConditionForNewDeliveryState(arg.state)
+      OrdersServiceImpl.getPreConditionForNewDeliveryState(restOfArg.state)
     );
   }
 
@@ -81,14 +91,14 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.deleteItemById(_id, Order);
   }
 
-  private async updateSalesItemStatesToSold(createOrderArg: CreateOrderArg): Promise<void | ErrorResponse> {
-    return await createOrderArg.shoppingCartItems.reduce(
-      async (errorResponseAccumulator: Promise<void | ErrorResponse>, shoppingCartItem) => {
+  private async updateSalesItemStatesToSold(orderItems: CreateOrderItemArg[]): Promise<void | ErrorResponse> {
+    return await orderItems.reduce(
+      async (errorResponseAccumulator: Promise<void | ErrorResponse>, { salesItemId }) => {
         return (
           (await errorResponseAccumulator) ||
           (await this.salesItemsService.updateSalesItemState(
             {
-              _id: shoppingCartItem.salesItemId,
+              _id: salesItemId,
               state: 'sold'
             },
             'forSale'

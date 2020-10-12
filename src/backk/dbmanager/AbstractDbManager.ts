@@ -1,7 +1,7 @@
 import { getNamespace, Namespace } from 'cls-hooked';
 import { FilterQuery, MongoClient } from 'mongodb';
 import { Pool } from 'pg';
-import { ErrorResponse, Id, OptPostQueryOps, PostQueryOps } from '../Backk';
+import { ErrorResponse, OptPostQueryOps, PostQueryOps } from '../Backk';
 import SqlExpression from '../sqlexpression/SqlExpression';
 
 export interface Field {
@@ -41,7 +41,7 @@ export default abstract class AbstractDbManager {
     Types: object,
     maxAllowedItemCount?: number,
     itemCountQueryFilter?: Partial<T>
-  ): Promise<Id | ErrorResponse>;
+  ): Promise<T | ErrorResponse>;
 
   abstract getItems<T>(
     filters: FilterQuery<T> | Partial<T> | SqlExpression[],

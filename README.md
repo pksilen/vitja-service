@@ -3,8 +3,14 @@
 TODO:
 - Move order delivery status, trackingUrl and deliveredTimestamp to shopping cart item
 - Order should have OrderItem array, order item should have one Delivery item as child
-- Possible to delete shopping cart item from order if it is not yet delivered
+- Return order item
+- Possible to delete order item from order if it is not yet delivered
 - Handle order modification and delete to reflect in salesItem states
+- Toimiiiko updateItem patchinä, jos subentityn jättää updatesta pois
+
+-Laita ErrorResponseen symboli ja muuta kaikki 'errorMessage' in tsekkaukset tsekkaa
+ - Luo globaali symboli, joka laitetaan error objecktiin avaimeksi
+
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
 - Logger

@@ -3,7 +3,7 @@ import { getFromContainer, MetadataStorage, ValidationTypes } from 'class-valida
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { Base64 } from "js-base64";
+import { Base64 } from 'js-base64';
 import { sign } from 'jsonwebtoken';
 import _ from 'lodash';
 import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
@@ -312,6 +312,47 @@ function getReturnValueTests(
   return javascriptLines;
 }
 
+function getSetCollectionVariableStatements(
+  entityName: string,
+  typeName: string,
+  serviceMetadata: ServiceMetadata,
+  types: { [key: string]: Function },
+  responsePath: string
+) {
+  const typeMetadata = serviceMetadata.types[typeName];
+  let collectionVariableSetStatements: string[] = [];
+
+  Object.entries(typeMetadata).forEach(([propertyName, propertyTypeName]) => {
+    const isArray = propertyTypeName.endsWith('[]');
+    let finalPropertyTypeName = propertyTypeName;
+    if (isArray) {
+      finalPropertyTypeName = propertyTypeName.slice(0, -2);
+    }
+
+    if (propertyName === '_id') {
+      collectionVariableSetStatements.push(
+        `pm.collectionVariables.set("${entityName}Id", response${responsePath}_id)`
+      );
+    }
+
+    if (types[finalPropertyTypeName]) {
+      const finalResponsePath = responsePath + propertyName + (isArray ? '[0]' : '') + '.';
+
+      collectionVariableSetStatements = collectionVariableSetStatements.concat(
+        getSetCollectionVariableStatements(
+          finalPropertyTypeName.charAt(0).toLowerCase() + finalPropertyTypeName.slice(1),
+          finalPropertyTypeName,
+          serviceMetadata,
+          types,
+          finalResponsePath
+        )
+      );
+    }
+  });
+
+  return collectionVariableSetStatements;
+}
+
 function getTests(
   serviceTypes: { [key: string]: Function },
   serviceMetadata: ServiceMetadata,
@@ -337,7 +378,7 @@ function getTests(
   pm.response.to.have.status(${expectedResponseStatusCode});
 });`;
 
-  if (returnValueTypeName === 'Id') {
+  if (functionMetadata.functionName.startsWith('create')) {
     return {
       id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
       listen: 'test',
@@ -346,7 +387,13 @@ function getTests(
         exec: [
           checkResponseCode,
           'const response = pm.response.json()',
-          `pm.collectionVariables.set("${serviceEntityName}Id", response._id)`
+          ...getSetCollectionVariableStatements(
+            serviceEntityName,
+            returnValueTypeName,
+            serviceMetadata,
+            serviceTypes,
+            isArray ? '[0].' : '.'
+          )
         ]
       }
     };

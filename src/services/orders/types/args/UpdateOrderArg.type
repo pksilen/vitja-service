@@ -1,3 +1,0 @@
-export default class UpdateOrderArg  {
-  ...Pick<Order, '_id' | 'userId' | 'shoppingCartItems'>;
-}

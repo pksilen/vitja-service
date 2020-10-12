@@ -28,26 +28,27 @@ export default class UsersServiceImpl extends UsersService {
 
   @FunctionDocumentation('createUser function doc goes here...')
   @AllowForEveryUser()
-  createUser(arg: CreateUserArg): Promise<Id | ErrorResponse> {
-    return this.dbManager.createItem(arg, User, this.Types);
+  async createUser(arg: CreateUserArg): Promise<UserResponse | ErrorResponse> {
+    const userOrErrorResponse = await this.dbManager.createItem(arg, User, this.Types);
+    return '_id' in userOrErrorResponse
+      ? UsersServiceImpl.getUserResponse(userOrErrorResponse)
+      : userOrErrorResponse;
   }
 
   @AllowForSelf()
   async getUserByUserName({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.getItemBy('userName', userName, User, this.Types);
-    if ('_id' in userOrErrorResponse) {
-      return UsersServiceImpl.getUserResponse(userOrErrorResponse);
-    }
-    return userOrErrorResponse;
+    return '_id' in userOrErrorResponse
+      ? UsersServiceImpl.getUserResponse(userOrErrorResponse)
+      : userOrErrorResponse;
   }
 
   @Private()
   async getUserById({ _id }: Id): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.getItemById(_id, User, this.Types);
-    if ('_id' in userOrErrorResponse) {
-      return UsersServiceImpl.getUserResponse(userOrErrorResponse);
-    }
-    return userOrErrorResponse;
+    return '_id' in userOrErrorResponse
+      ? UsersServiceImpl.getUserResponse(userOrErrorResponse)
+      : userOrErrorResponse;
   }
 
   @AllowForSelf()

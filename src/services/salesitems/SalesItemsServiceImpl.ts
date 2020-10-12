@@ -31,7 +31,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
 
   @NoCaptcha()
   @AllowForSelf()
-  async createSalesItem(arg: CreateSalesItemArg): Promise<Id | ErrorResponse> {
+  async createSalesItem(arg: CreateSalesItemArg): Promise<SalesItem | ErrorResponse> {
     return this.dbManager.createItem(
       {
         ...arg,

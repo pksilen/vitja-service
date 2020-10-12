@@ -7,7 +7,7 @@ import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import { pg } from 'yesql';
 import entityContainer, { JoinSpec } from '../annotations/entity/entityAnnotationContainer';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
-import { ErrorResponse, Id, OptionalProjection, OptPostQueryOps, SortBy } from '../Backk';
+import { ErrorResponse, OptionalProjection, OptPostQueryOps, SortBy } from '../Backk';
 import decryptItems from '../crypt/decryptItems';
 import encrypt from '../crypt/encrypt';
 import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
@@ -161,7 +161,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     maxAllowedItemCount?: number,
     itemCountQueryFilter?: Partial<T>,
     isRecursiveCall = false
-  ): Promise<Id | ErrorResponse> {
+  ): Promise<T | ErrorResponse> {
     try {
       if (!isRecursiveCall) {
         await hashAndEncryptItem(item, entityClass, Types);
@@ -252,7 +252,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             const relationEntityName = baseFieldTypeName;
             await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
               subItem[idFieldName] = _id;
-              const idOrErrorResponse = await this.createItem(
+              const subItemOrErrorResponse = await this.createItem(
                 subItem,
                 (Types as any)[relationEntityName],
                 Types,
@@ -260,8 +260,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
                 itemCountQueryFilter,
                 true
               );
-              if ('errorMessage' in idOrErrorResponse) {
-                throw new Error(idOrErrorResponse.errorMessage);
+              if ('errorMessage' in subItemOrErrorResponse && 'statusCode' in subItemOrErrorResponse) {
+                throw new Error(subItemOrErrorResponse.errorMessage);
               }
             });
           } else if (
@@ -271,7 +271,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             const relationEntityName = baseFieldTypeName;
             const subItem = (item as any)[fieldName];
             subItem[idFieldName] = _id;
-            const idOrErrorResponse = await this.createItem(
+            const subItemOrErrorResponse = await this.createItem(
               subItem,
               (Types as any)[relationEntityName],
               Types,
@@ -279,8 +279,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
               itemCountQueryFilter,
               true
             );
-            if ('errorMessage' in idOrErrorResponse) {
-              throw new Error(idOrErrorResponse.errorMessage);
+            if ('errorMessage' in subItemOrErrorResponse && 'statusCode' in subItemOrErrorResponse) {
+              throw new Error(subItemOrErrorResponse.errorMessage);
             }
           } else if (isArray) {
             await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
@@ -296,9 +296,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         await this.commitTransaction();
       }
 
-      return {
-        _id
-      };
+      return isRecursiveCall ? ({} as any) : this.getItemById(_id, entityClass, Types);
     } catch (error) {
       if (!this.getClsNamespace()?.get('globalTransaction')) {
         await this.rollbackTransaction();
@@ -429,7 +427,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const joinStatement = this.getJoinStatement(entityClass, Types);
 
       const result = await this.tryExecuteQuery(
-        `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE _id = $1`,
+        `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${this.schema}.${entityClass.name}._id = $1`,
         [parseInt(_id, 10)]
       );
 
@@ -518,7 +516,6 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
         (item as any)[fieldName] = encrypt(fieldValue as any, false);
-        console.log(item);
       }
 
       let sqlColumns;
@@ -1275,7 +1272,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           );
         }
       } else {
-        if (fieldName !== idFieldName && fieldName !== '_id') {
+        if (fieldName !== idFieldName && ((!parentEntityClass && fieldName !== '_id') || parentEntityClass)) {
           if (this.shouldIncludeField(fieldName, fieldPath, projection)) {
             resultMap.properties.push({ name: fieldName, column: fieldName.toLowerCase() });
           }
