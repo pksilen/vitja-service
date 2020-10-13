@@ -31,10 +31,10 @@ export default class OrdersServiceImpl extends OrdersService {
   @NoCaptcha()
   async createOrder({ salesItemIds, ...restOfArg }: CreateOrderArg): Promise<Order | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
-      const errorResponse = await this.updateSalesItemStatesToSold(salesItemIds);
+      const possibleErrorResponse = await this.updateSalesItemStatesToSold(salesItemIds);
 
-      return errorResponse
-        ? errorResponse
+      return possibleErrorResponse
+        ? possibleErrorResponse
         : await this.dbManager.createItem(
             {
               ...restOfArg,
@@ -78,12 +78,34 @@ export default class OrdersServiceImpl extends OrdersService {
     state,
     orderItemId
   }: UpdateOrderItemDeliveryStateArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(
-      { _id: orderItemId, state },
-      OrderItem,
-      this.Types,
-      OrdersServiceImpl.getPreConditionForNewDeliveryState(state)
-    );
+    return this.dbManager.executeInsideTransaction(async () => {
+      if (state === 'returned') {
+        const orderItemOrErrorResponse = await this.dbManager.getItemById(orderItemId, OrderItem, this.Types);
+
+        if ('errorMessage' in orderItemOrErrorResponse) {
+          return orderItemOrErrorResponse;
+        }
+
+        const possibleErrorResponse = await this.salesItemsService.updateSalesItemState(
+          {
+            _id: orderItemOrErrorResponse.salesItemId,
+            state: 'forSale'
+          },
+          'sold'
+        );
+
+        if (possibleErrorResponse) {
+          return possibleErrorResponse;
+        }
+      }
+
+      return this.dbManager.updateItem(
+        { _id: orderItemId, state },
+        OrderItem,
+        this.Types,
+        OrdersServiceImpl.getPreConditionForNewDeliveryState(state)
+      );
+    });
   }
 
   @AllowForSelf()

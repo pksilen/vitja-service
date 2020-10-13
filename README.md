@@ -3,9 +3,10 @@
 TODO:
 - Return order item
 - Toimiiiko updateItem patchinä, jos subentityn jättää updatesta pois
-
 -Laita ErrorResponseen symboli ja muuta kaikki 'errorMessage' in tsekkaukset tsekkaa
  - Luo globaali symboli, joka laitetaan error objecktiin avaimeksi
+- Lisää addOrderItem metodi AllowedForTests, siirrä deleteOrderItem createn jälkeen ennen tätä
+- Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
