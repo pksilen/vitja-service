@@ -79,6 +79,7 @@ function getDeclarationsFor(typeName: string, originatingTypeFilePathName: strin
 
 export default function getTypescriptLinesFor(
   typeName: string,
+  isBaseTypeOptional: boolean,
   keys: string[],
   keyType: 'omit' | 'pick',
   originatingTypeFilePathName: string
@@ -120,6 +121,9 @@ export default function getTypescriptLinesFor(
       }
 
       importLines.push(generate(node).code);
+      if (isBaseTypeOptional) {
+        importLines.push("import { IsOptional } from 'class-validator';");
+      }
     }
     if (
       (node.type === 'ExportDefaultDeclaration' || node.type === 'ExportNamedDeclaration') &&
@@ -150,6 +154,9 @@ export default function getTypescriptLinesFor(
             }
             return;
           }
+        }
+        if (isBaseTypeOptional) {
+          classPropertyLines.push('@IsOptional()');
         }
         classPropertyLines.push(generate(classBodyNode).code + '\n');
       });

@@ -1,3 +1,5 @@
-export default class UpdateUserArg {
-  ...Omit<User, 'userName'>;
+import { Id } from '../../../../backk/Backk';
+
+export default class UpdateUserArg extends Id {
+  ...Omit<Partial<User>, '_id' | 'userName'>;
 }

@@ -12,10 +12,16 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
     if (trimmedTypeFileLine.startsWith('...') && trimmedTypeFileLine.endsWith(';')) {
       const spreadType = trimmedTypeFileLine.slice(3, -1);
       if (spreadType.startsWith('Omit<')) {
-        const baseType = spreadType
+        let baseType = spreadType
           .slice(5)
           .split(',')[0]
           .trim();
+
+        let isBaseTypeOptional = false;
+        if (baseType.startsWith('Partial<')) {
+          baseType = baseType.slice(8, -1);
+          isBaseTypeOptional = true;
+        }
 
         const ommittedKeyParts = spreadType
           .slice(5)
@@ -33,6 +39,7 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
 
         const [importLines, classPropertyLines] = getTypescriptLinesFor(
           baseType,
+          isBaseTypeOptional,
           omittedKeys,
           'omit',
           typeFilePathName
@@ -61,6 +68,7 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
 
         const [importLines, classPropertyLines] = getTypescriptLinesFor(
           baseType,
+          false,
           pickedKeys,
           'pick',
           typeFilePathName
@@ -76,6 +84,7 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
 
         const [importLines, classPropertyLines] = getTypescriptLinesFor(
           spreadType,
+          false,
           [],
           'omit',
           typeFilePathName

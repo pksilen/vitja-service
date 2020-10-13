@@ -89,7 +89,7 @@ function getSampleArg(
     // noinspection ReuseOfLocalVariableJS
     finalPropertyTypeName = propertyTypeNameAndDefaultValue[0];
     const defaultValue = propertyTypeNameAndDefaultValue[1];
-    if (isOptionalProperty && defaultValue === undefined) {
+    if (isOptionalProperty && defaultValue === undefined && !isUpdate) {
       return;
     }
 

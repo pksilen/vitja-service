@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Return order item
 - Toimiiiko updateItem patchinä, jos subentityn jättää updatesta pois
 -Laita ErrorResponseen symboli ja muuta kaikki 'errorMessage' in tsekkaukset tsekkaa
  - Luo globaali symboli, joka laitetaan error objecktiin avaimeksi
