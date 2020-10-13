@@ -530,9 +530,9 @@ function createPostmanCollectionItemFromWrittenTest({
             'const response = pm.response.json();',
             ...(response.tests
               ? response.tests.map(
-                  (test: any) =>
-                    `pm.test("${test.name}", function () {
-  ${test.exec.join('\n  ')} 
+                  (test: string) =>
+                    `pm.test("test", function () {
+  ${test} 
 })`
                 )
               : [])
@@ -592,7 +592,11 @@ function addWrittenTest(writtenTest: any, items: any[]) {
       );
 
       instantiatedWrittenTest.testTemplate.testTemplateName =
-        instantiatedWrittenTest.testTemplate.testTemplateName + ' (' + test.testName + ')';
+        instantiatedWrittenTest.testTemplate.serviceName +
+        instantiatedWrittenTest.testTemplate.functionName +
+        ' (' +
+        test.testName +
+        ')';
 
       items.push(createPostmanCollectionItemFromWrittenTest(instantiatedWrittenTest));
     });

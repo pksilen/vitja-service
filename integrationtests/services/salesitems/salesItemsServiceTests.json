@@ -1,7 +1,6 @@
 [
   {
     "testTemplate": {
-      "testTemplateName": "salesItemsService.createSalesItem",
       "serviceName": "salesItemsService",
       "functionName": "createSalesItem",
       "functionArgument": {
@@ -18,12 +17,7 @@
       },
       "response": {
         "statusCode": 200,
-        "tests": [
-          {
-            "name": "set salesItemId",
-            "exec": ["pm.collectionVariables.set(\"salesItemId\", response._id)"]
-          }
-        ]
+        "tests": ["pm.collectionVariables.set(\"salesItemId\", response._id)"]
       }
     },
     "tests": [
@@ -51,7 +45,6 @@
   },
   {
     "testTemplate": {
-      "testTemplateName": "salesItemsService.getSalesItems",
       "serviceName": "salesItemsService",
       "functionName": "getSalesItems",
       "functionArgument": {
@@ -63,13 +56,8 @@
       "response": {
         "statusCode": 200,
         "tests": [
-          {
-            "name": "{{responseProperty[0]}} is {{responseProperty[1]}}",
-            "exec": [
-              "pm.expect(response[0].{{responseProperty[0]}}).to.eql({{responseProperty[1]}});",
-              "pm.expect(response.length).to.eql({{responseLength}});"
-            ]
-          }
+          "pm.expect(response[0].{{responseProperty[0]}}).to.eql({{responseProperty[1]}});",
+          "pm.expect(response.length).to.eql({{responseLength}});"
         ]
       }
     },
@@ -153,7 +141,6 @@
   },
   {
     "testTemplate": {
-      "testTemplateName": "salesItemsService.getSalesItemById",
       "serviceName": "salesItemsService",
       "functionName": "getSalesItemById",
       "functionArgument": {
@@ -163,19 +150,15 @@
       "response": {
         "statusCode": 200,
         "tests": [
-          {
-            "exec": [
-              "pm.expect(response.state).to.eql('sold');",
-              "pm.expect(response.userId).to.eql(pm.collectionVariables.get('userId'));",
-              "pm.expect(response.price).to.eql(2.0);",
-              "pm.expect(response.title).to.eql('secondTitle');",
-              "pm.expect(response.description).to.eql('secondDescription');",
-              "pm.expect(response.area).to.eql('Area2');",
-              "pm.expect(response.productDepartment).to.eql('Clothes');",
-              "pm.expect(response.productCategory).to.eql('Clothes');",
-              "pm.expect(response.productSubCategory).to.eql('Clothes');"
-            ]
-          }
+          "pm.expect(response.state).to.eql('sold');",
+          "pm.expect(response.userId).to.eql(pm.collectionVariables.get('userId'));",
+          "pm.expect(response.price).to.eql(2.0);",
+          "pm.expect(response.title).to.eql('secondTitle');",
+          "pm.expect(response.description).to.eql('secondDescription');",
+          "pm.expect(response.area).to.eql('Area2');",
+          "pm.expect(response.productDepartment).to.eql('Clothes');",
+          "pm.expect(response.productCategory).to.eql('Clothes');",
+          "pm.expect(response.productSubCategory).to.eql('Clothes');"
         ]
       }
     },

@@ -2,7 +2,6 @@
 
 TODO:
 - Return order item
-- Possible to delete order item from order if it is not yet delivered
 - Toimiiiko updateItem patchinä, jos subentityn jättää updatesta pois
 
 -Laita ErrorResponseen symboli ja muuta kaikki 'errorMessage' in tsekkaukset tsekkaa
