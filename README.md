@@ -1,7 +1,8 @@
 # Vitja service
 
 TODO:
-- Toimiiiko updateItem patchinä, jos subentityn jättää updatesta pois
+- Muuta updateArgit että on optionaalisia
+- Allow updateSalesItem only when it is forSale
 -Laita ErrorResponseen symboli ja muuta kaikki 'errorMessage' in tsekkaukset tsekkaa
  - Luo globaali symboli, joka laitetaan error objecktiin avaimeksi
 - Lisää addOrderItem metodi AllowedForTests, siirrä deleteOrderItem createn jälkeen ennen tätä

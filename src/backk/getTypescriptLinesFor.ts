@@ -121,7 +121,7 @@ export default function getTypescriptLinesFor(
       }
 
       importLines.push(generate(node).code);
-      if (isBaseTypeOptional) {
+      if (isBaseTypeOptional && !importLines.includes("import { IsOptional } from 'class-validator';")) {
         importLines.push("import { IsOptional } from 'class-validator';");
       }
     }
