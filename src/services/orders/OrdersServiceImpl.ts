@@ -81,7 +81,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }: UpdateOrderItemDeliveryStateArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateItem(
       { _id: orderItemId, ...restOfArg },
-      Order,
+      OrderItem,
       this.Types,
       OrdersServiceImpl.getPreConditionForNewDeliveryState(restOfArg.state)
     );
