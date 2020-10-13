@@ -2,11 +2,15 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { MaxLength } from 'class-validator';
+import { IsInt, IsNumber, Max, MaxLength, Min } from 'class-validator';
+import Entity from '../../../../backk/annotations/entity/Entity';
+import { Id } from '../../../../backk/Backk';
+import { ExpectInTestsToMatch } from '../../../../backk/ExpectInTestsToMatch';
 
 export default class UpdateSalesItemStateArg {
-  @MaxLength(24)
-  _id!: string;
+@MaxLength(24)
+_id!: string;
 
-  state!: 'forSale' | 'sold';
+state!: 'forSale' | 'sold';
+
 }

@@ -145,8 +145,12 @@ function getSampleArg(
     }
 
     if (finalPropertyTypeName.endsWith('[]')) {
-      sampleArg[propertyName] =
-        defaultValue === undefined ? [sampleArg[propertyName]] : JSON.parse(defaultValue);
+      if (propertyName.endsWith('Ids') && testValue === undefined) {
+        sampleArg[propertyName] = [`{{${propertyName.slice(0, -3)}Id}}`];
+      } else {
+        sampleArg[propertyName] =
+          defaultValue === undefined ? [sampleArg[propertyName]] : JSON.parse(defaultValue);
+      }
     }
   });
 

@@ -9,7 +9,6 @@ import SalesItemsService from '../salesitems/SalesItemsService';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import OrdersService from './OrdersService';
 import CreateOrderArg from './types/args/CreateOrderArg';
-import CreateOrderItemArg from './types/args/CreateOrderItemArg';
 import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
 import UpdateOrderItemDeliveryStateArg from './types/args/UpdateOrderItemDeliveryStateArg';
 import Order from './types/entity/Order';
@@ -28,18 +27,18 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForSelf()
   @NoCaptcha()
-  async createOrder(arg: CreateOrderArg): Promise<Order | ErrorResponse> {
+  async createOrder({ salesItemIds, ...restOfArg }: CreateOrderArg): Promise<Order | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
-      const errorResponse = await this.updateSalesItemStatesToSold(arg.orderItems);
+      const errorResponse = await this.updateSalesItemStatesToSold(salesItemIds);
 
       return errorResponse
         ? errorResponse
         : await this.dbManager.createItem(
             {
-              ...arg,
+              ...restOfArg,
               createdTimestampInSecs: Math.round(Date.now() / 1000),
-              orderItems: arg.orderItems.map((orderItem) => ({
-                ...orderItem,
+              orderItems: salesItemIds.map((salesItemId) => ({
+                salesItemId,
                 _id: '',
                 state: 'toBeDelivered' as 'toBeDelivered',
                 trackingUrl: '',
@@ -91,9 +90,9 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.deleteItemById(_id, Order);
   }
 
-  private async updateSalesItemStatesToSold(orderItems: CreateOrderItemArg[]): Promise<void | ErrorResponse> {
-    return await orderItems.reduce(
-      async (errorResponseAccumulator: Promise<void | ErrorResponse>, { salesItemId }) => {
+  private async updateSalesItemStatesToSold(salesItemIds: string[]): Promise<void | ErrorResponse> {
+    return await salesItemIds.reduce(
+      async (errorResponseAccumulator: Promise<void | ErrorResponse>, salesItemId) => {
         return (
           (await errorResponseAccumulator) ||
           (await this.salesItemsService.updateSalesItemState(

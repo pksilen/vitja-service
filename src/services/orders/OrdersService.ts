@@ -27,5 +27,6 @@ export default abstract class OrdersService extends BaseService {
   abstract getOrderById(idAndUserId: IdAndUserId): Promise<Order | ErrorResponse>;
   abstract deliverOrderItem(arg: DeliverOrderItemArg): Promise<void | ErrorResponse>;
   abstract updateOrderItemDeliveryState(arg: UpdateOrderItemDeliveryStateArg): Promise<void | ErrorResponse>;
+  // abstract deleteOrderItem(arg: DeleteOrderItemArg): Promise<void | ErrorResponse>;
   abstract deleteOrderById(idAndUserId: IdAndUserId): Promise<void | ErrorResponse>;
 }

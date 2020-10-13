@@ -3,11 +3,14 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { MaxLength } from 'class-validator';
-import ShoppingCartItem from '../entities/ShoppingCartItem';
+import Entity from '../../../../backk/annotations/entity/Entity';
+import { Id } from '../../../../backk/Backk';
+import ShoppingCartItem from "../entities/ShoppingCartItem";
 
 export default class CreateShoppingCartArg {
-  @MaxLength(24)
-  userId!: string;
+@MaxLength(24)
+userId!: string;
 
-  shoppingCartItems!: ShoppingCartItem[];
+shoppingCartItems!: ShoppingCartItem[];
+
 }

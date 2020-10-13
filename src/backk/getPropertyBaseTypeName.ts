@@ -6,5 +6,5 @@ export default function getPropertyBaseTypeName(propertyTypeName: string): strin
     ? basePropertyTypeName.slice(0, -2)
     : basePropertyTypeName;
 
-  return basePropertyTypeName
+  return basePropertyTypeName;
 }
