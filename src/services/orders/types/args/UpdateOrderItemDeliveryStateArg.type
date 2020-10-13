@@ -1,9 +1,5 @@
-export default class UpdateOrderItemDeliveryStateArg {
+import OrderIdAndOrderItemId from './OrderIdAndOrderItemId';
+
+export default class UpdateOrderItemDeliveryStateArg extends OrderIdAndOrderItemId {
   ...Pick<OrderItem, | 'state'>;
-
-  @MaxLength(24)
-  _id!: string;
-
-  @MaxLength(24)
-  orderItemId!: string;
 }

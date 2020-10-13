@@ -1,9 +1,5 @@
-export default class DeliverOrderItemArg  {
+import OrderIdAndOrderItemId from './OrderIdAndOrderItemId';
+
+export default class DeliverOrderItemArg extends OrderIdAndOrderItemId  {
   ...Pick<OrderItem, 'deliveryTimestampInSecs' | 'trackingUrl'>;
-
-  @MaxLength(24)
-  _id!: string
-
-  @MaxLength(24)
-  orderItemId!: string
 }

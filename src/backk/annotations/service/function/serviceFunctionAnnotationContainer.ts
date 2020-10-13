@@ -6,6 +6,7 @@ class ServiceFunctionAnnotationContainer {
   private serviceFunctionNameToIsPrivateMap: { [key: string]: boolean } = {};
   private serviceFunctionNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
   private serviceFunctionNameToDocStringMap: { [key: string]: string } = {};
+  private serviceFunctionNameToExpectedResponseStatusCodeInTestsMap: { [key: string]: number } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -33,6 +34,16 @@ class ServiceFunctionAnnotationContainer {
 
   addDocumentationForServiceFunction(serviceClass: Function, functionName: string, docString: string) {
     this.serviceFunctionNameToDocStringMap[`${serviceClass.name}${functionName}`] = docString;
+  }
+
+  addExpectedResponseStatusCodeInTestsForServiceFunction(
+    serviceClass: Function,
+    functionName: string,
+    statusCode: number
+  ) {
+    this.serviceFunctionNameToExpectedResponseStatusCodeInTestsMap[
+      `${serviceClass.name}${functionName}`
+    ] = statusCode;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -125,6 +136,24 @@ class ServiceFunctionAnnotationContainer {
     while (proto !== Object.prototype) {
       if (this.serviceFunctionNameToDocStringMap[`${serviceClass.name}${functionName}`] !== undefined) {
         return this.serviceFunctionNameToDocStringMap[`${serviceClass.name}${functionName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return undefined;
+  }
+
+  getExpectedResponseStatusCodeInTestsForServiceFunction(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToExpectedResponseStatusCodeInTestsMap[
+          `${serviceClass.name}${functionName}`
+        ] !== undefined
+      ) {
+        return this.serviceFunctionNameToExpectedResponseStatusCodeInTestsMap[
+          `${serviceClass.name}${functionName}`
+        ];
       }
       proto = Object.getPrototypeOf(proto);
     }

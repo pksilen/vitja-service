@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { Base64 } from 'js-base64';
 import { sign } from 'jsonwebtoken';
 import _ from 'lodash';
+import serviceFunctionAnnotationContainer from './annotations/service/function/serviceFunctionAnnotationContainer';
 import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
 import BaseService from './BaseService';
 import generateServicesMetadata, { FunctionMetadata, ServiceMetadata } from './generateServicesMetadata';
@@ -632,11 +633,17 @@ function writePostmanCollectionExportFile<T>(controller: T, servicesMetadata: Se
         lastGetFunctionMetadata = functionMetadata;
       }
 
+      const expectedResponseStatusCodeInTests = serviceFunctionAnnotationContainer.getExpectedResponseStatusCodeInTestsForServiceFunction(
+        (controller as any)[serviceMetadata.serviceName].constructor,
+        functionMetadata.functionName
+      );
+
       const tests = getTests(
         (controller as any)[serviceMetadata.serviceName].Types,
         serviceMetadata,
         functionMetadata,
-        false
+        false,
+        expectedResponseStatusCodeInTests
       );
 
       let isUpdate = false;

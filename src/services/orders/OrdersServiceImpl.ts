@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
 import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
 import { AllowForUserRoles } from '../../backk/annotations/service/function/AllowForUserRoles';
+import { ExpectResponseStatusCodeInTests } from '../../backk/annotations/service/function/ExpectResponseStatusCodeInTests';
 import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
 import { ErrorResponse, IdAndUserId } from '../../backk/Backk';
 import SalesItemsService from '../salesitems/SalesItemsService';
@@ -10,6 +11,7 @@ import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import OrdersService from './OrdersService';
 import CreateOrderArg from './types/args/CreateOrderArg';
 import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
+import OrderIdAndOrderItemIdAndUserId from './types/args/OrderIdAndOrderItemIdAndUserId';
 import UpdateOrderItemDeliveryStateArg from './types/args/UpdateOrderItemDeliveryStateArg';
 import Order from './types/entity/Order';
 import OrderItem from './types/entity/OrderItem';
@@ -73,17 +75,23 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   updateOrderItemDeliveryState({
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _id,
-    orderItemId,
-    ...restOfArg
+    state,
+    orderItemId
   }: UpdateOrderItemDeliveryStateArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateItem(
-      { _id: orderItemId, ...restOfArg },
+      { _id: orderItemId, state },
       OrderItem,
       this.Types,
-      OrdersServiceImpl.getPreConditionForNewDeliveryState(restOfArg.state)
+      OrdersServiceImpl.getPreConditionForNewDeliveryState(state)
     );
+  }
+
+  @AllowForSelf()
+  @ExpectResponseStatusCodeInTests(HttpStatus.CONFLICT)
+  deleteOrderItem({ orderItemId }: OrderIdAndOrderItemIdAndUserId): Promise<void | ErrorResponse> {
+    return this.getDbManager().deleteItemById(orderItemId, OrderItem, this.Types, {
+      state: 'toBeDelivered'
+    });
   }
 
   deleteOrderById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {

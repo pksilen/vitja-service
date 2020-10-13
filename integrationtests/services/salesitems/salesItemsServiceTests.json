@@ -164,7 +164,6 @@
         "statusCode": 200,
         "tests": [
           {
-            "name": "state is sold",
             "exec": [
               "pm.expect(response.state).to.eql('sold');",
               "pm.expect(response.userId).to.eql(pm.collectionVariables.get('userId'));",
