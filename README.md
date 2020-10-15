@@ -1,11 +1,8 @@
 # Vitja service
 
 TODO:
-- Muuta class spread overwrite
-- make generateTypes to run optimize-imports and prettier automatically
-- Muuta updateArgit että on optionaalisia
 - Allow updateSalesItem only when it is forSale
--Laita ErrorResponseen symboli ja muuta kaikki 'errorMessage' in tsekkaukset tsekkaa
+- Laita ErrorResponseen symboli ja muuta kaikki 'errorMessage' in tsekkaukset tsekkaa
  - Luo globaali symboli, joka laitetaan error objecktiin avaimeksi
 - Lisää addOrderItem metodi AllowedForTests, siirrä deleteOrderItem createn jälkeen ennen tätä
 - Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale

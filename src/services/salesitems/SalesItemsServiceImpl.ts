@@ -117,11 +117,12 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       const currentSalesItemOrErrorResponse = await this.getSalesItemById({ _id: arg._id });
 
       return 'errorMessage' in currentSalesItemOrErrorResponse
-        ? Promise.resolve(currentSalesItemOrErrorResponse)
+        ? currentSalesItemOrErrorResponse
         : this.dbManager.updateItem(
             { ...arg, previousPrice: currentSalesItemOrErrorResponse.price },
             SalesItem,
-            this.Types
+            this.Types,
+          { state: 'forSale'}
           );
     });
   }
