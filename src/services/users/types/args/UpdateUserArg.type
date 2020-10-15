@@ -1,5 +1,4 @@
 export default class UpdateUserArg {
+  ...Omit<Partial<User>, 'userName'>;
   ...Id;
-
-  ...Omit<Partial<User>, '_id' | 'userName'>;
 }

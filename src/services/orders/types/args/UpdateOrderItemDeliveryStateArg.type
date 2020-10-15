@@ -1,5 +1,4 @@
-import OrderIdAndOrderItemId from './OrderIdAndOrderItemId';
-
-export default class UpdateOrderItemDeliveryStateArg extends OrderIdAndOrderItemId {
+export default class UpdateOrderItemDeliveryStateArg {
+  ...OrderIdAndOrderItemId;
   ...Pick<OrderItem, | 'state'>;
 }

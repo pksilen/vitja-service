@@ -3,6 +3,7 @@ import { getFromContainer, MetadataStorage, ValidationTypes, Validator } from 'c
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import { readFileSync } from 'fs';
+import { SortBy } from './Backk';
 import getSrcFilePathNameForTypeName from './getSrcFilePathNameForTypeName';
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
@@ -104,9 +105,11 @@ export default function setPropertyTypeValidationDecorators(
           } else if (finalPropertyTypeName === 'string') {
             validationType = ValidationTypes.IS_STRING;
           } else if (finalPropertyTypeName.charAt(0).match(/^[_$A-Z]$/)) {
+            validationType = ValidationTypes.IS_INSTANCE;
             if (Types[finalPropertyTypeName]) {
-              validationType = ValidationTypes.IS_INSTANCE;
               constraints = [Types[finalPropertyTypeName]];
+            } else if (finalPropertyTypeName === 'SortBy') {
+              constraints = [SortBy];
             } else {
               throw new Error(
                 'Type: ' +

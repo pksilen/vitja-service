@@ -1,5 +1,4 @@
-import OrderIdAndOrderItemId from './OrderIdAndOrderItemId';
-
-export default class DeliverOrderItemArg extends OrderIdAndOrderItemId  {
+export default class DeliverOrderItemArg {
+  ...OrderIdAndOrderItemId;
   ...Pick<OrderItem, 'deliveryTimestampInSecs' | 'trackingUrl'>;
 }

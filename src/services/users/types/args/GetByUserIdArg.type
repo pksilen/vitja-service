@@ -1,5 +1,6 @@
-import { OptPostQueryOps } from "../../../../backk/Backk";
+import { SortBy } from '../../../../backk/Backk';
 
-export default class GetByUserIdArg extends OptPostQueryOps {
+export default class GetByUserIdArg {
   ...UserId;
+  ...OptPostQueryOps;
 }

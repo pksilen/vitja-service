@@ -10,6 +10,8 @@ function getDeclarationsFor(typeName: string, originatingTypeFilePathName: strin
 
   if (typeName === 'Id') {
     fileContentsStr = `
+    import { MaxLength } from 'class-validator';
+    
     export default class Id {
       @MaxLength(24)
       _id!: string;
@@ -83,15 +85,60 @@ export default function getTypescriptLinesFor(
   keys: string[],
   keyType: 'omit' | 'pick',
   originatingTypeFilePathName: string
-): [string[], string[]] {
-  if (!hasSrcFilenameForTypeName(typeName)) {
+): [string[], any[]] {
+  let typeFilePathName;
+  let fileContentsStr;
+
+  if (hasSrcFilenameForTypeName(typeName)) {
+    typeFilePathName = getSrcFilePathNameForTypeName(typeName);
+    fileContentsStr = readFileSync(typeFilePathName, { encoding: 'UTF-8' });
+  } else {
     if (typeName === 'Id') {
-      return [[], ['@MaxLength(24)', '_id!: string;']];
+      fileContentsStr = `
+    import { MaxLength } from 'class-validator';
+    
+    export default class Id {
+      @MaxLength(24)
+      _id!: string;
+    }
+    `;
+    } else if (typeName === 'OptPostQueryOps') {
+      fileContentsStr = `
+      import { MaxLength, IsOptional, IsArray, IsInt, IsInstance, Min, Max } from 'class-validator';
+      
+      export class OptPostQueryOps{
+  @IsOptional()
+  @MaxLength(4096, { each: true })
+  @IsArray()
+  includeResponseFields?: string[] = [];
+
+  @IsOptional()
+  @MaxLength(4096, { each: true })
+  @IsArray()
+  excludeResponseFields?: string[] = [];
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(10000)
+  pageNumber?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10000)
+  pageSize?: number;
+
+  @IsOptional()
+  @IsInstance(SortBy, { each: true })
+  @IsArray()
+  sortBys?: SortBy[];
+}
+      `;
+    } else {
+      throw new Error('Unsupported type: ' + typeName);
     }
   }
-
-  const typeFilePathName = getSrcFilePathNameForTypeName(typeName);
-  const fileContentsStr = readFileSync(typeFilePathName, { encoding: 'UTF-8' });
 
   const ast = parseSync(fileContentsStr, {
     plugins: [
@@ -103,13 +150,16 @@ export default function getTypescriptLinesFor(
 
   const nodes = (ast as any).program.body;
   let importLines: string[] = [];
-  const classPropertyLines: string[] = [];
+  const finalClassPropertyDeclarations: any[] = [];
 
   for (const node of nodes) {
     if (node.type === 'ImportDeclaration') {
       if (node.source.value.startsWith('.')) {
         const relativeImportPathName = node.source.value;
-        const importAbsolutePathName = path.resolve(path.dirname(typeFilePathName), relativeImportPathName);
+        const importAbsolutePathName = path.resolve(
+          path.dirname(typeFilePathName ?? ''),
+          relativeImportPathName
+        );
         const newRelativeImportPathName = path.relative(
           path.dirname(originatingTypeFilePathName),
           importAbsolutePathName
@@ -149,19 +199,34 @@ export default function getTypescriptLinesFor(
           if (keyType === 'omit' && keys.includes(propertyName)) {
             return;
           } else if (keyType === 'pick') {
-            if (keys.includes(propertyName)) {
-              classPropertyLines.push(generate(classBodyNode).code + '\n');
+            if (!keys.includes(propertyName)) {
+              return;
             }
-            return;
           }
         }
         if (isBaseTypeOptional) {
-          classPropertyLines.push('@IsOptional()');
+          const isOptionalDecorator = {
+            type: 'Decorator',
+            expression: {
+              type: 'CallExpression',
+              callee: {
+                type: 'Identifier',
+                name: 'IsOptional'
+              },
+              arguments: []
+            }
+          };
+
+          if (classBodyNode.decorators) {
+            classBodyNode.decorators.push(isOptionalDecorator);
+          } else {
+            classBodyNode.decorators = [isOptionalDecorator];
+          }
         }
-        classPropertyLines.push(generate(classBodyNode).code + '\n');
+        finalClassPropertyDeclarations.push(classBodyNode);
       });
     }
   }
 
-  return [importLines, classPropertyLines];
+  return [importLines, finalClassPropertyDeclarations];
 }

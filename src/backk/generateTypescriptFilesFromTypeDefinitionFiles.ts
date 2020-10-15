@@ -1,12 +1,18 @@
-import { readFileSync, writeFileSync } from 'fs';
-import { getFileNamesRecursively } from './getSrcFilePathNameForTypeName';
-import getTypeFilePathNameFor from './getTypeFilePathNameFor';
-import getTypescriptLinesFor from './getTypescriptLinesFor';
+import { parseSync } from "@babel/core";
+import generate from "@babel/generator";
+import { exec, execSync } from "child_process";
+import { readFileSync, writeFileSync } from "fs";
+import _ from "lodash";
+import { getFileNamesRecursively } from "./getSrcFilePathNameForTypeName";
+import getTypeFilePathNameFor from "./getTypeFilePathNameFor";
+import getTypescriptLinesFor from "./getTypescriptLinesFor";
 
 function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePathNames: string[]) {
   const typeFileLines = readFileSync(typeFilePathName, { encoding: 'UTF-8' }).split('\n');
-  let outputImportLines: string[] = [];
-  let outputClassPropertyLines: string[] = [];
+  let outputImportCodeLines: string[] = [];
+  let outputClassPropertyDeclarations: any[] = [];
+  const codeLines: string[] = [];
+
   typeFileLines.forEach((typeFileLine) => {
     const trimmedTypeFileLine = typeFileLine.trim();
     if (trimmedTypeFileLine.startsWith('...') && trimmedTypeFileLine.endsWith(';')) {
@@ -37,20 +43,26 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
           generateTypescriptFileFor(baseTypeFilePathName, handledTypeFilePathNames);
         }
 
-        const [importLines, classPropertyLines] = getTypescriptLinesFor(
+        const [importLines, classPropertyDeclarations] = getTypescriptLinesFor(
           baseType,
           isBaseTypeOptional,
           omittedKeys,
           'omit',
           typeFilePathName
         );
-        outputImportLines = outputImportLines.concat(importLines);
-        outputClassPropertyLines = outputClassPropertyLines.concat(classPropertyLines);
+        outputImportCodeLines = outputImportCodeLines.concat(importLines);
+        outputClassPropertyDeclarations = outputClassPropertyDeclarations.concat(classPropertyDeclarations);
       } else if (spreadType.startsWith('Pick<')) {
-        const baseType = spreadType
+        let baseType = spreadType
           .slice(5)
           .split(',')[0]
           .trim();
+
+        let isBaseTypeOptional = false;
+        if (baseType.startsWith('Partial<')) {
+          baseType = baseType.slice(8, -1);
+          isBaseTypeOptional = true;
+        }
 
         const pickedKeyParts = spreadType
           .slice(5)
@@ -66,50 +78,92 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
           generateTypescriptFileFor(baseTypeFilePathName, handledTypeFilePathNames);
         }
 
-        const [importLines, classPropertyLines] = getTypescriptLinesFor(
+        const [importLines, classPropertyDeclarations] = getTypescriptLinesFor(
           baseType,
-          false,
+          isBaseTypeOptional,
           pickedKeys,
           'pick',
           typeFilePathName
         );
-        outputImportLines = outputImportLines.concat(importLines);
-        outputClassPropertyLines = outputClassPropertyLines.concat(classPropertyLines);
+        outputImportCodeLines = outputImportCodeLines.concat(importLines);
+        outputClassPropertyDeclarations = outputClassPropertyDeclarations.concat(classPropertyDeclarations);
       } else {
         const spreadTypeFilePathName = getTypeFilePathNameFor(spreadType);
+        let isBaseTypeOptional = false;
+        let baseType = spreadType;
+        if (baseType.startsWith('Partial<')) {
+          baseType = baseType.slice(8, -1);
+          isBaseTypeOptional = true;
+        }
+
         if (spreadTypeFilePathName) {
           handledTypeFilePathNames.push(spreadTypeFilePathName);
           generateTypescriptFileFor(spreadTypeFilePathName, handledTypeFilePathNames);
         }
 
-        const [importLines, classPropertyLines] = getTypescriptLinesFor(
-          spreadType,
-          false,
+        const [importLines, classPropertyDeclarations] = getTypescriptLinesFor(
+          baseType,
+          isBaseTypeOptional,
           [],
           'omit',
           typeFilePathName
         );
-        outputImportLines = outputImportLines.concat(importLines);
-        outputClassPropertyLines = outputClassPropertyLines.concat(classPropertyLines);
+        outputImportCodeLines = outputImportCodeLines.concat(importLines);
+        outputClassPropertyDeclarations = outputClassPropertyDeclarations.concat(classPropertyDeclarations);
       }
     } else {
-      outputClassPropertyLines.push(typeFileLine);
+      codeLines.push(typeFileLine);
     }
   });
 
-  const outputFileLines = [
+  const ast = parseSync(codeLines.join('\n'), {
+    plugins: [
+      ['@babel/plugin-proposal-decorators', { legacy: true }],
+      '@babel/plugin-proposal-class-properties',
+      '@babel/plugin-transform-typescript'
+    ]
+  });
+
+  const nodes = (ast as any).program.body;
+  for (const node of nodes) {
+    if (
+      (node.type === 'ExportDefaultDeclaration' || node.type === 'ExportNamedDeclaration') &&
+      node.declaration.type === 'ClassDeclaration'
+    ) {
+      const declarations = outputClassPropertyDeclarations.concat(node.declaration.body.body);
+      declarations.reverse();
+      const uniqueDeclarations = _.uniqBy(declarations, (declaration) => declaration.key.name);
+      uniqueDeclarations.reverse();
+      node.declaration.body.body = uniqueDeclarations;
+    }
+  }
+
+  const outputCode = generate(ast as any).code;
+  const outputFileHeaderLines = [
     '// This is an auto-generated file from the respective .type file',
     '// DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only',
     "// This file can be generated from the respective .type file by running npm script 'generateTypes'",
     '',
-    ...outputImportLines,
-    '',
-    ...outputClassPropertyLines
+    ..._.uniq(outputImportCodeLines),
+    ''
   ];
 
-  const outputFileContentsStr = outputFileLines.join('\n');
+  let outputFileContentsStr = outputFileHeaderLines.join('\n') + '\n' + outputCode;
+  outputFileContentsStr = outputFileContentsStr
+    .split('\n')
+    .map((outputFileLine) => {
+      if (outputFileLine.endsWith(';') && !outputFileLine.startsWith('import')) {
+        return outputFileLine + '\n';
+      }
+      return outputFileLine;
+    })
+    .join('\n');
+
   const outputFileName = typeFilePathName.split('.')[0] + '.ts';
   writeFileSync(outputFileName, outputFileContentsStr, { encoding: 'UTF-8' });
+  exec(process.cwd() + '/node_modules/.bin/organize-imports-cli ' + outputFileName, () => {
+    exec(process.cwd() + '/node_modules/.bin/prettier --write ' + outputFileName);
+  });
 }
 
 (function generateTypescriptFilesFromTypeDefinitionFiles() {

@@ -1,6 +1,8 @@
 # Vitja service
 
 TODO:
+- Muuta class spread overwrite
+- make generateTypes to run optimize-imports and prettier automatically
 - Muuta updateArgit että on optionaalisia
 - Allow updateSalesItem only when it is forSale
 -Laita ErrorResponseen symboli ja muuta kaikki 'errorMessage' in tsekkaukset tsekkaa
