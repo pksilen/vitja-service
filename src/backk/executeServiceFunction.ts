@@ -10,6 +10,7 @@ import { ServiceMetadata } from './generateServicesMetadata';
 import getPropertyBaseTypeName from './getPropertyBaseTypeName';
 import throwHttpException from './throwHttpException';
 import UsersBaseService from './UsersBaseService';
+import getBadRequestErrorResponse from "./getBadRequestErrorResponse";
 
 function getValidationErrors(errorOrValidationErrors: ValidationError[] | Error): string {
   return errorOrValidationErrors instanceof Error
@@ -47,17 +48,11 @@ export default async function executeServiceFunction(
   }
 
   if (!controller[serviceName]) {
-    throwHttpException({
-      statusCode: HttpStatus.BAD_REQUEST,
-      errorMessage: `Unknown service: ${serviceName}`
-    });
+    throwHttpException(getBadRequestErrorResponse(`Unknown service: ${serviceName}`));
   }
 
   if (!controller[serviceName][functionName]) {
-    throwHttpException({
-      statusCode: HttpStatus.BAD_REQUEST,
-      errorMessage: `Unknown function: ${serviceName}.${functionName}`
-    });
+    throwHttpException(getBadRequestErrorResponse(`Unknown function: ${serviceName}.${functionName}`));
   }
   const usersService = Object.values(controller).find((service) => service instanceof UsersBaseService);
 
@@ -119,10 +114,7 @@ export default async function executeServiceFunction(
     });
 
     if (!instantiatedServiceFunctionArgument) {
-      throwHttpException({
-        statusCode: HttpStatus.BAD_REQUEST,
-        errorMessage: `Missing service function argument`
-      });
+      throwHttpException(getBadRequestErrorResponse('Missing service function argument'));
     }
 
     try {
@@ -132,7 +124,7 @@ export default async function executeServiceFunction(
       });
     } catch (validationErrors) {
       const errorMessage = getValidationErrors(validationErrors);
-      throwHttpException({ statusCode: HttpStatus.BAD_REQUEST, errorMessage });
+      throwHttpException(getBadRequestErrorResponse(errorMessage));
     }
   }
 

@@ -5,7 +5,7 @@ import { AllowForSelf } from '../../backk/annotations/service/function/AllowForS
 import { AllowForUserRoles } from '../../backk/annotations/service/function/AllowForUserRoles';
 import { ExpectResponseStatusCodeInTests } from '../../backk/annotations/service/function/ExpectResponseStatusCodeInTests';
 import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
-import { ErrorResponse, IdAndUserId } from '../../backk/Backk';
+import { ErrorResponse, errorResponseSymbol, IdAndUserId } from "../../backk/Backk";
 import SalesItemsService from '../salesitems/SalesItemsService';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import OrdersService from './OrdersService';

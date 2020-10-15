@@ -7,7 +7,7 @@ import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import { pg } from 'yesql';
 import entityContainer, { JoinSpec } from '../annotations/entity/entityAnnotationContainer';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
-import { ErrorResponse, OptionalProjection, OptPostQueryOps, SortBy } from '../Backk';
+import { ErrorResponse, errorResponseSymbol, OptionalProjection, OptPostQueryOps, SortBy } from "../Backk";
 import decryptItems from '../crypt/decryptItems';
 import encrypt from '../crypt/encrypt';
 import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
@@ -23,6 +23,7 @@ import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 import getFieldsFromGraphQlOrJson from '../graphql/getFieldsFromGraphQlOrJson';
 import SqlExpression from '../sqlexpression/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
+import isErrorResponse from "../isErrorResponse";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -143,7 +144,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
     const result = await executable();
 
-    if (result && 'statusCode' in result && 'errorMessage' in result) {
+    if (isErrorResponse(result)) {
       await this.rollbackTransaction();
     } else {
       await this.commitTransaction();
@@ -260,7 +261,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
                 itemCountQueryFilter,
                 true
               );
-              if ('errorMessage' in subItemOrErrorResponse && 'statusCode' in subItemOrErrorResponse) {
+              if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
                 throw new Error(subItemOrErrorResponse.errorMessage);
               }
             });
@@ -279,7 +280,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
               itemCountQueryFilter,
               true
             );
-            if ('errorMessage' in subItemOrErrorResponse && 'statusCode' in subItemOrErrorResponse) {
+            if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
               throw new Error(subItemOrErrorResponse.errorMessage);
             }
           } else if (isArray) {
@@ -631,7 +632,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       if (shouldCheckIfItemExists) {
         const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
-        if ('errorMessage' in itemOrErrorResponse && 'statusCode' in itemOrErrorResponse) {
+        if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
           console.log(itemOrErrorResponse);
           return itemOrErrorResponse;
         }
@@ -783,7 +784,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       if (Types && preCondition) {
         const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
-        if ('errorMessage' in itemOrErrorResponse && 'statusCode' in itemOrErrorResponse) {
+        if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
           console.log(itemOrErrorResponse);
           return itemOrErrorResponse;
         }

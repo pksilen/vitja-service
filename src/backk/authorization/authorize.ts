@@ -4,7 +4,8 @@ import serviceAnnotationContainer from '../annotations/service/serviceAnnotation
 import AuthorizationService from './AuthorizationService';
 import serviceFunctionAnnotationContainer from '../annotations/service/function/serviceFunctionAnnotationContainer';
 import BaseService from '../BaseService';
-import UsersBaseService from "../UsersBaseService";
+import UsersBaseService from '../UsersBaseService';
+import getForbiddenErrorResponse from '../getForbiddenErrorResponse';
 
 export default async function authorize(
   service: BaseService,
@@ -71,7 +72,7 @@ export default async function authorize(
         }
       }
 
-      if (await authorizationService.areSameIdentities(userName, authHeader)){
+      if (await authorizationService.areSameIdentities(userName, authHeader)) {
         return;
       }
     }
@@ -84,8 +85,5 @@ export default async function authorize(
     return;
   }
 
-  throwHttpException({
-    statusCode: HttpStatus.FORBIDDEN,
-    errorMessage: 'Attempted service function call not authorized'
-  });
+  throwHttpException(getForbiddenErrorResponse('Attempted service function call not authorized'));
 }

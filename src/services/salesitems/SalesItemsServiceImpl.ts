@@ -4,7 +4,13 @@ import { AllowForEveryUser } from '../../backk/annotations/service/function/Allo
 import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
 import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
 import { Private } from '../../backk/annotations/service/function/Private';
-import { ErrorResponse, Id, IdAndUserId, IdsAndOptPostQueryOps } from '../../backk/Backk';
+import {
+  ErrorResponse,
+  errorResponseSymbol,
+  Id,
+  IdAndUserId,
+  IdsAndOptPostQueryOps
+} from "../../backk/Backk";
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
 import SqlEquals from '../../backk/sqlexpression/SqlEquals';
@@ -17,6 +23,7 @@ import GetSalesItemsArg from './types/args/GetSalesItemsArg';
 import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
 import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
 import { SalesItem } from './types/entities/SalesItem';
+import isErrorResponse from "../../backk/isErrorResponse";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
