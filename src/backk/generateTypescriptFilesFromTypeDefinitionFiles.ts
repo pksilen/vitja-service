@@ -1,13 +1,20 @@
-import { parseSync } from "@babel/core";
-import generate from "@babel/generator";
-import { exec, execSync } from "child_process";
-import { readFileSync, writeFileSync } from "fs";
-import _ from "lodash";
-import { getFileNamesRecursively } from "./getSrcFilePathNameForTypeName";
-import getTypeFilePathNameFor from "./getTypeFilePathNameFor";
-import getTypescriptLinesFor from "./getTypescriptLinesFor";
+import { parseSync } from '@babel/core';
+import generate from '@babel/generator';
+import { exec } from 'child_process';
+import util from 'util';
+import { readFileSync, writeFileSync } from 'fs';
+import _ from 'lodash';
+import { getFileNamesRecursively } from './getSrcFilePathNameForTypeName';
+import getTypeFilePathNameFor from './getTypeFilePathNameFor';
+import getTypescriptLinesFor from './getTypescriptLinesFor';
 
-function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePathNames: string[]) {
+const promisifiedExec = util.promisify(exec);
+
+function generateTypescriptFileFor(
+  typeFilePathName: string,
+  handledTypeFilePathNames: string[],
+  promisifiedExecs: Array<Promise<any>>
+) {
   const typeFileLines = readFileSync(typeFilePathName, { encoding: 'UTF-8' }).split('\n');
   let outputImportCodeLines: string[] = [];
   let outputClassPropertyDeclarations: any[] = [];
@@ -40,7 +47,7 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
         const baseTypeFilePathName = getTypeFilePathNameFor(baseType);
         if (baseTypeFilePathName) {
           handledTypeFilePathNames.push(baseTypeFilePathName);
-          generateTypescriptFileFor(baseTypeFilePathName, handledTypeFilePathNames);
+          generateTypescriptFileFor(baseTypeFilePathName, handledTypeFilePathNames, promisifiedExecs);
         }
 
         const [importLines, classPropertyDeclarations] = getTypescriptLinesFor(
@@ -75,7 +82,7 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
         const baseTypeFilePathName = getTypeFilePathNameFor(baseType);
         if (baseTypeFilePathName) {
           handledTypeFilePathNames.push(baseTypeFilePathName);
-          generateTypescriptFileFor(baseTypeFilePathName, handledTypeFilePathNames);
+          generateTypescriptFileFor(baseTypeFilePathName, handledTypeFilePathNames, promisifiedExecs);
         }
 
         const [importLines, classPropertyDeclarations] = getTypescriptLinesFor(
@@ -98,7 +105,7 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
 
         if (spreadTypeFilePathName) {
           handledTypeFilePathNames.push(spreadTypeFilePathName);
-          generateTypescriptFileFor(spreadTypeFilePathName, handledTypeFilePathNames);
+          generateTypescriptFileFor(spreadTypeFilePathName, handledTypeFilePathNames, promisifiedExecs);
         }
 
         const [importLines, classPropertyDeclarations] = getTypescriptLinesFor(
@@ -161,14 +168,22 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
 
   const outputFileName = typeFilePathName.split('.')[0] + '.ts';
   writeFileSync(outputFileName, outputFileContentsStr, { encoding: 'UTF-8' });
-  exec(process.cwd() + '/node_modules/.bin/organize-imports-cli ' + outputFileName, () => {
-    exec(process.cwd() + '/node_modules/.bin/prettier --write ' + outputFileName);
+
+  const organizeImportsPromise = promisifiedExec(
+    process.cwd() + '/node_modules/.bin/organize-imports-cli ' + outputFileName
+  );
+  promisifiedExecs.push(organizeImportsPromise);
+  organizeImportsPromise.then(() => {
+    promisifiedExecs.push(
+      promisifiedExec(process.cwd() + '/node_modules/.bin/prettier --write ' + outputFileName)
+    );
   });
 }
 
-(function generateTypescriptFilesFromTypeDefinitionFiles() {
+(async function generateTypescriptFilesFromTypeDefinitionFiles() {
   const filePathNames = getFileNamesRecursively(process.cwd() + '/src');
   const handledTypeFilePathNames: string[] = [];
+  const promisifiedExecs: Array<Promise<any>> = [];
 
   filePathNames
     .filter((filePathName: string) => filePathName.endsWith('.type'))
@@ -177,6 +192,8 @@ function generateTypescriptFileFor(typeFilePathName: string, handledTypeFilePath
         return;
       }
 
-      generateTypescriptFileFor(typeFilePathName, handledTypeFilePathNames);
+      generateTypescriptFileFor(typeFilePathName, handledTypeFilePathNames, promisifiedExecs);
     });
+
+  await Promise.all(promisifiedExecs);
 })();

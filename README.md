@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Laita ErrorResponseen symboli ja muuta kaikki 'errorMessage' in tsekkaukset tsekkaa
- - Luo globaali symboli, joka laitetaan error objecktiin avaimeksi
 - Lisää addOrderItem metodi AllowedForTests, siirrä deleteOrderItem createn jälkeen ennen tätä
 - Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale
 
