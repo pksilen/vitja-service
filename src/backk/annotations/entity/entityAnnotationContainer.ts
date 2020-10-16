@@ -299,7 +299,11 @@ class EntityAnnotationContainer {
                 break;
               case 'string':
                 if (fieldName.endsWith('Id') || fieldName === 'id') {
-                  sqlColumnType = 'BIGINT';
+                  if (fieldName === 'id') {
+                    sqlColumnType = 'BIGINT PRIMARY KEY'
+                  } else {
+                    sqlColumnType = 'BIGINT';
+                  }
                 } else {
                   sqlColumnType = 'VARCHAR';
                 }

@@ -7,7 +7,7 @@ import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import { pg } from 'yesql';
 import entityContainer, { JoinSpec } from '../annotations/entity/entityAnnotationContainer';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
-import { ErrorResponse, errorResponseSymbol, OptionalProjection, OptPostQueryOps, SortBy } from "../Backk";
+import { ErrorResponse, OptionalProjection, OptPostQueryOps, PostQueryOps, SortBy } from "../Backk";
 import decryptItems from '../crypt/decryptItems';
 import encrypt from '../crypt/encrypt';
 import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
@@ -23,7 +23,7 @@ import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 import getFieldsFromGraphQlOrJson from '../graphql/getFieldsFromGraphQlOrJson';
 import SqlExpression from '../sqlexpression/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
-import isErrorResponse from "../isErrorResponse";
+import isErrorResponse from '../isErrorResponse';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -309,9 +309,82 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
+  async createSubItem<T extends { _id: string; id?: string }, U extends object>(
+    _id: string,
+    subItemsPath: string,
+    allowedSubItemsPathRegExp: RegExp,
+    subItemIndex: number,
+    newSubItem: U,
+    entityClass: new () => T,
+    Types: object,
+    preCondition?: object | string
+  ): Promise<T | ErrorResponse> {
+    if (!subItemsPath.match(allowedSubItemsPathRegExp)) {
+      return getBadRequestErrorResponse(`Sub items path: ${subItemsPath} not allowed`);
+    }
+
+    try {
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.beginTransaction();
+      }
+
+      const itemOrErrorResponse = await this.getItemById(_id, entityClass, Types);
+      if ('errorMessage' in itemOrErrorResponse) {
+        console.log(itemOrErrorResponse);
+        return itemOrErrorResponse;
+      }
+
+      if (preCondition) {
+        if (
+          typeof preCondition === 'string' &&
+          (preCondition.match(/require\s*\(/) || preCondition.match(/import\s*\(/))
+        ) {
+          return getBadRequestErrorResponse('Create sub item precondition expression cannot use require or import');
+        }
+
+        if (typeof preCondition === 'object') {
+          const isPreConditionMatched = Object.entries(preCondition).reduce(
+            (isPreconditionMatched, [key, value]) => {
+              return isPreconditionMatched && _.get(itemOrErrorResponse, key) === value;
+            },
+            true
+          );
+          if (!isPreConditionMatched) {
+            return getConflictErrorResponse(
+              `Create sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
+            );
+          }
+        } else {
+          // noinspection DynamicallyGeneratedCodeJS
+          if (
+            !new Function('const obj = arguments[0]; return ' + preCondition).call(null, itemOrErrorResponse)
+          ) {
+            return getConflictErrorResponse(`Create sub item precondition ${preCondition} was not satisfied`);
+          }
+        }
+      }
+
+      const subItems = _.get(itemOrErrorResponse, subItemsPath);
+      subItems[subItemIndex] = newSubItem;
+      await this.updateItem(itemOrErrorResponse, entityClass, Types, undefined, false);
+
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.commitTransaction();
+      }
+
+      return this.getItemById(_id, entityClass, Types);
+    } catch (error) {
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.rollbackTransaction();
+      }
+
+      return getInternalServerErrorResponse(error);
+    }
+  }
+
   async getItems<T>(
     filters: Partial<T> | SqlExpression[],
-    { pageNumber, pageSize, sortBys, ...projection }: OptPostQueryOps,
+    { pageNumber, pageSize, sortBys, ...projection }: PostQueryOps,
     entityClass: new () => T,
     Types: object
   ): Promise<T[] | ErrorResponse> {
@@ -616,7 +689,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     { _id, ...restOfItem }: Partial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
-    preCondition?: Partial<T> | [string, Partial<T>],
+    itemPreCondition?: Partial<T> | string,
     shouldCheckIfItemExists: boolean = true,
     isRecursiveCall = false
   ): Promise<void | ErrorResponse> {
@@ -638,28 +711,26 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         }
 
         if (
-          Array.isArray(preCondition) &&
-          (preCondition[0].match(/require\s*\(/) || preCondition[0].match(/import\s*\(/))
+          typeof itemPreCondition === 'string' &&
+          (itemPreCondition.match(/require\s*\(/) || itemPreCondition.match(/import\s*\(/))
         ) {
           return getBadRequestErrorResponse('Update precondition expression cannot use require or import');
         }
 
-        if (preCondition && !Array.isArray(preCondition) && !_.isMatch(itemOrErrorResponse, preCondition)) {
+        if (typeof itemPreCondition === 'object' && !_.isMatch(itemOrErrorResponse, itemPreCondition)) {
           return getConflictErrorResponse(
-            `Update precondition ${JSON.stringify(preCondition)} was not satisfied`
+            `Update precondition ${JSON.stringify(itemPreCondition)} was not satisfied`
           );
         } else {
           // noinspection DynamicallyGeneratedCodeJS
           if (
-            preCondition &&
-            Array.isArray(preCondition) &&
-            !new Function('const obj = arguments[0]; return ' + preCondition[0]).call(null, preCondition[1])
+            typeof itemPreCondition === 'string' &&
+            !new Function('const obj = arguments[0]; return ' + itemPreCondition).call(
+              null,
+              itemOrErrorResponse
+            )
           ) {
-            return getConflictErrorResponse(
-              `Update precondition ${preCondition[0]} with values ${JSON.stringify(
-                preCondition[1]
-              )} was not satisfied`
-            );
+            return getConflictErrorResponse(`Update precondition ${itemPreCondition} was not satisfied`);
           }
         }
       }
@@ -767,13 +838,84 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
+  async updateSubItemByIndex<T extends { _id: string; id?: string }, U extends object>(
+    _id: string,
+    subItemsPath: string,
+    allowedSubItemsPathRegExp: RegExp,
+    subItemIndex: number,
+    newSubItem: U,
+    entityClass: new () => T,
+    Types: object,
+    preCondition?: object | string
+  ): Promise<void | ErrorResponse> {
+    if (!subItemsPath.match(allowedSubItemsPathRegExp)) {
+      return getBadRequestErrorResponse(`Sub items path: ${subItemsPath} not allowed`);
+    }
+
+    try {
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.beginTransaction();
+      }
+
+      const itemOrErrorResponse = await this.getItemById(_id, entityClass, Types);
+      if ('errorMessage' in itemOrErrorResponse) {
+        console.log(itemOrErrorResponse);
+        return itemOrErrorResponse;
+      }
+
+      if (preCondition) {
+        if (
+          typeof preCondition === 'string' &&
+          (preCondition.match(/require\s*\(/) || preCondition.match(/import\s*\(/))
+        ) {
+          return getBadRequestErrorResponse('Update precondition expression cannot use require or import');
+        }
+
+        if (typeof preCondition === 'object') {
+          const isPreConditionMatched = Object.entries(preCondition).reduce(
+            (isPreconditionMatched, [key, value]) => {
+              return isPreconditionMatched && _.get(itemOrErrorResponse, key) === value;
+            },
+            true
+          );
+          if (!isPreConditionMatched) {
+            return getConflictErrorResponse(
+              `Update sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
+            );
+          }
+        } else {
+          // noinspection DynamicallyGeneratedCodeJS
+          if (
+            !new Function('const obj = arguments[0]; return ' + preCondition).call(null, itemOrErrorResponse)
+          ) {
+            return getConflictErrorResponse(`Update precondition ${preCondition} was not satisfied`);
+          }
+        }
+      }
+
+      const subItems = _.get(itemOrErrorResponse, subItemsPath);
+      subItems[subItemIndex] = newSubItem;
+      await this.updateItem(itemOrErrorResponse, entityClass, Types, undefined, false);
+
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.commitTransaction();
+      }
+    } catch (error) {
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.rollbackTransaction();
+      }
+
+      return getInternalServerErrorResponse(error);
+    }
+  }
+
   async deleteItemById<T extends object>(
     _id: string,
     entityClass: new () => T,
     Types?: object,
-    preCondition?: Partial<T> | [string, Partial<T>]
+    itemPreCondition?: Partial<T> | string
   ): Promise<void | ErrorResponse> {
-    if (preCondition && !Types) {
+    if (itemPreCondition && !Types) {
       throw new Error('Types argument must be given if preCondition argument is given');
     }
 
@@ -782,42 +924,42 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         await this.beginTransaction();
       }
 
-      if (Types && preCondition) {
-        const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
+      if (Types && itemPreCondition) {
+        const itemOrErrorResponse = await this.getItemById(_id, entityClass, Types);
         if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
           console.log(itemOrErrorResponse);
           return itemOrErrorResponse;
         }
 
         if (
-          Array.isArray(preCondition) &&
-          (preCondition[0].match(/require\s*\(/) || preCondition[0].match(/import\s*\(/))
+          typeof itemPreCondition === 'string' &&
+          (itemPreCondition.match(/require\s*\(/) || itemPreCondition.match(/import\s*\(/))
         ) {
           return getBadRequestErrorResponse('Delete precondition expression cannot use require or import');
         }
 
-        if (!Array.isArray(preCondition) && !_.isMatch(itemOrErrorResponse, preCondition)) {
-          return getConflictErrorResponse(
-            `Delete precondition ${JSON.stringify(preCondition)} was not satisfied`
-          );
+        if (typeof itemPreCondition === 'object') {
+          if (!_.isMatch(itemOrErrorResponse, itemPreCondition)) {
+            return getConflictErrorResponse(
+              `Delete precondition ${JSON.stringify(itemPreCondition)} was not satisfied`
+            );
+          }
         } else {
           // noinspection DynamicallyGeneratedCodeJS
           if (
-            Array.isArray(preCondition) &&
-            !new Function('const obj = arguments[0]; return ' + preCondition[0]).call(null, preCondition[1])
+            !new Function('const obj = arguments[0]; return ' + itemPreCondition).call(
+              null,
+              itemOrErrorResponse
+            )
           ) {
-            return getConflictErrorResponse(
-              `Delete precondition ${preCondition[0]} with values ${JSON.stringify(
-                preCondition[1]
-              )} was not satisfied`
-            );
+            return getConflictErrorResponse(`Delete precondition ${itemPreCondition} was not satisfied`);
           }
         }
       }
 
       await Promise.all([
         forEachAsyncParallel(
-          Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
+          Object.values(entityContainer.entityNameToJoinsMap[entityClass.name] || {}),
           async (joinSpec: JoinSpec) => {
             await this.tryExecuteSql(
               `DELETE FROM ${this.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} = $1`,
@@ -840,6 +982,77 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
+  async deleteSubItemByIndex<T extends { _id: string; id?: string }>(
+    _id: string,
+    subItemsPath: string,
+    allowedSubItemsPathRegExp: RegExp,
+    subItemIndex: number,
+    entityClass: new () => T,
+    Types: object,
+    preCondition?: object | string
+  ): Promise<void | ErrorResponse> {
+    if (!subItemsPath.match(allowedSubItemsPathRegExp)) {
+      return getBadRequestErrorResponse(`Sub items path: ${subItemsPath} not allowed`);
+    }
+
+    try {
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.beginTransaction();
+      }
+
+      const itemOrErrorResponse = await this.getItemById(_id, entityClass, Types);
+      if ('errorMessage' in itemOrErrorResponse) {
+        console.log(itemOrErrorResponse);
+        return itemOrErrorResponse;
+      }
+
+      if (preCondition) {
+        if (
+          typeof preCondition === 'string' &&
+          (preCondition.match(/require\s*\(/) || preCondition.match(/import\s*\(/))
+        ) {
+          return getBadRequestErrorResponse('Delete precondition expression cannot use require or import');
+        }
+
+        if (typeof preCondition === 'object') {
+          const isPreConditionMatched = Object.entries(preCondition).reduce(
+            (isPreconditionMatched, [key, value]) => {
+              return isPreconditionMatched && _.get(itemOrErrorResponse, key) === value;
+            },
+            true
+          );
+          if (!isPreConditionMatched) {
+            return getConflictErrorResponse(
+              `Delete sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
+            );
+          }
+        } else {
+          // noinspection DynamicallyGeneratedCodeJS
+          if (
+            !new Function('const obj = arguments[0]; return ' + preCondition).call(null, itemOrErrorResponse)
+          ) {
+            return getConflictErrorResponse(`Delete precondition ${preCondition} was not satisfied`);
+          }
+        }
+      }
+
+      const subItems = _.get(itemOrErrorResponse, subItemsPath);
+      const newSubItems = subItems.filter((subItem: any, index: number) => index !== subItemIndex);
+      _.set(itemOrErrorResponse, subItemsPath, newSubItems);
+      await this.updateItem(itemOrErrorResponse, entityClass, Types, undefined, false);
+
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.commitTransaction();
+      }
+    } catch (error) {
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.rollbackTransaction();
+      }
+
+      return getInternalServerErrorResponse(error);
+    }
+  }
+
   async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
     try {
       if (!this.getClsNamespace()?.get('globalTransaction')) {
@@ -848,7 +1061,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
       await Promise.all([
         forEachAsyncParallel(
-          Object.values(entityContainer.entityNameToJoinsMap[entityClass.name]),
+          Object.values(entityContainer.entityNameToJoinsMap[entityClass.name] || {}),
           async (joinSpec: JoinSpec) => {
             await this.tryExecuteSql(`DELETE FROM ${this.schema}.${joinSpec.joinTableName}`);
           }
@@ -1076,7 +1289,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           joinStatement += ' ';
         }
 
-        joinStatement += 'JOIN ';
+        joinStatement += 'LEFT JOIN ';
         joinStatement += this.schema + '.' + joinSpec.joinTableName;
         joinStatement += ' ON ';
         joinStatement +=

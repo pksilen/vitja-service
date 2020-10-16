@@ -4,6 +4,10 @@ import encrypt from './encrypt';
 import shouldEncryptValue from './shouldEncryptValue';
 
 function decryptItemValues(item: { [key: string]: any }, EntityClass: new () => any, Types: object) {
+  if (item === null) {
+    return;
+  }
+
   Object.entries(item).forEach(([propertyName, propertyValue]) => {
     if (Array.isArray(propertyValue) && propertyValue.length > 0) {
       if (typeof propertyValue[0] === 'object') {
@@ -24,7 +28,7 @@ function decryptItemValues(item: { [key: string]: any }, EntityClass: new () => 
     } else if (typeof propertyValue === 'object') {
       const entityMetadata = getTypeMetadata(EntityClass);
       decryptItemValues(propertyValue, (Types as any)[entityMetadata[propertyName]], Types);
-    } else if (shouldEncryptValue(propertyName, EntityClass)) {
+    } else if (propertyValue !== null && shouldEncryptValue(propertyName, EntityClass)) {
       if (typeof propertyValue !== 'string') {
         throw new Error(EntityClass.name + '.' + propertyName + ' must be string in order to encrypt it');
       }

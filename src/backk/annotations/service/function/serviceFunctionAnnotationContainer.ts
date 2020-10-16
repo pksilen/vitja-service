@@ -7,6 +7,7 @@ class ServiceFunctionAnnotationContainer {
   private serviceFunctionNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
   private serviceFunctionNameToDocStringMap: { [key: string]: string } = {};
   private serviceFunctionNameToExpectedResponseStatusCodeInTestsMap: { [key: string]: number } = {};
+  private serviceFunctionNameToAllowedForTestsMap: { [key: string]: boolean } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -44,6 +45,10 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToExpectedResponseStatusCodeInTestsMap[
       `${serviceClass.name}${functionName}`
     ] = statusCode;
+  }
+
+  addServiceFunctionAllowedForTests(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToAllowedForTestsMap[`${serviceClass.name}${functionName}`] = true;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -159,6 +164,21 @@ class ServiceFunctionAnnotationContainer {
     }
 
     return undefined;
+  }
+
+  isServiceFunctionAllowedForTests(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToAllowedForTestsMap[`${serviceClass.name}${functionName}`] !==
+        undefined
+      ) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
   }
 }
 

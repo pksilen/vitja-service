@@ -80,7 +80,7 @@ export default async function authorize(
 
   if (
     process.env.NODE_ENV === 'development' &&
-    serviceFunctionAnnotationContainer.isServiceFunctionPrivate(ServiceClass, functionName)
+    serviceFunctionAnnotationContainer.isServiceFunctionAllowedForTests(ServiceClass, functionName)
   ) {
     return;
   }

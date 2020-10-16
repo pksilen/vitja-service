@@ -43,6 +43,17 @@ export default abstract class AbstractDbManager {
     itemCountQueryFilter?: Partial<T>
   ): Promise<T | ErrorResponse>;
 
+  abstract createSubItem<T extends { _id: string; id?: string }, U extends object>(
+    _id: string,
+    subItemsPath: string,
+    allowedSubItemsPathRegExp: RegExp,
+    subItemIndex: number,
+    newSubItem: U,
+    entityClass: new () => T,
+    Types?: object,
+    preCondition?: object | string
+  ): Promise<T | ErrorResponse>;
+
   abstract getItems<T>(
     filters: FilterQuery<T> | Partial<T> | SqlExpression[],
     postQueryOps: PostQueryOps,
@@ -84,14 +95,35 @@ export default abstract class AbstractDbManager {
     { _id, ...restOfItem }: Partial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
-    preCondition?: Partial<T> | [string, Partial<T>]
+    itemPreCondition?: Partial<T> | string
+  ): Promise<void | ErrorResponse>;
+
+  abstract updateSubItemByIndex<T extends { _id: string; id?: string }, U extends object>(
+    _id: string,
+    subItemsPath: string,
+    allowedSubItemsPathRegExp: RegExp,
+    subItemIndex: number,
+    newSubItem: U,
+    entityClass: new () => T,
+    Types?: object,
+    preCondition?: object | string
   ): Promise<void | ErrorResponse>;
 
   abstract deleteItemById<T extends object>(
     _id: string,
     entityClass: new () => T,
     Types?: object,
-    preCondition?: Partial<T> | [string, Partial<T>]
+    itemPreCondition?: Partial<T> | string
+  ): Promise<void | ErrorResponse>;
+
+  abstract deleteSubItemByIndex<T extends { _id: string; id?: string }>(
+    _id: string,
+    subItemsPath: string,
+    allowedSubItemsPathRegExp: RegExp,
+    subItemIndex: number,
+    entityClass: new () => T,
+    Types?: object,
+    preCondition?: object | string
   ): Promise<void | ErrorResponse>;
 
   abstract deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse>;

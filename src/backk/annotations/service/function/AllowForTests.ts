@@ -3,6 +3,6 @@ import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationConta
 export function AllowForTests() {
   // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, functionName: string) {
-    serviceFunctionAnnotationContainer.addPrivateServiceFunction(object.constructor, functionName);
+    serviceFunctionAnnotationContainer.addServiceFunctionAllowedForTests(object.constructor, functionName);
   };
 }

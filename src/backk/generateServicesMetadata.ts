@@ -313,7 +313,10 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
       const functions: FunctionMetadata[] = functionNames
         .filter(
           (functionName) =>
-            !serviceFunctionAnnotationContainer.isServiceFunctionPrivate(ServiceClass, functionName)
+            !serviceFunctionAnnotationContainer.isServiceFunctionPrivate(
+              (controller as any)[serviceName].constructor,
+              functionName
+            )
         )
         .map((functionName: string) => {
           if (

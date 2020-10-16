@@ -383,7 +383,7 @@ function getTests(
   pm.response.to.have.status(${expectedResponseStatusCode});
 });`;
 
-  if (functionMetadata.functionName.startsWith('create')) {
+  if (functionMetadata.functionName.startsWith('create') || functionMetadata.functionName.startsWith('add')) {
     return {
       id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
       listen: 'test',

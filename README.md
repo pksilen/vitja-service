@@ -2,6 +2,9 @@
 
 TODO:
 - Lisää addOrderItem metodi AllowedForTests, siirrä deleteOrderItem createn jälkeen ennen tätä
+- entityAnnotationContainer, entities must have _id field
+- Generoi default _id/id order by clauset getItemXXX functiohin
+- Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
 - Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale
 
 - Prometheus metrics (Opentelemetry)

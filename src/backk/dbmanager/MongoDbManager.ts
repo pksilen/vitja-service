@@ -72,6 +72,19 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
+  createSubItem<T extends { _id: string; id?: string }, U extends object>(
+    _id: string,
+    subItemsPath: string,
+    allowedSubItemsPathRegExp: RegExp,
+    subItemIndex: number,
+    newSubItem: U,
+    entityClass: new () => T,
+    Types?: object,
+    preCondition?: object | string
+  ): Promise<T| ErrorResponse> {
+    throw new Error();
+  }
+
   async getItems<T>(
     filters: FilterQuery<T>,
     { pageNumber, pageSize, sortBys, ...projection }: PostQueryOps,
@@ -213,7 +226,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async updateItem<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: T,
     entityClass: new () => T,
-    preCondition?: Partial<T> | [string, Partial<T>]
+    itemPreCondition?: Partial<T> | string
   ): Promise<void | ErrorResponse> {
     // TODO add precondition check
     try {
@@ -232,11 +245,24 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
+ updateSubItemByIndex<T extends { _id: string; id?: string }, U extends object>(
+    _id: string,
+    subItemsPath: string,
+    allowedSubItemsPathRegExp: RegExp,
+    subItemIndex: number,
+    newSubItem: U,
+    entityClass: new () => T,
+    Types?: object,
+    preCondition?: object | string
+  ): Promise<void | ErrorResponse> {
+    return Promise.resolve();
+ }
+
   async deleteItemById<T>(
     _id: string,
     entityClass: new () => T,
     Types?: object,
-    preCondition?: Partial<T> | [string, Partial<T>]
+    itemPreCondition?: Partial<T> | string
   ): Promise<void | ErrorResponse> {
     try {
       const deleteOperationResult = await this.tryExecute((client) =>
@@ -253,6 +279,18 @@ export default class MongoDbManager extends AbstractDbManager {
       return getInternalServerErrorResponse(error);
     }
   }
+
+ deleteSubItemByIndex<T extends { _id: string; id?: string }>(
+    _id: string,
+    subItemsPath: string,
+    allowedSubItemPathsRegExp: RegExp,
+    subItemIndex: number,
+    entityClass: new () => T,
+    Types?: object,
+    preConditions?: object | string
+  ): Promise<void | ErrorResponse> {
+    return Promise.resolve();
+ }
 
   async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
     try {

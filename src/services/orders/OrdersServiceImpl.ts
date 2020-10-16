@@ -5,7 +5,7 @@ import { AllowForSelf } from '../../backk/annotations/service/function/AllowForS
 import { AllowForUserRoles } from '../../backk/annotations/service/function/AllowForUserRoles';
 import { ExpectResponseStatusCodeInTests } from '../../backk/annotations/service/function/ExpectResponseStatusCodeInTests';
 import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
-import { ErrorResponse, errorResponseSymbol, IdAndUserId } from "../../backk/Backk";
+import { ErrorResponse, errorResponseSymbol, Id, IdAndUserId } from '../../backk/Backk';
 import SalesItemsService from '../salesitems/SalesItemsService';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import OrdersService from './OrdersService';
@@ -15,6 +15,8 @@ import OrderIdAndOrderItemIdAndUserId from './types/args/OrderIdAndOrderItemIdAn
 import UpdateOrderItemDeliveryStateArg from './types/args/UpdateOrderItemDeliveryStateArg';
 import Order from './types/entity/Order';
 import OrderItem from './types/entity/OrderItem';
+import { AllowForTests } from '../../backk/annotations/service/function/AllowForTests';
+import SalesItemId from "./types/args/SalesItemId";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -42,7 +44,7 @@ export default class OrdersServiceImpl extends OrdersService {
               orderItems: salesItemIds.map((salesItemId) => ({
                 salesItemId,
                 _id: '',
-                state: 'toBeDelivered' as 'toBeDelivered',
+                state: 'toBeDelivered',
                 trackingUrl: '',
                 deliveryTimestampInSecs: 0
               }))
@@ -52,6 +54,23 @@ export default class OrdersServiceImpl extends OrdersService {
           );
     });
   }
+
+  /*@AllowForSelf()
+  deleteOrderItem({ orderItemId }: OrderIdAndOrderItemIdAndUserId): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteItemById(orderItemId, OrderItem, this.Types, {
+      state: 'toBeDelivered'
+    });
+  }
+
+  @AllowForTests()
+  addOrderItem({ salesItemId }: SalesItemId): Promise<OrderItem | ErrorResponse> {
+    return this.dbManager.createItem({
+      salesItemId,
+      state: 'toBeDelivered',
+      trackingUrl: '',
+      deliveryTimestampInSecs: 0
+    }, OrderItem, this.Types);
+  }*/
 
   @AllowForSelf()
   getOrdersByUserId({ userId, ...postQueryOps }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
@@ -105,14 +124,6 @@ export default class OrdersServiceImpl extends OrdersService {
         this.Types,
         OrdersServiceImpl.getPreConditionForNewDeliveryState(state)
       );
-    });
-  }
-
-  @AllowForSelf()
-  @ExpectResponseStatusCodeInTests(HttpStatus.CONFLICT)
-  deleteOrderItem({ orderItemId }: OrderIdAndOrderItemIdAndUserId): Promise<void | ErrorResponse> {
-    return this.getDbManager().deleteItemById(orderItemId, OrderItem, this.Types, {
-      state: 'toBeDelivered'
     });
   }
 
