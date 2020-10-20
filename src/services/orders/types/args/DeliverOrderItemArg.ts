@@ -7,7 +7,7 @@ import { ExpectInTestsToMatch } from '../../../../backk/ExpectInTestsToMatch';
 
 export default class DeliverOrderItemArg {
   @MaxLength(24)
-  _id!: string;
+  orderId!: string;
 
   @MaxLength(24)
   orderItemId!: string;

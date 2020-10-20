@@ -332,7 +332,9 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
               ServiceClass,
               functionName
             ) &&
-            serviceFunctionAnnotationContainer.getAllowedUserRoles(ServiceClass, functionName).length === 0
+            serviceFunctionAnnotationContainer.getAllowedUserRoles(ServiceClass, functionName).length === 0 &&
+            !serviceFunctionAnnotationContainer.isServiceFunctionPrivate(ServiceClass, functionName) &&
+            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForTests(ServiceClass, functionName)
           ) {
             throw new Error(serviceName + '.' + functionName + ': is missing authorization annotation');
           }

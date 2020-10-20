@@ -1,9 +1,9 @@
 import { MaxLength } from "class-validator";
 
-export default class OrderIdAndOrderItemId {
+export default class AddOrderItemArg {
   @MaxLength(24)
   orderId!: string;
 
   @MaxLength(24)
-  orderItemId!: string;
+  salesItemId!: string;
 }

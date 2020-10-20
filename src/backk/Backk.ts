@@ -2,6 +2,15 @@ import { IsArray, IsIn, IsInstance, IsInt, IsOptional, IsString, Max, MaxLength,
 import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 
+export type RecursivePartial<T> = {
+  [P in keyof T]?:
+  T[P] extends (infer U)[] ? RecursivePartial<U>[] :
+    T[P] extends object ? RecursivePartial<T[P]> :
+      T[P];
+};
+
+export const MAX_INT_VALUE = 2147483647;
+
 export function getSourceFileName(fileName: string, distFolderName = 'dist'): string {
   return fileName.replace(distFolderName, 'src');
 }

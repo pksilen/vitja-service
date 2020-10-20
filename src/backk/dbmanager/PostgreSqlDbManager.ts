@@ -3,11 +3,19 @@ import { Injectable } from '@nestjs/common';
 // @ts-ignore
 import joinjs from 'join-js';
 import _ from 'lodash';
+import { JSONPath } from 'jsonpath-plus';
 import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import { pg } from 'yesql';
 import entityContainer, { JoinSpec } from '../annotations/entity/entityAnnotationContainer';
 import { assertIsColumnName, assertIsNumber, assertIsSortDirection } from '../assert';
-import { ErrorResponse, OptionalProjection, OptPostQueryOps, PostQueryOps, SortBy } from "../Backk";
+import {
+  ErrorResponse,
+  OptionalProjection,
+  OptPostQueryOps,
+  PostQueryOps,
+  RecursivePartial,
+  SortBy
+} from '../Backk';
 import decryptItems from '../crypt/decryptItems';
 import encrypt from '../crypt/encrypt';
 import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
@@ -24,6 +32,8 @@ import getFieldsFromGraphQlOrJson from '../graphql/getFieldsFromGraphQlOrJson';
 import SqlExpression from '../sqlexpression/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import isErrorResponse from '../isErrorResponse';
+import entityAnnotationContainer from '../annotations/entity/entityAnnotationContainer';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -312,17 +322,11 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async createSubItem<T extends { _id: string; id?: string }, U extends object>(
     _id: string,
     subItemsPath: string,
-    allowedSubItemsPathRegExp: RegExp,
-    subItemIndex: number,
-    newSubItem: U,
+    newSubItem: Omit<U, 'id'>,
     entityClass: new () => T,
-    Types: object,
-    preCondition?: object | string
+    subItemEntityClass: new () => U,
+    Types: object
   ): Promise<T | ErrorResponse> {
-    if (!subItemsPath.match(allowedSubItemsPathRegExp)) {
-      return getBadRequestErrorResponse(`Sub items path: ${subItemsPath} not allowed`);
-    }
-
     try {
       if (!this.getClsNamespace()?.get('globalTransaction')) {
         await this.beginTransaction();
@@ -334,39 +338,20 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         return itemOrErrorResponse;
       }
 
-      if (preCondition) {
-        if (
-          typeof preCondition === 'string' &&
-          (preCondition.match(/require\s*\(/) || preCondition.match(/import\s*\(/))
-        ) {
-          return getBadRequestErrorResponse('Create sub item precondition expression cannot use require or import');
-        }
-
-        if (typeof preCondition === 'object') {
-          const isPreConditionMatched = Object.entries(preCondition).reduce(
-            (isPreconditionMatched, [key, value]) => {
-              return isPreconditionMatched && _.get(itemOrErrorResponse, key) === value;
-            },
-            true
-          );
-          if (!isPreConditionMatched) {
-            return getConflictErrorResponse(
-              `Create sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
-            );
-          }
-        } else {
-          // noinspection DynamicallyGeneratedCodeJS
-          if (
-            !new Function('const obj = arguments[0]; return ' + preCondition).call(null, itemOrErrorResponse)
-          ) {
-            return getConflictErrorResponse(`Create sub item precondition ${preCondition} was not satisfied`);
-          }
-        }
-      }
-
-      const subItems = _.get(itemOrErrorResponse, subItemsPath);
-      subItems[subItemIndex] = newSubItem;
-      await this.updateItem(itemOrErrorResponse, entityClass, Types, undefined, false);
+      const parentIdValue = JSONPath({ json: itemOrErrorResponse, path: subItemsPath + '$._id' })[0];
+      const parentIdFieldName = entityAnnotationContainer.getAdditionIdPropertyName(subItemEntityClass.name);
+      const maxSubItemId = JSONPath({ json: itemOrErrorResponse, path: subItemsPath }).reduce(
+        (maxSubItemId: number, subItem: any) => {
+          const subItemId = parseInt(subItem.id);
+          return subItemId > maxSubItemId ? subItemId : maxSubItemId;
+        },
+        0
+      );
+      await this.createItem(
+        { ...newSubItem, [parentIdFieldName]: parentIdValue, id: (maxSubItemId + 1).toString() } as any,
+        subItemEntityClass,
+        Types
+      );
 
       if (!this.getClsNamespace()?.get('globalTransaction')) {
         await this.commitTransaction();
@@ -520,6 +505,45 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       decryptItems(rows, entityClass, Types);
       return rows[0];
     } catch (error) {
+      return getInternalServerErrorResponse(error);
+    }
+  }
+
+  async getSubItem<T extends object, U extends object>(
+    _id: string,
+    subItemPath: string,
+    entityClass: new () => T,
+    Types: object
+  ): Promise<U | ErrorResponse> {
+    try {
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.beginTransaction();
+      }
+
+      const itemOrErrorResponse = await this.getItemById(_id, entityClass, Types);
+      if ('errorMessage' in itemOrErrorResponse) {
+        console.log(itemOrErrorResponse);
+        return itemOrErrorResponse;
+      }
+
+      const subItems = JSONPath({ json: itemOrErrorResponse, path: subItemPath });
+
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.commitTransaction();
+      }
+
+      if (subItems.length > 0) {
+        return subItems[0];
+      } else {
+        return getNotFoundErrorResponse(
+          'Item with _id: ' + _id + ', sub item from path ' + subItemPath + ' not found'
+        );
+      }
+    } catch (error) {
+      if (!this.getClsNamespace()?.get('globalTransaction')) {
+        await this.rollbackTransaction();
+      }
+
       return getInternalServerErrorResponse(error);
     }
   }
@@ -685,8 +709,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async updateItem<T extends { _id: string; id?: string }>(
-    { _id, ...restOfItem }: Partial<T> & { _id: string },
+  async updateItem<T extends object & { _id: string; id?: string }>(
+    { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
     itemPreCondition?: Partial<T> | string,
@@ -704,7 +728,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       }
 
       if (shouldCheckIfItemExists) {
-        const itemOrErrorResponse = await this.getItemById<T>(_id, entityClass, Types);
+        const itemOrErrorResponse = await this.getItemById(_id, entityClass, Types);
         if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
           console.log(itemOrErrorResponse);
           return itemOrErrorResponse;
@@ -801,7 +825,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
                 await this.tryExecuteSql(updateStatement, [subItem, _id]);
               })
             );
-          } else if (fieldName !== '_id') {
+          } else if (fieldName !== '_id' && fieldName !== 'id') {
             if ((restOfItem as any)[fieldName] !== undefined) {
               columns.push(fieldName);
               values.push((restOfItem as any)[fieldName]);
@@ -835,77 +859,6 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       return getInternalServerErrorResponse(error);
     } finally {
       this.getClsNamespace()?.set('localTransaction', false);
-    }
-  }
-
-  async updateSubItemByIndex<T extends { _id: string; id?: string }, U extends object>(
-    _id: string,
-    subItemsPath: string,
-    allowedSubItemsPathRegExp: RegExp,
-    subItemIndex: number,
-    newSubItem: U,
-    entityClass: new () => T,
-    Types: object,
-    preCondition?: object | string
-  ): Promise<void | ErrorResponse> {
-    if (!subItemsPath.match(allowedSubItemsPathRegExp)) {
-      return getBadRequestErrorResponse(`Sub items path: ${subItemsPath} not allowed`);
-    }
-
-    try {
-      if (!this.getClsNamespace()?.get('globalTransaction')) {
-        await this.beginTransaction();
-      }
-
-      const itemOrErrorResponse = await this.getItemById(_id, entityClass, Types);
-      if ('errorMessage' in itemOrErrorResponse) {
-        console.log(itemOrErrorResponse);
-        return itemOrErrorResponse;
-      }
-
-      if (preCondition) {
-        if (
-          typeof preCondition === 'string' &&
-          (preCondition.match(/require\s*\(/) || preCondition.match(/import\s*\(/))
-        ) {
-          return getBadRequestErrorResponse('Update precondition expression cannot use require or import');
-        }
-
-        if (typeof preCondition === 'object') {
-          const isPreConditionMatched = Object.entries(preCondition).reduce(
-            (isPreconditionMatched, [key, value]) => {
-              return isPreconditionMatched && _.get(itemOrErrorResponse, key) === value;
-            },
-            true
-          );
-          if (!isPreConditionMatched) {
-            return getConflictErrorResponse(
-              `Update sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
-            );
-          }
-        } else {
-          // noinspection DynamicallyGeneratedCodeJS
-          if (
-            !new Function('const obj = arguments[0]; return ' + preCondition).call(null, itemOrErrorResponse)
-          ) {
-            return getConflictErrorResponse(`Update precondition ${preCondition} was not satisfied`);
-          }
-        }
-      }
-
-      const subItems = _.get(itemOrErrorResponse, subItemsPath);
-      subItems[subItemIndex] = newSubItem;
-      await this.updateItem(itemOrErrorResponse, entityClass, Types, undefined, false);
-
-      if (!this.getClsNamespace()?.get('globalTransaction')) {
-        await this.commitTransaction();
-      }
-    } catch (error) {
-      if (!this.getClsNamespace()?.get('globalTransaction')) {
-        await this.rollbackTransaction();
-      }
-
-      return getInternalServerErrorResponse(error);
     }
   }
 
@@ -982,19 +935,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async deleteSubItemByIndex<T extends { _id: string; id?: string }>(
+  async deleteSubItems<T extends { _id: string; id?: string }, U extends object>(
     _id: string,
     subItemsPath: string,
-    allowedSubItemsPathRegExp: RegExp,
-    subItemIndex: number,
     entityClass: new () => T,
     Types: object,
     preCondition?: object | string
   ): Promise<void | ErrorResponse> {
-    if (!subItemsPath.match(allowedSubItemsPathRegExp)) {
-      return getBadRequestErrorResponse(`Sub items path: ${subItemsPath} not allowed`);
-    }
-
     try {
       if (!this.getClsNamespace()?.get('globalTransaction')) {
         await this.beginTransaction();
@@ -1016,8 +963,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
         if (typeof preCondition === 'object') {
           const isPreConditionMatched = Object.entries(preCondition).reduce(
-            (isPreconditionMatched, [key, value]) => {
-              return isPreconditionMatched && _.get(itemOrErrorResponse, key) === value;
+            (isPreconditionMatched, [path, value]) => {
+              return isPreconditionMatched && JSONPath({ json: itemOrErrorResponse, path })[0] === value;
             },
             true
           );
@@ -1026,20 +973,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
               `Delete sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
             );
           }
-        } else {
-          // noinspection DynamicallyGeneratedCodeJS
-          if (
-            !new Function('const obj = arguments[0]; return ' + preCondition).call(null, itemOrErrorResponse)
-          ) {
-            return getConflictErrorResponse(`Delete precondition ${preCondition} was not satisfied`);
-          }
         }
       }
 
-      const subItems = _.get(itemOrErrorResponse, subItemsPath);
-      const newSubItems = subItems.filter((subItem: any, index: number) => index !== subItemIndex);
-      _.set(itemOrErrorResponse, subItemsPath, newSubItems);
-      await this.updateItem(itemOrErrorResponse, entityClass, Types, undefined, false);
+      const itemInstance = plainToClass(entityClass, itemOrErrorResponse);
+      const subItems = JSONPath({ json: itemInstance, path: subItemsPath });
+      await forEachAsyncParallel(subItems, async (subItem: any) => {
+        await this.deleteItemById(subItem._id, subItem.constructor, Types);
+      });
 
       if (!this.getClsNamespace()?.get('globalTransaction')) {
         await this.commitTransaction();

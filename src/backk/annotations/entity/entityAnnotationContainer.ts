@@ -27,6 +27,10 @@ class EntityAnnotationContainer {
   private manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
   entityNameToJoinsMap: { [key: string]: JoinSpec[] } = {};
 
+  getAdditionIdPropertyName(entityName: string): string {
+    return this.entityNameToAdditionalIdPropertyNamesMap[entityName][0];
+  }
+  
   addEntityNameAndClass(entityName: string, entityClass: Function) {
     this.entityNameToClassMap[entityName] = entityClass;
   }

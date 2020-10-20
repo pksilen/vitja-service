@@ -1,22 +1,21 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
-import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
-import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
-import { AllowForUserRoles } from '../../backk/annotations/service/function/AllowForUserRoles';
-import { ExpectResponseStatusCodeInTests } from '../../backk/annotations/service/function/ExpectResponseStatusCodeInTests';
-import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
-import { ErrorResponse, errorResponseSymbol, Id, IdAndUserId } from '../../backk/Backk';
-import SalesItemsService from '../salesitems/SalesItemsService';
-import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
-import OrdersService from './OrdersService';
-import CreateOrderArg from './types/args/CreateOrderArg';
-import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
-import OrderIdAndOrderItemIdAndUserId from './types/args/OrderIdAndOrderItemIdAndUserId';
-import UpdateOrderItemDeliveryStateArg from './types/args/UpdateOrderItemDeliveryStateArg';
-import Order from './types/entity/Order';
-import OrderItem from './types/entity/OrderItem';
-import { AllowForTests } from '../../backk/annotations/service/function/AllowForTests';
-import SalesItemId from "./types/args/SalesItemId";
+import { Injectable } from "@nestjs/common";
+import AbstractDbManager from "src/backk/dbmanager/AbstractDbManager";
+import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
+import { AllowForUserRoles } from "../../backk/annotations/service/function/AllowForUserRoles";
+import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
+import { ErrorResponse, IdAndUserId } from "../../backk/Backk";
+import SalesItemsService from "../salesitems/SalesItemsService";
+import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
+import OrdersService from "./OrdersService";
+import CreateOrderArg from "./types/args/CreateOrderArg";
+import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
+import Order from "./types/entity/Order";
+import OrderItem from "./types/entity/OrderItem";
+import { AllowForTests } from "../../backk/annotations/service/function/AllowForTests";
+import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
+import AddOrderItemArg from "./types/args/AddOrderItemArg";
+import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -41,9 +40,9 @@ export default class OrdersServiceImpl extends OrdersService {
             {
               ...restOfArg,
               createdTimestampInSecs: Math.round(Date.now() / 1000),
-              orderItems: salesItemIds.map((salesItemId) => ({
+              orderItems: salesItemIds.map((salesItemId, index) => ({
+                id: index.toString(),
                 salesItemId,
-                _id: '',
                 state: 'toBeDelivered',
                 trackingUrl: '',
                 deliveryTimestampInSecs: 0
@@ -55,22 +54,35 @@ export default class OrdersServiceImpl extends OrdersService {
     });
   }
 
-  /*@AllowForSelf()
-  deleteOrderItem({ orderItemId }: OrderIdAndOrderItemIdAndUserId): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteItemById(orderItemId, OrderItem, this.Types, {
-      state: 'toBeDelivered'
-    });
+  @AllowForSelf()
+  deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteSubItems(
+      orderId,
+      `orderItems[?(@.id == '${orderItemId}')]`,
+      Order,
+      this.Types,
+      {
+        [`orderItems[?(@.id == '${orderItemId}')].state`]: 'toBeDelivered'
+      }
+    );
   }
 
   @AllowForTests()
-  addOrderItem({ salesItemId }: SalesItemId): Promise<OrderItem | ErrorResponse> {
-    return this.dbManager.createItem({
-      salesItemId,
-      state: 'toBeDelivered',
-      trackingUrl: '',
-      deliveryTimestampInSecs: 0
-    }, OrderItem, this.Types);
-  }*/
+  addOrderItem({ orderId, salesItemId }: AddOrderItemArg): Promise<Order | ErrorResponse> {
+    return this.dbManager.createSubItem(
+      orderId,
+      'orderItems',
+      {
+        salesItemId,
+        state: 'toBeDelivered',
+        trackingUrl: '',
+        deliveryTimestampInSecs: 0
+      },
+      Order,
+      OrderItem,
+      this.Types
+    );
+  }
 
   @AllowForSelf()
   getOrdersByUserId({ userId, ...postQueryOps }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
@@ -83,46 +95,47 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  deliverOrderItem({ _id, orderItemId, ...restOfArg }: DeliverOrderItemArg): Promise<void | ErrorResponse> {
+  deliverOrderItem({
+    orderId,
+    orderItemId,
+    ...restOfArg
+  }: DeliverOrderItemArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateItem(
-      { _id: orderItemId, ...restOfArg, state: 'delivering' },
-      OrderItem,
-      this.Types
+      {
+        _id: orderId,
+        orderItems: [{ state: 'delivering' as 'delivering', id: orderItemId, ...restOfArg }]
+      },
+      Order,
+      this.Types,
+      {
+        [`orderItems[?(@.id == '${orderItemId}')].state`]: 'toBeDelivered'
+      }
     );
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
-  updateOrderItemDeliveryState({
-    state,
-    orderItemId
-  }: UpdateOrderItemDeliveryStateArg): Promise<void | ErrorResponse> {
+  updateOrderItemState({
+    orderId,
+    orderItemId,
+    state
+  }: UpdateOrderItemStateArg): Promise<void | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
       if (state === 'returned') {
-        const orderItemOrErrorResponse = await this.dbManager.getItemById(orderItemId, OrderItem, this.Types);
-
-        if ('errorMessage' in orderItemOrErrorResponse) {
-          return orderItemOrErrorResponse;
-        }
-
-        const possibleErrorResponse = await this.salesItemsService.updateSalesItemState(
-          {
-            _id: orderItemOrErrorResponse.salesItemId,
-            state: 'forSale'
-          },
-          'sold'
-        );
-
+        const possibleErrorResponse = this.updateOrderItemSalesItemStateToForSale(orderId, orderItemId);
         if (possibleErrorResponse) {
           return possibleErrorResponse;
         }
       }
 
       return this.dbManager.updateItem(
-        { _id: orderItemId, state },
-        OrderItem,
+        { _id: orderId, orderItems: [{ id: orderItemId, state }] },
+        Order,
         this.Types,
-        OrdersServiceImpl.getPreConditionForNewDeliveryState(state)
+        {
+          [`orderItems[?(@.id == '${orderItemId}')].state`]: OrdersServiceImpl.getPreviousStateForNewState(
+            state
+          )
+        }
       );
     });
   }
@@ -149,18 +162,42 @@ export default class OrdersServiceImpl extends OrdersService {
     );
   }
 
-  private static getPreConditionForNewDeliveryState(
-    newDeliveryState: 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned'
-  ): object {
-    switch (newDeliveryState) {
+  private async updateOrderItemSalesItemStateToForSale(
+    orderId: string,
+    orderItemId: string
+  ): Promise<void | ErrorResponse> {
+    const orderItemOrErrorResponse = await this.dbManager.getSubItem<Order, OrderItem>(
+      orderId,
+      `orderItems[?(@.id == '${orderItemId}')]`,
+      Order,
+      this.Types
+    );
+
+    if ('errorMessage' in orderItemOrErrorResponse) {
+      return orderItemOrErrorResponse;
+    }
+
+    return await this.salesItemsService.updateSalesItemState(
+      {
+        _id: orderItemOrErrorResponse.salesItemId,
+        state: 'forSale'
+      },
+      'sold'
+    );
+  }
+
+  private static getPreviousStateForNewState(
+    newState: 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned'
+  ): 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned' {
+    switch (newState) {
       case 'delivered':
-        return { state: 'delivering' };
+        return 'delivering';
       case 'returning':
-        return { state: 'delivered' };
+        return 'delivered';
       case 'returned':
-        return { state: 'returning' };
+        return 'returning';
       default:
-        return { state: newDeliveryState };
+        return newState;
     }
   }
 }

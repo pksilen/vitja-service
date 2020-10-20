@@ -1,7 +1,7 @@
 import { getNamespace, Namespace } from 'cls-hooked';
 import { FilterQuery, MongoClient } from 'mongodb';
 import { Pool } from 'pg';
-import { ErrorResponse, OptPostQueryOps, PostQueryOps } from '../Backk';
+import { ErrorResponse, OptPostQueryOps, PostQueryOps, RecursivePartial } from '../Backk';
 import SqlExpression from '../sqlexpression/SqlExpression';
 
 export interface Field {
@@ -46,12 +46,10 @@ export default abstract class AbstractDbManager {
   abstract createSubItem<T extends { _id: string; id?: string }, U extends object>(
     _id: string,
     subItemsPath: string,
-    allowedSubItemsPathRegExp: RegExp,
-    subItemIndex: number,
-    newSubItem: U,
+    newSubItem: Omit<U, 'id'>,
     entityClass: new () => T,
-    Types?: object,
-    preCondition?: object | string
+    subItemEntityClass: new () => U,
+    Types?: object
   ): Promise<T | ErrorResponse>;
 
   abstract getItems<T>(
@@ -68,6 +66,13 @@ export default abstract class AbstractDbManager {
   ): Promise<number | ErrorResponse>;
 
   abstract getItemById<T>(_id: string, entityClass: new () => T, Types: object): Promise<T | ErrorResponse>;
+
+  abstract getSubItem<T extends object, U extends object>(
+    _id: string,
+    subItemPath: string,
+    entityClass: new () => T,
+    Types: object
+  ): Promise<U | ErrorResponse>;
 
   abstract getItemsByIds<T>(
     _ids: string[],
@@ -92,21 +97,10 @@ export default abstract class AbstractDbManager {
   ): Promise<T[] | ErrorResponse>;
 
   abstract updateItem<T extends { _id: string; id?: string }>(
-    { _id, ...restOfItem }: Partial<T> & { _id: string },
+    { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
     itemPreCondition?: Partial<T> | string
-  ): Promise<void | ErrorResponse>;
-
-  abstract updateSubItemByIndex<T extends { _id: string; id?: string }, U extends object>(
-    _id: string,
-    subItemsPath: string,
-    allowedSubItemsPathRegExp: RegExp,
-    subItemIndex: number,
-    newSubItem: U,
-    entityClass: new () => T,
-    Types?: object,
-    preCondition?: object | string
   ): Promise<void | ErrorResponse>;
 
   abstract deleteItemById<T extends object>(
@@ -116,11 +110,9 @@ export default abstract class AbstractDbManager {
     itemPreCondition?: Partial<T> | string
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteSubItemByIndex<T extends { _id: string; id?: string }>(
+  abstract deleteSubItems<T extends { _id: string; id?: string }>(
     _id: string,
     subItemsPath: string,
-    allowedSubItemsPathRegExp: RegExp,
-    subItemIndex: number,
     entityClass: new () => T,
     Types?: object,
     preCondition?: object | string

@@ -1,15 +1,39 @@
 # Vitja service
 
 TODO:
+- Use JsonPath and plainToClass, remove regExp and subEntityClass
+- CreateItem, check for duplicate subitem ids
 - Lisää addOrderItem metodi AllowedForTests, siirrä deleteOrderItem createn jälkeen ennen tätä
-- entityAnnotationContainer, entities must have _id field
+- Change Partial<x> instead of adding isOptional annotation, add ? to classProperty declaration
+- Change all sub entities must have id field, which must be set by user
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
+- All _id and Id ending fields comes with default annotations: MaxLength(24) and Match regExp [a-f\d]
+- All multiple getXX functions should require mandatory PostQueryOperations interface type param
+  - Create DefaultPagingAndSorting class which Args can extend
+  - page: 1, pageCount: 50, order by _id ASC
+- Change Shopping cart: remove updateShopping cart and replace with add/remove to/from shopping cart, precondition for adding, salesitem is forSale.
 - Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale
+- createItem function can accept projection argument
+- Possible to delete order if all of the orderitems are toBeDelivered, tarkista delete precondition jsonpath.query(item, 'orderItems[?(@.state != "toBeDelivered")]')
+  -pre operation hooks to update salesitems to forSale
+    hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
+- General pre/post operation hookit kaikki dbmanager functioihin, jos hook palauttaa false tai ErrorResponse, niin operaatio hylätään
+  -Hookilla error message parametrii
+-Change IsExprTrue annotation to use regular function instead of dynamically created function
+
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
 - Logger
+  - Logger.setLogPublisher, Logger.setAlarmPublisher
+  - Triggeröidyt hälyt kirjoitetaan persistent volumelle
+  - Type: 'Log' | 'Alarm trigger', 'Alarm cancel',
+  - level: 'Error' | 'warn' | 'info' | 'debug'
+  - source: { service: 'vitja', pod: 'vitja-fsfds-4335', 'host': 'control-01' }
+  - timestampIso8601Utc
+  - timeZoneIso8601
+  - text
 - GDPR logging
   -audit log should go to separate server
 - Own remote service function executor (Http)
@@ -32,7 +56,10 @@ TODO:
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
 - @ManyToMany
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
+  - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
+    - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
 - MariaDb/MySql
+- ErrorResponse is a base class and different errors can extends from that
 - Unit testaa: shouldIncludeField eri keissit
 
 TODO NEXT RELEASE:

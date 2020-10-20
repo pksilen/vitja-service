@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
 import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
-import { ErrorResponse, getMongoDbProjection, OptPostQueryOps, PostQueryOps } from '../Backk';
+import {
+  ErrorResponse,
+  getMongoDbProjection,
+  OptPostQueryOps,
+  PostQueryOps,
+  RecursivePartial
+} from '../Backk';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 import SqlExpression from '../sqlexpression/SqlExpression';
@@ -75,13 +81,11 @@ export default class MongoDbManager extends AbstractDbManager {
   createSubItem<T extends { _id: string; id?: string }, U extends object>(
     _id: string,
     subItemsPath: string,
-    allowedSubItemsPathRegExp: RegExp,
-    subItemIndex: number,
-    newSubItem: U,
+    newSubItem: Omit<U, 'id'>,
     entityClass: new () => T,
-    Types?: object,
-    preCondition?: object | string
-  ): Promise<T| ErrorResponse> {
+    subItemEntityClass: new () => U,
+    Types?: object
+  ): Promise<T | ErrorResponse> {
     throw new Error();
   }
 
@@ -147,6 +151,15 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (error) {
       return getInternalServerErrorResponse(error);
     }
+  }
+
+  getSubItem<T extends object, U extends object, >(
+    _id: string,
+    subItemPath: string,
+    entityClass: new () => T,
+    Types: object
+  ): Promise<U | ErrorResponse> {
+    throw new Error('Not implemented');
   }
 
   async getItemsByIds<T>(
@@ -224,7 +237,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async updateItem<T extends { _id: string; id?: string }>(
-    { _id, ...restOfItem }: T,
+    { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     itemPreCondition?: Partial<T> | string
   ): Promise<void | ErrorResponse> {
@@ -244,19 +257,6 @@ export default class MongoDbManager extends AbstractDbManager {
       return getInternalServerErrorResponse(error);
     }
   }
-
- updateSubItemByIndex<T extends { _id: string; id?: string }, U extends object>(
-    _id: string,
-    subItemsPath: string,
-    allowedSubItemsPathRegExp: RegExp,
-    subItemIndex: number,
-    newSubItem: U,
-    entityClass: new () => T,
-    Types?: object,
-    preCondition?: object | string
-  ): Promise<void | ErrorResponse> {
-    return Promise.resolve();
- }
 
   async deleteItemById<T>(
     _id: string,
@@ -280,17 +280,15 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
- deleteSubItemByIndex<T extends { _id: string; id?: string }>(
+  deleteSubItems<T extends { _id: string; id?: string }>(
     _id: string,
     subItemsPath: string,
-    allowedSubItemPathsRegExp: RegExp,
-    subItemIndex: number,
     entityClass: new () => T,
     Types?: object,
     preConditions?: object | string
   ): Promise<void | ErrorResponse> {
     return Promise.resolve();
- }
+  }
 
   async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
     try {

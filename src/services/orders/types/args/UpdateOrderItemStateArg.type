@@ -1,0 +1,4 @@
+export default class UpdateOrderItemStateArg {
+  ...OrderIdAndOrderItemId;
+  ...Pick<OrderItem, 'state'>;
+}

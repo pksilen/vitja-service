@@ -29,9 +29,6 @@ export default class UpdateUserArg {
   city!: string;
 
   @IsOptional()
-  loyaltyDiscountLevel!: 0 | 25 | 50;
-
-  @IsOptional()
   defaultPaymentMethod!: DefaultPaymentMethod;
 
   @IsOptional()
