@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Use JsonPath and plainToClass, remove regExp and subEntityClass
 - CreateItem, check for duplicate subitem ids
 - Lisää addOrderItem metodi AllowedForTests, siirrä deleteOrderItem createn jälkeen ennen tätä
 - Change Partial<x> instead of adding isOptional annotation, add ? to classProperty declaration

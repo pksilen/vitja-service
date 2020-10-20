@@ -338,15 +338,16 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         return itemOrErrorResponse;
       }
 
-      const parentIdValue = JSONPath({ json: itemOrErrorResponse, path: subItemsPath + '$._id' })[0];
+      const parentIdValue = JSONPath({ json: itemOrErrorResponse, path: '$._id' })[0];
       const parentIdFieldName = entityAnnotationContainer.getAdditionIdPropertyName(subItemEntityClass.name);
       const maxSubItemId = JSONPath({ json: itemOrErrorResponse, path: subItemsPath }).reduce(
         (maxSubItemId: number, subItem: any) => {
           const subItemId = parseInt(subItem.id);
           return subItemId > maxSubItemId ? subItemId : maxSubItemId;
         },
-        0
+        -1
       );
+
       await this.createItem(
         { ...newSubItem, [parentIdFieldName]: parentIdValue, id: (maxSubItemId + 1).toString() } as any,
         subItemEntityClass,
@@ -485,8 +486,11 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       }
       const joinStatement = this.getJoinStatement(entityClass, Types);
 
+      const typeMetadata = getTypeMetadata(entityClass);
+      const idFieldName = typeMetadata._id ? '_id' : 'id';
+
       const result = await this.tryExecuteQuery(
-        `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${this.schema}.${entityClass.name}._id = $1`,
+        `SELECT ${sqlColumns} FROM ${this.schema}.${entityClass.name} ${joinStatement} WHERE ${this.schema}.${entityClass.name}.${idFieldName} = $1`,
         [parseInt(_id, 10)]
       );
 
@@ -713,7 +717,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
-    itemPreCondition?: Partial<T> | string,
+    preCondition?: Partial<T> | string,
     shouldCheckIfItemExists: boolean = true,
     isRecursiveCall = false
   ): Promise<void | ErrorResponse> {
@@ -734,27 +738,18 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           return itemOrErrorResponse;
         }
 
-        if (
-          typeof itemPreCondition === 'string' &&
-          (itemPreCondition.match(/require\s*\(/) || itemPreCondition.match(/import\s*\(/))
-        ) {
-          return getBadRequestErrorResponse('Update precondition expression cannot use require or import');
-        }
-
-        if (typeof itemPreCondition === 'object' && !_.isMatch(itemOrErrorResponse, itemPreCondition)) {
-          return getConflictErrorResponse(
-            `Update precondition ${JSON.stringify(itemPreCondition)} was not satisfied`
+        if (typeof preCondition === 'object') {
+          const isPreConditionMatched = Object.entries(preCondition).reduce(
+            (isPreconditionMatched, [path, value]) => {
+              console.log(path);
+              return isPreconditionMatched && JSONPath({ json: itemOrErrorResponse, path })[0] === value;
+            },
+            true
           );
-        } else {
-          // noinspection DynamicallyGeneratedCodeJS
-          if (
-            typeof itemPreCondition === 'string' &&
-            !new Function('const obj = arguments[0]; return ' + itemPreCondition).call(
-              null,
-              itemOrErrorResponse
-            )
-          ) {
-            return getConflictErrorResponse(`Update precondition ${itemPreCondition} was not satisfied`);
+          if (!isPreConditionMatched) {
+            return getConflictErrorResponse(
+              `Delete sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
+            );
           }
         }
       }
@@ -835,17 +830,19 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       );
 
       const setStatements = columns
-        .map((fieldName: any, index: number) => fieldName + ' = ' + `$${index + 2}`)
+        .map((fieldName: string, index: number) => fieldName + ' = ' + `$${index + 2}`)
         .join(', ');
 
       const idFieldName = _id === undefined ? 'id' : '_id';
 
-      promises.push(
-        this.tryExecuteSql(
-          `UPDATE ${this.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
-          [_id === undefined ? restOfItem.id : _id, ...values]
-        )
-      );
+      if (setStatements) {
+        promises.push(
+          this.tryExecuteSql(
+            `UPDATE ${this.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
+            [_id === undefined ? restOfItem.id : _id, ...values]
+          )
+        );
+      }
 
       await Promise.all(promises);
 
@@ -884,13 +881,6 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           return itemOrErrorResponse;
         }
 
-        if (
-          typeof itemPreCondition === 'string' &&
-          (itemPreCondition.match(/require\s*\(/) || itemPreCondition.match(/import\s*\(/))
-        ) {
-          return getBadRequestErrorResponse('Delete precondition expression cannot use require or import');
-        }
-
         if (typeof itemPreCondition === 'object') {
           if (!_.isMatch(itemOrErrorResponse, itemPreCondition)) {
             return getConflictErrorResponse(
@@ -910,6 +900,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         }
       }
 
+      const typeMetadata = getTypeMetadata(entityClass);
+      const idFieldName = typeMetadata._id ? '_id' : 'id';
+
       await Promise.all([
         forEachAsyncParallel(
           Object.values(entityContainer.entityNameToJoinsMap[entityClass.name] || {}),
@@ -920,7 +913,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             );
           }
         ),
-        this.tryExecuteSql(`DELETE FROM ${this.schema}.${entityClass.name} WHERE _id = $1`, [_id])
+        this.tryExecuteSql(
+          `DELETE FROM ${this.schema}.${entityClass.name} WHERE ${this.schema}.${entityClass.name}.${idFieldName} = $1`,
+          [_id]
+        )
       ]);
 
       if (!this.getClsNamespace()?.get('globalTransaction')) {
@@ -954,16 +950,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       }
 
       if (preCondition) {
-        if (
-          typeof preCondition === 'string' &&
-          (preCondition.match(/require\s*\(/) || preCondition.match(/import\s*\(/))
-        ) {
-          return getBadRequestErrorResponse('Delete precondition expression cannot use require or import');
-        }
-
         if (typeof preCondition === 'object') {
           const isPreConditionMatched = Object.entries(preCondition).reduce(
             (isPreconditionMatched, [path, value]) => {
+              console.log(path);
               return isPreconditionMatched && JSONPath({ json: itemOrErrorResponse, path })[0] === value;
             },
             true
@@ -979,7 +969,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       const itemInstance = plainToClass(entityClass, itemOrErrorResponse);
       const subItems = JSONPath({ json: itemInstance, path: subItemsPath });
       await forEachAsyncParallel(subItems, async (subItem: any) => {
-        await this.deleteItemById(subItem._id, subItem.constructor, Types);
+        const possibleErrorResponse = await this.deleteItemById(subItem.id, subItem.constructor, Types);
+        if (possibleErrorResponse) {
+          throw new Error(possibleErrorResponse.errorMessage);
+        }
       });
 
       if (!this.getClsNamespace()?.get('globalTransaction')) {

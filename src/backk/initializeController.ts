@@ -110,7 +110,7 @@ function getSampleArg(
     } else if (propertyName.endsWith('Id')) {
       sampleArg[propertyName] = `{{${propertyName}}}`;
     } else if (propertyName === 'id') {
-      sampleArg[propertyName] = '123';
+      sampleArg[propertyName] = '0';
     } else if (finalPropertyTypeName.startsWith('integer') || finalPropertyTypeName.startsWith('bigint')) {
       sampleArg[propertyName] = isUpdate ? maxValue : minValue;
     } else if (finalPropertyTypeName.startsWith('number')) {
@@ -222,7 +222,7 @@ function getReturnValueTests(
     } else if (propertyName.endsWith('Id')) {
       expectedValue = `pm.collectionVariables.get('${propertyName}')`;
     } else if (propertyName === 'id') {
-      expectedValue = "'123'";
+      expectedValue = "'0'";
     } else {
       switch (finalPropertyTypeName) {
         case 'string':
@@ -337,6 +337,10 @@ function getSetCollectionVariableStatements(
     if (propertyName === '_id') {
       collectionVariableSetStatements.push(
         `pm.collectionVariables.set("${entityName}Id", response${responsePath}_id)`
+      );
+    } else if(propertyName === 'id') {
+      collectionVariableSetStatements.push(
+        `pm.collectionVariables.set("${entityName}Id", response${responsePath}id)`
       );
     }
 
@@ -592,7 +596,7 @@ function addWrittenTest(writtenTest: any, items: any[]) {
       );
 
       instantiatedWrittenTest.testTemplate.testTemplateName =
-        instantiatedWrittenTest.testTemplate.serviceName +
+        instantiatedWrittenTest.testTemplate.serviceName + '.' +
         instantiatedWrittenTest.testTemplate.functionName +
         ' (' +
         test.testName +
