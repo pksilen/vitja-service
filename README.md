@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- Voiko DefaultPaymentMethod olla ilman id:tä
 - DbManager, throw new Error, handle different statusCodes
 - Change Partial<x> instead of adding isOptional annotation, add ? to classProperty declaration
 - Change all sub entities must have id field, which must be set by user
