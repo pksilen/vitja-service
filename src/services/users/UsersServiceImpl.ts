@@ -30,25 +30,25 @@ export default class UsersServiceImpl extends UsersService {
   @AllowForEveryUser()
   async createUser(arg: CreateUserArg): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.createItem(arg, User, this.Types);
-    return '_id' in userOrErrorResponse
-      ? UsersServiceImpl.getUserResponse(userOrErrorResponse)
-      : userOrErrorResponse;
+    return 'errorMessage' in userOrErrorResponse
+      ? userOrErrorResponse
+      : UsersServiceImpl.getUserResponse(userOrErrorResponse);
   }
 
   @AllowForSelf()
   async getUserByUserName({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.getItemBy('userName', userName, User, this.Types);
-    return '_id' in userOrErrorResponse
-      ? UsersServiceImpl.getUserResponse(userOrErrorResponse)
-      : userOrErrorResponse;
+    return 'errorMessage' in userOrErrorResponse
+      ? userOrErrorResponse
+      : UsersServiceImpl.getUserResponse(userOrErrorResponse);
   }
 
   @Private()
   async getUserById({ _id }: Id): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.getItemById(_id, User, this.Types);
-    return '_id' in userOrErrorResponse
-      ? UsersServiceImpl.getUserResponse(userOrErrorResponse)
-      : userOrErrorResponse;
+    return 'errorMessage' in userOrErrorResponse
+      ? userOrErrorResponse
+      : UsersServiceImpl.getUserResponse(userOrErrorResponse);
   }
 
   @AllowForSelf()

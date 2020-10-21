@@ -30,7 +30,7 @@ class EntityAnnotationContainer {
   getAdditionIdPropertyName(entityName: string): string {
     return this.entityNameToAdditionalIdPropertyNamesMap[entityName][0];
   }
-  
+
   addEntityNameAndClass(entityName: string, entityClass: Function) {
     this.entityNameToClassMap[entityName] = entityClass;
   }
@@ -247,7 +247,13 @@ class EntityAnnotationContainer {
                 fieldName.slice(0, -1)} (`;
               const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
               createAdditionalTableStatement +=
-                idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
+                'id BIGINT, ' +
+                idFieldName +
+                ' BIGINT, ' +
+                fieldName.slice(0, -1) +
+                ' ' +
+                sqlColumnType +
+                ')';
               await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
 
               const joinSpec = {
@@ -304,7 +310,7 @@ class EntityAnnotationContainer {
               case 'string':
                 if (fieldName.endsWith('Id') || fieldName === 'id') {
                   if (fieldName === 'id') {
-                    sqlColumnType = 'BIGINT PRIMARY KEY'
+                    sqlColumnType = 'BIGINT';
                   } else {
                     sqlColumnType = 'BIGINT';
                   }
@@ -382,7 +388,7 @@ class EntityAnnotationContainer {
               fieldName.slice(0, -1)} (`;
             const idFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
             createAdditionalTableStatement +=
-              idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
+              'id BIGINT, ' + idFieldName + ' BIGINT, ' + fieldName.slice(0, -1) + ' ' + sqlColumnType + ')';
             await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
 
             const joinSpec = {

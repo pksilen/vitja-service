@@ -260,7 +260,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
             baseFieldTypeName[0] !== '('
           ) {
-            if (_.uniqBy((item as any)[fieldName], (subItem: any) => subItem.id).length !== (item as any)[fieldName].length) {
+            if (
+              _.uniqBy((item as any)[fieldName], (subItem: any) => subItem.id).length !==
+              (item as any)[fieldName].length
+            ) {
               throw new Error('Duplicate id values in ' + fieldName);
             }
 
@@ -298,9 +301,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
               throw new Error(subItemOrErrorResponse.errorMessage);
             }
           } else if (isArray) {
-            await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
+            await forEachAsyncParallel((item as any)[fieldName], async (subItem: any, index: number) => {
               const insertStatement = `INSERT INTO ${this.schema}.${entityClass.name +
-                fieldName.slice(0, -1)} (${idFieldName}, ${fieldName.slice(0, -1)}) VALUES($1, $2)`;
+                fieldName.slice(0, -1)} (id, ${idFieldName}, ${fieldName.slice(0, -1)}) VALUES(${index}, $1, $2)`;
               await this.tryExecuteSql(insertStatement, [_id, subItem]);
             });
           }
@@ -649,6 +652,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         entityClass.name + 'Map',
         entityClass.name.toLowerCase() + '_'
       );
+
       this.transformResults(rows, entityClass, Types);
       decryptItems(rows, entityClass, Types);
       return rows[0];
@@ -745,7 +749,6 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         if (typeof preCondition === 'object') {
           const isPreConditionMatched = Object.entries(preCondition).reduce(
             (isPreconditionMatched, [path, value]) => {
-              console.log(path);
               return isPreconditionMatched && JSONPath({ json: itemOrErrorResponse, path })[0] === value;
             },
             true
@@ -818,10 +821,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             }
           } else if (isArray) {
             promises.push(
-              forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
-                const updateStatement = `UPDATE ${this.schema}.${entityClass.name +
-                  fieldName.slice(0, -1)} SET ${fieldName.slice(0, -1)} = $1 WHERE ${idFieldName} = $2`;
-                await this.tryExecuteSql(updateStatement, [subItem, _id]);
+              forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any, index) => {
+                const deleteStatement = `DELETE FROM ${this.schema}.${entityClass.name +
+                fieldName.slice(0, -1)} WHERE ${idFieldName} = $1`;
+                await this.tryExecuteSql(deleteStatement, [_id]);
+
+                const insertStatement = `INSERT INTO ${this.schema}.${entityClass.name +
+                fieldName.slice(0, -1)} (id, ${idFieldName}, ${fieldName.slice(0, -1)}) VALUES(${index}, $1, $2)`;
+                await this.tryExecuteSql(insertStatement, [_id, subItem]);
               })
             );
           } else if (fieldName !== '_id' && fieldName !== 'id') {
@@ -957,7 +964,6 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         if (typeof preCondition === 'object') {
           const isPreConditionMatched = Object.entries(preCondition).reduce(
             (isPreconditionMatched, [path, value]) => {
-              console.log(path);
               return isPreconditionMatched && JSONPath({ json: itemOrErrorResponse, path })[0] === value;
             },
             true
@@ -1122,6 +1128,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
           fields.push(
             `${this.schema}.${relationEntityName}.${singularFieldName} AS ${relationEntityName}_${singularFieldName}`
+          );
+          fields.push(
+            `${this.schema}.${relationEntityName}.id AS ${relationEntityName}_id`
           );
         }
       } else {
@@ -1332,14 +1341,11 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         : suppliedEntityMetadata;
 
     const entityName = typeof entityClassOrName === 'function' ? entityClassOrName.name : entityClassOrName;
-
-    const idFieldName = parentEntityClass
-      ? parentEntityClass.name.charAt(0).toLowerCase() + parentEntityClass.name.slice(1) + 'Id'
-      : Object.keys(entityMetadata).find((fieldName) => fieldName === '_id');
+    const idFieldName = parentEntityClass ? 'id' : '_id';
 
     const resultMap = {
       mapId: entityName + 'Map',
-      idProperty: idFieldName ? idFieldName.toLowerCase() : undefined,
+      idProperty: idFieldName,
       properties: [] as object[],
       collections: [] as object[],
       associations: [] as object[]
@@ -1418,13 +1424,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             projection,
             fieldPath + fieldName + '.',
             {
+              id: 'integer',
               [fieldName.slice(0, -1)]: 'integer'
             },
             entityClassOrName as Function
           );
         }
       } else {
-        if (fieldName !== idFieldName && ((!parentEntityClass && fieldName !== '_id') || parentEntityClass)) {
+        if ((!parentEntityClass && fieldName !== '_id') || (parentEntityClass && fieldName !== 'id')) {
           if (this.shouldIncludeField(fieldName, fieldPath, projection)) {
             resultMap.properties.push({ name: fieldName, column: fieldName.toLowerCase() });
           }

@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- CreateItem, check for duplicate subitem ids
 - DbManager, throw new Error, handle different statusCodes
 - Change Partial<x> instead of adding isOptional annotation, add ? to classProperty declaration
 - Change all sub entities must have id field, which must be set by user
@@ -20,7 +19,7 @@ TODO:
 - General pre/post operation hookit kaikki dbmanager functioihin, jos hook palauttaa false tai ErrorResponse, niin operaatio hylätään
   -Hookilla error message parametrii
 -Change IsExprTrue annotation to use regular function instead of dynamically created function
-
+- In dbManager, rename createItem to createEntity etc.
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
