@@ -260,6 +260,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
             baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
             baseFieldTypeName[0] !== '('
           ) {
+            if (_.uniqBy((item as any)[fieldName], (subItem: any) => subItem.id).length !== (item as any)[fieldName].length) {
+              throw new Error('Duplicate id values in ' + fieldName);
+            }
+
             const relationEntityName = baseFieldTypeName;
             await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
               subItem[idFieldName] = _id;

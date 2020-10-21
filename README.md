@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO:
-- Pick as
 - CreateItem, check for duplicate subitem ids
+- DbManager, throw new Error, handle different statusCodes
 - Change Partial<x> instead of adding isOptional annotation, add ? to classProperty declaration
 - Change all sub entities must have id field, which must be set by user
 - Generoi default _id/id order by clauset getItemXXX functiohin
