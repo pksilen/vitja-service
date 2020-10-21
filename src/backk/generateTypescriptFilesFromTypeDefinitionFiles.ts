@@ -77,7 +77,25 @@ function generateTypescriptFileFor(
           .slice(0, -1)
           .split('|');
 
-        const pickedKeys = pickedKeyParts.map((pickedKeyPart) => pickedKeyPart.trim().split(/["']/)[1]);
+        const pickedKeys = pickedKeyParts.map((pickedKeyPart) => {
+          if (pickedKeyPart.includes(' as ')) {
+            return pickedKeyPart
+              .trim()
+              .split(' as ')[0]
+              .split(/["']/)[1];
+          }
+          return pickedKeyPart.trim().split(/["']/)[1];
+        });
+
+        const keyToNewKeyMap: { [key: string]: string } = {};
+        pickedKeyParts.forEach((pickedKeyPart) => {
+          if (pickedKeyPart.includes(' as ')) {
+            let [key, newKey] = pickedKeyPart.trim().split(' as ');
+            key = key.split(/["']/)[1];
+            newKey = newKey.split(/["']/)[1];
+            keyToNewKeyMap[key] = newKey;
+          }
+        });
 
         const baseTypeFilePathName = getTypeFilePathNameFor(baseType);
         if (baseTypeFilePathName) {
@@ -90,7 +108,8 @@ function generateTypescriptFileFor(
           isBaseTypeOptional,
           pickedKeys,
           'pick',
-          typeFilePathName
+          typeFilePathName,
+          keyToNewKeyMap
         );
         outputImportCodeLines = outputImportCodeLines.concat(importLines);
         outputClassPropertyDeclarations = outputClassPropertyDeclarations.concat(classPropertyDeclarations);

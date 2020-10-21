@@ -1,21 +1,21 @@
-import { Injectable } from "@nestjs/common";
-import AbstractDbManager from "src/backk/dbmanager/AbstractDbManager";
-import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
-import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
-import { AllowForUserRoles } from "../../backk/annotations/service/function/AllowForUserRoles";
-import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
-import { ErrorResponse, IdAndUserId } from "../../backk/Backk";
-import SalesItemsService from "../salesitems/SalesItemsService";
-import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
-import OrdersService from "./OrdersService";
-import CreateOrderArg from "./types/args/CreateOrderArg";
-import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
-import Order from "./types/entity/Order";
-import OrderItem from "./types/entity/OrderItem";
-import { AllowForTests } from "../../backk/annotations/service/function/AllowForTests";
-import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
-import AddOrderItemArg from "./types/args/AddOrderItemArg";
-import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
+import { Injectable } from '@nestjs/common';
+import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
+import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
+import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
+import { AllowForUserRoles } from '../../backk/annotations/service/function/AllowForUserRoles';
+import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
+import { ErrorResponse, IdAndUserId } from '../../backk/Backk';
+import SalesItemsService from '../salesitems/SalesItemsService';
+import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
+import OrdersService from './OrdersService';
+import CreateOrderArg from './types/args/CreateOrderArg';
+import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
+import Order from './types/entity/Order';
+import OrderItem from './types/entity/OrderItem';
+import { AllowForTests } from '../../backk/annotations/service/function/AllowForTests';
+import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
+import AddOrderItemArg from './types/args/AddOrderItemArg';
+import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -117,10 +117,10 @@ export default class OrdersServiceImpl extends OrdersService {
   updateOrderItemState({
     orderId,
     orderItemId,
-    state
+    newState
   }: UpdateOrderItemStateArg): Promise<void | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
-      if (state === 'returned') {
+      if (newState === 'returned') {
         const possibleErrorResponse = this.updateOrderItemSalesItemStateToForSale(orderId, orderItemId);
         if (possibleErrorResponse) {
           return possibleErrorResponse;
@@ -128,13 +128,11 @@ export default class OrdersServiceImpl extends OrdersService {
       }
 
       return this.dbManager.updateItem(
-        { _id: orderId, orderItems: [{ id: orderItemId, state }] },
+        { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
         Order,
         this.Types,
         {
-          [`orderItems[?(@.id == '${orderItemId}')].state`]: OrdersServiceImpl.getPreviousStateForNewState(
-            state
-          )
+          [`orderItems[?(@.id == '${orderItemId}')].state`]: OrdersServiceImpl.getPreviousStateFor(newState)
         }
       );
     });
@@ -186,7 +184,7 @@ export default class OrdersServiceImpl extends OrdersService {
     );
   }
 
-  private static getPreviousStateForNewState(
+  private static getPreviousStateFor(
     newState: 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned'
   ): 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned' {
     switch (newState) {

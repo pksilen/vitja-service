@@ -84,7 +84,8 @@ export default function getTypescriptLinesFor(
   isBaseTypeOptional: boolean,
   keys: string[],
   keyType: 'omit' | 'pick',
-  originatingTypeFilePathName: string
+  originatingTypeFilePathName: string,
+  keyToNewKeyMap?: { [key: string]: string}
 ): [string[], any[]] {
   let typeFilePathName;
   let fileContentsStr;
@@ -201,6 +202,10 @@ export default function getTypescriptLinesFor(
           } else if (keyType === 'pick') {
             if (!keys.includes(propertyName)) {
               return;
+            }
+
+            if (keyToNewKeyMap && keyToNewKeyMap[propertyName]) {
+              classBodyNode.key.name = keyToNewKeyMap[propertyName];
             }
           }
         }
