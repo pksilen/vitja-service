@@ -1,4 +1,4 @@
-import { getTypeMetadata } from '../generateServicesMetadata';
+import { getTypeMetadata } from '../service/generateServicesMetadata';
 import decrypt from './decrypt';
 import encrypt from './encrypt';
 import shouldEncryptValue from './shouldEncryptValue';

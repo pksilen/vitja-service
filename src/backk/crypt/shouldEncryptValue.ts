@@ -1,4 +1,4 @@
-import typePropertyAnnotationContainer from '../annotations/typeproperty/typePropertyAnnotationContainer';
+import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 
 const subPropertyNamesWhoseValuesShouldBeEncrypted = [
   'username',

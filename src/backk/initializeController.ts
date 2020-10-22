@@ -6,15 +6,15 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { Base64 } from 'js-base64';
 import { sign } from 'jsonwebtoken';
 import _ from 'lodash';
-import serviceFunctionAnnotationContainer from './annotations/service/function/serviceFunctionAnnotationContainer';
-import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
-import BaseService from './BaseService';
-import generateServicesMetadata, { FunctionMetadata, ServiceMetadata } from './generateServicesMetadata';
-import getServiceTypeNames from './getServiceTypeNames';
-import getSrcFilePathNameForTypeName, { getFileNamesRecursively } from './getSrcFilePathNameForTypeName';
-import getValidationConstraint from './getValidationConstraint';
-import setPropertyTypeValidationDecorators from './setPropertyTypeValidationDecorators';
-import testValueContainer from './testValueContainer';
+import serviceFunctionAnnotationContainer from './decorators/service/function/serviceFunctionAnnotationContainer';
+import serviceAnnotationContainer from './decorators/service/serviceAnnotationContainer';
+import BaseService from './service/basetypes/BaseService';
+import generateServicesMetadata, { FunctionMetadata, ServiceMetadata } from './service/generateServicesMetadata';
+import parseServiceTypeNames from './parser/parseServiceTypeNames';
+import getSrcFilePathNameForTypeName, { getFileNamesRecursively } from './utils/file/getSrcFilePathNameForTypeName';
+import getValidationConstraint from './decorators/typeproperty/getValidationConstraint';
+import setPropertyTypeValidationDecorators from './decorators/typeproperty/setPropertyTypeValidationDecorators';
+import testValueContainer from './decorators/typeproperty/testing/testValueContainer';
 
 function setNestedTypeAndValidationDecorators(
   typeClass: Function,
@@ -822,7 +822,7 @@ export default function initializeController(controller: any) {
         throw new Error('livenessCheckService is a reserved internal service name.');
       }
 
-      const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = getServiceTypeNames(
+      const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = parseServiceTypeNames(
         serviceName,
         getSrcFilePathNameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
       );

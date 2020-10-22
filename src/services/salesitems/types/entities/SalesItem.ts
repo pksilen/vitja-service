@@ -1,6 +1,6 @@
 import { IsInt, IsNumber, Max, MaxLength, Min } from 'class-validator';
-import Entity from '../../../../backk/annotations/entity/Entity';
-import { ExpectInTestsToMatch } from '../../../../backk/ExpectInTestsToMatch';
+import Entity from '../../../../backk/decorators/entity/Entity';
+import { ExpectInTestsToMatch } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToMatch';
 import Id from "../../../../backk/types/Id";
 
 @Entity()

@@ -3,7 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { MaxLength } from 'class-validator';
-import { IsExprTrue } from '../../../../backk/annotations/typeproperty/IsExprTrue';
+import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
 
 export default class UserName {
   @MaxLength(512)

@@ -1,7 +1,7 @@
 import { getNamespace, Namespace } from 'cls-hooked';
 import { FilterQuery, MongoClient } from 'mongodb';
 import { Pool } from 'pg';
-import SqlExpression from '../sqlexpression/SqlExpression';
+import SqlExpression from './sql/expressions/SqlExpression';
 import { RecursivePartial } from "../types/RecursivePartial";
 import { ErrorResponse } from "../types/ErrorResponse";
 import { PostQueryOps } from "../types/PostQueryOps";

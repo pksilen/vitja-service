@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
-import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
-import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import UserId from '../users/types/args/UserId';
 import ShoppingCartService from './ShoppingCartService';

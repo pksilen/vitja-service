@@ -1,9 +1,9 @@
 import { Body, Controller, Headers, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import AuthorizationService from '../backk/authorization/AuthorizationService';
 import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
-import executeServiceFunction from '../backk/executeServiceFunction';
+import executeServiceFunction from '../backk/service/executeServiceFunction';
 import initializeController from '../backk/initializeController';
-import ReadinessCheckService from '../backk/ReadinessCheckService';
+import ReadinessCheckService from '../backk/readinesscheck/ReadinessCheckService';
 import OrdersService from '../services/orders/OrdersService';
 import SalesItemsService from '../services/salesitems/SalesItemsService';
 import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';

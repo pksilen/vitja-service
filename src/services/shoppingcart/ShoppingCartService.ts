@@ -1,4 +1,4 @@
-import BaseService from '../../backk/BaseService';
+import BaseService from '../../backk/service/basetypes/BaseService';
 import UserId from '../users/types/args/UserId';
 import CreateShoppingCartArg from './types/args/CreateShoppingCartArg';
 import ShoppingCart from './types/entities/ShoppingCart';

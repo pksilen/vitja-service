@@ -1,4 +1,4 @@
-import typePropertyAnnotationContainer from '../annotations/typeproperty/typePropertyAnnotationContainer';
+import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 
 export default function shouldHashValue(propertyName: string, EntityClass: Function): boolean {
   return (

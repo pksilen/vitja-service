@@ -1,9 +1,9 @@
 import { Matches, MaxLength } from 'class-validator';
-import Entity from '../../../../backk/annotations/entity/Entity';
-import UniqueIndex from '../../../../backk/annotations/entity/UniqueIndex';
-import { Documentation } from '../../../../backk/annotations/typeproperty/Documentation';
-import { IsExprTrue } from '../../../../backk/annotations/typeproperty/IsExprTrue';
-import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
+import Entity from '../../../../backk/decorators/entity/Entity';
+import UniqueIndex from '../../../../backk/decorators/entity/UniqueIndex';
+import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
+import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
+import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import DefaultPaymentMethod from './DefaultPaymentMethod';
 import PaymentMethod from './PaymentMethod';
 import Id from "../../../../backk/types/Id";

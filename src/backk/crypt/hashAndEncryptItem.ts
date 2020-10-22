@@ -1,5 +1,5 @@
-import forEachAsyncParallel from '../forEachAsyncParallel';
-import { getTypeMetadata } from '../generateServicesMetadata';
+import forEachAsyncParallel from '../utils/forEachAsyncParallel';
+import { getTypeMetadata } from '../service/generateServicesMetadata';
 import encrypt from './encrypt';
 import hash from './hash';
 import shouldEncryptValue from './shouldEncryptValue';

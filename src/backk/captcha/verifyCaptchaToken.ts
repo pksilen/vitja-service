@@ -1,5 +1,5 @@
-import throwHttpException from "../throwHttpException";
-import getBadRequestErrorResponse from "../getBadRequestErrorResponse";
+import throwHttpException from "../errors/throwHttpException";
+import getBadRequestErrorResponse from "../errors/getBadRequestErrorResponse";
 
 export default async function verifyCaptchaToken(controller: any, captchaToken: string) {
   if (controller['captchaVerifyService']?.['verifyCaptcha']) {

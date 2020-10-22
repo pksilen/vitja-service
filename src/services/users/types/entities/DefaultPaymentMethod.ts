@@ -1,4 +1,4 @@
-import Entity from '../../../../backk/annotations/entity/Entity';
+import Entity from '../../../../backk/decorators/entity/Entity';
 import PaymentMethod from './PaymentMethod';
 
 @Entity()

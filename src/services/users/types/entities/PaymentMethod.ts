@@ -1,6 +1,6 @@
 import { IsCreditCard, Matches, MaxLength } from "class-validator";
-import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
-import Entity from "../../../../backk/annotations/entity/Entity";
+import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
+import Entity from "../../../../backk/decorators/entity/Entity";
 
 @Entity()
 export default class PaymentMethod {

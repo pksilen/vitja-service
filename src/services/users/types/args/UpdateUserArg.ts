@@ -3,8 +3,8 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
-import { Documentation } from '../../../../backk/annotations/typeproperty/Documentation';
-import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
+import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
+import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 

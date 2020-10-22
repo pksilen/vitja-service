@@ -3,9 +3,9 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { MaxLength } from 'class-validator';
-import { IsExprTrue } from '../../../../backk/annotations/typeproperty/IsExprTrue';
-import { ExpectAnyValueInTests } from '../../../../backk/ExpectAnyValueInTests';
-import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
+import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
+import { ExpectAnyValueInTests } from '../../../../backk/decorators/typeproperty/testing/ExpectAnyValueInTests';
+import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 

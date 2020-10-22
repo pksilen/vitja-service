@@ -1,11 +1,11 @@
-import throwHttpException from '../throwHttpException';
+import throwHttpException from '../errors/throwHttpException';
 import { HttpStatus } from '@nestjs/common';
-import serviceAnnotationContainer from '../annotations/service/serviceAnnotationContainer';
+import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
 import AuthorizationService from './AuthorizationService';
-import serviceFunctionAnnotationContainer from '../annotations/service/function/serviceFunctionAnnotationContainer';
-import BaseService from '../BaseService';
-import UsersBaseService from '../UsersBaseService';
-import getForbiddenErrorResponse from '../getForbiddenErrorResponse';
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import BaseService from '../service/basetypes/BaseService';
+import UsersBaseService from '../users/UsersBaseService';
+import getForbiddenErrorResponse from '../errors/getForbiddenErrorResponse';
 
 export default async function authorize(
   service: BaseService,

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/annotations/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
-import { FunctionDocumentation } from '../../backk/annotations/service/function/FunctionDocumentation';
-import { Private } from '../../backk/annotations/service/function/Private';
-import ServiceDocumentation from '../../backk/annotations/service/ServiceDocumentation';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import { FunctionDocumentation } from '../../backk/decorators/service/function/FunctionDocumentation';
+import { Private } from '../../backk/decorators/service/function/Private';
+import ServiceDocumentation from '../../backk/decorators/service/ServiceDocumentation';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import CreateUserArg from './types/args/CreateUserArg';
 import UpdateUserArg from './types/args/UpdateUserArg';

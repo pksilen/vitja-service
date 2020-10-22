@@ -1,4 +1,4 @@
-import BaseService from '../../backk/BaseService';
+import BaseService from '../../backk/service/basetypes/BaseService';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import CreateSalesItemArg from './types/args/CreateSalesItemArg';
 import GetSalesItemsArg from './types/args/GetSalesItemsArg';

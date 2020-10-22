@@ -3,7 +3,7 @@ import AuthorizationService from '../backk/authorization/AuthorizationService';
 import DefaultJwtAuthorizationServiceImpl from '../backk/authorization/DefaultJwtAuthorizationServiceImpl';
 import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
 import AbstractDbManager from '../backk/dbmanager/AbstractDbManager';
-import ReadinessCheckService from '../backk/ReadinessCheckService';
+import ReadinessCheckService from '../backk/readinesscheck/ReadinessCheckService';
 import { postgreSqlDbManager } from '../database/postgreSqlDbManager';
 import CaptchaVerifierServiceImpl from '../services/captchaverify/CatpchaVerifyServiceImpl';
 import OrdersService from '../services/orders/OrdersService';

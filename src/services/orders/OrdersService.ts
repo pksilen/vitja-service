@@ -1,4 +1,4 @@
-import BaseService from "../../backk/BaseService";
+import BaseService from "../../backk/service/basetypes/BaseService";
 import ShoppingCartItem from "../shoppingcart/types/entities/ShoppingCartItem";
 import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
 import CreateOrderArg from "./types/args/CreateOrderArg";

@@ -1,4 +1,4 @@
-import UsersBaseService from '../../backk/UsersBaseService';
+import UsersBaseService from '../../backk/users/UsersBaseService';
 import CreateUserArg from './types/args/CreateUserArg';
 import UpdateUserArg from './types/args/UpdateUserArg';
 import UserName from './types/args/UserName';

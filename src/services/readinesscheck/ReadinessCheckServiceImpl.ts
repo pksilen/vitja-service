@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import getServiceUnavailableErrorResponse from '../../backk/getServiceUnavailableErrorResponse';
-import ReadinessCheckService from '../../backk/ReadinessCheckService';
-import { AllowForEveryUser } from "../../backk/annotations/service/function/AllowForEveryUser";
+import getServiceUnavailableErrorResponse from '../../backk/errors/getServiceUnavailableErrorResponse';
+import ReadinessCheckService from '../../backk/readinesscheck/ReadinessCheckService';
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 
 @Injectable()

@@ -3,7 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { IsInt, Max, MaxLength, Min } from 'class-validator';
-import { ExpectInTestsToMatch } from '../../../../backk/ExpectInTestsToMatch';
+import { ExpectInTestsToMatch } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToMatch';
 
 export default class DeliverOrderItemArg {
   @MaxLength(24)
