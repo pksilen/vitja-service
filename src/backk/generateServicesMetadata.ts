@@ -3,8 +3,11 @@ import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata'
 import serviceFunctionAnnotationContainer from './annotations/service/function/serviceFunctionAnnotationContainer';
 import serviceAnnotationContainer from './annotations/service/serviceAnnotationContainer';
 import typeAnnotationContainer from './annotations/typeproperty/typePropertyAnnotationContainer';
-import { Id, IdAndUserId, IdsAndOptPostQueryOps, SortBy } from './Backk';
 import BaseService from './BaseService';
+import Id from "./types/Id";
+import IdsAndOptPostQueryOps from "./types/IdsAndOptPostQueryOps";
+import SortBy from "./types/SortBy";
+import IdAndUserId from "./types/IdAndUserId";
 
 function getTypeDocumentation<T>(
   typeMetadata: { [key: string]: string } | undefined,

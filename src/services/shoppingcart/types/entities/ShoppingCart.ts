@@ -1,7 +1,7 @@
 import { MaxLength } from 'class-validator';
 import Entity from '../../../../backk/annotations/entity/Entity';
-import { Id } from '../../../../backk/Backk';
 import ShoppingCartItem from './ShoppingCartItem';
+import Id from "../../../../backk/types/Id";
 
 @Entity()
 export default class ShoppingCart extends Id {

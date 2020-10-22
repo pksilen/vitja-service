@@ -1,29 +1,25 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/annotations/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
-import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
-import { Private } from '../../backk/annotations/service/function/Private';
-import {
-  ErrorResponse,
-  errorResponseSymbol,
-  Id,
-  IdAndUserId,
-  IdsAndOptPostQueryOps
-} from "../../backk/Backk";
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
-import SqlEquals from '../../backk/sqlexpression/SqlEquals';
-import SqlExpression from '../../backk/sqlexpression/SqlExpression';
-import SqlInExpression from '../../backk/sqlexpression/SqlInExpression';
-import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
-import SalesItemsService from './SalesItemsService';
-import CreateSalesItemArg from './types/args/CreateSalesItemArg';
-import GetSalesItemsArg from './types/args/GetSalesItemsArg';
-import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
-import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
-import { SalesItem } from './types/entities/SalesItem';
-import isErrorResponse from "../../backk/isErrorResponse";
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/annotations/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/annotations/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/annotations/service/function/AllowForSelf";
+import { NoCaptcha } from "../../backk/annotations/service/function/NoCaptcha";
+import { Private } from "../../backk/annotations/service/function/Private";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import MongoDbManager from "../../backk/dbmanager/MongoDbManager";
+import SqlEquals from "../../backk/sqlexpression/SqlEquals";
+import SqlExpression from "../../backk/sqlexpression/SqlExpression";
+import SqlInExpression from "../../backk/sqlexpression/SqlInExpression";
+import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
+import SalesItemsService from "./SalesItemsService";
+import CreateSalesItemArg from "./types/args/CreateSalesItemArg";
+import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
+import UpdateSalesItemArg from "./types/args/UpdateSalesItemArg";
+import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
+import { SalesItem } from "./types/entities/SalesItem";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import IdsAndOptPostQueryOps from "../../backk/types/IdsAndOptPostQueryOps";
+import IdAndUserId from "../../backk/types/IdAndUserId";
+import Id from "../../backk/types/Id";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])

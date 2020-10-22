@@ -1,5 +1,5 @@
-import { ErrorResponse, errorResponseSymbol } from "./Backk";
 import { HttpStatus } from "@nestjs/common";
+import { ErrorResponse, errorResponseSymbol } from "./types/ErrorResponse";
 
 export default function getNotFoundErrorResponse(errorMessage: string): ErrorResponse {
   return {

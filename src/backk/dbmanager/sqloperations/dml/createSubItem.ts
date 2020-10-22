@@ -1,8 +1,8 @@
-import { ErrorResponse } from '../../../Backk';
 import { JSONPath } from 'jsonpath-plus';
 import entityAnnotationContainer from '../../../annotations/entity/entityAnnotationContainer';
 import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../PostgreSqlDbManager';
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function createSubItem<T extends { _id: string; id?: string }, U extends object>(
   dbManager: PostgreSqlDbManager,

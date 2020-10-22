@@ -1,9 +1,9 @@
-import { ErrorResponse } from '../../../Backk';
 import { JSONPath } from 'jsonpath-plus';
 import getNotFoundErrorResponse from '../../../getNotFoundErrorResponse';
 import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../PostgreSqlDbManager';
 import getItemById from './getItemById';
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function getSubItem<T extends object, U extends object>(
   dbManager: PostgreSqlDbManager,

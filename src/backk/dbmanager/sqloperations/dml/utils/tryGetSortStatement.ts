@@ -1,7 +1,8 @@
-import { SortBy } from '../../../../Backk';
-import { assertIsColumnName, assertIsSortDirection } from '../../../../assert';
-import tryGetProjection from "./tryGetProjection";
-import getSqlColumnFromProjection from "./getSqlColumnFromProjection";
+import tryGetProjection from './tryGetProjection';
+import getSqlColumnFromProjection from './getSqlColumnFromProjection';
+import assertIsColumnName from '../../../../assertions/assertIsColumnName';
+import assertIsSortDirection from '../../../../assertions/assertIsSortDirection';
+import SortBy from "../../../../types/SortBy";
 
 export default function tryGetSortStatement<T>(
   schema: string,
@@ -18,7 +19,7 @@ export default function tryGetSortStatement<T>(
 
       let projection;
       try {
-        projection = tryGetProjection(schema,{ includeResponseFields: [sortField] }, entityClass, Types);
+        projection = tryGetProjection(schema, { includeResponseFields: [sortField] }, entityClass, Types);
       } catch (error) {
         throw new Error('Invalid sort field: ' + sortField);
       }

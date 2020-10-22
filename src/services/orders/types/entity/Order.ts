@@ -1,8 +1,8 @@
 import { IsInt, Max, MaxLength, Min } from 'class-validator';
 import Entity from '../../../../backk/annotations/entity/Entity';
-import { Id } from '../../../../backk/Backk';
 import { ExpectInTestsToMatch } from '../../../../backk/ExpectInTestsToMatch';
 import OrderItem from './OrderItem';
+import Id from "../../../../backk/types/Id";
 
 @Entity()
 export default class Order extends Id {

@@ -1,4 +1,3 @@
-import { ErrorResponse, OptPostQueryOps } from '../../../Backk';
 import shouldUseRandomInitializationVector from '../../../crypt/shouldUseRandomInitializationVector';
 import shouldEncryptValue from '../../../crypt/shouldEncryptValue';
 import encrypt from '../../../crypt/encrypt';
@@ -14,6 +13,8 @@ import getJoinStatement from "./utils/getJoinStatement";
 import getPagingStatement from "./utils/getPagingStatement";
 import createResultMaps from "./utils/createResultMaps";
 import transformResults from "./utils/transformResults";
+import OptPostQueryOps from "../../../types/OptPostQueryOps";
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function getItemsBy<T>(
   dbManager: PostgreSqlDbManager,

@@ -1,4 +1,3 @@
-import { ErrorResponse, Id, IdAndUserId, IdsAndOptPostQueryOps, SortBy } from '../../backk/Backk';
 import BaseService from '../../backk/BaseService';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import CreateSalesItemArg from './types/args/CreateSalesItemArg';
@@ -6,6 +5,11 @@ import GetSalesItemsArg from './types/args/GetSalesItemsArg';
 import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
 import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
 import { SalesItem } from './types/entities/SalesItem';
+import IdAndUserId from "../../backk/types/IdAndUserId";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import IdsAndOptPostQueryOps from "../../backk/types/IdsAndOptPostQueryOps";
+import Id from "../../backk/types/Id";
+import SortBy from "../../backk/types/SortBy";
 
 export default abstract class SalesItemsService extends BaseService {
   readonly Types = {

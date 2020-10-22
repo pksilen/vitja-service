@@ -1,4 +1,3 @@
-import { ErrorResponse } from '../../../Backk';
 import hashAndEncryptItem from '../../../crypt/hashAndEncryptItem';
 import getBadRequestErrorResponse from '../../../getBadRequestErrorResponse';
 import { getTypeMetadata } from '../../../generateServicesMetadata';
@@ -7,6 +6,7 @@ import _ from 'lodash';
 import isErrorResponse from '../../../isErrorResponse';
 import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../PostgreSqlDbManager';
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function createItem<T>(
   dbManager: PostgreSqlDbManager,

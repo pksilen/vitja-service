@@ -1,4 +1,3 @@
-import { ErrorResponse, Id } from '../../backk/Backk';
 import UsersBaseService from '../../backk/UsersBaseService';
 import CreateUserArg from './types/args/CreateUserArg';
 import UpdateUserArg from './types/args/UpdateUserArg';
@@ -7,6 +6,8 @@ import DefaultPaymentMethod from './types/entities/DefaultPaymentMethod';
 import PaymentMethod from './types/entities/PaymentMethod';
 import User from './types/entities/User';
 import UserResponse from './types/responses/UserResponse';
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import Id from "../../backk/types/Id";
 
 export default abstract class UsersService extends UsersBaseService {
   readonly Types = {

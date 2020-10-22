@@ -2,14 +2,17 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsArray, IsInstance, IsInt, IsOptional, Max, MaxLength, Min } from 'class-validator';
-import { SortBy } from '../../../../backk/Backk';
+import { IsArray, IsInstance, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import SortBy from '../../../../backk/types/SortBy';
 
 export default class GetByUserIdArg {
   @MaxLength(24)
   userId!: string;
 
   @IsOptional()
+  @IsString({
+    each: true
+  })
   @MaxLength(4096, {
     each: true
   })
@@ -17,6 +20,9 @@ export default class GetByUserIdArg {
   includeResponseFields?: string[] = [];
 
   @IsOptional()
+  @IsString({
+    each: true
+  })
   @MaxLength(4096, {
     each: true
   })

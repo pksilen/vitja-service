@@ -1,4 +1,3 @@
-import { ErrorResponse } from '../../../Backk';
 import getBadRequestErrorResponse from '../../../getBadRequestErrorResponse';
 import { getTypeMetadata } from '../../../generateServicesMetadata';
 import getNotFoundErrorResponse from '../../../getNotFoundErrorResponse';
@@ -10,6 +9,7 @@ import tryGetProjection from './utils/tryGetProjection';
 import getJoinStatement from './utils/getJoinStatement';
 import createResultMaps from './utils/createResultMaps';
 import transformResults from './utils/transformResults';
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function getItemById<T>(
   dbManager: PostgreSqlDbManager,

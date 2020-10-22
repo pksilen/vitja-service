@@ -3,8 +3,8 @@ import { getFromContainer, MetadataStorage, ValidationTypes, Validator } from 'c
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import { readFileSync } from 'fs';
-import { SortBy } from './Backk';
 import getSrcFilePathNameForTypeName from './getSrcFilePathNameForTypeName';
+import SortBy from "./types/SortBy";
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');

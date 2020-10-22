@@ -1,5 +1,6 @@
-import { PostQueryOps, SortBy } from "../../../../backk/Backk";
 import { IsInt, Max, MaxLength, Min } from 'class-validator';
+import { PostQueryOps } from "../../../../backk/types/PostQueryOps";
+import SortBy from "../../../../backk/types/SortBy";
 
 export default class GetSalesItemsArg implements PostQueryOps {
   @MaxLength(512)

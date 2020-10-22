@@ -4,7 +4,6 @@ import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServi
 import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
 import { AllowForUserRoles } from '../../backk/annotations/service/function/AllowForUserRoles';
 import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
-import { ErrorResponse, IdAndUserId } from '../../backk/Backk';
 import SalesItemsService from '../salesitems/SalesItemsService';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import OrdersService from './OrdersService';
@@ -16,6 +15,8 @@ import { AllowForTests } from '../../backk/annotations/service/function/AllowFor
 import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
 import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import IdAndUserId from "../../backk/types/IdAndUserId";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])

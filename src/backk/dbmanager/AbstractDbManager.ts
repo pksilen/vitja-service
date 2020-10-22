@@ -1,8 +1,11 @@
 import { getNamespace, Namespace } from 'cls-hooked';
 import { FilterQuery, MongoClient } from 'mongodb';
 import { Pool } from 'pg';
-import { ErrorResponse, OptPostQueryOps, PostQueryOps, RecursivePartial } from '../Backk';
 import SqlExpression from '../sqlexpression/SqlExpression';
+import { RecursivePartial } from "../types/RecursivePartial";
+import { ErrorResponse } from "../types/ErrorResponse";
+import { PostQueryOps } from "../types/PostQueryOps";
+import OptPostQueryOps from "../types/OptPostQueryOps";
 
 export interface Field {
   name: string;

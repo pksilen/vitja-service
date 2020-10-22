@@ -1,4 +1,4 @@
-import { OptionalProjection } from "../../../../Backk";
+import { OptionalProjection } from "../../../../types/OptionalProjection";
 
 export default function shouldIncludeField(
   fieldName: string,

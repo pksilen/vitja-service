@@ -1,4 +1,3 @@
-import { ErrorResponse, IdAndUserId } from "../../backk/Backk";
 import BaseService from "../../backk/BaseService";
 import ShoppingCartItem from "../shoppingcart/types/entities/ShoppingCartItem";
 import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
@@ -9,6 +8,8 @@ import OrderItem from "./types/entity/OrderItem";
 import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
 import AddOrderItemArg from "./types/args/AddOrderItemArg";
 import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
+import IdAndUserId from "../../backk/types/IdAndUserId";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
 
 export default abstract class OrdersService extends BaseService {
   readonly Types = {

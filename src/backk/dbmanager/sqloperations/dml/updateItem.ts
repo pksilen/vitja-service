@@ -1,4 +1,3 @@
-import { ErrorResponse, RecursivePartial } from '../../../Backk';
 import hashAndEncryptItem from '../../../crypt/hashAndEncryptItem';
 import isErrorResponse from '../../../isErrorResponse';
 import { JSONPath } from 'jsonpath-plus';
@@ -9,6 +8,8 @@ import forEachAsyncParallel from '../../../forEachAsyncParallel';
 import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../PostgreSqlDbManager';
 import getItemById from './getItemById';
+import { RecursivePartial } from "../../../types/RecursivePartial";
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function updateItem<T extends object & { _id: string; id?: string }>(
   dbManager: PostgreSqlDbManager,

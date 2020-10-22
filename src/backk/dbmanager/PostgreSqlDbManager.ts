@@ -1,29 +1,10 @@
 import { Injectable } from '@nestjs/common';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import joinjs from 'join-js';
-import _ from 'lodash';
-import { JSONPath } from 'jsonpath-plus';
 import { Pool, QueryConfig, QueryResult, types } from 'pg';
-import { pg } from 'yesql';
-import entityContainer, { JoinSpec } from '../annotations/entity/entityAnnotationContainer';
-import { ErrorResponse, OptPostQueryOps, PostQueryOps, RecursivePartial } from '../Backk';
-import decryptItems from '../crypt/decryptItems';
-import encrypt from '../crypt/encrypt';
-import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
-import shouldEncryptValue from '../crypt/shouldEncryptValue';
-import shouldUseRandomInitializationVector from '../crypt/shouldUseRandomInitializationVector';
-import forEachAsyncParallel from '../forEachAsyncParallel';
-import forEachAsyncSequential from '../forEachAsyncSequential';
-import { getTypeMetadata } from '../generateServicesMetadata';
-import getBadRequestErrorResponse from '../getBadRequestErrorResponse';
-import getConflictErrorResponse from '../getConflictErrorResponse';
-import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
-import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 import SqlExpression from '../sqlexpression/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import isErrorResponse from '../isErrorResponse';
-import { plainToClass } from 'class-transformer';
 import createItem from './sqloperations/dml/createItem';
 import createSubItem from './sqloperations/dml/createSubItem';
 import getItems from './sqloperations/dml/getItems';
@@ -37,6 +18,10 @@ import updateItem from './sqloperations/dml/updateItem';
 import deleteItemById from './sqloperations/dml/deleteItemById';
 import deleteSubItems from './sqloperations/dml/deleteSubItems';
 import deleteAllItems from './sqloperations/dml/deleteAllItems';
+import { ErrorResponse } from "../types/ErrorResponse";
+import { PostQueryOps } from "../types/PostQueryOps";
+import OptPostQueryOps from "../types/OptPostQueryOps";
+import { RecursivePartial } from "../types/RecursivePartial";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {

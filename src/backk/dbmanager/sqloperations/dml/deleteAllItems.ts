@@ -1,8 +1,8 @@
-import { ErrorResponse } from '../../../Backk';
 import forEachAsyncParallel from '../../../forEachAsyncParallel';
 import entityContainer, { JoinSpec } from '../../../annotations/entity/entityAnnotationContainer';
 import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../PostgreSqlDbManager';
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function deleteAllItems<T>(
   dbManager: PostgreSqlDbManager,

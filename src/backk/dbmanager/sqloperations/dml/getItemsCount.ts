@@ -1,5 +1,4 @@
 import SqlExpression from '../../../sqlexpression/SqlExpression';
-import { ErrorResponse } from '../../../Backk';
 import getBadRequestErrorResponse from '../../../getBadRequestErrorResponse';
 import { pg } from 'yesql';
 import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
@@ -7,6 +6,7 @@ import tryGetWhereStatement from './utils/tryGetWhereStatement';
 import PostgreSqlDbManager from '../../PostgreSqlDbManager';
 import getFilterValues from './utils/getFilterValues';
 import getJoinStatement from './utils/getJoinStatement';
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function getItemsCount<T>(
   dbManager: PostgreSqlDbManager,

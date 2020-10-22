@@ -1,4 +1,3 @@
-import { ErrorResponse } from '../../../Backk';
 import shouldUseRandomInitializationVector from '../../../crypt/shouldUseRandomInitializationVector';
 import shouldEncryptValue from '../../../crypt/shouldEncryptValue';
 import encrypt from '../../../crypt/encrypt';
@@ -12,6 +11,7 @@ import tryGetProjection from './utils/tryGetProjection';
 import getJoinStatement from './utils/getJoinStatement';
 import createResultMaps from './utils/createResultMaps';
 import transformResults from './utils/transformResults';
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function getItemBy<T>(
   dbManager: PostgreSqlDbManager,

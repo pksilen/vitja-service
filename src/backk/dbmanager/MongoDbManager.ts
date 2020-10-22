@@ -1,17 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
 import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
-import {
-  ErrorResponse,
-  getMongoDbProjection,
-  OptPostQueryOps,
-  PostQueryOps,
-  RecursivePartial
-} from '../Backk';
 import getInternalServerErrorResponse from '../getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../getNotFoundErrorResponse';
 import SqlExpression from '../sqlexpression/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
+import getMongoDbProjection from "./mongodb/getMongoDbProjection";
+import { ErrorResponse } from "../types/ErrorResponse";
+import { PostQueryOps } from "../types/PostQueryOps";
+import OptPostQueryOps from "../types/OptPostQueryOps";
+import { RecursivePartial } from "../types/RecursivePartial";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {

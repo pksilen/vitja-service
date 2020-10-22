@@ -5,7 +5,6 @@ import { AllowForSelf } from '../../backk/annotations/service/function/AllowForS
 import { FunctionDocumentation } from '../../backk/annotations/service/function/FunctionDocumentation';
 import { Private } from '../../backk/annotations/service/function/Private';
 import ServiceDocumentation from '../../backk/annotations/service/ServiceDocumentation';
-import { ErrorResponse, Id } from '../../backk/Backk';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import CreateUserArg from './types/args/CreateUserArg';
 import UpdateUserArg from './types/args/UpdateUserArg';
@@ -13,6 +12,8 @@ import UserName from './types/args/UserName';
 import User from './types/entities/User';
 import UserResponse from './types/responses/UserResponse';
 import UsersService from './UsersService';
+import Id from "../../backk/types/Id";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])

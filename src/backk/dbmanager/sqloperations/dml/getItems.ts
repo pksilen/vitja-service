@@ -1,5 +1,4 @@
 import SqlExpression from '../../../sqlexpression/SqlExpression';
-import { ErrorResponse, PostQueryOps } from '../../../Backk';
 import { types } from 'pg';
 import getBadRequestErrorResponse from '../../../getBadRequestErrorResponse';
 import { pg } from 'yesql';
@@ -15,6 +14,8 @@ import getFilterValues from './utils/getFilterValues';
 import getJoinStatement from './utils/getJoinStatement';
 import createResultMaps from './utils/createResultMaps';
 import transformResults from './utils/transformResults';
+import { PostQueryOps } from "../../../types/PostQueryOps";
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function getItems<T>(
   dbManager: PostgreSqlDbManager,

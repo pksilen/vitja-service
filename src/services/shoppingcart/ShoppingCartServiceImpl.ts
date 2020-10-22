@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import AllowServiceForUserRoles from '../../backk/annotations/service/AllowServiceForUserRoles';
 import { AllowForSelf } from '../../backk/annotations/service/function/AllowForSelf';
 import { NoCaptcha } from '../../backk/annotations/service/function/NoCaptcha';
-import { ErrorResponse, IdAndUserId } from '../../backk/Backk';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import UserId from '../users/types/args/UserId';
 import ShoppingCartService from './ShoppingCartService';
 import CreateShoppingCartArg from './types/args/CreateShoppingCartArg';
 import ShoppingCart from './types/entities/ShoppingCart';
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import IdAndUserId from "../../backk/types/IdAndUserId";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])

@@ -1,6 +1,7 @@
 import BaseService from './BaseService';
-import { ErrorResponse, Id } from "./Backk";
 import UserResponse from "../services/users/types/responses/UserResponse";
+import { ErrorResponse } from "./types/ErrorResponse";
+import Id from "./types/Id";
 
 export default abstract class UsersBaseService extends BaseService {
   isUsersService(): boolean {

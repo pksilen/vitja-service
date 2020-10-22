@@ -1,4 +1,3 @@
-import { ErrorResponse } from '../../../Backk';
 import isErrorResponse from '../../../isErrorResponse';
 import _ from 'lodash';
 import getConflictErrorResponse from '../../../getConflictErrorResponse';
@@ -8,6 +7,7 @@ import entityContainer, { JoinSpec } from '../../../annotations/entity/entityAnn
 import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../PostgreSqlDbManager';
 import getItemById from './getItemById';
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function deleteItemById<T extends object>(
   dbManager: PostgreSqlDbManager,

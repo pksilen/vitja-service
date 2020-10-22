@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsNumber, IsOptional, Max, MaxLength, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export default class UpdateSalesItemArg {
   @MaxLength(24)
@@ -47,6 +47,7 @@ export default class UpdateSalesItemArg {
   @IsOptional()
   secondaryImageDataUris!: string[];
 
+  @IsString()
   @MaxLength(24)
   _id!: string;
 }

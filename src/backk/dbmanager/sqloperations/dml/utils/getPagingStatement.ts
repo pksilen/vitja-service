@@ -1,4 +1,4 @@
-import { assertIsNumber } from "../../../../assert";
+import assertIsNumber from "../../../../assertions/assertIsNumber";
 
 export default function getPagingStatement(pageNumber?: number, pageSize?: number) {
   let limitAndOffsetStatement = '';

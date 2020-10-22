@@ -1,4 +1,3 @@
-import { ErrorResponse } from '../../../Backk';
 import { JSONPath } from 'jsonpath-plus';
 import getConflictErrorResponse from '../../../getConflictErrorResponse';
 import { plainToClass } from 'class-transformer';
@@ -7,6 +6,7 @@ import getInternalServerErrorResponse from '../../../getInternalServerErrorRespo
 import PostgreSqlDbManager from '../../PostgreSqlDbManager';
 import getItemById from './getItemById';
 import deleteItemById from './deleteItemById';
+import { ErrorResponse } from "../../../types/ErrorResponse";
 
 export default async function deleteSubItems<T extends { _id: string; id?: string }, U extends object>(
   dbManager: PostgreSqlDbManager,

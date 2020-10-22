@@ -1,6 +1,6 @@
-import { OptionalProjection } from '../../../../Backk';
 import { getTypeMetadata } from '../../../../generateServicesMetadata';
 import shouldIncludeField from './shouldIncludeField';
+import { OptionalProjection } from "../../../../types/OptionalProjection";
 
 function updateResultMaps(
   entityClassOrName: Function | string,

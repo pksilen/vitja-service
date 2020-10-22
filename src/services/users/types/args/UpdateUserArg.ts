@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsOptional, Matches, MaxLength } from 'class-validator';
+import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 import { Documentation } from '../../../../backk/annotations/typeproperty/Documentation';
 import { ValueUsedInTests } from '../../../../backk/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
@@ -41,6 +41,7 @@ export default class UpdateUserArg {
   @IsOptional()
   favoriteSalesItemIds!: string[];
 
+  @IsString()
   @MaxLength(24)
   _id!: string;
 }
