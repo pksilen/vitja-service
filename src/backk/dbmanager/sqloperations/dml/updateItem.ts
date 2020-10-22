@@ -1,13 +1,13 @@
-import { ErrorResponse, RecursivePartial } from '../../Backk';
-import hashAndEncryptItem from '../../crypt/hashAndEncryptItem';
-import isErrorResponse from '../../isErrorResponse';
+import { ErrorResponse, RecursivePartial } from '../../../Backk';
+import hashAndEncryptItem from '../../../crypt/hashAndEncryptItem';
+import isErrorResponse from '../../../isErrorResponse';
 import { JSONPath } from 'jsonpath-plus';
-import getConflictErrorResponse from '../../getConflictErrorResponse';
-import { getTypeMetadata } from '../../generateServicesMetadata';
-import forEachAsyncSequential from '../../forEachAsyncSequential';
-import forEachAsyncParallel from '../../forEachAsyncParallel';
-import getInternalServerErrorResponse from '../../getInternalServerErrorResponse';
-import PostgreSqlDbManager from '../PostgreSqlDbManager';
+import getConflictErrorResponse from '../../../getConflictErrorResponse';
+import { getTypeMetadata } from '../../../generateServicesMetadata';
+import forEachAsyncSequential from '../../../forEachAsyncSequential';
+import forEachAsyncParallel from '../../../forEachAsyncParallel';
+import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
+import PostgreSqlDbManager from '../../PostgreSqlDbManager';
 import getItemById from './getItemById';
 
 export default async function updateItem<T extends object & { _id: string; id?: string }>(

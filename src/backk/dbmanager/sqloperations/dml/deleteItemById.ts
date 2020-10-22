@@ -1,12 +1,12 @@
-import { ErrorResponse } from '../../Backk';
-import isErrorResponse from '../../isErrorResponse';
+import { ErrorResponse } from '../../../Backk';
+import isErrorResponse from '../../../isErrorResponse';
 import _ from 'lodash';
-import getConflictErrorResponse from '../../getConflictErrorResponse';
-import { getTypeMetadata } from '../../generateServicesMetadata';
-import forEachAsyncParallel from '../../forEachAsyncParallel';
-import entityContainer, { JoinSpec } from '../../annotations/entity/entityAnnotationContainer';
-import getInternalServerErrorResponse from '../../getInternalServerErrorResponse';
-import PostgreSqlDbManager from '../PostgreSqlDbManager';
+import getConflictErrorResponse from '../../../getConflictErrorResponse';
+import { getTypeMetadata } from '../../../generateServicesMetadata';
+import forEachAsyncParallel from '../../../forEachAsyncParallel';
+import entityContainer, { JoinSpec } from '../../../annotations/entity/entityAnnotationContainer';
+import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
+import PostgreSqlDbManager from '../../PostgreSqlDbManager';
 import getItemById from './getItemById';
 
 export default async function deleteItemById<T extends object>(

@@ -1,11 +1,11 @@
-import { ErrorResponse, OptPostQueryOps } from '../../Backk';
+import { ErrorResponse, OptPostQueryOps } from '../../../Backk';
 import { types } from 'pg';
-import getBadRequestErrorResponse from '../../getBadRequestErrorResponse';
-import getNotFoundErrorResponse from '../../getNotFoundErrorResponse';
+import getBadRequestErrorResponse from '../../../getBadRequestErrorResponse';
+import getNotFoundErrorResponse from '../../../getNotFoundErrorResponse';
 import joinjs from 'join-js';
-import decryptItems from '../../crypt/decryptItems';
-import getInternalServerErrorResponse from '../../getInternalServerErrorResponse';
-import PostgreSqlDbManager from '../PostgreSqlDbManager';
+import decryptItems from '../../../crypt/decryptItems';
+import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
+import PostgreSqlDbManager from '../../PostgreSqlDbManager';
 import tryGetProjection from './utils/tryGetProjection';
 import tryGetSortStatement from './utils/tryGetSortStatement';
 import getJoinStatement from './utils/getJoinStatement';

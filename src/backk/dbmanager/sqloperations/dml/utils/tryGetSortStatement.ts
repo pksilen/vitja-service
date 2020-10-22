@@ -1,5 +1,5 @@
-import { SortBy } from '../../../Backk';
-import { assertIsColumnName, assertIsSortDirection } from '../../../assert';
+import { SortBy } from '../../../../Backk';
+import { assertIsColumnName, assertIsSortDirection } from '../../../../assert';
 import tryGetProjection from "./tryGetProjection";
 import getSqlColumnFromProjection from "./getSqlColumnFromProjection";
 

@@ -1,5 +1,5 @@
-import entityContainer from '../../../annotations/entity/entityAnnotationContainer';
-import { getTypeMetadata } from '../../../generateServicesMetadata';
+import entityContainer from '../../../../annotations/entity/entityAnnotationContainer';
+import { getTypeMetadata } from '../../../../generateServicesMetadata';
 
 export default function getJoinStatement(schema: string, entityClass: Function, Types: object) {
   let joinStatement = '';

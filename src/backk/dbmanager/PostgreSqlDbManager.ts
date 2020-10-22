@@ -24,19 +24,19 @@ import SqlExpression from '../sqlexpression/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import isErrorResponse from '../isErrorResponse';
 import { plainToClass } from 'class-transformer';
-import createItem from './sqloperations/createItem';
-import createSubItem from './sqloperations/createSubItem';
-import getItems from './sqloperations/getItems';
-import getItemsCount from './sqloperations/getItemsCount';
-import getItemById from './sqloperations/getItemById';
-import getSubItem from './sqloperations/getSubItem';
-import getItemsByIds from './sqloperations/getItemsById';
-import getItemBy from './sqloperations/getItemBy';
-import getItemsBy from './sqloperations/getItemsBy';
-import updateItem from './sqloperations/updateItem';
-import deleteItemById from './sqloperations/deleteItemById';
-import deleteSubItems from './sqloperations/deleteSubItems';
-import deleteAllItems from './sqloperations/deleteAllItems';
+import createItem from './sqloperations/dml/createItem';
+import createSubItem from './sqloperations/dml/createSubItem';
+import getItems from './sqloperations/dml/getItems';
+import getItemsCount from './sqloperations/dml/getItemsCount';
+import getItemById from './sqloperations/dml/getItemById';
+import getSubItem from './sqloperations/dml/getSubItem';
+import getItemsByIds from './sqloperations/dml/getItemsById';
+import getItemBy from './sqloperations/dml/getItemBy';
+import getItemsBy from './sqloperations/dml/getItemsBy';
+import updateItem from './sqloperations/dml/updateItem';
+import deleteItemById from './sqloperations/dml/deleteItemById';
+import deleteSubItems from './sqloperations/dml/deleteSubItems';
+import deleteAllItems from './sqloperations/dml/deleteAllItems';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {

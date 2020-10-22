@@ -1,4 +1,4 @@
-import SqlExpression from '../../../sqlexpression/SqlExpression';
+import SqlExpression from '../../../../sqlexpression/SqlExpression';
 
 export default function getFilterValues<T>(filters: Partial<T> | SqlExpression[]) {
   if (Array.isArray(filters)) {

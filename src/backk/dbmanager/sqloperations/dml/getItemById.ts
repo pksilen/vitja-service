@@ -1,50 +1,40 @@
-import { ErrorResponse } from '../../Backk';
-import shouldUseRandomInitializationVector from '../../crypt/shouldUseRandomInitializationVector';
-import shouldEncryptValue from '../../crypt/shouldEncryptValue';
-import encrypt from '../../crypt/encrypt';
-import getBadRequestErrorResponse from '../../getBadRequestErrorResponse';
-import getNotFoundErrorResponse from '../../getNotFoundErrorResponse';
+import { ErrorResponse } from '../../../Backk';
+import getBadRequestErrorResponse from '../../../getBadRequestErrorResponse';
+import { getTypeMetadata } from '../../../generateServicesMetadata';
+import getNotFoundErrorResponse from '../../../getNotFoundErrorResponse';
 import joinjs from 'join-js';
-import decryptItems from '../../crypt/decryptItems';
-import getInternalServerErrorResponse from '../../getInternalServerErrorResponse';
-import PostgreSqlDbManager from '../PostgreSqlDbManager';
+import decryptItems from '../../../crypt/decryptItems';
+import getInternalServerErrorResponse from '../../../getInternalServerErrorResponse';
+import PostgreSqlDbManager from '../../PostgreSqlDbManager';
 import tryGetProjection from './utils/tryGetProjection';
 import getJoinStatement from './utils/getJoinStatement';
 import createResultMaps from './utils/createResultMaps';
 import transformResults from './utils/transformResults';
 
-export default async function getItemBy<T>(
+export default async function getItemById<T>(
   dbManager: PostgreSqlDbManager,
-  fieldName: string,
-  fieldValue: T[keyof T],
+  _id: string,
   entityClass: new () => T,
   Types: object
 ): Promise<T | ErrorResponse> {
   try {
-    const item = {
-      [fieldName]: fieldValue
-    };
-
-    if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
-      (item as any)[fieldName] = encrypt(fieldValue as any, false);
-    }
-
     let sqlColumns;
     try {
       sqlColumns = tryGetProjection(dbManager.schema, {}, entityClass, Types);
     } catch (error) {
       return getBadRequestErrorResponse(error.message);
     }
-
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
+    const typeMetadata = getTypeMetadata(entityClass);
+    const idFieldName = typeMetadata._id ? '_id' : 'id';
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${sqlColumns} FROM ${dbManager.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1`,
-      [(item as any)[fieldName]]
+      `SELECT ${sqlColumns} FROM ${dbManager.schema}.${entityClass.name} ${joinStatement} WHERE ${dbManager.schema}.${entityClass.name}.${idFieldName} = $1`,
+      [parseInt(_id, 10)]
     );
 
     if (result.rows.length === 0) {
-      return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
+      return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
     }
 
     const resultMaps = createResultMaps(entityClass, Types, {});

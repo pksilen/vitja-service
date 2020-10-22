@@ -1,4 +1,4 @@
-import SqlExpression from '../../../sqlexpression/SqlExpression';
+import SqlExpression from '../../../../sqlexpression/SqlExpression';
 import tryGetProjection from './tryGetProjection';
 import getSqlColumnFromProjection from './getSqlColumnFromProjection';
 
