@@ -18,9 +18,10 @@ export default async function createTable(
   const entityMetadata = getTypeMetadata(entityClass as any);
   let createTableStatement = `CREATE TABLE ${schema}.${entityName} (`;
   let fieldCnt = 0;
+  const idColumn = Object.keys(entityMetadata).find((fieldName) => fieldName === '_id' || fieldName === 'id');
 
   await forEachAsyncSequential(
-    Object.entries(entityMetadata),
+    Object.entries({ ...entityMetadata, ...(idColumn ? {} : { id: 'string' }) }),
     async ([fieldName, fieldTypeName]: [any, any]) => {
       let baseFieldTypeName = fieldTypeName;
       let isArray = false;

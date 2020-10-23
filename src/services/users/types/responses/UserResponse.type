@@ -1,4 +1,4 @@
-import { ExpectAnyValueInTests } from "../../../../backk/ExpectAnyValueInTests";
+import { ExpectAnyValueInTests } from "../../../../backk/decorators/typeproperty/testing/ExpectAnyValueInTests";
 import { MaxLength } from "class-validator";
 
 export default class UserResponse {

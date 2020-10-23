@@ -2,9 +2,10 @@
 
 TODO:
 - Voiko DefaultPaymentMethod olla ilman id:tä
+- Change all sub entities must have id field, which must be set by user, 
+    -Rename Id to _Id and create Id
 - DbManager, throw new Error, handle different statusCodes
 - Change Partial<x> instead of adding isOptional annotation, add ? to classProperty declaration
-- Change all sub entities must have id field, which must be set by user
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
 - All _id and Id ending fields comes with default annotations: MaxLength(24) and Match regExp [a-f\d]
