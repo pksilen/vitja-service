@@ -1,12 +1,10 @@
 import { IsCreditCard, Matches, MaxLength } from "class-validator";
 import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import Entity from "../../../../backk/decorators/entity/Entity";
+import Id from "../../../../backk/types/Id";
 
 @Entity()
-export default class PaymentMethod {
-  @MaxLength(24)
-  id!: string;
-
+export default class PaymentMethod extends Id {
   paymentMethodType!: 'creditCard';
 
   @IsCreditCard()

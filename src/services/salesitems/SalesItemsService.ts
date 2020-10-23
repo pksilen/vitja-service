@@ -8,7 +8,7 @@ import { SalesItem } from './types/entities/SalesItem';
 import IdAndUserId from "../../backk/types/IdAndUserId";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import IdsAndOptPostQueryOps from "../../backk/types/IdsAndOptPostQueryOps";
-import Id from "../../backk/types/Id";
+import _Id from "../../backk/types/_Id";
 import SortBy from "../../backk/types/SortBy";
 
 export default abstract class SalesItemsService extends BaseService {
@@ -27,7 +27,7 @@ export default abstract class SalesItemsService extends BaseService {
   abstract getSalesItems(arg: GetSalesItemsArg): Promise<SalesItem[] | ErrorResponse>;
   abstract getSalesItemsByUserId(arg: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse>;
   abstract getSalesItemsByIds(arg: IdsAndOptPostQueryOps): Promise<SalesItem[] | ErrorResponse>;
-  abstract getSalesItemById(arg: Id): Promise<SalesItem | ErrorResponse>;
+  abstract getSalesItemById(arg: _Id): Promise<SalesItem | ErrorResponse>;
   abstract updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse>;
 
   abstract updateSalesItemState(

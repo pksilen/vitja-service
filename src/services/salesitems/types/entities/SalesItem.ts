@@ -1,10 +1,10 @@
 import { IsInt, IsNumber, Max, MaxLength, Min } from 'class-validator';
 import Entity from '../../../../backk/decorators/entity/Entity';
 import { ExpectInTestsToMatch } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToMatch';
-import Id from "../../../../backk/types/Id";
+import _Id from "../../../../backk/types/_Id";
 
 @Entity()
-export class SalesItem extends Id {
+export class SalesItem extends _Id {
   @MaxLength(24)
   userId!: string;
 

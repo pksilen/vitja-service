@@ -19,7 +19,7 @@ import { SalesItem } from "./types/entities/SalesItem";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import IdsAndOptPostQueryOps from "../../backk/types/IdsAndOptPostQueryOps";
 import IdAndUserId from "../../backk/types/IdAndUserId";
-import Id from "../../backk/types/Id";
+import _Id from "../../backk/types/_Id";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -110,7 +110,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }
 
   @AllowForEveryUser()
-  getSalesItemById({ _id }: Id): Promise<SalesItem | ErrorResponse> {
+  getSalesItemById({ _id }: _Id): Promise<SalesItem | ErrorResponse> {
     return this.dbManager.getItemById(_id, SalesItem, this.Types);
   }
 

@@ -12,7 +12,7 @@ import UserName from './types/args/UserName';
 import User from './types/entities/User';
 import UserResponse from './types/responses/UserResponse';
 import UsersService from './UsersService';
-import Id from "../../backk/types/Id";
+import _Id from "../../backk/types/_Id";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 
 @ServiceDocumentation('Users service doc goes here...')
@@ -45,7 +45,7 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @Private()
-  async getUserById({ _id }: Id): Promise<UserResponse | ErrorResponse> {
+  async getUserById({ _id }: _Id): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.getItemById(_id, User, this.Types);
     return 'errorMessage' in userOrErrorResponse
       ? userOrErrorResponse
@@ -58,7 +58,7 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
-  deleteUserById({ _id }: Id): Promise<void | ErrorResponse> {
+  deleteUserById({ _id }: _Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteItemById(_id, User);
   }
 

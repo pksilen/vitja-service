@@ -7,6 +7,10 @@ import { IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-valid
 export default class UpdateSalesItemArg {
   @MaxLength(24)
   @IsOptional()
+  _id!: string;
+
+  @MaxLength(24)
+  @IsOptional()
   userId!: string;
 
   @MaxLength(64)
@@ -49,5 +53,5 @@ export default class UpdateSalesItemArg {
 
   @IsString()
   @MaxLength(24)
-  _id!: string;
+  id!: string;
 }

@@ -9,6 +9,10 @@ import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 
 export default class UpdateUserArg {
+  @MaxLength(24)
+  @IsOptional()
+  _id!: string;
+
   @Documentation('Password doc goes here...')
   @MaxLength(512)
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/)
@@ -43,5 +47,5 @@ export default class UpdateUserArg {
 
   @IsString()
   @MaxLength(24)
-  _id!: string;
+  id!: string;
 }

@@ -4,10 +4,11 @@ import serviceFunctionAnnotationContainer from '../decorators/service/function/s
 import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
 import typeAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import BaseService from './basetypes/BaseService';
-import Id from "../types/Id";
+import _Id from "../types/_Id";
 import IdsAndOptPostQueryOps from "../types/IdsAndOptPostQueryOps";
 import SortBy from "../types/SortBy";
 import IdAndUserId from "../types/IdAndUserId";
+import Id from "../types/Id";
 
 function getTypeDocumentation<T>(
   typeMetadata: { [key: string]: string } | undefined,
@@ -368,7 +369,9 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             .functionNameToReturnTypeNameMap[functionName];
 
           if (paramTypeName !== undefined && !(controller as any)[serviceName].Types[paramTypeName]) {
-            if (paramTypeName === 'Id') {
+            if (paramTypeName === '_Id') {
+              (controller as any)[serviceName].Types[paramTypeName] = _Id;
+            } else if (paramTypeName === 'Id') {
               (controller as any)[serviceName].Types[paramTypeName] = Id;
             } else if (paramTypeName === 'IdsAndOptPostQueryOps') {
               (controller as any)[serviceName].Types[paramTypeName] = IdsAndOptPostQueryOps;
@@ -424,7 +427,9 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             finalReturnValueTypeName !== 'void' &&
             !(controller as any)[serviceName].Types[finalReturnValueTypeName]
           ) {
-            if (finalReturnValueTypeName === 'Id') {
+            if (finalReturnValueTypeName === '_Id') {
+              (controller as any)[serviceName].Types[finalReturnValueTypeName] = _Id;
+            } else if (finalReturnValueTypeName === 'Id') {
               (controller as any)[serviceName].Types[finalReturnValueTypeName] = Id;
             } else if (finalReturnValueTypeName === 'IdsAndOptPostQueryOps') {
               (controller as any)[serviceName].Types[finalReturnValueTypeName] = IdsAndOptPostQueryOps;

@@ -21,6 +21,7 @@ TODO:
   -Hookilla error message parametrii
 -Change IsExprTrue annotation to use regular function instead of dynamically created function
 - In dbManager, rename createItem to createEntity etc.
+- Make possible to disable metadata endpoint
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)

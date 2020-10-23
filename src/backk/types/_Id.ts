@@ -1,7 +1,7 @@
 import { IsString, MaxLength } from 'class-validator';
 
-export default class Id {
+export default class _Id {
   @IsString()
   @MaxLength(24)
-  id!: string;
+  _id!: string;
 }

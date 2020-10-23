@@ -6,11 +6,11 @@ import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue
 import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import DefaultPaymentMethod from './DefaultPaymentMethod';
 import PaymentMethod from './PaymentMethod';
-import Id from "../../../../backk/types/Id";
+import _Id from "../../../../backk/types/_Id";
 
 @Entity()
 @UniqueIndex(['userName'])
-export default class User extends Id {
+export default class User extends _Id {
   @MaxLength(512)
   @IsExprTrue('obj.password && obj.password.length >= 8 || true')
   userName!: string;

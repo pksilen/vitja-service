@@ -7,7 +7,7 @@ import PaymentMethod from './types/entities/PaymentMethod';
 import User from './types/entities/User';
 import UserResponse from './types/responses/UserResponse';
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import Id from "../../backk/types/Id";
+import _Id from "../../backk/types/_Id";
 
 export default abstract class UsersService extends UsersBaseService {
   readonly Types = {
@@ -23,7 +23,7 @@ export default abstract class UsersService extends UsersBaseService {
   abstract deleteAllUsers(): Promise<void | ErrorResponse>;
   abstract createUser(arg: CreateUserArg): Promise<UserResponse | ErrorResponse>;
   abstract getUserByUserName(userName: UserName): Promise<UserResponse | ErrorResponse>;
-  abstract getUserById(id: Id): Promise<UserResponse | ErrorResponse>;
+  abstract getUserById(id: _Id): Promise<UserResponse | ErrorResponse>;
   abstract updateUser(updateUserArg: UpdateUserArg): Promise<void | ErrorResponse>;
-  abstract deleteUserById(id: Id): Promise<void | ErrorResponse>;
+  abstract deleteUserById(id: _Id): Promise<void | ErrorResponse>;
 }

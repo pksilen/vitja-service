@@ -1,7 +1,7 @@
 import { IsString, MaxLength } from "class-validator";
-import Id from "./Id";
+import _Id from "./_Id";
 
-export default class IdAndUserId extends Id {
+export default class IdAndUserId extends _Id {
   @IsString()
   @MaxLength(24)
   userId!: string;

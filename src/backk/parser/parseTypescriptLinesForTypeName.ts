@@ -8,13 +8,22 @@ function getDeclarationsFor(typeName: string, originatingTypeFilePathName: strin
   let fileContentsStr;
   let typeFilePathName;
 
-  if (typeName === 'Id') {
+  if (typeName === '_Id') {
+    fileContentsStr = `
+    import { MaxLength } from 'class-validator';
+    
+    export default class _Id {
+      @MaxLength(24)
+      _id!: string;
+    }
+    `;
+  } else if (typeName === 'Id') {
     fileContentsStr = `
     import { MaxLength } from 'class-validator';
     
     export default class Id {
       @MaxLength(24)
-      _id!: string;
+      id!: string;
     }
     `;
   } else {
@@ -94,13 +103,22 @@ export default function parseTypescriptLinesForTypeName(
     typeFilePathName = getSrcFilePathNameForTypeName(typeName);
     fileContentsStr = readFileSync(typeFilePathName, { encoding: 'UTF-8' });
   } else {
-    if (typeName === 'Id') {
+    if (typeName === '_Id') {
+      fileContentsStr = `
+    import { MaxLength } from 'class-validator';
+    
+    export default class _Id {
+      @MaxLength(24)
+      _id!: string;
+    }
+    `;
+    } else if (typeName === 'Id') {
       fileContentsStr = `
     import { MaxLength } from 'class-validator';
     
     export default class Id {
       @MaxLength(24)
-      _id!: string;
+      id!: string;
     }
     `;
     } else if (typeName === 'OptPostQueryOps') {
