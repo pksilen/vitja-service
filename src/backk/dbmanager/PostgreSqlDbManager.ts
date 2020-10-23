@@ -18,10 +18,10 @@ import updateItem from './sql/operations/dml/updateItem';
 import deleteItemById from './sql/operations/dml/deleteItemById';
 import deleteSubItems from './sql/operations/dml/deleteSubItems';
 import deleteAllItems from './sql/operations/dml/deleteAllItems';
-import { ErrorResponse } from "../types/ErrorResponse";
-import { PostQueryOps } from "../types/PostQueryOps";
-import OptPostQueryOps from "../types/OptPostQueryOps";
-import { RecursivePartial } from "../types/RecursivePartial";
+import { ErrorResponse } from '../types/ErrorResponse';
+import { PostQueryOps } from '../types/PostQueryOps';
+import OptPostQueryOps from '../types/OptPostQueryOps';
+import { RecursivePartial } from '../types/RecursivePartial';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -158,9 +158,19 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     Types: object,
     maxAllowedItemCount?: number,
-    itemCountQueryFilter?: Partial<T>
+    itemCountQueryFilter?: Partial<T>,
+    shouldReturnItem = true
   ): Promise<T | ErrorResponse> {
-    return createItem(this, item, entityClass, Types, maxAllowedItemCount, itemCountQueryFilter);
+    return createItem(
+      this,
+      item,
+      entityClass,
+      Types,
+      maxAllowedItemCount,
+      itemCountQueryFilter,
+      false,
+      shouldReturnItem
+    );
   }
 
   async createSubItem<T extends { _id: string; id?: string }, U extends object>(

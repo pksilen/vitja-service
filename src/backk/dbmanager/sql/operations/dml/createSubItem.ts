@@ -3,6 +3,7 @@ import entityAnnotationContainer from '../../../../decorators/entity/entityAnnot
 import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from "../../../../types/ErrorResponse";
+import createItem from "./createItem";
 
 export default async function createSubItem<T extends { _id: string; id?: string }, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -37,14 +38,17 @@ export default async function createSubItem<T extends { _id: string; id?: string
     await dbManager.createItem(
       { ...newSubItem, [parentIdFieldName]: parentIdValue, id: (maxSubItemId + 1).toString() } as any,
       subItemEntityClass,
-      Types
+      Types,
+      undefined,
+      undefined,
+      false
     );
 
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.commitTransaction();
     }
 
-    return dbManager.getItemById(_id, entityClass, Types);
+    return await dbManager.getItemById(_id, entityClass, Types);
   } catch (error) {
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();

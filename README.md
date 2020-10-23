@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Voiko DefaultPaymentMethod olla ilman id:tä
 - Change all sub entities must have id field, which must be set by user, 
     -Rename Id to _Id and create Id
 - DbManager, throw new Error, handle different statusCodes

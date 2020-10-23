@@ -15,7 +15,8 @@ export default async function createItem<T>(
   Types: object,
   maxAllowedItemCount?: number,
   itemCountQueryFilter?: Partial<T>,
-  isRecursiveCall = false
+  isRecursiveCall = false,
+  shouldReturnItem = true,
 ): Promise<T | ErrorResponse> {
   try {
     if (!isRecursiveCall) {
@@ -167,7 +168,7 @@ export default async function createItem<T>(
       await dbManager.commitTransaction();
     }
 
-    return isRecursiveCall ? ({} as any) : dbManager.getItemById(_id, entityClass, Types);
+    return isRecursiveCall || !shouldReturnItem ? ({} as any) : dbManager.getItemById(_id, entityClass, Types);
   } catch (error) {
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
