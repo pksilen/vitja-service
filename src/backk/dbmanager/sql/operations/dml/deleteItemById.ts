@@ -1,13 +1,13 @@
-import isErrorResponse from '../../../../errors/isErrorResponse';
-import _ from 'lodash';
-import getConflictErrorResponse from '../../../../errors/getConflictErrorResponse';
-import { getTypeMetadata } from '../../../../service/generateServicesMetadata';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import entityContainer, { JoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
-import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getItemById from './getItemById';
+import isErrorResponse from "../../../../errors/isErrorResponse";
+import _ from "lodash";
+import { getConflictErrorMessage } from "../../../../errors/getConflictErrorResponse";
+import { getTypeMetadata } from "../../../../service/generateServicesMetadata";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import entityContainer, { JoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import getItemById from "./getItemById";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
+import getErrorResponse from "../../../../errors/getErrorResponse";
 
 export default async function deleteItemById<T extends object>(
   dbManager: PostgreSqlDbManager,
@@ -28,25 +28,18 @@ export default async function deleteItemById<T extends object>(
     if (Types && itemPreCondition) {
       const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types);
       if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
-        console.log(itemOrErrorResponse);
-        return itemOrErrorResponse;
+        // noinspection ExceptionCaughtLocallyJS
+        throw new Error(itemOrErrorResponse.errorMessage);
       }
 
       if (typeof itemPreCondition === 'object') {
         if (!_.isMatch(itemOrErrorResponse, itemPreCondition)) {
-          return getConflictErrorResponse(
-            `Delete precondition ${JSON.stringify(itemPreCondition)} was not satisfied`
+          // noinspection ExceptionCaughtLocallyJS
+          throw new Error(
+            getConflictErrorMessage(
+              `Delete precondition ${JSON.stringify(itemPreCondition)} was not satisfied`
+            )
           );
-        }
-      } else {
-        // noinspection DynamicallyGeneratedCodeJS
-        if (
-          !new Function('const obj = arguments[0]; return ' + itemPreCondition).call(
-            null,
-            itemOrErrorResponse
-          )
-        ) {
-          return getConflictErrorResponse(`Delete precondition ${itemPreCondition} was not satisfied`);
         }
       }
     }
@@ -77,7 +70,6 @@ export default async function deleteItemById<T extends object>(
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-
-    return getInternalServerErrorResponse(error);
+    return getErrorResponse(error);
   }
 }

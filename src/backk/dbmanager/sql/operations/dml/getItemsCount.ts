@@ -1,12 +1,11 @@
-import SqlExpression from '../../expressions/SqlExpression';
-import getBadRequestErrorResponse from '../../../../errors/getBadRequestErrorResponse';
-import { pg } from 'yesql';
-import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
-import tryGetWhereStatement from './utils/tryGetWhereStatement';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getFilterValues from './utils/getFilterValues';
-import getJoinStatement from './utils/getJoinStatement';
+import SqlExpression from "../../expressions/SqlExpression";
+import { pg } from "yesql";
+import tryGetWhereStatement from "./utils/tryGetWhereStatement";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import getFilterValues from "./utils/getFilterValues";
+import getJoinStatement from "./utils/getJoinStatement";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
+import getErrorResponse from "../../../../errors/getErrorResponse";
 
 export default async function getItemsCount<T>(
   dbManager: PostgreSqlDbManager,
@@ -15,13 +14,7 @@ export default async function getItemsCount<T>(
   Types: object
 ): Promise<number | ErrorResponse> {
   try {
-    let whereStatement;
-    try {
-      whereStatement = tryGetWhereStatement(dbManager.schema, filters ?? {}, entityClass, Types);
-    } catch (error) {
-      return getBadRequestErrorResponse(error.message);
-    }
-
+    const whereStatement = tryGetWhereStatement(dbManager.schema, filters ?? {}, entityClass, Types);
     const filterValues = getFilterValues(filters ?? {});
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
 
@@ -33,6 +26,6 @@ export default async function getItemsCount<T>(
 
     return result.rows[0].count;
   } catch (error) {
-    return getInternalServerErrorResponse(error);
+    return getErrorResponse(error);
   }
 }

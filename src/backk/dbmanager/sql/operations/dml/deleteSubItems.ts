@@ -1,12 +1,12 @@
-import { JSONPath } from 'jsonpath-plus';
-import getConflictErrorResponse from '../../../../errors/getConflictErrorResponse';
-import { plainToClass } from 'class-transformer';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getItemById from './getItemById';
-import deleteItemById from './deleteItemById';
+import { JSONPath } from "jsonpath-plus";
+import { getConflictErrorMessage } from "../../../../errors/getConflictErrorResponse";
+import { plainToClass } from "class-transformer";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import getItemById from "./getItemById";
+import deleteItemById from "./deleteItemById";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
+import getErrorResponse from "../../../../errors/getErrorResponse";
 
 export default async function deleteSubItems<T extends { _id: string; id?: string }, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -23,8 +23,8 @@ export default async function deleteSubItems<T extends { _id: string; id?: strin
 
     const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types);
     if ('errorMessage' in itemOrErrorResponse) {
-      console.log(itemOrErrorResponse);
-      return itemOrErrorResponse;
+      // noinspection ExceptionCaughtLocallyJS
+      throw new Error(itemOrErrorResponse.errorMessage);
     }
 
     if (preCondition) {
@@ -36,9 +36,10 @@ export default async function deleteSubItems<T extends { _id: string; id?: strin
           true
         );
         if (!isPreConditionMatched) {
-          return getConflictErrorResponse(
+          // noinspection ExceptionCaughtLocallyJS
+          throw new Error(getConflictErrorMessage(
             `Delete sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
-          );
+          ));
         }
       }
     }
@@ -59,7 +60,6 @@ export default async function deleteSubItems<T extends { _id: string; id?: strin
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-
-    return getInternalServerErrorResponse(error);
+    return getErrorResponse(error);
   }
 }

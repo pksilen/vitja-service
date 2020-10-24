@@ -1,15 +1,12 @@
-import getBadRequestErrorResponse from '../../../../errors/getBadRequestErrorResponse';
-import { getTypeMetadata } from '../../../../service/generateServicesMetadata';
-import getNotFoundErrorResponse from '../../../../errors/getNotFoundErrorResponse';
-import joinjs from 'join-js';
-import decryptItems from '../../../../crypt/decryptItems';
-import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import tryGetProjection from './utils/tryGetProjection';
-import getJoinStatement from './utils/getJoinStatement';
-import createResultMaps from './utils/createResultMaps';
-import transformResults from './utils/transformResults';
+import { getTypeMetadata } from "../../../../service/generateServicesMetadata";
+import getNotFoundErrorResponse from "../../../../errors/getNotFoundErrorResponse";
+import getInternalServerErrorResponse from "../../../../errors/getInternalServerErrorResponse";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import tryGetProjection from "./utils/tryGetProjection";
+import getJoinStatement from "./utils/getJoinStatement";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
+import transformRowsToObjects from "./utils/transformRowsToObjects";
+import getErrorResponse from "../../../../errors/getErrorResponse";
 
 export default async function getItemById<T>(
   dbManager: PostgreSqlDbManager,
@@ -18,12 +15,7 @@ export default async function getItemById<T>(
   Types: object
 ): Promise<T | ErrorResponse> {
   try {
-    let sqlColumns;
-    try {
-      sqlColumns = tryGetProjection(dbManager.schema, {}, entityClass, Types);
-    } catch (error) {
-      return getBadRequestErrorResponse(error.message);
-    }
+    const sqlColumns = tryGetProjection(dbManager.schema, {}, entityClass, Types);
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
     const typeMetadata = getTypeMetadata(entityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
@@ -37,17 +29,8 @@ export default async function getItemById<T>(
       return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
     }
 
-    const resultMaps = createResultMaps(entityClass, Types, {});
-    const rows = joinjs.map(
-      result.rows,
-      resultMaps,
-      entityClass.name + 'Map',
-      entityClass.name.toLowerCase() + '_'
-    );
-    transformResults(rows, entityClass, Types);
-    decryptItems(rows, entityClass, Types);
-    return rows[0];
+    return transformRowsToObjects(result, entityClass, {}, Types)[0];
   } catch (error) {
-    return getInternalServerErrorResponse(error);
+    return getErrorResponse(error);
   }
 }

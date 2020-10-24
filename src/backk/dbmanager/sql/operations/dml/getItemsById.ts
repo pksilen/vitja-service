@@ -11,8 +11,10 @@ import getJoinStatement from './utils/getJoinStatement';
 import getPagingStatement from './utils/getPagingStatement';
 import createResultMaps from './utils/createResultMaps';
 import transformResults from './utils/transformResults';
-import OptPostQueryOps from "../../../../types/OptPostQueryOps";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import OptPostQueryOps from '../../../../types/OptPostQueryOps';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import transformRowsToObjects from "./utils/transformRowsToObjects";
+import getErrorResponse from "../../../../errors/getErrorResponse";
 
 export default async function getItemsByIds<T>(
   dbManager: PostgreSqlDbManager,
@@ -27,15 +29,8 @@ export default async function getItemsByIds<T>(
       excludeResponseFields: postQueryOps?.excludeResponseFields
     };
 
-    let sqlColumns;
-    let sortStatement;
-    try {
-      sqlColumns = tryGetProjection(dbManager.schema, projection, entityClass, Types);
-      sortStatement = tryGetSortStatement(dbManager.schema, postQueryOps?.sortBys, entityClass, types);
-    } catch (error) {
-      return getBadRequestErrorResponse(error.message);
-    }
-
+    const sqlColumns = tryGetProjection(dbManager.schema, projection, entityClass, Types);
+    const sortStatement = tryGetSortStatement(dbManager.schema, postQueryOps?.sortBys, entityClass, types);
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
     const pagingStatement = getPagingStatement(postQueryOps?.pageNumber, postQueryOps?.pageSize);
     const numericIds = _ids.map((id) => parseInt(id, 10));
@@ -50,17 +45,8 @@ export default async function getItemsByIds<T>(
       return getNotFoundErrorResponse(`Item with _ids: ${_ids} not found`);
     }
 
-    const resultMaps = createResultMaps(entityClass, Types, projection);
-    const rows = joinjs.map(
-      result.rows,
-      resultMaps,
-      entityClass.name + 'Map',
-      entityClass.name.toLowerCase() + '_'
-    );
-    transformResults(rows, entityClass, Types);
-    decryptItems(rows, entityClass, Types);
-    return rows;
+    return transformRowsToObjects(result, entityClass, projection, Types);
   } catch (error) {
-    return getInternalServerErrorResponse(error);
+    return getErrorResponse(error);
   }
 }

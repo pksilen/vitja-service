@@ -2,8 +2,8 @@ import { JSONPath } from 'jsonpath-plus';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createItem from "./createItem";
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import getErrorResponse from '../../../../errors/getErrorResponse';
 
 export default async function createSubItem<T extends { _id: string; id?: string }, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -21,8 +21,8 @@ export default async function createSubItem<T extends { _id: string; id?: string
 
     const itemOrErrorResponse = await dbManager.getItemById(_id, entityClass, Types);
     if ('errorMessage' in itemOrErrorResponse) {
-      console.log(itemOrErrorResponse);
-      return itemOrErrorResponse;
+      // noinspection ExceptionCaughtLocallyJS
+      throw new Error(itemOrErrorResponse.errorMessage);
     }
 
     const parentIdValue = JSONPath({ json: itemOrErrorResponse, path: '$._id' })[0];
@@ -35,7 +35,7 @@ export default async function createSubItem<T extends { _id: string; id?: string
       -1
     );
 
-    await dbManager.createItem(
+    const createdItemOrErrorResponse = await dbManager.createItem(
       { ...newSubItem, [parentIdFieldName]: parentIdValue, id: (maxSubItemId + 1).toString() } as any,
       subItemEntityClass,
       Types,
@@ -43,6 +43,11 @@ export default async function createSubItem<T extends { _id: string; id?: string
       undefined,
       false
     );
+
+    if ('errorMessage' in createdItemOrErrorResponse) {
+      // noinspection ExceptionCaughtLocallyJS
+      throw new Error(createdItemOrErrorResponse.errorMessage);
+    }
 
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.commitTransaction();
@@ -53,7 +58,6 @@ export default async function createSubItem<T extends { _id: string; id?: string
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-
-    return getInternalServerErrorResponse(error);
+    return getErrorResponse(error);
   }
 }

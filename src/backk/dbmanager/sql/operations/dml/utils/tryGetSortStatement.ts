@@ -21,7 +21,7 @@ export default function tryGetSortStatement<T>(
       try {
         projection = tryGetProjection(schema, { includeResponseFields: [sortField] }, entityClass, Types);
       } catch (error) {
-        throw new Error('Invalid sort field: ' + sortField);
+        throw new Error('400:Invalid sort field: ' + sortField);
       }
 
       const sortColumn = getSqlColumnFromProjection(projection);

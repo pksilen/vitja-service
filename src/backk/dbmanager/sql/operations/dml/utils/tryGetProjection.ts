@@ -87,7 +87,7 @@ export default function tryGetProjection(
       );
 
       if (fields.length === 0) {
-        throw new Error('Invalid field: ' + includeResponseField + ' in includeResponseFields');
+        throw new Error('400:Invalid field: ' + includeResponseField + ' in includeResponseFields');
       }
     });
   }
@@ -105,7 +105,7 @@ export default function tryGetProjection(
       );
 
       if (fields.length === 0) {
-        throw new Error('Invalid field: ' + excludeResponseField + ' in excludeResponseFields');
+        throw new Error('400:Invalid field: ' + excludeResponseField + ' in excludeResponseFields');
       }
     });
   }

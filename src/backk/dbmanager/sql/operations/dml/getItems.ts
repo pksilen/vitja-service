@@ -1,9 +1,6 @@
 import SqlExpression from '../../expressions/SqlExpression';
 import { types } from 'pg';
-import getBadRequestErrorResponse from '../../../../errors/getBadRequestErrorResponse';
 import { pg } from 'yesql';
-import joinjs from 'join-js';
-import decryptItems from '../../../../crypt/decryptItems';
 import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import tryGetProjection from './utils/tryGetProjection';
@@ -12,10 +9,10 @@ import getPagingStatement from './utils/getPagingStatement';
 import tryGetWhereStatement from './utils/tryGetWhereStatement';
 import getFilterValues from './utils/getFilterValues';
 import getJoinStatement from './utils/getJoinStatement';
-import createResultMaps from './utils/createResultMaps';
-import transformResults from './utils/transformResults';
-import { PostQueryOps } from "../../../../types/PostQueryOps";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { PostQueryOps } from '../../../../types/PostQueryOps';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import transformRowsToObjects from './utils/transformRowsToObjects';
+import getErrorResponse from '../../../../errors/getErrorResponse';
 
 export default async function getItems<T>(
   dbManager: PostgreSqlDbManager,
@@ -25,17 +22,9 @@ export default async function getItems<T>(
   Types: object
 ): Promise<T[] | ErrorResponse> {
   try {
-    let columns;
-    let whereStatement;
-    let sortStatement;
-    try {
-      columns = tryGetProjection(dbManager.schema, projection, entityClass, Types);
-      whereStatement = tryGetWhereStatement(dbManager.schema, filters, entityClass, types);
-      sortStatement = tryGetSortStatement(dbManager.schema, sortBys, entityClass, Types);
-    } catch (error) {
-      return getBadRequestErrorResponse(error.message);
-    }
-
+    const columns = tryGetProjection(dbManager.schema, projection, entityClass, Types);
+    const whereStatement = tryGetWhereStatement(dbManager.schema, filters, entityClass, types);
+    const sortStatement = tryGetSortStatement(dbManager.schema, sortBys, entityClass, Types);
     const filterValues = getFilterValues(filters);
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
     const pagingStatement = getPagingStatement(pageNumber, pageSize);
@@ -46,17 +35,8 @@ export default async function getItems<T>(
       )(filterValues)
     );
 
-    const resultMaps = createResultMaps(entityClass, Types, projection);
-    const rows = joinjs.map(
-      result.rows,
-      resultMaps,
-      entityClass.name + 'Map',
-      entityClass.name.toLowerCase() + '_'
-    );
-    transformResults(rows, entityClass, Types);
-    decryptItems(rows, entityClass, Types);
-    return rows;
+    return transformRowsToObjects(result, entityClass, projection, Types);
   } catch (error) {
-    return getInternalServerErrorResponse(error);
+    return getErrorResponse(error);
   }
 }

@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Change all sub entities must have id field, which must be set by user, 
-    -Rename Id to _Id and create Id
 - DbManager, throw new Error, handle different statusCodes
 - Change Partial<x> instead of adding isOptional annotation, add ? to classProperty declaration
 - Generoi default _id/id order by clauset getItemXXX functiohin

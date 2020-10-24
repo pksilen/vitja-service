@@ -33,7 +33,7 @@ export default function tryGetWhereStatement<T>(
     try {
       projection = tryGetProjection(schema, { includeResponseFields: [fieldName] }, entityClass, Types);
     } catch (error) {
-      throw new Error('Invalid filter field: ' + fieldName);
+      throw new Error('400: Invalid filter field: ' + fieldName);
     }
 
     const sqlColumn = getSqlColumnFromProjection(projection);

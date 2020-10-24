@@ -1,17 +1,13 @@
 import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
 import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
 import encrypt from '../../../../crypt/encrypt';
-import getBadRequestErrorResponse from '../../../../errors/getBadRequestErrorResponse';
 import getNotFoundErrorResponse from '../../../../errors/getNotFoundErrorResponse';
-import joinjs from 'join-js';
-import decryptItems from '../../../../crypt/decryptItems';
-import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import tryGetProjection from './utils/tryGetProjection';
 import getJoinStatement from './utils/getJoinStatement';
-import createResultMaps from './utils/createResultMaps';
-import transformResults from './utils/transformResults';
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import getErrorResponse from '../../../../errors/getErrorResponse';
+import transformRowsToObjects from './utils/transformRowsToObjects';
 
 export default async function getItemBy<T>(
   dbManager: PostgreSqlDbManager,
@@ -29,13 +25,7 @@ export default async function getItemBy<T>(
       (item as any)[fieldName] = encrypt(fieldValue as any, false);
     }
 
-    let sqlColumns;
-    try {
-      sqlColumns = tryGetProjection(dbManager.schema, {}, entityClass, Types);
-    } catch (error) {
-      return getBadRequestErrorResponse(error.message);
-    }
-
+    const sqlColumns = tryGetProjection(dbManager.schema, {}, entityClass, Types);
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
 
     const result = await dbManager.tryExecuteQuery(
@@ -47,17 +37,8 @@ export default async function getItemBy<T>(
       return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
     }
 
-    const resultMaps = createResultMaps(entityClass, Types, {});
-    const rows = joinjs.map(
-      result.rows,
-      resultMaps,
-      entityClass.name + 'Map',
-      entityClass.name.toLowerCase() + '_'
-    );
-    transformResults(rows, entityClass, Types);
-    decryptItems(rows, entityClass, Types);
-    return rows[0];
+    return transformRowsToObjects(result, entityClass, {}, Types)[0];
   } catch (error) {
-    return getInternalServerErrorResponse(error);
+    return getErrorResponse(error);
   }
 }

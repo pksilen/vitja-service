@@ -1,12 +1,12 @@
 import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
-import getBadRequestErrorResponse from '../../../../errors/getBadRequestErrorResponse';
+import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
 import { getTypeMetadata } from '../../../../service/generateServicesMetadata';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import _ from 'lodash';
 import isErrorResponse from '../../../../errors/isErrorResponse';
-import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import getErrorResponse from '../../../../errors/getErrorResponse';
 
 export default async function createItem<T>(
   dbManager: PostgreSqlDbManager,
@@ -16,8 +16,9 @@ export default async function createItem<T>(
   maxAllowedItemCount?: number,
   itemCountQueryFilter?: Partial<T>,
   isRecursiveCall = false,
-  shouldReturnItem = true,
+  shouldReturnItem = true
 ): Promise<T | ErrorResponse> {
+  // noinspection ExceptionCaughtLocallyJS
   try {
     if (!isRecursiveCall) {
       await hashAndEncryptItem(item, entityClass, Types);
@@ -25,7 +26,8 @@ export default async function createItem<T>(
 
     if (
       !dbManager.getClsNamespace()?.get('localTransaction') &&
-      !dbManager.getClsNamespace()?.get('globalTransaction')
+      !dbManager.getClsNamespace()?.get('globalTransaction') &&
+      shouldReturnItem
     ) {
       await dbManager.beginTransaction();
       dbManager.getClsNamespace()?.set('localTransaction', true);
@@ -40,12 +42,14 @@ export default async function createItem<T>(
 
       if (typeof itemCountOrErrorResponse === 'number') {
         if (itemCountOrErrorResponse >= maxAllowedItemCount) {
-          return getBadRequestErrorResponse(
-            'Cannot create new resource. Maximum resource count would be exceeded'
+          // noinspection ExceptionCaughtLocallyJS
+          throw new Error(
+            getBadRequestErrorMessage('Cannot create new resource. Maximum resource count would be exceeded')
           );
         }
       } else {
-        return itemCountOrErrorResponse;
+        // noinspection ExceptionCaughtLocallyJS
+        throw new Error(itemCountOrErrorResponse.errorMessage);
       }
     }
 
@@ -113,7 +117,7 @@ export default async function createItem<T>(
             _.uniqBy((item as any)[fieldName], (subItem: any) => subItem.id).length !==
             (item as any)[fieldName].length
           ) {
-            throw new Error('Duplicate id values in ' + fieldName);
+            throw new Error(getBadRequestErrorMessage('Duplicate id values in ' + fieldName));
           }
 
           const relationEntityName = baseFieldTypeName;
@@ -164,18 +168,21 @@ export default async function createItem<T>(
       }
     );
 
-    if (!isRecursiveCall && !dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (!isRecursiveCall && shouldReturnItem && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.commitTransaction();
     }
 
-    return isRecursiveCall || !shouldReturnItem ? ({} as any) : dbManager.getItemById(_id, entityClass, Types);
+    return isRecursiveCall || !shouldReturnItem
+      ? ({} as any)
+      : await dbManager.getItemById(_id, entityClass, Types);
   } catch (error) {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (shouldReturnItem && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-
-    return getInternalServerErrorResponse(error);
+    return getErrorResponse(error);
   } finally {
-    dbManager.getClsNamespace()?.set('localTransaction', false);
+    if (shouldReturnItem) {
+      dbManager.getClsNamespace()?.set('localTransaction', false);
+    }
   }
 }

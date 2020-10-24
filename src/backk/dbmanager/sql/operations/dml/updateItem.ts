@@ -1,15 +1,15 @@
-import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
-import isErrorResponse from '../../../../errors/isErrorResponse';
-import { JSONPath } from 'jsonpath-plus';
-import getConflictErrorResponse from '../../../../errors/getConflictErrorResponse';
-import { getTypeMetadata } from '../../../../service/generateServicesMetadata';
-import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getItemById from './getItemById';
+import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
+import isErrorResponse from "../../../../errors/isErrorResponse";
+import { JSONPath } from "jsonpath-plus";
+import { getConflictErrorMessage } from "../../../../errors/getConflictErrorResponse";
+import { getTypeMetadata } from "../../../../service/generateServicesMetadata";
+import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import getItemById from "./getItemById";
 import { RecursivePartial } from "../../../../types/RecursivePartial";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
+import getErrorResponse from "../../../../errors/getErrorResponse";
 
 export default async function updateItem<T extends object & { _id: string; id?: string }>(
   dbManager: PostgreSqlDbManager,
@@ -36,8 +36,8 @@ export default async function updateItem<T extends object & { _id: string; id?: 
     if (shouldCheckIfItemExists) {
       const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types);
       if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
-        console.log(itemOrErrorResponse);
-        return itemOrErrorResponse;
+        // noinspection ExceptionCaughtLocallyJS
+        throw new Error(itemOrErrorResponse.errorMessage);
       }
 
       if (typeof preCondition === 'object') {
@@ -48,8 +48,11 @@ export default async function updateItem<T extends object & { _id: string; id?: 
           true
         );
         if (!isPreConditionMatched) {
-          return getConflictErrorResponse(
-            `Delete sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
+          // noinspection ExceptionCaughtLocallyJS
+          throw new Error(
+            getConflictErrorMessage(
+              `Delete sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
+            )
           );
         }
       }
@@ -161,7 +164,7 @@ export default async function updateItem<T extends object & { _id: string; id?: 
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-    return getInternalServerErrorResponse(error);
+    return getErrorResponse(error);
   } finally {
     dbManager.getClsNamespace()?.set('localTransaction', false);
   }
