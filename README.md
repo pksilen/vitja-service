@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- DbManager, throw new Error, handle different statusCodes
 - Change Partial<x> instead of adding isOptional annotation, add ? to classProperty declaration
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
@@ -20,6 +19,7 @@ TODO:
 -Change IsExprTrue annotation to use regular function instead of dynamically created function
 - In dbManager, rename createItem to createEntity etc.
 - Make possible to disable metadata endpoint
+-Korjaa .type tiedostossa on @Entity
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)

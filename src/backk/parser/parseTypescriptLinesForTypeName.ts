@@ -2,7 +2,9 @@ import { parseSync } from '@babel/core';
 import generate from '@babel/generator';
 import { readFileSync } from 'fs';
 import path from 'path';
-import getSrcFilePathNameForTypeName, { hasSrcFilenameForTypeName } from '../utils/file/getSrcFilePathNameForTypeName';
+import getSrcFilePathNameForTypeName, {
+  hasSrcFilenameForTypeName
+} from '../utils/file/getSrcFilePathNameForTypeName';
 
 function getDeclarationsFor(typeName: string, originatingTypeFilePathName: string) {
   let fileContentsStr;
@@ -94,7 +96,7 @@ export default function parseTypescriptLinesForTypeName(
   keys: string[],
   keyType: 'omit' | 'pick',
   originatingTypeFilePathName: string,
-  keyToNewKeyMap?: { [key: string]: string}
+  keyToNewKeyMap?: { [key: string]: string }
 ): [string[], any[]] {
   let typeFilePathName;
   let fileContentsStr;
@@ -190,9 +192,6 @@ export default function parseTypescriptLinesForTypeName(
       }
 
       importLines.push(generate(node).code);
-      if (isBaseTypeOptional && !importLines.includes("import { IsOptional } from 'class-validator';")) {
-        importLines.push("import { IsOptional } from 'class-validator';");
-      }
     }
     if (
       (node.type === 'ExportDefaultDeclaration' || node.type === 'ExportNamedDeclaration') &&
@@ -228,23 +227,8 @@ export default function parseTypescriptLinesForTypeName(
           }
         }
         if (isBaseTypeOptional) {
-          const isOptionalDecorator = {
-            type: 'Decorator',
-            expression: {
-              type: 'CallExpression',
-              callee: {
-                type: 'Identifier',
-                name: 'IsOptional'
-              },
-              arguments: []
-            }
-          };
-
-          if (classBodyNode.decorators) {
-            classBodyNode.decorators.push(isOptionalDecorator);
-          } else {
-            classBodyNode.decorators = [isOptionalDecorator];
-          }
+          classBodyNode.optional = true;
+          classBodyNode.definite = false;
         }
         finalClassPropertyDeclarations.push(classBodyNode);
       });

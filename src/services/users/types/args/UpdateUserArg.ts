@@ -2,50 +2,39 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import { IsString, Matches, MaxLength } from 'class-validator';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
 import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 
 export default class UpdateUserArg {
-  @MaxLength(24)
-  @IsOptional()
-  _id!: string;
-
   @Documentation('Password doc goes here...')
   @MaxLength(512)
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/)
   @ValueUsedInTests('Jepulis0!')
-  @IsOptional()
-  password!: string;
+  password?: string;
 
   @MaxLength(512)
-  @IsOptional()
-  streetAddress!: string;
+  streetAddress?: string;
 
   @MaxLength(32)
-  @IsOptional()
-  postalCode!: string;
+  postalCode?: string;
 
   @MaxLength(256)
-  @IsOptional()
-  city!: string;
+  city?: string;
 
-  @IsOptional()
-  defaultPaymentMethod!: DefaultPaymentMethod;
+  defaultPaymentMethod?: DefaultPaymentMethod;
 
-  @IsOptional()
-  paymentMethods!: PaymentMethod[];
+  paymentMethods?: PaymentMethod[];
 
   @MaxLength(24, {
     each: true
   })
   @ValueUsedInTests('123')
-  @IsOptional()
-  favoriteSalesItemIds!: string[];
+  favoriteSalesItemIds?: string[];
 
   @IsString()
   @MaxLength(24)
-  id!: string;
+  _id!: string;
 }

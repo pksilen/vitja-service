@@ -2,56 +2,42 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export default class UpdateSalesItemArg {
   @MaxLength(24)
-  @IsOptional()
-  _id!: string;
-
-  @MaxLength(24)
-  @IsOptional()
-  userId!: string;
+  userId?: string;
 
   @MaxLength(64)
-  @IsOptional()
-  title!: string;
+  title?: string;
 
   @MaxLength(1024)
-  @IsOptional()
-  description!: string;
+  description?: string;
 
-  @IsOptional()
-  area!: 'Area1' | 'Area2' | 'Area3';
+  area?: 'Area1' | 'Area2' | 'Area3';
 
-  @IsOptional()
-  productDepartment!: 'Vehicles' | 'Clothes';
+  productDepartment?: 'Vehicles' | 'Clothes';
 
-  @IsOptional()
-  productCategory!: 'Vehicles' | 'Clothes';
+  productCategory?: 'Vehicles' | 'Clothes';
 
-  @IsOptional()
-  productSubCategory!: 'Vehicles' | 'Clothes';
+  productSubCategory?: 'Vehicles' | 'Clothes';
 
   @IsNumber({
     maxDecimalPlaces: 2
   })
   @Min(0)
   @Max(1000000000)
-  @IsOptional()
-  price!: number;
+  price?: number;
 
   @MaxLength(2097152)
-  @IsOptional()
-  primaryImageDataUri!: string;
+  primaryImageDataUri?: string;
 
   @MaxLength(2097152, {
     each: true
   })
-  @IsOptional()
-  secondaryImageDataUris!: string[];
+  secondaryImageDataUris?: string[];
 
   @IsString()
   @MaxLength(24)
-  id!: string;
+  _id!: string;
 }
