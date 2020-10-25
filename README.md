@@ -1,10 +1,12 @@
 # Vitja service
 
 TODO:
-- All _id and Id ending fields comes with default annotations: MaxLength(24) and Match regExp [a-f\d]
-- 
+- Change IsExprTrue annotation to use regular function instead of dynamically created function
+ - give custom error message
 - take google re2 into use
 - Don't allow to use @Matches, but MaxLengthAndMatches tai MaxLengthAndMatchesAll
+- Create password check helper functions:
+  getMaxConsecutiveLetterOrDigitCount
 - if sqlDbManager, check that ids are number strings
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
@@ -20,8 +22,6 @@ TODO:
     hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
 - General pre/post operation hookit kaikki dbmanager functioihin, jos hook palauttaa false tai ErrorResponse, niin operaatio hylätään
   -Hookilla error message parametrii
-- Change IsExprTrue annotation to use regular function instead of dynamically created function
- - give custom error message
 - Change ExpectInTestsToMatch to use regular function
 - In dbManager, rename createItem to createEntity etc.
 - Make possible to disable metadata endpoint

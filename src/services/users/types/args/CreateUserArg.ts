@@ -15,7 +15,8 @@ export default class CreateUserArg {
   userName!: string;
 
   @Documentation('Password doc goes here...')
-  @IsExprTrue('!obj.password.includes(obj.userName)')
+  @IsExprTrue(({ password }) => !password.includes('password'), 'Password may not contain word "password"')
+  @IsExprTrue(({ password, userName }) => !password.includes(userName), 'Password may not contain username')
   @MaxLengthAndMatches(512, /^(?=\S*[a-z])(?=\S*[A-Z])(?=\S*\d)(?=\S*[^\w\s])\S{8,}$/)
   @ValueUsedInTests('Jepulis0!')
   password!: string;
