@@ -13,12 +13,10 @@ export default class PaymentMethod extends Id {
   @ValueUsedInTests('4111 1111 1111 1111')
   creditCardNumber!: string;
 
-  @MaxLength(5)
   @MaxLengthAndMatches(5, /^(0[1-9]|1[0-2])\/([0-9]{2})$/)
   @ValueUsedInTests('11/21')
   creditCardExpiration!: string;
 
-  @MaxLength(4)
   @MaxLengthAndMatches(4, /^[0-9]{3,4}$/)
   @ValueUsedInTests('345')
   cardVerificationCode!: string;

@@ -70,15 +70,12 @@ export default function getTypeMetadata<T>(
         break;
     }
 
-    if (
-      isGeneration &&
-      isFirstRound &&
-      validationMetadata.type === 'isString' &&
-      !!validationMetadatas.find(
-        ({ propertyName, type }: ValidationMetadata) =>
-          propertyName === validationMetadata.propertyName && type === 'matches'
-      )
-    ) {
+    const hasMatchesValidation = !!validationMetadatas.find(
+      ({ propertyName, type }: ValidationMetadata) =>
+        propertyName === validationMetadata.propertyName && type === 'matches'
+    );
+
+    if (isGeneration && isFirstRound && hasMatchesValidation) {
       throw new Error(
         'Property ' +
           TypeClass.name +
@@ -223,7 +220,7 @@ export default function getTypeMetadata<T>(
               TypeClass.name +
               '.' +
               validationMetadata.propertyName +
-              ' has string type and must have either @MaxLength or @MaxLengthAndMatches annotation'
+              ' has string type and must have either @MaxLength, @MaxLengthAndMatches or @MaxLengthAndMatchesAll annotation'
           );
         }
       }

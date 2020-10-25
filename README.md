@@ -1,11 +1,10 @@
 # Vitja service
 
 TODO:
-- Don't allow to use @Matches, but MaxLengthAndMatches tai MaxLengthAndMatchesAll
-- UpdateUser precondition userName is userName
 - Create password check helper functions:
   getMaxConsecutiveLetterOrDigitCount
 - if sqlDbManager, check that ids are number strings
+- UpdateUser precondition userName is userName
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
 - All multiple getXX functions should require mandatory PostQueryOperations interface type param
