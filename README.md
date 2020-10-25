@@ -22,6 +22,7 @@ TODO:
 - In dbManager, rename createItem to createEntity etc.
 - Make possible to disable metadata endpoint
 -Korjaa .type tiedostossa on @Entity
+- Change class-validator so that first validation error short circuits validation
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
