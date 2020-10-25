@@ -70,6 +70,24 @@ export default function getTypeMetadata<T>(
         break;
     }
 
+    if (
+      isGeneration &&
+      isFirstRound &&
+      validationMetadata.type === 'isString' &&
+      !!validationMetadatas.find(
+        ({ propertyName, type }: ValidationMetadata) =>
+          propertyName === validationMetadata.propertyName && type === 'matches'
+      )
+    ) {
+      throw new Error(
+        'Property ' +
+          TypeClass.name +
+          '.' +
+          validationMetadata.propertyName +
+          ': Use @MaxLengthAndMatches or @MaxLengthAndMatchesAll instead of @Matches'
+      );
+    }
+
     if (isGeneration && !isFirstRound) {
       if (
         validationMetadata.type === 'isInt' ||
@@ -195,7 +213,11 @@ export default function getTypeMetadata<T>(
             propertyName === validationMetadata.propertyName && constraints?.[0] === 'maxLengthAndMatchesAll'
         );
 
-        if (!hasMaxLengthValidation && !hasMaxLengthAndMatchesValidation && !hasMaxLengthAndMatchesAllValidation) {
+        if (
+          !hasMaxLengthValidation &&
+          !hasMaxLengthAndMatchesValidation &&
+          !hasMaxLengthAndMatchesAllValidation
+        ) {
           throw new Error(
             'Property ' +
               TypeClass.name +

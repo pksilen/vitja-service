@@ -1,4 +1,4 @@
-import { MaxLength, MinLength } from "class-validator";
+import { MaxLength, MinLength } from 'class-validator';
 import Entity from '../../../../backk/decorators/entity/Entity';
 import UniqueIndex from '../../../../backk/decorators/entity/UniqueIndex';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
@@ -22,7 +22,7 @@ export default class User extends _Id {
     'Password may not contain word password'
   )
   @IsExprTrue(
-    ({ password, userName }) => !password.toLowerCase().includes(userName.toLowerCase()),
+    ({ password, userName }) => (userName ? !password.toLowerCase().includes(userName.toLowerCase()) : true),
     'Password may not contain username'
   )
   @MinLength(8)

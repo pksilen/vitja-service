@@ -1,14 +1,13 @@
 # Vitja service
 
 TODO:
-- take google re2 into use
 - Don't allow to use @Matches, but MaxLengthAndMatches tai MaxLengthAndMatchesAll
+- UpdateUser precondition userName is userName
 - Create password check helper functions:
   getMaxConsecutiveLetterOrDigitCount
 - if sqlDbManager, check that ids are number strings
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
-- Force string MaxLength annotation before Matches regexp annotation, check that first failed annotation shortcircuits and Matches is not checked
 - All multiple getXX functions should require mandatory PostQueryOperations interface type param
   - Create DefaultPagingAndSorting class which Args can extend
   - page: 1, pageCount: 50, order by _id ASC

@@ -20,7 +20,7 @@ export default class CreateUserArg {
     'Password may not contain word password'
   )
   @IsExprTrue(
-    ({ password, userName }) => !password.toLowerCase().includes(userName.toLowerCase()),
+    ({ password, userName }) => (userName ? !password.toLowerCase().includes(userName.toLowerCase()) : true),
     'Password may not contain username'
   )
   @MinLength(8)
