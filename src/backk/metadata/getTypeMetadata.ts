@@ -190,7 +190,12 @@ export default function getTypeMetadata<T>(
             propertyName === validationMetadata.propertyName && constraints?.[0] === 'maxLengthAndMatches'
         );
 
-        if (!hasMaxLengthValidation && !hasMaxLengthAndMatchesValidation) {
+        const hasMaxLengthAndMatchesAllValidation = !!validationMetadatas.find(
+          ({ constraints, propertyName }: ValidationMetadata) =>
+            propertyName === validationMetadata.propertyName && constraints?.[0] === 'maxLengthAndMatchesAll'
+        );
+
+        if (!hasMaxLengthValidation && !hasMaxLengthAndMatchesValidation && !hasMaxLengthAndMatchesAllValidation) {
           throw new Error(
             'Property ' +
               TypeClass.name +

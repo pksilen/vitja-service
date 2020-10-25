@@ -150,12 +150,23 @@ function generateTypescriptFileFor(
     ]
   });
 
+  const classDecoratorNames: string[] = [];
+  const classDecoratorArguments: string[] = [];
   const nodes = (ast as any).program.body;
   for (const node of nodes) {
     if (
       (node.type === 'ExportDefaultDeclaration' || node.type === 'ExportNamedDeclaration') &&
       node.declaration.type === 'ClassDeclaration'
     ) {
+      (node.declaration.decorators ?? []).forEach((decorator: any) => {
+        classDecoratorNames.push(decorator.expression.callee.name);
+        const argumentsStr = (decorator.expression.arguments ?? [])
+          .map((argument: any) => argument.raw)
+          .join(', ');
+        classDecoratorArguments.push(argumentsStr);
+      });
+      node.declaration.decorators = undefined;
+
       const declarations = outputClassPropertyDeclarations.concat(node.declaration.body.body);
       declarations.reverse();
       const uniqueDeclarations = _.uniqBy(declarations, (declaration) => declaration.key.name);
@@ -164,6 +175,9 @@ function generateTypescriptFileFor(
     }
   }
 
+  const classDecoratorLines = classDecoratorNames
+    .map((classDecoratorName, index) => '@' + classDecoratorName + '(' + classDecoratorArguments[index] + ')')
+    .join('\n');
   const outputCode = generate(ast as any).code;
   const outputFileHeaderLines = [
     '// This is an auto-generated file from the respective .type file',
@@ -180,6 +194,9 @@ function generateTypescriptFileFor(
     .map((outputFileLine) => {
       if (outputFileLine.endsWith(';') && !outputFileLine.startsWith('import')) {
         return outputFileLine + '\n';
+      }
+      if (outputFileLine.startsWith('export default class') || outputFileLine.startsWith('export class')) {
+        return classDecoratorLines + '\n' + outputFileLine;
       }
       return outputFileLine;
     })

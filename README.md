@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Change IsExprTrue annotation to use regular function instead of dynamically created function
- - give custom error message
 - take google re2 into use
 - Don't allow to use @Matches, but MaxLengthAndMatches tai MaxLengthAndMatchesAll
 - Create password check helper functions:

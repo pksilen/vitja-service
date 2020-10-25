@@ -2,19 +2,26 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsString, MaxLength } from 'class-validator';
+import { IsString, MaxLength, MinLength } from 'class-validator';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
 import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
-import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import MaxLengthAndMatchesAll from '../../../../backk/decorators/typeproperty/MaxLengthAndMatchesAll';
 import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 
 export default class UpdateUserArg {
   @Documentation('Password doc goes here...')
-  @IsExprTrue(({ password }) => !password.includes('password'), 'Password may not contain word "password"')
-  @IsExprTrue(({ password, userName }) => !password.includes(userName), 'Password may not contain username')
-  @MaxLengthAndMatches(512, /^(?=\S*[a-z])(?=\S*[A-Z])(?=\S*\d)(?=\S*[^\w\s])\S{8,}$/)
+  @IsExprTrue(
+    ({ password }) => !password.toLowerCase().includes('password'),
+    'Password may not contain word password'
+  )
+  @IsExprTrue(
+    ({ password, userName }) => !password.toLowerCase().includes(userName.toLowerCase()),
+    'Password may not contain username'
+  )
+  @MinLength(8)
+  @MaxLengthAndMatchesAll(512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
   @ValueUsedInTests('Jepulis0!')
   password?: string;
 

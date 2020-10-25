@@ -1,4 +1,5 @@
 import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
+import RE2 from 're2';
 
 export default function MaxLengthAndMatches(
   maxLength: number,
@@ -18,7 +19,8 @@ export default function MaxLengthAndMatches(
           if (value.length > maxLength) {
             return false;
           }
-          return !!value.match(regexp);
+          const re2RegExp = new RE2(regexp);
+          return re2RegExp.test(value);
         },
         defaultMessage: () =>
           propertyName + ' length must be ' + maxLength + ' or less and must match ' + regexp
