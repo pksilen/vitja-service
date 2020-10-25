@@ -12,8 +12,8 @@ import UserName from './types/args/UserName';
 import User from './types/entities/User';
 import UserResponse from './types/responses/UserResponse';
 import UsersService from './UsersService';
-import _Id from "../../backk/types/_Id";
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import _Id from '../../backk/types/_Id';
+import { ErrorResponse } from '../../backk/types/ErrorResponse';
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])

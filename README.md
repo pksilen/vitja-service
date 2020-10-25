@@ -1,10 +1,14 @@
 # Vitja service
 
 TODO:
-- Change Partial<x> instead of adding isOptional annotation, add ? to classProperty declaration
+- All _id and Id ending fields comes with default annotations: MaxLength(24) and Match regExp [a-f\d]
+- 
+- take google re2 into use
+- Don't allow to use @Matches, but MaxLengthAndMatches tai MaxLengthAndMatchesAll
+- if sqlDbManager, check that ids are number strings
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
-- All _id and Id ending fields comes with default annotations: MaxLength(24) and Match regExp [a-f\d]
+- Force string MaxLength annotation before Matches regexp annotation, check that first failed annotation shortcircuits and Matches is not checked
 - All multiple getXX functions should require mandatory PostQueryOperations interface type param
   - Create DefaultPagingAndSorting class which Args can extend
   - page: 1, pageCount: 50, order by _id ASC
@@ -16,7 +20,9 @@ TODO:
     hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
 - General pre/post operation hookit kaikki dbmanager functioihin, jos hook palauttaa false tai ErrorResponse, niin operaatio hylätään
   -Hookilla error message parametrii
--Change IsExprTrue annotation to use regular function instead of dynamically created function
+- Change IsExprTrue annotation to use regular function instead of dynamically created function
+ - give custom error message
+- Change ExpectInTestsToMatch to use regular function
 - In dbManager, rename createItem to createEntity etc.
 - Make possible to disable metadata endpoint
 -Korjaa .type tiedostossa on @Entity

@@ -6,7 +6,6 @@ import { IsArray, IsInstance, IsInt, IsOptional, IsString, Max, MaxLength, Min }
 import SortBy from '../../../../backk/types/SortBy';
 
 export default class GetByUserIdArg {
-  @MaxLength(24)
   userId!: string;
 
   @IsOptional()

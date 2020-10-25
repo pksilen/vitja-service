@@ -1,4 +1,4 @@
-import { getTypeMetadata } from '../../../../../service/generateServicesMetadata';
+import getTypeMetadata from "../../../../../metadata/getTypeMetadata";
 
 function transformResult(result: any, entityClass: Function, Types: object) {
   const entityMetadata = getTypeMetadata(entityClass as any);

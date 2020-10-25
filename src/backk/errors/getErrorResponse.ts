@@ -13,6 +13,6 @@ export default function getErrorResponse(error: Error): ErrorResponse {
     statusCode,
     errorMessage,
     [errorResponseSymbol]: true,
-    stackTrace: process.env.LOG_LEVEL === 'DEBUG' ? error.stack : undefined
+    stackTrace: process.env.LOG_LEVEL === 'DEBUG' && statusCode === 500 ? error.stack : undefined
   };
 }

@@ -92,6 +92,38 @@ export default function setPropertyTypeValidationDecorators(
           let validationType;
           let constraints;
 
+          if (propertyName === '_id' || propertyName === 'id' || propertyName.endsWith('Id') || propertyName.endsWith('Ids')) {
+            if (
+              !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.MAX_LENGTH)) {
+              const validationMetadataArgs: ValidationMetadataArgs = {
+                type: ValidationTypes.MAX_LENGTH,
+                target: typeClass,
+                propertyName,
+                constraints: [24],
+                validationOptions: { each: propertyTypeName.endsWith('[]') }
+              };
+
+              getFromContainer(MetadataStorage).addValidationMetadata(
+                new ValidationMetadata(validationMetadataArgs)
+              );
+            }
+
+            if (
+              !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.MATCHES)) {
+              const validationMetadataArgs: ValidationMetadataArgs = {
+                type: ValidationTypes.MATCHES,
+                target: typeClass,
+                propertyName,
+                constraints: [/^[a-f\d]{1,24}$/],
+                validationOptions: { each: propertyTypeName.endsWith('[]') }
+              };
+
+              getFromContainer(MetadataStorage).addValidationMetadata(
+                new ValidationMetadata(validationMetadataArgs)
+              );
+            }
+          }
+
           // noinspection IfStatementWithTooManyBranchesJS
           if (finalPropertyTypeName === 'boolean') {
             validationType = ValidationTypes.IS_BOOLEAN;

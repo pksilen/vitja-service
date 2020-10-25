@@ -1,10 +1,10 @@
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import { getTypeMetadata } from '../service/generateServicesMetadata';
 import encrypt from './encrypt';
 import hash from './hash';
 import shouldEncryptValue from './shouldEncryptValue';
 import shouldHashValue from './shouldHashValue';
 import shouldUseRandomInitializationVector from './shouldUseRandomInitializationVector';
+import getTypeMetadata from "../metadata/getTypeMetadata";
 
 async function hashOrEncryptItemValues(
   item: { [key: string]: any },

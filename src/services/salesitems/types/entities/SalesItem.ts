@@ -5,7 +5,6 @@ import _Id from "../../../../backk/types/_Id";
 
 @Entity()
 export class SalesItem extends _Id {
-  @MaxLength(24)
   userId!: string;
 
   @MaxLength(64)

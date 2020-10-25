@@ -1,5 +1,5 @@
 import BaseService from './service/basetypes/BaseService';
-import generateServicesMetadata from './service/generateServicesMetadata';
+import generateServicesMetadata from './metadata/generateServicesMetadata';
 import parseServiceTypeNames from './parser/parseServiceTypeNames';
 import getSrcFilePathNameForTypeName from './utils/file/getSrcFilePathNameForTypeName';
 import setPropertyTypeValidationDecorators from './validation/setPropertyTypeValidationDecorators';

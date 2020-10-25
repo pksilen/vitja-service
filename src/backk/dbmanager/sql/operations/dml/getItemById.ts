@@ -1,12 +1,11 @@
-import { getTypeMetadata } from "../../../../service/generateServicesMetadata";
 import getNotFoundErrorResponse from "../../../../errors/getNotFoundErrorResponse";
-import getInternalServerErrorResponse from "../../../../errors/getInternalServerErrorResponse";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import tryGetProjection from "./utils/tryGetProjection";
 import getJoinStatement from "./utils/getJoinStatement";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
 import getErrorResponse from "../../../../errors/getErrorResponse";
+import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 
 export default async function getItemById<T>(
   dbManager: PostgreSqlDbManager,

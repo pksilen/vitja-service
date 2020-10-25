@@ -1,7 +1,7 @@
 import getFieldsFromGraphQlOrJson from '../../../../../graphql/getFieldsFromGraphQlOrJson';
-import { getTypeMetadata } from '../../../../../service/generateServicesMetadata';
 import shouldIncludeField from './shouldIncludeField';
 import { OptionalProjection } from "../../../../../types/OptionalProjection";
+import getTypeMetadata from "../../../../../metadata/getTypeMetadata";
 
 function getFieldsForEntity(
   schema: string,

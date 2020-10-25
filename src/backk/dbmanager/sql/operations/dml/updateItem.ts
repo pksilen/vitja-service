@@ -2,7 +2,6 @@ import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
 import isErrorResponse from "../../../../errors/isErrorResponse";
 import { JSONPath } from "jsonpath-plus";
 import { getConflictErrorMessage } from "../../../../errors/getConflictErrorResponse";
-import { getTypeMetadata } from "../../../../service/generateServicesMetadata";
 import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
@@ -10,6 +9,7 @@ import getItemById from "./getItemById";
 import { RecursivePartial } from "../../../../types/RecursivePartial";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
+import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 
 export default async function updateItem<T extends object & { _id: string; id?: string }>(
   dbManager: PostgreSqlDbManager,

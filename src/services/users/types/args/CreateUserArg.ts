@@ -2,21 +2,21 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { Matches, MaxLength } from 'class-validator';
+import { MaxLength } from 'class-validator';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
 import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 
 export default class CreateUserArg {
   @MaxLength(512)
-  @IsExprTrue('obj.password && obj.password.length >= 8 || true')
   userName!: string;
 
   @Documentation('Password doc goes here...')
-  @MaxLength(512)
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/)
+  @IsExprTrue('!obj.password.includes(obj.userName)')
+  @MaxLengthAndMatches(512, /^(?=\S*[a-z])(?=\S*[A-Z])(?=\S*\d)(?=\S*[^\w\s])\S{8,}$/)
   @ValueUsedInTests('Jepulis0!')
   password!: string;
 

@@ -6,11 +6,11 @@ import _ from 'lodash';
 import authorize from '../authorization/authorize';
 import BaseService from './basetypes/BaseService';
 import verifyCaptchaToken from '../captcha/verifyCaptchaToken';
-import { ServiceMetadata } from './generateServicesMetadata';
 import getPropertyBaseTypeName from '../utils/type/getPropertyBaseTypeName';
 import throwHttpException from '../errors/throwHttpException';
 import UsersBaseService from '../users/UsersBaseService';
-import getBadRequestErrorResponse from "../errors/getBadRequestErrorResponse";
+import getBadRequestErrorResponse, { getBadRequestErrorMessage } from "../errors/getBadRequestErrorResponse";
+import { ServiceMetadata } from "../metadata/ServiceMetadata";
 
 function getValidationErrors(errorOrValidationErrors: ValidationError[] | Error): string {
   return errorOrValidationErrors instanceof Error

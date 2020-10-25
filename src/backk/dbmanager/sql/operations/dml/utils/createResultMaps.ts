@@ -1,6 +1,6 @@
-import { getTypeMetadata } from '../../../../../service/generateServicesMetadata';
 import shouldIncludeField from './shouldIncludeField';
 import { OptionalProjection } from "../../../../../types/OptionalProjection";
+import getTypeMetadata from "../../../../../metadata/getTypeMetadata";
 
 function updateResultMaps(
   entityClassOrName: Function | string,

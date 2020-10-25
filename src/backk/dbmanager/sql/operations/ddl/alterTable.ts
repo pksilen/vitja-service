@@ -1,12 +1,12 @@
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import typeAnnotationContainer from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
-import { getTypeMetadata } from "../../../../service/generateServicesMetadata";
 import AbstractDbManager, { Field } from "../../../AbstractDbManager";
 import getEnumSqlColumnType from "./utils/getEnumSqlColumnType";
 import getSqlColumnType from "./utils/getSqlColumnType";
 import setSubEntityInfo from "./utils/setSubEntityInfo";
 import createAdditionalTable from "./utils/createAdditionalTable";
 import addJoinSpec from "./utils/addJoinSpec";
+import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 
 export default async function alterTable(
   dbManager: AbstractDbManager,

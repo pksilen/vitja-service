@@ -1,7 +1,7 @@
-import { getTypeMetadata } from '../service/generateServicesMetadata';
 import decrypt from './decrypt';
 import encrypt from './encrypt';
 import shouldEncryptValue from './shouldEncryptValue';
+import getTypeMetadata from "../metadata/getTypeMetadata";
 
 function decryptItemValues(item: { [key: string]: any }, EntityClass: new () => any, Types: object) {
   if (item === null) {

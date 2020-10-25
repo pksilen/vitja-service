@@ -5,7 +5,6 @@ import Id from "../../../../backk/types/Id";
 
 @Entity()
 export default class OrderItem extends Id {
-  @MaxLength(24)
   salesItemId!: string;
 
   @IsInt()

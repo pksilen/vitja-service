@@ -6,10 +6,8 @@ import { IsInt, Max, MaxLength, Min } from 'class-validator';
 import { ExpectInTestsToMatch } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToMatch';
 
 export default class DeliverOrderItemArg {
-  @MaxLength(24)
   orderId!: string;
 
-  @MaxLength(24)
   orderItemId!: string;
 
   @IsInt()

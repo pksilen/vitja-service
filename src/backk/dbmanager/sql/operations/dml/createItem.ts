@@ -1,12 +1,12 @@
 import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
 import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
-import { getTypeMetadata } from '../../../../service/generateServicesMetadata';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import _ from 'lodash';
 import isErrorResponse from '../../../../errors/isErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import getErrorResponse from '../../../../errors/getErrorResponse';
+import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 
 export default async function createItem<T>(
   dbManager: PostgreSqlDbManager,

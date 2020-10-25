@@ -3,7 +3,6 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { MaxLength } from 'class-validator';
-import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
 import { ExpectAnyValueInTests } from '../../../../backk/decorators/typeproperty/testing/ExpectAnyValueInTests';
 import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
@@ -14,7 +13,6 @@ export default class UserResponse {
   _id!: string;
 
   @MaxLength(512)
-  @IsExprTrue('obj.password && obj.password.length >= 8 || true')
   userName!: string;
 
   @MaxLength(512)

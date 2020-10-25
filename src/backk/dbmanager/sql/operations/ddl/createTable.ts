@@ -1,4 +1,3 @@
-import { getTypeMetadata } from '../../../../service/generateServicesMetadata';
 import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import typeAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
@@ -8,6 +7,7 @@ import setSubEntityInfo from './utils/setSubEntityInfo';
 import getSqlColumnType from './utils/getSqlColumnType';
 import createAdditionalTable from './utils/createAdditionalTable';
 import addJoinSpec from './utils/addJoinSpec';
+import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 
 export default async function createTable(
   dbManager: AbstractDbManager,

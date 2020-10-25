@@ -1,13 +1,13 @@
 import isErrorResponse from "../../../../errors/isErrorResponse";
 import _ from "lodash";
 import { getConflictErrorMessage } from "../../../../errors/getConflictErrorResponse";
-import { getTypeMetadata } from "../../../../service/generateServicesMetadata";
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import entityContainer, { JoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import getItemById from "./getItemById";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
+import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 
 export default async function deleteItemById<T extends object>(
   dbManager: PostgreSqlDbManager,

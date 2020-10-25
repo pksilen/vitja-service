@@ -5,7 +5,6 @@
 import { IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export default class UpdateSalesItemArg {
-  @MaxLength(24)
   userId?: string;
 
   @MaxLength(64)
