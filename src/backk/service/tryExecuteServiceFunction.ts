@@ -1,6 +1,5 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
-import { validateOrReject, ValidationError } from 'class-validator';
 import { createNamespace } from 'cls-hooked';
 import _ from 'lodash';
 import authorize from '../authorization/authorize';
@@ -9,26 +8,13 @@ import verifyCaptchaToken from '../captcha/verifyCaptchaToken';
 import getPropertyBaseTypeName from '../utils/type/getPropertyBaseTypeName';
 import throwHttpException from '../errors/throwHttpException';
 import UsersBaseService from '../users/UsersBaseService';
-import getBadRequestErrorResponse, { getBadRequestErrorMessage } from "../errors/getBadRequestErrorResponse";
-import { ServiceMetadata } from "../metadata/ServiceMetadata";
+import getBadRequestErrorResponse from '../errors/getBadRequestErrorResponse';
+import { ServiceMetadata } from '../metadata/ServiceMetadata';
+import tryValidateObject from '../validation/tryValidateObject';
+import { getFromContainer, MetadataStorage } from 'class-validator';
+import DefaultPaymentMethod from "../../services/users/types/entities/DefaultPaymentMethod";
 
-function getValidationErrors(errorOrValidationErrors: ValidationError[] | Error): string {
-  return errorOrValidationErrors instanceof Error
-    ? errorOrValidationErrors.message
-    : errorOrValidationErrors
-        .map((validationError: ValidationError) => {
-          if (validationError.constraints) {
-            return Object.values(validationError.constraints)
-              .map((constraint) => constraint)
-              .join(', ');
-          } else {
-            return validationError.property + ': ' + getValidationErrors(validationError.children);
-          }
-        })
-        .join(', ');
-}
-
-export default async function executeServiceFunction(
+export default async function tryExecuteServiceFunction(
   controller: any,
   serviceFunction: string,
   serviceFunctionArgument: any,
@@ -117,15 +103,7 @@ export default async function executeServiceFunction(
       throwHttpException(getBadRequestErrorResponse('Missing service function argument'));
     }
 
-    try {
-      await validateOrReject(instantiatedServiceFunctionArgument as object, {
-        whitelist: true,
-        forbidNonWhitelisted: true
-      });
-    } catch (validationErrors) {
-      const errorMessage = getValidationErrors(validationErrors);
-      throwHttpException(getBadRequestErrorResponse(errorMessage));
-    }
+    await tryValidateObject(instantiatedServiceFunctionArgument);
   }
 
   const dbManager = (controller[serviceName] as BaseService).getDbManager();

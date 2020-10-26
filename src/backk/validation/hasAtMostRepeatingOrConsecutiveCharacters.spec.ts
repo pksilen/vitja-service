@@ -1,13 +1,13 @@
-import hasAtMostCountOfConsecutiveCharacters from './hasAtMostCountOfConsecutiveCharacters';
+import hasAtMostRepeatingOrConsecutiveCharacters from './hasAtMostRepeatingOrConsecutiveCharacters';
 
-describe('hasAtMostCountOfConsecutiveCharacters', () => {
+describe('hasAtMostRepeatingOrConsecutiveCharacters', () => {
   it('should return false when input is "aaab" and atMostCount is 2', () => {
     // GIVEN
     const input = 'aaab';
     const atMostCount = 2;
 
     // WHEN
-    const hasAtMost2ConsecutiveCharacters = hasAtMostCountOfConsecutiveCharacters(input, atMostCount);
+    const hasAtMost2ConsecutiveCharacters = hasAtMostRepeatingOrConsecutiveCharacters(input, atMostCount);
 
     // THEN
     expect(hasAtMost2ConsecutiveCharacters).toBe(false);
@@ -19,7 +19,7 @@ describe('hasAtMostCountOfConsecutiveCharacters', () => {
     const atMostCount = 3;
 
     // WHEN
-    const hasAtMost3ConsecutiveCharacters = hasAtMostCountOfConsecutiveCharacters(input, atMostCount);
+    const hasAtMost3ConsecutiveCharacters = hasAtMostRepeatingOrConsecutiveCharacters(input, atMostCount);
 
     // THEN
     expect(hasAtMost3ConsecutiveCharacters ).toBe(false);
@@ -31,7 +31,7 @@ describe('hasAtMostCountOfConsecutiveCharacters', () => {
     const atMostCount = 2;
 
     // WHEN
-    const hasAtMost2ConsecutiveCharacters  = hasAtMostCountOfConsecutiveCharacters(input, atMostCount);
+    const hasAtMost2ConsecutiveCharacters  = hasAtMostRepeatingOrConsecutiveCharacters(input, atMostCount);
 
     // THEN
     expect(hasAtMost2ConsecutiveCharacters ).toBe(false);
@@ -43,7 +43,7 @@ describe('hasAtMostCountOfConsecutiveCharacters', () => {
     const atMosCount = 2;
 
     // WHEN
-    const hasAtMost2ConsecutiveCharacters  = hasAtMostCountOfConsecutiveCharacters(input, atMosCount);
+    const hasAtMost2ConsecutiveCharacters  = hasAtMostRepeatingOrConsecutiveCharacters(input, atMosCount);
 
     // THEN
     expect(hasAtMost2ConsecutiveCharacters ).toBe(false);
@@ -55,7 +55,7 @@ describe('hasAtMostCountOfConsecutiveCharacters', () => {
     const atMostCount = 4;
 
     // WHEN
-    const hasAtMost4ConsecutiveCharacters  = hasAtMostCountOfConsecutiveCharacters(input, atMostCount);
+    const hasAtMost4ConsecutiveCharacters  = hasAtMostRepeatingOrConsecutiveCharacters(input, atMostCount);
 
     // THEN
     expect(hasAtMost4ConsecutiveCharacters).toBe(false);
@@ -67,7 +67,7 @@ describe('hasAtMostCountOfConsecutiveCharacters', () => {
     const atMostCount = 3
 
     // WHEN
-    const hasAtMost3ConsecutiveCharacters = hasAtMostCountOfConsecutiveCharacters(input, atMostCount);
+    const hasAtMost3ConsecutiveCharacters = hasAtMostRepeatingOrConsecutiveCharacters(input, atMostCount);
 
     // THEN
     expect(hasAtMost3ConsecutiveCharacters).toBe(false);
@@ -79,7 +79,7 @@ describe('hasAtMostCountOfConsecutiveCharacters', () => {
     const atMostCount = 3;
 
     // WHEN
-    const hasAtMost3ConsecutiveCharacters = hasAtMostCountOfConsecutiveCharacters(input, atMostCount);
+    const hasAtMost3ConsecutiveCharacters = hasAtMostRepeatingOrConsecutiveCharacters(input, atMostCount);
 
     // THEN
     expect(hasAtMost3ConsecutiveCharacters).toBe(false);
@@ -91,7 +91,7 @@ describe('hasAtMostCountOfConsecutiveCharacters', () => {
     const atMostCount = 4;
 
     // WHEN
-    const hasAtMost4ConsecutiveCharacters = hasAtMostCountOfConsecutiveCharacters(input, atMostCount);
+    const hasAtMost4ConsecutiveCharacters = hasAtMostRepeatingOrConsecutiveCharacters(input, atMostCount);
 
     // THEN
     expect(hasAtMost4ConsecutiveCharacters).toBe(false);
@@ -103,7 +103,7 @@ describe('hasAtMostCountOfConsecutiveCharacters', () => {
     const atMostCount = 2;
 
     // WHEN
-    const hasAtMost2ConsecutiveCharacters = hasAtMostCountOfConsecutiveCharacters(input, atMostCount);
+    const hasAtMost2ConsecutiveCharacters = hasAtMostRepeatingOrConsecutiveCharacters(input, atMostCount);
 
     // THEN
     expect(hasAtMost2ConsecutiveCharacters).toBe(false);

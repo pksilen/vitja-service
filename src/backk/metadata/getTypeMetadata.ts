@@ -23,6 +23,18 @@ export default function getTypeMetadata<T>(
   });
 
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
+    if (
+      validationMetadata.type === 'maxLength' ||
+      validationMetadata.type === 'conditionalValidation' ||
+      validationMetadata.type === 'nestedValidation'
+    ) {
+      if (!validationMetadata.groups?.includes('__backk_firstRound__')) {
+        validationMetadata.groups = validationMetadata.groups?.concat('__backk_firstRound__') ?? [
+          '__backk_firstRound__'
+        ];
+      }
+    }
+
     if (validationMetadata.type === 'conditionalValidation') {
       propNameToIsOptionalMap[validationMetadata.propertyName] = true;
     }

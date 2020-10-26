@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO:
-- if sqlDbManager, check that ids are number strings
 - Execute first only MaxLength decorators
+- Must have maxLength or Length decorator
 - @Private entity fields which cannot be queried (or included in includeResponseFields)
   - Use existing Private decorator, 'password' is private
 - UpdateUser precondition userName is userName

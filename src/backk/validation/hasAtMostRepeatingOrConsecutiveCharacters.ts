@@ -1,4 +1,4 @@
-export default function hasAtMostCountOfConsecutiveCharacters(str: string, atMostCount: number): boolean {
+export default function hasAtMostRepeatingOrConsecutiveCharacters(str: string, atMostCount: number): boolean {
   if (atMostCount > 26) {
     throw new Error('atMostCount must be less than 26');
   }

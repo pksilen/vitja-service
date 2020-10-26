@@ -1,7 +1,7 @@
 import { Body, Controller, Headers, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import AuthorizationService from '../backk/authorization/AuthorizationService';
 import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
-import executeServiceFunction from '../backk/service/executeServiceFunction';
+import tryExecuteServiceFunction from '../backk/service/tryExecuteServiceFunction';
 import initializeController from '../backk/initializeController';
 import ReadinessCheckService from '../backk/readinesscheck/ReadinessCheckService';
 import OrdersService from '../services/orders/OrdersService';
@@ -31,6 +31,6 @@ export class AppController {
     @Param() params: { serviceFunctionName: string },
     @Body() serviceFunctionArgument: object
   ): Promise<object | void> {
-    return executeServiceFunction(this, params.serviceFunctionName, serviceFunctionArgument, authHeader);
+    return tryExecuteServiceFunction(this, params.serviceFunctionName, serviceFunctionArgument, authHeader);
   }
 }

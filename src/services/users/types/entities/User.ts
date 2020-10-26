@@ -1,14 +1,13 @@
-import { MaxLength, MinLength } from 'class-validator';
-import Entity from '../../../../backk/decorators/entity/Entity';
-import UniqueIndex from '../../../../backk/decorators/entity/UniqueIndex';
-import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
-import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
-import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
-import DefaultPaymentMethod from './DefaultPaymentMethod';
-import PaymentMethod from './PaymentMethod';
-import _Id from '../../../../backk/types/_Id';
-import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
-import MaxLengthAndMatchesAll from '../../../../backk/decorators/typeproperty/MaxLengthAndMatchesAll';
+import { IsAlpha, MaxLength, MinLength } from "class-validator";
+import Entity from "../../../../backk/decorators/entity/Entity";
+import UniqueIndex from "../../../../backk/decorators/entity/UniqueIndex";
+import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
+import { IsExprTrue } from "../../../../backk/decorators/typeproperty/IsExprTrue";
+import { ValueUsedInTests } from "../../../../backk/decorators/typeproperty/testing/ValueUsedInTests";
+import DefaultPaymentMethod from "./DefaultPaymentMethod";
+import PaymentMethod from "./PaymentMethod";
+import _Id from "../../../../backk/types/_Id";
+import MaxLengthAndMatchesAll from "../../../../backk/decorators/typeproperty/MaxLengthAndMatchesAll";
 
 @Entity()
 @UniqueIndex(['userName'])
