@@ -1,4 +1,4 @@
-import { IsAlpha, MaxLength, MinLength } from "class-validator";
+import { MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import UniqueIndex from "../../../../backk/decorators/entity/UniqueIndex";
 import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
@@ -7,7 +7,7 @@ import { ValueUsedInTests } from "../../../../backk/decorators/typeproperty/test
 import DefaultPaymentMethod from "./DefaultPaymentMethod";
 import PaymentMethod from "./PaymentMethod";
 import _Id from "../../../../backk/types/_Id";
-import MaxLengthAndMatchesAll from "../../../../backk/decorators/typeproperty/MaxLengthAndMatchesAll";
+import LengthAndMatchesAll from "../../../../backk/decorators/typeproperty/LengthOrMatchesAll";
 
 @Entity()
 @UniqueIndex(['userName'])
@@ -24,8 +24,7 @@ export default class User extends _Id {
     ({ password, userName }) => (userName ? !password.toLowerCase().includes(userName.toLowerCase()) : true),
     'Password may not contain username'
   )
-  @MinLength(8)
-  @MaxLengthAndMatchesAll(512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
+  @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
   @ValueUsedInTests('Jepulis0!')
   password!: string;
 

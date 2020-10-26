@@ -212,6 +212,11 @@ export default function getTypeMetadata<T>(
             propertyName === validationMetadata.propertyName && type === 'maxLength'
         );
 
+        const hasLengthValidation = !!validationMetadatas.find(
+          ({ type, propertyName }: ValidationMetadata) =>
+            propertyName === validationMetadata.propertyName && type === 'length'
+        );
+
         const hasMaxLengthAndMatchesValidation = !!validationMetadatas.find(
           ({ constraints, propertyName }: ValidationMetadata) =>
             propertyName === validationMetadata.propertyName && constraints?.[0] === 'maxLengthAndMatches'
@@ -222,17 +227,30 @@ export default function getTypeMetadata<T>(
             propertyName === validationMetadata.propertyName && constraints?.[0] === 'maxLengthAndMatchesAll'
         );
 
+        const hasLengthAndMatchesValidation = !!validationMetadatas.find(
+          ({ constraints, propertyName }: ValidationMetadata) =>
+            propertyName === validationMetadata.propertyName && constraints?.[0] === 'lengthAndMatches'
+        );
+
+        const hasLengthAndMatchesAllValidation = !!validationMetadatas.find(
+          ({ constraints, propertyName }: ValidationMetadata) =>
+            propertyName === validationMetadata.propertyName && constraints?.[0] === 'lengthAndMatchesAll'
+        );
+
         if (
           !hasMaxLengthValidation &&
           !hasMaxLengthAndMatchesValidation &&
-          !hasMaxLengthAndMatchesAllValidation
+          !hasMaxLengthAndMatchesAllValidation &&
+          !hasLengthValidation &&
+          !hasLengthAndMatchesValidation &&
+          !hasLengthAndMatchesAllValidation
         ) {
           throw new Error(
             'Property ' +
               TypeClass.name +
               '.' +
               validationMetadata.propertyName +
-              ' has string type and must have either @MaxLength, @MaxLengthAndMatches or @MaxLengthAndMatchesAll annotation'
+              ' has string type and must have either @Length, @MaxLength, @MaxLengthAndMatches or @MaxLengthAndMatchesAll annotation'
           );
         }
       }

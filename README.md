@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Execute first only MaxLength decorators
 - Must have maxLength or Length decorator
 - @Private entity fields which cannot be queried (or included in includeResponseFields)
   - Use existing Private decorator, 'password' is private
