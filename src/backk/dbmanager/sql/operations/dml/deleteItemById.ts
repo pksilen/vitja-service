@@ -8,6 +8,7 @@ import getItemById from "./getItemById";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 import getTypeMetadata from "../../../../metadata/getTypeMetadata";
+import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
 
 export default async function deleteItemById<T extends object>(
   dbManager: PostgreSqlDbManager,
@@ -46,6 +47,12 @@ export default async function deleteItemById<T extends object>(
 
     const typeMetadata = getTypeMetadata(entityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
+    const numericId = parseInt(_id, 10);
+    if (isNaN(numericId)) {
+      throw new Error(
+        getBadRequestErrorMessage(idFieldName + ': must be a numeric id')
+      );
+    }
 
     await Promise.all([
       forEachAsyncParallel(
@@ -53,13 +60,13 @@ export default async function deleteItemById<T extends object>(
         async (joinSpec: JoinSpec) => {
           await dbManager.tryExecuteSql(
             `DELETE FROM ${dbManager.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} = $1`,
-            [_id]
+            [numericId]
           );
         }
       ),
       dbManager.tryExecuteSql(
         `DELETE FROM ${dbManager.schema}.${entityClass.name} WHERE ${dbManager.schema}.${entityClass.name}.${idFieldName} = $1`,
-        [_id]
+        [numericId]
       )
     ]);
 

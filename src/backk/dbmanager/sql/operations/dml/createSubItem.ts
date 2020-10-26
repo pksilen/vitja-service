@@ -1,9 +1,8 @@
-import { JSONPath } from 'jsonpath-plus';
-import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import getErrorResponse from '../../../../errors/getErrorResponse';
+import { JSONPath } from "jsonpath-plus";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import getErrorResponse from "../../../../errors/getErrorResponse";
 
 export default async function createSubItem<T extends { _id: string; id?: string }, U extends object>(
   dbManager: PostgreSqlDbManager,

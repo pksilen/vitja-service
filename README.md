@@ -1,9 +1,12 @@
 # Vitja service
 
 TODO:
-- Execute first only MaxLength decorators
 - if sqlDbManager, check that ids are number strings
+- Execute first only MaxLength decorators
+- @Private entity fields which cannot be queried (or included in includeResponseFields)
+  - Use existing Private decorator, 'password' is private
 - UpdateUser precondition userName is userName
+- UpdateUser give previous password
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
 - All multiple getXX functions should require mandatory PostQueryOperations interface type param
@@ -20,8 +23,6 @@ TODO:
 - Change ExpectInTestsToMatch to use regular function
 - In dbManager, rename createItem to createEntity etc.
 - Make possible to disable metadata endpoint
--Korjaa .type tiedostossa on @Entity
-- Change class-validator so that first validation error short circuits validation
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
@@ -40,6 +41,9 @@ TODO:
      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
 - executeMultipleInParallel endpoint, to execute multiple serviceCalls in parallel
+  - executionService.executeInParallel
+- executeInSequence
+  - executionService.executeInSequence
 - getDbManager support for multiple dbmanagers
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)

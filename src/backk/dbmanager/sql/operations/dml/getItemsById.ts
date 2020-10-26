@@ -1,20 +1,15 @@
-import { types } from 'pg';
-import getBadRequestErrorResponse from '../../../../errors/getBadRequestErrorResponse';
-import getNotFoundErrorResponse from '../../../../errors/getNotFoundErrorResponse';
-import joinjs from 'join-js';
-import decryptItems from '../../../../crypt/decryptItems';
-import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import tryGetProjection from './utils/tryGetProjection';
-import tryGetSortStatement from './utils/tryGetSortStatement';
-import getJoinStatement from './utils/getJoinStatement';
-import getPagingStatement from './utils/getPagingStatement';
-import createResultMaps from './utils/createResultMaps';
-import transformResults from './utils/transformResults';
-import OptPostQueryOps from '../../../../types/OptPostQueryOps';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
+import { types } from "pg";
+import getNotFoundErrorResponse from "../../../../errors/getNotFoundErrorResponse";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import tryGetProjection from "./utils/tryGetProjection";
+import tryGetSortStatement from "./utils/tryGetSortStatement";
+import getJoinStatement from "./utils/getJoinStatement";
+import getPagingStatement from "./utils/getPagingStatement";
+import OptPostQueryOps from "../../../../types/OptPostQueryOps";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
 import getErrorResponse from "../../../../errors/getErrorResponse";
+import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
 
 export default async function getItemsByIds<T>(
   dbManager: PostgreSqlDbManager,
@@ -33,7 +28,15 @@ export default async function getItemsByIds<T>(
     const sortStatement = tryGetSortStatement(dbManager.schema, postQueryOps?.sortBys, entityClass, types);
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
     const pagingStatement = getPagingStatement(postQueryOps?.pageNumber, postQueryOps?.pageSize);
-    const numericIds = _ids.map((id) => parseInt(id, 10));
+    const numericIds = _ids.map((id) => {
+      const numericId = parseInt(id, 10)
+      if (isNaN(numericId)) {
+        throw new Error(
+          getBadRequestErrorMessage('All ids must be a numeric ids')
+        );
+      }
+      return numericId;
+    });
     const idPlaceholders = _ids.map((_, index) => `$${index + 1}`).join(', ');
 
     const result = await dbManager.tryExecuteQuery(

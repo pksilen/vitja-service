@@ -1,15 +1,16 @@
-import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import { JSONPath } from "jsonpath-plus";
-import { getConflictErrorMessage } from "../../../../errors/getConflictErrorResponse";
-import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import getItemById from "./getItemById";
-import { RecursivePartial } from "../../../../types/RecursivePartial";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import getErrorResponse from "../../../../errors/getErrorResponse";
-import getTypeMetadata from "../../../../metadata/getTypeMetadata";
+import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
+import isErrorResponse from '../../../../errors/isErrorResponse';
+import { JSONPath } from 'jsonpath-plus';
+import { getConflictErrorMessage } from '../../../../errors/getConflictErrorResponse';
+import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import getItemById from './getItemById';
+import { RecursivePartial } from '../../../../types/RecursivePartial';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import getErrorResponse from '../../../../errors/getErrorResponse';
+import getTypeMetadata from '../../../../metadata/getTypeMetadata';
+import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
 
 export default async function updateItem<T extends object & { _id: string; id?: string }>(
   dbManager: PostgreSqlDbManager,
@@ -117,6 +118,12 @@ export default async function updateItem<T extends object & { _id: string; id?: 
             throw new Error(possibleErrorResponse.errorMessage);
           }
         } else if (isArray) {
+          const numericId = parseInt(_id, 10);
+          if (isNaN(numericId)) {
+            // noinspection ExceptionCaughtLocallyJS
+            throw new Error(getBadRequestErrorMessage(idFieldName + ': must be a numeric id'));
+          }
+
           promises.push(
             forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any, index) => {
               const deleteStatement = `DELETE FROM ${dbManager.schema}.${entityClass.name +
@@ -146,11 +153,19 @@ export default async function updateItem<T extends object & { _id: string; id?: 
 
     const idFieldName = _id === undefined ? 'id' : '_id';
 
+    const numericId = parseInt(_id === undefined ? (restOfItem.id ?? 0) : (_id as any), 10);
+    if (isNaN(numericId)) {
+      // noinspection ExceptionCaughtLocallyJS
+      throw new Error(
+        getBadRequestErrorMessage(entityClass.name + '.' + idFieldName + ': must be a numeric id')
+      );
+    }
+
     if (setStatements) {
       promises.push(
         dbManager.tryExecuteSql(
           `UPDATE ${dbManager.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
-          [_id === undefined ? restOfItem.id : _id, ...values]
+          [numericId, ...values]
         )
       );
     }
@@ -163,6 +178,9 @@ export default async function updateItem<T extends object & { _id: string; id?: 
   } catch (error) {
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
+    }
+    if (isRecursiveCall) {
+      throw error;
     }
     return getErrorResponse(error);
   } finally {

@@ -6,6 +6,7 @@ import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 import getTypeMetadata from "../../../../metadata/getTypeMetadata";
+import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
 
 export default async function getItemById<T>(
   dbManager: PostgreSqlDbManager,
@@ -18,10 +19,17 @@ export default async function getItemById<T>(
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
     const typeMetadata = getTypeMetadata(entityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
+    const numericId = parseInt(_id, 10);
+    if (isNaN(numericId)) {
+      // noinspection ExceptionCaughtLocallyJS
+      throw new Error(
+        getBadRequestErrorMessage( idFieldName + ': must be a numeric id')
+      );
+    }
 
     const result = await dbManager.tryExecuteQuery(
       `SELECT ${sqlColumns} FROM ${dbManager.schema}.${entityClass.name} ${joinStatement} WHERE ${dbManager.schema}.${entityClass.name}.${idFieldName} = $1`,
-      [parseInt(_id, 10)]
+      [numericId]
     );
 
     if (result.rows.length === 0) {

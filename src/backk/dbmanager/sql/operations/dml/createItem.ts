@@ -6,7 +6,7 @@ import isErrorResponse from '../../../../errors/isErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import getErrorResponse from '../../../../errors/getErrorResponse';
-import getTypeMetadata from "../../../../metadata/getTypeMetadata";
+import getTypeMetadata from '../../../../metadata/getTypeMetadata';
 
 export default async function createItem<T>(
   dbManager: PostgreSqlDbManager,
@@ -77,7 +77,13 @@ export default async function createItem<T>(
         ) {
           columns.push(fieldName);
           if (fieldName === 'id' || fieldName.endsWith('Id')) {
-            values.push(parseInt((item as any)[fieldName], 10));
+            const numericId = parseInt((item as any)[fieldName], 10);
+            if (isNaN(numericId)) {
+              throw new Error(
+                getBadRequestErrorMessage(entityClass.name + '.' + fieldName + ': must be a numeric id')
+              );
+            }
+            values.push(numericId);
           } else {
             values.push((item as any)[fieldName]);
           }
@@ -178,6 +184,9 @@ export default async function createItem<T>(
   } catch (error) {
     if (shouldReturnItem && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
+    }
+    if (isRecursiveCall) {
+      throw error;
     }
     return getErrorResponse(error);
   } finally {
