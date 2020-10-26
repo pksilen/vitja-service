@@ -1,8 +1,7 @@
 # Vitja service
 
 TODO:
-- Create password check helper functions:
-  getMaxConsecutiveLetterOrDigitCount
+- Execute first only MaxLength decorators
 - if sqlDbManager, check that ids are number strings
 - UpdateUser precondition userName is userName
 - Generoi default _id/id order by clauset getItemXXX functiohin
