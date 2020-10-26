@@ -1,10 +1,9 @@
 # Vitja service
 
 TODO:
-- @Private entity fields which cannot be queried (or included in includeResponseFields)
-  - Use existing Private decorator, 'password' is private
-- UpdateUser precondition userName is userName
-- UpdateUser give previous password
+- General pre operation hookit kaikki dbmanager functioihin, jos hook palauttaa false tai ErrorResponse, niin operaatio hylätään
+  -Hookilla error message parametrii
+- Verify userName is not changed and current password hash in changeUserPassword
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
 - All multiple getXX functions should require mandatory PostQueryOperations interface type param
@@ -16,8 +15,6 @@ TODO:
 - Possible to delete order if all of the orderitems are toBeDelivered, tarkista delete precondition jsonpath.query(item, 'orderItems[?(@.state != "toBeDelivered")]')
   -pre operation hooks to update salesitems to forSale
     hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
-- General pre/post operation hookit kaikki dbmanager functioihin, jos hook palauttaa false tai ErrorResponse, niin operaatio hylätään
-  -Hookilla error message parametrii
 - Change ExpectInTestsToMatch to use regular function
 - In dbManager, rename createItem to createEntity etc.
 - Make possible to disable metadata endpoint, or limit with service/function regexp

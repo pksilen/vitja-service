@@ -1,19 +1,20 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import { FunctionDocumentation } from '../../backk/decorators/service/function/FunctionDocumentation';
-import { Private } from '../../backk/decorators/service/function/Private';
-import ServiceDocumentation from '../../backk/decorators/service/ServiceDocumentation';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import CreateUserArg from './types/args/CreateUserArg';
-import UpdateUserArg from './types/args/UpdateUserArg';
-import UserName from './types/args/UserName';
-import User from './types/entities/User';
-import UserResponse from './types/responses/UserResponse';
-import UsersService from './UsersService';
-import _Id from '../../backk/types/_Id';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import { FunctionDocumentation } from "../../backk/decorators/service/function/FunctionDocumentation";
+import { Private } from "../../backk/decorators/service/function/Private";
+import ServiceDocumentation from "../../backk/decorators/service/ServiceDocumentation";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import CreateUserArg from "./types/args/CreateUserArg";
+import UpdateUserArg from "./types/args/UpdateUserArg";
+import UserName from "./types/args/UserName";
+import User from "./types/entities/User";
+import UserResponse from "./types/responses/UserResponse";
+import UsersService from "./UsersService";
+import _Id from "../../backk/types/_Id";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -58,6 +59,15 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
+  changeUserPassword({
+    _id,
+    currentPassword,
+    password
+  }: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem({ _id, password }, User, this.Types)
+  }
+
+  @AllowForSelf()
   deleteUserById({ _id }: _Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteItemById(_id, User);
   }
@@ -66,6 +76,6 @@ export default class UsersServiceImpl extends UsersService {
     return {
       ...user,
       extraInfo: 'Some extra info'
-    }
+    };
   }
 }

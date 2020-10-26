@@ -11,20 +11,14 @@ function getDeclarationsFor(typeName: string, originatingTypeFilePathName: strin
   let typeFilePathName;
 
   if (typeName === '_Id') {
-    fileContentsStr = `
-    import { MaxLength } from 'class-validator';
-    
+    fileContentsStr = `  
     export default class _Id {
-      @MaxLength(24)
       _id!: string;
     }
     `;
   } else if (typeName === 'Id') {
     fileContentsStr = `
-    import { MaxLength } from 'class-validator';
-    
     export default class Id {
-      @MaxLength(24)
       id!: string;
     }
     `;
@@ -107,19 +101,13 @@ export default function parseTypescriptLinesForTypeName(
   } else {
     if (typeName === '_Id') {
       fileContentsStr = `
-    import { MaxLength } from 'class-validator';
-    
     export default class _Id {
-      @MaxLength(24)
       _id!: string;
     }
     `;
     } else if (typeName === 'Id') {
       fileContentsStr = `
-    import { MaxLength } from 'class-validator';
-    
     export default class Id {
-      @MaxLength(24)
       id!: string;
     }
     `;

@@ -246,7 +246,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     item: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
-    preCondition?: Partial<T> | string,
+    preCondition?: Partial<T>,
     shouldCheckIfItemExists: boolean = true
   ): Promise<void | ErrorResponse> {
     return updateItem(this, item, entityClass, Types, preCondition, shouldCheckIfItemExists);

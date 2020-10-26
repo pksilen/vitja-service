@@ -1,5 +1,3 @@
-import { SortBy } from '../../../../backk/Backk';
-
 export default class GetByUserIdArg {
   ...UserId;
   ...OptPostQueryOps;

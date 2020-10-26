@@ -1,4 +1,4 @@
 export default class UpdateUserArg {
-  ...Omit<Partial<User>, 'userName' | 'loyaltyDiscountLevel'>;
+  ...Omit<Partial<User>, 'userName' | 'password' | 'loyaltyDiscountLevel'>;
   ..._Id;
 }

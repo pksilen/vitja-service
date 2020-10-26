@@ -17,13 +17,16 @@ export default async function updateItem<T extends object & { _id: string; id?: 
   { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
   entityClass: new () => T,
   Types: object,
-  preCondition?: Partial<T> | string,
+  preCondition?: Partial<T>,
   shouldCheckIfItemExists: boolean = true,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   try {
     if (!isRecursiveCall) {
       await hashAndEncryptItem(restOfItem, entityClass, Types);
+      if (preCondition) {
+        await hashAndEncryptItem(preCondition, entityClass, Types);
+      }
     }
 
     if (

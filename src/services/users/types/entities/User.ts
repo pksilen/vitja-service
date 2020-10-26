@@ -1,4 +1,4 @@
-import { MaxLength } from "class-validator";
+import { IsEmail, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import UniqueIndex from "../../../../backk/decorators/entity/UniqueIndex";
 import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
@@ -14,6 +14,8 @@ import { Private } from "../../../../backk/decorators/service/function/Private";
 @UniqueIndex(['userName'])
 export default class User extends _Id {
   @MaxLength(512)
+  @IsEmail()
+  @ValueUsedInTests('test@test.com')
   userName!: string;
 
   @Private()

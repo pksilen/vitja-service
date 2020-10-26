@@ -8,10 +8,10 @@ import { Documentation } from '../../../../backk/decorators/typeproperty/Documen
 import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
 import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
 import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
-import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
-import PaymentMethod from '../entities/PaymentMethod';
 
-export default class CreateUserArg {
+export default class ChangeUserPasswordArg {
+  _id!: string;
+
   @MaxLength(512)
   @IsEmail()
   @ValueUsedInTests('test@test.com')
@@ -32,26 +32,6 @@ export default class CreateUserArg {
   password!: string;
 
   @MaxLength(512)
-  streetAddress!: string;
-
-  @MaxLength(32)
-  postalCode!: string;
-
-  @MaxLength(256)
-  city!: string;
-
-  loyaltyDiscountLevel!: 0 | 25 | 50;
-
-  defaultPaymentMethod!: DefaultPaymentMethod;
-
-  paymentMethods!: PaymentMethod[];
-
-  @MaxLength(24, {
-    each: true
-  })
-  @ValueUsedInTests('123')
-  favoriteSalesItemIds!: string[];
-
-  @MaxLength(512)
-  captchaToken!: string;
+  @ValueUsedInTests('Jepulis0!')
+  currentPassword!: string;
 }
