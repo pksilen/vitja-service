@@ -5,6 +5,7 @@ class TypePropertyAnnotationContainer {
   private readonly typePropertyNameToIsHashedMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsEncryptedMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsNotEncryptedMap: { [key: string]: boolean } = {};
+  private readonly typePropertyNameToIsPrivateMap: { [key: string]: boolean } = {};
 
   addDocumentationForTypeProperty(Type: Function, propertyName: string, docString: string) {
     this.typePropertyNameToDocStringMap[`${Type.name}${propertyName}`] = docString;
@@ -28,6 +29,10 @@ class TypePropertyAnnotationContainer {
 
   setTypePropertyAsNotEncrypted(Type: Function, propertyName: string) {
     this.typePropertyNameToIsNotEncryptedMap[`${Type.name}${propertyName}`] = true;
+  }
+
+  setTypePropertyAsPrivate(Type: Function, propertyName: string) {
+    this.typePropertyNameToIsPrivateMap[`${Type.name}${propertyName}`] = true;
   }
 
   getDocumentationForTypeProperty(Type: Function, functionName: string) {
@@ -95,6 +100,18 @@ class TypePropertyAnnotationContainer {
     while (proto !== Object.prototype) {
       if (this.typePropertyNameToIsNotEncryptedMap[`${Type.name}${functionName}`] !== undefined) {
         return this.typePropertyNameToIsNotEncryptedMap[`${Type.name}${functionName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isTypePropertyPrivate(Type: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (Type as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.typePropertyNameToIsPrivateMap[`${Type.name}${functionName}`] !== undefined) {
+        return this.typePropertyNameToIsPrivateMap[`${Type.name}${functionName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }

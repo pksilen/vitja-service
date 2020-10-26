@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Must have maxLength or Length decorator
 - @Private entity fields which cannot be queried (or included in includeResponseFields)
   - Use existing Private decorator, 'password' is private
 - UpdateUser precondition userName is userName
@@ -21,7 +20,7 @@ TODO:
   -Hookilla error message parametrii
 - Change ExpectInTestsToMatch to use regular function
 - In dbManager, rename createItem to createEntity etc.
-- Make possible to disable metadata endpoint
+- Make possible to disable metadata endpoint, or limit with service/function regexp
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)

@@ -2,6 +2,8 @@ import getFieldsFromGraphQlOrJson from '../../../../../graphql/getFieldsFromGrap
 import shouldIncludeField from './shouldIncludeField';
 import { OptionalProjection } from "../../../../../types/OptionalProjection";
 import getTypeMetadata from "../../../../../metadata/getTypeMetadata";
+import typePropertyAnnotationContainer
+  from "../../../../../decorators/typeproperty/typePropertyAnnotationContainer";
 
 function getFieldsForEntity(
   schema: string,
@@ -14,6 +16,10 @@ function getFieldsForEntity(
   const entityMetadata = getTypeMetadata(entityClass as any);
 
   Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [string, any]) => {
+    if (typePropertyAnnotationContainer.isTypePropertyPrivate(entityClass, fieldName)) {
+      return;
+    }
+
     let baseFieldTypeName = fieldTypeName;
     let isArray = false;
 

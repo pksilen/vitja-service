@@ -8,6 +8,7 @@ import DefaultPaymentMethod from "./DefaultPaymentMethod";
 import PaymentMethod from "./PaymentMethod";
 import _Id from "../../../../backk/types/_Id";
 import LengthAndMatchesAll from "../../../../backk/decorators/typeproperty/LengthOrMatchesAll";
+import { Private } from "../../../../backk/decorators/service/function/Private";
 
 @Entity()
 @UniqueIndex(['userName'])
@@ -15,6 +16,7 @@ export default class User extends _Id {
   @MaxLength(512)
   userName!: string;
 
+  @Private()
   @Documentation('Password doc goes here...')
   @IsExprTrue(
     ({ password }) => !password.toLowerCase().includes('password'),

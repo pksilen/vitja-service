@@ -62,10 +62,10 @@ export default class UsersServiceImpl extends UsersService {
     return this.dbManager.deleteItemById(_id, User);
   }
 
-  private static getUserResponse(userOrErrorResponse: User) {
-    delete userOrErrorResponse.password;
-    const userResponse = (userOrErrorResponse as unknown) as UserResponse;
-    userResponse.extraInfo = 'Some extra info';
-    return userResponse;
+  private static getUserResponse(user: User): UserResponse {
+    return {
+      ...user,
+      extraInfo: 'Some extra info'
+    }
   }
 }
