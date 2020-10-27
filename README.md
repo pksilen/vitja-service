@@ -13,7 +13,6 @@ TODO:
   -pre operation hooks to update salesitems to forSale
     hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
 - Change ExpectInTestsToMatch to use regular function
-- Make possible to disable metadata endpoint, or limit with service/function regexp
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)

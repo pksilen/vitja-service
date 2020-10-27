@@ -11,6 +11,7 @@ import UsersBaseService from '../users/UsersBaseService';
 import getBadRequestErrorResponse from '../errors/getBadRequestErrorResponse';
 import { ServiceMetadata } from '../metadata/ServiceMetadata';
 import tryValidateObject from '../validation/tryValidateObject';
+import getErrorResponse from '../errors/getErrorResponse';
 
 export interface Options {
   isMetadataServiceEnabled?: boolean;
@@ -129,7 +130,10 @@ export default async function tryExecuteServiceFunction(
   }
 
   if (response && response.statusCode && response.errorMessage) {
-    throw new HttpException(response, response.statusCode);
+    throw new HttpException(
+      getErrorResponse(new Error(response.errorMessage)),
+      response.statusCode
+    );
   }
 
   if (

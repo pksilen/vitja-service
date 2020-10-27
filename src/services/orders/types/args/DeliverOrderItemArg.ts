@@ -3,7 +3,8 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { IsInt, Max, MaxLength, Min } from 'class-validator';
-import { ExpectInTestsToMatch } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToMatch';
+import { MAX_INT_VALUE } from '../../../../backk/constants';
+import { ExpectInTestsToEvaluateTrue } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue';
 
 export default class DeliverOrderItemArg {
   orderId!: string;
@@ -12,15 +13,18 @@ export default class DeliverOrderItemArg {
 
   @IsInt()
   @Min(0)
-  @Max(2147483647)
-  @ExpectInTestsToMatch(
-    "state === 'toBeDelivered' && deliveryTimestampInSecs === 0 || state !== 'toBeDelivered' && deliveryTimestampInSecs !== 0"
+  @Max(MAX_INT_VALUE)
+  @ExpectInTestsToEvaluateTrue(
+    ({ state, deliveryTimestampInSecs }) =>
+      (state === 'toBeDelivered' && deliveryTimestampInSecs === 0) ||
+      (state !== 'toBeDelivered' && deliveryTimestampInSecs !== 0)
   )
   deliveryTimestampInSecs!: number;
 
   @MaxLength(1024)
-  @ExpectInTestsToMatch(
-    "state === 'toBeDelivered' && trackingUrl === '' || state !== 'toBeDelivered' && trackingUrl !== ''"
+  @ExpectInTestsToEvaluateTrue(
+    ({ state, trackingUrl }) =>
+      (state === 'toBeDelivered' && trackingUrl === '') || (state !== 'toBeDelivered' && trackingUrl !== '')
   )
   trackingUrl!: string;
 }

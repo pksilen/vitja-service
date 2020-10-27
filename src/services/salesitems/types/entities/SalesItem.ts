@@ -1,7 +1,8 @@
 import { IsInt, IsNumber, Max, MaxLength, Min } from 'class-validator';
 import Entity from '../../../../backk/decorators/entity/Entity';
-import { ExpectInTestsToMatch } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToMatch';
-import _Id from "../../../../backk/types/_Id";
+import { ExpectInTestsToEvaluateTrue } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue';
+import _Id from '../../../../backk/types/_Id';
+import { MAX_INT_VALUE } from '../../../../backk/constants';
 
 @Entity()
 export class SalesItem extends _Id {
@@ -38,9 +39,11 @@ export class SalesItem extends _Id {
 
   @IsInt()
   @Min(0)
-  @Max(2147483647)
-  @ExpectInTestsToMatch(
-    'createdTimestampInSecs <= Math.round(Date.now() / 1000) && createdTimestampInSecs > Math.round((Date.now() / 1000) - 60)'
+  @Max(MAX_INT_VALUE)
+  @ExpectInTestsToEvaluateTrue(
+    ({ createdTimestampInSecs }) =>
+      createdTimestampInSecs <= Math.round(Date.now() / 1000) &&
+      createdTimestampInSecs > Math.round(Date.now() / 1000 - 60)
   )
   createdTimestampInSecs!: number;
 }
