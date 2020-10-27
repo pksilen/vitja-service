@@ -26,7 +26,7 @@ export default async function deleteItemById<T extends object>(
     }
 
     if (Types && preHooks) {
-      const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types);
+      const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types, true);
       await executePreHooks(preHooks, itemOrErrorResponse);
     }
 

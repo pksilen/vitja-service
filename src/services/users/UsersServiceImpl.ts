@@ -1,20 +1,21 @@
-import { Injectable } from "@nestjs/common";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
-import { FunctionDocumentation } from "../../backk/decorators/service/function/FunctionDocumentation";
-import { Private } from "../../backk/decorators/service/function/Private";
-import ServiceDocumentation from "../../backk/decorators/service/ServiceDocumentation";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import CreateUserArg from "./types/args/CreateUserArg";
-import UpdateUserArg from "./types/args/UpdateUserArg";
-import UserName from "./types/args/UserName";
-import User from "./types/entities/User";
-import UserResponse from "./types/responses/UserResponse";
-import UsersService from "./UsersService";
-import _Id from "../../backk/types/_Id";
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
+import { Injectable } from '@nestjs/common';
+import * as argon2 from 'argon2';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import { FunctionDocumentation } from '../../backk/decorators/service/function/FunctionDocumentation';
+import { Private } from '../../backk/decorators/service/function/Private';
+import ServiceDocumentation from '../../backk/decorators/service/ServiceDocumentation';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import CreateUserArg from './types/args/CreateUserArg';
+import UpdateUserArg from './types/args/UpdateUserArg';
+import UserName from './types/args/UserName';
+import User from './types/entities/User';
+import UserResponse from './types/responses/UserResponse';
+import UsersService from './UsersService';
+import _Id from '../../backk/types/_Id';
+import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -59,12 +60,19 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
-  changeUserPassword({
-    _id,
-    currentPassword,
-    password
-  }: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem({ _id, password }, User, this.Types)
+  changeUserPassword(arg: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
+    return this.dbManager.updateItem({ _id: arg._id, password: arg.password }, User, this.Types, [
+      {
+        jsonPath: 'userName',
+        hookFunc: (userName) => userName === arg.userName,
+        errorMessage: 'User name cannot be changed'
+      },
+      {
+        jsonPath: 'password',
+        hookFunc: async (hashedPassword) => await argon2.verify(hashedPassword, arg.currentPassword),
+        errorMessage: 'Invalid current password'
+      }
+    ]);
   }
 
   @AllowForSelf()

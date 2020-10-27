@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- General pre operation hookit kaikki dbmanager functioihin, jos hook palauttaa false tai ErrorResponse, niin operaatio hylätään
-  -Hookilla error message parametrii
 - Verify userName is not changed and current password hash in changeUserPassword
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array

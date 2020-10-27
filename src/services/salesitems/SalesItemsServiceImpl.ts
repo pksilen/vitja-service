@@ -138,7 +138,8 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
             this.Types,
             {
               jsonPath: 'state',
-              hookFunc: (state) => state === 'forSale'
+              hookFunc: (state) => state === 'forSale',
+              errorMessage: 'Sales item state must be forSale'
             }
           );
     });
@@ -156,7 +157,8 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       requiredCurrentState
         ? {
             jsonPath: 'state',
-            hookFunc: (state) => state === requiredCurrentState
+            hookFunc: (state) => state === requiredCurrentState,
+            errorMessage: 'Sales item state must be ' + requiredCurrentState
           }
         : undefined
     );

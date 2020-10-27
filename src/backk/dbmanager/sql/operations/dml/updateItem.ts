@@ -1,16 +1,16 @@
-import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import getItemById from "./getItemById";
-import { RecursivePartial } from "../../../../types/RecursivePartial";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import getErrorResponse from "../../../../errors/getErrorResponse";
-import getTypeMetadata from "../../../../metadata/getTypeMetadata";
-import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
-import { PreHook } from "../../../AbstractDbManager";
-import executePreHooks from "../../../hooks/executePreHooks";
+import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
+import isErrorResponse from '../../../../errors/isErrorResponse';
+import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import getItemById from './getItemById';
+import { RecursivePartial } from '../../../../types/RecursivePartial';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import getErrorResponse from '../../../../errors/getErrorResponse';
+import getTypeMetadata from '../../../../metadata/getTypeMetadata';
+import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
+import { PreHook } from '../../../AbstractDbManager';
+import executePreHooks from '../../../hooks/executePreHooks';
 
 export default async function updateItem<T extends object & { _id: string; id?: string }>(
   dbManager: PostgreSqlDbManager,
@@ -35,7 +35,7 @@ export default async function updateItem<T extends object & { _id: string; id?: 
     }
 
     if (shouldCheckIfItemExists) {
-      const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types);
+      const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types, true);
       if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
         // noinspection ExceptionCaughtLocallyJS
         throw new Error(itemOrErrorResponse.errorMessage);
@@ -140,7 +140,7 @@ export default async function updateItem<T extends object & { _id: string; id?: 
 
     const idFieldName = _id === undefined ? 'id' : '_id';
 
-    const numericId = parseInt(_id === undefined ? (restOfItem.id ?? 0) : (_id as any), 10);
+    const numericId = parseInt(_id === undefined ? restOfItem.id ?? 0 : (_id as any), 10);
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(
@@ -171,7 +171,7 @@ export default async function updateItem<T extends object & { _id: string; id?: 
     }
     return getErrorResponse(error);
   } finally {
-    if(!isRecursiveCall) {
+    if (!isRecursiveCall) {
       dbManager.getClsNamespace()?.set('localTransaction', false);
     }
   }

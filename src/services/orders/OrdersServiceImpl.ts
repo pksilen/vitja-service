@@ -64,7 +64,8 @@ export default class OrdersServiceImpl extends OrdersService {
       this.Types,
       {
         jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-        hookFunc: (state) => state === 'toBeDelivered'
+        hookFunc: (state) => state === 'toBeDelivered',
+        errorMessage: 'order item state must be toBeDelivered'
       }
     );
   }
@@ -111,7 +112,8 @@ export default class OrdersServiceImpl extends OrdersService {
       this.Types,
       {
         jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-        hookFunc: (state) => state === 'toBeDelivered'
+        hookFunc: (state) => state === 'toBeDelivered',
+        errorMessage: 'order item state must be toBeDelivered'
       }
     );
   }
@@ -136,7 +138,8 @@ export default class OrdersServiceImpl extends OrdersService {
         this.Types,
         {
           jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-          hookFunc: (state) => state === OrdersServiceImpl.getPreviousStateFor(newState)
+          hookFunc: (state) => state === OrdersServiceImpl.getPreviousStateFor(newState),
+          errorMessage: 'order item state must be ' + OrdersServiceImpl.getPreviousStateFor(newState)
         }
       );
     });

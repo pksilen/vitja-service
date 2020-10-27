@@ -22,7 +22,7 @@ export default async function deleteSubItems<T extends { _id: string; id?: strin
       await dbManager.beginTransaction();
     }
 
-    const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types);
+    const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types, true);
     if ('errorMessage' in itemOrErrorResponse) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(itemOrErrorResponse.errorMessage);

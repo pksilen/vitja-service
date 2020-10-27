@@ -1,9 +1,8 @@
 import getFieldsFromGraphQlOrJson from '../../../../../graphql/getFieldsFromGraphQlOrJson';
 import shouldIncludeField from './shouldIncludeField';
-import { OptionalProjection } from "../../../../../types/OptionalProjection";
-import getTypeMetadata from "../../../../../metadata/getTypeMetadata";
-import typePropertyAnnotationContainer
-  from "../../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import { OptionalProjection } from '../../../../../types/OptionalProjection';
+import getTypeMetadata from '../../../../../metadata/getTypeMetadata';
+import typePropertyAnnotationContainer from '../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 
 function getFieldsForEntity(
   schema: string,
@@ -11,12 +10,13 @@ function getFieldsForEntity(
   entityClass: Function,
   Types: object,
   projection: OptionalProjection,
-  fieldPath: string
+  fieldPath: string,
+  isInternalCall = false
 ) {
   const entityMetadata = getTypeMetadata(entityClass as any);
 
   Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [string, any]) => {
-    if (typePropertyAnnotationContainer.isTypePropertyPrivate(entityClass, fieldName)) {
+    if (!isInternalCall && typePropertyAnnotationContainer.isTypePropertyPrivate(entityClass, fieldName)) {
       return;
     }
 
@@ -68,7 +68,8 @@ export default function tryGetProjection(
   schema: string,
   projection: OptionalProjection,
   entityClass: Function,
-  Types: object
+  Types: object,
+  isInternalCall = false
 ) {
   const fields: string[] = [];
 
@@ -89,7 +90,8 @@ export default function tryGetProjection(
         entityClass as any,
         Types,
         { includeResponseFields: [includeResponseField] },
-        ''
+        '',
+        isInternalCall
       );
 
       if (fields.length === 0) {
@@ -107,7 +109,8 @@ export default function tryGetProjection(
         entityClass as any,
         Types,
         { includeResponseFields: [excludeResponseField] },
-        ''
+        '',
+        isInternalCall
       );
 
       if (fields.length === 0) {
@@ -116,6 +119,6 @@ export default function tryGetProjection(
     });
   }
 
-  getFieldsForEntity(schema, fields, entityClass as any, Types, projection, '');
+  getFieldsForEntity(schema, fields, entityClass as any, Types, projection, '', isInternalCall);
   return fields.join(', ');
 }

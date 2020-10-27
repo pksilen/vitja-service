@@ -1,30 +1,29 @@
-import getNotFoundErrorResponse from "../../../../errors/getNotFoundErrorResponse";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import tryGetProjection from "./utils/tryGetProjection";
-import getJoinStatement from "./utils/getJoinStatement";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import transformRowsToObjects from "./utils/transformRowsToObjects";
-import getErrorResponse from "../../../../errors/getErrorResponse";
-import getTypeMetadata from "../../../../metadata/getTypeMetadata";
-import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
+import getNotFoundErrorResponse from '../../../../errors/getNotFoundErrorResponse';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import tryGetProjection from './utils/tryGetProjection';
+import getJoinStatement from './utils/getJoinStatement';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import transformRowsToObjects from './utils/transformRowsToObjects';
+import getErrorResponse from '../../../../errors/getErrorResponse';
+import getTypeMetadata from '../../../../metadata/getTypeMetadata';
+import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
 
 export default async function getItemById<T>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   entityClass: new () => T,
-  Types: object
+  Types: object,
+  isInternalCall = false
 ): Promise<T | ErrorResponse> {
   try {
-    const sqlColumns = tryGetProjection(dbManager.schema, {}, entityClass, Types);
+    const sqlColumns = tryGetProjection(dbManager.schema, {}, entityClass, Types, isInternalCall);
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
     const typeMetadata = getTypeMetadata(entityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(
-        getBadRequestErrorMessage( idFieldName + ': must be a numeric id')
-      );
+      throw new Error(getBadRequestErrorMessage(idFieldName + ': must be a numeric id'));
     }
 
     const result = await dbManager.tryExecuteQuery(
