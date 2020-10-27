@@ -15,8 +15,8 @@ import { AllowForTests } from '../../backk/decorators/service/function/AllowForT
 import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
 import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import IdAndUserId from "../../backk/types/IdAndUserId";
+import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import IdAndUserId from '../../backk/types/IdAndUserId';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -63,7 +63,8 @@ export default class OrdersServiceImpl extends OrdersService {
       Order,
       this.Types,
       {
-        [`orderItems[?(@.id == '${orderItemId}')].state`]: 'toBeDelivered'
+        jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
+        hookFunc: (state) => state === 'toBeDelivered'
       }
     );
   }
@@ -109,7 +110,8 @@ export default class OrdersServiceImpl extends OrdersService {
       Order,
       this.Types,
       {
-        [`orderItems[?(@.id == '${orderItemId}')].state`]: 'toBeDelivered'
+        jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
+        hookFunc: (state) => state === 'toBeDelivered'
       }
     );
   }
@@ -133,7 +135,8 @@ export default class OrdersServiceImpl extends OrdersService {
         Order,
         this.Types,
         {
-          [`orderItems[?(@.id == '${orderItemId}')].state`]: OrdersServiceImpl.getPreviousStateFor(newState)
+          jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
+          hookFunc: (state) => state === OrdersServiceImpl.getPreviousStateFor(newState)
         }
       );
     });

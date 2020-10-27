@@ -1,6 +1,3 @@
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import _ from "lodash";
-import { getConflictErrorMessage } from "../../../../errors/getConflictErrorResponse";
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import entityContainer, { JoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
@@ -9,15 +6,17 @@ import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
+import { PreHook } from "../../../AbstractDbManager";
+import executePreHooks from "../../../hooks/executePreHooks";
 
 export default async function deleteItemById<T extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   entityClass: new () => T,
   Types?: object,
-  itemPreCondition?: Partial<T> | string
+  preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
-  if (itemPreCondition && !Types) {
+  if (preHooks && !Types) {
     throw new Error('Types argument must be given if preCondition argument is given');
   }
 
@@ -26,23 +25,9 @@ export default async function deleteItemById<T extends object>(
       await dbManager.beginTransaction();
     }
 
-    if (Types && itemPreCondition) {
+    if (Types && preHooks) {
       const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types);
-      if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
-        // noinspection ExceptionCaughtLocallyJS
-        throw new Error(itemOrErrorResponse.errorMessage);
-      }
-
-      if (typeof itemPreCondition === 'object') {
-        if (!_.isMatch(itemOrErrorResponse, itemPreCondition)) {
-          // noinspection ExceptionCaughtLocallyJS
-          throw new Error(
-            getConflictErrorMessage(
-              `Delete precondition ${JSON.stringify(itemPreCondition)} was not satisfied`
-            )
-          );
-        }
-      }
+      await executePreHooks(preHooks, itemOrErrorResponse);
     }
 
     const typeMetadata = getTypeMetadata(entityClass);

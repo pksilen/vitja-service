@@ -4,7 +4,7 @@ import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
 import getInternalServerErrorResponse from '../errors/getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../errors/getNotFoundErrorResponse';
 import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field } from './AbstractDbManager';
+import AbstractDbManager, { Field, PreHook } from "./AbstractDbManager";
 import getMongoDbProjection from "./mongodb/getMongoDbProjection";
 import { ErrorResponse } from "../types/ErrorResponse";
 import { PostQueryOps } from "../types/PostQueryOps";
@@ -58,8 +58,7 @@ export default class MongoDbManager extends AbstractDbManager {
     item: Omit<T, '_id'>,
     entityClass: new () => T,
     Types: object,
-    maxItemCount?: number,
-    itemCountQueryFilter?: FilterQuery<T>
+    preHooks?: PreHook | PreHook[]
   ): Promise<T | ErrorResponse> {
     // TODO implement maxItemCount
     try {
@@ -237,7 +236,8 @@ export default class MongoDbManager extends AbstractDbManager {
   async updateItem<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    itemPreCondition?: Partial<T> | string
+    Types: object,
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     // TODO add precondition check
     try {
@@ -260,7 +260,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     entityClass: new () => T,
     Types?: object,
-    itemPreCondition?: Partial<T> | string
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     try {
       const deleteOperationResult = await this.tryExecute((client) =>
@@ -283,7 +283,7 @@ export default class MongoDbManager extends AbstractDbManager {
     subItemsPath: string,
     entityClass: new () => T,
     Types?: object,
-    preConditions?: object | string
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     return Promise.resolve();
   }

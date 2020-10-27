@@ -7,8 +7,9 @@ import UserId from '../users/types/args/UserId';
 import ShoppingCartService from './ShoppingCartService';
 import CreateShoppingCartArg from './types/args/CreateShoppingCartArg';
 import ShoppingCart from './types/entities/ShoppingCart';
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import IdAndUserId from "../../backk/types/IdAndUserId";
+import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import IdAndUserId from '../../backk/types/IdAndUserId';
+import executeAndGetErrorResponseOrResultOf from '../../backk/utils/executeAndGetErrorResponseOrResultOf';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -24,7 +25,14 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @NoCaptcha()
   @AllowForSelf()
   async createShoppingCart(arg: CreateShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.createItem(arg, ShoppingCart, this.Types, 1, { userId: arg.userId });
+    return this.dbManager.createItem(arg, ShoppingCart, this.Types, {
+      hookFunc: async () =>
+        executeAndGetErrorResponseOrResultOf(
+          await this.dbManager.getItemsCount({ userId: arg.userId }, ShoppingCart, this.Types),
+          (shoppingCartCount) => shoppingCartCount === 0
+        ),
+      errorMessage: 'Shopping cart already exists. Only one shopping cart is allowed'
+    });
   }
 
   @AllowForSelf()

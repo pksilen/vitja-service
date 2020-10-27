@@ -1,20 +1,21 @@
-import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
-import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import _ from 'lodash';
-import isErrorResponse from '../../../../errors/isErrorResponse';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import getErrorResponse from '../../../../errors/getErrorResponse';
-import getTypeMetadata from '../../../../metadata/getTypeMetadata';
+import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
+import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import _ from "lodash";
+import isErrorResponse from "../../../../errors/isErrorResponse";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import getErrorResponse from "../../../../errors/getErrorResponse";
+import getTypeMetadata from "../../../../metadata/getTypeMetadata";
+import { PreHook } from "../../../AbstractDbManager";
+import executePreHooks from "../../../hooks/executePreHooks";
 
 export default async function createItem<T>(
   dbManager: PostgreSqlDbManager,
   item: Omit<T, '_id'>,
   entityClass: new () => T,
   Types: object,
-  maxAllowedItemCount?: number,
-  itemCountQueryFilter?: Partial<T>,
+  preHooks?: PreHook | PreHook[],
   isRecursiveCall = false,
   shouldReturnItem = true
 ): Promise<T | ErrorResponse> {
@@ -33,24 +34,8 @@ export default async function createItem<T>(
       dbManager.getClsNamespace()?.set('localTransaction', true);
     }
 
-    if (!isRecursiveCall && maxAllowedItemCount !== undefined) {
-      const itemCountOrErrorResponse = await dbManager.getItemsCount(
-        itemCountQueryFilter,
-        entityClass,
-        Types
-      );
-
-      if (typeof itemCountOrErrorResponse === 'number') {
-        if (itemCountOrErrorResponse >= maxAllowedItemCount) {
-          // noinspection ExceptionCaughtLocallyJS
-          throw new Error(
-            getBadRequestErrorMessage('Cannot create new resource. Maximum resource count would be exceeded')
-          );
-        }
-      } else {
-        // noinspection ExceptionCaughtLocallyJS
-        throw new Error(itemCountOrErrorResponse.errorMessage);
-      }
+    if (!isRecursiveCall && preHooks) {
+      await executePreHooks(preHooks);
     }
 
     const entityMetadata = getTypeMetadata(entityClass as any);
@@ -129,13 +114,12 @@ export default async function createItem<T>(
           const relationEntityName = baseFieldTypeName;
           await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
             subItem[idFieldName] = _id;
-            const subItemOrErrorResponse = await createItem(
+            const subItemOrErrorResponse: any | ErrorResponse = await createItem(
               dbManager,
               subItem,
               (Types as any)[relationEntityName],
               Types,
-              maxAllowedItemCount,
-              itemCountQueryFilter,
+              preHooks,
               true
             );
             if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
@@ -149,13 +133,12 @@ export default async function createItem<T>(
           const relationEntityName = baseFieldTypeName;
           const subItem = (item as any)[fieldName];
           subItem[idFieldName] = _id;
-          const subItemOrErrorResponse = await createItem(
+          const subItemOrErrorResponse: any | ErrorResponse = await createItem(
             dbManager,
             subItem,
             (Types as any)[relationEntityName],
             Types,
-            maxAllowedItemCount,
-            itemCountQueryFilter,
+            preHooks,
             true
           );
           if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
@@ -182,15 +165,15 @@ export default async function createItem<T>(
       ? ({} as any)
       : await dbManager.getItemById(_id, entityClass, Types);
   } catch (error) {
-    if (shouldReturnItem && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.rollbackTransaction();
-    }
     if (isRecursiveCall) {
       throw error;
     }
+    if (shouldReturnItem && !dbManager.getClsNamespace()?.get('globalTransaction')) {
+      await dbManager.rollbackTransaction();
+    }
     return getErrorResponse(error);
   } finally {
-    if (shouldReturnItem) {
+    if (!isRecursiveCall && shouldReturnItem) {
       dbManager.getClsNamespace()?.set('localTransaction', false);
     }
   }

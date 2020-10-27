@@ -39,7 +39,6 @@ export default async function createSubItem<T extends { _id: string; id?: string
       subItemEntityClass,
       Types,
       undefined,
-      undefined,
       false
     );
 

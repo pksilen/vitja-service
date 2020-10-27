@@ -1,5 +1,4 @@
 import { JSONPath } from "jsonpath-plus";
-import { getConflictErrorMessage } from "../../../../errors/getConflictErrorResponse";
 import { plainToClass } from "class-transformer";
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
@@ -7,6 +6,8 @@ import getItemById from "./getItemById";
 import deleteItemById from "./deleteItemById";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
+import executePreHooks from "../../../hooks/executePreHooks";
+import { PreHook } from "../../../AbstractDbManager";
 
 export default async function deleteSubItems<T extends { _id: string; id?: string }, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -14,7 +15,7 @@ export default async function deleteSubItems<T extends { _id: string; id?: strin
   subItemsPath: string,
   entityClass: new () => T,
   Types: object,
-  preCondition?: object | string
+  preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
   try {
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
@@ -27,21 +28,8 @@ export default async function deleteSubItems<T extends { _id: string; id?: strin
       throw new Error(itemOrErrorResponse.errorMessage);
     }
 
-    if (preCondition) {
-      if (typeof preCondition === 'object') {
-        const isPreConditionMatched = Object.entries(preCondition).reduce(
-          (isPreconditionMatched, [path, value]) => {
-            return isPreconditionMatched && JSONPath({ json: itemOrErrorResponse, path })[0] === value;
-          },
-          true
-        );
-        if (!isPreConditionMatched) {
-          // noinspection ExceptionCaughtLocallyJS
-          throw new Error(getConflictErrorMessage(
-            `Delete sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
-          ));
-        }
-      }
+    if (preHooks) {
+      await executePreHooks(preHooks, itemOrErrorResponse);
     }
 
     const itemInstance = plainToClass(entityClass, itemOrErrorResponse);

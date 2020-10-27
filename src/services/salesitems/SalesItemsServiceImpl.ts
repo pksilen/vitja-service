@@ -1,25 +1,26 @@
-import { Injectable } from "@nestjs/common";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
-import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
-import { Private } from "../../backk/decorators/service/function/Private";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import MongoDbManager from "../../backk/dbmanager/MongoDbManager";
-import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
-import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import SqlInExpression from "../../backk/dbmanager/sql/expressions/SqlInExpression";
-import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
-import SalesItemsService from "./SalesItemsService";
-import CreateSalesItemArg from "./types/args/CreateSalesItemArg";
-import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
-import UpdateSalesItemArg from "./types/args/UpdateSalesItemArg";
-import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
-import { SalesItem } from "./types/entities/SalesItem";
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import IdsAndOptPostQueryOps from "../../backk/types/IdsAndOptPostQueryOps";
-import IdAndUserId from "../../backk/types/IdAndUserId";
-import _Id from "../../backk/types/_Id";
+import { Injectable } from '@nestjs/common';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
+import { Private } from '../../backk/decorators/service/function/Private';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
+import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
+import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
+import SalesItemsService from './SalesItemsService';
+import CreateSalesItemArg from './types/args/CreateSalesItemArg';
+import GetSalesItemsArg from './types/args/GetSalesItemsArg';
+import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
+import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
+import { SalesItem } from './types/entities/SalesItem';
+import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import IdsAndOptPostQueryOps from '../../backk/types/IdsAndOptPostQueryOps';
+import IdAndUserId from '../../backk/types/IdAndUserId';
+import _Id from '../../backk/types/_Id';
+import executeAndGetErrorResponseOrResultOf from '../../backk/utils/executeAndGetErrorResponseOrResultOf';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -44,8 +45,18 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       },
       SalesItem,
       this.Types,
-      100,
-      { userId: arg.userId, state: 'forSale' }
+      {
+        hookFunc: async () =>
+          executeAndGetErrorResponseOrResultOf(
+            await this.dbManager.getItemsCount(
+              { userId: arg.userId, state: 'forSale' },
+              SalesItem,
+              this.Types
+            ),
+            (activeSalesItemCount) => activeSalesItemCount <= 100
+          ),
+        errorMessage: 'Maximum 100 active sales item allowed'
+      }
     );
   }
 
@@ -125,7 +136,10 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
             { ...arg, previousPrice: currentSalesItemOrErrorResponse.price },
             SalesItem,
             this.Types,
-          { state: 'forSale'}
+            {
+              jsonPath: 'state',
+              hookFunc: (state) => state === 'forSale'
+            }
           );
     });
   }
@@ -141,7 +155,8 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       this.Types,
       requiredCurrentState
         ? {
-            state: requiredCurrentState
+            jsonPath: 'state',
+            hookFunc: (state) => state === requiredCurrentState
           }
         : undefined
     );

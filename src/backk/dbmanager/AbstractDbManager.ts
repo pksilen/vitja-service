@@ -2,13 +2,19 @@ import { getNamespace, Namespace } from 'cls-hooked';
 import { FilterQuery, MongoClient } from 'mongodb';
 import { Pool } from 'pg';
 import SqlExpression from './sql/expressions/SqlExpression';
-import { RecursivePartial } from "../types/RecursivePartial";
-import { ErrorResponse } from "../types/ErrorResponse";
-import { PostQueryOps } from "../types/PostQueryOps";
-import OptPostQueryOps from "../types/OptPostQueryOps";
+import { RecursivePartial } from '../types/RecursivePartial';
+import { ErrorResponse } from '../types/ErrorResponse';
+import { PostQueryOps } from '../types/PostQueryOps';
+import OptPostQueryOps from '../types/OptPostQueryOps';
 
 export interface Field {
   name: string;
+}
+
+export interface PreHook {
+  jsonPath?: string;
+  hookFunc: (value?: any) => Promise<boolean | undefined | ErrorResponse> | boolean ;
+  errorMessage?: string;
 }
 
 export default abstract class AbstractDbManager {
@@ -42,8 +48,7 @@ export default abstract class AbstractDbManager {
     item: Omit<T, '_id'>,
     entityClass: new () => T,
     Types: object,
-    maxAllowedItemCount?: number,
-    itemCountQueryFilter?: Partial<T>
+    preHooks?: PreHook | PreHook[]
   ): Promise<T | ErrorResponse>;
 
   abstract createSubItem<T extends { _id: string; id?: string }, U extends object>(
@@ -103,14 +108,14 @@ export default abstract class AbstractDbManager {
     { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
-    itemPreCondition?: Partial<T> | string
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
   abstract deleteItemById<T extends object>(
     _id: string,
     entityClass: new () => T,
     Types?: object,
-    itemPreCondition?: Partial<T> | string
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
   abstract deleteSubItems<T extends { _id: string; id?: string }>(
@@ -118,7 +123,7 @@ export default abstract class AbstractDbManager {
     subItemsPath: string,
     entityClass: new () => T,
     Types?: object,
-    preCondition?: object | string
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
   abstract deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse>;

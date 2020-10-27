@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 // @ts-ignore
 import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field } from './AbstractDbManager';
+import AbstractDbManager, { Field, PreHook } from "./AbstractDbManager";
 import isErrorResponse from '../errors/isErrorResponse';
 import createItem from './sql/operations/dml/createItem';
 import createSubItem from './sql/operations/dml/createSubItem';
@@ -157,8 +157,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     item: Omit<T, '_id'>,
     entityClass: new () => T,
     Types: object,
-    maxAllowedItemCount?: number,
-    itemCountQueryFilter?: Partial<T>,
+    preHooks?: PreHook | PreHook[],
     shouldReturnItem = true
   ): Promise<T | ErrorResponse> {
     return createItem(
@@ -166,8 +165,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       item,
       entityClass,
       Types,
-      maxAllowedItemCount,
-      itemCountQueryFilter,
+      preHooks,
       false,
       shouldReturnItem
     );
@@ -246,19 +244,19 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     item: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
-    preCondition?: Partial<T>,
+    preHooks?: PreHook | PreHook[],
     shouldCheckIfItemExists: boolean = true
   ): Promise<void | ErrorResponse> {
-    return updateItem(this, item, entityClass, Types, preCondition, shouldCheckIfItemExists);
+    return updateItem(this, item, entityClass, Types, preHooks, shouldCheckIfItemExists);
   }
 
   async deleteItemById<T extends object>(
     _id: string,
     entityClass: new () => T,
     Types?: object,
-    itemPreCondition?: Partial<T> | string
+    preHooks?: PreHook | PreHook[],
   ): Promise<void | ErrorResponse> {
-    return deleteItemById(this, _id, entityClass, Types, itemPreCondition);
+    return deleteItemById(this, _id, entityClass, Types, preHooks);
   }
 
   async deleteSubItems<T extends { _id: string; id?: string }, U extends object>(
@@ -266,9 +264,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     subItemsPath: string,
     entityClass: new () => T,
     Types: object,
-    preCondition?: object | string
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
-    return deleteSubItems(this, _id, subItemsPath, entityClass, Types, preCondition);
+    return deleteSubItems(this, _id, subItemsPath, entityClass, Types, preHooks);
   }
 
   async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {

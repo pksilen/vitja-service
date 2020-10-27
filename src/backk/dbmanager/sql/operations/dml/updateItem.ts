@@ -1,36 +1,33 @@
-import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
-import isErrorResponse from '../../../../errors/isErrorResponse';
-import { JSONPath } from 'jsonpath-plus';
-import { getConflictErrorMessage } from '../../../../errors/getConflictErrorResponse';
-import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getItemById from './getItemById';
-import { RecursivePartial } from '../../../../types/RecursivePartial';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import getErrorResponse from '../../../../errors/getErrorResponse';
-import getTypeMetadata from '../../../../metadata/getTypeMetadata';
-import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
+import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
+import isErrorResponse from "../../../../errors/isErrorResponse";
+import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import getItemById from "./getItemById";
+import { RecursivePartial } from "../../../../types/RecursivePartial";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import getErrorResponse from "../../../../errors/getErrorResponse";
+import getTypeMetadata from "../../../../metadata/getTypeMetadata";
+import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
+import { PreHook } from "../../../AbstractDbManager";
+import executePreHooks from "../../../hooks/executePreHooks";
 
 export default async function updateItem<T extends object & { _id: string; id?: string }>(
   dbManager: PostgreSqlDbManager,
   { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
   entityClass: new () => T,
   Types: object,
-  preCondition?: Partial<T>,
+  preHooks?: PreHook | PreHook[],
   shouldCheckIfItemExists: boolean = true,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   try {
     if (!isRecursiveCall) {
       await hashAndEncryptItem(restOfItem, entityClass, Types);
-      if (preCondition) {
-        await hashAndEncryptItem(preCondition, entityClass, Types);
-      }
     }
 
     if (
-      !dbManager.getClsNamespace()?.get('transaction') &&
+      !dbManager.getClsNamespace()?.get('localTransaction') &&
       !dbManager.getClsNamespace()?.get('globalTransaction')
     ) {
       await dbManager.beginTransaction();
@@ -44,21 +41,8 @@ export default async function updateItem<T extends object & { _id: string; id?: 
         throw new Error(itemOrErrorResponse.errorMessage);
       }
 
-      if (typeof preCondition === 'object') {
-        const isPreConditionMatched = Object.entries(preCondition).reduce(
-          (isPreconditionMatched, [path, value]) => {
-            return isPreconditionMatched && JSONPath({ json: itemOrErrorResponse, path })[0] === value;
-          },
-          true
-        );
-        if (!isPreConditionMatched) {
-          // noinspection ExceptionCaughtLocallyJS
-          throw new Error(
-            getConflictErrorMessage(
-              `Delete sub item precondition ${JSON.stringify(preCondition)} was not satisfied`
-            )
-          );
-        }
+      if (preHooks) {
+        await executePreHooks(preHooks, itemOrErrorResponse);
       }
     }
 
@@ -179,14 +163,16 @@ export default async function updateItem<T extends object & { _id: string; id?: 
       await dbManager.commitTransaction();
     }
   } catch (error) {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.rollbackTransaction();
-    }
     if (isRecursiveCall) {
       throw error;
     }
+    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+      await dbManager.rollbackTransaction();
+    }
     return getErrorResponse(error);
   } finally {
-    dbManager.getClsNamespace()?.set('localTransaction', false);
+    if(!isRecursiveCall) {
+      dbManager.getClsNamespace()?.set('localTransaction', false);
+    }
   }
 }

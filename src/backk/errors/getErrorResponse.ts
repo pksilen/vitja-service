@@ -9,6 +9,10 @@ export default function getErrorResponse(error: Error): ErrorResponse {
     errorMessage = error.message;
   }
 
+  if (statusCode >= 500) {
+    console.log(error.stack);
+  }
+
   return {
     statusCode,
     errorMessage,
