@@ -11,19 +11,25 @@ import UsersBaseService from '../users/UsersBaseService';
 import getBadRequestErrorResponse from '../errors/getBadRequestErrorResponse';
 import { ServiceMetadata } from '../metadata/ServiceMetadata';
 import tryValidateObject from '../validation/tryValidateObject';
-import { getFromContainer, MetadataStorage } from 'class-validator';
-import DefaultPaymentMethod from "../../services/users/types/entities/DefaultPaymentMethod";
+
+export interface Options {
+  isMetadataServiceEnabled?: boolean;
+}
 
 export default async function tryExecuteServiceFunction(
   controller: any,
   serviceFunction: string,
   serviceFunctionArgument: any,
-  authHeader: string
+  authHeader: string,
+  options?: Options
 ): Promise<void | object> {
   const [serviceName, functionName] = serviceFunction.split('.');
 
   if (serviceFunction === 'metadataService.getServicesMetadata') {
-    return controller.servicesMetadata;
+    if (!options || options.isMetadataServiceEnabled === undefined || options.isMetadataServiceEnabled) {
+      return controller.servicesMetadata;
+    }
+    throwHttpException(getBadRequestErrorResponse(`Unknown service: ${serviceName}`));
   } else if (serviceFunction === 'livenessCheckService.isAlive') {
     return;
   } else if (
