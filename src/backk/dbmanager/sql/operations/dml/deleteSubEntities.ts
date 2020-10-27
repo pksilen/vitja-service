@@ -2,14 +2,14 @@ import { JSONPath } from "jsonpath-plus";
 import { plainToClass } from "class-transformer";
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import getItemById from "./getItemById";
-import deleteItemById from "./deleteItemById";
+import getEntityById from "./getEntityById";
+import deleteEntityById from "./deleteEntityById";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 import executePreHooks from "../../../hooks/executePreHooks";
-import { PreHook } from "../../../AbstractDbManager";
+import { PreHook } from "../../../hooks/PreHook";
 
-export default async function deleteSubItems<T extends { _id: string; id?: string }, U extends object>(
+export default async function deleteSubEntities<T extends { _id: string; id?: string }, U extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   subItemsPath: string,
@@ -22,7 +22,7 @@ export default async function deleteSubItems<T extends { _id: string; id?: strin
       await dbManager.beginTransaction();
     }
 
-    const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types, true);
+    const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, Types, true);
     if ('errorMessage' in itemOrErrorResponse) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(itemOrErrorResponse.errorMessage);
@@ -35,7 +35,7 @@ export default async function deleteSubItems<T extends { _id: string; id?: strin
     const itemInstance = plainToClass(entityClass, itemOrErrorResponse);
     const subItems = JSONPath({ json: itemInstance, path: subItemsPath });
     await forEachAsyncParallel(subItems, async (subItem: any) => {
-      const possibleErrorResponse = await deleteItemById(dbManager, subItem.id, subItem.constructor, Types);
+      const possibleErrorResponse = await deleteEntityById(dbManager, subItem.id, subItem.constructor, Types);
       if (possibleErrorResponse) {
         throw new Error(possibleErrorResponse.errorMessage);
       }

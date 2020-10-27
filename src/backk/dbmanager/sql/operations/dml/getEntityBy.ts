@@ -9,7 +9,7 @@ import { ErrorResponse } from '../../../../types/ErrorResponse';
 import getErrorResponse from '../../../../errors/getErrorResponse';
 import transformRowsToObjects from './utils/transformRowsToObjects';
 
-export default async function getItemBy<T>(
+export default async function getEntityBy<T>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T],

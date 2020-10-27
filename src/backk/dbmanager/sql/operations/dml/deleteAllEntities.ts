@@ -4,7 +4,7 @@ import getInternalServerErrorResponse from '../../../../errors/getInternalServer
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 
-export default async function deleteAllItems<T>(
+export default async function deleteAllEntities<T>(
   dbManager: PostgreSqlDbManager,
   entityClass: new () => T
 ): Promise<void | ErrorResponse> {

@@ -26,13 +26,13 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   deleteAllUsers(): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteAllItems(User);
+    return this.dbManager.deleteAllEntities(User);
   }
 
   @FunctionDocumentation('createUser function doc goes here...')
   @AllowForEveryUser()
   async createUser(arg: CreateUserArg): Promise<UserResponse | ErrorResponse> {
-    const userOrErrorResponse = await this.dbManager.createItem(arg, User, this.Types);
+    const userOrErrorResponse = await this.dbManager.createEntity(arg, User, this.Types);
     return 'errorMessage' in userOrErrorResponse
       ? userOrErrorResponse
       : UsersServiceImpl.getUserResponse(userOrErrorResponse);
@@ -40,7 +40,7 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   async getUserByUserName({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
-    const userOrErrorResponse = await this.dbManager.getItemBy('userName', userName, User, this.Types);
+    const userOrErrorResponse = await this.dbManager.getEntityBy('userName', userName, User, this.Types);
     return 'errorMessage' in userOrErrorResponse
       ? userOrErrorResponse
       : UsersServiceImpl.getUserResponse(userOrErrorResponse);
@@ -48,7 +48,7 @@ export default class UsersServiceImpl extends UsersService {
 
   @Private()
   async getUserById({ _id }: _Id): Promise<UserResponse | ErrorResponse> {
-    const userOrErrorResponse = await this.dbManager.getItemById(_id, User, this.Types);
+    const userOrErrorResponse = await this.dbManager.getEntityById(_id, User, this.Types);
     return 'errorMessage' in userOrErrorResponse
       ? userOrErrorResponse
       : UsersServiceImpl.getUserResponse(userOrErrorResponse);
@@ -56,12 +56,12 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   updateUser(arg: UpdateUserArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(arg, User, this.Types);
+    return this.dbManager.updateEntity(arg, User, this.Types);
   }
 
   @AllowForSelf()
   changeUserPassword(arg: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem({ _id: arg._id, password: arg.password }, User, this.Types, [
+    return this.dbManager.updateEntity({ _id: arg._id, password: arg.password }, User, this.Types, [
       {
         jsonPath: 'userName',
         hookFunc: (userName) => userName === arg.userName,
@@ -77,7 +77,7 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   deleteUserById({ _id }: _Id): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteItemById(_id, User);
+    return this.dbManager.deleteEntityById(_id, User);
   }
 
   private static getUserResponse(user: User): UserResponse {

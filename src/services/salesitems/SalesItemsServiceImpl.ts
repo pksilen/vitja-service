@@ -30,13 +30,13 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }
 
   deleteAllSalesItems(): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteAllItems(SalesItem);
+    return this.dbManager.deleteAllEntities(SalesItem);
   }
 
   @NoCaptcha()
   @AllowForSelf()
   async createSalesItem(arg: CreateSalesItemArg): Promise<SalesItem | ErrorResponse> {
-    return this.dbManager.createItem(
+    return this.dbManager.createEntity(
       {
         ...arg,
         createdTimestampInSecs: Math.round(Date.now() / 1000),
@@ -48,7 +48,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       {
         hookFunc: async () =>
           executeAndGetErrorResponseOrResultOf(
-            await this.dbManager.getItemsCount(
+            await this.dbManager.getEntitiesCount(
               { userId: arg.userId, state: 'forSale' },
               SalesItem,
               this.Types
@@ -107,22 +107,22 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       ];
     }
 
-    return this.dbManager.getItems(filters, postQueryOps, SalesItem, this.Types);
+    return this.dbManager.getEntities(filters, postQueryOps, SalesItem, this.Types);
   }
 
   @AllowForSelf()
   getSalesItemsByUserId({ userId, ...postQueryOps }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getItemsBy('userId', userId, SalesItem, this.Types, postQueryOps);
+    return this.dbManager.getEntitiesBy('userId', userId, SalesItem, this.Types, postQueryOps);
   }
 
   @AllowForEveryUser()
   getSalesItemsByIds({ _ids, ...postQueryOps }: IdsAndOptPostQueryOps): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getItemsByIds(_ids, SalesItem, this.Types, postQueryOps);
+    return this.dbManager.getEntitiesByIds(_ids, SalesItem, this.Types, postQueryOps);
   }
 
   @AllowForEveryUser()
   getSalesItemById({ _id }: _Id): Promise<SalesItem | ErrorResponse> {
-    return this.dbManager.getItemById(_id, SalesItem, this.Types);
+    return this.dbManager.getEntityById(_id, SalesItem, this.Types);
   }
 
   @AllowForSelf()
@@ -132,7 +132,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
 
       return 'errorMessage' in currentSalesItemOrErrorResponse
         ? currentSalesItemOrErrorResponse
-        : this.dbManager.updateItem(
+        : this.dbManager.updateEntity(
             { ...arg, previousPrice: currentSalesItemOrErrorResponse.price },
             SalesItem,
             this.Types,
@@ -150,7 +150,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     arg: UpdateSalesItemStateArg,
     requiredCurrentState?: 'forSale' | 'sold'
   ): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(
+    return this.dbManager.updateEntity(
       arg,
       SalesItem,
       this.Types,
@@ -166,6 +166,6 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
 
   @AllowForSelf()
   deleteSalesItemById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteItemById(_id, SalesItem);
+    return this.dbManager.deleteEntityById(_id, SalesItem);
   }
 }

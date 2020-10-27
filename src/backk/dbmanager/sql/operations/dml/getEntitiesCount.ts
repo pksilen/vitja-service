@@ -7,7 +7,7 @@ import getJoinStatement from "./utils/getJoinStatement";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 
-export default async function getItemsCount<T>(
+export default async function getEntitiesCount<T>(
   dbManager: PostgreSqlDbManager,
   filters: Partial<T> | SqlExpression[] | undefined,
   entityClass: new () => T,

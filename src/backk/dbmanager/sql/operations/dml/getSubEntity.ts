@@ -1,11 +1,11 @@
 import { JSONPath } from "jsonpath-plus";
 import getNotFoundErrorResponse from "../../../../errors/getNotFoundErrorResponse";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import getItemById from "./getItemById";
+import getEntityById from "./getEntityById";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 
-export default async function getSubItem<T extends object, U extends object>(
+export default async function getSubEntity<T extends object, U extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   subItemPath: string,
@@ -13,7 +13,7 @@ export default async function getSubItem<T extends object, U extends object>(
   Types: object
 ): Promise<U | ErrorResponse> {
   try {
-    const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types);
+    const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, Types);
     if ('errorMessage' in itemOrErrorResponse) {
       return itemOrErrorResponse;
     }

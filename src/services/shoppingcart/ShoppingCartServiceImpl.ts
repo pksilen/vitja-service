@@ -19,16 +19,16 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   deleteAllShoppingCarts(): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteAllItems(ShoppingCart);
+    return this.dbManager.deleteAllEntities(ShoppingCart);
   }
 
   @NoCaptcha()
   @AllowForSelf()
   async createShoppingCart(arg: CreateShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.createItem(arg, ShoppingCart, this.Types, {
+    return this.dbManager.createEntity(arg, ShoppingCart, this.Types, {
       hookFunc: async () =>
         executeAndGetErrorResponseOrResultOf(
-          await this.dbManager.getItemsCount({ userId: arg.userId }, ShoppingCart, this.Types),
+          await this.dbManager.getEntitiesCount({ userId: arg.userId }, ShoppingCart, this.Types),
           (shoppingCartCount) => shoppingCartCount === 0
         ),
       errorMessage: 'Shopping cart already exists. Only one shopping cart is allowed'
@@ -37,16 +37,16 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   getShoppingCartByUserId({ userId }: UserId): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.getItemBy('userId', userId, ShoppingCart, this.Types);
+    return this.dbManager.getEntityBy('userId', userId, ShoppingCart, this.Types);
   }
 
   @AllowForSelf()
   updateShoppingCart(shoppingCart: ShoppingCart): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(shoppingCart, ShoppingCart, this.Types);
+    return this.dbManager.updateEntity(shoppingCart, ShoppingCart, this.Types);
   }
 
   @AllowForSelf()
   deleteShoppingCartById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteItemById(_id, ShoppingCart);
+    return this.dbManager.deleteEntityById(_id, ShoppingCart);
   }
 }

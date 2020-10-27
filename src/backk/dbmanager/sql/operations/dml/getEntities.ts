@@ -13,7 +13,7 @@ import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 
-export default async function getItems<T>(
+export default async function getEntities<T>(
   dbManager: PostgreSqlDbManager,
   filters: Partial<T> | SqlExpression[],
   { pageNumber, pageSize, sortBys, ...projection }: PostQueryOps,

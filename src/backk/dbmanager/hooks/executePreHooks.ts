@@ -1,8 +1,8 @@
-import { PreHook } from '../AbstractDbManager';
 import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
 import { getBadRequestErrorMessage } from '../../errors/getBadRequestErrorResponse';
 import { JSONPath } from 'jsonpath-plus';
 import { ErrorResponse } from '../../types/ErrorResponse';
+import { PreHook } from "./PreHook";
 
 export default async function executePreHooks<T extends object>(
   preHooks: PreHook | PreHook[],

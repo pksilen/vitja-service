@@ -7,10 +7,10 @@ import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 import getTypeMetadata from "../../../../metadata/getTypeMetadata";
-import { PreHook } from "../../../AbstractDbManager";
 import executePreHooks from "../../../hooks/executePreHooks";
+import { PreHook } from "../../../hooks/PreHook";
 
-export default async function createItem<T>(
+export default async function createEntity<T>(
   dbManager: PostgreSqlDbManager,
   item: Omit<T, '_id'>,
   entityClass: new () => T,
@@ -114,7 +114,7 @@ export default async function createItem<T>(
           const relationEntityName = baseFieldTypeName;
           await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
             subItem[idFieldName] = _id;
-            const subItemOrErrorResponse: any | ErrorResponse = await createItem(
+            const subItemOrErrorResponse: any | ErrorResponse = await createEntity(
               dbManager,
               subItem,
               (Types as any)[relationEntityName],
@@ -133,7 +133,7 @@ export default async function createItem<T>(
           const relationEntityName = baseFieldTypeName;
           const subItem = (item as any)[fieldName];
           subItem[idFieldName] = _id;
-          const subItemOrErrorResponse: any | ErrorResponse = await createItem(
+          const subItemOrErrorResponse: any | ErrorResponse = await createEntity(
             dbManager,
             subItem,
             (Types as any)[relationEntityName],
@@ -163,7 +163,7 @@ export default async function createItem<T>(
 
     return isRecursiveCall || !shouldReturnItem
       ? ({} as any)
-      : await dbManager.getItemById(_id, entityClass, Types);
+      : await dbManager.getEntityById(_id, entityClass, Types);
   } catch (error) {
     if (isRecursiveCall) {
       throw error;

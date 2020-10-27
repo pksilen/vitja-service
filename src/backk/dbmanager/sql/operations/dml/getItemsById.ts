@@ -11,7 +11,7 @@ import transformRowsToObjects from "./utils/transformRowsToObjects";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
 
-export default async function getItemsByIds<T>(
+export default async function getEntitiesByIds<T>(
   dbManager: PostgreSqlDbManager,
   _ids: string[],
   entityClass: new () => T,

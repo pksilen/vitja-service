@@ -12,7 +12,7 @@ import OptPostQueryOps from "../../../../types/OptPostQueryOps";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
 
-export default async function getItemsBy<T>(
+export default async function getEntitiesBy<T>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T],

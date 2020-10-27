@@ -4,7 +4,7 @@ import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 
-export default async function createSubItem<T extends { _id: string; id?: string }, U extends object>(
+export default async function createSubEntity<T extends { _id: string; id?: string }, U extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   subItemsPath: string,
@@ -18,7 +18,7 @@ export default async function createSubItem<T extends { _id: string; id?: string
       await dbManager.beginTransaction();
     }
 
-    const itemOrErrorResponse = await dbManager.getItemById(_id, entityClass, Types);
+    const itemOrErrorResponse = await dbManager.getEntityById(_id, entityClass, Types);
     if ('errorMessage' in itemOrErrorResponse) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(itemOrErrorResponse.errorMessage);
@@ -34,7 +34,7 @@ export default async function createSubItem<T extends { _id: string; id?: string
       -1
     );
 
-    const createdItemOrErrorResponse = await dbManager.createItem(
+    const createdItemOrErrorResponse = await dbManager.createEntity(
       { ...newSubItem, [parentIdFieldName]: parentIdValue, id: (maxSubItemId + 1).toString() } as any,
       subItemEntityClass,
       Types,
@@ -51,7 +51,7 @@ export default async function createSubItem<T extends { _id: string; id?: string
       await dbManager.commitTransaction();
     }
 
-    return await dbManager.getItemById(_id, entityClass, Types);
+    return await dbManager.getEntityById(_id, entityClass, Types);
   } catch (error) {
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();

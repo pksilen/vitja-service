@@ -26,7 +26,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   deleteAllOrders(): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteAllItems(Order);
+    return this.dbManager.deleteAllEntities(Order);
   }
 
   @AllowForSelf()
@@ -37,7 +37,7 @@ export default class OrdersServiceImpl extends OrdersService {
 
       return possibleErrorResponse
         ? possibleErrorResponse
-        : await this.dbManager.createItem(
+        : await this.dbManager.createEntity(
             {
               ...restOfArg,
               createdTimestampInSecs: Math.round(Date.now() / 1000),
@@ -57,7 +57,7 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForSelf()
   deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteSubItems(
+    return this.dbManager.deleteSubEntities(
       orderId,
       `orderItems[?(@.id == '${orderItemId}')]`,
       Order,
@@ -72,7 +72,7 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForTests()
   addOrderItem({ orderId, salesItemId }: AddOrderItemArg): Promise<Order | ErrorResponse> {
-    return this.dbManager.createSubItem(
+    return this.dbManager.createSubEntity(
       orderId,
       'orderItems',
       {
@@ -89,12 +89,12 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForSelf()
   getOrdersByUserId({ userId, ...postQueryOps }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
-    return this.dbManager.getItemsBy('userId', userId, Order, this.Types, postQueryOps);
+    return this.dbManager.getEntitiesBy('userId', userId, Order, this.Types, postQueryOps);
   }
 
   @AllowForSelf()
   getOrderById({ _id }: IdAndUserId): Promise<Order | ErrorResponse> {
-    return this.dbManager.getItemById(_id, Order, this.Types);
+    return this.dbManager.getEntityById(_id, Order, this.Types);
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
@@ -103,7 +103,7 @@ export default class OrdersServiceImpl extends OrdersService {
     orderItemId,
     ...restOfArg
   }: DeliverOrderItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateItem(
+    return this.dbManager.updateEntity(
       {
         _id: orderId,
         orderItems: [{ state: 'delivering' as 'delivering', id: orderItemId, ...restOfArg }]
@@ -132,7 +132,7 @@ export default class OrdersServiceImpl extends OrdersService {
         }
       }
 
-      return this.dbManager.updateItem(
+      return this.dbManager.updateEntity(
         { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
         Order,
         this.Types,
@@ -146,7 +146,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   deleteOrderById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteItemById(_id, Order);
+    return this.dbManager.deleteEntityById(_id, Order);
   }
 
   private async updateSalesItemStatesToSold(salesItemIds: string[]): Promise<void | ErrorResponse> {
@@ -171,7 +171,7 @@ export default class OrdersServiceImpl extends OrdersService {
     orderId: string,
     orderItemId: string
   ): Promise<void | ErrorResponse> {
-    const orderItemOrErrorResponse = await this.dbManager.getSubItem<Order, OrderItem>(
+    const orderItemOrErrorResponse = await this.dbManager.getSubEntity<Order, OrderItem>(
       orderId,
       `orderItems[?(@.id == '${orderItemId}')]`,
       Order,

@@ -8,7 +8,7 @@ import getErrorResponse from '../../../../errors/getErrorResponse';
 import getTypeMetadata from '../../../../metadata/getTypeMetadata';
 import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
 
-export default async function getItemById<T>(
+export default async function getEntityById<T>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   entityClass: new () => T,

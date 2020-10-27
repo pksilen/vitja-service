@@ -1,15 +1,15 @@
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import entityContainer, { JoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import getItemById from "./getItemById";
+import getEntityById from "./getEntityById";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
-import { PreHook } from "../../../AbstractDbManager";
 import executePreHooks from "../../../hooks/executePreHooks";
+import { PreHook } from "../../../hooks/PreHook";
 
-export default async function deleteItemById<T extends object>(
+export default async function deleteEntityById<T extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   entityClass: new () => T,
@@ -26,7 +26,7 @@ export default async function deleteItemById<T extends object>(
     }
 
     if (Types && preHooks) {
-      const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types, true);
+      const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, Types, true);
       await executePreHooks(preHooks, itemOrErrorResponse);
     }
 

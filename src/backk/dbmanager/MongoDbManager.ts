@@ -4,12 +4,13 @@ import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
 import getInternalServerErrorResponse from '../errors/getInternalServerErrorResponse';
 import getNotFoundErrorResponse from '../errors/getNotFoundErrorResponse';
 import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field, PreHook } from "./AbstractDbManager";
+import AbstractDbManager, { Field} from "./AbstractDbManager";
 import getMongoDbProjection from "./mongodb/getMongoDbProjection";
 import { ErrorResponse } from "../types/ErrorResponse";
 import { PostQueryOps } from "../types/PostQueryOps";
 import OptPostQueryOps from "../types/OptPostQueryOps";
 import { RecursivePartial } from "../types/RecursivePartial";
+import { PreHook } from "./hooks/PreHook";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -54,7 +55,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async createItem<T>(
+  async createEntity<T>(
     item: Omit<T, '_id'>,
     entityClass: new () => T,
     Types: object,
@@ -69,13 +70,13 @@ export default class MongoDbManager extends AbstractDbManager {
           .insertOne(item)
       );
 
-      return this.getItemById(writeOperationResult.insertedId.toHexString(), entityClass);
+      return this.getEntityById(writeOperationResult.insertedId.toHexString(), entityClass);
     } catch (error) {
       return getInternalServerErrorResponse(error);
     }
   }
 
-  createSubItem<T extends { _id: string; id?: string }, U extends object>(
+  createSubEntity<T extends { _id: string; id?: string }, U extends object>(
     _id: string,
     subItemsPath: string,
     newSubItem: Omit<U, 'id'>,
@@ -86,7 +87,7 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error();
   }
 
-  async getItems<T>(
+  async getEntities<T>(
     filters: FilterQuery<T>,
     { pageNumber, pageSize, sortBys, ...projection }: PostQueryOps,
     entityClass: new () => T
@@ -122,7 +123,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async getItemsCount<T>(
+  async getEntitiesCount<T>(
     filters: Partial<T> | SqlExpression[],
     entityClass: new () => T,
     Types: object
@@ -131,7 +132,7 @@ export default class MongoDbManager extends AbstractDbManager {
     return Promise.resolve(0);
   }
 
-  async getItemById<T>(_id: string, entityClass: new () => T): Promise<T | ErrorResponse> {
+  async getEntityById<T>(_id: string, entityClass: new () => T): Promise<T | ErrorResponse> {
     try {
       const foundItem = await this.tryExecute((client) =>
         client
@@ -150,7 +151,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  getSubItem<T extends object, U extends object, >(
+  getSubEntity<T extends object, U extends object, >(
     _id: string,
     subItemPath: string,
     entityClass: new () => T,
@@ -159,7 +160,7 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  async getItemsByIds<T>(
+  async getEntitiesByIds<T>(
     _ids: string[],
     entityClass: new () => T,
     postQueryOperations?: OptPostQueryOps
@@ -184,7 +185,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async getItemBy<T>(
+  async getEntityBy<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T
@@ -207,7 +208,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async getItemsBy<T>(
+  async getEntitiesBy<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
@@ -233,7 +234,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async updateItem<T extends { _id: string; id?: string }>(
+  async updateEntity<T extends { _id: string; id?: string }>(
     { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     Types: object,
@@ -256,7 +257,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async deleteItemById<T>(
+  async deleteEntityById<T>(
     _id: string,
     entityClass: new () => T,
     Types?: object,
@@ -278,7 +279,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  deleteSubItems<T extends { _id: string; id?: string }>(
+  deleteSubEntities<T extends { _id: string; id?: string }>(
     _id: string,
     subItemsPath: string,
     entityClass: new () => T,
@@ -288,7 +289,7 @@ export default class MongoDbManager extends AbstractDbManager {
     return Promise.resolve();
   }
 
-  async deleteAllItems<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
+  async deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
     try {
       await this.tryExecute((client) =>
         client

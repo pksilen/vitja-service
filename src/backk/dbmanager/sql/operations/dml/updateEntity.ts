@@ -3,16 +3,16 @@ import isErrorResponse from '../../../../errors/isErrorResponse';
 import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getItemById from './getItemById';
+import getEntityById from './getEntityById';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import getErrorResponse from '../../../../errors/getErrorResponse';
 import getTypeMetadata from '../../../../metadata/getTypeMetadata';
 import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
-import { PreHook } from '../../../AbstractDbManager';
 import executePreHooks from '../../../hooks/executePreHooks';
+import { PreHook } from "../../../hooks/PreHook";
 
-export default async function updateItem<T extends object & { _id: string; id?: string }>(
+export default async function updateEntity<T extends object & { _id: string; id?: string }>(
   dbManager: PostgreSqlDbManager,
   { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
   entityClass: new () => T,
@@ -35,7 +35,7 @@ export default async function updateItem<T extends object & { _id: string; id?: 
     }
 
     if (shouldCheckIfItemExists) {
-      const itemOrErrorResponse = await getItemById(dbManager, _id, entityClass, Types, true);
+      const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, Types, true);
       if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
         // noinspection ExceptionCaughtLocallyJS
         throw new Error(itemOrErrorResponse.errorMessage);
@@ -74,7 +74,7 @@ export default async function updateItem<T extends object & { _id: string; id?: 
         ) {
           promises.push(
             forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
-              const possibleErrorResponse = await updateItem(
+              const possibleErrorResponse = await updateEntity(
                 dbManager,
                 subItem,
                 (Types as any)[baseFieldTypeName],
@@ -92,7 +92,7 @@ export default async function updateItem<T extends object & { _id: string; id?: 
           baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
           baseFieldTypeName[0] !== '('
         ) {
-          const possibleErrorResponse = await updateItem(
+          const possibleErrorResponse = await updateEntity(
             dbManager,
             (restOfItem as any)[fieldName],
             (Types as any)[baseFieldTypeName],
