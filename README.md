@@ -8,8 +8,7 @@ TODO:
 - Possible to delete order if all of the orderitems are toBeDelivered, tarkista delete precondition jsonpath.query(item, 'orderItems[?(@.state != "toBeDelivered")]')
   -pre operation hooks to update salesitems to forSale
     hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
-- Possible to deduce type property type from default value:
-  parseInt, parseFloat, true/false, ''/"""/`` (use in GetSalesItemsArg, DefaultPostQueryOpsArg)
+ 
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
@@ -31,7 +30,6 @@ TODO:
   - executionService.executeInParallel
 - executeInSequence
   - executionService.executeInSequence
-- getDbManager support for multiple dbmanagers
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)
@@ -46,14 +44,15 @@ TODO:
    -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
 - @ManyToMany
+- MariaDb/MySql
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
-- MariaDb/MySql
-- ErrorResponse is a base class and different errors can extends from that
 - Unit testaa: shouldIncludeField eri keissit
 
 TODO NEXT RELEASE:
+- Service funktioiden virheilmoitusten dokumentointi
+- getDbManager support for multiple dbmanagers
 - Response headers added Api gateway:
   - X-content-type-options: nosniff
   - Strict-Transport-Security: max-age 
