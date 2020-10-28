@@ -4,7 +4,7 @@ import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata'
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import { readFileSync } from 'fs';
 import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
-import SortBy from "../types/postqueryoperations/SortBy";
+import SortBy from '../types/postqueryoperations/SortBy';
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -75,26 +75,45 @@ export default function setPropertyTypeValidationDecorators(
       for (const classBodyNode of node.declaration.body.body) {
         if (classBodyNode.type === 'ClassProperty') {
           const propertyName = classBodyNode.key.name;
+          let finalPropertyTypeName: string;
+          let propertyTypeName;
+
           if (classBodyNode.typeAnnotation === undefined) {
-            throw new Error(
-              'Missing type annotation for property: ' + propertyName + ' in ' + typeClass.name
+            if (typeof classBodyNode.value?.value === 'number') {
+              propertyTypeName = 'number';
+              finalPropertyTypeName = 'number';
+            } else if (typeof classBodyNode.value?.value === 'boolean') {
+              propertyTypeName = 'boolean';
+              finalPropertyTypeName = 'boolean';
+            } else if (typeof classBodyNode.value?.value === 'string') {
+              propertyTypeName = 'string';
+              finalPropertyTypeName = 'string';
+            } else {
+              throw new Error(
+                'Missing type annotation for property: ' + propertyName + ' in ' + typeClass.name
+              );
+            }
+          } else {
+            const propertyTypeNameStart = classBodyNode.typeAnnotation.loc.start;
+            const propertyTypeNameEnd = classBodyNode.typeAnnotation.loc.end;
+
+            propertyTypeName = fileRows[propertyTypeNameStart.line - 1].slice(
+              propertyTypeNameStart.column + 2,
+              propertyTypeNameEnd.column
             );
+
+            finalPropertyTypeName = propertyTypeName.split('[]')[0];
           }
-          const propertyTypeNameStart = classBodyNode.typeAnnotation.loc.start;
-          const propertyTypeNameEnd = classBodyNode.typeAnnotation.loc.end;
-
-          const propertyTypeName = fileRows[propertyTypeNameStart.line - 1].slice(
-            propertyTypeNameStart.column + 2,
-            propertyTypeNameEnd.column
-          );
-
-          let finalPropertyTypeName = propertyTypeName.split('[]')[0];
           let validationType;
           let constraints;
 
-          if (propertyName === '_id' || propertyName === 'id' || propertyName.endsWith('Id') || propertyName.endsWith('Ids')) {
-            if (
-              !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.MAX_LENGTH)) {
+          if (
+            propertyName === '_id' ||
+            propertyName === 'id' ||
+            propertyName.endsWith('Id') ||
+            propertyName.endsWith('Ids')
+          ) {
+            if (!doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.MAX_LENGTH)) {
               const validationMetadataArgs: ValidationMetadataArgs = {
                 type: ValidationTypes.MAX_LENGTH,
                 target: typeClass,
@@ -108,8 +127,7 @@ export default function setPropertyTypeValidationDecorators(
               );
             }
 
-            if (
-              !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.MATCHES)) {
+            if (!doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.MATCHES)) {
               const validationMetadataArgs: ValidationMetadataArgs = {
                 type: ValidationTypes.MATCHES,
                 target: typeClass,

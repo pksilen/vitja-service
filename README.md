@@ -1,10 +1,6 @@
 # Vitja service
 
 TODO:
-- createItem function can accept projection argument
-- All multiple getXX functions should require mandatory PostQueryOperations interface type param
-  - Create DefaultPagingAndSorting class which Args can extend
-  - page: 1, pageCount: 50, order by _id ASC
 - Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
 - Change Shopping cart: remove updateShopping cart and replace with add/remove to/from shopping cart, precondition for adding, salesitem is forSale.
