@@ -1,16 +1,18 @@
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
 import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
 import BaseService from '../service/basetypes/BaseService';
-import _Id from '../types/_Id';
-import IdsAndOptPostQueryOps from '../types/IdsAndOptPostQueryOps';
-import SortBy from '../types/SortBy';
-import IdAndUserId from '../types/IdAndUserId';
-import Id from '../types/Id';
+import _Id from '../types/id/_Id';
+import IdsAndDefaultPostQueryOperationsArg from '../types/postqueryoperations/args/IdsAndDefaultPostQueryOperationsArg';
+import SortBy from '../types/postqueryoperations/SortBy';
+import IdAndUserId from '../types/id/IdAndUserId';
+import Id from '../types/id/Id';
 import { ServiceMetadata } from './ServiceMetadata';
 import getTypeMetadata from './getTypeMetadata';
 import { FunctionMetadata } from './FunctionMetadata';
 import getValidationMetadata from './getValidationMetadata';
 import getTypeDocumentation from './getTypeDocumentation';
+import DefaultPostQueryOperationsArg from '../types/postqueryoperations/args/DefaultPostQueryOperationsArg';
+import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 
 export default function generateServicesMetadata<T>(controller: T, isFirstRound = true): ServiceMetadata[] {
   return Object.entries(controller)
@@ -88,10 +90,8 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
               (controller as any)[serviceName].Types[paramTypeName] = _Id;
             } else if (paramTypeName === 'Id') {
               (controller as any)[serviceName].Types[paramTypeName] = Id;
-            } else if (paramTypeName === 'IdsAndOptPostQueryOps') {
-              (controller as any)[serviceName].Types[paramTypeName] = IdsAndOptPostQueryOps;
-            } else if (paramTypeName === 'SortBy') {
-              (controller as any)[serviceName].Types[paramTypeName] = SortBy;
+            } else if (paramTypeName === 'IdsAndDefaultPostQueryOperationsArg') {
+              (controller as any)[serviceName].Types[paramTypeName] = IdsAndDefaultPostQueryOperationsArg;
             } else if (paramTypeName === 'IdAndUserId') {
               (controller as any)[serviceName].Types[paramTypeName] = IdAndUserId;
             } else {
@@ -105,6 +105,12 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             );
             while (proto !== Object.prototype) {
               if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
+                if (proto.constructor.name === 'DefaultPostQueryOperationsArg') {
+                  (controller as any)[serviceName].Types[
+                    'DefaultPostQueryOperations'
+                    ] = DefaultPostQueryOperations;
+                  (controller as any)[serviceName].Types['SortBy'] = SortBy;
+                }
                 (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
               }
               proto = Object.getPrototypeOf(proto);
@@ -124,14 +130,11 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             }
           }
           let finalReturnValueTypeName = returnValueParts[0].trim();
-          let isArrayReturnType = false;
           if (finalReturnValueTypeName.endsWith('[]')) {
             finalReturnValueTypeName = finalReturnValueTypeName.slice(0, -2);
-            isArrayReturnType = true;
           }
           if (finalReturnValueTypeName.startsWith('Array<')) {
             finalReturnValueTypeName = finalReturnValueTypeName.slice(6, -1);
-            isArrayReturnType = true;
           }
 
           if (finalReturnValueTypeName.startsWith('Partial<')) {
@@ -146,9 +149,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
               (controller as any)[serviceName].Types[finalReturnValueTypeName] = _Id;
             } else if (finalReturnValueTypeName === 'Id') {
               (controller as any)[serviceName].Types[finalReturnValueTypeName] = Id;
-            } else if (finalReturnValueTypeName === 'IdsAndOptPostQueryOps') {
-              (controller as any)[serviceName].Types[finalReturnValueTypeName] = IdsAndOptPostQueryOps;
-            } else {
+            }  else {
               throw new Error(
                 'Type: ' + finalReturnValueTypeName + ' is not found in ' + serviceName + '.Types'
               );
@@ -164,19 +165,6 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
                 (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
               }
               proto = Object.getPrototypeOf(proto);
-            }
-          }
-
-          if (isArrayReturnType) {
-            const argTypeClass = (controller as any)[serviceName].Types[paramTypeName];
-            const argTypeMetadata = getTypeMetadata(argTypeClass, true);
-            if (!argTypeMetadata.pageNumber || !argTypeMetadata.pageSize) {
-              throw new Error(
-                serviceName +
-                  '.' +
-                  functionName +
-                  ': argument type must implement Paging because function returns an array'
-              );
             }
           }
 

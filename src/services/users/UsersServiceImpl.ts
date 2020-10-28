@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from "@nestjs/common";
 import * as argon2 from 'argon2';
 import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
 import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
@@ -13,16 +13,30 @@ import UserName from './types/args/UserName';
 import User from './types/entities/User';
 import UserResponse from './types/responses/UserResponse';
 import UsersService from './UsersService';
-import _Id from '../../backk/types/_Id';
+import _Id from '../../backk/types/id/_Id';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
+import DefaultPaymentMethod from './types/entities/DefaultPaymentMethod';
+import PaymentMethod from './types/entities/PaymentMethod';
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
 export default class UsersServiceImpl extends UsersService {
-  constructor(dbManager: AbstractDbManager) {
-    super(dbManager);
+  constructor(
+    dbManager: AbstractDbManager,
+    @Optional() readonly Types = {
+      ChangeUserPasswordArg,
+      DefaultPaymentMethod,
+      PaymentMethod,
+      UpdateUserArg,
+      User,
+      UserName,
+      CreateUserArg,
+      UserResponse
+    }
+  ) {
+    super(dbManager, Types);
   }
 
   deleteAllUsers(): Promise<void | ErrorResponse> {
@@ -32,7 +46,7 @@ export default class UsersServiceImpl extends UsersService {
   @FunctionDocumentation('createUser function doc goes here...')
   @AllowForEveryUser()
   async createUser(arg: CreateUserArg): Promise<UserResponse | ErrorResponse> {
-    const userOrErrorResponse = await this.dbManager.createEntity(arg, User, this.Types);
+    const userOrErrorResponse = await this.dbManager.createEntity(arg, User);
     return 'errorMessage' in userOrErrorResponse
       ? userOrErrorResponse
       : UsersServiceImpl.getUserResponse(userOrErrorResponse);
@@ -40,7 +54,7 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   async getUserByUserName({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
-    const userOrErrorResponse = await this.dbManager.getEntityBy('userName', userName, User, this.Types);
+    const userOrErrorResponse = await this.dbManager.getEntityBy('userName', userName, User);
     return 'errorMessage' in userOrErrorResponse
       ? userOrErrorResponse
       : UsersServiceImpl.getUserResponse(userOrErrorResponse);
@@ -48,7 +62,7 @@ export default class UsersServiceImpl extends UsersService {
 
   @Private()
   async getUserById({ _id }: _Id): Promise<UserResponse | ErrorResponse> {
-    const userOrErrorResponse = await this.dbManager.getEntityById(_id, User, this.Types);
+    const userOrErrorResponse = await this.dbManager.getEntityById(_id, User);
     return 'errorMessage' in userOrErrorResponse
       ? userOrErrorResponse
       : UsersServiceImpl.getUserResponse(userOrErrorResponse);
@@ -56,12 +70,12 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   updateUser(arg: UpdateUserArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity(arg, User, this.Types);
+    return this.dbManager.updateEntity(arg, User);
   }
 
   @AllowForSelf()
   changeUserPassword(arg: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity({ _id: arg._id, password: arg.password }, User, this.Types, [
+    return this.dbManager.updateEntity({ _id: arg._id, password: arg.password }, User, [
       {
         jsonPath: 'userName',
         hookFunc: (userName) => userName === arg.userName,

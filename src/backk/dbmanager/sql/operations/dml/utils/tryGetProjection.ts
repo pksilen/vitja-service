@@ -1,6 +1,6 @@
 import getFieldsFromGraphQlOrJson from '../../../../../graphql/getFieldsFromGraphQlOrJson';
 import shouldIncludeField from './shouldIncludeField';
-import { OptionalProjection } from '../../../../../types/OptionalProjection';
+import { Projection } from '../../../../../types/postqueryoperations/Projection';
 import getTypeMetadata from '../../../../../metadata/getTypeMetadata';
 import typePropertyAnnotationContainer from '../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 
@@ -9,7 +9,7 @@ function getFieldsForEntity(
   fields: string[],
   entityClass: Function,
   Types: object,
-  projection: OptionalProjection,
+  projection: Projection,
   fieldPath: string,
   isInternalCall = false
 ) {
@@ -66,7 +66,7 @@ function getFieldsForEntity(
 
 export default function tryGetProjection(
   schema: string,
-  projection: OptionalProjection,
+  projection: Projection,
   entityClass: Function,
   Types: object,
   isInternalCall = false

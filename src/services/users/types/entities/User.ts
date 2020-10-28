@@ -6,7 +6,7 @@ import { IsExprTrue } from "../../../../backk/decorators/typeproperty/IsExprTrue
 import { ValueUsedInTests } from "../../../../backk/decorators/typeproperty/testing/ValueUsedInTests";
 import DefaultPaymentMethod from "./DefaultPaymentMethod";
 import PaymentMethod from "./PaymentMethod";
-import _Id from "../../../../backk/types/_Id";
+import _Id from "../../../../backk/types/id/_Id";
 import LengthAndMatchesAll from "../../../../backk/decorators/typeproperty/LengthOrMatchesAll";
 import { Private } from "../../../../backk/decorators/service/function/Private";
 

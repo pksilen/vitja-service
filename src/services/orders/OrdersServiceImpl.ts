@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from "@nestjs/common";
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
@@ -16,13 +16,28 @@ import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
 import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import IdAndUserId from '../../backk/types/IdAndUserId';
+import IdAndUserId from '../../backk/types/id/IdAndUserId';
+import ShoppingCartItem from '../shoppingcart/types/entities/ShoppingCartItem';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class OrdersServiceImpl extends OrdersService {
-  constructor(dbManager: AbstractDbManager, private readonly salesItemsService: SalesItemsService) {
-    super(dbManager);
+  constructor(
+    dbManager: AbstractDbManager,
+    private readonly salesItemsService: SalesItemsService,
+    @Optional() readonly Types = {
+      AddOrderItemArg,
+      CreateOrderArg,
+      DeleteOrderItemArg,
+      DeliverOrderItemArg,
+      GetByUserIdArg,
+      Order,
+      OrderItem,
+      ShoppingCartItem,
+      UpdateOrderItemStateArg
+    }
+  ) {
+    super(dbManager, Types);
   }
 
   deleteAllOrders(): Promise<void | ErrorResponse> {
@@ -49,25 +64,18 @@ export default class OrdersServiceImpl extends OrdersService {
                 deliveryTimestampInSecs: 0
               }))
             },
-            Order,
-            this.Types
+            Order
           );
     });
   }
 
   @AllowForSelf()
   deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteSubEntities(
-      orderId,
-      `orderItems[?(@.id == '${orderItemId}')]`,
-      Order,
-      this.Types,
-      {
-        jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-        hookFunc: (state) => state === 'toBeDelivered',
-        errorMessage: 'order item state must be toBeDelivered'
-      }
-    );
+    return this.dbManager.deleteSubEntities(orderId, `orderItems[?(@.id == '${orderItemId}')]`, Order, {
+      jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
+      hookFunc: (state) => state === 'toBeDelivered',
+      errorMessage: 'order item state must be toBeDelivered'
+    });
   }
 
   @AllowForTests()
@@ -82,19 +90,18 @@ export default class OrdersServiceImpl extends OrdersService {
         deliveryTimestampInSecs: 0
       },
       Order,
-      OrderItem,
-      this.Types
+      OrderItem
     );
   }
 
   @AllowForSelf()
-  getOrdersByUserId({ userId, ...postQueryOps }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
-    return this.dbManager.getEntitiesBy('userId', userId, Order, this.Types, postQueryOps);
+  getOrdersByUserId({ userId, _postQueryOperations }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
+    return this.dbManager.getEntitiesBy('userId', userId, Order, _postQueryOperations);
   }
 
   @AllowForSelf()
   getOrderById({ _id }: IdAndUserId): Promise<Order | ErrorResponse> {
-    return this.dbManager.getEntityById(_id, Order, this.Types);
+    return this.dbManager.getEntityById(_id, Order);
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
@@ -109,7 +116,6 @@ export default class OrdersServiceImpl extends OrdersService {
         orderItems: [{ state: 'delivering' as 'delivering', id: orderItemId, ...restOfArg }]
       },
       Order,
-      this.Types,
       {
         jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
         hookFunc: (state) => state === 'toBeDelivered',
@@ -135,7 +141,6 @@ export default class OrdersServiceImpl extends OrdersService {
       return this.dbManager.updateEntity(
         { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
         Order,
-        this.Types,
         {
           jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
           hookFunc: (state) => state === OrdersServiceImpl.getPreviousStateFor(newState),
@@ -174,8 +179,7 @@ export default class OrdersServiceImpl extends OrdersService {
     const orderItemOrErrorResponse = await this.dbManager.getSubEntity<Order, OrderItem>(
       orderId,
       `orderItems[?(@.id == '${orderItemId}')]`,
-      Order,
-      this.Types
+      Order
     );
 
     if ('errorMessage' in orderItemOrErrorResponse) {

@@ -3,6 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 
 export default class UpdateSalesItemArg {
   userId?: string;
@@ -37,6 +38,6 @@ export default class UpdateSalesItemArg {
   secondaryImageDataUris?: string[];
 
   @IsString()
-  @MaxLength(24)
+  @MaxLengthAndMatches(24, /^[a-f\d]+$/)
   _id!: string;
 }

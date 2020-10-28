@@ -111,40 +111,7 @@ export default function parseTypescriptLinesForTypeName(
       id!: string;
     }
     `;
-    } else if (typeName === 'OptPostQueryOps') {
-      fileContentsStr = `
-      import { MaxLength, IsOptional, IsArray, IsInt, IsInstance, Min, Max } from 'class-validator';
-      
-      export class OptPostQueryOps{
-  @IsOptional()
-  @MaxLength(4096, { each: true })
-  @IsArray()
-  includeResponseFields?: string[] = [];
-
-  @IsOptional()
-  @MaxLength(4096, { each: true })
-  @IsArray()
-  excludeResponseFields?: string[] = [];
-
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  @Max(10000)
-  pageNumber?: number;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Max(10000)
-  pageSize?: number;
-
-  @IsOptional()
-  @IsInstance(SortBy, { each: true })
-  @IsArray()
-  sortBys?: SortBy[];
-}
-      `;
-    } else {
+    }  else {
       throw new Error('Unsupported type: ' + typeName);
     }
   }

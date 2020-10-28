@@ -1,29 +1,15 @@
 import BaseService from "../../backk/service/basetypes/BaseService";
-import ShoppingCartItem from "../shoppingcart/types/entities/ShoppingCartItem";
 import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
 import CreateOrderArg from "./types/args/CreateOrderArg";
 import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
 import Order from "./types/entity/Order";
-import OrderItem from "./types/entity/OrderItem";
 import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
 import AddOrderItemArg from "./types/args/AddOrderItemArg";
 import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
-import IdAndUserId from "../../backk/types/IdAndUserId";
+import IdAndUserId from "../../backk/types/id/IdAndUserId";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 
 export default abstract class OrdersService extends BaseService {
-  readonly Types = {
-    AddOrderItemArg,
-    CreateOrderArg,
-    DeleteOrderItemArg,
-    DeliverOrderItemArg,
-    GetByUserIdArg,
-    Order,
-    OrderItem,
-    ShoppingCartItem,
-    UpdateOrderItemStateArg
-  };
-
   abstract deleteAllOrders(): Promise<void | ErrorResponse>;
   abstract createOrder(arg: CreateOrderArg): Promise<Order | ErrorResponse>;
   abstract deleteOrderItem(arg: DeleteOrderItemArg): Promise<void | ErrorResponse>;

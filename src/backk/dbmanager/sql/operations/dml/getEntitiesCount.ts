@@ -10,9 +10,10 @@ import getErrorResponse from "../../../../errors/getErrorResponse";
 export default async function getEntitiesCount<T>(
   dbManager: PostgreSqlDbManager,
   filters: Partial<T> | SqlExpression[] | undefined,
-  entityClass: new () => T,
-  Types: object
+  entityClass: new () => T
 ): Promise<number | ErrorResponse> {
+  const Types = dbManager.getTypes();
+
   try {
     const whereStatement = tryGetWhereStatement(dbManager.schema, filters ?? {}, entityClass, Types);
     const filterValues = getFilterValues(filters ?? {});

@@ -1,6 +1,6 @@
 import Entity from "../../../../backk/decorators/entity/Entity";
 import ShoppingCartItem from "./ShoppingCartItem";
-import _Id from "../../../../backk/types/_Id";
+import _Id from "../../../../backk/types/id/_Id";
 
 @Entity()
 export default class ShoppingCart extends _Id {

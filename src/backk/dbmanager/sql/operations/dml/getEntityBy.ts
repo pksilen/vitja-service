@@ -1,22 +1,24 @@
-import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
-import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
-import encrypt from '../../../../crypt/encrypt';
-import getNotFoundErrorResponse from '../../../../errors/getNotFoundErrorResponse';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import tryGetProjection from './utils/tryGetProjection';
-import getJoinStatement from './utils/getJoinStatement';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import getErrorResponse from '../../../../errors/getErrorResponse';
-import transformRowsToObjects from './utils/transformRowsToObjects';
+import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
+import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
+import encrypt from "../../../../crypt/encrypt";
+import getNotFoundErrorResponse from "../../../../errors/getNotFoundErrorResponse";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import tryGetProjection from "./utils/tryGetProjection";
+import getJoinStatement from "./utils/getJoinStatement";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import getErrorResponse from "../../../../errors/getErrorResponse";
+import transformRowsToObjects from "./utils/transformRowsToObjects";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
 export default async function getEntityBy<T>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T],
   entityClass: new () => T,
-  Types: object
+  postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
   try {
+    const Types = dbManager.getTypes();
     const item = {
       [fieldName]: fieldValue
     };
@@ -25,7 +27,13 @@ export default async function getEntityBy<T>(
       (item as any)[fieldName] = encrypt(fieldValue as any, false);
     }
 
-    const sqlColumns = tryGetProjection(dbManager.schema, {}, entityClass, Types);
+    const sqlColumns = tryGetProjection(
+      dbManager.schema,
+      postQueryOperations ?? {},
+      entityClass,
+      Types
+    );
+
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
 
     const result = await dbManager.tryExecuteQuery(
@@ -37,7 +45,7 @@ export default async function getEntityBy<T>(
       return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
     }
 
-    return transformRowsToObjects(result, entityClass, {}, Types)[0];
+    return transformRowsToObjects(result, entityClass, {}, 1, Types)[0];
   } catch (error) {
     return getErrorResponse(error);
   }

@@ -8,19 +8,19 @@ import tryGetProjection from "./utils/tryGetProjection";
 import tryGetSortStatement from "./utils/tryGetSortStatement";
 import getJoinStatement from "./utils/getJoinStatement";
 import getPagingStatement from "./utils/getPagingStatement";
-import OptPostQueryOps from "../../../../types/OptPostQueryOps";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
 export default async function getEntitiesBy<T>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T],
   entityClass: new () => T,
-  Types: object,
-  postQueryOps?: OptPostQueryOps
+  { pageNumber, pageSize, sortBys, ...projection }: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
   try {
+    const Types = dbManager.getTypes();
     const item = {
       [fieldName]: fieldValue
     };
@@ -29,15 +29,10 @@ export default async function getEntitiesBy<T>(
       (item as any)[fieldName] = encrypt(fieldValue as any, false);
     }
 
-    const projection = {
-      includeResponseFields: postQueryOps?.includeResponseFields,
-      excludeResponseFields: postQueryOps?.excludeResponseFields
-    };
-
     const sqlColumns = tryGetProjection(dbManager.schema, projection, entityClass, Types);
-    const sortStatement = tryGetSortStatement(dbManager.schema, postQueryOps?.sortBys, entityClass, Types);
+    const sortStatement = tryGetSortStatement(dbManager.schema, sortBys, entityClass, Types);
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
-    const pagingStatement = getPagingStatement(postQueryOps?.pageNumber, postQueryOps?.pageSize);
+    const pagingStatement = getPagingStatement(pageNumber, pageSize);
 
     const result = await dbManager.tryExecuteQuery(
       `SELECT ${sqlColumns} FROM ${dbManager.schema}.${entityClass.name} ${joinStatement} WHERE ${fieldName} = $1 ${sortStatement} ${pagingStatement}`,
@@ -48,7 +43,7 @@ export default async function getEntitiesBy<T>(
       return getNotFoundErrorResponse(`Item(s) with ${fieldName}: ${fieldValue} not found`);
     }
 
-    return transformRowsToObjects(result, entityClass, projection, Types);
+    return transformRowsToObjects(result, entityClass, projection, pageSize, Types);
   } catch (error) {
     return getInternalServerErrorResponse(error);
   }

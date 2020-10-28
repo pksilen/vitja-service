@@ -1,7 +1,6 @@
 import { IsIn, IsString, MaxLength } from "class-validator";
-import { ISortBy } from "./ISortBy";
 
-export default class SortBy implements ISortBy {
+export default class SortBy {
   constructor(sortField: string, sortDirection: 'ASC' | 'DESC') {
     this.sortField = sortField;
     this.sortDirection = sortDirection;

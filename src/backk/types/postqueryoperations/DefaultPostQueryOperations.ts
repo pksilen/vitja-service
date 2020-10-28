@@ -1,9 +1,18 @@
-import { IsArray, IsInstance, IsInt, IsOptional, IsString, Max, MaxLength, Min } from "class-validator";
+import { PostQueryOperations } from "./PostQueryOperations";
 import SortBy from "./SortBy";
-import { Paging } from "./Paging";
-import { OptionalProjection } from "./OptionalProjection";
+import {
+  IsArray,
+  IsInstance,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  ValidateNested
+} from "class-validator";
 
-export default class OptPostQueryOps implements Partial<Paging>, OptionalProjection {
+export default class DefaultPostQueryOperations implements PostQueryOperations {
   @IsOptional()
   @IsString({ each: true })
   @MaxLength(4096, { each: true })
@@ -20,16 +29,17 @@ export default class OptPostQueryOps implements Partial<Paging>, OptionalProject
   @IsInt()
   @Min(1)
   @Max(10000)
-  pageNumber?: number;
+  pageNumber: number = 1;
 
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(1)
   @Max(10000)
-  pageSize?: number;
+  pageSize: number = 50;
 
   @IsOptional()
   @IsInstance(SortBy, { each: true })
+  @ValidateNested()
   @IsArray()
-  sortBys?: SortBy[];
+  sortBys: SortBy[] = [new SortBy('_id', 'ASC')];
 }

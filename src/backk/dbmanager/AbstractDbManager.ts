@@ -4,18 +4,29 @@ import { Pool } from "pg";
 import SqlExpression from "./sql/expressions/SqlExpression";
 import { RecursivePartial } from "../types/RecursivePartial";
 import { ErrorResponse } from "../types/ErrorResponse";
-import { PostQueryOps } from "../types/PostQueryOps";
-import OptPostQueryOps from "../types/OptPostQueryOps";
 import { PreHook } from "./hooks/PreHook";
+import { Entity } from "../types/Entity";
+import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
+import { Injectable } from "@nestjs/common";
 
 export interface Field {
   name: string;
 }
 
+@Injectable()
 export default abstract class AbstractDbManager {
   private clsNamespaceName: string | undefined = undefined;
+  private Types: object = {};
   readonly dbName?: string;
   readonly schema?: string;
+
+  addTypes(Types: object) {
+    this.Types = { ...this.Types, ...Types };
+  }
+
+  getTypes(): Readonly<object> {
+    return this.Types;
+  }
 
   setClsNamespaceName(clsNamespaceName: string) {
     this.clsNamespaceName = clsNamespaceName;
@@ -40,84 +51,81 @@ export default abstract class AbstractDbManager {
   ): Promise<T | ErrorResponse>;
 
   abstract createEntity<T>(
-    item: Omit<T, '_id'>,
+    entity: Omit<T, '_id'>,
     entityClass: new () => T,
-    Types: object,
-    preHooks?: PreHook | PreHook[]
+    preHooks?: PreHook | PreHook[],
+    postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
-  abstract createSubEntity<T extends { _id: string; id?: string }, U extends object>(
+  abstract createSubEntity<T extends Entity, U extends object>(
     _id: string,
-    subItemsPath: string,
-    newSubItem: Omit<U, 'id'>,
+    subEntitiesPath: string,
+    newSubEntity: Omit<U, 'id'>,
     entityClass: new () => T,
-    subItemEntityClass: new () => U,
-    Types?: object
+    subEntityClass: new () => U,
+    postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
   abstract getEntities<T>(
     filters: FilterQuery<T> | Partial<T> | SqlExpression[],
-    postQueryOps: PostQueryOps,
     entityClass: new () => T,
-    Types: object
+    postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
   abstract getEntitiesCount<T>(
     filters: Partial<T> | SqlExpression[],
-    entityClass: new () => T,
-    Types: object
+    entityClass: new () => T
   ): Promise<number | ErrorResponse>;
 
-  abstract getEntityById<T>(_id: string, entityClass: new () => T, Types: object): Promise<T | ErrorResponse>;
+  abstract getEntityById<T>(
+    _id: string,
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse>;
 
   abstract getSubEntity<T extends object, U extends object>(
     _id: string,
-    subItemPath: string,
+    subEntityPath: string,
     entityClass: new () => T,
-    Types: object
+    postQueryOperations?: PostQueryOperations
   ): Promise<U | ErrorResponse>;
 
   abstract getEntitiesByIds<T>(
     _ids: string[],
     entityClass: new () => T,
-    Types: object,
-    postQueryOperations?: OptPostQueryOps
+    postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
   abstract getEntityBy<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
-    Types: object
+    postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
   abstract getEntitiesBy<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
-    Types: object,
-    postQueryOperations?: OptPostQueryOps
+    postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
-  abstract updateEntity<T extends { _id: string; id?: string }>(
+  abstract updateEntity<T extends Entity>(
     { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    Types: object,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
   abstract deleteEntityById<T extends object>(
     _id: string,
     entityClass: new () => T,
-    Types?: object,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteSubEntities<T extends { _id: string; id?: string }>(
+  abstract deleteSubEntities<T extends Entity>(
     _id: string,
-    subItemsPath: string,
+    subEntitiesPath: string,
     entityClass: new () => T,
-    Types?: object,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 

@@ -21,6 +21,7 @@ import { AppController } from './app.controller';
   imports: [],
   controllers: [AppController],
   providers: [
+    { provide: AbstractDbManager, useValue: postgreSqlDbManager },
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },
     { provide: CaptchaVerifyService, useClass: CaptchaVerifierServiceImpl },
     {
@@ -35,7 +36,6 @@ import { AppController } from './app.controller';
     { provide: UsersService, useClass: UsersServiceImpl },
     { provide: OrdersService, useClass: OrdersServiceImpl },
     { provide: ShoppingCartService, useClass: ShoppingCartServiceImpl },
-    { provide: AbstractDbManager, useValue: postgreSqlDbManager }
   ]
 })
 export class AppModule {}

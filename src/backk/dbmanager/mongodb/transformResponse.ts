@@ -1,10 +1,10 @@
 import pick from 'lodash/pick';
 import omit from 'lodash/omit';
-import { PostQueryOps } from "../../types/PostQueryOps";
+import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
 
 export default function transformResponse<T extends object>(
   responseObjects: T[],
-  args: PostQueryOps
+  args: PostQueryOperations
 ): Array<Partial<T>> {
   return responseObjects.map((responseObject) => {
     let newResponseObject: Partial<T> = responseObject;

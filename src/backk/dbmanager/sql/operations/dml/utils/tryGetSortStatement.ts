@@ -2,7 +2,7 @@ import tryGetProjection from './tryGetProjection';
 import getSqlColumnFromProjection from './getSqlColumnFromProjection';
 import assertIsColumnName from '../../../../../assertions/assertIsColumnName';
 import assertIsSortDirection from '../../../../../assertions/assertIsSortDirection';
-import SortBy from "../../../../../types/SortBy";
+import SortBy from "../../../../../types/postqueryoperations/SortBy";
 
 export default function tryGetSortStatement<T>(
   schema: string,

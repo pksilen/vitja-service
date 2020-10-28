@@ -1,7 +1,7 @@
 import { IsCreditCard, MaxLength } from "class-validator";
 import { ValueUsedInTests } from "../../../../backk/decorators/typeproperty/testing/ValueUsedInTests";
 import Entity from "../../../../backk/decorators/entity/Entity";
-import Id from "../../../../backk/types/Id";
+import Id from "../../../../backk/types/id/Id";
 import MaxLengthAndMatches from "../../../../backk/decorators/typeproperty/MaxLengthAndMatches";
 
 @Entity()

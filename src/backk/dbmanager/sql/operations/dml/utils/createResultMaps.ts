@@ -1,12 +1,12 @@
 import shouldIncludeField from './shouldIncludeField';
-import { OptionalProjection } from "../../../../../types/OptionalProjection";
+import { Projection } from "../../../../../types/postqueryoperations/Projection";
 import getTypeMetadata from "../../../../../metadata/getTypeMetadata";
 
 function updateResultMaps(
   entityClassOrName: Function | string,
   Types: object,
   resultMaps: any[],
-  projection: OptionalProjection,
+  projection: Projection,
   fieldPath: string,
   suppliedEntityMetadata: { [key: string]: string } = {},
   parentEntityClass?: Function
@@ -94,7 +94,7 @@ function updateResultMaps(
 export default function createResultMaps(
   entityClass: Function,
   Types: object,
-  projection: OptionalProjection
+  projection: Projection
 ) {
   const resultMaps: any[] = [];
   updateResultMaps(entityClass, Types, resultMaps, projection, '');

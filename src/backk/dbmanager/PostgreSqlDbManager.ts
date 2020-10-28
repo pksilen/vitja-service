@@ -1,28 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import { Pool, QueryConfig, QueryResult, types } from 'pg';
-import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field} from "./AbstractDbManager";
-import isErrorResponse from '../errors/isErrorResponse';
-import createEntity from './sql/operations/dml/createEntity';
-import createSubEntity from './sql/operations/dml/createSubEntity';
-import getEntities from './sql/operations/dml/getEntities';
-import getEntitiesCount from './sql/operations/dml/getEntitiesCount';
-import getEntityById from './sql/operations/dml/getEntityById';
-import getSubEntity from './sql/operations/dml/getSubEntity';
-import getEntitiesByIds from './sql/operations/dml/getItemsById';
-import getEntityBy from './sql/operations/dml/getEntityBy';
-import getEntitiesBy from './sql/operations/dml/getEntitiesBy';
-import updateEntity from './sql/operations/dml/updateEntity';
-import deleteEntityById from './sql/operations/dml/deleteEntityById';
-import deleteSubEntities from './sql/operations/dml/deleteSubEntities';
-import deleteAllEntities from './sql/operations/dml/deleteAllEntities';
-import { ErrorResponse } from '../types/ErrorResponse';
-import { PostQueryOps } from '../types/PostQueryOps';
-import OptPostQueryOps from '../types/OptPostQueryOps';
-import { RecursivePartial } from '../types/RecursivePartial';
+import { Pool, QueryConfig, QueryResult, types } from "pg";
+import SqlExpression from "./sql/expressions/SqlExpression";
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import isErrorResponse from "../errors/isErrorResponse";
+import createEntity from "./sql/operations/dml/createEntity";
+import createSubEntity from "./sql/operations/dml/createSubEntity";
+import getEntities from "./sql/operations/dml/getEntities";
+import getEntitiesCount from "./sql/operations/dml/getEntitiesCount";
+import getEntityById from "./sql/operations/dml/getEntityById";
+import getSubEntity from "./sql/operations/dml/getSubEntity";
+import getEntityBy from "./sql/operations/dml/getEntityBy";
+import getEntitiesBy from "./sql/operations/dml/getEntitiesBy";
+import updateEntity from "./sql/operations/dml/updateEntity";
+import deleteEntityById from "./sql/operations/dml/deleteEntityById";
+import deleteSubEntities from "./sql/operations/dml/deleteSubEntities";
+import deleteAllEntities from "./sql/operations/dml/deleteAllEntities";
+import getEntitiesByIds from "./sql/operations/dml/getEntitiesByIds";
+import { ErrorResponse } from "../types/ErrorResponse";
+import { RecursivePartial } from "../types/RecursivePartial";
 import { PreHook } from "./hooks/PreHook";
+import { Entity } from "../types/Entity";
+import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -155,119 +155,108 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async createEntity<T>(
-    item: Omit<T, '_id'>,
+    entity: Omit<T, '_id'>,
     entityClass: new () => T,
-    Types: object,
     preHooks?: PreHook | PreHook[],
+    postQueryOperations?: PostQueryOperations,
     shouldReturnItem = true
   ): Promise<T | ErrorResponse> {
-    return createEntity(
-      this,
-      item,
-      entityClass,
-      Types,
-      preHooks,
-      false,
-      shouldReturnItem
-    );
+    return createEntity(this, entity, entityClass, preHooks, postQueryOperations,false, shouldReturnItem);
   }
 
-  async createSubEntity<T extends { _id: string; id?: string }, U extends object>(
+  async createSubEntity<T extends Entity, U extends object>(
     _id: string,
-    subItemsPath: string,
-    newSubItem: Omit<U, 'id'>,
+    subEntitiesPath: string,
+    newSubEntity: Omit<U, 'id'>,
     entityClass: new () => T,
-    subItemEntityClass: new () => U,
-    Types: object
+    subEntityClass: new () => U,
+    postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    return createSubEntity(this, _id, subItemsPath, newSubItem, entityClass, subItemEntityClass, Types);
+    return createSubEntity(this, _id, subEntitiesPath, newSubEntity, entityClass, subEntityClass, postQueryOperations);
   }
 
   async getEntities<T>(
     filters: Partial<T> | SqlExpression[],
-    postQueryOps: PostQueryOps,
     entityClass: new () => T,
-    Types: object
+    postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    return getEntities(this, filters, postQueryOps, entityClass, Types);
+    return getEntities(this, filters, entityClass, postQueryOperations);
   }
 
   async getEntitiesCount<T>(
     filters: Partial<T> | SqlExpression[] | undefined,
-    entityClass: new () => T,
-    Types: object
+    entityClass: new () => T
   ): Promise<number | ErrorResponse> {
-    return getEntitiesCount(this, filters, entityClass, Types);
+    return getEntitiesCount(this, filters, entityClass);
   }
 
-  async getEntityById<T>(_id: string, entityClass: new () => T, Types: object): Promise<T | ErrorResponse> {
-    return getEntityById(this, _id, entityClass, Types);
+  async getEntityById<T>(
+    _id: string,
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse> {
+    return getEntityById(this, _id, entityClass, postQueryOperations);
   }
 
   async getSubEntity<T extends object, U extends object>(
     _id: string,
-    subItemPath: string,
+    subEntityPath: string,
     entityClass: new () => T,
-    Types: object
+    postQueryOperations?: PostQueryOperations
   ): Promise<U | ErrorResponse> {
-    return getSubEntity(this, _id, subItemPath, entityClass, Types);
+    return getSubEntity(this, _id, subEntityPath, entityClass, postQueryOperations);
   }
 
   async getEntitiesByIds<T>(
     _ids: string[],
     entityClass: new () => T,
-    Types: object,
-    postQueryOps?: OptPostQueryOps
+    postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    return getEntitiesByIds(this, _ids, entityClass, Types, postQueryOps);
+    return getEntitiesByIds(this, _ids, entityClass, postQueryOperations);
   }
 
   async getEntityBy<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
-    Types: object
+    postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    return getEntityBy(this, fieldName, fieldValue, entityClass, Types);
+    return getEntityBy(this, fieldName, fieldValue, entityClass, postQueryOperations);
   }
 
   async getEntitiesBy<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
-    Types: object,
-    postQueryOps?: OptPostQueryOps
+    postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    return getEntitiesBy(this, fieldName, fieldValue, entityClass, Types);
+    return getEntitiesBy(this, fieldName, fieldValue, entityClass, postQueryOperations);
   }
 
-  async updateEntity<T extends object & { _id: string; id?: string }>(
-    item: RecursivePartial<T> & { _id: string },
+  async updateEntity<T extends Entity>(
+    entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    Types: object,
     preHooks?: PreHook | PreHook[],
     shouldCheckIfItemExists: boolean = true
   ): Promise<void | ErrorResponse> {
-    return updateEntity(this, item, entityClass, Types, preHooks, shouldCheckIfItemExists);
+    return updateEntity(this, entity, entityClass, preHooks, shouldCheckIfItemExists);
   }
 
   async deleteEntityById<T extends object>(
     _id: string,
     entityClass: new () => T,
-    Types?: object,
-    preHooks?: PreHook | PreHook[],
-  ): Promise<void | ErrorResponse> {
-    return deleteEntityById(this, _id, entityClass, Types, preHooks);
-  }
-
-  async deleteSubEntities<T extends { _id: string; id?: string }, U extends object>(
-    _id: string,
-    subItemsPath: string,
-    entityClass: new () => T,
-    Types: object,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
-    return deleteSubEntities(this, _id, subItemsPath, entityClass, Types, preHooks);
+    return deleteEntityById(this, _id, entityClass, preHooks);
+  }
+
+  async deleteSubEntities<T extends Entity, U extends object>(
+    _id: string,
+    subEntitiesPath: string,
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[]
+  ): Promise<void | ErrorResponse> {
+    return deleteSubEntities(this, _id, subEntitiesPath, entityClass, preHooks);
   }
 
   async deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse> {

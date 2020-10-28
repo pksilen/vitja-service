@@ -1,9 +1,9 @@
 
 import getIncludeFieldsMap from "./getIncludeFieldsMap";
 import getExcludeFieldsMap from "./getExcludeFieldsMap";
-import { OptionalProjection } from "../../types/OptionalProjection";
+import { Projection } from "../../types/postqueryoperations/Projection";
 
-export default function getMongoDbProjection(args: OptionalProjection): object {
+export default function getMongoDbProjection(args: Projection): object {
   // TODO handle nested projection
   const includeFieldsMap = getIncludeFieldsMap(args.includeResponseFields);
   const excludeFieldsMap = getExcludeFieldsMap(args.excludeResponseFields);

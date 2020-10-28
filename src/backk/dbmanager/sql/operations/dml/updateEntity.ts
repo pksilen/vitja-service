@@ -10,20 +10,21 @@ import getErrorResponse from '../../../../errors/getErrorResponse';
 import getTypeMetadata from '../../../../metadata/getTypeMetadata';
 import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
 import executePreHooks from '../../../hooks/executePreHooks';
-import { PreHook } from "../../../hooks/PreHook";
+import { PreHook } from '../../../hooks/PreHook';
+import { Entity } from '../../../../types/Entity';
 
-export default async function updateEntity<T extends object & { _id: string; id?: string }>(
+export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
   { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
   entityClass: new () => T,
-  Types: object,
   preHooks?: PreHook | PreHook[],
   shouldCheckIfItemExists: boolean = true,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   try {
+    const Types = dbManager.getTypes();
     if (!isRecursiveCall) {
-      await hashAndEncryptItem(restOfItem, entityClass, Types);
+      await hashAndEncryptItem(restOfItem, entityClass as any, Types);
     }
 
     if (
@@ -35,7 +36,7 @@ export default async function updateEntity<T extends object & { _id: string; id?
     }
 
     if (shouldCheckIfItemExists) {
-      const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, Types, true);
+      const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
       if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
         // noinspection ExceptionCaughtLocallyJS
         throw new Error(itemOrErrorResponse.errorMessage);
@@ -78,7 +79,6 @@ export default async function updateEntity<T extends object & { _id: string; id?
                 dbManager,
                 subItem,
                 (Types as any)[baseFieldTypeName],
-                Types,
                 undefined,
                 false,
                 true
@@ -96,7 +96,6 @@ export default async function updateEntity<T extends object & { _id: string; id?
             dbManager,
             (restOfItem as any)[fieldName],
             (Types as any)[baseFieldTypeName],
-            Types,
             undefined,
             false,
             true

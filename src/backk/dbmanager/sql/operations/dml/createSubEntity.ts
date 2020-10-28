@@ -3,30 +3,34 @@ import entityAnnotationContainer from "../../../../decorators/entity/entityAnnot
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
+import { Entity } from "../../../../types/Entity";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
-export default async function createSubEntity<T extends { _id: string; id?: string }, U extends object>(
+export default async function createSubEntity<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
-  subItemsPath: string,
-  newSubItem: Omit<U, 'id'>,
+  subEntitiesPath: string,
+  newSubEntity: Omit<U, 'id'>,
   entityClass: new () => T,
-  subItemEntityClass: new () => U,
-  Types: object
+  subEntityClass: new () => U,
+  postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
+  const Types = dbManager.getTypes();
+
   try {
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.beginTransaction();
     }
 
-    const itemOrErrorResponse = await dbManager.getEntityById(_id, entityClass, Types);
+    const itemOrErrorResponse = await dbManager.getEntityById(_id, entityClass, postQueryOperations);
     if ('errorMessage' in itemOrErrorResponse) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(itemOrErrorResponse.errorMessage);
     }
 
     const parentIdValue = JSONPath({ json: itemOrErrorResponse, path: '$._id' })[0];
-    const parentIdFieldName = entityAnnotationContainer.getAdditionIdPropertyName(subItemEntityClass.name);
-    const maxSubItemId = JSONPath({ json: itemOrErrorResponse, path: subItemsPath }).reduce(
+    const parentIdFieldName = entityAnnotationContainer.getAdditionIdPropertyName(subEntityClass.name);
+    const maxSubItemId = JSONPath({ json: itemOrErrorResponse, path: subEntitiesPath }).reduce(
       (maxSubItemId: number, subItem: any) => {
         const subItemId = parseInt(subItem.id);
         return subItemId > maxSubItemId ? subItemId : maxSubItemId;
@@ -35,10 +39,10 @@ export default async function createSubEntity<T extends { _id: string; id?: stri
     );
 
     const createdItemOrErrorResponse = await dbManager.createEntity(
-      { ...newSubItem, [parentIdFieldName]: parentIdValue, id: (maxSubItemId + 1).toString() } as any,
-      subItemEntityClass,
-      Types,
+      { ...newSubEntity, [parentIdFieldName]: parentIdValue, id: (maxSubItemId + 1).toString() } as any,
+      subEntityClass,
       undefined,
+      postQueryOperations,
       false
     );
 
@@ -51,7 +55,7 @@ export default async function createSubEntity<T extends { _id: string; id?: stri
       await dbManager.commitTransaction();
     }
 
-    return await dbManager.getEntityById(_id, entityClass, Types);
+    return await dbManager.getEntityById(_id, entityClass, postQueryOperations);
   } catch (error) {
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();

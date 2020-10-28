@@ -1,16 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
-import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
-import getInternalServerErrorResponse from '../errors/getInternalServerErrorResponse';
-import getNotFoundErrorResponse from '../errors/getNotFoundErrorResponse';
-import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field} from "./AbstractDbManager";
+import { Injectable } from "@nestjs/common";
+import { FilterQuery, MongoClient, ObjectId } from "mongodb";
+import { SalesItem } from "../../services/salesitems/types/entities/SalesItem";
+import getInternalServerErrorResponse from "../errors/getInternalServerErrorResponse";
+import getNotFoundErrorResponse from "../errors/getNotFoundErrorResponse";
+import SqlExpression from "./sql/expressions/SqlExpression";
+import AbstractDbManager, { Field } from "./AbstractDbManager";
 import getMongoDbProjection from "./mongodb/getMongoDbProjection";
 import { ErrorResponse } from "../types/ErrorResponse";
-import { PostQueryOps } from "../types/PostQueryOps";
-import OptPostQueryOps from "../types/OptPostQueryOps";
 import { RecursivePartial } from "../types/RecursivePartial";
 import { PreHook } from "./hooks/PreHook";
+import { Entity } from "../types/Entity";
+import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -56,10 +56,10 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async createEntity<T>(
-    item: Omit<T, '_id'>,
+    entity: Omit<T, '_id'>,
     entityClass: new () => T,
-    Types: object,
-    preHooks?: PreHook | PreHook[]
+    preHooks?: PreHook | PreHook[],
+    postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     // TODO implement maxItemCount
     try {
@@ -67,7 +67,7 @@ export default class MongoDbManager extends AbstractDbManager {
         client
           .db(this.dbName)
           .collection(entityClass.name.toLowerCase())
-          .insertOne(item)
+          .insertOne(entity)
       );
 
       return this.getEntityById(writeOperationResult.insertedId.toHexString(), entityClass);
@@ -76,21 +76,21 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  createSubEntity<T extends { _id: string; id?: string }, U extends object>(
+  createSubEntity<T extends Entity, U extends object>(
     _id: string,
-    subItemsPath: string,
-    newSubItem: Omit<U, 'id'>,
+    subEntitiesPath: string,
+    newSubEntity: Omit<U, 'id'>,
     entityClass: new () => T,
-    subItemEntityClass: new () => U,
-    Types?: object
+    subEntityClass: new () => U,
+    postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     throw new Error();
   }
 
   async getEntities<T>(
-    filters: FilterQuery<T>,
-    { pageNumber, pageSize, sortBys, ...projection }: PostQueryOps,
-    entityClass: new () => T
+    filters: FilterQuery<T> | Partial<T> | SqlExpression[],
+    entityClass: new () => T,
+    { pageNumber, pageSize, sortBys, ...projection }: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
     try {
       return await this.tryExecute((client) => {
@@ -125,14 +125,17 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getEntitiesCount<T>(
     filters: Partial<T> | SqlExpression[],
-    entityClass: new () => T,
-    Types: object
+    entityClass: new () => T
   ): Promise<number | ErrorResponse> {
     // TODO implement
-    return Promise.resolve(0);
+    throw new Error('Not implemented');
   }
 
-  async getEntityById<T>(_id: string, entityClass: new () => T): Promise<T | ErrorResponse> {
+  async getEntityById<T>(
+    _id: string,
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse> {
     try {
       const foundItem = await this.tryExecute((client) =>
         client
@@ -151,11 +154,11 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  getSubEntity<T extends object, U extends object, >(
+  getSubEntity<T extends object, U extends object>(
     _id: string,
-    subItemPath: string,
+    subEntityPath: string,
     entityClass: new () => T,
-    Types: object
+    postQueryOperations?: PostQueryOperations
   ): Promise<U | ErrorResponse> {
     throw new Error('Not implemented');
   }
@@ -163,7 +166,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async getEntitiesByIds<T>(
     _ids: string[],
     entityClass: new () => T,
-    postQueryOperations?: OptPostQueryOps
+    postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
     // TODO implemennt postqueryOps
     try {
@@ -188,7 +191,8 @@ export default class MongoDbManager extends AbstractDbManager {
   async getEntityBy<T>(
     fieldName: string,
     fieldValue: T[keyof T],
-    entityClass: new () => T
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     try {
       const foundItem = await this.tryExecute((client) =>
@@ -212,7 +216,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
-    postQueryOperations?: OptPostQueryOps
+    postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
     // TODO implement postQueryOps
     try {
@@ -234,10 +238,9 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async updateEntity<T extends { _id: string; id?: string }>(
+  async updateEntity<T extends Entity>(
     { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    Types: object,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     // TODO add precondition check
@@ -260,7 +263,6 @@ export default class MongoDbManager extends AbstractDbManager {
   async deleteEntityById<T>(
     _id: string,
     entityClass: new () => T,
-    Types?: object,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     try {
@@ -279,11 +281,10 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  deleteSubEntities<T extends { _id: string; id?: string }>(
+  deleteSubEntities<T extends Entity>(
     _id: string,
-    subItemsPath: string,
+    subEntitiesPath: string,
     entityClass: new () => T,
-    Types?: object,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     return Promise.resolve();

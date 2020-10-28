@@ -1,9 +1,9 @@
-import { OptionalProjection } from "../../../../../types/OptionalProjection";
+import { Projection } from "../../../../../types/postqueryoperations/Projection";
 
 export default function shouldIncludeField(
   fieldName: string,
   fieldPath: string,
-  { includeResponseFields, excludeResponseFields }: OptionalProjection
+  { includeResponseFields, excludeResponseFields }: Projection
 ) {
   let shouldIncludeField = true;
   const fullFieldPath = fieldPath + fieldName;

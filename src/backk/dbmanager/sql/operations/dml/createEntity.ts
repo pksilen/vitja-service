@@ -9,20 +9,23 @@ import getErrorResponse from "../../../../errors/getErrorResponse";
 import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 import executePreHooks from "../../../hooks/executePreHooks";
 import { PreHook } from "../../../hooks/PreHook";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
 export default async function createEntity<T>(
   dbManager: PostgreSqlDbManager,
-  item: Omit<T, '_id'>,
+  entity: Omit<T, '_id'>,
   entityClass: new () => T,
-  Types: object,
   preHooks?: PreHook | PreHook[],
+  postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false,
   shouldReturnItem = true
 ): Promise<T | ErrorResponse> {
   // noinspection ExceptionCaughtLocallyJS
   try {
+    const Types = dbManager.getTypes();
+
     if (!isRecursiveCall) {
-      await hashAndEncryptItem(item, entityClass, Types);
+      await hashAndEncryptItem(entity, entityClass, Types);
     }
 
     if (
@@ -39,7 +42,7 @@ export default async function createEntity<T>(
     }
 
     const entityMetadata = getTypeMetadata(entityClass as any);
-    const additionalMetadata = Object.keys(item)
+    const additionalMetadata = Object.keys(entity)
       .filter((itemKey) => itemKey.endsWith('Id'))
       .reduce((accumulatedMetadata, itemKey) => ({ ...accumulatedMetadata, [itemKey]: 'integer' }), {});
     const columns: any = [];
@@ -62,7 +65,7 @@ export default async function createEntity<T>(
         ) {
           columns.push(fieldName);
           if (fieldName === 'id' || fieldName.endsWith('Id')) {
-            const numericId = parseInt((item as any)[fieldName], 10);
+            const numericId = parseInt((entity as any)[fieldName], 10);
             if (isNaN(numericId)) {
               throw new Error(
                 getBadRequestErrorMessage(entityClass.name + '.' + fieldName + ': must be a numeric id')
@@ -70,7 +73,7 @@ export default async function createEntity<T>(
             }
             values.push(numericId);
           } else {
-            values.push((item as any)[fieldName]);
+            values.push((entity as any)[fieldName]);
           }
         }
       }
@@ -105,21 +108,21 @@ export default async function createEntity<T>(
           baseFieldTypeName[0] !== '('
         ) {
           if (
-            _.uniqBy((item as any)[fieldName], (subItem: any) => subItem.id).length !==
-            (item as any)[fieldName].length
+            _.uniqBy((entity as any)[fieldName], (subItem: any) => subItem.id).length !==
+            (entity as any)[fieldName].length
           ) {
             throw new Error(getBadRequestErrorMessage('Duplicate id values in ' + fieldName));
           }
 
           const relationEntityName = baseFieldTypeName;
-          await forEachAsyncParallel((item as any)[fieldName], async (subItem: any) => {
+          await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any) => {
             subItem[idFieldName] = _id;
             const subItemOrErrorResponse: any | ErrorResponse = await createEntity(
               dbManager,
               subItem,
               (Types as any)[relationEntityName],
-              Types,
               preHooks,
+              postQueryOperations,
               true
             );
             if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
@@ -131,21 +134,21 @@ export default async function createEntity<T>(
           baseFieldTypeName[0] !== '('
         ) {
           const relationEntityName = baseFieldTypeName;
-          const subItem = (item as any)[fieldName];
+          const subItem = (entity as any)[fieldName];
           subItem[idFieldName] = _id;
           const subItemOrErrorResponse: any | ErrorResponse = await createEntity(
             dbManager,
             subItem,
             (Types as any)[relationEntityName],
-            Types,
             preHooks,
+            postQueryOperations,
             true
           );
           if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
             throw new Error(subItemOrErrorResponse.errorMessage);
           }
         } else if (isArray) {
-          await forEachAsyncParallel((item as any)[fieldName], async (subItem: any, index: number) => {
+          await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index: number) => {
             const insertStatement = `INSERT INTO ${dbManager.schema}.${entityClass.name +
               fieldName.slice(0, -1)} (id, ${idFieldName}, ${fieldName.slice(
               0,
@@ -163,7 +166,7 @@ export default async function createEntity<T>(
 
     return isRecursiveCall || !shouldReturnItem
       ? ({} as any)
-      : await dbManager.getEntityById(_id, entityClass, Types);
+      : await dbManager.getEntityById(_id, entityClass, postQueryOperations);
   } catch (error) {
     if (isRecursiveCall) {
       throw error;

@@ -8,7 +8,7 @@ import { ErrorResponse } from "../../backk/types/ErrorResponse";
 @Injectable()
 export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
   constructor(dbManager: AbstractDbManager) {
-    super(dbManager);
+    super(dbManager, {});
   }
 
   @AllowForEveryUser()

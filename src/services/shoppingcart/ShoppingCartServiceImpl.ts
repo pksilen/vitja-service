@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from "@nestjs/common";
 import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
 import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
@@ -8,14 +8,23 @@ import ShoppingCartService from './ShoppingCartService';
 import CreateShoppingCartArg from './types/args/CreateShoppingCartArg';
 import ShoppingCart from './types/entities/ShoppingCart';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import IdAndUserId from '../../backk/types/IdAndUserId';
+import IdAndUserId from '../../backk/types/id/IdAndUserId';
 import executeAndGetErrorResponseOrResultOf from '../../backk/utils/executeAndGetErrorResponseOrResultOf';
+import ShoppingCartItem from './types/entities/ShoppingCartItem';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class ShoppingCartServiceImpl extends ShoppingCartService {
-  constructor(dbManager: AbstractDbManager) {
-    super(dbManager);
+  constructor(
+    dbManager: AbstractDbManager,
+    @Optional() readonly Types = {
+      ShoppingCart,
+      ShoppingCartItem,
+      CreateShoppingCartArg,
+      UserId
+    }
+  ) {
+    super(dbManager, Types);
   }
 
   deleteAllShoppingCarts(): Promise<void | ErrorResponse> {
@@ -25,10 +34,10 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @NoCaptcha()
   @AllowForSelf()
   async createShoppingCart(arg: CreateShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.createEntity(arg, ShoppingCart, this.Types, {
+    return this.dbManager.createEntity(arg, ShoppingCart, {
       hookFunc: async () =>
         executeAndGetErrorResponseOrResultOf(
-          await this.dbManager.getEntitiesCount({ userId: arg.userId }, ShoppingCart, this.Types),
+          await this.dbManager.getEntitiesCount({ userId: arg.userId }, ShoppingCart),
           (shoppingCartCount) => shoppingCartCount === 0
         ),
       errorMessage: 'Shopping cart already exists. Only one shopping cart is allowed'
@@ -37,12 +46,12 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   getShoppingCartByUserId({ userId }: UserId): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.getEntityBy('userId', userId, ShoppingCart, this.Types);
+    return this.dbManager.getEntityBy('userId', userId, ShoppingCart);
   }
 
   @AllowForSelf()
   updateShoppingCart(shoppingCart: ShoppingCart): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity(shoppingCart, ShoppingCart, this.Types);
+    return this.dbManager.updateEntity(shoppingCart, ShoppingCart);
   }
 
   @AllowForSelf()

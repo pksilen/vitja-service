@@ -5,35 +5,28 @@ import tryGetProjection from "./utils/tryGetProjection";
 import tryGetSortStatement from "./utils/tryGetSortStatement";
 import getJoinStatement from "./utils/getJoinStatement";
 import getPagingStatement from "./utils/getPagingStatement";
-import OptPostQueryOps from "../../../../types/OptPostQueryOps";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
 import getErrorResponse from "../../../../errors/getErrorResponse";
 import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
 export default async function getEntitiesByIds<T>(
   dbManager: PostgreSqlDbManager,
   _ids: string[],
   entityClass: new () => T,
-  Types: object,
-  postQueryOps?: OptPostQueryOps
+  { pageNumber, pageSize, sortBys, ...projection }: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
   try {
-    const projection = {
-      includeResponseFields: postQueryOps?.includeResponseFields,
-      excludeResponseFields: postQueryOps?.excludeResponseFields
-    };
-
+    const Types = dbManager.getTypes();
     const sqlColumns = tryGetProjection(dbManager.schema, projection, entityClass, Types);
-    const sortStatement = tryGetSortStatement(dbManager.schema, postQueryOps?.sortBys, entityClass, types);
+    const sortStatement = tryGetSortStatement(dbManager.schema, sortBys, entityClass, types);
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
-    const pagingStatement = getPagingStatement(postQueryOps?.pageNumber, postQueryOps?.pageSize);
+    const pagingStatement = getPagingStatement(pageNumber, pageSize);
     const numericIds = _ids.map((id) => {
-      const numericId = parseInt(id, 10)
+      const numericId = parseInt(id, 10);
       if (isNaN(numericId)) {
-        throw new Error(
-          getBadRequestErrorMessage('All ids must be a numeric ids')
-        );
+        throw new Error(getBadRequestErrorMessage('All ids must be a numeric ids'));
       }
       return numericId;
     });
@@ -48,7 +41,7 @@ export default async function getEntitiesByIds<T>(
       return getNotFoundErrorResponse(`Item with _ids: ${_ids} not found`);
     }
 
-    return transformRowsToObjects(result, entityClass, projection, Types);
+    return transformRowsToObjects(result, entityClass, projection, pageSize, Types);
   } catch (error) {
     return getErrorResponse(error);
   }

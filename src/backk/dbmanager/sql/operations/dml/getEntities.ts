@@ -8,18 +8,20 @@ import getPagingStatement from "./utils/getPagingStatement";
 import tryGetWhereStatement from "./utils/tryGetWhereStatement";
 import getFilterValues from "./utils/getFilterValues";
 import getJoinStatement from "./utils/getJoinStatement";
-import { PostQueryOps } from "../../../../types/PostQueryOps";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
 import getErrorResponse from "../../../../errors/getErrorResponse";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
 export default async function getEntities<T>(
   dbManager: PostgreSqlDbManager,
   filters: Partial<T> | SqlExpression[],
-  { pageNumber, pageSize, sortBys, ...projection }: PostQueryOps,
   entityClass: new () => T,
-  Types: object
+  {  pageNumber, pageSize, sortBys, ...projection }: PostQueryOperations
+
 ): Promise<T[] | ErrorResponse> {
+  const Types = dbManager.getTypes();
+
   try {
     const columns = tryGetProjection(dbManager.schema, projection, entityClass, Types);
     const whereStatement = tryGetWhereStatement(dbManager.schema, filters, entityClass, types);
@@ -34,7 +36,7 @@ export default async function getEntities<T>(
       )(filterValues)
     );
 
-    return transformRowsToObjects(result, entityClass, projection, Types);
+    return transformRowsToObjects(result, entityClass, projection, pageSize, Types);
   } catch (error) {
     return getErrorResponse(error);
   }

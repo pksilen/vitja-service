@@ -1,18 +1,19 @@
 # Vitja service
 
 TODO:
-- Generoi default _id/id order by clauset getItemXXX functiohin
-- Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
+- createItem function can accept projection argument
 - All multiple getXX functions should require mandatory PostQueryOperations interface type param
   - Create DefaultPagingAndSorting class which Args can extend
   - page: 1, pageCount: 50, order by _id ASC
+- Generoi default _id/id order by clauset getItemXXX functiohin
+- Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
 - Change Shopping cart: remove updateShopping cart and replace with add/remove to/from shopping cart, precondition for adding, salesitem is forSale.
 - Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale
-- createItem function can accept projection argument
 - Possible to delete order if all of the orderitems are toBeDelivered, tarkista delete precondition jsonpath.query(item, 'orderItems[?(@.state != "toBeDelivered")]')
   -pre operation hooks to update salesitems to forSale
     hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
-- Change ExpectInTestsToMatch to use regular function
+- Possible to deduce type property type from default value:
+  parseInt, parseFloat, true/false, ''/"""/`` (use in GetSalesItemsArg, DefaultPostQueryOpsArg)
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)

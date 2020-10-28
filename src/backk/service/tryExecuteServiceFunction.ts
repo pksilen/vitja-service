@@ -136,14 +136,5 @@ export default async function tryExecuteServiceFunction(
     );
   }
 
-  if (
-    instantiatedServiceFunctionArgument &&
-    instantiatedServiceFunctionArgument.pageSize &&
-    Array.isArray(response) &&
-    response.length > instantiatedServiceFunctionArgument.pageSize
-  ) {
-    return response.slice(0, instantiatedServiceFunctionArgument.pageSize);
-  }
-
   return response;
 }

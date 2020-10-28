@@ -1,8 +1,8 @@
 import { IsInt, Max, MaxLength, Min } from 'class-validator';
-import { PostQueryOps } from "../../../../backk/types/PostQueryOps";
-import SortBy from "../../../../backk/types/SortBy";
+import { PostQueryOperations } from "../../../../backk/types/postqueryoperations/PostQueryOperations";
+import SortBy from "../../../../backk/types/postqueryoperations/SortBy";
 
-export default class GetSalesItemsArg implements PostQueryOps {
+export default class GetSalesItemsArg implements PostQueryOperations {
   @MaxLength(512)
   textFilter?: string;
 
@@ -20,7 +20,7 @@ export default class GetSalesItemsArg implements PostQueryOps {
   maxPrice?: number;
 
   sortBys: SortBy[] = [{ sortField: 'createdTimestampInSecs', sortDirection: 'DESC' }];
-  // or alternatively [new Sorting('createdTimestampInSecs', 'DESC')];
+  // or alternatively [new SortBys('createdTimestampInSecs', 'DESC')];
 
   @MaxLength(512, { each: true })
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];

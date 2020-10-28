@@ -7,16 +7,25 @@ import transformRowsToObjects from './utils/transformRowsToObjects';
 import getErrorResponse from '../../../../errors/getErrorResponse';
 import getTypeMetadata from '../../../../metadata/getTypeMetadata';
 import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 
 export default async function getEntityById<T>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   entityClass: new () => T,
-  Types: object,
+  postQueryOperations?: PostQueryOperations,
   isInternalCall = false
 ): Promise<T | ErrorResponse> {
+  const Types = dbManager.getTypes();
+
   try {
-    const sqlColumns = tryGetProjection(dbManager.schema, {}, entityClass, Types, isInternalCall);
+    const sqlColumns = tryGetProjection(
+      dbManager.schema,
+      postQueryOperations ?? {},
+      entityClass,
+      Types,
+      isInternalCall
+    );
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
     const typeMetadata = getTypeMetadata(entityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
@@ -35,7 +44,7 @@ export default async function getEntityById<T>(
       return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
     }
 
-    return transformRowsToObjects(result, entityClass, {}, Types)[0];
+    return transformRowsToObjects(result, entityClass, {}, 1, Types)[0];
   } catch (error) {
     return getErrorResponse(error);
   }

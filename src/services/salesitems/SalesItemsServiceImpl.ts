@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from "@nestjs/common";
 import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
 import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
@@ -17,16 +17,28 @@ import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
 import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
 import { SalesItem } from './types/entities/SalesItem';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import IdsAndOptPostQueryOps from '../../backk/types/IdsAndOptPostQueryOps';
-import IdAndUserId from '../../backk/types/IdAndUserId';
-import _Id from '../../backk/types/_Id';
+import IdsAndDefaultPostQueryOperationsArg from '../../backk/types/postqueryoperations/args/IdsAndDefaultPostQueryOperationsArg';
+import IdAndUserId from '../../backk/types/id/IdAndUserId';
+import _Id from '../../backk/types/id/_Id';
 import executeAndGetErrorResponseOrResultOf from '../../backk/utils/executeAndGetErrorResponseOrResultOf';
+import SortBy from '../../backk/types/postqueryoperations/SortBy';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class SalesItemsServiceImpl extends SalesItemsService {
-  constructor(dbManager: AbstractDbManager) {
-    super(dbManager);
+  constructor(
+    dbManager: AbstractDbManager,
+    @Optional() readonly Types = {
+      GetByUserIdArg,
+      GetSalesItemsArg,
+      CreateSalesItemArg,
+      UpdateSalesItemArg,
+      UpdateSalesItemStateArg,
+      SalesItem,
+      SortBy
+    }
+  ) {
+    super(dbManager, Types);
   }
 
   deleteAllSalesItems(): Promise<void | ErrorResponse> {
@@ -44,15 +56,10 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
         previousPrice: -1
       },
       SalesItem,
-      this.Types,
       {
         hookFunc: async () =>
           executeAndGetErrorResponseOrResultOf(
-            await this.dbManager.getEntitiesCount(
-              { userId: arg.userId, state: 'forSale' },
-              SalesItem,
-              this.Types
-            ),
+            await this.dbManager.getEntitiesCount({ userId: arg.userId, state: 'forSale' }, SalesItem),
             (activeSalesItemCount) => activeSalesItemCount <= 100
           ),
         errorMessage: 'Maximum 100 active sales item allowed'
@@ -107,22 +114,28 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       ];
     }
 
-    return this.dbManager.getEntities(filters, postQueryOps, SalesItem, this.Types);
+    return this.dbManager.getEntities(filters, SalesItem, postQueryOps);
   }
 
   @AllowForSelf()
-  getSalesItemsByUserId({ userId, ...postQueryOps }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getEntitiesBy('userId', userId, SalesItem, this.Types, postQueryOps);
+  getSalesItemsByUserId({
+    userId,
+    _postQueryOperations
+  }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getEntitiesBy('userId', userId, SalesItem, _postQueryOperations);
   }
 
   @AllowForEveryUser()
-  getSalesItemsByIds({ _ids, ...postQueryOps }: IdsAndOptPostQueryOps): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getEntitiesByIds(_ids, SalesItem, this.Types, postQueryOps);
+  getSalesItemsByIds({
+    _ids,
+    _postQueryOperations
+  }: IdsAndDefaultPostQueryOperationsArg): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getEntitiesByIds(_ids, SalesItem, _postQueryOperations);
   }
 
   @AllowForEveryUser()
   getSalesItemById({ _id }: _Id): Promise<SalesItem | ErrorResponse> {
-    return this.dbManager.getEntityById(_id, SalesItem, this.Types);
+    return this.dbManager.getEntityById(_id, SalesItem);
   }
 
   @AllowForSelf()
@@ -135,7 +148,6 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
         : this.dbManager.updateEntity(
             { ...arg, previousPrice: currentSalesItemOrErrorResponse.price },
             SalesItem,
-            this.Types,
             {
               jsonPath: 'state',
               hookFunc: (state) => state === 'forSale',
@@ -153,7 +165,6 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.updateEntity(
       arg,
       SalesItem,
-      this.Types,
       requiredCurrentState
         ? {
             jsonPath: 'state',

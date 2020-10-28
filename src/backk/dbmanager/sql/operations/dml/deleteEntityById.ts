@@ -1,24 +1,21 @@
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import entityContainer, { JoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import getEntityById from "./getEntityById";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import getErrorResponse from "../../../../errors/getErrorResponse";
-import getTypeMetadata from "../../../../metadata/getTypeMetadata";
-import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
-import executePreHooks from "../../../hooks/executePreHooks";
-import { PreHook } from "../../../hooks/PreHook";
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import entityContainer, { JoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import getEntityById from './getEntityById';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import getErrorResponse from '../../../../errors/getErrorResponse';
+import getTypeMetadata from '../../../../metadata/getTypeMetadata';
+import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
+import executePreHooks from '../../../hooks/executePreHooks';
+import { PreHook } from '../../../hooks/PreHook';
 
 export default async function deleteEntityById<T extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   entityClass: new () => T,
-  Types?: object,
   preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
-  if (preHooks && !Types) {
-    throw new Error('Types argument must be given if preCondition argument is given');
-  }
+  const Types = dbManager.getTypes();
 
   try {
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
@@ -26,7 +23,7 @@ export default async function deleteEntityById<T extends object>(
     }
 
     if (Types && preHooks) {
-      const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, Types, true);
+      const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
       await executePreHooks(preHooks, itemOrErrorResponse);
     }
 
@@ -34,9 +31,8 @@ export default async function deleteEntityById<T extends object>(
     const idFieldName = typeMetadata._id ? '_id' : 'id';
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
-      throw new Error(
-        getBadRequestErrorMessage(idFieldName + ': must be a numeric id')
-      );
+      // noinspection ExceptionCaughtLocallyJS
+      throw new Error(getBadRequestErrorMessage(idFieldName + ': must be a numeric id'));
     }
 
     await Promise.all([

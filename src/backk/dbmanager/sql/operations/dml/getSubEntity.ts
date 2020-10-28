@@ -4,27 +4,28 @@ import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import getEntityById from "./getEntityById";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import getErrorResponse from "../../../../errors/getErrorResponse";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
 export default async function getSubEntity<T extends object, U extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
-  subItemPath: string,
+  subEntityPath: string,
   entityClass: new () => T,
-  Types: object
+  postQueryOperations?: PostQueryOperations
 ): Promise<U | ErrorResponse> {
   try {
-    const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, Types);
+    const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, postQueryOperations);
     if ('errorMessage' in itemOrErrorResponse) {
       return itemOrErrorResponse;
     }
 
-    const subItems = JSONPath({ json: itemOrErrorResponse, path: subItemPath });
+    const subItems = JSONPath({ json: itemOrErrorResponse, path: subEntityPath });
 
     if (subItems.length > 0) {
       return subItems[0];
     } else {
       return getNotFoundErrorResponse(
-        'Item with _id: ' + _id + ', sub item from path ' + subItemPath + ' not found'
+        'Item with _id: ' + _id + ', sub item from path ' + subEntityPath + ' not found'
       );
     }
   } catch (error) {

@@ -4,7 +4,7 @@ import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata'
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import { readFileSync } from 'fs';
 import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
-import SortBy from "../types/SortBy";
+import SortBy from "../types/postqueryoperations/SortBy";
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -45,8 +45,8 @@ export default function setPropertyTypeValidationDecorators(
   if (
     typeClassName === '_Id' ||
     typeClassName === 'Id' ||
-    typeClassName === 'OptPostQueryOps' ||
-    typeClassName === 'IdsAndOptPostQueryOps' ||
+    typeClassName === 'DefaultPostQueryOperationsArg' ||
+    typeClassName === 'IdsAndDefaultPostQueryOperationsArg' ||
     typeClassName === 'SortBy' ||
     typeClassName === 'IdAndUserId'
   ) {
