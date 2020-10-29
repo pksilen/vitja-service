@@ -14,8 +14,8 @@ export default async function tryExecutePreHooks<T extends object>(
     }
 
     let items: any[] | undefined;
-    if (preHook.jsonPath && itemOrErrorResponse !== undefined) {
-      items = JSONPath({ json: itemOrErrorResponse, path: preHook.jsonPath });
+    if (preHook.entityJsonPath && itemOrErrorResponse !== undefined) {
+      items = JSONPath({ json: itemOrErrorResponse, path: preHook.entityJsonPath });
     }
 
     const hookCallResult = await preHook.hookFunc(items && items.length === 1 ? items[0] : items);

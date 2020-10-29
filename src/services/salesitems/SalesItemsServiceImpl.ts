@@ -20,7 +20,7 @@ import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import IdsAndDefaultPostQueryOperationsArg from '../../backk/types/postqueryoperations/args/IdsAndDefaultPostQueryOperationsArg';
 import IdAndUserId from '../../backk/types/id/IdAndUserId';
 import _Id from '../../backk/types/id/_Id';
-import executeAndGetErrorResponseOrResultOf from '../../backk/utils/executeAndGetErrorResponseOrResultOf';
+import getErrorResponseOrResultOf from '../../backk/utils/getErrorResponseOrResultOf';
 import SortBy from '../../backk/types/postqueryoperations/SortBy';
 import {
   INVALID_SALES_ITEM_STATE,
@@ -66,7 +66,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       SalesItem,
       {
         hookFunc: async () =>
-          executeAndGetErrorResponseOrResultOf(
+          getErrorResponseOrResultOf(
             await this.dbManager.getEntitiesCount({ userId: arg.userId, state: 'forSale' }, SalesItem),
             (activeSalesItemCount) => activeSalesItemCount <= 100
           ),
@@ -158,7 +158,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
             { ...arg, previousPrice: currentSalesItemOrErrorResponse.price },
             SalesItem,
             {
-              jsonPath: 'state',
+              entityJsonPath: 'state',
               hookFunc: (state) => state === 'forSale',
               error: SALES_ITEM_STATE_MUST_BE_FOR_SALE
             }
@@ -177,7 +177,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       SalesItem,
       requiredCurrentState
         ? {
-            jsonPath: 'state',
+            entityJsonPath: 'state',
             hookFunc: (state) => state === requiredCurrentState,
             error: INVALID_SALES_ITEM_STATE
           }

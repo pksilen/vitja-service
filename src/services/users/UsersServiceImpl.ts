@@ -80,12 +80,12 @@ export default class UsersServiceImpl extends UsersService {
   changeUserPassword(arg: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity({ _id: arg._id, password: arg.password }, User, [
       {
-        jsonPath: 'userName',
+        entityJsonPath: 'userName',
         hookFunc: (userName) => userName === arg.userName,
         error: USER_NAME_CANNOT_BE_CHANGED
       },
       {
-        jsonPath: 'password',
+        entityJsonPath: 'password',
         hookFunc: async (hashedPassword) => await argon2.verify(hashedPassword, arg.currentPassword),
         error: INVALID_CURRENT_PASSWORD
       }

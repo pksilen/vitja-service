@@ -63,6 +63,7 @@ export default abstract class AbstractDbManager {
     newSubEntity: Omit<U, 'id'>,
     entityClass: new () => T,
     subEntityClass: new () => U,
+    preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 

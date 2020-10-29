@@ -170,9 +170,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     newSubEntity: Omit<U, 'id'>,
     entityClass: new () => T,
     subEntityClass: new () => U,
+    preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    return createSubEntity(this, _id, subEntitiesPath, newSubEntity, entityClass, subEntityClass, postQueryOperations);
+    return createSubEntity(this, _id, subEntitiesPath, newSubEntity, entityClass, subEntityClass, preHooks, postQueryOperations);
   }
 
   async getEntities<T>(

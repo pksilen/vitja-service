@@ -9,18 +9,22 @@ import CreateShoppingCartArg from './types/args/CreateShoppingCartArg';
 import ShoppingCart from './types/entities/ShoppingCart';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import IdAndUserId from '../../backk/types/id/IdAndUserId';
-import executeAndGetErrorResponseOrResultOf from '../../backk/utils/executeAndGetErrorResponseOrResultOf';
+import getErrorResponseOrResultOf from '../../backk/utils/getErrorResponseOrResultOf';
 import ShoppingCartItem from './types/entities/ShoppingCartItem';
 import { SHOPPING_CART_ALREADY_EXISTS } from './errors/shoppingCartServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import AddShoppingCartItemArg from './types/args/AddShoppingCartItemArg';
 import RemoveShoppingCartItemByIdArg from './types/args/RemoveShoppingCartItemByIdArg';
+import { SalesItem } from '../salesitems/types/entities/SalesItem';
+import { SALES_ITEM_STATE_MUST_BE_FOR_SALE } from '../salesitems/errors/salesItemsServiceErrors';
+import SalesItemsService from '../salesitems/SalesItemsService';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class ShoppingCartServiceImpl extends ShoppingCartService {
   constructor(
     dbManager: AbstractDbManager,
+    private readonly salesItemService: SalesItemsService,
     @Optional()
     readonly Types = {
       AddShoppingCartItemArg,
@@ -44,7 +48,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   async createShoppingCart(arg: CreateShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.createEntity(arg, ShoppingCart, {
       hookFunc: async () =>
-        executeAndGetErrorResponseOrResultOf(
+        getErrorResponseOrResultOf(
           await this.dbManager.getEntitiesCount({ userId: arg.userId }, ShoppingCart),
           (shoppingCartCount) => shoppingCartCount === 0
         ),
@@ -67,7 +71,15 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       'shoppingCartItems',
       { salesItemId },
       ShoppingCart,
-      ShoppingCartItem
+      ShoppingCartItem,
+      {
+        hookFunc: async () =>
+          getErrorResponseOrResultOf(
+            await this.salesItemService.getSalesItemById({ _id: salesItemId }),
+            (salesItem) => salesItem.state === 'forSale'
+          ),
+        error: SALES_ITEM_STATE_MUST_BE_FOR_SALE
+      }
     );
   }
 
@@ -80,7 +92,12 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       shoppingCartId,
       'shoppingCartItems',
       shoppingCartItemId,
-      ShoppingCart
+      ShoppingCart,
+      {
+        entityJsonPath: `shoppingCartItems[?(@.id == '${shoppingCartItemId}')]`,
+        hookFunc: async ({ salesItemId }) =>
+          await this.salesItemService.updateSalesItemState({ _id: salesItemId, state: 'forSale' })
+      }
     );
   }
 

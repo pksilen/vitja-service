@@ -5,6 +5,8 @@ import { ErrorResponse } from "../../../../types/ErrorResponse";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import { Entity } from "../../../../types/Entity";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { PreHook } from "../../../hooks/PreHook";
 
 export default async function createSubEntity<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -13,11 +15,16 @@ export default async function createSubEntity<T extends Entity, U extends object
   newSubEntity: Omit<U, 'id'>,
   entityClass: new () => T,
   subEntityClass: new () => U,
+  preHooks?: PreHook | PreHook[],
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
   try {
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.beginTransaction();
+    }
+
+    if (preHooks) {
+      await tryExecutePreHooks(preHooks);
     }
 
     const itemOrErrorResponse = await dbManager.getEntityById(_id, entityClass, postQueryOperations);

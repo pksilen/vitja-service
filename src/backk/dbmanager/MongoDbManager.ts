@@ -1,17 +1,17 @@
-import { Injectable } from '@nestjs/common';
-import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
-import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
-import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field } from './AbstractDbManager';
-import getMongoDbProjection from './mongodb/getMongoDbProjection';
-import { ErrorResponse } from '../types/ErrorResponse';
-import { RecursivePartial } from '../types/RecursivePartial';
-import { PreHook } from './hooks/PreHook';
-import { Entity } from '../types/Entity';
-import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
-import createErrorResponseFromError from '../errors/createErrorResponseFromError';
-import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
-import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import { Injectable } from "@nestjs/common";
+import { FilterQuery, MongoClient, ObjectId } from "mongodb";
+import { SalesItem } from "../../services/salesitems/types/entities/SalesItem";
+import SqlExpression from "./sql/expressions/SqlExpression";
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import getMongoDbProjection from "./mongodb/getMongoDbProjection";
+import { ErrorResponse } from "../types/ErrorResponse";
+import { RecursivePartial } from "../types/RecursivePartial";
+import { PreHook } from "./hooks/PreHook";
+import { Entity } from "../types/Entity";
+import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
+import createErrorResponseFromError from "../errors/createErrorResponseFromError";
+import createErrorResponseFromErrorMessageAndStatusCode
+  from "../errors/createErrorResponseFromErrorMessageAndStatusCode";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -83,6 +83,7 @@ export default class MongoDbManager extends AbstractDbManager {
     newSubEntity: Omit<U, 'id'>,
     entityClass: new () => T,
     subEntityClass: new () => U,
+    preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     throw new Error();
