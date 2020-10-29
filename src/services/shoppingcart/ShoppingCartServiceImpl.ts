@@ -12,6 +12,7 @@ import IdAndUserId from '../../backk/types/id/IdAndUserId';
 import executeAndGetErrorResponseOrResultOf from '../../backk/utils/executeAndGetErrorResponseOrResultOf';
 import ShoppingCartItem from './types/entities/ShoppingCartItem';
 import { SHOPPING_CART_ALREADY_EXISTS } from "./errors/shoppingCartServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -34,6 +35,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @NoCaptcha()
   @AllowForSelf()
+  @Errors([SHOPPING_CART_ALREADY_EXISTS])
   async createShoppingCart(arg: CreateShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.createEntity(arg, ShoppingCart, {
       hookFunc: async () =>

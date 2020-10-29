@@ -19,6 +19,7 @@ import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
 import DefaultPaymentMethod from './types/entities/DefaultPaymentMethod';
 import PaymentMethod from './types/entities/PaymentMethod';
 import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/usersServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -75,6 +76,7 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
+  @Errors([USER_NAME_CANNOT_BE_CHANGED, INVALID_CURRENT_PASSWORD])
   changeUserPassword(arg: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity({ _id: arg._id, password: arg.password }, User, [
       {

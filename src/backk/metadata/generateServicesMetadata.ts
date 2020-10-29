@@ -108,7 +108,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
                 if (proto.constructor.name === 'DefaultPostQueryOperationsArg') {
                   (controller as any)[serviceName].Types[
                     'DefaultPostQueryOperations'
-                    ] = DefaultPostQueryOperations;
+                  ] = DefaultPostQueryOperations;
                   (controller as any)[serviceName].Types['SortBy'] = SortBy;
                 }
                 (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
@@ -149,7 +149,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
               (controller as any)[serviceName].Types[finalReturnValueTypeName] = _Id;
             } else if (finalReturnValueTypeName === 'Id') {
               (controller as any)[serviceName].Types[finalReturnValueTypeName] = Id;
-            }  else {
+            } else {
               throw new Error(
                 'Type: ' + finalReturnValueTypeName + ' is not found in ' + serviceName + '.Types'
               );
@@ -175,7 +175,11 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
               functionName
             ),
             argType: paramTypeName,
-            returnValueType: returnValueTypeName
+            returnValueType: returnValueTypeName,
+            errors: serviceFunctionAnnotationContainer.getErrorsForServiceFunction(
+              service.constructor,
+              functionName
+            ) ?? []
           };
         });
 

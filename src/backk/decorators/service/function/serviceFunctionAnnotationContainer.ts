@@ -1,3 +1,5 @@
+import { ErrorCodeAndMessage } from "../../../dbmanager/hooks/PreHook";
+
 class ServiceFunctionAnnotationContainer {
   private serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
   private serviceFunctionNameToIsAllowedForEveryUserMap: { [key: string]: boolean } = {};
@@ -8,6 +10,7 @@ class ServiceFunctionAnnotationContainer {
   private serviceFunctionNameToDocStringMap: { [key: string]: string } = {};
   private serviceFunctionNameToExpectedResponseStatusCodeInTestsMap: { [key: string]: number } = {};
   private serviceFunctionNameToAllowedForTestsMap: { [key: string]: boolean } = {};
+  private serviceFunctionNameToErrorsMap: { [key: string]: ErrorCodeAndMessage[] } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -49,6 +52,10 @@ class ServiceFunctionAnnotationContainer {
 
   addServiceFunctionAllowedForTests(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToAllowedForTestsMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
+  addErrorsForServiceFunction(serviceClass: Function, functionName:string, errors: ErrorCodeAndMessage[]){
+    this.serviceFunctionNameToErrorsMap[`${serviceClass.name}${functionName}`] = errors;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -179,6 +186,24 @@ class ServiceFunctionAnnotationContainer {
     }
 
     return false;
+  }
+
+  getErrorsForServiceFunction(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToErrorsMap[
+          `${serviceClass.name}${functionName}`
+          ] !== undefined
+      ) {
+        return this.serviceFunctionNameToErrorsMap[
+          `${serviceClass.name}${functionName}`
+          ];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return undefined;
   }
 }
 

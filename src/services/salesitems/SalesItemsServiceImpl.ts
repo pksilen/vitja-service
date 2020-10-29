@@ -27,6 +27,7 @@ import {
   MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
   SALES_ITEM_STATE_MUST_BE_FOR_SALE
 } from './errors/salesItemsServiceErrors';
+import { Errors } from "../../backk/decorators/service/function/Errors";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -53,6 +54,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
 
   @NoCaptcha()
   @AllowForSelf()
+  @Errors([MAXIMUM_SALES_ITEM_COUNT_EXCEEDED])
   async createSalesItem(arg: CreateSalesItemArg): Promise<SalesItem | ErrorResponse> {
     return this.dbManager.createEntity(
       {
@@ -145,6 +147,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }
 
   @AllowForSelf()
+  @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
   async updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
       const currentSalesItemOrErrorResponse = await this.getSalesItemById({ _id: arg._id });
@@ -164,6 +167,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }
 
   @Private()
+  @Errors([INVALID_SALES_ITEM_STATE])
   updateSalesItemState(
     arg: UpdateSalesItemStateArg,
     requiredCurrentState?: 'forSale' | 'sold'

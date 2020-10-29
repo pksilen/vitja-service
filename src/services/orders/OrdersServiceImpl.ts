@@ -22,6 +22,7 @@ import {
   INVALID_ORDER_ITEM_STATE,
   ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
 } from './errors/ordersServiceErrors';
+import { Errors } from "../../backk/decorators/service/function/Errors";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -75,6 +76,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForSelf()
+  @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<void | ErrorResponse> {
     return this.dbManager.deleteSubEntities(orderId, `orderItems[?(@.id == '${orderItemId}')]`, Order, {
       jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
@@ -110,6 +112,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
+  @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   deliverOrderItem({
     orderId,
     orderItemId,
@@ -130,6 +133,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
+  @Errors([INVALID_ORDER_ITEM_STATE])
   updateOrderItemState({
     orderId,
     orderItemId,
