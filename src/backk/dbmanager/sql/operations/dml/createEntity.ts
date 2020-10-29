@@ -1,15 +1,15 @@
-import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
-import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import _ from "lodash";
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import getErrorResponse from "../../../../errors/getErrorResponse";
-import getTypeMetadata from "../../../../metadata/getTypeMetadata";
-import executePreHooks from "../../../hooks/executePreHooks";
-import { PreHook } from "../../../hooks/PreHook";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import _ from 'lodash';
+import isErrorResponse from '../../../../errors/isErrorResponse';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import getTypeMetadata from '../../../../metadata/getTypeMetadata';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
+import { PreHook } from '../../../hooks/PreHook';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 
 export default async function createEntity<T>(
   dbManager: PostgreSqlDbManager,
@@ -38,7 +38,7 @@ export default async function createEntity<T>(
     }
 
     if (!isRecursiveCall && preHooks) {
-      await executePreHooks(preHooks);
+      await tryExecutePreHooks(preHooks);
     }
 
     const entityMetadata = getTypeMetadata(entityClass as any);
@@ -68,7 +68,10 @@ export default async function createEntity<T>(
             const numericId = parseInt((entity as any)[fieldName], 10);
             if (isNaN(numericId)) {
               throw new Error(
-                getBadRequestErrorMessage(entityClass.name + '.' + fieldName + ': must be a numeric id')
+                createErrorMessageWithStatusCode(
+                  entityClass.name + '.' + fieldName + ': must be a numeric id',
+                  400
+                )
               );
             }
             values.push(numericId);
@@ -111,7 +114,7 @@ export default async function createEntity<T>(
             _.uniqBy((entity as any)[fieldName], (subItem: any) => subItem.id).length !==
             (entity as any)[fieldName].length
           ) {
-            throw new Error(getBadRequestErrorMessage('Duplicate id values in ' + fieldName));
+            throw new Error(createErrorMessageWithStatusCode('Duplicate id values in ' + fieldName, 400));
           }
 
           const relationEntityName = baseFieldTypeName;
@@ -174,7 +177,8 @@ export default async function createEntity<T>(
     if (shouldReturnItem && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-    return getErrorResponse(error);
+
+    return createErrorResponseFromError(error);
   } finally {
     if (!isRecursiveCall && shouldReturnItem) {
       dbManager.getClsNamespace()?.set('localTransaction', false);

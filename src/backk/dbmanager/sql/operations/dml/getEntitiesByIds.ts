@@ -1,5 +1,4 @@
 import { types } from "pg";
-import getNotFoundErrorResponse from "../../../../errors/getNotFoundErrorResponse";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import tryGetProjection from "./utils/tryGetProjection";
 import tryGetSortStatement from "./utils/tryGetSortStatement";
@@ -7,9 +6,10 @@ import getJoinStatement from "./utils/getJoinStatement";
 import getPagingStatement from "./utils/getPagingStatement";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
-import getErrorResponse from "../../../../errors/getErrorResponse";
-import { getBadRequestErrorMessage } from "../../../../errors/getBadRequestErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
+import createErrorResponseFromErrorMessageAndStatusCode from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
 
 export default async function getEntitiesByIds<T>(
   dbManager: PostgreSqlDbManager,
@@ -26,7 +26,7 @@ export default async function getEntitiesByIds<T>(
     const numericIds = _ids.map((id) => {
       const numericId = parseInt(id, 10);
       if (isNaN(numericId)) {
-        throw new Error(getBadRequestErrorMessage('All ids must be a numeric ids'));
+        throw new Error(createErrorMessageWithStatusCode('All ids must be a numeric ids', 400));
       }
       return numericId;
     });
@@ -38,11 +38,11 @@ export default async function getEntitiesByIds<T>(
     );
 
     if (result.rows.length === 0) {
-      return getNotFoundErrorResponse(`Item with _ids: ${_ids} not found`);
+      return createErrorResponseFromErrorMessageAndStatusCode(`Item with _ids: ${_ids} not found`, 404);
     }
 
     return transformRowsToObjects(result, entityClass, projection, pageSize, Types);
   } catch (error) {
-    return getErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

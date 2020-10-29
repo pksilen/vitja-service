@@ -2,7 +2,7 @@ import { JSONPath } from "jsonpath-plus";
 import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
-import getErrorResponse from "../../../../errors/getErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import { Entity } from "../../../../types/Entity";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
@@ -15,8 +15,6 @@ export default async function createSubEntity<T extends Entity, U extends object
   subEntityClass: new () => U,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
-  const Types = dbManager.getTypes();
-
   try {
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.beginTransaction();
@@ -60,6 +58,6 @@ export default async function createSubEntity<T extends Entity, U extends object
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-    return getErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

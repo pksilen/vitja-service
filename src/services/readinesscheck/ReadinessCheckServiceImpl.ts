@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import getServiceUnavailableErrorResponse from '../../backk/errors/getServiceUnavailableErrorResponse';
-import ReadinessCheckService from '../../backk/readinesscheck/ReadinessCheckService';
+import { Injectable } from "@nestjs/common";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import ReadinessCheckService from "../../backk/readinesscheck/ReadinessCheckService";
 import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import createErrorResponseFromErrorMessageAndStatusCode from "../../backk/errors/createErrorResponseFromErrorMessageAndStatusCode";
 
 @Injectable()
 export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
@@ -18,6 +18,6 @@ export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
       return;
     }
 
-    return Promise.resolve(getServiceUnavailableErrorResponse('Database not ready'));
+    return Promise.resolve(createErrorResponseFromErrorMessageAndStatusCode('Database not ready', 503));
   }
 }

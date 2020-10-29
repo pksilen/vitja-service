@@ -10,7 +10,7 @@ import getFilterValues from "./utils/getFilterValues";
 import getJoinStatement from "./utils/getJoinStatement";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
-import getErrorResponse from "../../../../errors/getErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
 export default async function getEntities<T>(
@@ -38,6 +38,6 @@ export default async function getEntities<T>(
 
     return transformRowsToObjects(result, entityClass, projection, pageSize, Types);
   } catch (error) {
-    return getErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

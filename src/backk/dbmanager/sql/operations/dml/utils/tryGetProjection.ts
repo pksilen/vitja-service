@@ -1,6 +1,7 @@
 import getFieldsFromGraphQlOrJson from '../../../../../graphql/getFieldsFromGraphQlOrJson';
 import { Projection } from '../../../../../types/postqueryoperations/Projection';
 import getFieldsForEntity from './getFieldsForEntity';
+import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
 
 export default function tryGetProjection(
   schema: string,
@@ -34,7 +35,12 @@ export default function tryGetProjection(
       );
 
       if (fields.length === 0) {
-        throw new Error('400:Invalid field: ' + includeResponseField + ' in includeResponseFields');
+        throw new Error(
+          createErrorMessageWithStatusCode(
+            'Invalid field: ' + includeResponseField + ' in includeResponseFields',
+            400
+          )
+        );
       }
     });
   }
@@ -54,7 +60,12 @@ export default function tryGetProjection(
       );
 
       if (fields.length === 0) {
-        throw new Error('400:Invalid field: ' + excludeResponseField + ' in excludeResponseFields');
+        throw new Error(
+          createErrorMessageWithStatusCode(
+            'Invalid field: ' + excludeResponseField + ' in excludeResponseFields',
+            400
+          )
+        );
       }
     });
   }

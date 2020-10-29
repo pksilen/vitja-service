@@ -3,11 +3,11 @@ import entityContainer, { JoinSpec } from '../../../../decorators/entity/entityA
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import getEntityById from './getEntityById';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
-import getErrorResponse from '../../../../errors/getErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getTypeMetadata from '../../../../metadata/getTypeMetadata';
-import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
-import executePreHooks from '../../../hooks/executePreHooks';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
+import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
 
 export default async function deleteEntityById<T extends object>(
   dbManager: PostgreSqlDbManager,
@@ -24,7 +24,7 @@ export default async function deleteEntityById<T extends object>(
 
     if (Types && preHooks) {
       const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
-      await executePreHooks(preHooks, itemOrErrorResponse);
+      await tryExecutePreHooks(preHooks, itemOrErrorResponse);
     }
 
     const typeMetadata = getTypeMetadata(entityClass);
@@ -32,7 +32,7 @@ export default async function deleteEntityById<T extends object>(
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(getBadRequestErrorMessage(idFieldName + ': must be a numeric id'));
+      throw new Error(createErrorMessageWithStatusCode(idFieldName + ': must be a numeric id', 400));
     }
 
     await Promise.all([
@@ -58,6 +58,6 @@ export default async function deleteEntityById<T extends object>(
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-    return getErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

@@ -5,7 +5,7 @@ import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import getFilterValues from "./utils/getFilterValues";
 import getJoinStatement from "./utils/getJoinStatement";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
-import getErrorResponse from "../../../../errors/getErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 
 export default async function getEntitiesCount<T>(
   dbManager: PostgreSqlDbManager,
@@ -27,6 +27,6 @@ export default async function getEntitiesCount<T>(
 
     return result.rows[0].count;
   } catch (error) {
-    return getErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

@@ -5,8 +5,8 @@ import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import getEntityById from './getEntityById';
 import deleteEntityById from './deleteEntityById';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
-import getErrorResponse from '../../../../errors/getErrorResponse';
-import executePreHooks from '../../../hooks/executePreHooks';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/Entity';
 
@@ -31,7 +31,7 @@ export default async function deleteSubEntities<T extends Entity, U extends obje
     }
 
     if (preHooks) {
-      await executePreHooks(preHooks, itemOrErrorResponse);
+      await tryExecutePreHooks(preHooks, itemOrErrorResponse);
     }
 
     const entityInstance = plainToClass(entityClass, itemOrErrorResponse);
@@ -50,6 +50,6 @@ export default async function deleteSubEntities<T extends Entity, U extends obje
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-    return getErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

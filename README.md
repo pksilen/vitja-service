@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
 - Service funktioiden virheilmoitusten dokumentointi
 - Change Shopping cart: remove updateShopping cart and replace with add/remove to/from shopping cart, precondition for adding, salesitem is forSale.
 - Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale

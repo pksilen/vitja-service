@@ -6,12 +6,12 @@ import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import getEntityById from './getEntityById';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
-import getErrorResponse from '../../../../errors/getErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getTypeMetadata from '../../../../metadata/getTypeMetadata';
-import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
-import executePreHooks from '../../../hooks/executePreHooks';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/Entity';
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
@@ -43,7 +43,7 @@ export default async function updateEntity<T extends Entity>(
       }
 
       if (preHooks) {
-        await executePreHooks(preHooks, itemOrErrorResponse);
+        await tryExecutePreHooks(preHooks, itemOrErrorResponse);
       }
     }
 
@@ -107,7 +107,7 @@ export default async function updateEntity<T extends Entity>(
           const numericId = parseInt(_id, 10);
           if (isNaN(numericId)) {
             // noinspection ExceptionCaughtLocallyJS
-            throw new Error(getBadRequestErrorMessage(idFieldName + ': must be a numeric id'));
+            throw new Error(createErrorMessageWithStatusCode(idFieldName + ': must be a numeric id', 400));
           }
 
           promises.push(
@@ -143,7 +143,7 @@ export default async function updateEntity<T extends Entity>(
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(
-        getBadRequestErrorMessage(entityClass.name + '.' + idFieldName + ': must be a numeric id')
+        createErrorMessageWithStatusCode(entityClass.name + '.' + idFieldName + ': must be a numeric id', 400)
       );
     }
 
@@ -168,7 +168,7 @@ export default async function updateEntity<T extends Entity>(
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-    return getErrorResponse(error);
+    return createErrorResponseFromError(error);
   } finally {
     if (!isRecursiveCall) {
       dbManager.getClsNamespace()?.set('localTransaction', false);

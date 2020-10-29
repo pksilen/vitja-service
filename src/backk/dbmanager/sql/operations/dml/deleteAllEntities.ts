@@ -1,8 +1,8 @@
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import entityContainer, { JoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
-import getInternalServerErrorResponse from '../../../../errors/getInternalServerErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from "../../../../types/ErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 
 export default async function deleteAllEntities<T>(
   dbManager: PostgreSqlDbManager,
@@ -30,6 +30,6 @@ export default async function deleteAllEntities<T>(
     if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
-    return getInternalServerErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

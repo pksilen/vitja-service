@@ -1,8 +1,6 @@
 import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
 import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
 import encrypt from "../../../../crypt/encrypt";
-import getNotFoundErrorResponse from "../../../../errors/getNotFoundErrorResponse";
-import getInternalServerErrorResponse from "../../../../errors/getInternalServerErrorResponse";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import tryGetProjection from "./utils/tryGetProjection";
 import tryGetSortStatement from "./utils/tryGetSortStatement";
@@ -11,6 +9,8 @@ import getPagingStatement from "./utils/getPagingStatement";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import createErrorResponseFromErrorMessageAndStatusCode from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 
 export default async function getEntitiesBy<T>(
   dbManager: PostgreSqlDbManager,
@@ -40,11 +40,11 @@ export default async function getEntitiesBy<T>(
     );
 
     if (result.rows.length === 0) {
-      return getNotFoundErrorResponse(`Item(s) with ${fieldName}: ${fieldValue} not found`);
+      return createErrorResponseFromErrorMessageAndStatusCode(`Item(s) with ${fieldName}: ${fieldValue} not found`, 404);
     }
 
     return transformRowsToObjects(result, entityClass, projection, pageSize, Types);
   } catch (error) {
-    return getInternalServerErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

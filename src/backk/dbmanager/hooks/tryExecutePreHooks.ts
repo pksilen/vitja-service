@@ -1,10 +1,10 @@
 import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
-import { getBadRequestErrorMessage } from '../../errors/getBadRequestErrorResponse';
 import { JSONPath } from 'jsonpath-plus';
 import { ErrorResponse } from '../../types/ErrorResponse';
-import { PreHook } from "./PreHook";
+import { PreHook } from './PreHook';
+import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
 
-export default async function executePreHooks<T extends object>(
+export default async function tryExecutePreHooks<T extends object>(
   preHooks: PreHook | PreHook[],
   itemOrErrorResponse?: T | ErrorResponse
 ) {
@@ -17,12 +17,18 @@ export default async function executePreHooks<T extends object>(
     if (preHook.jsonPath && itemOrErrorResponse !== undefined) {
       items = JSONPath({ json: itemOrErrorResponse, path: preHook.jsonPath });
     }
+
     const hookCallResult = await preHook.hookFunc(items && items.length === 1 ? items[0] : items);
+
     if (hookCallResult !== undefined) {
       if (typeof hookCallResult !== 'boolean' && 'errorMessage' in hookCallResult) {
         throw new Error(hookCallResult.errorMessage);
       } else if (hookCallResult === false) {
-        throw new Error(getBadRequestErrorMessage(preHook.errorMessage ?? 'Undefined pre-hook error'));
+        let errorMessage = 'Undefined pre-hook error';
+        if (preHook.error) {
+          errorMessage = 'Error code ' + preHook.error.errorCode + ':' + preHook.error.errorMessage;
+        }
+        throw new Error(createErrorMessageWithStatusCode(errorMessage, preHook.error?.statusCode ?? 400));
       }
     }
   });

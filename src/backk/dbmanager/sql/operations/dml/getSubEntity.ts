@@ -1,10 +1,10 @@
-import { JSONPath } from "jsonpath-plus";
-import getNotFoundErrorResponse from "../../../../errors/getNotFoundErrorResponse";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import getEntityById from "./getEntityById";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import getErrorResponse from "../../../../errors/getErrorResponse";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import { JSONPath } from 'jsonpath-plus';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import getEntityById from './getEntityById';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import createErrorResponseFromErrorMessageAndStatusCode from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
 
 export default async function getSubEntity<T extends object, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -24,11 +24,12 @@ export default async function getSubEntity<T extends object, U extends object>(
     if (subItems.length > 0) {
       return subItems[0];
     } else {
-      return getNotFoundErrorResponse(
-        'Item with _id: ' + _id + ', sub item from path ' + subEntityPath + ' not found'
+      return createErrorResponseFromErrorMessageAndStatusCode(
+        'Item with _id: ' + _id + ', sub item from path ' + subEntityPath + ' not found',
+        404
       );
     }
   } catch (error) {
-    return getErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

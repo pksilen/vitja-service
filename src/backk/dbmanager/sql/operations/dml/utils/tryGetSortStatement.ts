@@ -5,6 +5,7 @@ import assertIsColumnName from '../../../../../assertions/assertIsColumnName';
 import assertIsSortDirection from '../../../../../assertions/assertIsSortDirection';
 import SortBy from '../../../../../types/postqueryoperations/SortBy';
 import getFieldsForEntity from './getFieldsForEntity';
+import createErrorMessageWithStatusCode from "../../../../../errors/createErrorMessageWithStatusCode";
 
 export default function tryGetSortStatement<T>(
   schema: string,
@@ -27,7 +28,7 @@ export default function tryGetSortStatement<T>(
       try {
         projection = tryGetProjection(schema, { includeResponseFields: [sortField] }, entityClass, Types);
       } catch (error) {
-        throw new Error('400:Invalid sort field: ' + sortField);
+        throw new Error(createErrorMessageWithStatusCode('Invalid sort field: ' + sortField, 400));
       }
 
       const sortColumn = getSqlColumnFromProjection(projection);

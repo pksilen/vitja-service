@@ -1,14 +1,14 @@
 import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
 import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
 import encrypt from "../../../../crypt/encrypt";
-import getNotFoundErrorResponse from "../../../../errors/getNotFoundErrorResponse";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import tryGetProjection from "./utils/tryGetProjection";
 import getJoinStatement from "./utils/getJoinStatement";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
-import getErrorResponse from "../../../../errors/getErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import transformRowsToObjects from "./utils/transformRowsToObjects";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import createErrorResponseFromErrorMessageAndStatusCode from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
 
 export default async function getEntityBy<T>(
   dbManager: PostgreSqlDbManager,
@@ -27,13 +27,7 @@ export default async function getEntityBy<T>(
       (item as any)[fieldName] = encrypt(fieldValue as any, false);
     }
 
-    const sqlColumns = tryGetProjection(
-      dbManager.schema,
-      postQueryOperations ?? {},
-      entityClass,
-      Types
-    );
-
+    const sqlColumns = tryGetProjection(dbManager.schema, postQueryOperations ?? {}, entityClass, Types);
     const joinStatement = getJoinStatement(dbManager.schema, entityClass, Types);
 
     const result = await dbManager.tryExecuteQuery(
@@ -42,11 +36,11 @@ export default async function getEntityBy<T>(
     );
 
     if (result.rows.length === 0) {
-      return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
+      return createErrorResponseFromErrorMessageAndStatusCode(`Item with ${fieldName}: ${fieldValue} not found`, 404);
     }
 
     return transformRowsToObjects(result, entityClass, {}, 1, Types)[0];
   } catch (error) {
-    return getErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

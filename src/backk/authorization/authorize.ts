@@ -1,11 +1,10 @@
-import throwHttpException from '../errors/throwHttpException';
-import { HttpStatus } from '@nestjs/common';
+import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
 import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
 import AuthorizationService from './AuthorizationService';
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
 import BaseService from '../service/basetypes/BaseService';
 import UsersBaseService from '../users/UsersBaseService';
-import getForbiddenErrorResponse from '../errors/getForbiddenErrorResponse';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
 
 export default async function authorize(
   service: BaseService,
@@ -85,5 +84,7 @@ export default async function authorize(
     return;
   }
 
-  throwHttpException(getForbiddenErrorResponse('Attempted service function call not authorized'));
+  createErrorFromErrorMessageAndThrowError(
+    createErrorMessageWithStatusCode('Attempted service function call not authorized', 403)
+  );
 }

@@ -1,13 +1,13 @@
-import getNotFoundErrorResponse from '../../../../errors/getNotFoundErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import tryGetProjection from './utils/tryGetProjection';
 import getJoinStatement from './utils/getJoinStatement';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import transformRowsToObjects from './utils/transformRowsToObjects';
-import getErrorResponse from '../../../../errors/getErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getTypeMetadata from '../../../../metadata/getTypeMetadata';
-import { getBadRequestErrorMessage } from '../../../../errors/getBadRequestErrorResponse';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import createErrorResponseFromErrorMessageAndStatusCode from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
 
 export default async function getEntityById<T>(
   dbManager: PostgreSqlDbManager,
@@ -32,7 +32,7 @@ export default async function getEntityById<T>(
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(getBadRequestErrorMessage(idFieldName + ': must be a numeric id'));
+      throw new Error(createErrorMessageWithStatusCode(idFieldName + ': must be a numeric id', 400));
     }
 
     const result = await dbManager.tryExecuteQuery(
@@ -41,11 +41,11 @@ export default async function getEntityById<T>(
     );
 
     if (result.rows.length === 0) {
-      return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
+      return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
     }
 
     return transformRowsToObjects(result, entityClass, {}, 1, Types)[0];
   } catch (error) {
-    return getErrorResponse(error);
+    return createErrorResponseFromError(error);
   }
 }

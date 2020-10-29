@@ -11,6 +11,7 @@ import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import IdAndUserId from '../../backk/types/id/IdAndUserId';
 import executeAndGetErrorResponseOrResultOf from '../../backk/utils/executeAndGetErrorResponseOrResultOf';
 import ShoppingCartItem from './types/entities/ShoppingCartItem';
+import { SHOPPING_CART_ALREADY_EXISTS } from "./errors/shoppingCartServiceErrors";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -40,7 +41,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
           await this.dbManager.getEntitiesCount({ userId: arg.userId }, ShoppingCart),
           (shoppingCartCount) => shoppingCartCount === 0
         ),
-      errorMessage: 'Shopping cart already exists. Only one shopping cart is allowed'
+      error: SHOPPING_CART_ALREADY_EXISTS
     });
   }
 

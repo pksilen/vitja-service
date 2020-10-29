@@ -6,12 +6,11 @@ import authorize from '../authorization/authorize';
 import BaseService from './basetypes/BaseService';
 import verifyCaptchaToken from '../captcha/verifyCaptchaToken';
 import getPropertyBaseTypeName from '../utils/type/getPropertyBaseTypeName';
-import throwHttpException from '../errors/throwHttpException';
+import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
 import UsersBaseService from '../users/UsersBaseService';
-import getBadRequestErrorResponse from '../errors/getBadRequestErrorResponse';
 import { ServiceMetadata } from '../metadata/ServiceMetadata';
 import tryValidateObject from '../validation/tryValidateObject';
-import getErrorResponse from '../errors/getErrorResponse';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
 
 export interface Options {
   isMetadataServiceEnabled?: boolean;
@@ -30,7 +29,7 @@ export default async function tryExecuteServiceFunction(
     if (!options || options.isMetadataServiceEnabled === undefined || options.isMetadataServiceEnabled) {
       return controller.servicesMetadata;
     }
-    throwHttpException(getBadRequestErrorResponse(`Unknown service: ${serviceName}`));
+    createErrorFromErrorMessageAndThrowError(createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, 400));
   } else if (serviceFunction === 'livenessCheckService.isAlive') {
     return;
   } else if (
@@ -41,11 +40,13 @@ export default async function tryExecuteServiceFunction(
   }
 
   if (!controller[serviceName]) {
-    throwHttpException(getBadRequestErrorResponse(`Unknown service: ${serviceName}`));
+    createErrorFromErrorMessageAndThrowError(createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, 400));
   }
 
   if (!controller[serviceName][functionName]) {
-    throwHttpException(getBadRequestErrorResponse(`Unknown function: ${serviceName}.${functionName}`));
+    createErrorFromErrorMessageAndThrowError(
+      createErrorMessageWithStatusCode(`Unknown function: ${serviceName}.${functionName}`, 400)
+    );
   }
   const usersService = Object.values(controller).find((service) => service instanceof UsersBaseService);
 
@@ -107,7 +108,7 @@ export default async function tryExecuteServiceFunction(
     });
 
     if (!instantiatedServiceFunctionArgument) {
-      throwHttpException(getBadRequestErrorResponse('Missing service function argument'));
+      createErrorFromErrorMessageAndThrowError(createErrorMessageWithStatusCode('Missing service function argument', 400));
     }
 
     await tryValidateObject(instantiatedServiceFunctionArgument);
@@ -130,10 +131,7 @@ export default async function tryExecuteServiceFunction(
   }
 
   if (response && response.statusCode && response.errorMessage) {
-    throw new HttpException(
-      getErrorResponse(new Error(response.errorMessage)),
-      response.statusCode
-    );
+    throw new HttpException(response, response.statusCode);
   }
 
   return response;

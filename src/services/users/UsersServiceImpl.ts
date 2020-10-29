@@ -18,6 +18,7 @@ import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
 import DefaultPaymentMethod from './types/entities/DefaultPaymentMethod';
 import PaymentMethod from './types/entities/PaymentMethod';
+import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/usersServiceErrors";
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -79,12 +80,12 @@ export default class UsersServiceImpl extends UsersService {
       {
         jsonPath: 'userName',
         hookFunc: (userName) => userName === arg.userName,
-        errorMessage: 'User name cannot be changed'
+        error: USER_NAME_CANNOT_BE_CHANGED
       },
       {
         jsonPath: 'password',
         hookFunc: async (hashedPassword) => await argon2.verify(hashedPassword, arg.currentPassword),
-        errorMessage: 'Invalid current password'
+        error: INVALID_CURRENT_PASSWORD
       }
     ]);
   }

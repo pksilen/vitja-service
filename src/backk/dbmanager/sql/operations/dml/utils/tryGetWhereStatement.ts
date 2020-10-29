@@ -1,6 +1,7 @@
 import SqlExpression from '../../../expressions/SqlExpression';
 import tryGetProjection from './tryGetProjection';
 import getSqlColumnFromProjection from './getSqlColumnFromProjection';
+import createErrorMessageWithStatusCode from "../../../../../errors/createErrorMessageWithStatusCode";
 
 export default function tryGetWhereStatement<T>(
   schema: string,
@@ -33,7 +34,7 @@ export default function tryGetWhereStatement<T>(
     try {
       projection = tryGetProjection(schema, { includeResponseFields: [fieldName] }, entityClass, Types);
     } catch (error) {
-      throw new Error('400: Invalid filter field: ' + fieldName);
+      throw new Error(createErrorMessageWithStatusCode('Invalid filter field: ' + fieldName, 400));
     }
 
     const sqlColumn = getSqlColumnFromProjection(projection);

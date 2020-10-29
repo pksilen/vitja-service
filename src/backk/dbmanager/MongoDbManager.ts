@@ -1,16 +1,17 @@
-import { Injectable } from "@nestjs/common";
-import { FilterQuery, MongoClient, ObjectId } from "mongodb";
-import { SalesItem } from "../../services/salesitems/types/entities/SalesItem";
-import getInternalServerErrorResponse from "../errors/getInternalServerErrorResponse";
-import getNotFoundErrorResponse from "../errors/getNotFoundErrorResponse";
-import SqlExpression from "./sql/expressions/SqlExpression";
-import AbstractDbManager, { Field } from "./AbstractDbManager";
-import getMongoDbProjection from "./mongodb/getMongoDbProjection";
-import { ErrorResponse } from "../types/ErrorResponse";
-import { RecursivePartial } from "../types/RecursivePartial";
-import { PreHook } from "./hooks/PreHook";
-import { Entity } from "../types/Entity";
-import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
+import { Injectable } from '@nestjs/common';
+import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
+import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
+import SqlExpression from './sql/expressions/SqlExpression';
+import AbstractDbManager, { Field } from './AbstractDbManager';
+import getMongoDbProjection from './mongodb/getMongoDbProjection';
+import { ErrorResponse } from '../types/ErrorResponse';
+import { RecursivePartial } from '../types/RecursivePartial';
+import { PreHook } from './hooks/PreHook';
+import { Entity } from '../types/Entity';
+import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
+import createErrorResponseFromError from '../errors/createErrorResponseFromError';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -72,7 +73,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
       return this.getEntityById(writeOperationResult.insertedId.toHexString(), entityClass);
     } catch (error) {
-      return getInternalServerErrorResponse(error);
+      return createErrorResponseFromError(error);
     }
   }
 
@@ -119,7 +120,7 @@ export default class MongoDbManager extends AbstractDbManager {
         return cursor.toArray();
       });
     } catch (error) {
-      return getInternalServerErrorResponse(error);
+      return createErrorResponseFromError(error);
     }
   }
 
@@ -148,9 +149,9 @@ export default class MongoDbManager extends AbstractDbManager {
         return foundItem;
       }
 
-      return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
+      return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
     } catch (error) {
-      return getInternalServerErrorResponse(error);
+      return createErrorResponseFromError(error);
     }
   }
 
@@ -182,9 +183,9 @@ export default class MongoDbManager extends AbstractDbManager {
         return foundItems;
       }
 
-      return getNotFoundErrorResponse(`Item with _ids: ${_ids} not found`);
+      return createErrorResponseFromErrorMessageAndStatusCode(`Item with _ids: ${_ids} not found`, 404);
     } catch (error) {
-      return getInternalServerErrorResponse(error);
+      return createErrorResponseFromError(error);
     }
   }
 
@@ -206,9 +207,12 @@ export default class MongoDbManager extends AbstractDbManager {
         return foundItem;
       }
 
-      return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
+      return createErrorResponseFromErrorMessageAndStatusCode(
+        `Item with ${fieldName}: ${fieldValue} not found`,
+        404
+      );
     } catch (error) {
-      return getInternalServerErrorResponse(error);
+      return createErrorResponseFromError(error);
     }
   }
 
@@ -232,9 +236,12 @@ export default class MongoDbManager extends AbstractDbManager {
         return foundItem;
       }
 
-      return getNotFoundErrorResponse(`Item with ${fieldName}: ${fieldValue} not found`);
+      return createErrorResponseFromErrorMessageAndStatusCode(
+        `Item with ${fieldName}: ${fieldValue} not found`,
+        404
+      );
     } catch (error) {
-      return getInternalServerErrorResponse(error);
+      return createErrorResponseFromError(error);
     }
   }
 
@@ -253,10 +260,10 @@ export default class MongoDbManager extends AbstractDbManager {
       );
 
       if (updateOperationResult.matchedCount !== 1) {
-        return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
+        return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
       }
     } catch (error) {
-      return getInternalServerErrorResponse(error);
+      return createErrorResponseFromError(error);
     }
   }
 
@@ -274,10 +281,10 @@ export default class MongoDbManager extends AbstractDbManager {
       );
 
       if (deleteOperationResult.deletedCount !== 1) {
-        return getNotFoundErrorResponse(`Item with _id: ${_id} not found`);
+        return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
       }
     } catch (error) {
-      return getInternalServerErrorResponse(error);
+      return createErrorResponseFromError(error);
     }
   }
 
@@ -299,7 +306,7 @@ export default class MongoDbManager extends AbstractDbManager {
           .deleteMany({})
       );
     } catch (error) {
-      return getInternalServerErrorResponse(error);
+      return createErrorResponseFromError(error);
     }
   }
 

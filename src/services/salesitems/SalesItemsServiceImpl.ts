@@ -1,4 +1,4 @@
-import { Injectable, Optional } from "@nestjs/common";
+import { Injectable, Optional } from '@nestjs/common';
 import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
 import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
@@ -22,13 +22,19 @@ import IdAndUserId from '../../backk/types/id/IdAndUserId';
 import _Id from '../../backk/types/id/_Id';
 import executeAndGetErrorResponseOrResultOf from '../../backk/utils/executeAndGetErrorResponseOrResultOf';
 import SortBy from '../../backk/types/postqueryoperations/SortBy';
+import {
+  INVALID_SALES_ITEM_STATE,
+  MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
+  SALES_ITEM_STATE_MUST_BE_FOR_SALE
+} from './errors/salesItemsServiceErrors';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class SalesItemsServiceImpl extends SalesItemsService {
   constructor(
     dbManager: AbstractDbManager,
-    @Optional() readonly Types = {
+    @Optional()
+    readonly Types = {
       GetByUserIdArg,
       GetSalesItemsArg,
       CreateSalesItemArg,
@@ -62,7 +68,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
             await this.dbManager.getEntitiesCount({ userId: arg.userId, state: 'forSale' }, SalesItem),
             (activeSalesItemCount) => activeSalesItemCount <= 100
           ),
-        errorMessage: 'Maximum 100 active sales item allowed'
+        error: MAXIMUM_SALES_ITEM_COUNT_EXCEEDED
       }
     );
   }
@@ -151,7 +157,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
             {
               jsonPath: 'state',
               hookFunc: (state) => state === 'forSale',
-              errorMessage: 'Sales item state must be forSale'
+              error: SALES_ITEM_STATE_MUST_BE_FOR_SALE
             }
           );
     });
@@ -169,7 +175,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
         ? {
             jsonPath: 'state',
             hookFunc: (state) => state === requiredCurrentState,
-            errorMessage: 'Sales item state must be ' + requiredCurrentState
+            error: INVALID_SALES_ITEM_STATE
           }
         : undefined
     );

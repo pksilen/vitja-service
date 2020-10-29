@@ -1,4 +1,4 @@
-import { Injectable, Optional } from "@nestjs/common";
+import { Injectable, Optional } from '@nestjs/common';
 import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
@@ -18,6 +18,10 @@ import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import IdAndUserId from '../../backk/types/id/IdAndUserId';
 import ShoppingCartItem from '../shoppingcart/types/entities/ShoppingCartItem';
+import {
+  INVALID_ORDER_ITEM_STATE,
+  ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+} from './errors/ordersServiceErrors';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -25,7 +29,8 @@ export default class OrdersServiceImpl extends OrdersService {
   constructor(
     dbManager: AbstractDbManager,
     private readonly salesItemsService: SalesItemsService,
-    @Optional() readonly Types = {
+    @Optional()
+    readonly Types = {
       AddOrderItemArg,
       CreateOrderArg,
       DeleteOrderItemArg,
@@ -74,7 +79,7 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.deleteSubEntities(orderId, `orderItems[?(@.id == '${orderItemId}')]`, Order, {
       jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
       hookFunc: (state) => state === 'toBeDelivered',
-      errorMessage: 'order item state must be toBeDelivered'
+      error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
     });
   }
 
@@ -119,7 +124,7 @@ export default class OrdersServiceImpl extends OrdersService {
       {
         jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
         hookFunc: (state) => state === 'toBeDelivered',
-        errorMessage: 'order item state must be toBeDelivered'
+        error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
       }
     );
   }
@@ -144,7 +149,7 @@ export default class OrdersServiceImpl extends OrdersService {
         {
           jsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
           hookFunc: (state) => state === OrdersServiceImpl.getPreviousStateFor(newState),
-          errorMessage: 'order item state must be ' + OrdersServiceImpl.getPreviousStateFor(newState)
+          error: INVALID_ORDER_ITEM_STATE
         }
       );
     });
