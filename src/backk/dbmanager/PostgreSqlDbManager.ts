@@ -259,6 +259,17 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return deleteSubEntities(this, _id, subEntitiesPath, entityClass, preHooks);
   }
 
+  deleteSubEntityById<T extends Entity>(
+    _id: string,
+    subEntitiesPath: string,
+    subEntityId: string,
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[]
+  ): Promise<void | ErrorResponse> {
+    const subEntityPath = `${subEntitiesPath}[?(@.id == '${subEntityId}')]`;
+    return this.deleteSubEntities(_id, subEntityPath, entityClass, preHooks);
+  }
+
   async deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
     return deleteAllEntities(this, entityClass);
   }

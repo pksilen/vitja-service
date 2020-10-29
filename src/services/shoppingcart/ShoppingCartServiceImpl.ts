@@ -1,4 +1,4 @@
-import { Injectable, Optional } from "@nestjs/common";
+import { Injectable, Optional } from '@nestjs/common';
 import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
 import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
@@ -11,19 +11,24 @@ import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import IdAndUserId from '../../backk/types/id/IdAndUserId';
 import executeAndGetErrorResponseOrResultOf from '../../backk/utils/executeAndGetErrorResponseOrResultOf';
 import ShoppingCartItem from './types/entities/ShoppingCartItem';
-import { SHOPPING_CART_ALREADY_EXISTS } from "./errors/shoppingCartServiceErrors";
-import { Errors } from "../../backk/decorators/service/function/Errors";
+import { SHOPPING_CART_ALREADY_EXISTS } from './errors/shoppingCartServiceErrors';
+import { Errors } from '../../backk/decorators/service/function/Errors';
+import AddShoppingCartItemArg from './types/args/AddShoppingCartItemArg';
+import RemoveShoppingCartItemByIdArg from './types/args/RemoveShoppingCartItemByIdArg';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class ShoppingCartServiceImpl extends ShoppingCartService {
   constructor(
     dbManager: AbstractDbManager,
-    @Optional() readonly Types = {
+    @Optional()
+    readonly Types = {
+      AddShoppingCartItemArg,
+      CreateShoppingCartArg,
       ShoppingCart,
       ShoppingCartItem,
-      CreateShoppingCartArg,
-      UserId
+      UserId,
+      RemoveShoppingCartItemByIdArg
     }
   ) {
     super(dbManager, Types);
@@ -53,8 +58,30 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  updateShoppingCart(shoppingCart: ShoppingCart): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity(shoppingCart, ShoppingCart);
+  addShoppingCartItem({
+    shoppingCartId,
+    salesItemId
+  }: AddShoppingCartItemArg): Promise<ShoppingCart | ErrorResponse> {
+    return this.dbManager.createSubEntity(
+      shoppingCartId,
+      'shoppingCartItems',
+      { salesItemId },
+      ShoppingCart,
+      ShoppingCartItem
+    );
+  }
+
+  @AllowForSelf()
+  removeShoppingCartItemById({
+    shoppingCartId,
+    shoppingCartItemId
+  }: RemoveShoppingCartItemByIdArg): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteSubEntityById(
+      shoppingCartId,
+      'shoppingCartItems',
+      shoppingCartItemId,
+      ShoppingCart
+    );
   }
 
   @AllowForSelf()

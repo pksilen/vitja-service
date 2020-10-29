@@ -1,12 +1,13 @@
 # Vitja service
 
 TODO:
-- Service funktioiden virheilmoitusten dokumentointi
-- Change Shopping cart: remove updateShopping cart and replace with add/remove to/from shopping cart, precondition for adding, salesitem is forSale.
+- Change Shopping cart: remove updateShopping cart and replace with add/remove to/from shopping cart, precondition for adding, salesitem is forSale.`
 - Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale
 - Possible to delete order if all of the orderitems are toBeDelivered, tarkista delete precondition jsonpath.query(item, 'orderItems[?(@.state != "toBeDelivered")]')
   -pre operation hooks to update salesitems to forSale
     hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
+- If include/exclude removes a subentity, don't join that data
+- Only require needed validations if type is not entity and it's type is not used in any services' any function as argument
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
@@ -15,7 +16,7 @@ TODO:
   - Triggeröidyt hälyt kirjoitetaan persistent volumelle
   - Type: 'Log' | 'Alarm trigger', 'Alarm cancel',
   - level: 'Error' | 'warn' | 'info' | 'debug'
-  - source: { service: 'vitja', pod: 'vitja-fsfds-4335', 'host': 'control-01' }
+  - source: { service: 'vitja', pod: 'vitja-fsfds-4335', 'hos': 'control-01' }
   - timestampIso8601Utc
   - timeZoneIso8601
   - text
@@ -26,6 +27,7 @@ TODO:
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
 - executeMultiple endpoint, to execute multiple serviceCalls 
   { executeInSequence: { user : {}, executeInParallel: {userSalesItems:{}, userOrders: {}}}}
+  - execute remote services 
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)
@@ -46,7 +48,7 @@ TODO:
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
 - Add boolean field to entity to test it
 - New entities: User has Friends, Posts, show posts from friends
-  - GetEntitiesByIn: get Post where userId in User's friendIds
+  - GetEntitiesByIn: get Posts where userId in User's friendIds
 - Unit testaa: shouldIncludeField eri keissit
 
 TODO NEXT RELEASE:

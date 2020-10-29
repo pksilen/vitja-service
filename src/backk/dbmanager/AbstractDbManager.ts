@@ -129,5 +129,13 @@ export default abstract class AbstractDbManager {
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
+  abstract deleteSubEntityById<T extends Entity>(
+    _id: string,
+    subEntitiesPath: string,
+    subEntityId: string,
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[]
+  ): Promise<void | ErrorResponse>;
+
   abstract deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse>;
 }

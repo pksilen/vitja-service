@@ -297,6 +297,16 @@ export default class MongoDbManager extends AbstractDbManager {
     return Promise.resolve();
   }
 
+  deleteSubEntityById<T extends Entity>(
+    _id: string,
+    subEntitiesPath: string,
+    subEntityId: string,
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[]
+  ): Promise<void | ErrorResponse> {
+    return Promise.resolve();
+  }
+
   async deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
     try {
       await this.tryExecute((client) =>
