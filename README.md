@@ -1,14 +1,13 @@
 # Vitja service
 
 TODO:
-- Generoi default _id/id order by clauset getItemXXX functiohin
 - Testaa response rows objectki onko vain yksi subitemi ja pelkkiä nulleja subItemissä => empty subitem array
+- Service funktioiden virheilmoitusten dokumentointi
 - Change Shopping cart: remove updateShopping cart and replace with add/remove to/from shopping cart, precondition for adding, salesitem is forSale.
 - Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale
 - Possible to delete order if all of the orderitems are toBeDelivered, tarkista delete precondition jsonpath.query(item, 'orderItems[?(@.state != "toBeDelivered")]')
   -pre operation hooks to update salesitems to forSale
     hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
- 
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
@@ -26,10 +25,8 @@ TODO:
 - Own remote service function executor (Http)
      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
-- executeMultipleInParallel endpoint, to execute multiple serviceCalls in parallel
-  - executionService.executeInParallel
-- executeInSequence
-  - executionService.executeInSequence
+- executeMultiple endpoint, to execute multiple serviceCalls 
+  { executeInSequence: { user : {}, executeInParallel: {userSalesItems:{}, userOrders: {}}}}
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)
@@ -48,10 +45,12 @@ TODO:
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
+- Add boolean field to entity to test it
+- New entities: User has Friends, Posts, show posts from friends
+  - GetEntitiesByIn: get Post where userId in User's friendIds
 - Unit testaa: shouldIncludeField eri keissit
 
 TODO NEXT RELEASE:
-- Service funktioiden virheilmoitusten dokumentointi
 - getDbManager support for multiple dbmanagers
 - Response headers added Api gateway:
   - X-content-type-options: nosniff
