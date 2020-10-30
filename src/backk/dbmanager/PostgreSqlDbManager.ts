@@ -6,7 +6,7 @@ import SqlExpression from "./sql/expressions/SqlExpression";
 import AbstractDbManager, { Field } from "./AbstractDbManager";
 import isErrorResponse from "../errors/isErrorResponse";
 import createEntity from "./sql/operations/dml/createEntity";
-import createSubEntity from "./sql/operations/dml/createSubEntity";
+import addSubEntity from "./sql/operations/dml/addSubEntity";
 import getEntities from "./sql/operations/dml/getEntities";
 import getEntitiesCount from "./sql/operations/dml/getEntitiesCount";
 import getEntityById from "./sql/operations/dml/getEntityById";
@@ -15,7 +15,7 @@ import getEntityBy from "./sql/operations/dml/getEntityBy";
 import getEntitiesBy from "./sql/operations/dml/getEntitiesBy";
 import updateEntity from "./sql/operations/dml/updateEntity";
 import deleteEntityById from "./sql/operations/dml/deleteEntityById";
-import deleteSubEntities from "./sql/operations/dml/deleteSubEntities";
+import removeSubEntities from "./sql/operations/dml/removeSubEntities";
 import deleteAllEntities from "./sql/operations/dml/deleteAllEntities";
 import getEntitiesByIds from "./sql/operations/dml/getEntitiesByIds";
 import { ErrorResponse } from "../types/ErrorResponse";
@@ -164,7 +164,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return createEntity(this, entity, entityClass, preHooks, postQueryOperations,false, shouldReturnItem);
   }
 
-  async createSubEntity<T extends Entity, U extends object>(
+  async addSubEntity<T extends Entity, U extends object>(
     _id: string,
     subEntitiesPath: string,
     newSubEntity: Omit<U, 'id'>,
@@ -173,7 +173,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    return createSubEntity(this, _id, subEntitiesPath, newSubEntity, entityClass, subEntityClass, preHooks, postQueryOperations);
+    return addSubEntity(this, _id, subEntitiesPath, newSubEntity, entityClass, subEntityClass, preHooks, postQueryOperations);
   }
 
   async getEntities<T>(
@@ -251,16 +251,16 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return deleteEntityById(this, _id, entityClass, preHooks);
   }
 
-  async deleteSubEntities<T extends Entity, U extends object>(
+  async removeSubEntities<T extends Entity, U extends object>(
     _id: string,
     subEntitiesPath: string,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
-    return deleteSubEntities(this, _id, subEntitiesPath, entityClass, preHooks);
+    return removeSubEntities(this, _id, subEntitiesPath, entityClass, preHooks);
   }
 
-  deleteSubEntityById<T extends Entity>(
+  removeSubEntityById<T extends Entity>(
     _id: string,
     subEntitiesPath: string,
     subEntityId: string,
@@ -268,7 +268,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     const subEntityPath = `${subEntitiesPath}[?(@.id == '${subEntityId}')]`;
-    return this.deleteSubEntities(_id, subEntityPath, entityClass, preHooks);
+    return this.removeSubEntities(_id, subEntityPath, entityClass, preHooks);
   }
 
   async deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse> {

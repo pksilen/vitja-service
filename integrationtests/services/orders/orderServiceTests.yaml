@@ -1,0 +1,46 @@
+- testTemplate:
+    serviceName: ordersService
+    functionName: updateOrderItemState
+    functionArgument:
+      orderId: '{{orderId}}'
+      orderItemId: '{{orderItemId}}'
+      newState: '{{newState}}'
+    executeAfter: ordersService.updateOrderItemState
+    response:
+      statusCode: 200
+  tests:
+    - testName: newState = delivered
+      testProperties:
+        newState: delivered
+    - testName: newState = returning
+      testProperties:
+        newState: returning
+    - testName: newState = returned
+      testProperties:
+        newState: returned
+
+- testTemplate:
+    serviceName: salesItemsService
+    functionName: getSalesItemById
+    functionArgument:
+      _id: '{{salesItemId}}'
+    executeAfter: ordersService.createOrder
+    response:
+      statusCode: 200
+      tests:
+        - pm.expect(response.state).to.eql('sold');
+  tests:
+    - testName: state == sold
+
+- testTemplate:
+    serviceName: salesItemsService
+    functionName: getSalesItemById
+    functionArgument:
+      _id: '{{salesItemId}}'
+    executeAfter: ordersService.updateOrderItemState
+    response:
+      statusCode: 200
+      tests:
+        - pm.expect(response.state).to.eql('forSale');
+  tests:
+    - testName: state == forSale

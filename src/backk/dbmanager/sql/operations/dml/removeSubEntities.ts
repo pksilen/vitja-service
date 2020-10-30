@@ -10,7 +10,7 @@ import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/Entity';
 
-export default async function deleteSubEntities<T extends Entity, U extends object>(
+export default async function removeSubEntities<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   subEntitiesPath: string,

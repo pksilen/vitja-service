@@ -78,7 +78,7 @@ export default class OrdersServiceImpl extends OrdersService {
   @AllowForSelf()
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteSubEntityById(orderId, 'orderItems', orderItemId, Order, {
+    return this.dbManager.removeSubEntityById(orderId, 'orderItems', orderItemId, Order, {
       entityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
       hookFunc: (state) => state === 'toBeDelivered',
       error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
@@ -87,7 +87,7 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForTests()
   addOrderItem({ orderId, salesItemId }: AddOrderItemArg): Promise<Order | ErrorResponse> {
-    return this.dbManager.createSubEntity(
+    return this.dbManager.addSubEntity(
       orderId,
       'orderItems',
       {

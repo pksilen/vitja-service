@@ -11,6 +11,7 @@ TODO:
 - Get endpoint, executeServiceFunction has httpmethod param which defaults to POST
   - allowedServiceFunctionsregExp has default value
   - deniedServiceFunctions list
+- support YAML in custom written tests
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)

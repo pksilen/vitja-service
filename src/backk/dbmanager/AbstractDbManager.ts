@@ -57,7 +57,7 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
-  abstract createSubEntity<T extends Entity, U extends object>(
+  abstract addSubEntity<T extends Entity, U extends object>(
     _id: string,
     subEntitiesPath: string,
     newSubEntity: Omit<U, 'id'>,
@@ -123,14 +123,14 @@ export default abstract class AbstractDbManager {
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteSubEntities<T extends Entity>(
+  abstract removeSubEntities<T extends Entity>(
     _id: string,
     subEntitiesPath: string,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteSubEntityById<T extends Entity>(
+  abstract removeSubEntityById<T extends Entity>(
     _id: string,
     subEntitiesPath: string,
     subEntityId: string,

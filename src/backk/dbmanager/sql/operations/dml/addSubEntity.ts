@@ -8,7 +8,7 @@ import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQ
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 import { PreHook } from "../../../hooks/PreHook";
 
-export default async function createSubEntity<T extends Entity, U extends object>(
+export default async function addSubEntity<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   subEntitiesPath: string,

@@ -77,7 +77,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  createSubEntity<T extends Entity, U extends object>(
+  addSubEntity<T extends Entity, U extends object>(
     _id: string,
     subEntitiesPath: string,
     newSubEntity: Omit<U, 'id'>,
@@ -289,7 +289,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  deleteSubEntities<T extends Entity>(
+  removeSubEntities<T extends Entity>(
     _id: string,
     subEntitiesPath: string,
     entityClass: new () => T,
@@ -298,7 +298,7 @@ export default class MongoDbManager extends AbstractDbManager {
     return Promise.resolve();
   }
 
-  deleteSubEntityById<T extends Entity>(
+  removeSubEntityById<T extends Entity>(
     _id: string,
     subEntitiesPath: string,
     subEntityId: string,

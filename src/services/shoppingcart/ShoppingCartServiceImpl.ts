@@ -61,7 +61,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
                                shoppingCartId,
                                shoppingCartItemId
                              }: RemoveShoppingCartItemByIdArg): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteSubEntityById(
+    return this.dbManager.removeSubEntityById(
       shoppingCartId,
       'shoppingCartItems',
       shoppingCartItemId,
@@ -79,7 +79,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     shoppingCartId,
     salesItemId
   }: AddShoppingCartItemArg): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.createSubEntity(
+    return this.dbManager.addSubEntity(
       shoppingCartId,
       'shoppingCartItems',
       { salesItemId },
