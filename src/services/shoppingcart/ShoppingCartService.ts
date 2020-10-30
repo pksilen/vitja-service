@@ -10,8 +10,8 @@ import RemoveShoppingCartItemByIdArg from "./types/args/RemoveShoppingCartItemBy
 export default abstract class ShoppingCartService extends BaseService {
   abstract deleteAllShoppingCarts(): Promise<void | ErrorResponse>;
   abstract createShoppingCart(arg: CreateShoppingCartArg): Promise<ShoppingCart | ErrorResponse>;
-  abstract getShoppingCartByUserId(userId: UserId): Promise<ShoppingCart | ErrorResponse>;
-  abstract addShoppingCartItem(arg: AddShoppingCartItemArg): Promise<ShoppingCart | ErrorResponse>
   abstract removeShoppingCartItemById(arg: RemoveShoppingCartItemByIdArg): Promise<void | ErrorResponse>
+  abstract addShoppingCartItem(arg: AddShoppingCartItemArg): Promise<ShoppingCart | ErrorResponse>
+  abstract getShoppingCartByUserId(userId: UserId): Promise<ShoppingCart | ErrorResponse>;
   abstract deleteShoppingCartById(idAndUserId: IdAndUserId): Promise<void | ErrorResponse>;
 }

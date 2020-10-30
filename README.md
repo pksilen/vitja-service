@@ -1,13 +1,16 @@
 # Vitja service
 
 TODO:
-precondition for adding, salesitem is forSale.
 - Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale
 - Possible to delete order if all of the orderitems are toBeDelivered, tarkista delete precondition jsonpath.query(item, 'orderItems[?(@.state != "toBeDelivered")]')
   -pre operation hooks to update salesitems to forSale
     hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
 - If include/exclude removes a subentity, don't join that data
-- Only require needed validations if type is not entity and it's type is not used in any services' any function as argument
+- validate response value, if array of objects or object
+- Generate also Vitja_api_postman_collection in addition to Vitja_tests_postman_collection
+- Get endpoint, executeServiceFunction has httpmethod param which defaults to POST
+  - allowedServiceFunctionsregExp has default value
+  - deniedServiceFunctions list
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)

@@ -57,8 +57,21 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  getShoppingCartByUserId({ userId }: UserId): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.getEntityBy('userId', userId, ShoppingCart);
+  removeShoppingCartItemById({
+                               shoppingCartId,
+                               shoppingCartItemId
+                             }: RemoveShoppingCartItemByIdArg): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteSubEntityById(
+      shoppingCartId,
+      'shoppingCartItems',
+      shoppingCartItemId,
+      ShoppingCart,
+      {
+        entityJsonPath: `shoppingCartItems[?(@.id == '${shoppingCartItemId}')]`,
+        hookFunc: async ({ salesItemId }) =>
+          await this.salesItemService.updateSalesItemState({ _id: salesItemId, state: 'forSale' })
+      }
+    );
   }
 
   @AllowForSelf()
@@ -84,21 +97,8 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  removeShoppingCartItemById({
-    shoppingCartId,
-    shoppingCartItemId
-  }: RemoveShoppingCartItemByIdArg): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteSubEntityById(
-      shoppingCartId,
-      'shoppingCartItems',
-      shoppingCartItemId,
-      ShoppingCart,
-      {
-        entityJsonPath: `shoppingCartItems[?(@.id == '${shoppingCartItemId}')]`,
-        hookFunc: async ({ salesItemId }) =>
-          await this.salesItemService.updateSalesItemState({ _id: salesItemId, state: 'forSale' })
-      }
-    );
+  getShoppingCartByUserId({ userId }: UserId): Promise<ShoppingCart | ErrorResponse> {
+    return this.dbManager.getEntityBy('userId', userId, ShoppingCart);
   }
 
   @AllowForSelf()
