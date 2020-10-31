@@ -19,10 +19,12 @@ import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import IdAndUserId from '../../backk/types/id/IdAndUserId';
 import ShoppingCartItem from '../shoppingcart/types/entities/ShoppingCartItem';
 import {
+  DELETE_ORDER_NOT_ALLOWED,
   INVALID_ORDER_ITEM_STATE,
   ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
 } from './errors/ordersServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
+import executeForAll from '../../backk/utils/executeForAll';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -53,26 +55,23 @@ export default class OrdersServiceImpl extends OrdersService {
   @AllowForSelf()
   @NoCaptcha()
   async createOrder({ salesItemIds, ...restOfArg }: CreateOrderArg): Promise<Order | ErrorResponse> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      const possibleErrorResponse = await this.updateSalesItemStatesToSold(salesItemIds);
-
-      return possibleErrorResponse
-        ? possibleErrorResponse
-        : await this.dbManager.createEntity(
-            {
-              ...restOfArg,
-              createdTimestampInSecs: Math.round(Date.now() / 1000),
-              orderItems: salesItemIds.map((salesItemId, index) => ({
-                id: index.toString(),
-                salesItemId,
-                state: 'toBeDelivered',
-                trackingUrl: '',
-                deliveryTimestampInSecs: 0
-              }))
-            },
-            Order
-          );
-    });
+    return await this.dbManager.createEntity(
+      {
+        ...restOfArg,
+        createdTimestampInSecs: Math.round(Date.now() / 1000),
+        orderItems: salesItemIds.map((salesItemId, index) => ({
+          id: index.toString(),
+          salesItemId,
+          state: 'toBeDelivered',
+          trackingUrl: '',
+          deliveryTimestampInSecs: 0
+        }))
+      },
+      Order,
+      {
+        hookFunc: async () => await this.updateSalesItemStates(salesItemIds, 'sold', 'forSale')
+      }
+    );
   }
 
   @AllowForSelf()
@@ -80,7 +79,7 @@ export default class OrdersServiceImpl extends OrdersService {
   deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<void | ErrorResponse> {
     return this.dbManager.removeSubEntityById(orderId, 'orderItems', orderItemId, Order, {
       entityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-      hookFunc: (state) => state === 'toBeDelivered',
+      hookFunc: ([state]) => state === 'toBeDelivered',
       error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
     });
   }
@@ -126,7 +125,7 @@ export default class OrdersServiceImpl extends OrdersService {
       Order,
       {
         entityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-        hookFunc: (state) => state === 'toBeDelivered',
+        hookFunc: ([state]) => state === 'toBeDelivered',
         error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
       }
     );
@@ -134,73 +133,62 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Errors([INVALID_ORDER_ITEM_STATE])
-  updateOrderItemState({
+  async updateOrderItemState({
     orderId,
     orderItemId,
     newState
   }: UpdateOrderItemStateArg): Promise<void | ErrorResponse> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      if (newState === 'returned') {
-        const possibleErrorResponse = this.updateOrderItemSalesItemStateToForSale(orderId, orderItemId);
-        if (possibleErrorResponse) {
-          return possibleErrorResponse;
-        }
-      }
-
-      return this.dbManager.updateEntity(
-        { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
-        Order,
-        {
-          entityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-          hookFunc: (state) => state === OrdersServiceImpl.getPreviousStateFor(newState),
-          error: INVALID_ORDER_ITEM_STATE
-        }
-      );
-    });
-  }
-
-  deleteOrderById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteEntityById(_id, Order);
-  }
-
-  private async updateSalesItemStatesToSold(salesItemIds: string[]): Promise<void | ErrorResponse> {
-    return await salesItemIds.reduce(
-      async (errorResponseAccumulator: Promise<void | ErrorResponse>, salesItemId) => {
-        return (
-          (await errorResponseAccumulator) ||
-          (await this.salesItemsService.updateSalesItemState(
-            {
-              _id: salesItemId,
-              state: 'sold'
-            },
-            'forSale'
-          ))
-        );
-      },
-      Promise.resolve(undefined)
-    );
-  }
-
-  private async updateOrderItemSalesItemStateToForSale(
-    orderId: string,
-    orderItemId: string
-  ): Promise<void | ErrorResponse> {
-    const orderItemOrErrorResponse = await this.dbManager.getSubEntity<Order, OrderItem>(
-      orderId,
-      `orderItems[?(@.id == '${orderItemId}')]`,
-      Order
-    );
-
-    if ('errorMessage' in orderItemOrErrorResponse) {
-      return orderItemOrErrorResponse;
-    }
-
-    return await this.salesItemsService.updateSalesItemState(
+    return this.dbManager.updateEntity(
+      { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
+      Order,
       {
-        _id: orderItemOrErrorResponse.salesItemId,
-        state: 'forSale'
+        entityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
+        hookFunc: async ([{ salesItemId, state }]) =>
+          (newState === 'returned'
+            ? await this.salesItemsService.updateSalesItemState(
+                {
+                  _id: salesItemId,
+                  state: 'forSale'
+                },
+                'sold'
+              )
+            : false) || state === OrdersServiceImpl.getPreviousStateFor(newState),
+        error: INVALID_ORDER_ITEM_STATE
+      }
+    );
+  }
+
+  @AllowForSelf()
+  deleteOrderById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteEntityById(_id, Order, [
+      {
+        entityJsonPath: 'orderItems[?(@.state != "toBeDelivered")]',
+        hookFunc: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
+        error: DELETE_ORDER_NOT_ALLOWED,
+        skipInTests: true
       },
-      'sold'
+      {
+        entityJsonPath: 'orderItems[*].salesItemId',
+        hookFunc: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
+      }
+    ]);
+  }
+
+  private async updateSalesItemStates(
+    salesItemIds: string[],
+    newState: 'forSale' | 'sold',
+    currentState?: 'forSale' | 'sold'
+  ): Promise<void | ErrorResponse> {
+    return await executeForAll(
+      salesItemIds,
+      async (salesItemId) =>
+        await this.salesItemsService.updateSalesItemState(
+          {
+            _id: salesItemId,
+            state: newState
+          },
+          currentState
+        )
     );
   }
 

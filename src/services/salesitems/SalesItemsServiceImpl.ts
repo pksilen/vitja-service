@@ -20,14 +20,13 @@ import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import IdsAndDefaultPostQueryOperationsArg from '../../backk/types/postqueryoperations/args/IdsAndDefaultPostQueryOperationsArg';
 import IdAndUserId from '../../backk/types/id/IdAndUserId';
 import _Id from '../../backk/types/id/_Id';
-import getErrorResponseOrResultOf from '../../backk/utils/getErrorResponseOrResultOf';
 import SortBy from '../../backk/types/postqueryoperations/SortBy';
 import {
   INVALID_SALES_ITEM_STATE,
   MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
   SALES_ITEM_STATE_MUST_BE_FOR_SALE
 } from './errors/salesItemsServiceErrors';
-import { Errors } from "../../backk/decorators/service/function/Errors";
+import { Errors } from '../../backk/decorators/service/function/Errors';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -65,11 +64,15 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       },
       SalesItem,
       {
-        hookFunc: async () =>
-          getErrorResponseOrResultOf(
-            await this.dbManager.getEntitiesCount({ userId: arg.userId, state: 'forSale' }, SalesItem),
-            (activeSalesItemCount) => activeSalesItemCount <= 100
-          ),
+        hookFunc: async () => {
+          const activeSalesItemCountOrErrorResponse = await this.dbManager.getEntitiesCount(
+            { userId: arg.userId, state: 'forSale' },
+            SalesItem
+          );
+          return typeof activeSalesItemCountOrErrorResponse === 'number'
+            ? activeSalesItemCountOrErrorResponse <= 100
+            : activeSalesItemCountOrErrorResponse;
+        },
         error: MAXIMUM_SALES_ITEM_COUNT_EXCEEDED
       }
     );
@@ -149,20 +152,11 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @AllowForSelf()
   @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
   async updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      const currentSalesItemOrErrorResponse = await this.getSalesItemById({ _id: arg._id });
-
-      return 'errorMessage' in currentSalesItemOrErrorResponse
-        ? currentSalesItemOrErrorResponse
-        : this.dbManager.updateEntity(
-            { ...arg, previousPrice: currentSalesItemOrErrorResponse.price },
-            SalesItem,
-            {
-              entityJsonPath: 'state',
-              hookFunc: (state) => state === 'forSale',
-              error: SALES_ITEM_STATE_MUST_BE_FOR_SALE
-            }
-          );
+    return this.dbManager.updateEntity(arg, SalesItem, {
+      entityJsonPath: '$',
+      hookFunc: async ([{ _id, state, price }]) =>
+        (await this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem)) || state === 'forSale',
+      error: SALES_ITEM_STATE_MUST_BE_FOR_SALE
     });
   }
 
@@ -178,7 +172,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       requiredCurrentState
         ? {
             entityJsonPath: 'state',
-            hookFunc: (state) => state === requiredCurrentState,
+            hookFunc: ([state]) => state === requiredCurrentState,
             error: INVALID_SALES_ITEM_STATE
           }
         : undefined

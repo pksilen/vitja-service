@@ -15,7 +15,6 @@ import { SHOPPING_CART_ALREADY_EXISTS } from './errors/shoppingCartServiceErrors
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import AddShoppingCartItemArg from './types/args/AddShoppingCartItemArg';
 import RemoveShoppingCartItemByIdArg from './types/args/RemoveShoppingCartItemByIdArg';
-import { SalesItem } from '../salesitems/types/entities/SalesItem';
 import { SALES_ITEM_STATE_MUST_BE_FOR_SALE } from '../salesitems/errors/salesItemsServiceErrors';
 import SalesItemsService from '../salesitems/SalesItemsService';
 
@@ -47,20 +46,24 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @Errors([SHOPPING_CART_ALREADY_EXISTS])
   async createShoppingCart(arg: CreateShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.createEntity(arg, ShoppingCart, {
-      hookFunc: async () =>
-        getErrorResponseOrResultOf(
-          await this.dbManager.getEntitiesCount({ userId: arg.userId }, ShoppingCart),
-          (shoppingCartCount) => shoppingCartCount === 0
-        ),
+      hookFunc: async () => {
+        const shoppingCartCountOrErrorResponse = await this.dbManager.getEntitiesCount(
+          { userId: arg.userId },
+          ShoppingCart
+        );
+        return typeof shoppingCartCountOrErrorResponse === 'number'
+          ? shoppingCartCountOrErrorResponse === 0
+          : shoppingCartCountOrErrorResponse;
+      },
       error: SHOPPING_CART_ALREADY_EXISTS
     });
   }
 
   @AllowForSelf()
   removeShoppingCartItemById({
-                               shoppingCartId,
-                               shoppingCartItemId
-                             }: RemoveShoppingCartItemByIdArg): Promise<void | ErrorResponse> {
+    shoppingCartId,
+    shoppingCartItemId
+  }: RemoveShoppingCartItemByIdArg): Promise<void | ErrorResponse> {
     return this.dbManager.removeSubEntityById(
       shoppingCartId,
       'shoppingCartItems',
@@ -68,7 +71,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       ShoppingCart,
       {
         entityJsonPath: `shoppingCartItems[?(@.id == '${shoppingCartItemId}')]`,
-        hookFunc: async ({ salesItemId }) =>
+        hookFunc: async ([{ salesItemId }]) =>
           await this.salesItemService.updateSalesItemState({ _id: salesItemId, state: 'forSale' })
       }
     );

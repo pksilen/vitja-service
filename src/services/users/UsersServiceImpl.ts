@@ -1,4 +1,4 @@
-import { Injectable, Optional } from "@nestjs/common";
+import { Injectable, Optional } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
 import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
@@ -18,8 +18,8 @@ import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
 import DefaultPaymentMethod from './types/entities/DefaultPaymentMethod';
 import PaymentMethod from './types/entities/PaymentMethod';
-import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/usersServiceErrors";
-import { Errors } from "../../backk/decorators/service/function/Errors";
+import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from './errors/usersServiceErrors';
+import { Errors } from '../../backk/decorators/service/function/Errors';
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -27,7 +27,8 @@ import { Errors } from "../../backk/decorators/service/function/Errors";
 export default class UsersServiceImpl extends UsersService {
   constructor(
     dbManager: AbstractDbManager,
-    @Optional() readonly Types = {
+    @Optional()
+    readonly Types = {
       ChangeUserPasswordArg,
       DefaultPaymentMethod,
       PaymentMethod,
@@ -77,16 +78,21 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   @Errors([USER_NAME_CANNOT_BE_CHANGED, INVALID_CURRENT_PASSWORD])
-  changeUserPassword(arg: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity({ _id: arg._id, password: arg.password }, User, [
+  changeUserPassword({
+    _id,
+    currentPassword,
+    password,
+    userName
+  }: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
+    return this.dbManager.updateEntity({ _id, password }, User, [
       {
         entityJsonPath: 'userName',
-        hookFunc: (userName) => userName === arg.userName,
+        hookFunc: ([currentUserName]) => currentUserName === userName,
         error: USER_NAME_CANNOT_BE_CHANGED
       },
       {
         entityJsonPath: 'password',
-        hookFunc: async (hashedPassword) => await argon2.verify(hashedPassword, arg.currentPassword),
+        hookFunc: async ([hashedPassword]) => await argon2.verify(hashedPassword, currentPassword),
         error: INVALID_CURRENT_PASSWORD
       }
     ]);

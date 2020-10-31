@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Testaa eri orderitem state updated ja tsekkaa viimeisen jälkeen, että salesitem state = forSale
 - Possible to delete order if all of the orderitems are toBeDelivered, tarkista delete precondition jsonpath.query(item, 'orderItems[?(@.state != "toBeDelivered")]')
   -pre operation hooks to update salesitems to forSale
     hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
@@ -11,7 +10,7 @@ TODO:
 - Get endpoint, executeServiceFunction has httpmethod param which defaults to POST
   - allowedServiceFunctionsregExp has default value
   - deniedServiceFunctions list
-- support YAML in custom written tests
+- Add tests in create/add methods
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)
