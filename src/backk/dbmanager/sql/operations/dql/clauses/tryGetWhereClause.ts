@@ -1,9 +1,9 @@
 import SqlExpression from '../../../expressions/SqlExpression';
 import tryGetProjection from './tryGetProjection';
-import getSqlColumnFromProjection from './getSqlColumnFromProjection';
+import getSqlColumnFromProjection from '../utils/columns/getSqlColumnFromProjection';
 import createErrorMessageWithStatusCode from "../../../../../errors/createErrorMessageWithStatusCode";
 
-export default function tryGetWhereStatement<T>(
+export default function tryGetWhereClause<T>(
   schema: string,
   filters: Partial<T> | SqlExpression[],
   entityClass: Function,

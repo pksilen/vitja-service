@@ -1,19 +1,18 @@
-import { QueryResult } from 'pg';
-import joinjs from 'join-js';
-import transformResults from './transformResults';
-import decryptItems from '../../../../../crypt/decryptItems';
+import { QueryResult } from "pg";
+import joinjs from "join-js";
+import transformResults from "./transformResults";
+import decryptItems from "../../../../../crypt/decryptItems";
 import createResultMaps from "./createResultMaps";
-import { Projection } from "../../../../../types/postqueryoperations/Projection";
 import removeSingleSubEntitiesWithNullProperties from "./removeSingleSubEntitiesWithNullProperties";
+import { PostQueryOperations } from "../../../../../types/postqueryoperations/PostQueryOperations";
 
 export default function transformRowsToObjects<T>(
   result: QueryResult<any>,
   entityClass: { new (): T },
-  projection: Projection,
-  pageSize: number,
+  { pageSize, includeResponseFields, excludeResponseFields }: PostQueryOperations,
   Types: object
 ) {
-  const resultMaps = createResultMaps(entityClass, Types, projection);
+  const resultMaps = createResultMaps(entityClass, Types, { includeResponseFields, excludeResponseFields });
 
   let rows = joinjs.map(
     result.rows,

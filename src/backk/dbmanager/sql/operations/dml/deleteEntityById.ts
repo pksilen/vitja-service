@@ -1,7 +1,7 @@
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import entityContainer, { JoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getEntityById from './getEntityById';
+import getEntityById from '../dql/getEntityById';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getTypeMetadata from '../../../../metadata/getTypeMetadata';

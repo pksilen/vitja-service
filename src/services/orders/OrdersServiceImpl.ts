@@ -165,7 +165,7 @@ export default class OrdersServiceImpl extends OrdersService {
         entityJsonPath: 'orderItems[?(@.state != "toBeDelivered")]',
         hookFunc: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
         error: DELETE_ORDER_NOT_ALLOWED,
-        skipInTests: true
+        disregardInTests: true
       },
       {
         entityJsonPath: 'orderItems[*].salesItemId',

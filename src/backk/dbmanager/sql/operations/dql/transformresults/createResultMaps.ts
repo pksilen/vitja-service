@@ -1,4 +1,4 @@
-import shouldIncludeField from './shouldIncludeField';
+import shouldIncludeField from '../utils/columns/shouldIncludeField';
 import { Projection } from "../../../../../types/postqueryoperations/Projection";
 import getTypeMetadata from "../../../../../metadata/getTypeMetadata";
 

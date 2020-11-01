@@ -3,7 +3,7 @@ import isErrorResponse from '../../../../errors/isErrorResponse';
 import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getEntityById from './getEntityById';
+import getEntityById from '../dql/getEntityById';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';

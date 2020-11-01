@@ -1,9 +1,6 @@
 # Vitja service
 
 TODO:
-- Possible to delete order if all of the orderitems are toBeDelivered, tarkista delete precondition jsonpath.query(item, 'orderItems[?(@.state != "toBeDelivered")]')
-  -pre operation hooks to update salesitems to forSale
-    hooks: { items: orderItems, hook: ({salesItemId}] => updateSalesItemStateTo(salesItemId, 'forSale')
 - If include/exclude removes a subentity, don't join that data
 - validate response value, if array of objects or object
 - Generate also Vitja_api_postman_collection in addition to Vitja_tests_postman_collection

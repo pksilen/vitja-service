@@ -24,7 +24,7 @@ export default async function tryExecutePreHooks<T extends object>(
       if (typeof hookCallResult !== 'boolean' && 'errorMessage' in hookCallResult) {
         throw new Error(hookCallResult.errorMessage);
       } else if (hookCallResult === false) {
-        if (process.env.NODE_ENV === 'development' && preHook.skipInTests) {
+        if (process.env.NODE_ENV === 'development' && preHook.disregardInTests) {
           return;
         }
         let errorMessage = 'Unspecified pre-hook error';
@@ -32,7 +32,7 @@ export default async function tryExecutePreHooks<T extends object>(
           errorMessage = 'Error code ' + preHook.error.errorCode + ':' + preHook.error.errorMessage;
         }
         throw new Error(createErrorMessageWithStatusCode(errorMessage, preHook.error?.statusCode ?? 400));
-      } else if (process.env.NODE_ENV === 'development' && hookCallResult === true && preHook.skipInTests) {
+      } else if (process.env.NODE_ENV === 'development' && hookCallResult === true && preHook.disregardInTests) {
         throw new Error('Invalid hook result (=true) when skipInTest is true');
       }
     }

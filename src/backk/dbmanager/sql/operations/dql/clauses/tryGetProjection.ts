@@ -1,6 +1,6 @@
 import getFieldsFromGraphQlOrJson from '../../../../../graphql/getFieldsFromGraphQlOrJson';
 import { Projection } from '../../../../../types/postqueryoperations/Projection';
-import getFieldsForEntity from './getFieldsForEntity';
+import getFieldsForEntity from '../utils/columns/getFieldsForEntity';
 import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
 
 export default function tryGetProjection(
@@ -9,7 +9,7 @@ export default function tryGetProjection(
   entityClass: Function,
   Types: object,
   isInternalCall = false
-) {
+): string {
   const fields: string[] = [];
 
   if (projection.includeResponseFields?.[0]?.includes('{')) {

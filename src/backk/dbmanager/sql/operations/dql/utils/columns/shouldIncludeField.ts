@@ -1,4 +1,4 @@
-import { Projection } from "../../../../../types/postqueryoperations/Projection";
+import { Projection } from "../../../../../../types/postqueryoperations/Projection";
 
 export default function shouldIncludeField(
   fieldName: string,

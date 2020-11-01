@@ -1,6 +1,6 @@
 import assertIsNumber from "../../../../../assertions/assertIsNumber";
 
-export default function getPagingStatement(pageNumber?: number, pageSize?: number) {
+export default function getPagingClause(pageNumber?: number, pageSize?: number) {
   let limitAndOffsetStatement = '';
 
   if (pageNumber && pageSize) {

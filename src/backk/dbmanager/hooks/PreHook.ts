@@ -10,5 +10,5 @@ export interface PreHook {
   entityJsonPath?: string;
   hookFunc: (valueFromJsonPath?: any) => Promise<boolean | undefined | void | ErrorResponse> | boolean;
   error?: ErrorCodeAndMessage;
-  skipInTests?: boolean;
+  disregardInTests?: boolean;
 }

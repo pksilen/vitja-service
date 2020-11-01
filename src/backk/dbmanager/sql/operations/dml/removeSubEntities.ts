@@ -2,7 +2,7 @@ import { JSONPath } from 'jsonpath-plus';
 import { plainToClass } from 'class-transformer';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getEntityById from './getEntityById';
+import getEntityById from '../dql/getEntityById';
 import deleteEntityById from './deleteEntityById';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';

@@ -1,7 +1,7 @@
-import { Projection } from "../../../../../types/postqueryoperations/Projection";
-import getTypeMetadata from "../../../../../metadata/getTypeMetadata";
+import { Projection } from "../../../../../../types/postqueryoperations/Projection";
+import getTypeMetadata from "../../../../../../metadata/getTypeMetadata";
 import typePropertyAnnotationContainer
-  from "../../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+  from "../../../../../../decorators/typeproperty/typePropertyAnnotationContainer";
 import shouldIncludeField from "./shouldIncludeField";
 
 export default function getFieldsForEntity(

@@ -1,13 +1,13 @@
 import _ from 'lodash';
 import tryGetProjection from './tryGetProjection';
-import getSqlColumnFromProjection from './getSqlColumnFromProjection';
+import getSqlColumnFromProjection from '../utils/columns/getSqlColumnFromProjection';
 import assertIsColumnName from '../../../../../assertions/assertIsColumnName';
 import assertIsSortDirection from '../../../../../assertions/assertIsSortDirection';
 import SortBy from '../../../../../types/postqueryoperations/SortBy';
-import getFieldsForEntity from './getFieldsForEntity';
+import getFieldsForEntity from '../utils/columns/getFieldsForEntity';
 import createErrorMessageWithStatusCode from "../../../../../errors/createErrorMessageWithStatusCode";
 
-export default function tryGetSortStatement<T>(
+export default function tryGetOrderByClause<T>(
   schema: string,
   sortBys: SortBy[] | undefined,
   entityClass: new () => T,
