@@ -1,4 +1,4 @@
-import { Body, Controller, Headers, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import AuthorizationService from '../backk/authorization/AuthorizationService';
 import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
 import tryExecuteServiceFunction from '../backk/execution/tryExecuteServiceFunction';
@@ -24,9 +24,21 @@ export class AppController {
     initializeController(this);
   }
 
+  @Get(':serviceFunctionName')
+  @HttpCode(HttpStatus.OK)
+  processGetRequests(
+    @Headers('authorization') authHeader: string,
+    @Param() params: { serviceFunctionName: string },
+    @Query('arg') serviceFunctionArgument: object
+  ): Promise<object | void> {
+    return tryExecuteServiceFunction(this, params.serviceFunctionName, serviceFunctionArgument, authHeader, {
+      httpMethod: 'GET'
+    });
+  }
+
   @Post(':serviceFunctionName')
   @HttpCode(HttpStatus.OK)
-  processRequests(
+  processPostRequests(
     @Headers('authorization') authHeader: string,
     @Param() params: { serviceFunctionName: string },
     @Body() serviceFunctionArgument: object

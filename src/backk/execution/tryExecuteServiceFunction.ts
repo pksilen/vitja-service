@@ -15,7 +15,8 @@ import tryValidateResponse from '../validation/tryValidateResponse';
 import isErrorResponse from '../errors/isErrorResponse';
 import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
 
-export interface Options {
+export interface ExecuteServiceFunctionOptions {
+  httpMethod?: 'POST' | 'GET';
   isMetadataServiceEnabled?: boolean;
 }
 
@@ -24,8 +25,21 @@ export default async function tryExecuteServiceFunction(
   serviceFunction: string,
   serviceFunctionArgument: any,
   authHeader: string,
-  options?: Options
+  options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
+  if (options?.httpMethod === 'GET') {
+    // noinspection AssignmentToFunctionParameterJS
+    serviceFunctionArgument = decodeURIComponent(serviceFunctionArgument);
+    // noinspection AssignmentToFunctionParameterJS
+    try {
+      serviceFunctionArgument = JSON.parse(serviceFunctionArgument);
+    } catch(error) {
+      createErrorFromErrorMessageAndThrowError(
+        createErrorMessageWithStatusCode('Invalid service function argument. Argument must be a URI encoded JSON object string', 400)
+      );
+    }
+  }
+
   const [serviceName, functionName] = serviceFunction.split('.');
 
   if (serviceFunction === 'metadataService.getServicesMetadata') {
@@ -53,6 +67,12 @@ export default async function tryExecuteServiceFunction(
   if (!controller[serviceName][functionName]) {
     createErrorFromErrorMessageAndThrowError(
       createErrorMessageWithStatusCode(`Unknown function: ${serviceName}.${functionName}`, 400)
+    );
+  }
+
+  if (typeof serviceFunctionArgument !== 'object' || Array.isArray(serviceFunctionArgument)) {
+    createErrorFromErrorMessageAndThrowError(
+      createErrorMessageWithStatusCode(`Invalid service function argument. Argument must be a JSON object string`, 400)
     );
   }
   const usersService = Object.values(controller).find((service) => service instanceof UsersBaseService);
