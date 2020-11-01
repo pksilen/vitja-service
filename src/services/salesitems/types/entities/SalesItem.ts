@@ -2,7 +2,7 @@ import { IsInt, IsNumber, Max, MaxLength, Min } from 'class-validator';
 import Entity from '../../../../backk/decorators/entity/Entity';
 import { ExpectInTestsToEvaluateTrue } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue';
 import _Id from '../../../../backk/types/id/_Id';
-import { MAX_INT_VALUE } from '../../../../backk/constants';
+import { MAX_INT_VALUE } from '../../../../backk/constants/constants';
 
 @Entity()
 export class SalesItem extends _Id {

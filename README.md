@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- If include/exclude removes a subentity, don't join that data
 - validate response value, if array of objects or object
 - Generate also Vitja_api_postman_collection in addition to Vitja_tests_postman_collection
 - Get endpoint, executeServiceFunction has httpmethod param which defaults to POST

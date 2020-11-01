@@ -3,14 +3,17 @@ import { plainToClass } from 'class-transformer';
 import { createNamespace } from 'cls-hooked';
 import _ from 'lodash';
 import authorize from '../authorization/authorize';
-import BaseService from './basetypes/BaseService';
-import verifyCaptchaToken from '../captcha/verifyCaptchaToken';
+import BaseService from '../service/BaseService';
+import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
 import getPropertyBaseTypeName from '../utils/type/getPropertyBaseTypeName';
 import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
 import UsersBaseService from '../users/UsersBaseService';
 import { ServiceMetadata } from '../metadata/ServiceMetadata';
 import tryValidateObject from '../validation/tryValidateObject';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import tryValidateResponse from '../validation/tryValidateResponse';
+import isErrorResponse from '../errors/isErrorResponse';
+import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
 
 export interface Options {
   isMetadataServiceEnabled?: boolean;
@@ -29,7 +32,9 @@ export default async function tryExecuteServiceFunction(
     if (!options || options.isMetadataServiceEnabled === undefined || options.isMetadataServiceEnabled) {
       return controller.servicesMetadata;
     }
-    createErrorFromErrorMessageAndThrowError(createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, 400));
+    createErrorFromErrorMessageAndThrowError(
+      createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, 400)
+    );
   } else if (serviceFunction === 'livenessCheckService.isAlive') {
     return;
   } else if (
@@ -40,7 +45,9 @@ export default async function tryExecuteServiceFunction(
   }
 
   if (!controller[serviceName]) {
-    createErrorFromErrorMessageAndThrowError(createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, 400));
+    createErrorFromErrorMessageAndThrowError(
+      createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, 400)
+    );
   }
 
   if (!controller[serviceName][functionName]) {
@@ -60,7 +67,7 @@ export default async function tryExecuteServiceFunction(
   );
 
   if (serviceFunctionArgument?.captchaToken) {
-    verifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
+    tryVerifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
   }
 
   const serviceFunctionArgumentTypeName =
@@ -108,7 +115,9 @@ export default async function tryExecuteServiceFunction(
     });
 
     if (!instantiatedServiceFunctionArgument) {
-      createErrorFromErrorMessageAndThrowError(createErrorMessageWithStatusCode('Missing service function argument', 400));
+      createErrorFromErrorMessageAndThrowError(
+        createErrorMessageWithStatusCode('Missing service function argument', 400)
+      );
     }
 
     await tryValidateObject(instantiatedServiceFunctionArgument);
@@ -121,6 +130,7 @@ export default async function tryExecuteServiceFunction(
     const clsNamespace = createNamespace('dbManager');
     dbManager.setClsNamespaceName('dbManager');
     response = await clsNamespace.runAndReturn(async () => {
+      // TODO: surround db operations with try catch and throw proper 500 error
       await dbManager.reserveDbConnectionFromPool();
       const response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
       dbManager.releaseDbConnectionBackToPool();
@@ -130,8 +140,22 @@ export default async function tryExecuteServiceFunction(
     response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
   }
 
-  if (response && response.statusCode && response.errorMessage) {
+  if (response && isErrorResponse(response)) {
     throw new HttpException(response, response.statusCode);
+  }
+
+  if (response !== undefined) {
+    const serviceFunctionBaseReturnTypeName = getReturnValueBaseType(
+      controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName]
+    );
+
+    const ServiceFunctionReturnType = controller[serviceName]['Types'][serviceFunctionBaseReturnTypeName];
+
+    if (Array.isArray(response) && response.length > 0 && typeof response[0] === 'object') {
+      await tryValidateResponse(response[0], ServiceFunctionReturnType);
+    } else if (typeof response === 'object') {
+      await tryValidateResponse(response, ServiceFunctionReturnType);
+    }
   }
 
   return response;

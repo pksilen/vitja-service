@@ -3,7 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { IsInt, Max, MaxLength, Min } from 'class-validator';
-import { MAX_INT_VALUE } from '../../../../backk/constants';
+import { MAX_INT_VALUE } from '../../../../backk/constants/constants';
 import { ExpectInTestsToEvaluateTrue } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue';
 
 export default class DeliverOrderItemArg {

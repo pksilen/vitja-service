@@ -1,10 +1,10 @@
-import BaseService from './service/basetypes/BaseService';
-import generateServicesMetadata from './metadata/generateServicesMetadata';
-import parseServiceTypeNames from './parser/parseServiceTypeNames';
-import getSrcFilePathNameForTypeName from './utils/file/getSrcFilePathNameForTypeName';
-import setPropertyTypeValidationDecorators from './validation/setPropertyTypeValidationDecorators';
-import setNestedTypeValidationDecorators from './validation/setNestedTypeValidationDecorators';
-import writePostmanCollectionExportFile from './postman/writePostmanCollectionExportFile';
+import BaseService from '../service/BaseService';
+import generateServicesMetadata from '../metadata/generateServicesMetadata';
+import parseServiceTypeNames from '../parser/parseServiceTypeNames';
+import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
+import setPropertyTypeValidationDecorators from '../validation/setPropertyTypeValidationDecorators';
+import setNestedTypeValidationDecorators from '../validation/setNestedTypeValidationDecorators';
+import writePostmanCollectionExportFile from '../postman/writePostmanCollectionExportFile';
 
 export default function initializeController(controller: any) {
   Object.entries(controller)

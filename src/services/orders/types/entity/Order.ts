@@ -3,7 +3,7 @@ import Entity from '../../../../backk/decorators/entity/Entity';
 import { ExpectInTestsToEvaluateTrue } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue';
 import OrderItem from './OrderItem';
 import _Id from '../../../../backk/types/id/_Id';
-import { MAX_INT_VALUE } from '../../../../backk/constants';
+import { MAX_INT_VALUE } from '../../../../backk/constants/constants';
 
 @Entity()
 export default class Order extends _Id {

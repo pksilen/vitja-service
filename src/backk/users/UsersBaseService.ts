@@ -1,4 +1,4 @@
-import BaseService from '../service/basetypes/BaseService';
+import BaseService from '../service/BaseService';
 import UserResponse from "../../services/users/types/responses/UserResponse";
 import { ErrorResponse } from "../types/ErrorResponse";
 import _Id from "../types/id/_Id";

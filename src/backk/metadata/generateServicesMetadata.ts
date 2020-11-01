@@ -1,6 +1,6 @@
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
 import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
-import BaseService from '../service/basetypes/BaseService';
+import BaseService from '../service/BaseService';
 import _Id from '../types/id/_Id';
 import IdsAndDefaultPostQueryOperationsArg from '../types/postqueryoperations/args/IdsAndDefaultPostQueryOperationsArg';
 import SortBy from '../types/postqueryoperations/SortBy';

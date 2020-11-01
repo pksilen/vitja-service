@@ -2,7 +2,7 @@ import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromE
 import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
 import AuthorizationService from './AuthorizationService';
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import BaseService from '../service/basetypes/BaseService';
+import BaseService from '../service/BaseService';
 import UsersBaseService from '../users/UsersBaseService';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
 

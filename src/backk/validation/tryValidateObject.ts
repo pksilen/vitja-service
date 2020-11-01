@@ -1,22 +1,7 @@
-import { getFromContainer, MetadataStorage, validateOrReject, ValidationError } from 'class-validator';
-import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
+import { validateOrReject, ValidationError } from "class-validator";
+import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
 import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
-
-function getValidationErrors(errorOrValidationErrors: ValidationError[] | Error): string {
-  return errorOrValidationErrors instanceof Error
-    ? errorOrValidationErrors.message
-    : errorOrValidationErrors
-        .map((validationError: ValidationError) => {
-          if (validationError.constraints) {
-            return Object.values(validationError.constraints)
-              .map((constraint) => constraint)
-              .join(', ');
-          } else {
-            return validationError.property + ': ' + getValidationErrors(validationError.children);
-          }
-        })
-        .join(', ');
-}
+import getValidationErrors from "./getValidationErrors";
 
 export default async function tryValidateObject(obj: object): Promise<void> {
   try {
@@ -29,7 +14,7 @@ export default async function tryValidateObject(obj: object): Promise<void> {
       forbidNonWhitelisted: true
     });
   } catch (validationErrors) {
-    const errorMessage = getValidationErrors(validationErrors);
+    const errorMessage = 'Invalid argument: ' + getValidationErrors(validationErrors);
     createErrorFromErrorMessageAndThrowError(createErrorMessageWithStatusCode(errorMessage, 400));
   }
 }

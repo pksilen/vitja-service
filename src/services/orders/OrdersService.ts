@@ -1,4 +1,4 @@
-import BaseService from "../../backk/service/basetypes/BaseService";
+import BaseService from "../../backk/service/BaseService";
 import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
 import CreateOrderArg from "./types/args/CreateOrderArg";
 import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";

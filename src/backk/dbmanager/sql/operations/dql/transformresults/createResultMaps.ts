@@ -1,6 +1,6 @@
 import shouldIncludeField from '../utils/columns/shouldIncludeField';
-import { Projection } from "../../../../../types/postqueryoperations/Projection";
-import getTypeMetadata from "../../../../../metadata/getTypeMetadata";
+import { Projection } from '../../../../../types/postqueryoperations/Projection';
+import getTypeMetadata from '../../../../../metadata/getTypeMetadata';
 
 function updateResultMaps(
   entityClassOrName: Function | string,
@@ -36,11 +36,35 @@ function updateResultMaps(
       isArray = true;
     }
 
-    if (baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
+    if (
+      isArray &&
+      baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+      baseFieldTypeName[0] !== '('
+    ) {
       if (shouldIncludeField(fieldName, fieldPath, projection)) {
         const relationEntityName = baseFieldTypeName;
 
         resultMap.collections.push({
+          name: fieldName,
+          mapId: relationEntityName + 'Map',
+          columnPrefix: relationEntityName.toLowerCase() + '_'
+        });
+
+        updateResultMaps(
+          (Types as any)[relationEntityName],
+          Types,
+          resultMaps,
+          projection,
+          fieldPath + fieldName + '.',
+          {},
+          entityClassOrName as Function
+        );
+      }
+    } else if (baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
+      if (shouldIncludeField(fieldName, fieldPath, projection)) {
+        const relationEntityName = baseFieldTypeName;
+
+        resultMap.associations.push({
           name: fieldName,
           mapId: relationEntityName + 'Map',
           columnPrefix: relationEntityName.toLowerCase() + '_'
@@ -91,11 +115,7 @@ function updateResultMaps(
   resultMaps.push(resultMap);
 }
 
-export default function createResultMaps(
-  entityClass: Function,
-  Types: object,
-  projection: Projection
-) {
+export default function createResultMaps(entityClass: Function, Types: object, projection: Projection) {
   const resultMaps: any[] = [];
   updateResultMaps(entityClass, Types, resultMaps, projection, '');
   return resultMaps;
