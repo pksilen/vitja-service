@@ -4,9 +4,15 @@ import parseServiceTypeNames from '../parser/parseServiceTypeNames';
 import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
 import setPropertyTypeValidationDecorators from '../validation/setPropertyTypeValidationDecorators';
 import setNestedTypeValidationDecorators from '../validation/setNestedTypeValidationDecorators';
-import writePostmanCollectionExportFile from '../postman/writePostmanCollectionExportFile';
+import writeTestsPostmanCollectionExportFile from '../postman/writeTestsPostmanCollectionExportFile';
+import writeApiPostmanCollectionExportFile from "../postman/writeApiPostmanCollectionExportFile";
 
-export default function initializeController(controller: any) {
+export interface ControllerInitOptions {
+  generatePostmanTestFile?: boolean;
+  generatePostmanApiFile?: boolean;
+}
+
+export default function initializeController(controller: any, controllerInitOptions?: ControllerInitOptions) {
   Object.entries(controller)
     .filter(([, service]: [string, any]) => service instanceof BaseService)
     .forEach(([serviceName]: [string, any]) => {
@@ -42,7 +48,10 @@ export default function initializeController(controller: any) {
   const servicesMetadata = generateServicesMetadata(controller, false);
   controller.servicesMetadata = servicesMetadata;
 
-  if (process.env.NODE_ENV === 'development') {
-    writePostmanCollectionExportFile(controller, servicesMetadata);
+  if (process.env.NODE_ENV === 'development' && (controllerInitOptions?.generatePostmanTestFile ?? true)) {
+    writeTestsPostmanCollectionExportFile(controller, servicesMetadata);
+  }
+  if (process.env.NODE_ENV === 'development' && (controllerInitOptions?.generatePostmanApiFile ?? true)) {
+    writeApiPostmanCollectionExportFile(controller, servicesMetadata);
   }
 }

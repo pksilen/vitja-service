@@ -9,7 +9,7 @@ import SalesItemsService from '../services/salesitems/SalesItemsService';
 import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
 import UsersService from '../services/users/UsersService';
 
-// noinspection JSUnusedLocalSymbols
+// noinspection JSUnusedLocalSymbols,OverlyComplexFunctionJS
 @Controller()
 export class AppController {
   constructor(
