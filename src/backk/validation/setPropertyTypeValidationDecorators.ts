@@ -113,32 +113,34 @@ export default function setPropertyTypeValidationDecorators(
             propertyName.endsWith('Id') ||
             propertyName.endsWith('Ids')
           ) {
-            if (!doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.MAX_LENGTH)) {
-              const validationMetadataArgs: ValidationMetadataArgs = {
-                type: ValidationTypes.MAX_LENGTH,
-                target: typeClass,
-                propertyName,
-                constraints: [24],
-                validationOptions: { each: propertyTypeName.endsWith('[]') }
-              };
+            if (!doesPropertyContainCustomValidation(typeClass, propertyName, 'maxLengthAndMatches')) {
+              if (!doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.MAX_LENGTH)) {
+                const validationMetadataArgs: ValidationMetadataArgs = {
+                  type: ValidationTypes.MAX_LENGTH,
+                  target: typeClass,
+                  propertyName,
+                  constraints: [24],
+                  validationOptions: { each: propertyTypeName.endsWith('[]') }
+                };
 
-              getFromContainer(MetadataStorage).addValidationMetadata(
-                new ValidationMetadata(validationMetadataArgs)
-              );
-            }
+                getFromContainer(MetadataStorage).addValidationMetadata(
+                  new ValidationMetadata(validationMetadataArgs)
+                );
+              }
 
-            if (!doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.MATCHES)) {
-              const validationMetadataArgs: ValidationMetadataArgs = {
-                type: ValidationTypes.MATCHES,
-                target: typeClass,
-                propertyName,
-                constraints: [/^[a-f\d]{1,24}$/],
-                validationOptions: { each: propertyTypeName.endsWith('[]') }
-              };
+              if (!doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.MATCHES)) {
+                const validationMetadataArgs: ValidationMetadataArgs = {
+                  type: ValidationTypes.MATCHES,
+                  target: typeClass,
+                  propertyName,
+                  constraints: [/^[a-f\d]{1,24}$/],
+                  validationOptions: { each: propertyTypeName.endsWith('[]') }
+                };
 
-              getFromContainer(MetadataStorage).addValidationMetadata(
-                new ValidationMetadata(validationMetadataArgs)
-              );
+                getFromContainer(MetadataStorage).addValidationMetadata(
+                  new ValidationMetadata(validationMetadataArgs)
+                );
+              }
             }
           }
 
