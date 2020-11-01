@@ -32,7 +32,8 @@ export class AppController {
     @Query('arg') serviceFunctionArgument: object
   ): Promise<object | void> {
     return tryExecuteServiceFunction(this, params.serviceFunctionName, serviceFunctionArgument, authHeader, {
-      httpMethod: 'GET'
+      httpMethod: 'GET',
+      allowedServiceFunctionsRegExpForHttpGetMethod: /^\w+\.get/
     });
   }
 

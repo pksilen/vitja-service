@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Get endpoint, executeServiceFunction has httpmethod param which defaults to POST
   - allowedServiceFunctionsregExp has default value
   - deniedServiceFunctions list
 - Add tests in create/add methods

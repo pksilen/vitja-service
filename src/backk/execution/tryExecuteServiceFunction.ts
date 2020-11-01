@@ -17,6 +17,7 @@ import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
+  allowedServiceFunctionsRegExpForHttpGetMethod?: RegExp;
   isMetadataServiceEnabled?: boolean;
 }
 
@@ -27,20 +28,34 @@ export default async function tryExecuteServiceFunction(
   authHeader: string,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
+  const [serviceName, functionName] = serviceFunction.split('.');
+
   if (options?.httpMethod === 'GET') {
+    if (!options?.allowedServiceFunctionsRegExpForHttpGetMethod) {
+      throw new Error('allowedServiceFunctionsRegExpForHttpGetMethod must be specified in GET endpoint');
+    }
+    if (!serviceFunction.match(options?.allowedServiceFunctionsRegExpForHttpGetMethod)) {
+      createErrorFromErrorMessageAndThrowError(
+        createErrorMessageWithStatusCode(
+          'Service function cannot be called with HTTP GET. Use HTTP POST instead',
+          400
+        )
+      );
+    }
     // noinspection AssignmentToFunctionParameterJS
     serviceFunctionArgument = decodeURIComponent(serviceFunctionArgument);
     // noinspection AssignmentToFunctionParameterJS
     try {
       serviceFunctionArgument = JSON.parse(serviceFunctionArgument);
-    } catch(error) {
+    } catch (error) {
       createErrorFromErrorMessageAndThrowError(
-        createErrorMessageWithStatusCode('Invalid service function argument. Argument must be a URI encoded JSON object string', 400)
+        createErrorMessageWithStatusCode(
+          'Invalid service function argument. Argument must be a URI encoded JSON object string',
+          400
+        )
       );
     }
   }
-
-  const [serviceName, functionName] = serviceFunction.split('.');
 
   if (serviceFunction === 'metadataService.getServicesMetadata') {
     if (!options || options.isMetadataServiceEnabled === undefined || options.isMetadataServiceEnabled) {
@@ -72,7 +87,10 @@ export default async function tryExecuteServiceFunction(
 
   if (typeof serviceFunctionArgument !== 'object' || Array.isArray(serviceFunctionArgument)) {
     createErrorFromErrorMessageAndThrowError(
-      createErrorMessageWithStatusCode(`Invalid service function argument. Argument must be a JSON object string`, 400)
+      createErrorMessageWithStatusCode(
+        `Invalid service function argument. Argument must be a JSON object string`,
+        400
+      )
     );
   }
   const usersService = Object.values(controller).find((service) => service instanceof UsersBaseService);
