@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-  - allowedServiceFunctionsregExp has default value
   - deniedServiceFunctions list
 - Add tests in create/add methods
 

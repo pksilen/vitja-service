@@ -18,6 +18,7 @@ import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
   allowedServiceFunctionsRegExpForHttpGetMethod?: RegExp;
+  deniedServiceFunctionsForForHttpGetMethod?: string[];
   isMetadataServiceEnabled?: boolean;
 }
 
@@ -34,7 +35,10 @@ export default async function tryExecuteServiceFunction(
     if (!options?.allowedServiceFunctionsRegExpForHttpGetMethod) {
       throw new Error('allowedServiceFunctionsRegExpForHttpGetMethod must be specified in GET endpoint');
     }
-    if (!serviceFunction.match(options?.allowedServiceFunctionsRegExpForHttpGetMethod)) {
+    if (
+      !serviceFunction.match(options?.allowedServiceFunctionsRegExpForHttpGetMethod) ||
+      options?.deniedServiceFunctionsForForHttpGetMethod?.includes(serviceFunction)
+    ) {
       createErrorFromErrorMessageAndThrowError(
         createErrorMessageWithStatusCode(
           'Service function cannot be called with HTTP GET. Use HTTP POST instead',
@@ -42,6 +46,7 @@ export default async function tryExecuteServiceFunction(
         )
       );
     }
+
     // noinspection AssignmentToFunctionParameterJS
     serviceFunctionArgument = decodeURIComponent(serviceFunctionArgument);
     // noinspection AssignmentToFunctionParameterJS
@@ -50,7 +55,7 @@ export default async function tryExecuteServiceFunction(
     } catch (error) {
       createErrorFromErrorMessageAndThrowError(
         createErrorMessageWithStatusCode(
-          'Invalid service function argument. Argument must be a URI encoded JSON object string',
+          'Invalid or too long service function argument. Argument must be a URI encoded JSON object string',
           400
         )
       );
