@@ -18,10 +18,14 @@ export default async function removeSubEntities<T extends Entity, U extends obje
   preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
   const Types = dbManager.getTypes();
+  let didStartTransaction = false;
 
   try {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (!dbManager.getClsNamespace()?.get('globalTransaction') &&
+      !dbManager.getClsNamespace()?.get('localTransaction')) {
       await dbManager.beginTransaction();
+      didStartTransaction = true;
+      dbManager.getClsNamespace()?.set('localTransaction', true);
     }
 
     const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
@@ -43,13 +47,17 @@ export default async function removeSubEntities<T extends Entity, U extends obje
       }
     });
 
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.commitTransaction();
     }
   } catch (error) {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
     return createErrorResponseFromError(error);
+  } finally {
+    if (didStartTransaction) {
+      dbManager.getClsNamespace()?.set('localTransaction', false);
+    }
   }
 }

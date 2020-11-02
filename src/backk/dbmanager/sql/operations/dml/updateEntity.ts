@@ -21,6 +21,8 @@ export default async function updateEntity<T extends Entity>(
   shouldCheckIfItemExists: boolean = true,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
+  let didStartTransaction = false;
+
   try {
     const Types = dbManager.getTypes();
     if (!isRecursiveCall) {
@@ -32,6 +34,7 @@ export default async function updateEntity<T extends Entity>(
       !dbManager.getClsNamespace()?.get('globalTransaction')
     ) {
       await dbManager.beginTransaction();
+      didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
     }
 
@@ -158,19 +161,19 @@ export default async function updateEntity<T extends Entity>(
 
     await Promise.all(promises);
 
-    if (!isRecursiveCall && !dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.commitTransaction();
     }
   } catch (error) {
     if (isRecursiveCall) {
       throw error;
     }
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
     return createErrorResponseFromError(error);
   } finally {
-    if (!isRecursiveCall) {
+    if (didStartTransaction) {
       dbManager.getClsNamespace()?.set('localTransaction', false);
     }
   }

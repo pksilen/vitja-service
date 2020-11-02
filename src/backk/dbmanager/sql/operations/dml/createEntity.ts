@@ -20,6 +20,7 @@ export default async function createEntity<T>(
   isRecursiveCall = false,
   shouldReturnItem = true
 ): Promise<T | ErrorResponse> {
+  let didStartTransaction = false;
   // noinspection ExceptionCaughtLocallyJS
   try {
     const Types = dbManager.getTypes();
@@ -30,10 +31,10 @@ export default async function createEntity<T>(
 
     if (
       !dbManager.getClsNamespace()?.get('localTransaction') &&
-      !dbManager.getClsNamespace()?.get('globalTransaction') &&
-      shouldReturnItem
+      !dbManager.getClsNamespace()?.get('globalTransaction')
     ) {
       await dbManager.beginTransaction();
+      didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
     }
 
@@ -163,24 +164,27 @@ export default async function createEntity<T>(
       }
     );
 
-    if (!isRecursiveCall && shouldReturnItem && !dbManager.getClsNamespace()?.get('globalTransaction')) {
+    const response =
+      isRecursiveCall || !shouldReturnItem
+        ? ({} as any)
+        : await dbManager.getEntityById(_id, entityClass, postQueryOperations);
+
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.commitTransaction();
     }
 
-    return isRecursiveCall || !shouldReturnItem
-      ? ({} as any)
-      : await dbManager.getEntityById(_id, entityClass, postQueryOperations);
+    return response;
   } catch (error) {
     if (isRecursiveCall) {
       throw error;
     }
-    if (shouldReturnItem && !dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
 
     return createErrorResponseFromError(error);
   } finally {
-    if (!isRecursiveCall && shouldReturnItem) {
+    if (didStartTransaction) {
       dbManager.getClsNamespace()?.set('localTransaction', false);
     }
   }

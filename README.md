@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Add tests in create/add methods
 
 - Prometheus metrics (Opentelemetry)
 - Jaeger tracing (Opentelemetry)

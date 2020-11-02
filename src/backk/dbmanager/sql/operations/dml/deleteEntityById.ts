@@ -7,7 +7,7 @@ import createErrorResponseFromError from '../../../../errors/createErrorResponse
 import getTypeMetadata from '../../../../metadata/getTypeMetadata';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
-import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 
 export default async function deleteEntityById<T extends object>(
   dbManager: PostgreSqlDbManager,
@@ -16,10 +16,16 @@ export default async function deleteEntityById<T extends object>(
   preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
   const Types = dbManager.getTypes();
+  let didStartTransaction = false;
 
   try {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (
+      !dbManager.getClsNamespace()?.get('globalTransaction') &&
+      !dbManager.getClsNamespace()?.get('localTransaction')
+    ) {
       await dbManager.beginTransaction();
+      didStartTransaction = true;
+      dbManager.getClsNamespace()?.set('localTransaction', true);
     }
 
     if (Types && preHooks) {
@@ -51,13 +57,17 @@ export default async function deleteEntityById<T extends object>(
       )
     ]);
 
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.commitTransaction();
     }
   } catch (error) {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
     return createErrorResponseFromError(error);
+  } finally {
+    if (didStartTransaction) {
+      dbManager.getClsNamespace()?.set('localTransaction', false);
+    }
   }
 }

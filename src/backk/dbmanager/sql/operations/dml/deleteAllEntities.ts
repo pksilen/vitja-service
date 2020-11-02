@@ -1,16 +1,23 @@
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import entityContainer, { JoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 
 export default async function deleteAllEntities<T>(
   dbManager: PostgreSqlDbManager,
   entityClass: new () => T
 ): Promise<void | ErrorResponse> {
+  let didStartTransaction = false;
+
   try {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (
+      !dbManager.getClsNamespace()?.get('globalTransaction') &&
+      !dbManager.getClsNamespace()?.get('localTransaction')
+    ) {
       await dbManager.beginTransaction();
+      didStartTransaction = true;
+      dbManager.getClsNamespace()?.set('localTransaction', true);
     }
 
     await Promise.all([
@@ -23,13 +30,17 @@ export default async function deleteAllEntities<T>(
       dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${entityClass.name}`)
     ]);
 
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.commitTransaction();
     }
   } catch (error) {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
     return createErrorResponseFromError(error);
+  } finally {
+    if (didStartTransaction) {
+      dbManager.getClsNamespace()?.set('localTransaction', false);
+    }
   }
 }

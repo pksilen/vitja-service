@@ -1,12 +1,12 @@
-import { JSONPath } from "jsonpath-plus";
-import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import { Entity } from "../../../../types/Entity";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
-import { PreHook } from "../../../hooks/PreHook";
+import { JSONPath } from 'jsonpath-plus';
+import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import { Entity } from '../../../../types/Entity';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
+import { PreHook } from '../../../hooks/PreHook';
 
 export default async function addSubEntity<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -18,9 +18,15 @@ export default async function addSubEntity<T extends Entity, U extends object>(
   preHooks?: PreHook | PreHook[],
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
+  let didStartTransaction = false;
   try {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (
+      !dbManager.getClsNamespace()?.get('localTransaction') &&
+      !dbManager.getClsNamespace()?.get('globalTransaction')
+    ) {
       await dbManager.beginTransaction();
+      didStartTransaction = true;
+      dbManager.getClsNamespace()?.set('localTransaction', true);
     }
 
     if (preHooks) {
@@ -56,15 +62,19 @@ export default async function addSubEntity<T extends Entity, U extends object>(
       throw new Error(createdItemOrErrorResponse.errorMessage);
     }
 
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.commitTransaction();
     }
 
     return await dbManager.getEntityById(_id, entityClass, postQueryOperations);
   } catch (error) {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction')) {
+    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.rollbackTransaction();
     }
     return createErrorResponseFromError(error);
+  } finally {
+    if (didStartTransaction) {
+      dbManager.getClsNamespace()?.set('localTransaction', false);
+    }
   }
 }
