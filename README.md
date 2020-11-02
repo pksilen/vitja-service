@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-  - deniedServiceFunctions list
 - Add tests in create/add methods
 
 - Prometheus metrics (Opentelemetry)
