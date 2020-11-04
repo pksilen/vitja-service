@@ -2,7 +2,7 @@ import { HttpException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { createNamespace } from 'cls-hooked';
 import _ from 'lodash';
-import authorize from '../authorization/authorize';
+import tryAuthorize from '../authorization/tryAuthorize';
 import BaseService from '../service/BaseService';
 import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
 import getPropertyBaseTypeName from '../utils/type/getPropertyBaseTypeName';
@@ -14,6 +14,8 @@ import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithSt
 import tryValidateResponse from '../validation/tryValidateResponse';
 import isErrorResponse from '../errors/isErrorResponse';
 import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
+import defaultServiceMetrics from '../telemetry/metrics/defaultServiceMetrics';
+import createErrorResponseFromError from "../errors/createErrorResponseFromError";
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -29,14 +31,13 @@ export default async function tryExecuteServiceFunction(
   authHeader: string,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
+  defaultServiceMetrics.incrementHttpRequestsByOne();
+  const serviceFunctionCallStartTimeInMillis = Date.now();
   const [serviceName, functionName] = serviceFunction.split('.');
 
   if (options?.httpMethod === 'GET') {
-    if (!options?.allowedServiceFunctionsRegExpForHttpGetMethod) {
-      throw new Error('allowedServiceFunctionsRegExpForHttpGetMethod must be specified in GET endpoint');
-    }
     if (
-      !serviceFunction.match(options?.allowedServiceFunctionsRegExpForHttpGetMethod) ||
+      !serviceFunction.match(options?.allowedServiceFunctionsRegExpForHttpGetMethod ?? /^\w+\.get/) ||
       options?.deniedServiceFunctionsForForHttpGetMethod?.includes(serviceFunction)
     ) {
       createErrorFromErrorMessageAndThrowError(
@@ -49,8 +50,8 @@ export default async function tryExecuteServiceFunction(
 
     // noinspection AssignmentToFunctionParameterJS
     serviceFunctionArgument = decodeURIComponent(serviceFunctionArgument);
-    // noinspection AssignmentToFunctionParameterJS
     try {
+      // noinspection AssignmentToFunctionParameterJS
       serviceFunctionArgument = JSON.parse(serviceFunctionArgument);
     } catch (error) {
       createErrorFromErrorMessageAndThrowError(
@@ -98,9 +99,14 @@ export default async function tryExecuteServiceFunction(
       )
     );
   }
+
+  if (serviceFunctionArgument?.captchaToken) {
+    tryVerifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
+  }
+
   const usersService = Object.values(controller).find((service) => service instanceof UsersBaseService);
 
-  await authorize(
+  await tryAuthorize(
     controller[serviceName],
     functionName,
     serviceFunctionArgument,
@@ -108,10 +114,6 @@ export default async function tryExecuteServiceFunction(
     controller['authorizationService'],
     usersService as UsersBaseService | undefined
   );
-
-  if (serviceFunctionArgument?.captchaToken) {
-    tryVerifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
-  }
 
   const serviceFunctionArgumentTypeName =
     controller[`${serviceName}Types`].functionNameToParamTypeNameMap[functionName];
@@ -173,10 +175,16 @@ export default async function tryExecuteServiceFunction(
     const clsNamespace = createNamespace('dbManager');
     dbManager.setClsNamespaceName('dbManager');
     response = await clsNamespace.runAndReturn(async () => {
-      // TODO: surround db operations with try catch and throw proper 500 error
-      await dbManager.reserveDbConnectionFromPool();
-      const response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
-      dbManager.releaseDbConnectionBackToPool();
+      let response;
+
+      try {
+        await dbManager.tryReserveDbConnectionFromPool();
+        response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
+        dbManager.tryReleaseDbConnectionBackToPool();
+      } catch(error) {
+        response = createErrorResponseFromError(error);
+      }
+
       return response;
     });
   } else {
@@ -184,6 +192,9 @@ export default async function tryExecuteServiceFunction(
   }
 
   if (response && isErrorResponse(response)) {
+    if (response.statusCode >= 500) {
+      defaultServiceMetrics.incrementHttp5xxErrorsByOne();
+    }
     throw new HttpException(response, response.statusCode);
   }
 
@@ -200,6 +211,13 @@ export default async function tryExecuteServiceFunction(
       await tryValidateResponse(response, ServiceFunctionReturnType);
     }
   }
+
+  const serviceFunctionProcessingTimeInMillis = Date.now() - serviceFunctionCallStartTimeInMillis;
+
+  defaultServiceMetrics.incrementServiceFunctionProcessingTimeInSecsBucketCounterByOne(
+    serviceFunction,
+    serviceFunctionProcessingTimeInMillis / 1000
+  );
 
   return response;
 }

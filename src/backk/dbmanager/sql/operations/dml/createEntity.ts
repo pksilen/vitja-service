@@ -33,7 +33,7 @@ export default async function createEntity<T>(
       !dbManager.getClsNamespace()?.get('localTransaction') &&
       !dbManager.getClsNamespace()?.get('globalTransaction')
     ) {
-      await dbManager.beginTransaction();
+      await dbManager.tryBeginTransaction();
       didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
     }
@@ -170,7 +170,7 @@ export default async function createEntity<T>(
         : await dbManager.getEntityById(_id, entityClass, postQueryOperations);
 
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.commitTransaction();
+      await dbManager.tryCommitTransaction();
     }
 
     return response;
@@ -179,7 +179,7 @@ export default async function createEntity<T>(
       throw error;
     }
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.rollbackTransaction();
+      await dbManager.tryRollbackTransaction();
     }
 
     return createErrorResponseFromError(error);

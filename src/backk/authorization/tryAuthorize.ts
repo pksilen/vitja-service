@@ -5,8 +5,9 @@ import serviceFunctionAnnotationContainer from '../decorators/service/function/s
 import BaseService from '../service/BaseService';
 import UsersBaseService from '../users/UsersBaseService';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import defaultServiceMetrics from '../telemetry/metrics/defaultServicemetrics';
 
-export default async function authorize(
+export default async function tryAuthorize(
   service: BaseService,
   functionName: string,
   serviceFunctionArgument: any,
@@ -84,6 +85,7 @@ export default async function authorize(
     return;
   }
 
+  defaultServiceMetrics.incrementAuthorizationFailuresByOne();
   createErrorFromErrorMessageAndThrowError(
     createErrorMessageWithStatusCode('Attempted service function call not authorized', 403)
   );

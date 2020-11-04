@@ -40,12 +40,13 @@ export default abstract class AbstractDbManager {
     return getNamespace(this.clsNamespaceName);
   }
 
+  abstract getDbManagerType(): string;
   abstract tryExecute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T>;
   abstract tryExecuteSql<T>(sqlStatement: string): Promise<Field[]>;
   abstract tryExecuteSqlWithoutCls<T>(sqlStatement: string, values?: any[]): Promise<Field[]>;
   abstract isDbReady(): Promise<boolean>;
-  abstract reserveDbConnectionFromPool(): Promise<void>;
-  abstract releaseDbConnectionBackToPool(): void;
+  abstract tryReserveDbConnectionFromPool(): Promise<void>;
+  abstract tryReleaseDbConnectionBackToPool(): void;
   abstract executeInsideTransaction<T>(
     executable: () => Promise<T | ErrorResponse>
   ): Promise<T | ErrorResponse>;

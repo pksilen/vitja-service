@@ -6,7 +6,7 @@ import createErrorResponseFromError from '../../../../errors/createErrorResponse
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import createErrorResponseFromErrorMessageAndStatusCode from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
 
-export default async function getSubEntity<T extends object, U extends object>(
+export default async function getSubEntity<T extends object, U>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   subEntityPath: string,

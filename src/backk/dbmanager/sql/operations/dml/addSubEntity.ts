@@ -24,7 +24,7 @@ export default async function addSubEntity<T extends Entity, U extends object>(
       !dbManager.getClsNamespace()?.get('localTransaction') &&
       !dbManager.getClsNamespace()?.get('globalTransaction')
     ) {
-      await dbManager.beginTransaction();
+      await dbManager.tryBeginTransaction();
       didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
     }
@@ -63,13 +63,13 @@ export default async function addSubEntity<T extends Entity, U extends object>(
     }
 
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.commitTransaction();
+      await dbManager.tryCommitTransaction();
     }
 
     return await dbManager.getEntityById(_id, entityClass, postQueryOperations);
   } catch (error) {
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.rollbackTransaction();
+      await dbManager.tryRollbackTransaction();
     }
     return createErrorResponseFromError(error);
   } finally {

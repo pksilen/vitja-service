@@ -23,7 +23,7 @@ export default async function removeSubEntities<T extends Entity, U extends obje
   try {
     if (!dbManager.getClsNamespace()?.get('globalTransaction') &&
       !dbManager.getClsNamespace()?.get('localTransaction')) {
-      await dbManager.beginTransaction();
+      await dbManager.tryBeginTransaction();
       didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
     }
@@ -48,11 +48,11 @@ export default async function removeSubEntities<T extends Entity, U extends obje
     });
 
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.commitTransaction();
+      await dbManager.tryCommitTransaction();
     }
   } catch (error) {
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.rollbackTransaction();
+      await dbManager.tryRollbackTransaction();
     }
     return createErrorResponseFromError(error);
   } finally {

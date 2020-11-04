@@ -11,6 +11,7 @@ TODO:
   - timestampIso8601Utc
   - timeZoneIso8601
   - text
+- If db initialization in main.ts fails, try in loop for initialization and collect error metris
 - GDPR logging
   -audit log should go to separate server
 - Own remote service function executor (Http)
@@ -37,6 +38,7 @@ TODO:
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
+  - Update default prometheus metrics
 - Add boolean field to entity to test it
 - New entities: User has Friends, Posts, show posts from friends
   - GetEntitiesByIn: get Posts where userId in User's friendIds

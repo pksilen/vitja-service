@@ -33,7 +33,7 @@ export default async function updateEntity<T extends Entity>(
       !dbManager.getClsNamespace()?.get('localTransaction') &&
       !dbManager.getClsNamespace()?.get('globalTransaction')
     ) {
-      await dbManager.beginTransaction();
+      await dbManager.tryBeginTransaction();
       didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
     }
@@ -162,14 +162,14 @@ export default async function updateEntity<T extends Entity>(
     await Promise.all(promises);
 
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.commitTransaction();
+      await dbManager.tryCommitTransaction();
     }
   } catch (error) {
     if (isRecursiveCall) {
       throw error;
     }
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.rollbackTransaction();
+      await dbManager.tryRollbackTransaction();
     }
     return createErrorResponseFromError(error);
   } finally {

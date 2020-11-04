@@ -1,13 +1,13 @@
-import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
-import AuthorizationService from '../backk/authorization/AuthorizationService';
-import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
-import tryExecuteServiceFunction from '../backk/execution/tryExecuteServiceFunction';
-import initializeController from '../backk/initialization/initializeController';
-import ReadinessCheckService from '../backk/readinesscheck/ReadinessCheckService';
-import OrdersService from '../services/orders/OrdersService';
-import SalesItemsService from '../services/salesitems/SalesItemsService';
-import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
-import UsersService from '../services/users/UsersService';
+import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Param, Post, Query } from "@nestjs/common";
+import AuthorizationService from "../backk/authorization/AuthorizationService";
+import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
+import tryExecuteServiceFunction from "../backk/execution/tryExecuteServiceFunction";
+import initializeController from "../backk/initialization/initializeController";
+import ReadinessCheckService from "../backk/readinesscheck/ReadinessCheckService";
+import OrdersService from "../services/orders/OrdersService";
+import SalesItemsService from "../services/salesitems/SalesItemsService";
+import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
+import UsersService from "../services/users/UsersService";
 
 // noinspection JSUnusedLocalSymbols,OverlyComplexFunctionJS
 @Controller()

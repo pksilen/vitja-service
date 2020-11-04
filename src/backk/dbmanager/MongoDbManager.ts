@@ -17,7 +17,7 @@ import createErrorResponseFromErrorMessageAndStatusCode
 export default class MongoDbManager extends AbstractDbManager {
   private readonly mongoClient: MongoClient;
 
-  constructor(uri: string, public readonly dbName: string) {
+  constructor(private readonly uri: string, public readonly dbName: string) {
     super();
     this.mongoClient = new MongoClient(uri, { useNewUrlParser: true });
   }
@@ -40,6 +40,10 @@ export default class MongoDbManager extends AbstractDbManager {
 
   executeInsideTransaction<T>(): Promise<T | ErrorResponse> {
     throw new Error('Method not allowed.');
+  }
+
+  getDbManagerType(): string {
+    return "MongoDB";
   }
 
   async isDbReady(): Promise<boolean> {
@@ -321,11 +325,11 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  releaseDbConnectionBackToPool() {
+  tryReleaseDbConnectionBackToPool() {
     // TODO inmplement
   }
 
-  reserveDbConnectionFromPool(): Promise<void> {
+  tryReserveDbConnectionFromPool(): Promise<void> {
     // TODO inmplement
     return Promise.resolve(undefined);
   }
