@@ -41,6 +41,7 @@ export default abstract class AbstractDbManager {
   }
 
   abstract getDbManagerType(): string;
+  abstract getDbHost(): string;
   abstract tryExecute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T>;
   abstract tryExecuteSql<T>(sqlStatement: string): Promise<Field[]>;
   abstract tryExecuteSqlWithoutCls<T>(sqlStatement: string, values?: any[]): Promise<Field[]>;

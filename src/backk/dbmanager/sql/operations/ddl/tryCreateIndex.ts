@@ -1,7 +1,7 @@
 import AbstractDbManager from '../../../AbstractDbManager';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 
-export default async function createIndex(
+export default async function tryCreateIndex(
   dbManager: AbstractDbManager,
   entityName: string,
   schema: string | undefined,

@@ -1,11 +1,11 @@
 import AbstractDbManager from '../../../AbstractDbManager';
-import createIndex from './createIndex';
+import tryCreateIndex from './tryCreateIndex';
 
-export default async function createUniqueIndex(
+export default async function tryCreateUniqueIndex(
   dbManager: AbstractDbManager,
   entityName: string,
   schema: string | undefined,
   indexFields: string[]
 ) {
-  await createIndex(dbManager, entityName, schema, indexFields, true);
+  await tryCreateIndex(dbManager, entityName, schema, indexFields, true);
 }

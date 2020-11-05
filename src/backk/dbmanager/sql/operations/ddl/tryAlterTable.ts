@@ -8,7 +8,7 @@ import createAdditionalTable from "./utils/createAdditionalTable";
 import addJoinSpec from "./utils/addJoinSpec";
 import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 
-export default async function alterTable(
+export default async function tryAlterTable(
   dbManager: AbstractDbManager,
   entityName: string,
   entityClass: Function,

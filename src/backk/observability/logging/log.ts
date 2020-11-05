@@ -55,3 +55,7 @@ export default function log(
 
   console.log(logEntry);
 }
+
+export function logError(error: Error) {
+  log('ERROR', error.message, error.stack ?? '')
+}

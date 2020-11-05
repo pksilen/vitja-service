@@ -57,6 +57,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return 'PostgreSQL';
   }
 
+  getDbHost(): string {
+    return this.host;
+  }
+
   async tryExecute<T>(dbOperationFunction: (pool: Pool) => Promise<T>): Promise<T> {
     throw new Error('Not implemented');
   }

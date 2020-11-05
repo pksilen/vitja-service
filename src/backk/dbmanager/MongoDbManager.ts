@@ -46,6 +46,10 @@ export default class MongoDbManager extends AbstractDbManager {
     return "MongoDB";
   }
 
+  getDbHost(): string {
+    return this.uri;
+  }
+
   async isDbReady(): Promise<boolean> {
     try {
       await this.tryExecute((client) =>

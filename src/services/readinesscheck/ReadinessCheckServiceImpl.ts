@@ -3,7 +3,10 @@ import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import ReadinessCheckService from "../../backk/readinesscheck/ReadinessCheckService";
 import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import createErrorResponseFromErrorMessageAndStatusCode from "../../backk/errors/createErrorResponseFromErrorMessageAndStatusCode";
+import createErrorResponseFromErrorMessageAndStatusCode
+  from "../../backk/errors/createErrorResponseFromErrorMessageAndStatusCode";
+import initializeDatabase, { isDbInitialized } from "../../backk/dbmanager/sql/operations/ddl/initializeDatabase";
+import { HttpStatusCodes } from "../../backk/constants/constants";
 
 @Injectable()
 export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
@@ -13,11 +16,13 @@ export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
 
   @AllowForEveryUser()
   async isReady(): Promise<void | ErrorResponse> {
-    const isDbReady = await this.dbManager.isDbReady();
-    if (isDbReady) {
-      return;
+    if (!isDbInitialized(this.dbManager) && !(await initializeDatabase(this.dbManager))) {
+      return createErrorResponseFromErrorMessageAndStatusCode(
+        'Database not ready',
+        HttpStatusCodes.SERVICE_UNAVAILABLE
+      );
     }
 
-    return Promise.resolve(createErrorResponseFromErrorMessageAndStatusCode('Database not ready', 503));
+    return;
   }
 }

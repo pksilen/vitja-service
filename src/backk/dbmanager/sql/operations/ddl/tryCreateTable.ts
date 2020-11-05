@@ -9,7 +9,7 @@ import createAdditionalTable from './utils/createAdditionalTable';
 import addJoinSpec from './utils/addJoinSpec';
 import getTypeMetadata from "../../../../metadata/getTypeMetadata";
 
-export default async function createTable(
+export default async function tryCreateTable(
   dbManager: AbstractDbManager,
   entityName: string,
   entityClass: Function,
