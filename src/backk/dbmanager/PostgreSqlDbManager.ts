@@ -24,8 +24,8 @@ import { PreHook } from './hooks/PreHook';
 import { Entity } from '../types/Entity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
-import createErrorResponseFromError from "../errors/createErrorResponseFromError";
-import log from "../observability/logging/log";
+import createErrorResponseFromError from '../errors/createErrorResponseFromError';
+import log from '../observability/logging/log';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -77,6 +77,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryReserveDbConnectionFromPool(): Promise<void> {
+    log('DEBUG', 'Acquire database connection', '');
+
     try {
       this.getClsNamespace()?.set('connection', await this.pool.connect());
       this.getClsNamespace()?.set('localTransaction', false);
@@ -88,13 +90,19 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     } catch (error) {
       if (this.firstDbOperationFailureTimeInMillis) {
         const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
-        defaultServiceMetrics.recordDbFailureDurationInSecs(this.getDbManagerType(), this.host, failureDurationInSecs);
+        defaultServiceMetrics.recordDbFailureDurationInSecs(
+          this.getDbManagerType(),
+          this.host,
+          failureDurationInSecs
+        );
       }
       throw error;
     }
   }
 
   tryReleaseDbConnectionBackToPool() {
+    log('DEBUG', 'Release database connection', '');
+
     this.getClsNamespace()
       ?.get('connection')
       .release();
@@ -102,6 +110,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryBeginTransaction(): Promise<void> {
+    log('DEBUG', 'Begin database transaction', '');
+
     try {
       await this.getClsNamespace()
         ?.get('connection')
@@ -113,28 +123,34 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     } catch (error) {
       if (this.firstDbOperationFailureTimeInMillis) {
         const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
-        defaultServiceMetrics.recordDbFailureDurationInSecs(this.getDbManagerType(), this.host, failureDurationInSecs);
+        defaultServiceMetrics.recordDbFailureDurationInSecs(
+          this.getDbManagerType(),
+          this.host,
+          failureDurationInSecs
+        );
       }
       throw error;
     }
   }
 
   async tryCommitTransaction(): Promise<void> {
+    log('DEBUG', 'Commit database transaction', '');
+
     await this.getClsNamespace()
       ?.get('connection')
       .query('COMMIT');
   }
 
   async tryRollbackTransaction(): Promise<void> {
+    log('DEBUG', 'Rollback database transaction', '');
+
     await this.getClsNamespace()
       ?.get('connection')
       .query('ROLLBACK');
   }
 
   async tryExecuteSql<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
-    if (process.env.LOG_LEVEL === 'DEBUG') {
-      log('INFO', 'Database operation', sqlStatement);
-    }
+    log('DEBUG', 'Database DML operation', sqlStatement);
 
     try {
       const result = await this.getClsNamespace()
@@ -149,9 +165,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryExecuteSqlWithoutCls<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
-    if (process.env.LOG_LEVEL === 'DEBUG') {
-      log('INFO', 'Database operation', sqlStatement);
-    }
+    log('DEBUG', 'Database DDL operation', sqlStatement);
 
     try {
       const result = await this.pool.query(sqlStatement, values);
@@ -163,12 +177,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryExecuteQuery(sqlStatement: string, values?: any[]): Promise<QueryResult<any>> {
-    if (process.env.LOG_LEVEL === 'DEBUG') {
-      log('INFO', 'Database operation', sqlStatement);
-    }
+    log('DEBUG', 'Database DQL operation', sqlStatement);
 
     try {
-
       const response = await this.getClsNamespace()
         ?.get('connection')
         .query(sqlStatement, values);
@@ -182,7 +193,11 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     } catch (error) {
       if (this.firstDbOperationFailureTimeInMillis) {
         const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
-        defaultServiceMetrics.recordDbFailureDurationInSecs(this.getDbManagerType(), this.host, failureDurationInSecs);
+        defaultServiceMetrics.recordDbFailureDurationInSecs(
+          this.getDbManagerType(),
+          this.host,
+          failureDurationInSecs
+        );
       }
       defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.host);
       throw error;
@@ -190,9 +205,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryExecuteQueryWithConfig(queryConfig: QueryConfig): Promise<QueryResult<any>> {
-    if (process.env.LOG_LEVEL === 'DEBUG') {
-      log('INFO', 'Database operation', queryConfig.text);
-    }
+    log('DEBUG', 'Database DQL operation', queryConfig.text);
 
     try {
       const response = await this.getClsNamespace()
@@ -208,7 +221,11 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     } catch (error) {
       if (this.firstDbOperationFailureTimeInMillis) {
         const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
-        defaultServiceMetrics.recordDbFailureDurationInSecs(this.getDbManagerType(), this.host, failureDurationInSecs);
+        defaultServiceMetrics.recordDbFailureDurationInSecs(
+          this.getDbManagerType(),
+          this.host,
+          failureDurationInSecs
+        );
       }
       defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.host);
       throw error;
@@ -224,10 +241,14 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         this.firstDbOperationFailureTimeInMillis = 0;
         defaultServiceMetrics.recordDbFailureDurationInSecs(this.getDbManagerType(), this.host, 0);
       }
-    } catch(error) {
+    } catch (error) {
       if (this.firstDbOperationFailureTimeInMillis) {
         const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
-        defaultServiceMetrics.recordDbFailureDurationInSecs(this.getDbManagerType(), this.host, failureDurationInSecs);
+        defaultServiceMetrics.recordDbFailureDurationInSecs(
+          this.getDbManagerType(),
+          this.host,
+          failureDurationInSecs
+        );
       }
       return createErrorResponseFromError(error);
     }
@@ -238,13 +259,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     if (isErrorResponse(result)) {
       try {
         await this.tryRollbackTransaction();
-      } catch(error) {
+      } catch (error) {
         return createErrorResponseFromError(error);
       }
     } else {
       try {
         await this.tryCommitTransaction();
-      } catch(error) {
+      } catch (error) {
         return createErrorResponseFromError(error);
       }
     }
@@ -260,6 +281,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations,
     shouldReturnItem = true
   ): Promise<T | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.createEntity');
+
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = createEntity(
@@ -290,6 +313,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.addSubEntity');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = addSubEntity(
@@ -317,6 +341,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.getEntities');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = getEntities(this, filters, entityClass, postQueryOperations);
@@ -334,6 +359,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     filters: Partial<T> | SqlExpression[] | undefined,
     entityClass: new () => T
   ): Promise<number | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.getEntitiesCount');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = getEntitiesCount(this, filters, entityClass);
@@ -352,6 +378,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.getEntityById');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = getEntityById(this, _id, entityClass, postQueryOperations);
@@ -371,6 +398,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<any | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.getSubEntity');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = getSubEntity(this, _id, subEntityPath, entityClass, postQueryOperations);
@@ -389,6 +417,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.getEntitiesByIds');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = getEntitiesByIds(this, _ids, entityClass, postQueryOperations);
@@ -408,6 +437,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.getEntityBy');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = getEntityBy(this, fieldName, fieldValue, entityClass, postQueryOperations);
@@ -427,6 +457,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.getEntitiesBy');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = getEntitiesBy(this, fieldName, fieldValue, entityClass, postQueryOperations);
@@ -446,6 +477,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     shouldCheckIfItemExists: boolean = true
   ): Promise<void | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.updateEntity');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = updateEntity(this, entity, entityClass, preHooks, shouldCheckIfItemExists);
@@ -464,6 +496,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.deleteEntityById');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = deleteEntityById(this, _id, entityClass, preHooks);
@@ -483,6 +516,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.removeSubEntities');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = removeSubEntities(this, _id, subEntitiesPath, entityClass, preHooks);
@@ -503,6 +537,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.removeSubEntityById');
     const dbOperationStartTimeInMillis = Date.now();
 
     const subEntityPath = `${subEntitiesPath}[?(@.id == '${subEntityId}')]`;
@@ -518,6 +553,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
+    log('DEBUG', 'Database manager operation', 'PostgreSqlDbManager.deleteAllEntities');
     const dbOperationStartTimeInMillis = Date.now();
 
     const response = deleteAllEntities(this, entityClass);

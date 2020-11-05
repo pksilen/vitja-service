@@ -10,7 +10,7 @@ export interface LogEntry {
   Timestamp: string;
   TraceId?: string;
   SpanId?: string;
-  TraceFlags?: string;
+  TraceFlags?: number;
   SeverityText: string;
   SeverityNumber: number;
   Name: string;

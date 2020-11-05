@@ -4,5 +4,9 @@ ENCRYPTION_KEY=abcdefghijklmnopqrstuvxyz01234567890123456789
 NODE_ENV=development
 JWT_SIGN_SECRET=abcdef
 TEST_USER_ROLE=vitjaAdmin
-POD_NAME=
-POD_NAMESPACE
+SERVICE_INSTANCE_ID=
+SERVICE_NAMESPACE
+
+Improve stack traces :
+node --async-stack-traces
+ to run production build

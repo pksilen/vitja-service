@@ -1,12 +1,15 @@
 # Vitja service
 
 TODO:
-- If db initialization in main.ts fails, try in loop for initialization and collect error metris
-- GDPR logging
-  -audit log should go to separate server
+- Debug log:
+  service function
+  dbManagerType.function, e.g. PostgreSql.createEntity
+- Error log: in sql add sql command that failed and dbManager function in log Attributes
 - Own remote service function executor (Http)
      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
+- GDPR logging
+  -audit log should go to separate server
 - executeMultiple endpoint, to execute multiple serviceCalls 
   { executeInSequence: { user : {}, executeInParallel: {userSalesItems:{}, userOrders: {}}}}
   - execute remote services 

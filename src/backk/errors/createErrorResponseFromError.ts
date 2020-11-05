@@ -1,5 +1,5 @@
 import { ErrorResponse, errorResponseSymbol } from '../types/ErrorResponse';
-import log from "../observability/logging/log";
+import log from '../observability/logging/log';
 
 export default function createErrorResponseFromError(error: Error): ErrorResponse {
   let statusCode = parseInt(error.message.slice(0, 3));
@@ -10,15 +10,15 @@ export default function createErrorResponseFromError(error: Error): ErrorRespons
     errorMessage = error.message;
   }
 
-  if (statusCode >= 500) {
-    log('ERROR', error.message, error.stack ?? '');
-  }
-
   let errorCode;
   if (errorMessage.startsWith('Error code ')) {
     [errorCode, errorMessage] = errorMessage.split(':');
     errorCode = errorCode.slice(11);
     errorMessage = errorMessage.trim();
+  }
+
+  if (statusCode >= 500) {
+    log('ERROR', (errorCode ? errorCode + ': ' : '') + error.message, error.stack ?? '');
   }
 
   return {
