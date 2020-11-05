@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Prometheus metrics (Opentelemetry)
 - Logger
   - Logger.setLogPublisher, Logger.setAlarmPublisher
   - Triggeröidyt hälyt kirjoitetaan persistent volumelle

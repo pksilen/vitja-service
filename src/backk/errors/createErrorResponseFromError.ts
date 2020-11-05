@@ -1,4 +1,5 @@
 import { ErrorResponse, errorResponseSymbol } from '../types/ErrorResponse';
+import log from "../observability/logging/log";
 
 export default function createErrorResponseFromError(error: Error): ErrorResponse {
   let statusCode = parseInt(error.message.slice(0, 3));
@@ -10,7 +11,7 @@ export default function createErrorResponseFromError(error: Error): ErrorRespons
   }
 
   if (statusCode >= 500) {
-    console.log(error.stack);
+    log('ERROR', error.message, error.stack ?? '');
   }
 
   let errorCode;

@@ -25,6 +25,7 @@ import { Entity } from '../types/Entity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from "../errors/createErrorResponseFromError";
+import log from "../observability/logging/log";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -128,7 +129,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async tryExecuteSql<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
     if (process.env.LOG_LEVEL === 'DEBUG') {
-      console.log(sqlStatement);
+      log('INFO', 'Database operation', sqlStatement);
     }
 
     try {
@@ -145,7 +146,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async tryExecuteSqlWithoutCls<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
     if (process.env.LOG_LEVEL === 'DEBUG') {
-      console.log(sqlStatement);
+      log('INFO', 'Database operation', sqlStatement);
     }
 
     try {
@@ -159,7 +160,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async tryExecuteQuery(sqlStatement: string, values?: any[]): Promise<QueryResult<any>> {
     if (process.env.LOG_LEVEL === 'DEBUG') {
-      console.log(sqlStatement);
+      log('INFO', 'Database operation', sqlStatement);
     }
 
     try {
@@ -186,7 +187,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
 
   async tryExecuteQueryWithConfig(queryConfig: QueryConfig): Promise<QueryResult<any>> {
     if (process.env.LOG_LEVEL === 'DEBUG') {
-      console.log(queryConfig.text);
+      log('INFO', 'Database operation', queryConfig.text);
     }
 
     try {
