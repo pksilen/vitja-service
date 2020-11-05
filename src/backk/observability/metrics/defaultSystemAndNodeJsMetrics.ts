@@ -1,21 +1,24 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { Meter } from '@opentelemetry/metrics';
-import defaultPrometheusMeter, { DEFAULT_METER_INTERVAL_IN_MILLIS } from '../defaultPrometheusMeter';
+import defaultPrometheusMeter, { DEFAULT_METER_INTERVAL_IN_MILLIS } from './defaultPrometheusMeter';
 import * as fs from 'fs';
-import CpuUsage = NodeJS.CpuUsage;
 import * as perf_hooks from 'perf_hooks';
-import { BoundCounter } from '@opentelemetry/api';
+import CpuUsage = NodeJS.CpuUsage;
+import { Counter } from '@opentelemetry/api';
 
 class DefaultSystemAndNodeJsMetrics {
-  private gcTypeAndDurationBucketToBoundCounterMap: { [key: string]: BoundCounter } = {};
+  private garbageCollectionDurationBucketCounter: Counter;
 
-  constructor(private readonly meter: Meter) {}
+  constructor(private readonly meter: Meter) {
+    this.garbageCollectionDurationBucketCounter = this.meter.createCounter(`garbage_collection_event_count`, {
+      description: 'Garbage collection event count'
+    });
+  }
 
   startCollectingMetrics() {
     const labels = { pid: process.pid.toString() };
 
     const processStartTimestampSinceEpochInSecs = Math.round(Date.now() / 1000 - process.uptime());
-
     this.meter.createValueObserver(
       'process_start_timestamp_since_epoch_in_seconds',
       {
@@ -137,18 +140,9 @@ class DefaultSystemAndNodeJsMetrics {
     gcKindToTypeMap[perf_hooks.constants.NODE_PERFORMANCE_GC_MINOR.toString()] = 'minor';
     gcKindToTypeMap[perf_hooks.constants.NODE_PERFORMANCE_GC_INCREMENTAL.toString()] = 'incremental';
     gcKindToTypeMap[perf_hooks.constants.NODE_PERFORMANCE_GC_WEAKCB.toString()] = 'weakcb';
+
     // noinspection MagicNumberJS
     const gcDurationInSecsBuckets = [0.001, 0.01, 0.1, 1, 2, 5, Number.POSITIVE_INFINITY];
-
-    Object.values(gcKindToTypeMap).forEach((gcType) => {
-      gcDurationInSecsBuckets.forEach((gcDurationBucket) => {
-        this.gcTypeAndDurationBucketToBoundCounterMap[`${gcType}_${gcDurationBucket}`] = this.meter
-          .createCounter(`garbage_collection_event_count`, {
-            description: 'Garbage collection event count'
-          })
-          .bind({ ...labels, gcType, gcDurationBucket: gcDurationBucket.toString() });
-      });
-    });
 
     const garbageCollectionObserver = new perf_hooks.PerformanceObserver((list) => {
       const { kind, duration } = list.getEntries()[0];
@@ -158,10 +152,11 @@ class DefaultSystemAndNodeJsMetrics {
       );
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const gcType = gcKindToTypeMap[kind!.toString()];
-      const boundCounter = this.gcTypeAndDurationBucketToBoundCounterMap[
-        `${gcType}_${foundGcDurationBucket}`
-      ];
-      boundCounter.add(1);
+
+      this.garbageCollectionDurationBucketCounter
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        .bind({ ...labels, gcType, gcDurationBucket: foundGcDurationBucket!.toString() })
+        .add(1);
     });
 
     garbageCollectionObserver.observe({ entryTypes: ['gc'], buffered: false });

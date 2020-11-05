@@ -23,7 +23,7 @@ import { RecursivePartial } from '../types/RecursivePartial';
 import { PreHook } from './hooks/PreHook';
 import { Entity } from '../types/Entity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
-import defaultServiceMetrics from '../telemetry/metrics/defaultServiceMetrics';
+import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from "../errors/createErrorResponseFromError";
 
 @Injectable()

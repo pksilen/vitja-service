@@ -5,7 +5,7 @@ import serviceFunctionAnnotationContainer from '../decorators/service/function/s
 import BaseService from '../service/BaseService';
 import UsersBaseService from '../users/UsersBaseService';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
-import defaultServiceMetrics from '../telemetry/metrics/defaultServicemetrics';
+import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 
 export default async function tryAuthorize(
   service: BaseService,

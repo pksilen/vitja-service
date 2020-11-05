@@ -1,6 +1,6 @@
 import { Meter } from '@opentelemetry/metrics';
 import { BoundCounter, Counter, ValueRecorder } from '@opentelemetry/api';
-import defaultPrometheusMeter from '../defaultPrometheusMeter';
+import defaultPrometheusMeter from './defaultPrometheusMeter';
 
 class DefaultServiceMetrics {
   // noinspection MagicNumberJS

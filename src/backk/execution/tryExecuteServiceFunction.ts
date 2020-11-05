@@ -14,7 +14,7 @@ import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithSt
 import tryValidateResponse from '../validation/tryValidateResponse';
 import isErrorResponse from '../errors/isErrorResponse';
 import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
-import defaultServiceMetrics from '../telemetry/metrics/defaultServiceMetrics';
+import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from "../errors/createErrorResponseFromError";
 
 export interface ExecuteServiceFunctionOptions {
