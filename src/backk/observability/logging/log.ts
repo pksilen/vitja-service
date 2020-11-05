@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { LogEntry } from './LogEntry';
 import * as fs from 'fs';
+import tracerProvider from "../distributedtracinig/initializeTracing";
 
 export type Severity = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
 
@@ -33,6 +34,8 @@ export default function log(
 ) {
   const logEntry: LogEntry = {
     Timestamp: Date.now() + '000000',
+    TraceId: tracerProvider.getTracer('default').getCurrentSpan()?.context().traceId,
+    SpanId: tracerProvider.getTracer('default').getCurrentSpan()?.context().spanId,
     SeverityText: severity,
     SeverityNumber: severityToSeverityNumberMap[severity],
     Name: name,
@@ -45,7 +48,7 @@ export default function log(
       'node.name': process.env.NODE_NAME ?? ''
     },
     Attributes: {
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timeZoneName: Intl.DateTimeFormat().resolvedOptions().timeZone,
       ...attributes
     }
   };

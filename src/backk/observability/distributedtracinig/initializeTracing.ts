@@ -3,7 +3,7 @@ import { SpanProcessor, SimpleSpanProcessor } from '@opentelemetry/tracing';
 import { JaegerExporter,  } from '@opentelemetry/exporter-jaeger';
 import { ExporterConfig } from "@opentelemetry/exporter-jaeger/build/src/types";
 
-const provider = new NodeTracerProvider({
+const tracerProvider = new NodeTracerProvider({
   plugins: {
     express: {
       enabled: false
@@ -11,10 +11,11 @@ const provider = new NodeTracerProvider({
   }
 });
 
-provider.register();
+tracerProvider.register();
+
 
 export function initializeTracing(spanProcessor: SpanProcessor) {
-  provider.addSpanProcessor(spanProcessor);
+  tracerProvider.addSpanProcessor(spanProcessor);
 }
 
 export function initializeDefaultJaegerTracing(jaegerExporterOptions?: ExporterConfig) {
@@ -30,3 +31,5 @@ export function initializeDefaultJaegerTracing(jaegerExporterOptions?: ExporterC
     )
   );
 }
+
+export default tracerProvider;

@@ -1,15 +1,6 @@
 # Vitja service
 
 TODO:
-- Logger
-  - Logger.setLogPublisher, Logger.setAlarmPublisher
-  - Triggeröidyt hälyt kirjoitetaan persistent volumelle
-  - Type: 'Log' | 'Alarm trigger', 'Alarm cancel',
-  - level: 'Error' | 'warn' | 'info' | 'debug'
-  - source: { service: 'vitja', pod: 'vitja-fsfds-4335', 'hos': 'control-01' }
-  - timestampIso8601Utc
-  - timeZoneIso8601
-  - text
 - If db initialization in main.ts fails, try in loop for initialization and collect error metris
 - GDPR logging
   -audit log should go to separate server
