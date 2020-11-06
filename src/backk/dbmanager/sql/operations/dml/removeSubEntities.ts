@@ -9,6 +9,8 @@ import createErrorResponseFromError from '../../../../errors/createErrorResponse
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/Entity';
+import { isError } from 'util';
+import isErrorResponse from '../../../../errors/isErrorResponse';
 
 export default async function removeSubEntities<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -17,21 +19,22 @@ export default async function removeSubEntities<T extends Entity, U extends obje
   entityClass: new () => T,
   preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
-  const Types = dbManager.getTypes();
   let didStartTransaction = false;
 
   try {
-    if (!dbManager.getClsNamespace()?.get('globalTransaction') &&
-      !dbManager.getClsNamespace()?.get('localTransaction')) {
+    if (
+      !dbManager.getClsNamespace()?.get('globalTransaction') &&
+      !dbManager.getClsNamespace()?.get('localTransaction')
+    ) {
       await dbManager.tryBeginTransaction();
       didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
     }
 
     const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
-    if ('errorMessage' in itemOrErrorResponse) {
+    if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(itemOrErrorResponse.errorMessage);
+      throw itemOrErrorResponse;
     }
 
     if (preHooks) {
@@ -43,18 +46,20 @@ export default async function removeSubEntities<T extends Entity, U extends obje
     await forEachAsyncParallel(subEntities, async (subItem: any) => {
       const possibleErrorResponse = await deleteEntityById(dbManager, subItem.id, subItem.constructor);
       if (possibleErrorResponse) {
-        throw new Error(possibleErrorResponse.errorMessage);
+        throw possibleErrorResponse;
       }
     });
 
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.tryCommitTransaction();
     }
-  } catch (error) {
+  } catch (errorOrErrorResponse) {
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.tryRollbackTransaction();
     }
-    return createErrorResponseFromError(error);
+    return isErrorResponse(errorOrErrorResponse)
+      ? errorOrErrorResponse
+      : createErrorResponseFromError(errorOrErrorResponse);
   } finally {
     if (didStartTransaction) {
       dbManager.getClsNamespace()?.set('localTransaction', false);

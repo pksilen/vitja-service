@@ -17,10 +17,6 @@ export default function createErrorResponseFromError(error: Error): ErrorRespons
     errorMessage = errorMessage.trim();
   }
 
-  if (statusCode >= 500) {
-    log('ERROR', (errorCode ? errorCode + ': ' : '') + error.message, error.stack ?? '');
-  }
-
   return {
     statusCode,
     errorCode,

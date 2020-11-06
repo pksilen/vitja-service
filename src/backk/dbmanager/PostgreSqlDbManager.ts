@@ -69,7 +69,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     const createTableStatement = `CREATE TABLE IF NOT EXISTS ${this.schema}.__BACKK__ (dummy INT)`;
 
     try {
-      await this.tryExecuteSql(createTableStatement);
+      await this.tryExecuteSqlWithoutCls(createTableStatement);
       return true;
     } catch (error) {
       return false;
@@ -96,6 +96,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           failureDurationInSecs
         );
       }
+      log('ERROR', error.message, error.stack ?? '', {
+        function: 'PostgreSqlDbManager.tryReserveDbConnectionFromPool'
+      });
       throw error;
     }
   }
@@ -103,9 +106,17 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   tryReleaseDbConnectionBackToPool() {
     log('DEBUG', 'Release database connection', '');
 
-    this.getClsNamespace()
-      ?.get('connection')
-      .release();
+    try {
+      this.getClsNamespace()
+        ?.get('connection')
+        .release();
+    } catch (error) {
+      log('ERROR', error.message, error.stack ?? '', {
+        function: 'PostgreSqlDbManager.tryReleaseDbConnectionBackToPool'
+      });
+      throw error;
+    }
+
     this.getClsNamespace()?.set('connection', null);
   }
 
@@ -129,6 +140,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
           failureDurationInSecs
         );
       }
+      log('ERROR', error.message, error.stack ?? '', {
+        function: 'PostgreSqlDbManager.tryBeginTransaction',
+        sqlStatement: 'BEGIN'
+      });
       throw error;
     }
   }
@@ -136,17 +151,32 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async tryCommitTransaction(): Promise<void> {
     log('DEBUG', 'Commit database transaction', '');
 
-    await this.getClsNamespace()
-      ?.get('connection')
-      .query('COMMIT');
+    try {
+      await this.getClsNamespace()
+        ?.get('connection')
+        .query('COMMIT');
+    } catch (error) {
+      log('ERROR', error.message, error.stack ?? '', {
+        function: 'PostgreSqlDbManager.tryCommitTransaction',
+        sqlStatement: 'COMMIT'
+      });
+      throw error;
+    }
   }
 
   async tryRollbackTransaction(): Promise<void> {
     log('DEBUG', 'Rollback database transaction', '');
 
-    await this.getClsNamespace()
-      ?.get('connection')
-      .query('ROLLBACK');
+    try {
+      await this.getClsNamespace()
+        ?.get('connection')
+        .query('ROLLBACK');
+    } catch (error) {
+      log('ERROR', error.message, error.stack ?? '', {
+        function: 'PostgreSqlDbManager.tryRollackTransaction',
+        sqlStatement: 'ROLLBACK'
+      });
+    }
   }
 
   async tryExecuteSql<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
@@ -160,6 +190,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       return result.fields;
     } catch (error) {
       defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.host);
+      log('ERROR', error.message, error.stack ?? '', {
+        sqlStatement,
+        function: 'PostgreSqlDbManager.tryExecuteSql'
+      });
       throw error;
     }
   }
@@ -172,6 +206,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       return result.fields;
     } catch (error) {
       defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.host);
+      log('ERROR', error.message, error.stack ?? '', {
+        sqlStatement,
+        function: 'PostgreSqlDbManager.tryExecuteSqlWithoutCls'
+      });
       throw error;
     }
   }
@@ -200,6 +238,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         );
       }
       defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.host);
+      log('ERROR', error.message, error.stack ?? '', {
+        sqlStatement,
+        function: 'PostgreSqlDbManager.tryExecuteQuery'
+      });
       throw error;
     }
   }
@@ -228,6 +270,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         );
       }
       defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.host);
+      log('ERROR', error.message, error.stack ?? '', {
+        sqlStatement: queryConfig.text,
+        function: 'PostgreSqlDbManager.tryExecuteQueryWithConfig'
+      });
       throw error;
     }
   }

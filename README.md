@@ -1,9 +1,6 @@
 # Vitja service
 
 TODO:
-- Debug log:
-  service function
-  dbManagerType.function, e.g. PostgreSql.createEntity
 - Error log: in sql add sql command that failed and dbManager function in log Attributes
 - Own remote service function executor (Http)
      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)

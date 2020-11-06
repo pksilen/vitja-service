@@ -42,7 +42,7 @@ export default async function updateEntity<T extends Entity>(
       const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
       if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
         // noinspection ExceptionCaughtLocallyJS
-        throw new Error(itemOrErrorResponse.errorMessage);
+        throw itemOrErrorResponse;
       }
 
       if (preHooks) {
@@ -86,8 +86,9 @@ export default async function updateEntity<T extends Entity>(
                 false,
                 true
               );
+
               if (possibleErrorResponse) {
-                throw new Error(possibleErrorResponse.errorMessage);
+                throw possibleErrorResponse;
               }
             })
           );
@@ -103,8 +104,9 @@ export default async function updateEntity<T extends Entity>(
             false,
             true
           );
+
           if (possibleErrorResponse) {
-            throw new Error(possibleErrorResponse.errorMessage);
+            throw possibleErrorResponse;
           }
         } else if (isArray) {
           const numericId = parseInt(_id, 10);
@@ -164,14 +166,16 @@ export default async function updateEntity<T extends Entity>(
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.tryCommitTransaction();
     }
-  } catch (error) {
+  } catch (errorOrErrorResponse) {
     if (isRecursiveCall) {
-      throw error;
+      throw errorOrErrorResponse;
     }
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.tryRollbackTransaction();
     }
-    return createErrorResponseFromError(error);
+    return isErrorResponse(errorOrErrorResponse)
+      ? errorOrErrorResponse
+      : createErrorResponseFromError(errorOrErrorResponse);
   } finally {
     if (didStartTransaction) {
       dbManager.getClsNamespace()?.set('localTransaction', false);

@@ -7,6 +7,7 @@ import { Entity } from '../../../../types/Entity';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
+import isErrorResponse from '../../../../errors/isErrorResponse';
 
 export default async function addSubEntity<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -34,9 +35,9 @@ export default async function addSubEntity<T extends Entity, U extends object>(
     }
 
     const itemOrErrorResponse = await dbManager.getEntityById(_id, entityClass, postQueryOperations);
-    if ('errorMessage' in itemOrErrorResponse) {
+    if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(itemOrErrorResponse.errorMessage);
+      throw itemOrErrorResponse;
     }
 
     const parentIdValue = JSONPath({ json: itemOrErrorResponse, path: '$._id' })[0];
@@ -57,9 +58,9 @@ export default async function addSubEntity<T extends Entity, U extends object>(
       false
     );
 
-    if ('errorMessage' in createdItemOrErrorResponse) {
+    if ('errorMessage' in createdItemOrErrorResponse && isErrorResponse(createdItemOrErrorResponse)) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(createdItemOrErrorResponse.errorMessage);
+      throw createdItemOrErrorResponse;
     }
 
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
@@ -67,11 +68,14 @@ export default async function addSubEntity<T extends Entity, U extends object>(
     }
 
     return await dbManager.getEntityById(_id, entityClass, postQueryOperations);
-  } catch (error) {
+  } catch (errorOrErrorResponse) {
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.tryRollbackTransaction();
     }
-    return createErrorResponseFromError(error);
+
+    return isErrorResponse(errorOrErrorResponse)
+      ? errorOrErrorResponse
+      : createErrorResponseFromError(errorOrErrorResponse);
   } finally {
     if (didStartTransaction) {
       dbManager.getClsNamespace()?.set('localTransaction', false);

@@ -21,6 +21,7 @@ export default async function createEntity<T>(
   shouldReturnItem = true
 ): Promise<T | ErrorResponse> {
   let didStartTransaction = false;
+  let sqlStatement;
   // noinspection ExceptionCaughtLocallyJS
   try {
     const Types = dbManager.getTypes();
@@ -86,12 +87,8 @@ export default async function createEntity<T>(
     const sqlColumns = columns.map((fieldName: any) => fieldName).join(', ');
     const sqlValuePlaceholders = columns.map((_: any, index: number) => `$${index + 1}`).join(', ');
     const getIdSqlStatement = Object.keys(entityMetadata).includes('_id') ? 'RETURNING _id' : '';
-
-    const result = await dbManager.tryExecuteQuery(
-      `INSERT INTO ${dbManager.schema}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`,
-      values
-    );
-
+    sqlStatement = `INSERT INTO ${dbManager.schema}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`;
+    const result = await dbManager.tryExecuteQuery(sqlStatement, values);
     const _id = result.rows[0]?._id?.toString();
 
     await forEachAsyncParallel(
@@ -130,7 +127,7 @@ export default async function createEntity<T>(
               true
             );
             if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
-              throw new Error(subItemOrErrorResponse.errorMessage);
+              throw subItemOrErrorResponse;
             }
           });
         } else if (
@@ -149,7 +146,7 @@ export default async function createEntity<T>(
             true
           );
           if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
-            throw new Error(subItemOrErrorResponse.errorMessage);
+            throw subItemOrErrorResponse;
           }
         } else if (isArray) {
           await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index: number) => {
@@ -174,15 +171,18 @@ export default async function createEntity<T>(
     }
 
     return response;
-  } catch (error) {
+  } catch (errorOrErrorResponse) {
     if (isRecursiveCall) {
-      throw error;
+      throw errorOrErrorResponse;
     }
+
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.tryRollbackTransaction();
     }
 
-    return createErrorResponseFromError(error);
+    return isErrorResponse(errorOrErrorResponse)
+      ? errorOrErrorResponse
+      : createErrorResponseFromError(errorOrErrorResponse);
   } finally {
     if (didStartTransaction) {
       dbManager.getClsNamespace()?.set('localTransaction', false);

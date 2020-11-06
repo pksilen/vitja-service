@@ -1,16 +1,17 @@
-import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
-import { JSONPath } from 'jsonpath-plus';
-import { ErrorResponse } from '../../types/ErrorResponse';
-import { PreHook } from './PreHook';
-import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
+import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
+import { JSONPath } from "jsonpath-plus";
+import { ErrorResponse } from "../../types/ErrorResponse";
+import { PreHook } from "./PreHook";
+import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
+import isErrorResponse from "../../errors/isErrorResponse";
 
 export default async function tryExecutePreHooks<T extends object>(
   preHooks: PreHook | PreHook[],
   itemOrErrorResponse?: T | ErrorResponse
 ) {
   await forEachAsyncSequential(Array.isArray(preHooks) ? preHooks : [preHooks], async (preHook: PreHook) => {
-    if (typeof itemOrErrorResponse === 'object' && 'errorMessage' in itemOrErrorResponse) {
-      throw new Error(itemOrErrorResponse.errorMessage);
+    if (typeof itemOrErrorResponse === 'object' && 'errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
+      throw itemOrErrorResponse;
     }
 
     let items: any[] | undefined;
@@ -21,8 +22,8 @@ export default async function tryExecutePreHooks<T extends object>(
     const hookCallResult = await preHook.hookFunc(items);
 
     if (hookCallResult !== undefined) {
-      if (typeof hookCallResult !== 'boolean' && 'errorMessage' in hookCallResult) {
-        throw new Error(hookCallResult.errorMessage);
+      if (typeof hookCallResult !== 'boolean' && 'errorMessage' in hookCallResult && isErrorResponse(hookCallResult)) {
+        throw hookCallResult;
       } else if (hookCallResult === false) {
         if (process.env.NODE_ENV === 'development' && preHook.disregardInTests) {
           return;
@@ -33,7 +34,7 @@ export default async function tryExecutePreHooks<T extends object>(
         }
         throw new Error(createErrorMessageWithStatusCode(errorMessage, preHook.error?.statusCode ?? 400));
       } else if (process.env.NODE_ENV === 'development' && hookCallResult === true && preHook.disregardInTests) {
-        throw new Error('Invalid hook result (=true) when skipInTest is true');
+        throw new Error('Invalid hook result (=true) when disregardInTest is true');
       }
     }
   });
