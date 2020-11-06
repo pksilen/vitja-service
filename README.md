@@ -1,13 +1,15 @@
 # Vitja service
 
 TODO:
+- Create topic
 - implement get request url
 - Implement auth headers
-- GDPR logging
-  -audit log should go to separate server
 - executeMultiple endpoint, to execute multiple serviceCalls 
   { executeInSequence: { user : {}, executeInParallel: {userSalesItems:{}, userOrders: {}}}}
   - execute remote services 
+  - Make an option where to disable executeXXX
+- GDPR logging
+  -audit log should go to separate server
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)

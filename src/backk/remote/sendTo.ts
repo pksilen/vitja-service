@@ -13,6 +13,17 @@ const minimumLoggingSeverityToKafkaLoggingLevelMap: { [key: string]: number } = 
   ERROR: logLevel.ERROR
 };
 
+enum SendAcknowledgementType {
+  NONE,
+  LEADER_ONLY,
+  ALL_REPLICAS
+}
+
+export interface SendToOptions {
+  compressionType?: CompressionTypes;
+  sendAcknowledgementType?: SendAcknowledgementType;
+}
+
 function parseRemoteServiceUrlParts(remoteServiceUrl: string) {
   const scheme = remoteServiceUrl.slice(0, 5);
   const [broker, topic] = remoteServiceUrl.slice(8).split('/');
@@ -22,9 +33,10 @@ function parseRemoteServiceUrlParts(remoteServiceUrl: string) {
 export default async function sendTo(
   remoteServiceUrl: string,
   serviceFunction: string,
-  serviceFunctionArgument: object
+  serviceFunctionArgument: object,
+  options?: SendToOptions
 ): Promise<void | ErrorResponse> {
-  log('DEBUG', 'Remote async service execution', '', { remoteServiceUrl, serviceFunction });
+  log('DEBUG', 'Send to remote service for execution', '', { remoteServiceUrl, serviceFunction });
   const { scheme, broker, topic } = parseRemoteServiceUrlParts(remoteServiceUrl);
 
   if (scheme !== 'kafka') {
@@ -46,7 +58,8 @@ export default async function sendTo(
     await producer.connect();
     await producer.send({
       topic,
-      compression: CompressionTypes.GZIP,
+      compression: options?.compressionType ?? CompressionTypes.None,
+      acks: options?.sendAcknowledgementType ?? SendAcknowledgementType.ALL_REPLICAS,
       messages: [
         // TODO add authheader to headers property https://kafka.js.org/docs/producing
         { key: serviceFunction, value: JSON.stringify(serviceFunctionArgument) }
