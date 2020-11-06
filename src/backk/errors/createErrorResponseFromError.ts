@@ -17,6 +17,8 @@ export default function createErrorResponseFromError(error: Error): ErrorRespons
     errorMessage = errorMessage.trim();
   }
 
+  log('DEBUG', errorMessage, error.stack ?? '', { errorCode, statusCode });
+
   return {
     statusCode,
     errorCode,

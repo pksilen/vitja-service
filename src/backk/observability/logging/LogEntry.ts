@@ -16,5 +16,5 @@ export interface LogEntry {
   Name: string;
   Body: string;
   Resource: Resource;
-  Attributes?: { [key: string]: string };
+  Attributes?: { [key: string]: string | number | boolean | undefined };
 }

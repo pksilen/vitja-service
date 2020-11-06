@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Error log: in sql add sql command that failed and dbManager function in log Attributes
 - Own remote service function executor (Http)
      - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
