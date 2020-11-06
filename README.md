@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Own remote service function executor (Http)
-     - call('http://app-service-dns-name/serviceName.functionName', inputArgObj)
      - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
 - GDPR logging
   -audit log should go to separate server

@@ -1,6 +1,5 @@
-import { getFromContainer, MetadataStorage } from 'class-validator';
-import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import User from "../../services/users/types/entities/User";
+import { getFromContainer, MetadataStorage } from "class-validator";
+import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
 
 const typeNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 
