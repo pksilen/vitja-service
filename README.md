@@ -1,7 +1,8 @@
 # Vitja service
 
 TODO:
-     - env variable USE_FAKE_REMOTE_SERVICES_IN_TESTS (default true)
+- implement get request url
+- Implement auth headers
 - GDPR logging
   -audit log should go to separate server
 - executeMultiple endpoint, to execute multiple serviceCalls 

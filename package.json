@@ -50,6 +50,7 @@
     "js-base64": "^3.5.2",
     "jsonpath-plus": "^4.0.0",
     "jsonwebtoken": "^8.5.1",
+    "kafkajs": "^1.14.0",
     "lodash": "^4.17.19",
     "mongodb": "^3.5.4",
     "node-fetch": "^2.6.1",

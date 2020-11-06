@@ -36,10 +36,11 @@ export default function log(
 ) {
   const severityNumber = severityToSeverityNumberMap[severity];
   const minLoggingSeverityNumber = severityToSeverityNumberMap[process.env.LOG_LEVEL ?? 'INFO'];
+  const now = new Date();
 
   if (severityNumber >= minLoggingSeverityNumber) {
     const logEntry: LogEntry = {
-      Timestamp: Date.now() + '000000',
+      Timestamp: now.valueOf() + '000000',
       TraceId: tracerProvider
         .getTracer('default')
         .getCurrentSpan()
@@ -64,6 +65,7 @@ export default function log(
         'node.name': process.env.NODE_NAME ?? ''
       },
       Attributes: {
+        timestampIso8601: now.toISOString(),
         timeZoneName: Intl.DateTimeFormat().resolvedOptions().timeZone,
         ...attributes
       }
