@@ -1,8 +1,8 @@
 import { CompressionTypes, Kafka, logLevel } from 'kafkajs';
-import getServiceName from '../utils/getServiceName';
-import { ErrorResponse } from '../types/ErrorResponse';
-import createErrorResponseFromError from '../errors/createErrorResponseFromError';
-import log, { Severity } from "../observability/logging/log";
+import getServiceName from '../../utils/getServiceName';
+import { ErrorResponse } from '../../types/ErrorResponse';
+import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
+import log, { Severity } from "../../observability/logging/log";
 
 const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
 

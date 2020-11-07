@@ -1,12 +1,12 @@
-import { ErrorResponse, errorResponseSymbol } from '../types/ErrorResponse';
+import { ErrorResponse, errorResponseSymbol } from '../../types/ErrorResponse';
 import fetch from 'node-fetch';
-import log, { Severity } from "../observability/logging/log";
-import createErrorResponseFromError from '../errors/createErrorResponseFromError';
-import isErrorResponse from '../errors/isErrorResponse';
-import getRemoteResponseTestValue from '../metadata/getRemoteResponseTestValue';
+import log, { Severity } from "../../observability/logging/log";
+import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
+import isErrorResponse from '../../errors/isErrorResponse';
+import getRemoteResponseTestValue from '../../metadata/getRemoteResponseTestValue';
 
 export interface HttpRequestOptions {
-  httpMethod?: 'POST';
+  httpMethod?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 }
 
 export default async function call<T>(

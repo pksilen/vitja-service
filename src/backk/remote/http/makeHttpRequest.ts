@@ -1,6 +1,6 @@
 import call, { HttpRequestOptions } from './call';
 
-export default async function makeHttpPostRequest<T>(
+export default async function makeHttpRequest<T>(
   requestUrl: string,
   requestBodyObject: object,
   options?: HttpRequestOptions,
