@@ -6,7 +6,7 @@ import log, { Severity, severityNameToSeverityMap } from '../../observability/lo
 import { getNamespace } from 'cls-hooked';
 import { Send } from './sendInsideTransaction';
 import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
-import tracerProvider from "../../observability/distributedtracinig/tracerProvider";
+import tracerProvider from '../../observability/distributedtracinig/tracerProvider';
 
 const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
 
@@ -37,7 +37,7 @@ export function parseRemoteServiceUrlParts(remoteServiceUrl: string) {
 const logCreator = () => ({ label, log: { message, ...extra } }: any) =>
   log(severityNameToSeverityMap[label], 'Message queue error', message, extra);
 
-export async function sendOneOrMore(sendTos: Send[], transactional: boolean) {
+export async function sendOneOrMore(sendTos: Send[], isTransactional: boolean) {
   const { scheme, broker, topic } = parseRemoteServiceUrlParts(sendTos[0].remoteServiceUrl);
 
   if (scheme !== 'kafka') {
@@ -57,14 +57,24 @@ export async function sendOneOrMore(sendTos: Send[], transactional: boolean) {
   const kafkaClient = kafkaBrokerToKafkaClientMap[broker];
   const producer = kafkaClient.producer();
   let transaction;
+  const producerConnectSpan = tracerProvider.getTracer('default').startSpan('kafkajs.producer.connect');
+  let transactionSpan;
 
   try {
+    producerConnectSpan.setAttribute('component', 'kafkajs');
+    producerConnectSpan.setAttribute('span.kind', 'CLIENT');
+    producerConnectSpan.setAttribute('peer.address', broker);
     await producer.connect();
 
+
     let producerOrTransaction: Producer | Transaction;
-    if (transactional) {
+    if (isTransactional) {
       transaction = await producer.transaction();
       producerOrTransaction = transaction;
+      transactionSpan = tracerProvider.getTracer('default').startSpan('kafkajs.producer.transaction');
+      transactionSpan.setAttribute('component', 'kafkajs');
+      transactionSpan.setAttribute('span.kind', 'CLIENT');
+      transactionSpan.setAttribute('peer.address', broker);
     } else {
       producerOrTransaction = producer;
     }
@@ -77,7 +87,10 @@ export async function sendOneOrMore(sendTos: Send[], transactional: boolean) {
           serviceFunction
         });
 
-        const span = tracerProvider.getTracer('default').startSpan('kafkajs: SEND_MESSAGE');
+        const span = tracerProvider
+          .getTracer('default')
+          .startSpan(isTransactional ? 'kafkajs.transaction.send' : 'kafkajs.producer.send');
+
         span.setAttribute('component', 'kafkajs');
         span.setAttribute('span.kind', 'CLIENT');
         span.setAttribute('peer.address', broker);
@@ -112,6 +125,15 @@ export async function sendOneOrMore(sendTos: Send[], transactional: boolean) {
     await transaction?.commit();
   } catch (error) {
     await transaction?.abort();
+
+    transactionSpan?.setAttribute('status.name', 'ERROR');
+    transactionSpan?.setAttribute('status.code', 1);
+    transactionSpan?.setAttribute('error.message', error.message);
+
+    producerConnectSpan.setAttribute('status.name', 'ERROR');
+    producerConnectSpan.setAttribute('status.code', 1);
+    producerConnectSpan.setAttribute('error.message', error.message);
+
     return createErrorResponseFromError(error);
   } finally {
     try {
@@ -119,6 +141,8 @@ export async function sendOneOrMore(sendTos: Send[], transactional: boolean) {
     } catch (error) {
       // NOOP
     }
+    transactionSpan?.end();
+    producerConnectSpan.end();
   }
 }
 

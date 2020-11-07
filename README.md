@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Kafka tracing span
 - check if multiple dbManager methods are called, they are not inside a transaction
 - check if dbManager and remote method are called and they are not inside transaction
 - Create multiple entities db operations:
@@ -11,6 +10,9 @@ TODO:
   - deleteEntitiesByIds
   - getSubEntities
 - Kafka consumer
+    - Kafka consumer span processor
+    - Auth header support
+- Create opentelemetry kafkajs plugin
 - GDPR logging
   -audit log should go to separate server
 - Date/Timestamp type support
