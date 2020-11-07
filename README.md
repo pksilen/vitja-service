@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Implement auth headers
 - Kafka transactions support
 - Kafka custom logger
 - check if multiple dbManager methods are called, they are not inside a transaction
