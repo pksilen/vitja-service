@@ -2,7 +2,7 @@ import { CompressionTypes, Kafka, logLevel, Producer, Transaction } from 'kafkaj
 import getServiceName from '../../utils/getServiceName';
 import { ErrorResponse } from '../../types/ErrorResponse';
 import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
-import log, { Severity } from '../../observability/logging/log';
+import log, { Severity, severityNameToSeverityMap } from '../../observability/logging/log';
 import { getNamespace } from 'cls-hooked';
 import { SendTo } from './sendInsideTransaction';
 import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
@@ -33,6 +33,9 @@ export function parseRemoteServiceUrlParts(remoteServiceUrl: string) {
   return { scheme, broker, topic };
 }
 
+const logCreator = () => ({ label, log: { message, ...extra } }: any) =>
+  log(severityNameToSeverityMap[label], 'Message queue error', message, extra);
+
 export async function sendOneOrMoreTo(sendTos: SendTo[], transactional: boolean) {
   const { scheme, broker, topic } = parseRemoteServiceUrlParts(sendTos[0].remoteServiceUrl);
 
@@ -44,7 +47,8 @@ export async function sendOneOrMoreTo(sendTos: SendTo[], transactional: boolean)
     kafkaBrokerToKafkaClientMap[broker] = new Kafka({
       clientId: getServiceName(),
       logLevel: minimumLoggingSeverityToKafkaLoggingLevelMap[process.env.LOG_LEVEL ?? 'INFO'],
-      brokers: [broker]
+      brokers: [broker],
+      logCreator
     });
   }
 
@@ -55,7 +59,7 @@ export async function sendOneOrMoreTo(sendTos: SendTo[], transactional: boolean)
 
   try {
     await producer.connect();
-    
+
     let producerOrTransaction: Producer | Transaction;
     if (transactional) {
       transaction = await producer.transaction();

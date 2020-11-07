@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO:
-- Kafka transactions support
 - Kafka custom logger
+- Kafka tracing span
 - check if multiple dbManager methods are called, they are not inside a transaction
 - check if dbManager and remote method are called and they are not inside transaction
 - Create multiple entities db operations:

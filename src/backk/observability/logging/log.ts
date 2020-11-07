@@ -11,7 +11,7 @@ export enum Severity {
   FATAL = 21
 };
 
-const severityNameToSeverityNumberMap: { [key: string]: number } = {
+export const severityNameToSeverityMap: { [key: string]: number } = {
   DEBUG: Severity.DEBUG,
   INFO: Severity.INFO,
   WARN: Severity.WARN,
@@ -40,8 +40,8 @@ export default function log(
   body: string,
   attributes?: { [key: string]: string | number | boolean | undefined }
 ) {
-  const severityNumber = severityNameToSeverityNumberMap[severity];
-  const minLoggingSeverityNumber = severityNameToSeverityNumberMap[process.env.LOG_LEVEL ?? 'INFO'];
+  const severityNumber = severityNameToSeverityMap[severity];
+  const minLoggingSeverityNumber = severityNameToSeverityMap[process.env.LOG_LEVEL ?? 'INFO'];
   const now = new Date();
 
   if (severityNumber >= minLoggingSeverityNumber) {
