@@ -1,6 +1,6 @@
 import { ErrorResponse, errorResponseSymbol } from '../types/ErrorResponse';
 import fetch from 'node-fetch';
-import log from '../observability/logging/log';
+import log, { Severity } from "../observability/logging/log";
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
 import isErrorResponse from '../errors/isErrorResponse';
 import getRemoteResponseTestValue from '../metadata/getRemoteResponseTestValue';
@@ -15,7 +15,7 @@ export default async function call<T>(
   options?: HttpRequestOptions,
   ResponseClass?: new () => T
 ): Promise<T | ErrorResponse> {
-  log('DEBUG', 'Call sync remote service', '', { remoteServiceFunctionCallUrl });
+  log(Severity.DEBUG, 'Call sync remote service', '', { remoteServiceFunctionCallUrl });
   if (
     process.env.NODE_ENV === 'development' &&
     process.env.SHOULD_USE_FAKE_REMOTE_SERVICES_IN_TEST === 'true'
@@ -46,13 +46,13 @@ export default async function call<T>(
       const errorCode = isErrorResponse(responseBody) ? responseBody.errorCode : undefined;
 
       if (response.status >= 500) {
-        log('ERROR', errorMessage, stackTrace, {
+        log(Severity.ERROR, errorMessage, stackTrace, {
           errorCode,
           statusCode: response.status,
           remoteServiceFunctionCallUrl
         });
       } else {
-        log('DEBUG', errorMessage, stackTrace, {
+        log(Severity.DEBUG, errorMessage, stackTrace, {
           errorCode,
           statusCode: response.status,
           remoteServiceFunctionCallUrl
@@ -72,7 +72,7 @@ export default async function call<T>(
 
     return responseBody;
   } catch (error) {
-    log('ERROR', error.message, error.stack, { remoteServiceFunctionCallUrl });
+    log(Severity.ERROR, error.message, error.stack, { remoteServiceFunctionCallUrl });
     return createErrorResponseFromError(error);
   }
 }

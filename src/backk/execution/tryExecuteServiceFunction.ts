@@ -16,7 +16,7 @@ import isErrorResponse from '../errors/isErrorResponse';
 import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from "../errors/createErrorResponseFromError";
-import log from "../observability/logging/log";
+import log, { Severity } from "../observability/logging/log";
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -32,7 +32,7 @@ export default async function tryExecuteServiceFunction(
   authHeader: string,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
-  log('DEBUG', 'Service function call', serviceFunction);
+  log(Severity.DEBUG, 'Service function call', serviceFunction);
   defaultServiceMetrics.incrementHttpRequestsByOne();
   const serviceFunctionCallStartTimeInMillis = Date.now();
   const [serviceName, functionName] = serviceFunction.split('.');

@@ -1,5 +1,5 @@
 import { ErrorResponse, errorResponseSymbol } from '../types/ErrorResponse';
-import log from '../observability/logging/log';
+import log, { Severity } from "../observability/logging/log";
 
 export default function createErrorResponseFromError(error: Error): ErrorResponse {
   let statusCode = parseInt(error.message.slice(0, 3));
@@ -17,7 +17,7 @@ export default function createErrorResponseFromError(error: Error): ErrorRespons
     errorMessage = errorMessage.trim();
   }
 
-  log('DEBUG', errorMessage, error.stack ?? '', { errorCode, statusCode });
+  log(Severity.DEBUG, errorMessage, error.stack ?? '', { errorCode, statusCode });
 
   return {
     statusCode,

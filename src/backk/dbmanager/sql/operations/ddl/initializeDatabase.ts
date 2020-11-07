@@ -5,7 +5,7 @@ import entityAnnotationContainer from '../../../../decorators/entity/entityAnnot
 import tryAlterOrCreateTable from './tryAlterOrCreateTable';
 import tryCreateIndex from './tryCreateIndex';
 import tryCreateUniqueIndex from './tryCreateUniqueIndex';
-import log, { logError } from '../../../../observability/logging/log';
+import log, { logError, Severity } from "../../../../observability/logging/log";
 
 const dbManagerToIsInitializedMap: { [key: string]: boolean } = {};
 
@@ -58,6 +58,6 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
   }
 
   dbManagerToIsInitializedMap[`${dbManager.getDbHost()}`] = true;
-  log('INFO', 'Database initialized', '');
+  log(Severity.INFO, 'Database initialized', '');
   return true;
 }

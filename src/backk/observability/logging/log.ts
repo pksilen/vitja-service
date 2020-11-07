@@ -3,14 +3,20 @@ import { LogEntry } from './LogEntry';
 import * as fs from 'fs';
 import tracerProvider from '../distributedtracinig/initializeTracing';
 
-export type Severity = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
+export enum Severity {
+  DEBUG = 5,
+  INFO = 9,
+  WARN = 13,
+  ERROR = 17,
+  FATAL = 21
+};
 
-const severityToSeverityNumberMap: { [key: string]: number } = {
-  DEBUG: 5,
-  INFO: 9,
-  WARN: 13,
-  ERROR: 17,
-  FATAL: 21
+const severityNameToSeverityNumberMap: { [key: string]: number } = {
+  DEBUG: Severity.DEBUG,
+  INFO: Severity.INFO,
+  WARN: Severity.WARN,
+  ERROR: Severity.ERROR,
+  FATAL: Severity.FATAL
 };
 
 const cwd = process.cwd();
@@ -34,8 +40,8 @@ export default function log(
   body: string,
   attributes?: { [key: string]: string | number | boolean | undefined }
 ) {
-  const severityNumber = severityToSeverityNumberMap[severity];
-  const minLoggingSeverityNumber = severityToSeverityNumberMap[process.env.LOG_LEVEL ?? 'INFO'];
+  const severityNumber = severityNameToSeverityNumberMap[severity];
+  const minLoggingSeverityNumber = severityNameToSeverityNumberMap[process.env.LOG_LEVEL ?? 'INFO'];
   const now = new Date();
 
   if (severityNumber >= minLoggingSeverityNumber) {
@@ -53,7 +59,7 @@ export default function log(
         .getTracer('default')
         .getCurrentSpan()
         ?.context().traceFlags,
-      SeverityText: severity,
+      SeverityText: severity.toString(),
       SeverityNumber: severityNumber,
       Name: name,
       Body: body,
@@ -76,5 +82,5 @@ export default function log(
 }
 
 export function logError(error: Error) {
-  log('ERROR', error.message, error.stack ?? '');
+  log(Severity.ERROR, error.message, error.stack ?? '');
 }

@@ -9,7 +9,7 @@ import generateServicesDocumentation from './backk/documentation/generateService
 import { postgreSqlDbManager } from './database/postgreSqlDbManager';
 import initializeDatabase from './backk/dbmanager/sql/operations/ddl/initializeDatabase';
 import defaultSystemAndNodeJsMetrics from "./backk/observability/metrics/defaultSystemAndNodeJsMetrics";
-import log from "./backk/observability/logging/log";
+import log, { Severity } from "./backk/observability/logging/log";
 
 async function bootstrap() {
   generateServicesDocumentation();
@@ -17,7 +17,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
   await initializeDatabase(postgreSqlDbManager);
   await app.listen(3000);
-  log('INFO', 'Service started', '');
+  log(Severity.INFO, 'Service started', '');
 }
 
 bootstrap();

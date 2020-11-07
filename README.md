@@ -1,12 +1,16 @@
 # Vitja service
 
 TODO:
+- Change log levels to ENUM values
 - Create topic
-- implement get request url
+- implement http GET request url
 - Implement auth headers
+- Kafka transactions support
+- check if multiple dbManager methods are called, they are not inside a transaction
+- check if dbManager and remote method are called and they are not inside transaction
 - executeMultiple endpoint, to execute multiple serviceCalls 
   { executeInSequence: { user : {}, executeInParallel: {userSalesItems:{}, userOrders: {}}}}
-  - execute remote services 
+  - execute inside transaction
   - Make an option where to disable executeXXX
 - GDPR logging
   -audit log should go to separate server

@@ -2,7 +2,7 @@ import { CompressionTypes, Kafka, logLevel } from 'kafkajs';
 import getServiceName from '../utils/getServiceName';
 import { ErrorResponse } from '../types/ErrorResponse';
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
-import log from '../observability/logging/log';
+import log, { Severity } from "../observability/logging/log";
 
 const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
 
@@ -36,7 +36,7 @@ export default async function sendTo(
   serviceFunctionArgument: object,
   options?: SendToOptions
 ): Promise<void | ErrorResponse> {
-  log('DEBUG', 'Send to remote service for execution', '', { remoteServiceUrl, serviceFunction });
+  log(Severity.DEBUG, 'Send to remote service for execution', '', { remoteServiceUrl, serviceFunction });
   const { scheme, broker, topic } = parseRemoteServiceUrlParts(remoteServiceUrl);
 
   if (scheme !== 'kafka') {
@@ -66,7 +66,7 @@ export default async function sendTo(
       ]
     });
   } catch (error) {
-    log('ERROR', error.message, error.stack, { remoteServiceUrl, serviceFunction });
+    log(Severity.ERROR, error.message, error.stack, { remoteServiceUrl, serviceFunction });
     return createErrorResponseFromError(error);
   } finally {
     try {
