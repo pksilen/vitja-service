@@ -1,15 +1,15 @@
 import _ from 'lodash';
-import { parseRemoteServiceUrlParts, sendOneOrMoreTo, SendToOptions } from "./sendTo";
+import { parseRemoteServiceUrlParts, sendOneOrMore, SendToOptions } from "./sendTo";
 
-export interface SendTo {
+export interface Send {
   remoteServiceUrl: string;
   serviceFunction: string;
   serviceFunctionArgument: object;
   options?: SendToOptions;
 }
 
-export default async function sendInsideTransaction(sendTos: SendTo[]) {
-  const uniqueSendTosByBroker = _.uniqBy(sendTos, ({ remoteServiceUrl }) =>
+export default async function sendInsideTransaction(sends: Send[]) {
+  const uniqueSendTosByBroker = _.uniqBy(sends, ({ remoteServiceUrl }) =>
     parseRemoteServiceUrlParts(remoteServiceUrl).broker
   );
 
@@ -17,5 +17,5 @@ export default async function sendInsideTransaction(sendTos: SendTo[]) {
     throw new Error('All sendTos must be to same broker');
   }
 
-  return await sendOneOrMoreTo(sendTos, true);
+  return await sendOneOrMore(sends, true);
 }

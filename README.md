@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Kafka custom logger
 - Kafka tracing span
 - check if multiple dbManager methods are called, they are not inside a transaction
 - check if dbManager and remote method are called and they are not inside transaction
@@ -11,6 +10,7 @@ TODO:
   - updateEntities
   - deleteEntitiesByIds
   - getSubEntities
+- Kafka consumer
 - GDPR logging
   -audit log should go to separate server
 - Date/Timestamp type support

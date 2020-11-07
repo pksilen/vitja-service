@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { LogEntry } from './LogEntry';
 import * as fs from 'fs';
-import tracerProvider from '../distributedtracinig/initializeTracing';
+import tracerProvider from "../distributedtracinig/tracerProvider";
 
 export enum Severity {
   DEBUG = 5,

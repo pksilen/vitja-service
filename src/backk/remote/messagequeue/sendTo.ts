@@ -4,8 +4,9 @@ import { ErrorResponse } from '../../types/ErrorResponse';
 import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
 import log, { Severity, severityNameToSeverityMap } from '../../observability/logging/log';
 import { getNamespace } from 'cls-hooked';
-import { SendTo } from './sendInsideTransaction';
+import { Send } from './sendInsideTransaction';
 import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
+import tracerProvider from "../../observability/distributedtracinig/tracerProvider";
 
 const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
 
@@ -36,7 +37,7 @@ export function parseRemoteServiceUrlParts(remoteServiceUrl: string) {
 const logCreator = () => ({ label, log: { message, ...extra } }: any) =>
   log(severityNameToSeverityMap[label], 'Message queue error', message, extra);
 
-export async function sendOneOrMoreTo(sendTos: SendTo[], transactional: boolean) {
+export async function sendOneOrMore(sendTos: Send[], transactional: boolean) {
   const { scheme, broker, topic } = parseRemoteServiceUrlParts(sendTos[0].remoteServiceUrl);
 
   if (scheme !== 'kafka') {
@@ -70,11 +71,18 @@ export async function sendOneOrMoreTo(sendTos: SendTo[], transactional: boolean)
 
     await forEachAsyncSequential(
       sendTos,
-      async ({ remoteServiceUrl, options, serviceFunction, serviceFunctionArgument }: SendTo) => {
+      async ({ remoteServiceUrl, options, serviceFunction, serviceFunctionArgument }: Send) => {
         log(Severity.DEBUG, 'Send to remote service for execution', '', {
           remoteServiceUrl,
           serviceFunction
         });
+
+        const span = tracerProvider.getTracer('default').startSpan('kafkajs: SEND_MESSAGE');
+        span.setAttribute('component', 'kafkajs');
+        span.setAttribute('span.kind', 'CLIENT');
+        span.setAttribute('peer.address', broker);
+        span.setAttribute('kafka.topic', topic);
+        span.setAttribute('kafka.message.key', serviceFunction);
 
         try {
           await producerOrTransaction.send({
@@ -91,7 +99,12 @@ export async function sendOneOrMoreTo(sendTos: SendTo[], transactional: boolean)
           });
         } catch (error) {
           log(Severity.ERROR, error.message, error.stack, { remoteServiceUrl, serviceFunction });
+          span.setAttribute('status.name', 'ERROR');
+          span.setAttribute('status.code', 1);
+          span.setAttribute('error.message', error.message);
           throw error;
+        } finally {
+          span.end();
         }
       }
     );
@@ -115,7 +128,7 @@ export default async function sendTo(
   serviceFunctionArgument: object,
   options?: SendToOptions
 ): Promise<void | ErrorResponse> {
-  return await sendOneOrMoreTo(
+  return await sendOneOrMore(
     [
       {
         remoteServiceUrl,
