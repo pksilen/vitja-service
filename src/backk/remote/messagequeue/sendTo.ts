@@ -2,7 +2,8 @@ import { CompressionTypes, Kafka, logLevel } from 'kafkajs';
 import getServiceName from '../../utils/getServiceName';
 import { ErrorResponse } from '../../types/ErrorResponse';
 import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
-import log, { Severity } from "../../observability/logging/log";
+import log, { Severity } from '../../observability/logging/log';
+import { getNamespace } from 'cls-hooked';
 
 const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
 
@@ -51,6 +52,7 @@ export default async function sendTo(
     });
   }
 
+  const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
   const kafkaClient = kafkaBrokerToKafkaClientMap[broker];
   const producer = kafkaClient.producer();
 
@@ -61,8 +63,11 @@ export default async function sendTo(
       compression: options?.compressionType ?? CompressionTypes.None,
       acks: options?.sendAcknowledgementType ?? SendAcknowledgementType.ALL_REPLICAS,
       messages: [
-        // TODO add authheader to headers property https://kafka.js.org/docs/producing
-        { key: serviceFunction, value: JSON.stringify(serviceFunctionArgument) }
+        {
+          key: serviceFunction,
+          value: JSON.stringify(serviceFunctionArgument),
+          headers: { Authorization: authHeader }
+        }
       ]
     });
   } catch (error) {

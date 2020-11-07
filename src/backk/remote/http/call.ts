@@ -1,9 +1,10 @@
 import { ErrorResponse, errorResponseSymbol } from '../../types/ErrorResponse';
 import fetch from 'node-fetch';
-import log, { Severity } from "../../observability/logging/log";
+import log, { Severity } from '../../observability/logging/log';
 import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
 import isErrorResponse from '../../errors/isErrorResponse';
 import getRemoteResponseTestValue from '../../metadata/getRemoteResponseTestValue';
+import { getNamespace } from 'cls-hooked';
 
 export interface HttpRequestOptions {
   httpMethod?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -28,11 +29,13 @@ export default async function call<T>(
     return getRemoteResponseTestValue(ResponseClass) as T;
   }
 
+  const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
+
   try {
     const response = await fetch(remoteServiceFunctionCallUrl, {
       method: options?.httpMethod?.toLowerCase() ?? 'post',
       body: serviceFunctionArgument ? JSON.stringify(serviceFunctionArgument) : undefined,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', Authorization: authHeader }
       // TODO add auth header
     });
 

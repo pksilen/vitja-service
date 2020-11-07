@@ -15,8 +15,8 @@ import tryValidateResponse from '../validation/tryValidateResponse';
 import isErrorResponse from '../errors/isErrorResponse';
 import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
-import createErrorResponseFromError from "../errors/createErrorResponseFromError";
-import log, { Severity } from "../observability/logging/log";
+import createErrorResponseFromError from '../errors/createErrorResponseFromError';
+import log, { Severity } from '../observability/logging/log';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -171,27 +171,31 @@ export default async function tryExecuteServiceFunction(
   }
 
   const dbManager = (controller[serviceName] as BaseService).getDbManager();
-  let response;
 
+  const clsNamespace = createNamespace('serviceFunctionExecution');
   if (dbManager) {
-    const clsNamespace = createNamespace('dbManager');
-    dbManager.setClsNamespaceName('dbManager');
-    response = await clsNamespace.runAndReturn(async () => {
-      let response;
-
-      try {
+    dbManager.setClsNamespaceName('serviceFunctionExecution');
+  }
+  const response = await clsNamespace.runAndReturn(async () => {
+    clsNamespace.set('authHeader', authHeader);
+    let response;
+    
+    try {
+      if (dbManager) {
         await dbManager.tryReserveDbConnectionFromPool();
-        response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
-        dbManager.tryReleaseDbConnectionBackToPool();
-      } catch(error) {
-        response = createErrorResponseFromError(error);
       }
 
-      return response;
-    });
-  } else {
-    response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
-  }
+      response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
+
+      if (dbManager) {
+        dbManager.tryReleaseDbConnectionBackToPool();
+      }
+    } catch (error) {
+      response = createErrorResponseFromError(error);
+    }
+
+    return response;
+  });
 
   if (response && isErrorResponse(response)) {
     if (response.statusCode >= 500) {

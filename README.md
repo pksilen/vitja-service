@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- implement http GET request url
 - Implement auth headers
 - Kafka transactions support
 - Kafka custom logger
