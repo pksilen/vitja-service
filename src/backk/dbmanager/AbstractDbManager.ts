@@ -1,13 +1,14 @@
-import { getNamespace, Namespace } from "cls-hooked";
-import { FilterQuery, MongoClient } from "mongodb";
-import { Pool } from "pg";
-import SqlExpression from "./sql/expressions/SqlExpression";
-import { RecursivePartial } from "../types/RecursivePartial";
-import { ErrorResponse } from "../types/ErrorResponse";
-import { PreHook } from "./hooks/PreHook";
-import { Entity } from "../types/Entity";
-import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
-import { Injectable } from "@nestjs/common";
+import { getNamespace, Namespace } from 'cls-hooked';
+import { FilterQuery, MongoClient } from 'mongodb';
+import { Pool } from 'pg';
+import SqlExpression from './sql/expressions/SqlExpression';
+import { RecursivePartial } from '../types/RecursivePartial';
+import { ErrorResponse } from '../types/ErrorResponse';
+import { PreHook } from './hooks/PreHook';
+import { Entity } from '../types/Entity';
+import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
+import { Injectable } from '@nestjs/common';
+import isErrorResponse from '../errors/isErrorResponse';
 
 export interface Field {
   name: string;
@@ -58,6 +59,35 @@ export default abstract class AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
+
+  async createEntities<T>(
+    entities: Array<Omit<T, '_id'>>,
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[],
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T[] | ErrorResponse> {
+    return this.executeInsideTransaction(async () => {
+      try {
+        return await Promise.all(
+          entities.map(async (entity, index) => {
+            const entityOrErrorResponse = await this.createEntity(
+              entity,
+              entityClass,
+              preHooks,
+              postQueryOperations
+            );
+            if ('errorMessage' in entityOrErrorResponse && isErrorResponse(entityOrErrorResponse)) {
+              entityOrErrorResponse.errorMessage =
+                'Entity ' + index + ': ' + entityOrErrorResponse.errorMessage;
+              throw entityOrErrorResponse;
+            }
+          })
+        );
+      } catch (errorResponse) {
+        return errorResponse;
+      }
+    });
+  }
 
   abstract addSubEntity<T extends Entity, U extends object>(
     _id: string,
