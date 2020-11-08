@@ -134,6 +134,13 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<U | ErrorResponse>;
 
+  abstract getSubEntities<T extends object, U extends object>(
+    _id: string,
+    subEntityPath: string,
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<U[] | ErrorResponse>;
+
   abstract getEntitiesByIds<T>(
     _ids: string[],
     entityClass: new () => T,

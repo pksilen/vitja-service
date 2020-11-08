@@ -9,7 +9,6 @@ import createEntity from './sql/operations/dml/createEntity';
 import getEntities from './sql/operations/dql/getEntities';
 import getEntitiesCount from './sql/operations/dql/getEntitiesCount';
 import getEntityById from './sql/operations/dql/getEntityById';
-import getSubEntity from './sql/operations/dql/getSubEntity';
 import getEntityBy from './sql/operations/dql/getEntityBy';
 import getEntitiesBy from './sql/operations/dql/getEntitiesBy';
 import updateEntity from './sql/operations/dml/updateEntity';
@@ -26,6 +25,7 @@ import defaultServiceMetrics from '../observability/metrics/defaultServiceMetric
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
 import log, { Severity } from '../observability/logging/log';
 import addSubEntities from "./sql/operations/dml/addSubEntities";
+import getSubEntities from "./sql/operations/dql/getSubEntities";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -480,7 +480,27 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.getSubEntity');
     const dbOperationStartTimeInMillis = Date.now();
 
-    const response = getSubEntity(this, _id, subEntityPath, entityClass, postQueryOperations);
+    const response = getSubEntities(this, _id, subEntityPath, entityClass, postQueryOperations, 'first');
+
+    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
+    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
+      this.getDbManagerType(),
+      this.host,
+      dbOperationProcessingTimeInMillis / 1000
+    );
+    return response;
+  }
+
+  async getSubEntities<T extends object>(
+    _id: string,
+    subEntityPath: string,
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<any | ErrorResponse> {
+    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.getSubEntities');
+    const dbOperationStartTimeInMillis = Date.now();
+
+    const response = getSubEntities(this, _id, subEntityPath, entityClass, postQueryOperations, 'all');
 
     const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
     defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(

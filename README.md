@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-  - deleteEntitiesByIds
   - getSubEntities
 - Redis sendTo
 - Kafka consumer

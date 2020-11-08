@@ -185,6 +185,15 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
+  getSubEntities<T extends object, U extends object>(
+    _id: string,
+    subEntityPath: string,
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<U[] | ErrorResponse> {
+    throw new Error('Not implemented');
+  }
+
   async getEntitiesByIds<T>(
     _ids: string[],
     entityClass: new () => T,
