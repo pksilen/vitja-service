@@ -46,6 +46,7 @@
     "cls-hooked": "^4.2.2",
     "expr-eval": "^2.0.2",
     "extends-classes": "^1.0.5",
+    "ioredis": "^4.19.2",
     "join-js": "^1.1.2",
     "js-base64": "^3.5.2",
     "jsonpath-plus": "^4.0.0",
