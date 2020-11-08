@@ -12,6 +12,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToAllowedForTestsMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToErrorsMap: { [key: string]: ErrorCodeAndMessage[] } = {};
   private readonly serviceFunctionNameToIsNotTransactionalMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToIsNotDistributedTransactionalMap: { [key: string]: boolean } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -61,6 +62,10 @@ class ServiceFunctionAnnotationContainer {
 
   addNonTransactionalServiceFunction(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToIsNotTransactionalMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
+  addNonDistributedTransactionalServiceFunction(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToIsNotDistributedTransactionalMap[`${serviceClass.name}${functionName}`] = true;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -206,6 +211,18 @@ class ServiceFunctionAnnotationContainer {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (this.serviceFunctionNameToIsNotTransactionalMap[`${serviceClass.name}${functionName}`] !== undefined) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isServiceFunctionNonDistributedTransactional(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.serviceFunctionNameToIsNotDistributedTransactionalMap[`${serviceClass.name}${functionName}`] !== undefined) {
         return true;
       }
       proto = Object.getPrototypeOf(proto);

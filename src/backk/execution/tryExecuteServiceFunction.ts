@@ -220,7 +220,13 @@ export default async function tryExecuteServiceFunction(
           serviceFunction +
             ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction'
         );
-      } else if (clsNamespace.get('remoteServiceCallCount') > 1) {
+      } else if (
+        clsNamespace.get('remoteServiceCallCount') > 1 &&
+        !serviceFunctionAnnotationContainer.isServiceFunctionNonDistributedTransactional(
+          controller[serviceName].constructor,
+          functionName
+        )
+      ) {
         // noinspection ExceptionCaughtLocallyJS
         throw new Error(
           serviceFunction +
