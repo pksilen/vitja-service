@@ -8,12 +8,13 @@ import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQ
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import isErrorResponse from '../../../../errors/isErrorResponse';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 
-export default async function addSubEntity<T extends Entity, U extends object>(
+export default async function addSubEntities<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   subEntitiesPath: string,
-  newSubEntity: Omit<U, 'id'>,
+  newSubEntities: Array<Omit<U, 'id'>>,
   entityClass: new () => T,
   subEntityClass: new () => U,
   preHooks?: PreHook | PreHook[],
@@ -46,18 +47,24 @@ export default async function addSubEntity<T extends Entity, U extends object>(
       -1
     );
 
-    const createdItemOrErrorResponse = await dbManager.createEntity(
-      { ...newSubEntity, [parentIdFieldName]: parentIdValue, id: (maxSubItemId + 1).toString() } as any,
-      subEntityClass,
-      undefined,
-      postQueryOperations,
-      false
-    );
+    await forEachAsyncParallel(newSubEntities, async (newSubEntity, index) => {
+      const createdItemOrErrorResponse = await dbManager.createEntity(
+        {
+          ...newSubEntity,
+          [parentIdFieldName]: parentIdValue,
+          id: (maxSubItemId + 1 + index).toString()
+        } as any,
+        subEntityClass,
+        undefined,
+        postQueryOperations,
+        false
+      );
 
-    if ('errorMessage' in createdItemOrErrorResponse && isErrorResponse(createdItemOrErrorResponse)) {
-      // noinspection ExceptionCaughtLocallyJS
-      throw createdItemOrErrorResponse;
-    }
+      if ('errorMessage' in createdItemOrErrorResponse && isErrorResponse(createdItemOrErrorResponse)) {
+        // noinspection ExceptionCaughtLocallyJS
+        throw createdItemOrErrorResponse;
+      }
+    });
 
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.tryCommitTransaction();

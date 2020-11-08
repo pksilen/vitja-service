@@ -6,7 +6,6 @@ import SqlExpression from './sql/expressions/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import isErrorResponse from '../errors/isErrorResponse';
 import createEntity from './sql/operations/dml/createEntity';
-import addSubEntity from './sql/operations/dml/addSubEntity';
 import getEntities from './sql/operations/dql/getEntities';
 import getEntitiesCount from './sql/operations/dql/getEntitiesCount';
 import getEntityById from './sql/operations/dql/getEntityById';
@@ -26,6 +25,7 @@ import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOpera
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
 import log, { Severity } from '../observability/logging/log';
+import addSubEntities from "./sql/operations/dml/addSubEntities";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -363,11 +363,43 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.addSubEntity');
     const dbOperationStartTimeInMillis = Date.now();
 
-    const response = addSubEntity(
+    const response = addSubEntities(
       this,
       _id,
       subEntitiesPath,
-      newSubEntity,
+      [newSubEntity],
+      entityClass,
+      subEntityClass,
+      preHooks,
+      postQueryOperations
+    );
+
+    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
+    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
+      this.getDbManagerType(),
+      this.host,
+      dbOperationProcessingTimeInMillis / 1000
+    );
+    return response;
+  }
+
+  async addSubEntities<T extends Entity, U extends object>(
+    _id: string,
+    subEntitiesPath: string,
+    newSubEntities: Array<Omit<U, 'id'>>,
+    entityClass: new () => T,
+    subEntityClass: new () => U,
+    preHooks?: PreHook | PreHook[],
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse> {
+    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.addSubEntities');
+    const dbOperationStartTimeInMillis = Date.now();
+
+    const response = addSubEntities(
+      this,
+      _id,
+      subEntitiesPath,
+      newSubEntities,
       entityClass,
       subEntityClass,
       preHooks,

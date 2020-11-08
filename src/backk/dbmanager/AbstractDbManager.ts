@@ -99,6 +99,16 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
+  abstract addSubEntities<T extends Entity, U extends object>(
+    _id: string,
+    subEntitiesPath: string,
+    newSubEntities: Array<Omit<U, 'id'>>,
+    entityClass: new () => T,
+    subEntityClass: new () => U,
+    preHooks?: PreHook | PreHook[],
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse>;
+
   abstract getEntities<T>(
     filters: FilterQuery<T> | Partial<T> | SqlExpression[],
     entityClass: new () => T,

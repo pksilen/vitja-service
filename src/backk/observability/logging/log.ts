@@ -35,12 +35,11 @@ if (
 }
 
 export default function log(
-  severity: Severity,
+  severityNumber: Severity,
   name: string,
   body: string,
   attributes?: { [key: string]: string | number | boolean | undefined }
 ) {
-  const severityNumber = severityNameToSeverityMap[severity];
   const minLoggingSeverityNumber = severityNameToSeverityMap[process.env.LOG_LEVEL ?? 'INFO'];
   const now = new Date();
 
@@ -59,7 +58,7 @@ export default function log(
         .getTracer('default')
         .getCurrentSpan()
         ?.context().traceFlags,
-      SeverityText: severity.toString(),
+      SeverityText: Severity[severityNumber],
       SeverityNumber: severityNumber,
       Name: name,
       Body: body,

@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Create multiple entities db operations:
-  - createEntities
   - addSubEntities
   - updateEntities
   - deleteEntitiesByIds
