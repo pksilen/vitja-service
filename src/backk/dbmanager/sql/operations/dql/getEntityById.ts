@@ -9,6 +9,7 @@ import createErrorResponseFromErrorMessageAndStatusCode
   from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
 import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
+import updateDbTransactionCount from "./utils/updateDbTransactionCount";
 
 export default async function getEntityById<T>(
   dbManager: PostgreSqlDbManager,
@@ -17,6 +18,7 @@ export default async function getEntityById<T>(
   postQueryOperations?: PostQueryOperations,
   isInternalCall = false
 ): Promise<T | ErrorResponse> {
+  updateDbTransactionCount(dbManager);
   const Types = dbManager.getTypes();
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 

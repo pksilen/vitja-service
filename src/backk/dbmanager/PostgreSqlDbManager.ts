@@ -25,7 +25,7 @@ import { Entity } from '../types/Entity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
-import log, { Severity } from "../observability/logging/log";
+import log, { Severity } from '../observability/logging/log';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -281,6 +281,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async executeInsideTransaction<T>(
     executable: () => Promise<T | ErrorResponse>
   ): Promise<T | ErrorResponse> {
+    this.getClsNamespace()?.set('globalTransaction', true);
+
     try {
       await this.tryBeginTransaction();
       if (this.firstDbOperationFailureTimeInMillis) {
@@ -298,7 +300,6 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       }
       return createErrorResponseFromError(error);
     }
-    this.getClsNamespace()?.set('globalTransaction', true);
 
     const result = await executable();
 

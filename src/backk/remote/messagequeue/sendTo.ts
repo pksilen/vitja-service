@@ -7,6 +7,7 @@ import { getNamespace } from 'cls-hooked';
 import { Send } from './sendInsideTransaction';
 import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
 import tracerProvider from '../../observability/distributedtracinig/tracerProvider';
+import { CanonicalCode } from '@opentelemetry/api';
 
 const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
 
@@ -66,7 +67,6 @@ export async function sendOneOrMore(sendTos: Send[], isTransactional: boolean) {
     producerConnectSpan.setAttribute('peer.address', broker);
     await producer.connect();
 
-
     let producerOrTransaction: Producer | Transaction;
     if (isTransactional) {
       transaction = await producer.transaction();
@@ -110,11 +110,15 @@ export async function sendOneOrMore(sendTos: Send[], isTransactional: boolean) {
               }
             ]
           });
+          span.setStatus({
+            code: CanonicalCode.OK
+          });
         } catch (error) {
           log(Severity.ERROR, error.message, error.stack, { remoteServiceUrl, serviceFunction });
-          span.setAttribute('status.name', 'ERROR');
-          span.setAttribute('status.code', 1);
-          span.setAttribute('error.message', error.message);
+          span.setStatus({
+            code: CanonicalCode.UNKNOWN,
+            message: error.message
+          });
           throw error;
         } finally {
           span.end();
@@ -123,16 +127,24 @@ export async function sendOneOrMore(sendTos: Send[], isTransactional: boolean) {
     );
 
     await transaction?.commit();
+    transactionSpan?.setStatus({
+      code: CanonicalCode.OK
+    });
+    producerConnectSpan?.setStatus({
+      code: CanonicalCode.OK
+    });
   } catch (error) {
     await transaction?.abort();
 
-    transactionSpan?.setAttribute('status.name', 'ERROR');
-    transactionSpan?.setAttribute('status.code', 1);
-    transactionSpan?.setAttribute('error.message', error.message);
+    transactionSpan?.setStatus({
+      code: CanonicalCode.UNKNOWN,
+      message: error.message
+    });
 
-    producerConnectSpan.setAttribute('status.name', 'ERROR');
-    producerConnectSpan.setAttribute('status.code', 1);
-    producerConnectSpan.setAttribute('error.message', error.message);
+    producerConnectSpan?.setStatus({
+      code: CanonicalCode.UNKNOWN,
+      message: error.message
+    });
 
     return createErrorResponseFromError(error);
   } finally {

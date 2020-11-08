@@ -8,6 +8,7 @@ import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQ
 import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import updateDbTransactionCount from "./utils/updateDbTransactionCount";
 
 export default async function getEntitiesBy<T>(
   dbManager: PostgreSqlDbManager,
@@ -17,6 +18,8 @@ export default async function getEntitiesBy<T>(
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
   try {
+    updateDbTransactionCount(dbManager);
+
     const Types = dbManager.getTypes();
     const item = {
       [fieldName]: fieldValue

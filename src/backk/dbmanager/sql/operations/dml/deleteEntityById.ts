@@ -16,7 +16,6 @@ export default async function deleteEntityById<T extends object>(
   entityClass: new () => T,
   preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
-  const Types = dbManager.getTypes();
   let didStartTransaction = false;
 
   try {
@@ -27,9 +26,12 @@ export default async function deleteEntityById<T extends object>(
       await dbManager.tryBeginTransaction();
       didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
+      dbManager
+        .getClsNamespace()
+        ?.set('dbTransactionCount', dbManager.getClsNamespace()?.get('dbTransactionCount') + 1);
     }
 
-    if (Types && preHooks) {
+    if (preHooks) {
       const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
       await tryExecutePreHooks(preHooks, itemOrErrorResponse);
     }
@@ -61,13 +63,11 @@ export default async function deleteEntityById<T extends object>(
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.tryCommitTransaction();
     }
-  } catch (errorOrErrorReponse) {
+  } catch (errorOrErrorResponse) {
     if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
       await dbManager.tryRollbackTransaction();
     }
-    return isErrorResponse(errorOrErrorReponse)
-      ? errorOrErrorReponse
-      : createErrorResponseFromError(errorOrErrorReponse);
+    return isErrorResponse(errorOrErrorResponse) ? errorOrErrorResponse: createErrorResponseFromError(errorOrErrorResponse);
   } finally {
     if (didStartTransaction) {
       dbManager.getClsNamespace()?.set('localTransaction', false);

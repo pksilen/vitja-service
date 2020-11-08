@@ -10,6 +10,7 @@ import createErrorResponseFromErrorMessageAndStatusCode
   from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
 import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
+import updateDbTransactionCount from "./utils/updateDbTransactionCount";
 
 export default async function getEntityBy<T>(
   dbManager: PostgreSqlDbManager,
@@ -18,13 +19,14 @@ export default async function getEntityBy<T>(
   entityClass: new () => T,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
-  try {
-    const Types = dbManager.getTypes();
-    const item = {
-      [fieldName]: fieldValue
-    };
-    const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
+  updateDbTransactionCount(dbManager);
+  const Types = dbManager.getTypes();
+  const item = {
+    [fieldName]: fieldValue
+  };
+  const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
+  try {
     if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
       (item as any)[fieldName] = encrypt(fieldValue as any, false);
     }

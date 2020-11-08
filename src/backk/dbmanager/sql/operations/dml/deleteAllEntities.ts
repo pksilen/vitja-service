@@ -18,6 +18,9 @@ export default async function deleteAllEntities<T>(
       await dbManager.tryBeginTransaction();
       didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
+      dbManager
+        .getClsNamespace()
+        ?.set('dbTransactionCount', dbManager.getClsNamespace()?.get('dbTransactionCount') + 1);
     }
 
     await Promise.all([

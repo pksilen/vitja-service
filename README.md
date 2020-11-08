@@ -3,6 +3,7 @@
 TODO:
 - check if multiple dbManager methods are called, they are not inside a transaction
 - check if dbManager and remote method are called and they are not inside transaction
+- check if more than 1 remote method is called (excluding methods inside kafka transaction)
 - Create multiple entities db operations:
   - createEntities
   - addSubEntities

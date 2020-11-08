@@ -178,8 +178,10 @@ export default async function tryExecuteServiceFunction(
   }
   const response = await clsNamespace.runAndReturn(async () => {
     clsNamespace.set('authHeader', authHeader);
+    clsNamespace.set('dbTransactionCount', 0);
     let response;
-    
+
+    // noinspection ExceptionCaughtLocallyJS
     try {
       if (dbManager) {
         await dbManager.tryReserveDbConnectionFromPool();
@@ -189,6 +191,14 @@ export default async function tryExecuteServiceFunction(
 
       if (dbManager) {
         dbManager.tryReleaseDbConnectionBackToPool();
+      }
+
+      if (clsNamespace.get('dbTransactionCount') > 1) {
+        // noinspection ExceptionCaughtLocallyJS
+        throw new Error(
+          serviceFunction +
+            ': multiple database manager operations must be executed inside a transaction or service function must be annotated with @NoTransaction'
+        );
       }
     } catch (error) {
       response = createErrorResponseFromError(error);

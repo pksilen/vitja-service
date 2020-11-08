@@ -20,6 +20,7 @@ export default async function addSubEntity<T extends Entity, U extends object>(
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
   let didStartTransaction = false;
+
   try {
     if (
       !dbManager.getClsNamespace()?.get('localTransaction') &&
@@ -28,21 +29,16 @@ export default async function addSubEntity<T extends Entity, U extends object>(
       await dbManager.tryBeginTransaction();
       didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
+      dbManager
+        .getClsNamespace()
+        ?.set('dbTransactionCount', dbManager.getClsNamespace()?.get('dbTransactionCount') + 1);
     }
 
-    if (preHooks) {
-      await tryExecutePreHooks(preHooks);
-    }
-
-    const itemOrErrorResponse = await dbManager.getEntityById(_id, entityClass, postQueryOperations);
-    if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
-      // noinspection ExceptionCaughtLocallyJS
-      throw itemOrErrorResponse;
-    }
-
-    const parentIdValue = JSONPath({ json: itemOrErrorResponse, path: '$._id' })[0];
+    const currentEntityOrErrorResponse = await dbManager.getEntityById(_id, entityClass, postQueryOperations);
+    await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
+    const parentIdValue = JSONPath({ json: currentEntityOrErrorResponse, path: '$._id' })[0];
     const parentIdFieldName = entityAnnotationContainer.getAdditionIdPropertyName(subEntityClass.name);
-    const maxSubItemId = JSONPath({ json: itemOrErrorResponse, path: subEntitiesPath }).reduce(
+    const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath }).reduce(
       (maxSubItemId: number, subItem: any) => {
         const subItemId = parseInt(subItem.id);
         return subItemId > maxSubItemId ? subItemId : maxSubItemId;

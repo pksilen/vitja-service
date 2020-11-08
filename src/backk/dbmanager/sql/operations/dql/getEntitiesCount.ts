@@ -1,19 +1,18 @@
-import SqlExpression from '../../expressions/SqlExpression';
-import { pg } from 'yesql';
-import tryGetWhereClause from './clauses/tryGetWhereClause';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getFilterValues from './utils/getFilterValues';
-import getJoinClause from './clauses/getJoinClause';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import SqlExpression from "../../expressions/SqlExpression";
+import { pg } from "yesql";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
+import updateDbTransactionCount from "./utils/updateDbTransactionCount";
 
 export default async function getEntitiesCount<T>(
   dbManager: PostgreSqlDbManager,
   filters: Partial<T> | SqlExpression[] | undefined,
   entityClass: new () => T
 ): Promise<number | ErrorResponse> {
+  updateDbTransactionCount(dbManager);
   const Types = dbManager.getTypes();
 
   try {

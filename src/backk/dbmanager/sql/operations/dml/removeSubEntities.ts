@@ -9,7 +9,6 @@ import createErrorResponseFromError from '../../../../errors/createErrorResponse
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/Entity';
-import { isError } from 'util';
 import isErrorResponse from '../../../../errors/isErrorResponse';
 
 export default async function removeSubEntities<T extends Entity, U extends object>(
@@ -29,20 +28,15 @@ export default async function removeSubEntities<T extends Entity, U extends obje
       await dbManager.tryBeginTransaction();
       didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
+      dbManager
+        .getClsNamespace()
+        ?.set('dbTransactionCount', dbManager.getClsNamespace()?.get('dbTransactionCount') + 1);
     }
 
-    const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
-    if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
-      // noinspection ExceptionCaughtLocallyJS
-      throw itemOrErrorResponse;
-    }
-
-    if (preHooks) {
-      await tryExecutePreHooks(preHooks, itemOrErrorResponse);
-    }
-
-    const entityInstance = plainToClass(entityClass, itemOrErrorResponse);
-    const subEntities = JSONPath({ json: entityInstance, path: subEntitiesPath });
+    const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
+    await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
+    const currentEntityInstance = plainToClass(entityClass, currentEntityOrErrorResponse);
+    const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesPath });
     await forEachAsyncParallel(subEntities, async (subItem: any) => {
       const possibleErrorResponse = await deleteEntityById(dbManager, subItem.id, subItem.constructor);
       if (possibleErrorResponse) {

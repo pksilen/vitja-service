@@ -36,18 +36,14 @@ export default async function updateEntity<T extends Entity>(
       await dbManager.tryBeginTransaction();
       didStartTransaction = true;
       dbManager.getClsNamespace()?.set('localTransaction', true);
+      dbManager
+        .getClsNamespace()
+        ?.set('dbTransactionCount', dbManager.getClsNamespace()?.get('dbTransactionCount') + 1);
     }
 
     if (shouldCheckIfItemExists) {
-      const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
-      if ('errorMessage' in itemOrErrorResponse && isErrorResponse(itemOrErrorResponse)) {
-        // noinspection ExceptionCaughtLocallyJS
-        throw itemOrErrorResponse;
-      }
-
-      if (preHooks) {
-        await tryExecutePreHooks(preHooks, itemOrErrorResponse);
-      }
+      const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
+      await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     }
 
     const entityMetadata = getTypeMetadata(entityClass as any);
