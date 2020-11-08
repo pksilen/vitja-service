@@ -187,6 +187,27 @@ export default abstract class AbstractDbManager {
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
+  deleteEntitiesByIds<T extends object>(
+    _ids: string[],
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[]
+  ): Promise<void | ErrorResponse> {
+    return this.executeInsideTransaction(async () => {
+      try {
+        return await forEachAsyncParallel(_ids, async (_id, index) => {
+          const possibleErrorResponse = await this.deleteEntityById(_id, entityClass, preHooks);
+          if (possibleErrorResponse) {
+            possibleErrorResponse.errorMessage =
+              'Entity ' + index + ': ' + possibleErrorResponse.errorMessage;
+            throw possibleErrorResponse;
+          }
+        });
+      } catch (errorResponse) {
+        return errorResponse;
+      }
+    });
+  }
+
   abstract removeSubEntities<T extends Entity>(
     _id: string,
     subEntitiesPath: string,

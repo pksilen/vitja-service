@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-  - updateEntities
   - deleteEntitiesByIds
   - getSubEntities
 - Redis sendTo

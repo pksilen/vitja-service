@@ -2,6 +2,7 @@
 import { LogEntry } from './LogEntry';
 import * as fs from 'fs';
 import tracerProvider from "../distributedtracinig/tracerProvider";
+import getTimeZone from "../../utils/getTimeZone";
 
 export enum Severity {
   DEBUG = 5,
@@ -70,8 +71,7 @@ export default function log(
         'node.name': process.env.NODE_NAME ?? ''
       },
       Attributes: {
-        timestampIso8601: now.toISOString(),
-        timeZoneName: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        isoTimestamp: now.toISOString() + getTimeZone(),
         ...attributes
       }
     };
