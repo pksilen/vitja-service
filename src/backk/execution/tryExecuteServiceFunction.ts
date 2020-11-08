@@ -178,7 +178,8 @@ export default async function tryExecuteServiceFunction(
   }
   const response = await clsNamespace.runAndReturn(async () => {
     clsNamespace.set('authHeader', authHeader);
-    clsNamespace.set('dbTransactionCount', 0);
+    clsNamespace.set('dbLocalTransactionCount', 0);
+    clsNamespace.set('remoteServiceCallCount', 0);
     let response;
 
     // noinspection ExceptionCaughtLocallyJS
@@ -193,11 +194,26 @@ export default async function tryExecuteServiceFunction(
         dbManager.tryReleaseDbConnectionBackToPool();
       }
 
-      if (clsNamespace.get('dbTransactionCount') > 1) {
+      if (clsNamespace.get('dbLocalTransactionCount') > 1) {
         // noinspection ExceptionCaughtLocallyJS
         throw new Error(
           serviceFunction +
             ': multiple database manager operations must be executed inside a transaction or service function must be annotated with @NoTransaction'
+        );
+      } else if (
+        clsNamespace.get('dbLocalTransactionCount') === 1 &&
+        clsNamespace.get('remoteServiceCallCount') === 1
+      ) {
+        // noinspection ExceptionCaughtLocallyJS
+        throw new Error(
+          serviceFunction +
+            ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction'
+        );
+      } else if (clsNamespace.get('remoteServiceCallCount') > 1) {
+        // noinspection ExceptionCaughtLocallyJS
+        throw new Error(
+          serviceFunction +
+            ": multiple remote service calls cannot be executed because distributed transactions are not supported. To allow multiple remote service calls that don't require a transaction, annotate service function with @NoDistributedTransaction"
         );
       }
     } catch (error) {

@@ -30,7 +30,7 @@ export default async function removeSubEntities<T extends Entity, U extends obje
       dbManager.getClsNamespace()?.set('localTransaction', true);
       dbManager
         .getClsNamespace()
-        ?.set('dbTransactionCount', dbManager.getClsNamespace()?.get('dbTransactionCount') + 1);
+        ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
     }
 
     const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);

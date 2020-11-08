@@ -39,7 +39,7 @@ export default async function createEntity<T>(
       dbManager.getClsNamespace()?.set('localTransaction', true);
       dbManager
         .getClsNamespace()
-        ?.set('dbTransactionCount', dbManager.getClsNamespace()?.get('dbTransactionCount') + 1);
+        ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
     }
 
     if (!isRecursiveCall && preHooks) {

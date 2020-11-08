@@ -38,7 +38,7 @@ export default async function updateEntity<T extends Entity>(
       dbManager.getClsNamespace()?.set('localTransaction', true);
       dbManager
         .getClsNamespace()
-        ?.set('dbTransactionCount', dbManager.getClsNamespace()?.get('dbTransactionCount') + 1);
+        ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
     }
 
     if (shouldCheckIfItemExists) {

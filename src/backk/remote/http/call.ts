@@ -16,14 +16,17 @@ export default async function call<T>(
   options?: HttpRequestOptions,
   ResponseClass?: new () => T
 ): Promise<T | ErrorResponse> {
+  const clsNamespace = getNamespace('serviceFunctionExecution');
+  clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
   log(Severity.DEBUG, 'Call sync remote service', '', { remoteServiceFunctionCallUrl });
+
   if (
     process.env.NODE_ENV === 'development' &&
     process.env.SHOULD_USE_FAKE_REMOTE_SERVICES_IN_TEST === 'true'
   ) {
     if (!ResponseClass) {
       throw new Error(
-        'ResponseClass must be provided when environment variable SHOULD_USE_FAKE_REMOTE_SERVICES_IN_TEST is true'
+        'ResponseClass must be provided when environment variable SHOULD_USE_FAKE_REMOTE_SERVICES_IN_TEST is set to true'
       );
     }
     return getRemoteResponseTestValue(ResponseClass) as T;

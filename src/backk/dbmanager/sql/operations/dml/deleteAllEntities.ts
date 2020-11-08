@@ -20,7 +20,7 @@ export default async function deleteAllEntities<T>(
       dbManager.getClsNamespace()?.set('localTransaction', true);
       dbManager
         .getClsNamespace()
-        ?.set('dbTransactionCount', dbManager.getClsNamespace()?.get('dbTransactionCount') + 1);
+        ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
     }
 
     await Promise.all([

@@ -39,6 +39,9 @@ const logCreator = () => ({ label, log: { message, ...extra } }: any) =>
   log(severityNameToSeverityMap[label], 'Message queue error', message, extra);
 
 export async function sendOneOrMore(sendTos: Send[], isTransactional: boolean) {
+  const clsNamespace = getNamespace('serviceFunctionExecution');
+  clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
+
   const { scheme, broker, topic } = parseRemoteServiceUrlParts(sendTos[0].remoteServiceUrl);
 
   if (scheme !== 'kafka') {

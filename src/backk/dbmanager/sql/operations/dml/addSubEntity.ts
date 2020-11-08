@@ -31,7 +31,7 @@ export default async function addSubEntity<T extends Entity, U extends object>(
       dbManager.getClsNamespace()?.set('localTransaction', true);
       dbManager
         .getClsNamespace()
-        ?.set('dbTransactionCount', dbManager.getClsNamespace()?.get('dbTransactionCount') + 1);
+        ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
     }
 
     const currentEntityOrErrorResponse = await dbManager.getEntityById(_id, entityClass, postQueryOperations);
