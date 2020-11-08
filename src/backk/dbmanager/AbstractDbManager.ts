@@ -9,6 +9,7 @@ import { Entity } from '../types/Entity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import { Injectable } from '@nestjs/common';
 import isErrorResponse from '../errors/isErrorResponse';
+import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 
 export interface Field {
   name: string;
@@ -154,10 +155,31 @@ export default abstract class AbstractDbManager {
   ): Promise<T[] | ErrorResponse>;
 
   abstract updateEntity<T extends Entity>(
-    { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
+    entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
+
+  updateEntities<T extends Entity>(
+    entities: Array<RecursivePartial<T> & { _id: string }>,
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[]
+  ): Promise<void | ErrorResponse> {
+    return this.executeInsideTransaction(async () => {
+      try {
+        return await forEachAsyncParallel(entities, async (entity, index) => {
+          const possibleErrorResponse = await this.updateEntity(entity, entityClass, preHooks);
+          if (possibleErrorResponse) {
+            possibleErrorResponse.errorMessage =
+              'Entity ' + index + ': ' + possibleErrorResponse.errorMessage;
+            throw possibleErrorResponse;
+          }
+        });
+      } catch (errorResponse) {
+        return errorResponse;
+      }
+    });
+  }
 
   abstract deleteEntityById<T extends object>(
     _id: string,

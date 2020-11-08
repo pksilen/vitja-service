@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-  - addSubEntities
   - updateEntities
   - deleteEntitiesByIds
   - getSubEntities
