@@ -1,16 +1,17 @@
-import { ErrorCodeAndMessage } from "../../../dbmanager/hooks/PreHook";
+import { ErrorCodeAndMessage } from '../../../dbmanager/hooks/PreHook';
 
 class ServiceFunctionAnnotationContainer {
-  private serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
-  private serviceFunctionNameToIsAllowedForEveryUserMap: { [key: string]: boolean } = {};
-  private serviceFunctionNameToIsAllowedForInternalUseMap: { [key: string]: boolean } = {};
-  private serviceFunctionNameToIsAllowedForSelfMap: { [key: string]: boolean } = {};
-  private serviceFunctionNameToIsPrivateMap: { [key: string]: boolean } = {};
-  private serviceFunctionNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
-  private serviceFunctionNameToDocStringMap: { [key: string]: string } = {};
-  private serviceFunctionNameToExpectedResponseStatusCodeInTestsMap: { [key: string]: number } = {};
-  private serviceFunctionNameToAllowedForTestsMap: { [key: string]: boolean } = {};
-  private serviceFunctionNameToErrorsMap: { [key: string]: ErrorCodeAndMessage[] } = {};
+  private readonly serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToIsAllowedForEveryUserMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToIsAllowedForInternalUseMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToIsAllowedForSelfMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToIsPrivateMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
+  private readonly serviceFunctionNameToDocStringMap: { [key: string]: string } = {};
+  private readonly serviceFunctionNameToExpectedResponseStatusCodeInTestsMap: { [key: string]: number } = {};
+  private readonly serviceFunctionNameToAllowedForTestsMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToErrorsMap: { [key: string]: ErrorCodeAndMessage[] } = {};
+  private readonly serviceFunctionNameToIsNotTransactionalMap: { [key: string]: boolean } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -54,8 +55,12 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToAllowedForTestsMap[`${serviceClass.name}${functionName}`] = true;
   }
 
-  addErrorsForServiceFunction(serviceClass: Function, functionName:string, errors: ErrorCodeAndMessage[]){
+  addErrorsForServiceFunction(serviceClass: Function, functionName: string, errors: ErrorCodeAndMessage[]) {
     this.serviceFunctionNameToErrorsMap[`${serviceClass.name}${functionName}`] = errors;
+  }
+
+  addNonTransactionalServiceFunction(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToIsNotTransactionalMap[`${serviceClass.name}${functionName}`] = true;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -176,10 +181,7 @@ class ServiceFunctionAnnotationContainer {
   isServiceFunctionAllowedForTests(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (
-        this.serviceFunctionNameToAllowedForTestsMap[`${serviceClass.name}${functionName}`] !==
-        undefined
-      ) {
+      if (this.serviceFunctionNameToAllowedForTestsMap[`${serviceClass.name}${functionName}`] !== undefined) {
         return true;
       }
       proto = Object.getPrototypeOf(proto);
@@ -191,19 +193,25 @@ class ServiceFunctionAnnotationContainer {
   getErrorsForServiceFunction(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (
-        this.serviceFunctionNameToErrorsMap[
-          `${serviceClass.name}${functionName}`
-          ] !== undefined
-      ) {
-        return this.serviceFunctionNameToErrorsMap[
-          `${serviceClass.name}${functionName}`
-          ];
+      if (this.serviceFunctionNameToErrorsMap[`${serviceClass.name}${functionName}`] !== undefined) {
+        return this.serviceFunctionNameToErrorsMap[`${serviceClass.name}${functionName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
 
     return undefined;
+  }
+
+  isServiceFunctionNonTransactional(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.serviceFunctionNameToIsNotTransactionalMap[`${serviceClass.name}${functionName}`] !== undefined) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
   }
 }
 

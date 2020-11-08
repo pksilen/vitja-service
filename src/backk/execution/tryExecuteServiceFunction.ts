@@ -17,6 +17,7 @@ import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
 import log, { Severity } from '../observability/logging/log';
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -194,7 +195,13 @@ export default async function tryExecuteServiceFunction(
         dbManager.tryReleaseDbConnectionBackToPool();
       }
 
-      if (clsNamespace.get('dbLocalTransactionCount') > 1) {
+      if (
+        clsNamespace.get('dbLocalTransactionCount') > 1 &&
+        !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
+          controller[serviceName].constructor,
+          functionName
+        )
+      ) {
         // noinspection ExceptionCaughtLocallyJS
         throw new Error(
           serviceFunction +
@@ -202,7 +209,11 @@ export default async function tryExecuteServiceFunction(
         );
       } else if (
         clsNamespace.get('dbLocalTransactionCount') === 1 &&
-        clsNamespace.get('remoteServiceCallCount') === 1
+        clsNamespace.get('remoteServiceCallCount') === 1 &&
+        !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
+          controller[serviceName].constructor,
+          functionName
+        )
       ) {
         // noinspection ExceptionCaughtLocallyJS
         throw new Error(
