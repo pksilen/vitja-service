@@ -215,6 +215,12 @@ export default abstract class AbstractDbManager {
     });
   }
 
+  abstract deleteEntitiesBy<T extends object>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    entityClass: new () => T
+  ): Promise<void | ErrorResponse>;
+
   abstract removeSubEntities<T extends Entity>(
     _id: string,
     subEntitiesPath: string,

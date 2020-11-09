@@ -24,8 +24,11 @@ import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOpera
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
 import log, { Severity } from '../observability/logging/log';
-import addSubEntities from "./sql/operations/dml/addSubEntities";
-import getSubEntities from "./sql/operations/dql/getSubEntities";
+import addSubEntities from './sql/operations/dml/addSubEntities';
+import getSubEntities from './sql/operations/dql/getSubEntities';
+import startDbOperation from './utils/startDbOperation';
+import recordDbOperationDuration from "./utils/recordDbOperationDuration";
+import deleteEntitiesBy from "./sql/operations/dml/deleteEntitiesBy";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -328,9 +331,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations,
     shouldReturnItem = true
   ): Promise<T | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.createEntity');
-
-    const dbOperationStartTimeInMillis = Date.now();
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.createEntity');
 
     const response = createEntity(
       this,
@@ -342,12 +343,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       shouldReturnItem
     );
 
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -360,8 +356,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.addSubEntity');
-    const dbOperationStartTimeInMillis = Date.now();
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.addSubEntity');
 
     const response = addSubEntities(
       this,
@@ -374,12 +369,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       postQueryOperations
     );
 
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -392,8 +382,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.addSubEntities');
-    const dbOperationStartTimeInMillis = Date.now();
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.addSubEntities');
 
     const response = addSubEntities(
       this,
@@ -406,12 +395,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
       postQueryOperations
     );
 
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -420,17 +404,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.getEntities');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntities');
     const response = getEntities(this, filters, entityClass, postQueryOperations);
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -438,17 +414,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     filters: Partial<T> | SqlExpression[] | undefined,
     entityClass: new () => T
   ): Promise<number | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.getEntitiesCount');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntitiesCount');
     const response = getEntitiesCount(this, filters, entityClass);
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -457,17 +425,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.getEntityById');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntityById');
     const response = getEntityById(this, _id, entityClass, postQueryOperations);
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -477,17 +437,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<any | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.getSubEntity');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getSubEntity');
     const response = getSubEntities(this, _id, subEntityPath, entityClass, postQueryOperations, 'first');
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -497,17 +449,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<any | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.getSubEntities');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getSubEntities');
     const response = getSubEntities(this, _id, subEntityPath, entityClass, postQueryOperations, 'all');
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -516,17 +460,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.getEntitiesByIds');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntitiesByIds');
     const response = getEntitiesByIds(this, _ids, entityClass, postQueryOperations);
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -536,17 +472,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.getEntityBy');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntityBy');
     const response = getEntityBy(this, fieldName, fieldValue, entityClass, postQueryOperations);
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -556,17 +484,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.getEntitiesBy');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntitiesBy');
     const response = getEntitiesBy(this, fieldName, fieldValue, entityClass, postQueryOperations);
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -576,17 +496,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     shouldCheckIfItemExists: boolean = true
   ): Promise<void | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.updateEntity');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntity');
     const response = updateEntity(this, entity, entityClass, preHooks, shouldCheckIfItemExists);
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -595,17 +507,20 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.deleteEntityById');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.deleteEntityById');
     const response = deleteEntityById(this, _id, entityClass, preHooks);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
 
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+  deleteEntitiesBy<T extends object>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    entityClass: new () => T,
+  ): Promise<void | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.deleteEntitiesBy');
+    const response = deleteEntitiesBy(this, fieldName, fieldValue, entityClass);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -615,17 +530,9 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.removeSubEntities');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.removeSubEntities');
     const response = removeSubEntities(this, _id, subEntitiesPath, entityClass, preHooks);
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
@@ -636,33 +543,17 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.removeSubEntityById');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.removeSubEntityById');
     const subEntityPath = `${subEntitiesPath}[?(@.id == '${subEntityId}')]`;
     const response = this.removeSubEntities(_id, subEntityPath, entityClass, preHooks);
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
   async deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
-    log(Severity.DEBUG, 'Database manager operation', 'PostgreSqlDbManager.deleteAllEntities');
-    const dbOperationStartTimeInMillis = Date.now();
-
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.deleteAllEntities');
     const response = deleteAllEntities(this, entityClass);
-
-    const dbOperationProcessingTimeInMillis = Date.now() - dbOperationStartTimeInMillis;
-    defaultServiceMetrics.incrementDbOperationProcessingTimeInSecsBucketCounterByOne(
-      this.getDbManagerType(),
-      this.host,
-      dbOperationProcessingTimeInMillis / 1000
-    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 }

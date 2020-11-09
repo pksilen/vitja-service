@@ -318,6 +318,14 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
+  deleteEntitiesBy<T extends object>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    entityClass: new () => T
+  ): Promise<void | ErrorResponse> {
+    throw new Error();
+  }
+
   removeSubEntities<T extends Entity>(
     _id: string,
     subEntitiesPath: string,

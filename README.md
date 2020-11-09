@@ -1,15 +1,17 @@
 # Vitja service
 
 TODO:
-  - getSubEntities
+- deleteEntitiesBy, updateEntitiesBy
 - Redis sendTo
 - Kafka consumer
     - Kafka consumer span processor
     - Auth header support
 - Redis consumer
-- Create opentelemetry kafkajs plugin
+- createEntities, check that subentities id's are zero-based and subsequent unique
+- allow paging for sub entities, by limiting query within an id range
 - GDPR logging
   -audit log should go to separate server
+- Support dotted fieldname in getEntitiesBy, deleteEntitiesBy and updateEntitiesBy
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)
@@ -23,6 +25,7 @@ TODO:
    Filter : { fieldName: string, operator?: '>=' | '<=' | '!=' ..., value: any }
    -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
+   - getEntitiesByFilter, updateEntitiesByFilter, deleteEntitiesByFilter
 - @ManyToMany
 - MariaDb/MySql
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
@@ -33,6 +36,7 @@ TODO:
 - New entities: User has Friends, Posts, show posts from friends
   - GetEntitiesByIn: get Posts where userId in User's friendIds
 - Unit testaa: shouldIncludeField eri keissit
+- Create opentelemetry kafkajs plugin
 
 TODO NEXT RELEASE:
 - getDbManager support for multiple dbmanagers
