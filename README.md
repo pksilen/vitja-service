@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- updateEntitiesBy
 - Redis sendTo
 - Kafka consumer
     - Kafka consumer span processor
