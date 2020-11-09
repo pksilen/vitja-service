@@ -29,6 +29,7 @@ import getSubEntities from './sql/operations/dql/getSubEntities';
 import startDbOperation from './utils/startDbOperation';
 import recordDbOperationDuration from "./utils/recordDbOperationDuration";
 import deleteEntitiesBy from "./sql/operations/dml/deleteEntitiesBy";
+import updateEntitiesBy from "./sql/operations/dml/updateEntitiesBy";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -498,6 +499,18 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntity');
     const response = updateEntity(this, entity, entityClass, preHooks, shouldCheckIfItemExists);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  updateEntitiesBy<T extends Entity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    entity: RecursivePartial<T> & { _id: string },
+    entityClass: new () => T
+  ): Promise<void | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntitiesBy');
+    const response = updateEntitiesBy(this, fieldName, fieldValue, entity, entityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

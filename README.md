@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- deleteEntitiesBy, updateEntitiesBy
+- updateEntitiesBy
 - Redis sendTo
 - Kafka consumer
     - Kafka consumer span processor
@@ -11,7 +11,10 @@ TODO:
 - allow paging for sub entities, by limiting query within an id range
 - GDPR logging
   -audit log should go to separate server
-- Support dotted fieldname in getEntitiesBy, deleteEntitiesBy and updateEntitiesBy
+- Support dotted fieldname in getEntitiesBy
+  - deleteEntitiesBy 
+  - and updateEntitiesBy
+- redis request cache for getting multiple entities (getEntities)
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)

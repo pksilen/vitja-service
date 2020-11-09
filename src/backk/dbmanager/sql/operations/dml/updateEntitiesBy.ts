@@ -3,30 +3,37 @@ import isErrorResponse from '../../../../errors/isErrorResponse';
 import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getEntityById from '../dql/getEntityById';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getTypeMetadata from '../../../../metadata/getTypeMetadata';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/Entity';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import updateEntity from './updateEntity';
+import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
+import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
+import encrypt from '../../../../crypt/encrypt';
 
-export default async function updateEntity<T extends Entity>(
+export default async function updateEntitiesBy<T extends Entity>(
   dbManager: PostgreSqlDbManager,
+  fieldName: string,
+  fieldValue: T[keyof T],
   { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
   entityClass: new () => T,
-  preHooks?: PreHook | PreHook[],
-  shouldCheckIfItemExists: boolean = true,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   let didStartTransaction = false;
 
   try {
     const Types = dbManager.getTypes();
+    const item = {
+      [fieldName]: fieldValue
+    };
+
     if (!isRecursiveCall) {
-      await hashAndEncryptItem(restOfItem, entityClass as any, Types);
+      if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
+        (item as any)[fieldName] = encrypt(fieldValue as any, false);
+      }
     }
 
     if (
@@ -39,11 +46,6 @@ export default async function updateEntity<T extends Entity>(
       dbManager
         .getClsNamespace()
         ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
-    }
-
-    if (shouldCheckIfItemExists) {
-      const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
-      await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     }
 
     const entityMetadata = getTypeMetadata(entityClass as any);
@@ -60,7 +62,8 @@ export default async function updateEntity<T extends Entity>(
 
         let baseFieldTypeName = fieldTypeName;
         let isArray = false;
-        const foreignIdFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+        const foreignIdFieldName =
+          entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
         const idFieldName = _id === undefined ? 'id' : '_id';
 
         if (fieldTypeName.endsWith('[]')) {
@@ -75,13 +78,12 @@ export default async function updateEntity<T extends Entity>(
         ) {
           promises.push(
             forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
-              subItem[foreignIdFieldName] = _id;
-              const possibleErrorResponse = await updateEntity(
+              const possibleErrorResponse = await updateEntitiesBy(
                 dbManager,
+                foreignIdFieldName,
+                _id ?? restOfItem.id,
                 subItem,
                 (Types as any)[baseFieldTypeName],
-                undefined,
-                false,
                 true
               );
 
@@ -94,14 +96,12 @@ export default async function updateEntity<T extends Entity>(
           baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
           baseFieldTypeName[0] !== '('
         ) {
-          const subItem = (restOfItem as any)[fieldName];
-          subItem[foreignIdFieldName] = _id;
-          const possibleErrorResponse = await updateEntity(
+          const possibleErrorResponse = await updateEntitiesBy(
             dbManager,
-            subItem,
+            foreignIdFieldName,
+            _id ?? restOfItem.id,
+            (restOfItem as any)[fieldName],
             (Types as any)[baseFieldTypeName],
-            undefined,
-            false,
             true
           );
 
@@ -118,11 +118,11 @@ export default async function updateEntity<T extends Entity>(
           promises.push(
             forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any, index) => {
               const deleteStatement = `DELETE FROM ${dbManager.schema}.${entityClass.name +
-                fieldName.slice(0, -1)} WHERE ${foreignIdFieldName} = $1`;
+                fieldName.slice(0, -1)} WHERE ${idFieldName} = $1`;
               await dbManager.tryExecuteSql(deleteStatement, [_id]);
 
               const insertStatement = `INSERT INTO ${dbManager.schema}.${entityClass.name +
-                fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
+                fieldName.slice(0, -1)} (id, ${idFieldName}, ${fieldName.slice(
                 0,
                 -1
               )}) VALUES(${index}, $1, $2)`;
@@ -142,21 +142,11 @@ export default async function updateEntity<T extends Entity>(
       .map((fieldName: string, index: number) => fieldName + ' = ' + `$${index + 2}`)
       .join(', ');
 
-    const idFieldName = _id === undefined ? 'id' : '_id';
-
-    const numericId = parseInt(_id === undefined ? restOfItem.id ?? 0 : (_id as any), 10);
-    if (isNaN(numericId)) {
-      // noinspection ExceptionCaughtLocallyJS
-      throw new Error(
-        createErrorMessageWithStatusCode(entityClass.name + '.' + idFieldName + ': must be a numeric id', 400)
-      );
-    }
-
     if (setStatements) {
       promises.push(
         dbManager.tryExecuteSql(
-          `UPDATE ${dbManager.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
-          [numericId, ...values]
+          `UPDATE ${dbManager.schema}.${entityClass.name} SET ${setStatements} WHERE ${fieldName} = $1`,
+          [(item as any)[fieldName], ...values]
         )
       );
     }

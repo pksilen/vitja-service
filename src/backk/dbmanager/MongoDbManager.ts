@@ -297,6 +297,15 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
+  updateEntitiesBy<T extends Entity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    entity: RecursivePartial<T> & { _id: string },
+    entityClass: new () => T
+  ): Promise<void | ErrorResponse> {
+    throw new Error();
+  }
+
   async deleteEntityById<T>(
     _id: string,
     entityClass: new () => T,

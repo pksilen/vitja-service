@@ -188,6 +188,13 @@ export default abstract class AbstractDbManager {
     });
   }
 
+  abstract updateEntitiesBy<T extends Entity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    entity: RecursivePartial<T> & { _id: string },
+    entityClass: new () => T
+  ): Promise<void | ErrorResponse>;
+
   abstract deleteEntityById<T extends object>(
     _id: string,
     entityClass: new () => T,
