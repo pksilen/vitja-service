@@ -44,6 +44,9 @@ class DefaultServiceMetrics {
   private readonly kafkaConsumerRequestTimeoutCounter: BoundCounter;
   private readonly kafkaConsumerOffsetLagRecorder: ValueRecorder;
 
+  private readonly redisConsumerErrorCounter: BoundCounter;
+  private readonly redisConsumerQueueLengthRecorder: ValueRecorder;
+
   private readonly remoteServiceCallCounter: Counter;
   private readonly remoteServiceCallErrorCounter: Counter;
   private readonly syncRemoteServiceHttp5xxErrorResponseCounter: Counter;
@@ -131,6 +134,16 @@ class DefaultServiceMetrics {
         description: 'Number of synchronous (HTTP) remote service call authorization failures'
       }
     );
+
+    this.redisConsumerErrorCounter = meter
+      .createCounter('redis_consumer_error_count', {
+        description: 'Number of Redis consumer errors'
+      })
+      .bind(this.defaultLabels);
+
+    this.redisConsumerQueueLengthRecorder = meter.createValueRecorder('redis_consumer_queue_length', {
+      description: 'Length of Redis consumer queue'
+    });
   }
 
   incrementServiceFunctionCallsByOne(serviceFunction: string) {
@@ -226,6 +239,14 @@ class DefaultServiceMetrics {
 
   incrementHttpClientErrorCounter(serviceFunction: string) {
     this.httpClientErrorCounter.bind({ ...this.defaultLabels, serviceFunction }).add(1);
+  }
+
+  incrementRedisConsumerErrorCounteByOne() {
+    this.redisConsumerErrorCounter.add(1);
+  }
+
+  recordRedisConsumerQueueLength(queueLength: number) {
+    this.redisConsumerQueueLengthRecorder.bind(this.defaultLabels).record(queueLength);
   }
 }
 

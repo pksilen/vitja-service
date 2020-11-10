@@ -2,7 +2,6 @@
 
 TODO:
 - Redis consumer
-  - Error log entries
   - Metrics (queue length)
 - createEntities, check that subentities id's are zero-based and subsequent unique
 - GDPR logging
