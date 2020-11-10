@@ -5,6 +5,7 @@ import createErrorResponseFromError from '../../errors/createErrorResponseFromEr
 import isErrorResponse from '../../errors/isErrorResponse';
 import getRemoteResponseTestValue from '../../metadata/getRemoteResponseTestValue';
 import { getNamespace } from 'cls-hooked';
+import defaultServiceMetrics from "../../observability/metrics/defaultServiceMetrics";
 
 export interface HttpRequestOptions {
   httpMethod?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -19,6 +20,7 @@ export default async function call<T>(
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
   log(Severity.DEBUG, 'Call sync remote service', '', { remoteServiceFunctionCallUrl });
+  defaultServiceMetrics.incrementSyncRemoteServiceCallCountByOne(remoteServiceFunctionCallUrl);
 
   if (
     process.env.NODE_ENV === 'development' &&

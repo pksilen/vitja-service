@@ -38,6 +38,7 @@ class DefaultServiceMetrics {
   private readonly kafkaConsumerErrorCounter: BoundCounter;
   private readonly kafkaConsumerRequestTimeoutCounter: BoundCounter;
   private readonly kafkaConsumerOffsetLagRecorder: ValueRecorder;
+  private readonly syncRemoteServiceCallCounter: Counter;
 
   constructor(private readonly meter: Meter) {
     this.allServiceFunctionCallCounter = meter
@@ -94,6 +95,10 @@ class DefaultServiceMetrics {
 
     this.kafkaConsumerOffsetLagRecorder = meter.createValueRecorder('kafka_consumer_offset_lag', {
       description: 'Kafka consumer offset lag'
+    });
+
+    this.syncRemoteServiceCallCounter = meter.createCounter('sync_remote_service_calls', {
+      description: 'Number of synchronous (HTTP) remote service calls'
     });
   }
 
@@ -168,6 +173,10 @@ class DefaultServiceMetrics {
 
   recordKafkaConsumerOffsetLag(partition: any, offsetLag: number) {
     this.kafkaConsumerOffsetLagRecorder.bind({ ...this.defaultLabels, partition }).record(offsetLag);
+  }
+
+  incrementSyncRemoteServiceCallCountByOne(remoteServiceUrl: string) {
+    this.syncRemoteServiceCallCounter.bind({ ...this.defaultLabels, remoteServiceUrl }).add(1);
   }
 }
 
