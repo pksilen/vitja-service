@@ -34,6 +34,7 @@ class DefaultServiceMetrics {
 
   private readonly authorizationFailureCounter: BoundCounter;
   private readonly http5xxErrorCounter: BoundCounter;
+  private readonly httpClientErrorCounter: Counter;
 
   private readonly dbOperationErrorCounter: Counter;
   private readonly dbFailureDurationInSecsRecorder: ValueRecorder;
@@ -70,6 +71,10 @@ class DefaultServiceMetrics {
         description: 'Number of HTTP 5xx errors'
       })
       .bind(this.defaultLabels);
+
+    this.httpClientErrorCounter = meter.createCounter('http_client_errors', {
+      description: 'Number of HTTP client errors'
+    });
 
     this.dbOperationErrorCounter = meter.createCounter('db_operation_errors', {
       description: 'Number of database operation errors'
@@ -217,6 +222,10 @@ class DefaultServiceMetrics {
 
   incrementSyncRemoteServiceCallAuthFailureCounter(remoteServiceUrl: string) {
     this.syncRemoteServiceCallAuthFailureCounter.bind({ ...this.defaultLabels, remoteServiceUrl }).add(1);
+  }
+
+  incrementHttpClientErrorCounter(serviceFunction: string) {
+    this.httpClientErrorCounter.bind({ ...this.defaultLabels, serviceFunction }).add(1);
   }
 }
 

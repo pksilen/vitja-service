@@ -18,6 +18,7 @@ import defaultServiceMetrics from '../observability/metrics/defaultServiceMetric
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
 import log, { Severity } from '../observability/logging/log';
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import { HttpStatusCodes } from '../constants/constants';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -242,8 +243,10 @@ export default async function tryExecuteServiceFunction(
   });
 
   if (response && isErrorResponse(response)) {
-    if (response.statusCode >= 500) {
+    if (response.statusCode >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {
       defaultServiceMetrics.incrementHttp5xxErrorsByOne();
+    } else if (response.statusCode >= HttpStatusCodes.CLIENT_ERRORS_START) {
+      defaultServiceMetrics.incrementHttpClientErrorCounter(serviceFunction);
     }
     throw new HttpException(response, response.statusCode);
   }
@@ -263,7 +266,6 @@ export default async function tryExecuteServiceFunction(
   }
 
   const serviceFunctionProcessingTimeInMillis = Date.now() - serviceFunctionCallStartTimeInMillis;
-
   defaultServiceMetrics.incrementServiceFunctionProcessingTimeInSecsBucketCounterByOne(
     serviceFunction,
     serviceFunctionProcessingTimeInMillis / 1000

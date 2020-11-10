@@ -2,7 +2,6 @@
 
 TODO:
 - Kafka consumer
-    - admin client instrumentation?
     - Send failed service execution related message back to message queue
 - Redis producer metrics
 - Redis consumer

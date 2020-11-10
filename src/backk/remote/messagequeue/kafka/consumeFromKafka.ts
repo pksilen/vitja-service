@@ -141,7 +141,7 @@ export default async function consumeFromKafka(
     await forEachAsyncParallel(additionalTopics ?? [], async (topic) => await consumer.subscribe({ topic }));
     await consumer.run({
       eachMessage: async ({ message: { key, value, headers } }) => {
-        await tryExecuteServiceFunction(
+        const response = await tryExecuteServiceFunction(
           controller,
           key.toString(),
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

@@ -46,7 +46,7 @@ export default async function call<T>(
 
     const responseBody = await response.json();
 
-    if (response.status >= HttpStatusCodes.FAILURES_START) {
+    if (response.status >= HttpStatusCodes.ERRORS_START) {
       const errorMessage = isErrorResponse(responseBody)
         ? responseBody.errorMessage
         : JSON.stringify(responseBody);
