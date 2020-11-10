@@ -1,16 +1,16 @@
-import { CompressionTypes, Kafka, Producer, Transaction } from "kafkajs";
-import getServiceName from "../../../utils/getServiceName";
-import { getNamespace } from "cls-hooked";
-import tracerProvider from "../../../observability/distributedtracinig/tracerProvider";
-import forEachAsyncSequential from "../../../utils/forEachAsyncSequential";
-import { Send } from "../sendInsideTransaction";
-import log, { Severity } from "../../../observability/logging/log";
-import { CanonicalCode } from "@opentelemetry/api";
-import createErrorResponseFromError from "../../../errors/createErrorResponseFromError";
-import parseRemoteServiceUrlParts from "../../utils/parseRemoteServiceUrlParts";
-import { ErrorResponse } from "../../../types/ErrorResponse";
-import minimumLoggingSeverityToKafkaLoggingLevelMap from "./minimumLoggingSeverityToKafkaLoggingLevelMap";
-import logCreator from "./logCreator";
+import { CompressionTypes, Kafka, Producer, Transaction } from 'kafkajs';
+import getServiceName from '../../../utils/getServiceName';
+import { getNamespace } from 'cls-hooked';
+import tracerProvider from '../../../observability/distributedtracinig/tracerProvider';
+import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
+import { Send } from '../sendInsideTransaction';
+import log, { Severity } from '../../../observability/logging/log';
+import { CanonicalCode } from '@opentelemetry/api';
+import createErrorResponseFromError from '../../../errors/createErrorResponseFromError';
+import parseRemoteServiceUrlParts from '../../utils/parseRemoteServiceUrlParts';
+import { ErrorResponse } from '../../../types/ErrorResponse';
+import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
+import logCreator from './logCreator';
 
 const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
 
@@ -37,7 +37,7 @@ export default async function sendOneOrMoreToKafka(
 
   const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
   const kafkaClient = kafkaBrokerToKafkaClientMap[broker];
-  const producer = kafkaClient.producer();
+  const producer = kafkaClient.producer(isTransactional ? { maxInFlightRequests: 1, idempotent: true } : {});
   let transaction;
   const producerConnectSpan = tracerProvider.getTracer('default').startSpan('kafkajs.producer.connect');
   let transactionSpan;
@@ -82,7 +82,9 @@ export default async function sendOneOrMoreToKafka(
           await producerOrTransaction.send({
             topic,
             compression: options?.compressionType ?? CompressionTypes.None,
-            acks: options?.sendAcknowledgementType ?? SendAcknowledgementType.ALL_REPLICAS,
+            acks: isTransactional
+              ? SendAcknowledgementType.ALL_REPLICAS
+              : options?.sendAcknowledgementType ?? SendAcknowledgementType.ALL_REPLICAS,
             messages: [
               {
                 key: serviceFunction,
