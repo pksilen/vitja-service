@@ -61,6 +61,7 @@ export default async function consumeFromKafka(controller: any, remoteServiceUrl
   });
 
   consumer.on(consumer.events.FETCH_START, () => {
+    log(Severity.DEBUG, 'Kafka: started fetch messages from broker', '');
     fetchSpan = tracerProvider.getTracer('default').startSpan('kafkajs.consumer.FETCH_START');
     hasFetchError = false;
     fetchSpan.setAttribute('component', 'kafkajs');
@@ -68,8 +69,9 @@ export default async function consumeFromKafka(controller: any, remoteServiceUrl
     fetchSpan.setAttribute('peer.address', broker);
   });
 
-  consumer.on(consumer.events.FETCH, ({numberOfBatches}) => {
-    fetchSpan?.setAttribute('kafka.consumer.fetch.numberOfBatches', numberOfBatches);
+  consumer.on(consumer.events.FETCH, (event) => {
+    log(Severity.DEBUG, 'Kafka: finished fetching messages from broker', '', event);
+    fetchSpan?.setAttribute('kafka.consumer.fetch.numberOfBatches', event.numberOfBatches);
     if (!hasFetchError) {
       fetchSpan?.setStatus({
         code: CanonicalCode.OK
@@ -77,6 +79,14 @@ export default async function consumeFromKafka(controller: any, remoteServiceUrl
     }
     fetchSpan?.end();
     fetchSpan = undefined;
+  });
+
+  consumer.on(consumer.events.START_BATCH_PROCESS, (event) => {
+   log(Severity.DEBUG, 'Kafka: started processing batch of messages', '', event);
+  });
+
+  consumer.on(consumer.events.END_BATCH_PROCESS, (event) => {
+    log(Severity.DEBUG, 'Kafka: finished processing batch of messages', '', event);
   });
 
   try {
