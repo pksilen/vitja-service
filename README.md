@@ -2,9 +2,9 @@
 
 TODO:
 - Kafka consumer
-    - Kafka consumer span processor
     - Metrics (consumedMessageCount etc.., change httpRequestCount to serviceCallCount)
       - record per each service function also
+    - Remote service metrics
     - Send failed service execution related message back to message queue
     - create topics (NUM_PARTITIONS=3, REPLICACOUNT=3 or from env variables)
 - Kafka producer metrics
@@ -13,7 +13,6 @@ TODO:
 - Redis consumer
 - Redis consumer metrics
 - createEntities, check that subentities id's are zero-based and subsequent unique
-- allow paging for sub entities, by limiting query within an id range
 - GDPR logging
   -audit log should go to separate server
 - Support dotted fieldname in getEntitiesBy
@@ -35,6 +34,7 @@ TODO:
    -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
    - getEntitiesByFilter, updateEntitiesByFilter, deleteEntitiesByFilter
+- allow paging for sub entities, by limiting query within an id range
 - @ManyToMany
 - MariaDb/MySql
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany

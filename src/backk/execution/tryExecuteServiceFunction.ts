@@ -34,7 +34,8 @@ export default async function tryExecuteServiceFunction(
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
   log(Severity.DEBUG, 'Service function call', serviceFunction);
-  defaultServiceMetrics.incrementHttpRequestsByOne();
+  defaultServiceMetrics.incrementServiceFunctionCallsByOne(serviceFunction);
+
   const serviceFunctionCallStartTimeInMillis = Date.now();
   const [serviceName, functionName] = serviceFunction.split('.');
 

@@ -27,7 +27,8 @@ class DefaultServiceMetrics {
   ];
 
   private readonly defaultLabels = { pid: process.pid.toString() };
-  private readonly httpRequestCounter: BoundCounter;
+  private readonly allServiceFunctionCallCounter: BoundCounter;
+  private readonly serviceFunctionCallCounter: Counter;
   private readonly authorizationFailureCounter: BoundCounter;
   private readonly http5xxErrorCounter: BoundCounter;
   private readonly dbOperationErrorCounter: Counter;
@@ -36,11 +37,16 @@ class DefaultServiceMetrics {
   private readonly dbOperationProcessingTimeCounter: Counter;
 
   constructor(private readonly meter: Meter) {
-    this.httpRequestCounter = meter
-      .createCounter('http_requests', {
-        description: 'Number of HTTP requests'
+    this.allServiceFunctionCallCounter = meter
+      .createCounter('all_service_function_calls', {
+        description: 'Number of all service function calls'
       })
       .bind(this.defaultLabels);
+
+    this.serviceFunctionCallCounter = meter
+      .createCounter('service_function_calls', {
+        description: 'Number of service function calls'
+      })
 
     this.authorizationFailureCounter = meter
       .createCounter('authorization_failures', {
@@ -73,8 +79,9 @@ class DefaultServiceMetrics {
     });
   }
 
-  incrementHttpRequestsByOne() {
-    this.httpRequestCounter.add(1);
+  incrementServiceFunctionCallsByOne(serviceFunction: string) {
+    this.allServiceFunctionCallCounter.add(1);
+    this.serviceFunctionCallCounter.bind({...this.defaultLabels, serviceFunction }).add(1);
   }
 
   incrementAuthorizationFailuresByOne() {
