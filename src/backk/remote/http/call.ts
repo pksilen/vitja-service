@@ -5,7 +5,7 @@ import createErrorResponseFromError from '../../errors/createErrorResponseFromEr
 import isErrorResponse from '../../errors/isErrorResponse';
 import getRemoteResponseTestValue from '../../metadata/getRemoteResponseTestValue';
 import { getNamespace } from 'cls-hooked';
-import defaultServiceMetrics from "../../observability/metrics/defaultServiceMetrics";
+import defaultServiceMetrics from '../../observability/metrics/defaultServiceMetrics';
 
 export interface HttpRequestOptions {
   httpMethod?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -58,6 +58,9 @@ export default async function call<T>(
           statusCode: response.status,
           remoteServiceFunctionCallUrl
         });
+        defaultServiceMetrics.incrementSyncRemoteServiceHttp5xxErrorResponseCounter(
+          remoteServiceFunctionCallUrl
+        );
       } else {
         log(Severity.DEBUG, errorMessage, stackTrace, {
           errorCode,
