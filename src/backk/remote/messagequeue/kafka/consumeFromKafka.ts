@@ -89,6 +89,10 @@ export default async function consumeFromKafka(controller: any, remoteServiceUrl
     log(Severity.DEBUG, 'Kafka: finished processing batch of messages', '', event);
   });
 
+  consumer.on(consumer.events.COMMIT_OFFSETS, (event) => {
+    log(Severity.DEBUG, 'Kafka: committed offsets', '', event);
+  });
+
   try {
     await consumer.connect();
     await consumer.subscribe({ topic });
