@@ -21,7 +21,7 @@ export default async function call<T>(
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
   log(Severity.DEBUG, 'Call sync remote service', '', { remoteServiceFunctionCallUrl });
-  defaultServiceMetrics.incrementSyncRemoteServiceCallCountByOne(remoteServiceFunctionCallUrl);
+  defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceFunctionCallUrl);
 
   if (
     process.env.NODE_ENV === 'development' &&
@@ -90,7 +90,7 @@ export default async function call<T>(
     return responseBody;
   } catch (error) {
     log(Severity.ERROR, error.message, error.stack, { remoteServiceFunctionCallUrl });
-    defaultServiceMetrics.incrementSyncRemoteServiceCallErrorCountByOne(remoteServiceFunctionCallUrl);
+    defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(remoteServiceFunctionCallUrl);
     return createErrorResponseFromError(error);
   }
 }

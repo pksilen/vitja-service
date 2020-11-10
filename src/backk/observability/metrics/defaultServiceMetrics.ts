@@ -27,19 +27,24 @@ class DefaultServiceMetrics {
   ];
 
   private readonly defaultLabels = { pid: process.pid.toString() };
+
   private readonly allServiceFunctionCallCounter: BoundCounter;
   private readonly serviceFunctionCallCounter: Counter;
+  private readonly serviceFunctionProcessingTimeCounter: Counter;
+
   private readonly authorizationFailureCounter: BoundCounter;
   private readonly http5xxErrorCounter: BoundCounter;
+
   private readonly dbOperationErrorCounter: Counter;
   private readonly dbFailureDurationInSecsRecorder: ValueRecorder;
-  private readonly serviceFunctionProcessingTimeCounter: Counter;
   private readonly dbOperationProcessingTimeCounter: Counter;
+
   private readonly kafkaConsumerErrorCounter: BoundCounter;
   private readonly kafkaConsumerRequestTimeoutCounter: BoundCounter;
   private readonly kafkaConsumerOffsetLagRecorder: ValueRecorder;
-  private readonly syncRemoteServiceCallCounter: Counter;
-  private readonly syncRemoteServiceCallErrorCounter: Counter;
+
+  private readonly remoteServiceCallCounter: Counter;
+  private readonly remoteServiceCallErrorCounter: Counter;
   private readonly syncRemoteServiceHttp5xxErrorResponseCounter: Counter;
   private readonly syncRemoteServiceCallAuthFailureCounter: Counter;
 
@@ -100,12 +105,12 @@ class DefaultServiceMetrics {
       description: 'Kafka consumer offset lag'
     });
 
-    this.syncRemoteServiceCallCounter = meter.createCounter('sync_remote_service_calls', {
-      description: 'Number of synchronous (HTTP) remote service calls'
+    this.remoteServiceCallCounter = meter.createCounter('remote_service_calls', {
+      description: 'Number of remote service calls'
     });
 
-    this.syncRemoteServiceCallErrorCounter = meter.createCounter('sync_remote_service_call_errors', {
-      description: 'Number of synchronous (HTTP) remote service call errors'
+    this.remoteServiceCallErrorCounter = meter.createCounter('remote_service_call_errors', {
+      description: 'Number of remote service call errors'
     });
 
     this.syncRemoteServiceHttp5xxErrorResponseCounter = meter.createCounter(
@@ -196,12 +201,12 @@ class DefaultServiceMetrics {
     this.kafkaConsumerOffsetLagRecorder.bind({ ...this.defaultLabels, partition }).record(offsetLag);
   }
 
-  incrementSyncRemoteServiceCallCountByOne(remoteServiceUrl: string) {
-    this.syncRemoteServiceCallCounter.bind({ ...this.defaultLabels, remoteServiceUrl }).add(1);
+  incrementRemoteServiceCallCountByOne(remoteServiceUrl: string) {
+    this.remoteServiceCallCounter.bind({ ...this.defaultLabels, remoteServiceUrl }).add(1);
   }
 
-  incrementSyncRemoteServiceCallErrorCountByOne(remoteServiceUrl: string) {
-    this.syncRemoteServiceCallErrorCounter.bind({ ...this.defaultLabels, remoteServiceUrl }).add(1);
+  incrementRemoteServiceCallErrorCountByOne(remoteServiceUrl: string) {
+    this.remoteServiceCallErrorCounter.bind({ ...this.defaultLabels, remoteServiceUrl }).add(1);
   }
 
   incrementSyncRemoteServiceHttp5xxErrorResponseCounter(remoteServiceUrl: string) {

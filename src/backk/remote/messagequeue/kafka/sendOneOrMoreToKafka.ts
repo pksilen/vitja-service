@@ -11,6 +11,7 @@ import parseRemoteServiceUrlParts from '../../utils/parseRemoteServiceUrlParts';
 import { ErrorResponse } from '../../../types/ErrorResponse';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
 import logCreator from './logCreator';
+import defaultServiceMetrics from "../../../observability/metrics/defaultServiceMetrics";
 
 const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
 
@@ -79,6 +80,8 @@ export default async function sendOneOrMoreToKafka(
         span.setAttribute('kafka.producer.message.key', serviceFunction);
 
         try {
+          defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceUrl);
+
           await producerOrTransaction.send({
             topic,
             compression: options?.compressionType ?? CompressionTypes.None,
@@ -93,11 +96,13 @@ export default async function sendOneOrMoreToKafka(
               }
             ]
           });
+
           span.setStatus({
             code: CanonicalCode.OK
           });
         } catch (error) {
           log(Severity.ERROR, error.message, error.stack, { remoteServiceUrl, serviceFunction });
+          defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(remoteServiceUrl);
           span.setStatus({
             code: CanonicalCode.UNKNOWN,
             message: error.message
