@@ -1,32 +1,24 @@
-import { CompressionTypes, Kafka, logLevel, Producer, Transaction } from 'kafkajs';
-import getServiceName from '../../../utils/getServiceName';
-import { getNamespace } from 'cls-hooked';
-import tracerProvider from '../../../observability/distributedtracinig/tracerProvider';
-import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
-import { Send } from '../sendInsideTransaction';
-import log, { Severity, severityNameToSeverityMap } from '../../../observability/logging/log';
-import { CanonicalCode } from '@opentelemetry/api';
-import createErrorResponseFromError from '../../../errors/createErrorResponseFromError';
-import parseRemoteServiceUrlParts from '../../utils/parseRemoteServiceUrlParts';
-import { ErrorResponse } from '../../../types/ErrorResponse';
+import { CompressionTypes, Kafka, Producer, Transaction } from "kafkajs";
+import getServiceName from "../../../utils/getServiceName";
+import { getNamespace } from "cls-hooked";
+import tracerProvider from "../../../observability/distributedtracinig/tracerProvider";
+import forEachAsyncSequential from "../../../utils/forEachAsyncSequential";
+import { Send } from "../sendInsideTransaction";
+import log, { Severity } from "../../../observability/logging/log";
+import { CanonicalCode } from "@opentelemetry/api";
+import createErrorResponseFromError from "../../../errors/createErrorResponseFromError";
+import parseRemoteServiceUrlParts from "../../utils/parseRemoteServiceUrlParts";
+import { ErrorResponse } from "../../../types/ErrorResponse";
+import minimumLoggingSeverityToKafkaLoggingLevelMap from "./minimumLoggingSeverityToKafkaLoggingLevelMap";
+import logCreator from "./logCreator";
 
 const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
-
-const minimumLoggingSeverityToKafkaLoggingLevelMap: { [key: string]: number } = {
-  DEBUG: logLevel.DEBUG,
-  INFO: logLevel.INFO,
-  WARN: logLevel.WARN,
-  ERROR: logLevel.ERROR
-};
 
 export enum SendAcknowledgementType {
   NONE,
   LEADER_ONLY,
   ALL_REPLICAS
 }
-
-const logCreator = () => ({ label, log: { message, ...extra } }: any) =>
-  log(severityNameToSeverityMap[label], 'Message queue error', message, extra);
 
 export default async function sendOneOrMoreToKafka(
   sends: Send[],

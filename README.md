@@ -1,11 +1,19 @@
 # Vitja service
 
 TODO:
-- Redis sendTo
 - Kafka consumer
     - Kafka consumer span processor
     - Auth header support
+    - Debug logging
+    - Error logging
+    - Metrics (consumedMessageCount etc..)
+    - Send failed service execution related message back to message queue
+    - create topics (NUM_PARTITIONS=3, REPLICACOUNT=3 or from env variables)
+- Kafka producer metrics
+- Kafka consumer metrics
+- Redis producer metrics
 - Redis consumer
+- Redis consumer metrics
 - createEntities, check that subentities id's are zero-based and subsequent unique
 - allow paging for sub entities, by limiting query within an id range
 - GDPR logging
@@ -14,6 +22,7 @@ TODO:
   - deleteEntitiesBy 
   - and updateEntitiesBy
 - redis request cache for getting multiple entities (getEntities)
+  - if GET method used, set appropriate HTTP response cache headers
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)
