@@ -3,8 +3,6 @@
 TODO:
 - Kafka consumer
     - Kafka consumer span processor
-    - Debug logging
-    - Error logging
     - Metrics (consumedMessageCount etc.., change httpRequestCount to serviceCallCount)
       - record per each service function also
     - Send failed service execution related message back to message queue

@@ -76,7 +76,7 @@ export default async function sendOneOrMoreToKafka(
         span.setAttribute('span.kind', 'CLIENT');
         span.setAttribute('peer.address', broker);
         span.setAttribute('kafka.topic', topic);
-        span.setAttribute('kafka.message.key', serviceFunction);
+        span.setAttribute('kafka.producer.message.key', serviceFunction);
 
         try {
           await producerOrTransaction.send({
