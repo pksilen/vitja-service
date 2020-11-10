@@ -2,7 +2,7 @@ import consumeFromKafka from "./kafka/consumeFromKafka";
 
 export default async function consumeFrom(
   controller: any,
-  remoteServiceUrl: string
+  broker: string
 ) {
-  consumeFromKafka(controller, remoteServiceUrl);
+  consumeFromKafka(controller, broker);
 }

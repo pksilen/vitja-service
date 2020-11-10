@@ -1,17 +1,20 @@
 import { Kafka } from 'kafkajs';
 import getServiceName from '../../../utils/getServiceName';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
-import parseRemoteServiceUrlParts from '../../utils/parseRemoteServiceUrlParts';
 import logCreator from './logCreator';
 import tryExecuteServiceFunction from '../../../execution/tryExecuteServiceFunction';
 import tracerProvider from '../../../observability/distributedtracinig/tracerProvider';
 import log, { Severity } from '../../../observability/logging/log';
-import { CanonicalCode, Span } from "@opentelemetry/api";
-import defaultServiceMetrics from "../../../observability/metrics/defaultServiceMetrics";
+import { CanonicalCode, Span } from '@opentelemetry/api';
+import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
+import forEachAsyncParallel from '../../../utils/forEachAsyncParallel';
 
-export default async function consumeFromKafka(controller: any, remoteServiceUrl: string) {
-  const { broker, topic } = parseRemoteServiceUrlParts(remoteServiceUrl);
-
+export default async function consumeFromKafka(
+  controller: any,
+  broker: string,
+  defaultTopic?: string,
+  additionalTopics?: string[]
+) {
   const kafkaClient = new Kafka({
     clientId: getServiceName(),
     logLevel: minimumLoggingSeverityToKafkaLoggingLevelMap[process.env.LOG_LEVEL ?? 'INFO'],
@@ -85,7 +88,7 @@ export default async function consumeFromKafka(controller: any, remoteServiceUrl
   });
 
   consumer.on(consumer.events.START_BATCH_PROCESS, (event) => {
-   log(Severity.DEBUG, 'Kafka: started processing batch of messages', '', event);
+    log(Severity.DEBUG, 'Kafka: started processing batch of messages', '', event);
   });
 
   consumer.on(consumer.events.END_BATCH_PROCESS, (event) => {
@@ -99,7 +102,8 @@ export default async function consumeFromKafka(controller: any, remoteServiceUrl
 
   try {
     await consumer.connect();
-    await consumer.subscribe({ topic });
+    await consumer.subscribe({ topic: defaultTopic ?? getServiceName() });
+    await forEachAsyncParallel(additionalTopics ?? [], async (topic) => await consumer.subscribe({ topic }));
     await consumer.run({
       eachMessage: async ({ message: { key, value, headers } }) => {
         await tryExecuteServiceFunction(
