@@ -13,6 +13,16 @@ export default async function consumeFromKafka(
   controller: any,
   broker: string,
   defaultTopic?: string,
+  defaultTopicConfig = {
+    numPartitions: parseInt(process.env.KAFKA_DEFAULT_TOPIC_NUM_PARTITIONS ?? '3'),
+    replicationFactor: parseInt(process.env.KAFKA_DEFAULT_TOPIC_REPLICATION_FACTOR ?? '3'),
+    configEntries: [
+      {
+        name: 'retention.ms',
+        value: parseInt(process.env.KAFKA_DEFAULT_TOPIC_RETENTION_MS ?? (5 * 60 * 1000).toString())
+      }
+    ]
+  },
   additionalTopics?: string[]
 ) {
   const kafkaClient = new Kafka({
@@ -100,9 +110,23 @@ export default async function consumeFromKafka(
     log(Severity.DEBUG, 'Kafka: committed offsets', '', event);
   });
 
+  const admin = kafkaClient.admin();
+  const topic = defaultTopic ?? getServiceName();
+
   try {
+    await admin.connect();
+    await admin.createTopics({
+      topics: [
+        {
+          topic,
+          ...defaultTopicConfig
+        }
+      ]
+    });
+    await admin.disconnect();
+
     await consumer.connect();
-    await consumer.subscribe({ topic: defaultTopic ?? getServiceName() });
+    await consumer.subscribe({ topic });
     await forEachAsyncParallel(additionalTopics ?? [], async (topic) => await consumer.subscribe({ topic }));
     await consumer.run({
       eachMessage: async ({ message: { key, value, headers } }) => {
@@ -120,6 +144,7 @@ export default async function consumeFromKafka(
   } finally {
     try {
       await consumer.disconnect();
+      await admin.disconnect();
     } catch {
       // NOOP
     }
