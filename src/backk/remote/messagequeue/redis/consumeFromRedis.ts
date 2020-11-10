@@ -5,11 +5,13 @@ import isErrorResponse from '../../../errors/isErrorResponse';
 import { ErrorResponse } from '../../../types/ErrorResponse';
 import { HttpStatusCodes } from '../../../constants/constants';
 import sendTo from '../sendTo';
+import log, { Severity } from "../../../observability/logging/log";
 
 export default async function consumeFromRedis(controller: any, broker: string, topic = getServiceName()) {
   const redis = new Redis(broker);
 
   try {
+    log(Severity.DEBUG, 'Redis: consume message from queue', '', { broker, topic });
     const valueJson = await redis.lpop(topic);
     const { serviceFunction, serviceFunctionArgument, headers } = JSON.parse(valueJson);
 

@@ -2,10 +2,9 @@
 
 TODO:
 - Redis consumer
-  - Basic functionality
   - Debug log entries
   - Error log entries
-  - Metrics
+  - Metrics (queue length)
 - createEntities, check that subentities id's are zero-based and subsequent unique
 - GDPR logging
   -audit log should go to separate server

@@ -1,18 +1,17 @@
-import { Kafka } from 'kafkajs';
-import getServiceName from '../../../utils/getServiceName';
-import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
-import logCreator from './logCreator';
-import tryExecuteServiceFunction from '../../../execution/tryExecuteServiceFunction';
-import tracerProvider from '../../../observability/distributedtracinig/tracerProvider';
-import log, { Severity } from '../../../observability/logging/log';
-import { CanonicalCode, Span } from '@opentelemetry/api';
-import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
-import forEachAsyncParallel from '../../../utils/forEachAsyncParallel';
-import isErrorResponse from '../../../errors/isErrorResponse';
-import { ErrorResponse } from '../../../types/ErrorResponse';
-import { HttpStatusCodes } from '../../../constants/constants';
-import sendInsideTransaction from '../sendInsideTransaction';
-import sendTo from '../sendTo';
+import { Kafka } from "kafkajs";
+import getServiceName from "../../../utils/getServiceName";
+import minimumLoggingSeverityToKafkaLoggingLevelMap from "./minimumLoggingSeverityToKafkaLoggingLevelMap";
+import logCreator from "./logCreator";
+import tryExecuteServiceFunction from "../../../execution/tryExecuteServiceFunction";
+import tracerProvider from "../../../observability/distributedtracinig/tracerProvider";
+import log, { Severity } from "../../../observability/logging/log";
+import { CanonicalCode, Span } from "@opentelemetry/api";
+import defaultServiceMetrics from "../../../observability/metrics/defaultServiceMetrics";
+import forEachAsyncParallel from "../../../utils/forEachAsyncParallel";
+import isErrorResponse from "../../../errors/isErrorResponse";
+import { ErrorResponse } from "../../../types/ErrorResponse";
+import { HttpStatusCodes } from "../../../constants/constants";
+import sendTo from "../sendTo";
 
 export default async function consumeFromKafka(
   controller: any,
