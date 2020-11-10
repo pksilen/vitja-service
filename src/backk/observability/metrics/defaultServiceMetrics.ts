@@ -37,6 +37,7 @@ class DefaultServiceMetrics {
   private readonly dbOperationProcessingTimeCounter: Counter;
   private readonly kafkaConsumerErrorCounter: BoundCounter;
   private readonly kafkaConsumerRequestTimeoutCounter: BoundCounter;
+  private readonly kafkaConsumerOffsetLagRecorder: ValueRecorder;
 
   constructor(private readonly meter: Meter) {
     this.allServiceFunctionCallCounter = meter
@@ -45,10 +46,9 @@ class DefaultServiceMetrics {
       })
       .bind(this.defaultLabels);
 
-    this.serviceFunctionCallCounter = meter
-      .createCounter('service_function_calls', {
-        description: 'Number of service function calls'
-      })
+    this.serviceFunctionCallCounter = meter.createCounter('service_function_calls', {
+      description: 'Number of service function calls'
+    });
 
     this.authorizationFailureCounter = meter
       .createCounter('authorization_failures', {
@@ -91,11 +91,15 @@ class DefaultServiceMetrics {
         description: 'Number of Kafka consumer request timeouts'
       })
       .bind(this.defaultLabels);
+
+    this.kafkaConsumerOffsetLagRecorder = meter.createValueRecorder('kafka_consumer_offset_lag', {
+      description: 'Kafka consumer offset lag'
+    });
   }
 
   incrementServiceFunctionCallsByOne(serviceFunction: string) {
     this.allServiceFunctionCallCounter.add(1);
-    this.serviceFunctionCallCounter.bind({...this.defaultLabels, serviceFunction }).add(1);
+    this.serviceFunctionCallCounter.bind({ ...this.defaultLabels, serviceFunction }).add(1);
   }
 
   incrementAuthorizationFailuresByOne() {
@@ -110,11 +114,7 @@ class DefaultServiceMetrics {
     this.dbOperationErrorCounter.bind({ ...this.defaultLabels, dbManagerType, dbHost }).add(1);
   }
 
-  recordDbFailureDurationInSecs(
-    dbManagerType: string,
-    dbHost: string,
-    failureDurationInSecs: number
-  ) {
+  recordDbFailureDurationInSecs(dbManagerType: string, dbHost: string, failureDurationInSecs: number) {
     this.dbFailureDurationInSecsRecorder
       .bind({ ...this.defaultLabels, dbManagerType, dbHost })
       .record(failureDurationInSecs);
@@ -164,6 +164,10 @@ class DefaultServiceMetrics {
 
   incrementKafkaConsumerRequestTimeoutsByOne() {
     this.kafkaConsumerRequestTimeoutCounter.add(1);
+  }
+
+  recordKafkaConsumerOffsetLag(partition: any, offsetLag: number) {
+    this.kafkaConsumerOffsetLagRecorder.bind({ ...this.defaultLabels, partition }).record(offsetLag);
   }
 }
 
