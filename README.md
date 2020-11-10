@@ -1,9 +1,11 @@
 # Vitja service
 
 TODO:
-- Redis producer metrics
 - Redis consumer
-- Redis consumer metrics
+  - Basic functionality
+  - Debug log entries
+  - Error log entries
+  - Metrics
 - createEntities, check that subentities id's are zero-based and subsequent unique
 - GDPR logging
   -audit log should go to separate server
