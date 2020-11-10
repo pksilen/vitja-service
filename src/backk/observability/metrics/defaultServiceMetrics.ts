@@ -39,6 +39,7 @@ class DefaultServiceMetrics {
   private readonly kafkaConsumerRequestTimeoutCounter: BoundCounter;
   private readonly kafkaConsumerOffsetLagRecorder: ValueRecorder;
   private readonly syncRemoteServiceCallCounter: Counter;
+  private readonly syncRemoteServiceCallErrorCounter: Counter;
 
   constructor(private readonly meter: Meter) {
     this.allServiceFunctionCallCounter = meter
@@ -99,6 +100,10 @@ class DefaultServiceMetrics {
 
     this.syncRemoteServiceCallCounter = meter.createCounter('sync_remote_service_calls', {
       description: 'Number of synchronous (HTTP) remote service calls'
+    });
+
+    this.syncRemoteServiceCallErrorCounter = meter.createCounter('sync_remote_service_call_errors', {
+      description: 'Number of synchronous (HTTP) remote service call errors'
     });
   }
 
@@ -177,6 +182,10 @@ class DefaultServiceMetrics {
 
   incrementSyncRemoteServiceCallCountByOne(remoteServiceUrl: string) {
     this.syncRemoteServiceCallCounter.bind({ ...this.defaultLabels, remoteServiceUrl }).add(1);
+  }
+
+  incrementSyncRemoteServiceCallErrorCountByOne(remoteServiceUrl: string) {
+    this.syncRemoteServiceCallErrorCounter.bind({ ...this.defaultLabels, remoteServiceUrl }).add(1);
   }
 }
 

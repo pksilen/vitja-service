@@ -41,7 +41,6 @@ export default async function call<T>(
       method: options?.httpMethod?.toLowerCase() ?? 'post',
       body: serviceFunctionArgument ? JSON.stringify(serviceFunctionArgument) : undefined,
       headers: { 'Content-Type': 'application/json', Authorization: authHeader }
-      // TODO add auth header
     });
 
     const responseBody = await response.json();
@@ -81,6 +80,7 @@ export default async function call<T>(
     return responseBody;
   } catch (error) {
     log(Severity.ERROR, error.message, error.stack, { remoteServiceFunctionCallUrl });
+    defaultServiceMetrics.incrementSyncRemoteServiceCallErrorCountByOne(remoteServiceFunctionCallUrl);
     return createErrorResponseFromError(error);
   }
 }
