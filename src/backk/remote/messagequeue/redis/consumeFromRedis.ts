@@ -5,7 +5,7 @@ import isErrorResponse from '../../../errors/isErrorResponse';
 import { ErrorResponse } from '../../../types/ErrorResponse';
 import { HttpStatusCodes } from '../../../constants/constants';
 import sendTo from '../sendTo';
-import log, { Severity } from "../../../observability/logging/log";
+import log, { Severity } from '../../../observability/logging/log';
 
 export default async function consumeFromRedis(controller: any, broker: string, topic = getServiceName()) {
   const redis = new Redis(broker);
@@ -29,6 +29,6 @@ export default async function consumeFromRedis(controller: any, broker: string, 
       await sendTo('redis://' + broker + '/' + topic, serviceFunction, serviceFunctionArgument);
     }
   } catch (error) {
-    // NOOP
+    log(Severity.ERROR, 'Redis: ' + error.message, error.stack, { broker, topic });
   }
 }

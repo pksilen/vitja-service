@@ -2,7 +2,6 @@
 
 TODO:
 - Redis consumer
-  - Debug log entries
   - Error log entries
   - Metrics (queue length)
 - createEntities, check that subentities id's are zero-based and subsequent unique
@@ -66,6 +65,7 @@ TODO NEXT RELEASE:
 - Support for analytics aggregated queries, aggregations (function name, fieldname), group by, filters
     - Put analytics query inside its service and enabled for 'management' role for u
 - Add Avro schema generation and content type support (avro-js)
+- For javascript CEP: http://alasql.org/
 - IsExprTrue annotation should be documented in servicemetadata with the function, so that frontend can use same functiongit 
 - Backk-frontend automatically create a frontend for one or more backends
   - backend metadata fetch urls are given in env variable as parameter
