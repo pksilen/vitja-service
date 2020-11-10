@@ -7,6 +7,7 @@ import tryExecuteServiceFunction from '../../../execution/tryExecuteServiceFunct
 import tracerProvider from '../../../observability/distributedtracinig/tracerProvider';
 import log, { Severity } from '../../../observability/logging/log';
 import { CanonicalCode, Span } from "@opentelemetry/api";
+import defaultServiceMetrics from "../../../observability/metrics/defaultServiceMetrics";
 
 export default async function consumeFromKafka(controller: any, remoteServiceUrl: string) {
   const { broker, topic } = parseRemoteServiceUrlParts(remoteServiceUrl);
@@ -40,6 +41,7 @@ export default async function consumeFromKafka(controller: any, remoteServiceUrl
 
   consumer.on(consumer.events.CRASH, ({ error, ...restOfEvent }) => {
     log(Severity.ERROR, 'Kafka: consumer crashed due to error', error, restOfEvent);
+    defaultServiceMetrics.incrementKafkaConsumerErrorsByOne();
     hasFetchError = true;
     fetchSpan?.setStatus({
       code: CanonicalCode.UNKNOWN,

@@ -35,6 +35,8 @@ class DefaultServiceMetrics {
   private readonly dbFailureDurationInSecsRecorder: ValueRecorder;
   private readonly serviceFunctionProcessingTimeCounter: Counter;
   private readonly dbOperationProcessingTimeCounter: Counter;
+  private readonly kafkaConsumerErrorCounter: BoundCounter;
+  // private readonly kafkaConsumerRequestTimeoutCount: BoundCounter;
 
   constructor(private readonly meter: Meter) {
     this.allServiceFunctionCallCounter = meter
@@ -77,6 +79,12 @@ class DefaultServiceMetrics {
       description:
         'Count of database operations where database operation processing time is in processing time bucket'
     });
+
+    this.kafkaConsumerErrorCounter = meter
+      .createCounter('kafka_consumer_errors', {
+        description: 'Number of Kafka consumer errors'
+      })
+      .bind(this.defaultLabels);
   }
 
   incrementServiceFunctionCallsByOne(serviceFunction: string) {
@@ -142,6 +150,10 @@ class DefaultServiceMetrics {
         processingTimeInSecsBucket: foundProcessingTimeInSecsBucket!.toString()
       })
       .add(1);
+  }
+
+  incrementKafkaConsumerErrorsByOne() {
+    this.kafkaConsumerErrorCounter.add(1);
   }
 }
 

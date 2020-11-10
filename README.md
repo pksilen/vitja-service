@@ -4,7 +4,7 @@ TODO:
 - Kafka consumer
     - Metrics (consumedMessageCount etc.., change httpRequestCount to serviceCallCount)
       - record per each service function also
-    - Remote service metrics
+    - Remote service execution metrics
     - Send failed service execution related message back to message queue
     - create topics (NUM_PARTITIONS=3, REPLICACOUNT=3 or from env variables)
 - Kafka producer metrics
