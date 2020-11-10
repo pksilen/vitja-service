@@ -6,6 +6,7 @@ import isErrorResponse from '../../errors/isErrorResponse';
 import getRemoteResponseTestValue from '../../metadata/getRemoteResponseTestValue';
 import { getNamespace } from 'cls-hooked';
 import defaultServiceMetrics from '../../observability/metrics/defaultServiceMetrics';
+import { HttpStatusCodes } from '../../constants/constants';
 
 export interface HttpRequestOptions {
   httpMethod?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -45,14 +46,14 @@ export default async function call<T>(
 
     const responseBody = await response.json();
 
-    if (response.status >= 300) {
+    if (response.status >= HttpStatusCodes.FAILURES_START) {
       const errorMessage = isErrorResponse(responseBody)
         ? responseBody.errorMessage
         : JSON.stringify(responseBody);
       const stackTrace = isErrorResponse(responseBody) ? responseBody.stackTrace : '';
       const errorCode = isErrorResponse(responseBody) ? responseBody.errorCode : undefined;
 
-      if (response.status >= 500) {
+      if (response.status >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {
         log(Severity.ERROR, errorMessage, stackTrace, {
           errorCode,
           statusCode: response.status,
@@ -67,6 +68,12 @@ export default async function call<T>(
           statusCode: response.status,
           remoteServiceFunctionCallUrl
         });
+
+        if (response.status === HttpStatusCodes.FORBIDDEN) {
+          defaultServiceMetrics.incrementSyncRemoteServiceCallAuthFailureCounter(
+            remoteServiceFunctionCallUrl
+          );
+        }
       }
 
       return isErrorResponse(responseBody)

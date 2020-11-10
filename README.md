@@ -3,6 +3,7 @@
 TODO:
 - Kafka consumer
     - Remote service execution metrics
+    - Kafka consumer auth failure should increment current authFailure counter
     - Send failed service execution related message back to message queue
     - create topics (NUM_PARTITIONS=3, REPLICACOUNT=3 or from env variables)
     - admin client instrumentation?

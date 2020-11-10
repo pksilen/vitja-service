@@ -41,6 +41,7 @@ class DefaultServiceMetrics {
   private readonly syncRemoteServiceCallCounter: Counter;
   private readonly syncRemoteServiceCallErrorCounter: Counter;
   private readonly syncRemoteServiceHttp5xxErrorResponseCounter: Counter;
+  private readonly syncRemoteServiceCallAuthFailureCounter: Counter;
 
   constructor(private readonly meter: Meter) {
     this.allServiceFunctionCallCounter = meter
@@ -111,6 +112,13 @@ class DefaultServiceMetrics {
       'sync_remote_service_call_http_5xx_error_responses',
       {
         description: 'Number of synchronous remote service call HTTP 5xx error responses'
+      }
+    );
+
+    this.syncRemoteServiceCallAuthFailureCounter = meter.createCounter(
+      'sync_remote_service_call_auth_failures',
+      {
+        description: 'Number of synchronous (HTTP) remote service call authorization failures'
       }
     );
   }
@@ -200,6 +208,10 @@ class DefaultServiceMetrics {
     this.syncRemoteServiceHttp5xxErrorResponseCounter
       .bind({ ...this.defaultLabels, remoteServiceUrl })
       .add(1);
+  }
+
+  incrementSyncRemoteServiceCallAuthFailureCounter(remoteServiceUrl: string) {
+    this.syncRemoteServiceCallAuthFailureCounter.bind({ ...this.defaultLabels, remoteServiceUrl }).add(1);
   }
 }
 
