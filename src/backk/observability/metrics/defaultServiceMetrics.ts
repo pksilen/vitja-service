@@ -36,7 +36,7 @@ class DefaultServiceMetrics {
   private readonly serviceFunctionProcessingTimeCounter: Counter;
   private readonly dbOperationProcessingTimeCounter: Counter;
   private readonly kafkaConsumerErrorCounter: BoundCounter;
-  // private readonly kafkaConsumerRequestTimeoutCount: BoundCounter;
+  private readonly kafkaConsumerRequestTimeoutCounter: BoundCounter;
 
   constructor(private readonly meter: Meter) {
     this.allServiceFunctionCallCounter = meter
@@ -83,6 +83,12 @@ class DefaultServiceMetrics {
     this.kafkaConsumerErrorCounter = meter
       .createCounter('kafka_consumer_errors', {
         description: 'Number of Kafka consumer errors'
+      })
+      .bind(this.defaultLabels);
+
+    this.kafkaConsumerRequestTimeoutCounter = meter
+      .createCounter('kafka_consumer_request_timeouts', {
+        description: 'Number of Kafka consumer request timeouts'
       })
       .bind(this.defaultLabels);
   }
@@ -154,6 +160,10 @@ class DefaultServiceMetrics {
 
   incrementKafkaConsumerErrorsByOne() {
     this.kafkaConsumerErrorCounter.add(1);
+  }
+
+  incrementKafkaConsumerRequestTimeoutsByOne() {
+    this.kafkaConsumerRequestTimeoutCounter.add(1);
   }
 }
 

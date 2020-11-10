@@ -51,6 +51,7 @@ export default async function consumeFromKafka(controller: any, remoteServiceUrl
 
   consumer.on(consumer.events.REQUEST_TIMEOUT, (event) => {
     log(Severity.ERROR, 'Kafka: consumer request to broker has timed out', '', event);
+    defaultServiceMetrics.incrementKafkaConsumerRequestTimeoutsByOne();
     hasFetchError = true;
     fetchSpan?.setStatus({
       code: CanonicalCode.UNKNOWN,
