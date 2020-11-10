@@ -39,7 +39,7 @@ export default function log(
   severityNumber: Severity,
   name: string,
   body: string,
-  attributes?: { [key: string]: string | number | boolean | undefined }
+  attributes?: { [key: string]: string | number | boolean | undefined | object[] }
 ) {
   const minLoggingSeverityNumber = severityNameToSeverityMap[process.env.LOG_LEVEL ?? 'INFO'];
   const now = new Date();

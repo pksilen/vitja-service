@@ -2,7 +2,6 @@
 
 TODO:
 - Kafka consumer
-    - create topics (NUM_PARTITIONS=3, REPLICACOUNT=3 or from env variables)
     - admin client instrumentation?
     - Send failed service execution related message back to message queue
 - Redis producer metrics

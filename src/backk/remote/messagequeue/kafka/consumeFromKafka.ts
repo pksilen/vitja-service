@@ -37,11 +37,11 @@ export default async function consumeFromKafka(
   let hasFetchError = false;
 
   consumer.on(consumer.events.CONNECT, (event) => {
-    log(Severity.INFO, 'Kafka: connected to broker', '', event);
+    log(Severity.INFO, 'Kafka: consumer connected to broker', '', event);
   });
 
   consumer.on(consumer.events.GROUP_JOIN, (event) => {
-    log(Severity.INFO, 'Kafka: joined consumer group', '', event);
+    log(Severity.INFO, 'Kafka: consumer joined consumer group', '', event);
   });
 
   consumer.on(consumer.events.STOP, (event) => {
@@ -49,7 +49,7 @@ export default async function consumeFromKafka(
   });
 
   consumer.on(consumer.events.DISCONNECT, (event) => {
-    log(Severity.INFO, 'Kafka: disconnect from broker', '', event);
+    log(Severity.INFO, 'Kafka: consumer disconnected from broker', '', event);
   });
 
   consumer.on(consumer.events.CRASH, ({ error, ...restOfEvent }) => {
@@ -113,9 +113,17 @@ export default async function consumeFromKafka(
   const admin = kafkaClient.admin();
   const topic = defaultTopic ?? getServiceName();
 
+  admin.on(admin.events.CONNECT, (event) => {
+    log(Severity.DEBUG, 'Kafka: admin client connected to broker', '', event);
+  });
+
+  admin.on(admin.events.DISCONNECT, (event) => {
+    log(Severity.DEBUG, 'Kafka: admin client disconnected from broker', '', event);
+  });
+
   try {
     await admin.connect();
-    await admin.createTopics({
+    const didCreateTopic = await admin.createTopics({
       topics: [
         {
           topic,
@@ -123,6 +131,9 @@ export default async function consumeFromKafka(
         }
       ]
     });
+    if (didCreateTopic) {
+      log(Severity.INFO, 'Kafka: admin client created topic', '', { topic, ...defaultTopicConfig });
+    }
     await admin.disconnect();
 
     await consumer.connect();
