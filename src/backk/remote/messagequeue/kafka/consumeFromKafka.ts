@@ -8,6 +8,11 @@ import log, { Severity } from '../../../observability/logging/log';
 import { CanonicalCode, Span } from '@opentelemetry/api';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
 import forEachAsyncParallel from '../../../utils/forEachAsyncParallel';
+import isErrorResponse from '../../../errors/isErrorResponse';
+import { ErrorResponse } from '../../../types/ErrorResponse';
+import { HttpStatusCodes } from '../../../constants/constants';
+import sendInsideTransaction from '../sendInsideTransaction';
+import sendTo from '../sendTo';
 
 export default async function consumeFromKafka(
   controller: any,
@@ -141,13 +146,22 @@ export default async function consumeFromKafka(
     await forEachAsyncParallel(additionalTopics ?? [], async (topic) => await consumer.subscribe({ topic }));
     await consumer.run({
       eachMessage: async ({ message: { key, value, headers } }) => {
+        const serviceFunction = key.toString();
+        const serviceFunctionArgument = JSON.parse(value!.toString());
         const response = await tryExecuteServiceFunction(
           controller,
-          key.toString(),
+          serviceFunction,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          JSON.parse(value!.toString()),
+          serviceFunctionArgument,
           headers?.Auhtorization as string
         );
+
+        if (
+          isErrorResponse(response) &&
+          (response as ErrorResponse).statusCode >= HttpStatusCodes.INTERNAL_ERRORS_START
+        ) {
+          await sendTo('kafka://' + broker + '/' + topic, serviceFunction, serviceFunctionArgument);
+        }
       }
     });
   } catch (error) {

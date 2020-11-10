@@ -242,7 +242,7 @@ export default async function tryExecuteServiceFunction(
     return response;
   });
 
-  if (response && isErrorResponse(response)) {
+  if (isErrorResponse(response)) {
     if (response.statusCode >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {
       defaultServiceMetrics.incrementHttp5xxErrorsByOne();
     } else if (response.statusCode >= HttpStatusCodes.CLIENT_ERRORS_START) {
