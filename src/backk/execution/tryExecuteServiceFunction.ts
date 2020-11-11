@@ -195,9 +195,9 @@ export default async function tryExecuteServiceFunction(
       if (cachedResponseJson) {
         log(Severity.DEBUG, 'Fetched service function call response from Redis cache', '', {
           redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
-          key,
-          serviceFunctionArgument
+          key
         });
+
         try {
           response = JSON.parse(cachedResponseJson);
         } catch {
@@ -312,6 +312,10 @@ export default async function tryExecuteServiceFunction(
           response = JSON.stringify(response);
           const key = getNamespacedServiceName() + ':' + serviceFunction;
           await redis.hset(key, JSON.stringify(serviceFunctionArgument), response);
+          log(Severity.DEBUG, 'Store service function call response to Redis cache', '', {
+            redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
+            key
+          });
           if (await redis.exists(key)) {
             ttl = await redis.ttl(key);
           } else {
