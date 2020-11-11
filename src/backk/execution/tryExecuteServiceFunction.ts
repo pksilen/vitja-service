@@ -191,10 +191,8 @@ export default async function tryExecuteServiceFunction(
       const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
       let cachedResponseJson;
       try {
-        cachedResponseJson = await redis.hget(key,
-          JSON.stringify(serviceFunctionArgument)
-        );
-      } catch(error) {
+        cachedResponseJson = await redis.hget(key, JSON.stringify(serviceFunctionArgument));
+      } catch (error) {
         log(Severity.ERROR, 'Failed to access Redis cache', error.message, {
           redisUrl: controller?.responseCacheConfigService.getRedisUrl()
         });
@@ -204,6 +202,7 @@ export default async function tryExecuteServiceFunction(
           redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
           key
         });
+        defaultServiceMetrics.incrementServiceFunctionCallCacheHitCounterByOne(serviceFunction);
 
         try {
           response = JSON.parse(cachedResponseJson);
@@ -333,7 +332,7 @@ export default async function tryExecuteServiceFunction(
                 controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunction)
               );
             }
-          } catch(error) {
+          } catch (error) {
             log(Severity.ERROR, 'Failed to access Redis cache', error.message, {
               redisUrl: controller?.responseCacheConfigService.getRedisUrl()
             });

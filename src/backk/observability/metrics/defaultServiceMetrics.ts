@@ -30,6 +30,7 @@ class DefaultServiceMetrics {
 
   private readonly allServiceFunctionCallCounter: BoundCounter;
   private readonly serviceFunctionCallCounter: Counter;
+  private readonly serviceFunctionCallCacheHitCounter: Counter;
   private readonly serviceFunctionProcessingTimeCounter: Counter;
 
   private readonly authorizationFailureCounter: BoundCounter;
@@ -61,6 +62,10 @@ class DefaultServiceMetrics {
 
     this.serviceFunctionCallCounter = meter.createCounter('service_function_calls', {
       description: 'Number of service function calls'
+    });
+
+    this.serviceFunctionCallCacheHitCounter = meter.createCounter('service_function_call_cache_hits', {
+      description: 'Number of service function calls hitting the cache'
     });
 
     this.authorizationFailureCounter = meter
@@ -247,6 +252,10 @@ class DefaultServiceMetrics {
 
   recordRedisConsumerQueueLength(queueLength: number) {
     this.redisConsumerQueueLengthRecorder.bind(this.defaultLabels).record(queueLength);
+  }
+
+  incrementServiceFunctionCallCacheHitCounterByOne(serviceFunction: string) {
+    this.serviceFunctionCallCacheHitCounter.bind({ ...this.defaultLabels, serviceFunction }).add(1);
   }
 }
 
