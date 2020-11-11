@@ -1,16 +1,14 @@
 # Vitja service
 
 TODO:
-- Redis consumer
-  - Metrics (queue length)
 - createEntities, check that subentities id's are zero-based and subsequent unique
-- GDPR logging
-  -audit log should go to separate server
 - Support dotted fieldname in getEntitiesBy
   - deleteEntitiesBy 
   - and updateEntitiesBy
 - redis request cache for getting multiple entities (getEntities)
   - if GET method used, set appropriate HTTP response cache headers
+- GDPR logging
+  -audit log should go to separate server
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)

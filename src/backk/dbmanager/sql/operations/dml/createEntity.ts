@@ -119,8 +119,24 @@ export default async function createEntity<T>(
           }
 
           const relationEntityName = baseFieldTypeName;
-          await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any) => {
+          await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index) => {
             subItem[idFieldName] = _id;
+
+            if (subItem.id === undefined) {
+              subItem.id = index;
+            } else {
+              if (parseInt(subItem.id, 10) !== index) {
+                throw new Error(
+                  createErrorMessageWithStatusCode(
+                    'Invalid id values in ' +
+                    fieldName +
+                    '. Id values must be consecutive numbers starting from zero.',
+                    400
+                  )
+                );
+              }
+            }
+
             const subItemOrErrorResponse: any | ErrorResponse = await createEntity(
               dbManager,
               subItem,
