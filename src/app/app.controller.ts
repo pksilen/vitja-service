@@ -45,8 +45,9 @@ export class AppController {
     @Param() params: { serviceFunctionName: string },
     @Query('arg') serviceFunctionArgument: object,
     @Res() response: any
-  ): Promise<object | void> {
-    return tryExecuteServiceFunction(
+  ) {
+    // noinspection JSIgnoredPromiseFromCall
+    tryExecuteServiceFunction(
       this,
       params.serviceFunctionName,
       serviceFunctionArgument,
@@ -67,6 +68,7 @@ export class AppController {
     @Body() serviceFunctionArgument: object,
     @Res() response: any
   ) {
+    // noinspection JSIgnoredPromiseFromCall
     tryExecuteServiceFunction(
       this,
       params.serviceFunctionName,

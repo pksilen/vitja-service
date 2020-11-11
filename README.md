@@ -2,13 +2,15 @@
 
 TODO:
 - redis request cache for getting multiple entities
-  - cache if GET method used
   - cache debug logging
   - cache error logging
   - cache metrics
 - Support kubernetes namespace to additionally identify topic
   - Kafka consumer/sendTo
   - Redis consumer/sendTo
+- Support Redis/Kafka consumer to send successful response to another service
+  - Kafka
+  - Redis
 - GDPR logging
   -audit log should go to separate server
   - methods that use userName or userId

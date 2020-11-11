@@ -180,18 +180,24 @@ export default async function tryExecuteServiceFunction(
 
     let response;
 
-    if (options?.httpMethod === 'GET' &&
+    if (
+      options?.httpMethod === 'GET' &&
       controller?.responseCacheConfigService.shouldCacheServiceFunctionCallResponse(
         serviceFunction,
         serviceFunctionArgument
       )
     ) {
+      const key = getNamespacedServiceName() + ':' + serviceFunction;
       const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
-      const cachedResponseJson = await redis.hget(
-        getNamespacedServiceName() + ':' + serviceFunction,
+      const cachedResponseJson = await redis.hget(key,
         JSON.stringify(serviceFunctionArgument)
       );
       if (cachedResponseJson) {
+        log(Severity.DEBUG, 'Fetched service function call response from Redis cache', '', {
+          redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
+          key,
+          serviceFunctionArgument
+        });
         try {
           response = JSON.parse(cachedResponseJson);
         } catch {
@@ -295,7 +301,8 @@ export default async function tryExecuteServiceFunction(
           await tryValidateResponse(response, ServiceFunctionReturnType);
         }
 
-        if (options?.httpMethod === 'GET' &&
+        if (
+          options?.httpMethod === 'GET' &&
           controller?.responseCacheConfigService.shouldCacheServiceFunctionCallResponse(
             serviceFunction,
             serviceFunctionArgument
@@ -335,7 +342,7 @@ export default async function tryExecuteServiceFunction(
   } catch (error) {
     if (resp && error instanceof HttpException) {
       resp.status(error.getStatus());
-      resp.send(error.getResponse())
+      resp.send(error.getResponse());
     } else {
       throw error;
     }
