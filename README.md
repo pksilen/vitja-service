@@ -6,6 +6,9 @@ TODO:
   - cache debug logging
   - cache error logging
   - cache metrics
+- Support kubernetes namespace to additionally identify topic
+  - Kafka consumer/sendTo
+  - Redis consumer/sendTo
 - GDPR logging
   -audit log should go to separate server
   - methods that use userName or userId
