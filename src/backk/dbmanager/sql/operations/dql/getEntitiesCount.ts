@@ -5,14 +5,14 @@ import { ErrorResponse } from "../../../../types/ErrorResponse";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
-import updateDbTransactionCount from "./utils/updateDbTransactionCount";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 
 export default async function getEntitiesCount<T>(
   dbManager: PostgreSqlDbManager,
   filters: Partial<T> | SqlExpression[] | undefined,
   entityClass: new () => T
 ): Promise<number | ErrorResponse> {
-  updateDbTransactionCount(dbManager);
+  updateDbLocalTransactionCount(dbManager);
   const Types = dbManager.getTypes();
 
   try {

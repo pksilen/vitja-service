@@ -6,7 +6,7 @@ import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import updateDbTransactionCount from "./utils/updateDbTransactionCount";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 
 export default async function getEntities<T>(
   dbManager: PostgreSqlDbManager,
@@ -14,7 +14,7 @@ export default async function getEntities<T>(
   entityClass: new () => T,
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
-  updateDbTransactionCount(dbManager);
+  updateDbLocalTransactionCount(dbManager);
   const Types = dbManager.getTypes();
 
   try {

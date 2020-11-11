@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- createEntities, check that subentities id's are zero-based and subsequent unique
 - Support dotted fieldname in getEntitiesBy
   - deleteEntitiesBy 
   - and updateEntitiesBy
@@ -9,6 +8,8 @@ TODO:
   - if GET method used, set appropriate HTTP response cache headers
 - GDPR logging
   -audit log should go to separate server
+  - methods that use userName or userId
+  - userService methods
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)

@@ -21,7 +21,6 @@ export default function tryGetOrderByClause<T>(
 
   if (sortBys) {
     const sortBysStr = sortBys.map(({ sortField, sortDirection }) => {
-      assertIsColumnName('sortBy', sortField);
       assertIsSortDirection(sortDirection);
 
       let projection;

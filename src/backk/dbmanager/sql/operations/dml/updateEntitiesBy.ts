@@ -1,38 +1,47 @@
-import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
-import isErrorResponse from '../../../../errors/isErrorResponse';
-import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import { RecursivePartial } from '../../../../types/RecursivePartial';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getTypeMetadata from '../../../../metadata/getTypeMetadata';
-import { Entity } from '../../../../types/Entity';
-import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
-import updateEntity from './updateEntity';
-import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
-import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
-import encrypt from '../../../../crypt/encrypt';
+import isErrorResponse from "../../../../errors/isErrorResponse";
+import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import { RecursivePartial } from "../../../../types/RecursivePartial";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import getTypeMetadata from "../../../../metadata/getTypeMetadata";
+import { Entity } from "../../../../types/Entity";
+import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
+import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
+import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
+import encrypt from "../../../../crypt/encrypt";
+import tryGetProjection from "../dql/clauses/tryGetProjection";
+import getSqlColumnFromProjection from "../dql/utils/columns/getSqlColumnFromProjection";
 
 export default async function updateEntitiesBy<T extends Entity>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
-  fieldValue: T[keyof T],
+  fieldValue: T[keyof T] | string,
   { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
   entityClass: new () => T,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
+  const Types = dbManager.getTypes();
   let didStartTransaction = false;
 
   try {
-    const Types = dbManager.getTypes();
-    const item = {
-      [fieldName]: fieldValue
-    };
+    let projection;
+    try {
+      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, entityClass, Types);
+    } catch (error) {
+      // noinspection ExceptionCaughtLocallyJS
+      throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
+    }
+
+    // noinspection AssignmentToFunctionParameterJS
+    fieldName = getSqlColumnFromProjection(projection);
 
     if (!isRecursiveCall) {
-      if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
-        (item as any)[fieldName] = encrypt(fieldValue as any, false);
+      const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
+      if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
+        // noinspection AssignmentToFunctionParameterJS
+        fieldValue = encrypt(fieldValue as any, false);
       }
     }
 
@@ -146,7 +155,7 @@ export default async function updateEntitiesBy<T extends Entity>(
       promises.push(
         dbManager.tryExecuteSql(
           `UPDATE ${dbManager.schema}.${entityClass.name} SET ${setStatements} WHERE ${fieldName} = $1`,
-          [(item as any)[fieldName], ...values]
+          [fieldValue, ...values]
         )
       );
     }

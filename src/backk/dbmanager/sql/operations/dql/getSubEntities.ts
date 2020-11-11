@@ -5,7 +5,7 @@ import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import createErrorResponseFromErrorMessageAndStatusCode from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
-import updateDbTransactionCount from "./utils/updateDbTransactionCount";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 
 export default async function getSubEntities<T extends object, U>(
   dbManager: PostgreSqlDbManager,
@@ -15,7 +15,7 @@ export default async function getSubEntities<T extends object, U>(
   postQueryOperations?: PostQueryOperations,
   responseMode?: 'first' | 'all'
 ): Promise<U | ErrorResponse> {
-  updateDbTransactionCount(dbManager);
+  updateDbLocalTransactionCount(dbManager);
 
   try {
     const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, postQueryOperations);

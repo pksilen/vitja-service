@@ -1,6 +1,6 @@
 import AbstractDbManager from "../../../../AbstractDbManager";
 
-export default function updateDbTransactionCount(dbManager: AbstractDbManager) {
+export default function updateDbLocalTransactionCount(dbManager: AbstractDbManager) {
   if (
     !dbManager.getClsNamespace()?.get('localTransaction') &&
     !dbManager.getClsNamespace()?.get('globalTransaction')

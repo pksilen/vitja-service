@@ -7,7 +7,7 @@ import createErrorMessageWithStatusCode from "../../../../errors/createErrorMess
 import createErrorResponseFromErrorMessageAndStatusCode
   from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import updateDbTransactionCount from "./utils/updateDbTransactionCount";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 
 export default async function getEntitiesByIds<T>(
   dbManager: PostgreSqlDbManager,
@@ -16,7 +16,7 @@ export default async function getEntitiesByIds<T>(
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
   try {
-    updateDbTransactionCount(dbManager);
+    updateDbLocalTransactionCount(dbManager);
 
     const Types = dbManager.getTypes();
     const { columns, joinClause, sortClause, pagingClause } = getSqlSelectStatementParts(
