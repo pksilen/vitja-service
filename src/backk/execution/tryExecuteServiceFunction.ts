@@ -184,10 +184,10 @@ export default async function tryExecuteServiceFunction(
     )
   ) {
      const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
-     const cachedResponse = await redis.hget(serviceFunction, JSON.stringify(serviceFunctionArgument));
-     if (cachedResponse) {
+     const cachedResponseJson = await redis.hget(serviceFunction, JSON.stringify(serviceFunctionArgument));
+     if (cachedResponseJson) {
        try {
-         response = JSON.parse(cachedResponse);
+         response = JSON.parse(cachedResponseJson);
        } catch {
          // NOOP
        }
@@ -263,28 +263,43 @@ export default async function tryExecuteServiceFunction(
 
       return response;
     });
-  }
 
-  if (isErrorResponse(response)) {
-    if (response.statusCode >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {
-      defaultServiceMetrics.incrementHttp5xxErrorsByOne();
-    } else if (response.statusCode >= HttpStatusCodes.CLIENT_ERRORS_START) {
-      defaultServiceMetrics.incrementHttpClientErrorCounter(serviceFunction);
+
+    if (isErrorResponse(response)) {
+      if (response.statusCode >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {
+        defaultServiceMetrics.incrementHttp5xxErrorsByOne();
+      } else if (response.statusCode >= HttpStatusCodes.CLIENT_ERRORS_START) {
+        defaultServiceMetrics.incrementHttpClientErrorCounter(serviceFunction);
+      }
+      throw new HttpException(response, response.statusCode);
     }
-    throw new HttpException(response, response.statusCode);
-  }
 
-  if (response !== undefined) {
-    const serviceFunctionBaseReturnTypeName = getReturnValueBaseType(
-      controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName]
-    );
+    if (response !== undefined) {
+      const serviceFunctionBaseReturnTypeName = getReturnValueBaseType(
+        controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName]
+      );
 
-    const ServiceFunctionReturnType = controller[serviceName]['Types'][serviceFunctionBaseReturnTypeName];
+      const ServiceFunctionReturnType = controller[serviceName]['Types'][serviceFunctionBaseReturnTypeName];
 
-    if (Array.isArray(response) && response.length > 0 && typeof response[0] === 'object') {
-      await tryValidateResponse(response[0], ServiceFunctionReturnType);
-    } else if (typeof response === 'object') {
-      await tryValidateResponse(response, ServiceFunctionReturnType);
+      if (Array.isArray(response) && response.length > 0 && typeof response[0] === 'object') {
+        await tryValidateResponse(response[0], ServiceFunctionReturnType);
+      } else if (typeof response === 'object') {
+        await tryValidateResponse(response, ServiceFunctionReturnType);
+      }
+
+      if (
+        controller?.responseCacheConfigService.shouldCacheServiceFunctionCallResponse(
+          serviceFunction,
+          serviceFunctionArgument
+        )
+      ) {
+        const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
+        response = JSON.stringify(response);
+        await redis.hset(serviceFunction, JSON.stringify(serviceFunctionArgument), response);
+        if (!await redis.exists(serviceFunction)) {
+          await redis.expire(serviceFunction, controller?.responseCacheConfigService.getCachingDurationInSecs());
+        }
+      }
     }
   }
 

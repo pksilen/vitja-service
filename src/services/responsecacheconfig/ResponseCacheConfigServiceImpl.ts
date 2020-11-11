@@ -2,7 +2,7 @@ import ResponseCacheConfigService from '../../backk/cache/ResponseCacheConfigSer
 
 export default class ResponseCacheConfigServiceImpl implements ResponseCacheConfigService {
   getCachingDurationInSecs(): number {
-    return 30;
+    return 60;
   }
 
   getRedisUrl(): string {
@@ -10,13 +10,13 @@ export default class ResponseCacheConfigServiceImpl implements ResponseCacheConf
   }
 
   shouldCacheServiceFunctionCallResponse(serviceFunction: string, serviceFunctionArgument: any): boolean {
-    if (
+    /*if (
       serviceFunction === 'salesItemsService.getSalesItems' &&
       serviceFunctionArgument.pageNumber <= 3 &&
       serviceFunctionArgument.pageSize === 50
     ) {
       return true;
-    }
+    }*/
     return false;
   }
 }

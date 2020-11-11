@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- redis request cache for getting multiple entities (getEntities)
+- redis request cache for getting multiple entities
   - if GET method used, set appropriate HTTP response cache headers
   - cache debug logging
   - cache error logging
