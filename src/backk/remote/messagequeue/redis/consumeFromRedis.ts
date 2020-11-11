@@ -8,13 +8,18 @@ import { HttpStatusCodes } from '../../../constants/constants';
 import sendTo from '../sendTo';
 import log, { Severity } from '../../../observability/logging/log';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
+import getNamespacedServiceName from '../../../utils/getServiceNamespace';
 
-export default async function consumeFromRedis(controller: any, broker: string, topic = getServiceName()) {
+export default async function consumeFromRedis(
+  controller: any,
+  broker: string,
+  topic = getNamespacedServiceName()
+) {
   const redis = new Redis(broker);
   let lastQueueLengthUpdateTimestamp = 0;
 
   // noinspection InfiniteLoopJS
-  while(true) {
+  while (true) {
     try {
       const valueJson = await redis.lpop(topic);
       log(Severity.DEBUG, 'Redis: consume message from queue', '', { broker, topic });

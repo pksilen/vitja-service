@@ -2,7 +2,6 @@
 
 TODO:
 - Support kubernetes namespace to additionally identify topic
-  - Kafka consumer
   - kafka sendTo
   - Redis consumer
   - Redis sendTo
