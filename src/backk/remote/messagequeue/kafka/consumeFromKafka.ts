@@ -12,6 +12,7 @@ import isErrorResponse from "../../../errors/isErrorResponse";
 import { ErrorResponse } from "../../../types/ErrorResponse";
 import { HttpStatusCodes } from "../../../constants/constants";
 import sendTo from "../sendTo";
+import getNamespacedServiceName from "../../../utils/getServiceNamespace";
 
 export default async function consumeFromKafka(
   controller: any,
@@ -115,7 +116,7 @@ export default async function consumeFromKafka(
   });
 
   const admin = kafkaClient.admin();
-  const topic = defaultTopic ?? getServiceName();
+  const topic = defaultTopic ?? getNamespacedServiceName();
 
   admin.on(admin.events.CONNECT, (event) => {
     log(Severity.DEBUG, 'Kafka: admin client connected to broker', '', event);

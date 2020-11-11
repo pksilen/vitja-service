@@ -1,11 +1,11 @@
 # Vitja service
 
 TODO:
-- redis request cache for getting multiple entities
-  - cache metrics
 - Support kubernetes namespace to additionally identify topic
-  - Kafka consumer/sendTo
-  - Redis consumer/sendTo
+  - Kafka consumer
+  - kafka sendTo
+  - Redis consumer
+  - Redis sendTo
 - Support Redis/Kafka consumer to send successful response to another service
   - Kafka
   - Redis
