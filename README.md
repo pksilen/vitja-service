@@ -3,6 +3,9 @@
 TODO:
 - redis request cache for getting multiple entities (getEntities)
   - if GET method used, set appropriate HTTP response cache headers
+  - cache debug logging
+  - cache error logging
+  - cache metrics
 - GDPR logging
   -audit log should go to separate server
   - methods that use userName or userId

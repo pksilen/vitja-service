@@ -1,24 +1,26 @@
-import { HttpException } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
-import { createNamespace } from 'cls-hooked';
-import _ from 'lodash';
-import tryAuthorize from '../authorization/tryAuthorize';
-import BaseService from '../service/BaseService';
-import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
-import getPropertyBaseTypeName from '../utils/type/getPropertyBaseTypeName';
-import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
-import UsersBaseService from '../users/UsersBaseService';
-import { ServiceMetadata } from '../metadata/ServiceMetadata';
-import tryValidateObject from '../validation/tryValidateObject';
-import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
-import tryValidateResponse from '../validation/tryValidateResponse';
-import isErrorResponse from '../errors/isErrorResponse';
-import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
-import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
-import createErrorResponseFromError from '../errors/createErrorResponseFromError';
-import log, { Severity } from '../observability/logging/log';
-import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import { HttpStatusCodes } from '../constants/constants';
+import { HttpException } from "@nestjs/common";
+import { plainToClass } from "class-transformer";
+import { createNamespace } from "cls-hooked";
+import _ from "lodash";
+import Redis from "ioredis";
+import tryAuthorize from "../authorization/tryAuthorize";
+import BaseService from "../service/BaseService";
+import tryVerifyCaptchaToken from "../captcha/tryVerifyCaptchaToken";
+import getPropertyBaseTypeName from "../utils/type/getPropertyBaseTypeName";
+import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
+import UsersBaseService from "../users/UsersBaseService";
+import { ServiceMetadata } from "../metadata/ServiceMetadata";
+import tryValidateObject from "../validation/tryValidateObject";
+import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
+import tryValidateResponse from "../validation/tryValidateResponse";
+import isErrorResponse from "../errors/isErrorResponse";
+import getReturnValueBaseType from "../utils/type/getReturnValueBaseType";
+import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
+import createErrorResponseFromError from "../errors/createErrorResponseFromError";
+import log, { Severity } from "../observability/logging/log";
+import serviceFunctionAnnotationContainer
+  from "../decorators/service/function/serviceFunctionAnnotationContainer";
+import { HttpStatusCodes } from "../constants/constants";
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -173,74 +175,95 @@ export default async function tryExecuteServiceFunction(
     await tryValidateObject(instantiatedServiceFunctionArgument);
   }
 
-  const dbManager = (controller[serviceName] as BaseService).getDbManager();
+  let response;
 
-  const clsNamespace = createNamespace('serviceFunctionExecution');
-  if (dbManager) {
-    dbManager.setClsNamespaceName('serviceFunctionExecution');
+  if (
+    controller?.responseCacheConfigService.shouldCacheServiceFunctionCallResponse(
+      serviceFunction,
+      serviceFunctionArgument
+    )
+  ) {
+     const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
+     const cachedResponse = await redis.hget(serviceFunction, JSON.stringify(serviceFunctionArgument));
+     if (cachedResponse) {
+       try {
+         response = JSON.parse(cachedResponse);
+       } catch {
+         // NOOP
+       }
+     }
   }
-  const response = await clsNamespace.runAndReturn(async () => {
-    clsNamespace.set('authHeader', authHeader);
-    clsNamespace.set('dbLocalTransactionCount', 0);
-    clsNamespace.set('remoteServiceCallCount', 0);
-    let response;
 
-    // noinspection ExceptionCaughtLocallyJS
-    try {
-      if (dbManager) {
-        await dbManager.tryReserveDbConnectionFromPool();
-      }
+  if (!response) {
+    const dbManager = (controller[serviceName] as BaseService).getDbManager();
 
-      response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
-
-      if (dbManager) {
-        dbManager.tryReleaseDbConnectionBackToPool();
-      }
-
-      if (
-        clsNamespace.get('dbLocalTransactionCount') > 1 &&
-        !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
-          controller[serviceName].constructor,
-          functionName
-        )
-      ) {
-        // noinspection ExceptionCaughtLocallyJS
-        throw new Error(
-          serviceFunction +
-            ': multiple database manager operations must be executed inside a transaction or service function must be annotated with @NoTransaction'
-        );
-      } else if (
-        clsNamespace.get('dbLocalTransactionCount') === 1 &&
-        clsNamespace.get('remoteServiceCallCount') === 1 &&
-        !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
-          controller[serviceName].constructor,
-          functionName
-        )
-      ) {
-        // noinspection ExceptionCaughtLocallyJS
-        throw new Error(
-          serviceFunction +
-            ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction'
-        );
-      } else if (
-        clsNamespace.get('remoteServiceCallCount') > 1 &&
-        !serviceFunctionAnnotationContainer.isServiceFunctionNonDistributedTransactional(
-          controller[serviceName].constructor,
-          functionName
-        )
-      ) {
-        // noinspection ExceptionCaughtLocallyJS
-        throw new Error(
-          serviceFunction +
-            ": multiple remote service calls cannot be executed because distributed transactions are not supported. To allow multiple remote service calls that don't require a transaction, annotate service function with @NoDistributedTransaction"
-        );
-      }
-    } catch (error) {
-      response = createErrorResponseFromError(error);
+    const clsNamespace = createNamespace('serviceFunctionExecution');
+    if (dbManager) {
+      dbManager.setClsNamespaceName('serviceFunctionExecution');
     }
+    response = await clsNamespace.runAndReturn(async () => {
+      clsNamespace.set('authHeader', authHeader);
+      clsNamespace.set('dbLocalTransactionCount', 0);
+      clsNamespace.set('remoteServiceCallCount', 0);
+      let response;
 
-    return response;
-  });
+      // noinspection ExceptionCaughtLocallyJS
+      try {
+        if (dbManager) {
+          await dbManager.tryReserveDbConnectionFromPool();
+        }
+
+        response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
+
+        if (dbManager) {
+          dbManager.tryReleaseDbConnectionBackToPool();
+        }
+
+        if (
+          clsNamespace.get('dbLocalTransactionCount') > 1 &&
+          !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
+            controller[serviceName].constructor,
+            functionName
+          )
+        ) {
+          // noinspection ExceptionCaughtLocallyJS
+          throw new Error(
+            serviceFunction +
+            ': multiple database manager operations must be executed inside a transaction or service function must be annotated with @NoTransaction'
+          );
+        } else if (
+          clsNamespace.get('dbLocalTransactionCount') === 1 &&
+          clsNamespace.get('remoteServiceCallCount') === 1 &&
+          !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
+            controller[serviceName].constructor,
+            functionName
+          )
+        ) {
+          // noinspection ExceptionCaughtLocallyJS
+          throw new Error(
+            serviceFunction +
+            ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction'
+          );
+        } else if (
+          clsNamespace.get('remoteServiceCallCount') > 1 &&
+          !serviceFunctionAnnotationContainer.isServiceFunctionNonDistributedTransactional(
+            controller[serviceName].constructor,
+            functionName
+          )
+        ) {
+          // noinspection ExceptionCaughtLocallyJS
+          throw new Error(
+            serviceFunction +
+            ": multiple remote service calls cannot be executed because distributed transactions are not supported. To allow multiple remote service calls that don't require a transaction, annotate service function with @NoDistributedTransaction"
+          );
+        }
+      } catch (error) {
+        response = createErrorResponseFromError(error);
+      }
+
+      return response;
+    });
+  }
 
   if (isErrorResponse(response)) {
     if (response.statusCode >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {

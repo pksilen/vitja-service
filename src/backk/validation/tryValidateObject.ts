@@ -1,4 +1,4 @@
-import { validateOrReject, ValidationError } from "class-validator";
+import { validateOrReject } from "class-validator";
 import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
 import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
 import getValidationErrors from "./getValidationErrors";
@@ -14,7 +14,7 @@ export default async function tryValidateObject(obj: object): Promise<void> {
       forbidNonWhitelisted: true
     });
   } catch (validationErrors) {
-    const errorMessage = 'Invalid argument: ' + getValidationErrors(validationErrors);
+    const errorMessage = 'Error code invalidArgument: Invalid argument: ' + getValidationErrors(validationErrors);
     createErrorFromErrorMessageAndThrowError(createErrorMessageWithStatusCode(errorMessage, 400));
   }
 }

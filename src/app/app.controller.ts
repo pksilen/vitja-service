@@ -1,18 +1,18 @@
-import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
-import AuthorizationService from '../backk/authorization/AuthorizationService';
-import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
-import tryExecuteServiceFunction from '../backk/execution/tryExecuteServiceFunction';
-import initializeController from '../backk/initialization/initializeController';
-import ReadinessCheckService from '../backk/readinesscheck/ReadinessCheckService';
-import OrdersService from '../services/orders/OrdersService';
-import SalesItemsService from '../services/salesitems/SalesItemsService';
-import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
-import UsersService from '../services/users/UsersService';
-import ResponseCacheConfigService from '../backk/cache/ResponseCacheConfigService';
+import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Param, Post, Query } from "@nestjs/common";
+import AuthorizationService from "../backk/authorization/AuthorizationService";
+import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
+import tryExecuteServiceFunction from "../backk/execution/tryExecuteServiceFunction";
+import initializeController from "../backk/initialization/initializeController";
+import ReadinessCheckService from "../backk/readinesscheck/ReadinessCheckService";
+import OrdersService from "../services/orders/OrdersService";
+import SalesItemsService from "../services/salesitems/SalesItemsService";
+import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
+import UsersService from "../services/users/UsersService";
+import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigService";
 
 // noinspection JSUnusedLocalSymbols,OverlyComplexFunctionJS
 @Controller()
-export class AppController {
+export class AppController  {
   constructor(
     private readonly captchaVerifyService: CaptchaVerifyService,
     private readonly readinessCheckService: ReadinessCheckService,
