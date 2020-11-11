@@ -180,7 +180,7 @@ export default async function tryExecuteServiceFunction(
 
     let response;
 
-    if (
+    if (options?.httpMethod === 'GET' &&
       controller?.responseCacheConfigService.shouldCacheServiceFunctionCallResponse(
         serviceFunction,
         serviceFunctionArgument
@@ -295,7 +295,7 @@ export default async function tryExecuteServiceFunction(
           await tryValidateResponse(response, ServiceFunctionReturnType);
         }
 
-        if (
+        if (options?.httpMethod === 'GET' &&
           controller?.responseCacheConfigService.shouldCacheServiceFunctionCallResponse(
             serviceFunction,
             serviceFunctionArgument

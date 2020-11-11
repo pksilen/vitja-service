@@ -2,7 +2,7 @@
 
 TODO:
 - redis request cache for getting multiple entities
-  - if GET method used, set appropriate HTTP response cache headers
+  - cache if GET method used
   - cache debug logging
   - cache error logging
   - cache metrics
