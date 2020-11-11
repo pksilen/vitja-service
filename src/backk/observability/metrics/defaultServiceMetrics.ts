@@ -31,6 +31,7 @@ class DefaultServiceMetrics {
   private readonly allServiceFunctionCallCounter: BoundCounter;
   private readonly serviceFunctionCallCounter: Counter;
   private readonly serviceFunctionCallCacheHitCounter: Counter;
+  private readonly serviceFunctionCallCachedResponsesCounter: Counter;
   private readonly serviceFunctionProcessingTimeCounter: Counter;
 
   private readonly authorizationFailureCounter: BoundCounter;
@@ -67,6 +68,13 @@ class DefaultServiceMetrics {
     this.serviceFunctionCallCacheHitCounter = meter.createCounter('service_function_call_cache_hits', {
       description: 'Number of service function calls hitting the cache'
     });
+
+    this.serviceFunctionCallCachedResponsesCounter = meter.createCounter(
+      'cached_service_function_call_responses',
+      {
+        description: 'Number of cached service function call responses'
+      }
+    );
 
     this.authorizationFailureCounter = meter
       .createCounter('authorization_failures', {
@@ -256,6 +264,10 @@ class DefaultServiceMetrics {
 
   incrementServiceFunctionCallCacheHitCounterByOne(serviceFunction: string) {
     this.serviceFunctionCallCacheHitCounter.bind({ ...this.defaultLabels, serviceFunction }).add(1);
+  }
+
+  incrementServiceFunctionCallCachedResponsesCounterByOne(serviceFunction: string) {
+    this.serviceFunctionCallCachedResponsesCounter.bind({ ...this.defaultLabels, serviceFunction }).add(1);
   }
 }
 

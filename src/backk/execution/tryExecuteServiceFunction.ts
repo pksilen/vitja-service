@@ -324,6 +324,7 @@ export default async function tryExecuteServiceFunction(
               redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
               key
             });
+            defaultServiceMetrics.incrementServiceFunctionCallCachedResponsesCounterByOne(serviceName);
             if (await redis.exists(key)) {
               ttl = await redis.ttl(key);
             } else {
@@ -331,6 +332,7 @@ export default async function tryExecuteServiceFunction(
                 key,
                 controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunction)
               );
+              ttl = controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunction);
             }
           } catch (error) {
             log(Severity.ERROR, 'Failed to access Redis cache', error.message, {
