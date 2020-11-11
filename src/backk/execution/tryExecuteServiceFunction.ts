@@ -189,9 +189,16 @@ export default async function tryExecuteServiceFunction(
     ) {
       const key = getNamespacedServiceName() + ':' + serviceFunction;
       const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
-      const cachedResponseJson = await redis.hget(key,
-        JSON.stringify(serviceFunctionArgument)
-      );
+      let cachedResponseJson;
+      try {
+        cachedResponseJson = await redis.hget(key,
+          JSON.stringify(serviceFunctionArgument)
+        );
+      } catch(error) {
+        log(Severity.ERROR, 'Failed to access Redis cache', error.message, {
+          redisUrl: controller?.responseCacheConfigService.getRedisUrl()
+        });
+      }
       if (cachedResponseJson) {
         log(Severity.DEBUG, 'Fetched service function call response from Redis cache', '', {
           redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
@@ -311,18 +318,25 @@ export default async function tryExecuteServiceFunction(
           const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
           response = JSON.stringify(response);
           const key = getNamespacedServiceName() + ':' + serviceFunction;
-          await redis.hset(key, JSON.stringify(serviceFunctionArgument), response);
-          log(Severity.DEBUG, 'Store service function call response to Redis cache', '', {
-            redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
-            key
-          });
-          if (await redis.exists(key)) {
-            ttl = await redis.ttl(key);
-          } else {
-            await redis.expire(
-              key,
-              controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunction)
-            );
+
+          try {
+            await redis.hset(key, JSON.stringify(serviceFunctionArgument), response);
+            log(Severity.DEBUG, 'Stored service function call response to Redis cache', '', {
+              redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
+              key
+            });
+            if (await redis.exists(key)) {
+              ttl = await redis.ttl(key);
+            } else {
+              await redis.expire(
+                key,
+                controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunction)
+              );
+            }
+          } catch(error) {
+            log(Severity.ERROR, 'Failed to access Redis cache', error.message, {
+              redisUrl: controller?.responseCacheConfigService.getRedisUrl()
+            });
           }
         }
       }

@@ -2,7 +2,6 @@
 
 TODO:
 - redis request cache for getting multiple entities
-  - cache debug logging
   - cache error logging
   - cache metrics
 - Support kubernetes namespace to additionally identify topic
