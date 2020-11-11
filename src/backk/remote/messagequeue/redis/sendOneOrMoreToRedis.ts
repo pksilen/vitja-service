@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 import { Send } from '../sendInsideTransaction';
-import parseRemoteServiceUrlParts from '../../utils/parseRemoteServiceUrlParts';
+import parseServiceFunctionCallUrlParts from '../../utils/parseServiceFunctionCallUrlParts';
 import { getNamespace } from 'cls-hooked';
 import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
 import log, { Severity } from '../../../observability/logging/log';
@@ -12,8 +12,8 @@ export default async function sendOneOrMoreToRedis(
   sends: Send[],
   isTransactional: boolean
 ): Promise<void | ErrorResponse> {
-  const remoteServiceUrl = sends[0].remoteServiceUrl;
-  const { broker, topic } = parseRemoteServiceUrlParts(remoteServiceUrl);
+  const remoteServiceUrl = sends[0].serviceFunctionCallUrl;
+  const { broker, topic } = parseServiceFunctionCallUrlParts(remoteServiceUrl);
   const redis = new Redis(broker);
   const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
 
@@ -24,20 +24,22 @@ export default async function sendOneOrMoreToRedis(
 
     await forEachAsyncSequential(
       sends,
-      async ({ remoteServiceUrl, options, serviceFunction, serviceFunctionArgument }: Send) => {
+      async ({ responseUrl, serviceFunctionCallUrl, serviceFunctionArgument }: Send) => {
+        const { serviceFunction } = parseServiceFunctionCallUrlParts(serviceFunctionCallUrl);
         log(Severity.DEBUG, 'Send to remote service for execution', '', {
-          remoteServiceUrl,
+          serviceFunctionCallUrl: serviceFunctionCallUrl,
           serviceFunction
         });
 
-        defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceUrl);
+        defaultServiceMetrics.incrementRemoteServiceCallCountByOne(serviceFunctionCallUrl);
         await redis.rpush(
           topic,
           JSON.stringify({
             serviceFunction,
             serviceFunctionArgument,
             headers: {
-              Authorization: authHeader
+              Authorization: authHeader,
+              responseUrl
             }
           })
         );

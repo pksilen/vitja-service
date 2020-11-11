@@ -1,10 +1,6 @@
 # Vitja service
 
 TODO:
-- Support kubernetes namespace to additionally identify topic
-  - kafka sendTo
-  - Redis consumer
-  - Redis sendTo
 - Support Redis/Kafka consumer to send successful response to another service
   - Kafka
   - Redis

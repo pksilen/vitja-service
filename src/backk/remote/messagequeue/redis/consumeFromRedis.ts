@@ -36,7 +36,9 @@ export default async function consumeFromRedis(
         isErrorResponse(response) &&
         (response as ErrorResponse).statusCode >= HttpStatusCodes.INTERNAL_ERRORS_START
       ) {
-        await sendTo('redis://' + broker + '/' + topic, serviceFunction, serviceFunctionArgument);
+        await sendTo('redis://' + broker + '/' + topic + '/' + serviceFunction, serviceFunctionArgument);
+      } else if (headers?.responseUrl && response) {
+        await sendTo(headers.responseUrl as string, response);
       }
 
       const now = Date.now();
