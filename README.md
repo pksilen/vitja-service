@@ -1,9 +1,6 @@
 # Vitja service
 
 TODO:
-- Support dotted fieldname in getEntitiesBy
-  - deleteEntitiesBy 
-  - and updateEntitiesBy
 - redis request cache for getting multiple entities (getEntities)
   - if GET method used, set appropriate HTTP response cache headers
 - GDPR logging
