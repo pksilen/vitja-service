@@ -8,6 +8,8 @@ export default function getSqlColumnType(fieldName: string, baseFieldTypeName: s
       return 'DOUBLE PRECISION';
     case 'boolean':
       return 'BOOLEAN';
+    case 'Date':
+      return 'TIMESTAMP';
     case 'string':
       if (fieldName.endsWith('Id') || fieldName === 'id') {
         return 'BIGINT';

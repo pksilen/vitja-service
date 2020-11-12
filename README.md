@@ -1,9 +1,6 @@
 # Vitja service
 
 TODO:
-- GDPR logging
-  - methods that use userName or userId
-  - userService methods
 - Date/Timestamp type support
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)
@@ -26,6 +23,7 @@ TODO:
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
   - Update default prometheus metrics
 - Add boolean field to entity to test it
+- User has SalesItems and Orders subentities
 - New entities: User has Friends, Posts, show posts from friends
   - GetEntitiesByIn: get Posts where userId in User's friendIds
 - Unit testaa: shouldIncludeField eri keissit

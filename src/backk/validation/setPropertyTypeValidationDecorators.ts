@@ -157,6 +157,8 @@ export default function setPropertyTypeValidationDecorators(
             }
           } else if (finalPropertyTypeName === 'string') {
             validationType = ValidationTypes.IS_STRING;
+          } else if (finalPropertyTypeName === 'Date') {
+            validationType = ValidationTypes.IS_DATE;
           } else if (finalPropertyTypeName.charAt(0).match(/^[_$A-Z]$/)) {
             validationType = ValidationTypes.IS_INSTANCE;
             if (Types[finalPropertyTypeName]) {
@@ -247,14 +249,14 @@ export default function setPropertyTypeValidationDecorators(
             propertyTypeName.endsWith('[]') &&
             !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.IS_ARRAY)
           ) {
-            const optionalValidationMetadataArgs: ValidationMetadataArgs = {
+            const arrayValidationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.IS_ARRAY,
               target: typeClass,
               propertyName
             };
 
             getFromContainer(MetadataStorage).addValidationMetadata(
-              new ValidationMetadata(optionalValidationMetadataArgs)
+              new ValidationMetadata(arrayValidationMetadataArgs)
             );
           }
 

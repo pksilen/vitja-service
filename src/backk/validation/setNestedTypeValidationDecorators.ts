@@ -10,6 +10,23 @@ export default function setNestedTypeValidationDecorators(
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
 
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
+    if (validationMetadata.type === 'isDate') {
+      if (
+        !targetAndPropNameToHasNestedValidationMap[
+        (validationMetadata.target as Function).name + validationMetadata.propertyName
+          ]
+      ) {
+        Type(() => Date)(
+          new (validationMetadata.target as new () => any)(),
+          validationMetadata.propertyName
+        );
+
+        targetAndPropNameToHasNestedValidationMap[
+        (validationMetadata.target as Function).name + validationMetadata.propertyName
+          ] = true;
+      }
+    }
+
     if (validationMetadata.type === 'isInstance') {
       const nestedValidationMetadataArgs: ValidationMetadataArgs = {
         type: ValidationTypes.NESTED_VALIDATION,

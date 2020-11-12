@@ -56,6 +56,10 @@ export default function getTypeMetadata<T>(
         propNameToPropTypeMap[validationMetadata.propertyName] =
           'integer' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
         break;
+      case 'isDate':
+        propNameToPropTypeMap[validationMetadata.propertyName] =
+          'Date' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+        break;
       case 'customValidation':
         if (validationMetadata.constraints[0] === 'isBigInt') {
           propNameToPropTypeMap[validationMetadata.propertyName] =

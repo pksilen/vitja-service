@@ -37,8 +37,8 @@ export default function parseServiceTypeNames(
               paramTypeNameEnd.column
             );
 
-            if (paramTypeName === 'number' || paramTypeName === 'string' || paramTypeName === 'boolean' || paramTypeName.endsWith('[]') || paramTypeName.startsWith('Array<')) {
-              throw new Error(serviceName + '.' + functionName + ': input argument must have class type');
+            if ((paramTypeName.charAt(0) === paramTypeName.charAt(0).toLowerCase() && paramTypeName.charAt(0) !== '_') || paramTypeName.endsWith('[]') || paramTypeName.startsWith('Array<')) {
+              throw new Error(serviceName + '.' + functionName + ': input argument type must be a user-defined class type');
             }
 
             functionNameToParamTypeNameMap[functionName] = paramTypeName;
