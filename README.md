@@ -2,7 +2,6 @@
 
 TODO:
 - GDPR logging
-  -audit log should go to separate server
   - methods that use userName or userId
   - userService methods
 - Date/Timestamp type support

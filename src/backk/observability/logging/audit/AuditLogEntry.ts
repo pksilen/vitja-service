@@ -2,14 +2,22 @@ import { Resource } from '../LogEntry';
 
 export type UserOperation =
   | 'loginUser'
-  | 'lockAccount'
+  | 'verifyUserLogin'
+  | 'lockUserTemporarily'
+  | 'lockUserPermanently'
   | 'forgotPassword'
   | 'logoutUser'
-  | 'changePassword'
-  | 'addUser'
-  | 'removeUser'
-  | 'assignUserToRole'
-  | 'removeRoleFromUser'
+  | 'changeUserPassword'
+  | 'updateUser'
+  | 'createUser'
+  | 'verifyUser'
+  | 'deleteUser'
+  | 'createUserGroup'
+  | 'deleteUserGroup'
+  | 'associateUserWithRole'
+  | 'disassociateUserWithRole'
+  | 'associateUserGroupWithRole'
+  | 'disassociateUserGroupWithRole'
   | 'addUserToGroup'
   | 'removeUserFromGroup'
 
@@ -22,7 +30,7 @@ export interface AuditLogEntry {
   TraceFlags?: number;
   userName: string;
   clientIp: string;
-  accessToken: string;
+  authorizationHeader: string;
   userOperation: UserOperation | string;
   userOperationResult: UserOperationResult;
   userOperationHttpStatusCode: number;

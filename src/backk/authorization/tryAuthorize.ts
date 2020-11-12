@@ -14,7 +14,7 @@ export default async function tryAuthorize(
   authHeader: string | undefined,
   authorizationService: any,
   usersService: UsersBaseService | undefined
-): Promise<void> {
+): Promise<void | string> {
   const ServiceClass = service.constructor;
 
   if (!authorizationService || !(authorizationService instanceof AuthorizationService)) {
@@ -24,8 +24,7 @@ export default async function tryAuthorize(
   if (authHeader === undefined) {
     if (
       serviceAnnotationContainer.isServiceAllowedForInternalUse(ServiceClass) ||
-      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(ServiceClass, functionName) ||
-      serviceAnnotationContainer.isServiceAllowedForEveryUser(ServiceClass)
+      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(ServiceClass, functionName)
     ) {
       return;
     }
@@ -73,14 +72,16 @@ export default async function tryAuthorize(
       }
 
       if (await authorizationService.areSameIdentities(userName, authHeader)) {
-        return;
+        return userName;
       }
     }
   }
 
   if (
     process.env.NODE_ENV === 'development' &&
-    serviceFunctionAnnotationContainer.isServiceFunctionAllowedForTests(ServiceClass, functionName)
+    (serviceFunctionAnnotationContainer.isServiceFunctionAllowedForTests(ServiceClass, functionName) ||
+      serviceAnnotationContainer.isServiceAllowedForInternalUse(ServiceClass) ||
+      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(ServiceClass, functionName))
   ) {
     return;
   }

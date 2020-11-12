@@ -8,7 +8,7 @@ import { postgreSqlDbManager } from '../database/postgreSqlDbManager';
 import CaptchaVerifierServiceImpl from '../services/captchaverify/CatpchaVerifyServiceImpl';
 import OrdersService from '../services/orders/OrdersService';
 import OrdersServiceImpl from '../services/orders/OrdersServiceImpl';
-import ReadinessCheckServiceImpl from '../services/readinesscheck/ReadinessCheckServiceImpl';
+import ReadinessCheckServiceImpl from '../backk/readinesscheck/ReadinessCheckServiceImpl';
 import SalesItemsService from '../services/salesitems/SalesItemsService';
 import SalesItemsServiceImpl from '../services/salesitems/SalesItemsServiceImpl';
 import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
@@ -18,6 +18,8 @@ import UsersServiceImpl from '../services/users/UsersServiceImpl';
 import { AppController } from './app.controller';
 import ResponseCacheConfigService from '../backk/cache/ResponseCacheConfigService';
 import ResponseCacheConfigServiceImpl from '../services/responsecacheconfig/ResponseCacheConfigServiceImpl';
+import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
+import AuditLoggingServiceImpl from "../services/auditlogging/AuditLoggingServiceImpl";
 
 @Module({
   imports: [],
@@ -25,6 +27,7 @@ import ResponseCacheConfigServiceImpl from '../services/responsecacheconfig/Resp
   providers: [
     { provide: AbstractDbManager, useValue: postgreSqlDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
+    { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },
     { provide: CaptchaVerifyService, useClass: CaptchaVerifierServiceImpl },
     {

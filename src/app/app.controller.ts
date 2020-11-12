@@ -8,19 +8,19 @@ import {
   Param,
   Post,
   Query,
-  Res,
-  Response
+  Res
 } from '@nestjs/common';
 import AuthorizationService from '../backk/authorization/AuthorizationService';
 import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
 import tryExecuteServiceFunction from '../backk/execution/tryExecuteServiceFunction';
-import initializeController from '../backk/initialization/initializeController';
 import ReadinessCheckService from '../backk/readinesscheck/ReadinessCheckService';
 import OrdersService from '../services/orders/OrdersService';
 import SalesItemsService from '../services/salesitems/SalesItemsService';
 import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
 import UsersService from '../services/users/UsersService';
 import ResponseCacheConfigService from '../backk/cache/ResponseCacheConfigService';
+import AuditLoggingService from '../backk/observability/logging/audit/AuditLoggingService';
+import initializeController from '../backk/initialization/initializeController';
 
 // noinspection JSUnusedLocalSymbols,OverlyComplexFunctionJS
 @Controller()
@@ -29,6 +29,7 @@ export class AppController {
     private readonly captchaVerifyService: CaptchaVerifyService,
     private readonly readinessCheckService: ReadinessCheckService,
     private readonly responseCacheConfigService: ResponseCacheConfigService,
+    private readonly auditLoggingService: AuditLoggingService,
     private readonly authorizationService: AuthorizationService,
     private readonly usersService: UsersService,
     private readonly salesItemsService: SalesItemsService,
@@ -42,6 +43,7 @@ export class AppController {
   @HttpCode(HttpStatus.OK)
   processGetRequests(
     @Headers('authorization') authHeader: string,
+    @Headers('x-forwarded-for') xForwardedForHeader: string,
     @Param() params: { serviceFunctionName: string },
     @Query('arg') serviceFunctionArgument: object,
     @Res() response: any
@@ -51,7 +53,7 @@ export class AppController {
       this,
       params.serviceFunctionName,
       serviceFunctionArgument,
-      authHeader,
+      { Authorization: authHeader, 'X-Forwarded-For': xForwardedForHeader },
       response,
       {
         httpMethod: 'GET',
@@ -64,6 +66,7 @@ export class AppController {
   @HttpCode(HttpStatus.OK)
   processPostRequests(
     @Headers('authorization') authHeader: string,
+    @Headers('x-forwarded-for') xForwardedForHeader: string,
     @Param() params: { serviceFunctionName: string },
     @Body() serviceFunctionArgument: object,
     @Res() response: any
@@ -73,7 +76,7 @@ export class AppController {
       this,
       params.serviceFunctionName,
       serviceFunctionArgument,
-      authHeader,
+      { Authorization: authHeader, 'X-Forwarded-For': xForwardedForHeader },
       response
     );
   }

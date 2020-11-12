@@ -153,7 +153,7 @@ export default async function consumeFromKafka(
           serviceFunction,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           serviceFunctionArgument,
-          headers?.Auhtorization as string
+          headers as any
         );
 
         if (

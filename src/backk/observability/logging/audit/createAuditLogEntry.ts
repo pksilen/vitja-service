@@ -1,7 +1,7 @@
+import fs from 'fs';
 import tracerProvider from '../../distributedtracinig/tracerProvider';
 import getTimeZone from '../../../utils/getTimeZone';
 import getServiceName from '../../../utils/getServiceName';
-import fs from 'fs';
 import { AuditLogEntry, UserOperation, UserOperationResult } from "./AuditLogEntry";
 
 const cwd = process.cwd();
@@ -12,7 +12,7 @@ const packageObj = JSON.parse(packageJson);
 export default function createAuditLogEntry(
   userName: string,
   clientIp: string,
-  accessToken: string,
+  authorizationHeader: string,
   userOperation: UserOperation | string,
   userOperationResult: UserOperationResult,
   userOperationHttpStatusCode: number,
@@ -26,7 +26,7 @@ export default function createAuditLogEntry(
   return {
     userName,
     clientIp,
-    accessToken,
+    authorizationHeader,
     userOperation,
     userOperationResult,
     userOperationHttpStatusCode,

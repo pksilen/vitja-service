@@ -21,6 +21,8 @@ import log, { Severity } from '../observability/logging/log';
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
 import { HttpStatusCodes } from '../constants/constants';
 import getNamespacedServiceName from '../utils/getServiceNamespace';
+import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
+import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -33,17 +35,21 @@ export default async function tryExecuteServiceFunction(
   controller: any,
   serviceFunction: string,
   serviceFunctionArgument: any,
-  authHeader: string,
+  headers: { [key: string]: string },
   resp?: any,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
+  const [serviceName, functionName] = serviceFunction.split('.');
+  let response;
+  let storedError;
+  let userName;
+
   // noinspection ExceptionCaughtLocallyJS
   try {
     log(Severity.DEBUG, 'Service function call', serviceFunction);
     defaultServiceMetrics.incrementServiceFunctionCallsByOne(serviceFunction);
 
     const serviceFunctionCallStartTimeInMillis = Date.now();
-    const [serviceName, functionName] = serviceFunction.split('.');
 
     if (options?.httpMethod === 'GET') {
       if (
@@ -116,11 +122,11 @@ export default async function tryExecuteServiceFunction(
 
     const usersService = Object.values(controller).find((service) => service instanceof UsersBaseService);
 
-    await tryAuthorize(
+    userName = await tryAuthorize(
       controller[serviceName],
       functionName,
       serviceFunctionArgument,
-      authHeader,
+      headers.Authorization,
       controller['authorizationService'],
       usersService as UsersBaseService | undefined
     );
@@ -178,8 +184,6 @@ export default async function tryExecuteServiceFunction(
       await tryValidateObject(instantiatedServiceFunctionArgument);
     }
 
-    let response;
-
     if (
       options?.httpMethod === 'GET' &&
       controller?.responseCacheConfigService.shouldCacheServiceFunctionCallResponse(
@@ -222,7 +226,7 @@ export default async function tryExecuteServiceFunction(
         dbManager.setClsNamespaceName('serviceFunctionExecution');
       }
       response = await clsNamespace.runAndReturn(async () => {
-        clsNamespace.set('authHeader', authHeader);
+        clsNamespace.set('authHeader', headers.Authorization);
         clsNamespace.set('dbLocalTransactionCount', 0);
         clsNamespace.set('remoteServiceCallCount', 0);
         let response;
@@ -359,11 +363,26 @@ export default async function tryExecuteServiceFunction(
 
     resp?.send(response);
   } catch (error) {
+    storedError = error;
     if (resp && error instanceof HttpException) {
       resp.status(error.getStatus());
       resp.send(error.getResponse());
     } else {
       throw error;
+    }
+  } finally {
+    if (controller[serviceName] instanceof UsersBaseService || userName) {
+      const auditLogEntry = createAuditLogEntry(
+        userName ?? serviceFunctionArgument?.userName ?? '',
+        headers['X-Forwarded-For'] ?? '',
+        headers.Authorization,
+        controller[serviceName] instanceof UsersBaseService ? functionName : serviceFunction,
+        storedError ? 'failure' : 'success',
+        storedError?.getStatus(),
+        storedError?.getResponse().errorMessage,
+        controller[serviceName] instanceof UsersBaseService ? serviceFunctionArgument : { _id: response._id }
+      );
+      await (controller?.auditLoggingService as AuditLoggingService).log(auditLogEntry);
     }
   }
 }
