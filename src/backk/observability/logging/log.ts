@@ -3,6 +3,7 @@ import { LogEntry } from './LogEntry';
 import * as fs from 'fs';
 import tracerProvider from "../distributedtracinig/tracerProvider";
 import getTimeZone from "../../utils/getTimeZone";
+import getServiceName from "../../utils/getServiceName";
 
 export enum Severity {
   DEBUG = 5,
@@ -21,8 +22,7 @@ export const severityNameToSeverityMap: { [key: string]: number } = {
 };
 
 const cwd = process.cwd();
-const serviceName = cwd.split('/').reverse()[0];
-
+const serviceName = getServiceName();
 const packageJson = fs.readFileSync(cwd + '/package.json', { encoding: 'UTF-8' });
 const packageObj = JSON.parse(packageJson);
 

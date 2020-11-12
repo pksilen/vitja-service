@@ -1,9 +1,6 @@
 # Vitja service
 
 TODO:
-- Support Redis/Kafka consumer to send successful response to another service
-  - Kafka
-  - Redis
 - GDPR logging
   -audit log should go to separate server
   - methods that use userName or userId
