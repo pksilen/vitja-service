@@ -38,6 +38,7 @@ function updateResultMaps(
 
     if (
       isArray &&
+      baseFieldTypeName !== 'Date' &&
       baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
       baseFieldTypeName[0] !== '('
     ) {
@@ -60,7 +61,7 @@ function updateResultMaps(
           entityClassOrName as Function
         );
       }
-    } else if (baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
+    } else if ( baseFieldTypeName !== 'Date' && baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
       if (shouldIncludeField(fieldName, fieldPath, projection)) {
         const relationEntityName = baseFieldTypeName;
 

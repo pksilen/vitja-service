@@ -65,7 +65,7 @@ export default async function createEntity<T>(
 
         if (
           !isArray &&
-          (baseFieldTypeName[0] !== baseFieldTypeName[0].toUpperCase() || baseFieldTypeName[0] === '(') &&
+          (baseFieldTypeName[0] !== baseFieldTypeName[0].toUpperCase() || baseFieldTypeName[0] === '(' || baseFieldTypeName === 'Date') &&
           fieldName !== '_id'
         ) {
           columns.push(fieldName);
@@ -108,6 +108,7 @@ export default async function createEntity<T>(
 
         if (
           isArray &&
+          baseFieldTypeName !== 'Date' &&
           baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
           baseFieldTypeName[0] !== '('
         ) {
@@ -150,6 +151,7 @@ export default async function createEntity<T>(
             }
           });
         } else if (
+          baseFieldTypeName !== 'Date' &&
           baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
           baseFieldTypeName[0] !== '('
         ) {

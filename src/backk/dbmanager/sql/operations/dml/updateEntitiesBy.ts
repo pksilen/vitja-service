@@ -82,6 +82,7 @@ export default async function updateEntitiesBy<T extends Entity>(
 
         if (
           isArray &&
+          baseFieldTypeName !== 'Date' &&
           baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
           baseFieldTypeName[0] !== '('
         ) {
@@ -102,6 +103,7 @@ export default async function updateEntitiesBy<T extends Entity>(
             })
           );
         } else if (
+          baseFieldTypeName !== 'Date' &&
           baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
           baseFieldTypeName[0] !== '('
         ) {

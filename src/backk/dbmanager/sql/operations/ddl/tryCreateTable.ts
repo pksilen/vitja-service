@@ -25,7 +25,7 @@ export default async function tryCreateTable(
     async ([fieldName, fieldTypeName]: [any, any]) => {
       let baseFieldTypeName = fieldTypeName;
       let isArray = false;
-      let sqlColumnType: string;
+      let sqlColumnType;
 
       if (fieldTypeName.endsWith('[]')) {
         baseFieldTypeName = fieldTypeName.slice(0, -2);
@@ -39,17 +39,17 @@ export default async function tryCreateTable(
       }
 
       if (!sqlColumnType && baseFieldTypeName[0] === '(') {
-        sqlColumnType = getEnumSqlColumnType(baseFieldTypeName, sqlColumnType);
+        sqlColumnType = getEnumSqlColumnType(baseFieldTypeName);
       }
 
-      if (baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
+      if (!sqlColumnType && baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
         setSubEntityInfo(entityName, baseFieldTypeName);
       } else if (isArray) {
         const idFieldName = await createAdditionalTable(
           schema,
           entityName,
           fieldName,
-          sqlColumnType,
+          sqlColumnType ?? '',
           dbManager
         );
 

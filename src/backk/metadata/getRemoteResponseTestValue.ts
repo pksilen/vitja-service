@@ -41,7 +41,7 @@ export default function getRemoteResponseTestValue<T>(
     } else if (finalPropertyTypeName.startsWith('string')) {
       sampleArg[propertyName] = 'abc';
     } else if (finalPropertyTypeName.startsWith('Date')) {
-      sampleArg[propertyName] = new Date(0).toString();
+      sampleArg[propertyName] = `'${new Date(0).toISOString()}'`;
     } else if (finalPropertyTypeName.startsWith('(')) {
       const enumValues = finalPropertyTypeName.slice(1).split(/[|)]/);
       sampleArg[propertyName] =

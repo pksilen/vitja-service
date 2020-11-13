@@ -28,7 +28,7 @@ export default function getFieldsForEntity(
       isArray = true;
     }
 
-    if (baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
+    if ( baseFieldTypeName !== 'Date' && baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
       getFieldsForEntity(
         schema,
         fields,

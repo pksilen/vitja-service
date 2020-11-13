@@ -35,4 +35,6 @@ export default class CreateSalesItemArg {
     each: true
   })
   secondaryImageDataUris!: string[];
+
+  lastModifiedTimestamp!: Date;
 }

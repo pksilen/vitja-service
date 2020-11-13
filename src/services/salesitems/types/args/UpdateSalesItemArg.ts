@@ -37,6 +37,8 @@ export default class UpdateSalesItemArg {
   })
   secondaryImageDataUris?: string[];
 
+  lastModifiedTimestamp?: Date;
+
   @IsString()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
   _id!: string;

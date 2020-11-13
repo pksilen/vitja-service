@@ -48,7 +48,7 @@ export default function getJoinClause(
       baseFieldTypeName = fieldTypeName.slice(0, -2);
     }
 
-    if (baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
+    if ( baseFieldTypeName !== 'Date' && baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
       joinClause += getJoinClause(schema, projection, (Types as any)[baseFieldTypeName], Types);
     }
   });

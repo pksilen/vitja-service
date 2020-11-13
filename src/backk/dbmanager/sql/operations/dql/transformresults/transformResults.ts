@@ -12,7 +12,7 @@ function transformResult(result: any, entityClass: Function, Types: object) {
       isArray = true;
     }
 
-    if (baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
+    if ( baseFieldTypeName !== 'Date' && baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
       transformResult(result[fieldName], (Types as any)[baseFieldTypeName], Types);
     } else if (isArray && result[fieldName]) {
       const singularFieldName = fieldName.slice(0, -1);

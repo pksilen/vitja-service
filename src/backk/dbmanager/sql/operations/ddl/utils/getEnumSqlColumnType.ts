@@ -1,4 +1,4 @@
-export default function getEnumSqlColumnType(baseFieldTypeName: string, sqlColumnType: string) {
+export default function getEnumSqlColumnType(baseFieldTypeName: string) {
   const enumValues = baseFieldTypeName.slice(1).split(/[|)]/);
   const firstEnumValue = enumValues[0];
   if (firstEnumValue[0] === "'") {

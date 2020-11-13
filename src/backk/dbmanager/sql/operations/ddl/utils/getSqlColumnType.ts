@@ -1,4 +1,4 @@
-export default function getSqlColumnType(fieldName: string, baseFieldTypeName: string): string {
+export default function getSqlColumnType(fieldName: string, baseFieldTypeName: string): string | undefined {
   switch (baseFieldTypeName) {
     case 'integer':
       return 'INTEGER';
@@ -18,5 +18,5 @@ export default function getSqlColumnType(fieldName: string, baseFieldTypeName: s
       }
   }
 
-  return '';
+  return undefined;
 }

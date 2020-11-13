@@ -46,4 +46,6 @@ export class SalesItem extends _Id {
       createdTimestampInSecs > Math.round(Date.now() / 1000 - 60)
   )
   createdTimestampInSecs!: number;
+
+  lastModifiedTimestamp!: Date;
 }
