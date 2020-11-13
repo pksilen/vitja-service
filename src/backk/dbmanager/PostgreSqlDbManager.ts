@@ -70,13 +70,18 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async isDbReady(): Promise<boolean> {
-    const createTableStatement = `CREATE TABLE IF NOT EXISTS ${this.schema}.__BACKK__ (dummy INT)`;
-
     try {
-      await this.tryExecuteSqlWithoutCls(createTableStatement);
+      await this.tryExecuteSqlWithoutCls(`SELECT * FROM ${this.schema}.__BACKK__`);
       return true;
     } catch (error) {
-      return false;
+      try {
+        const createTableStatement = `CREATE TABLE ${this.schema}.__BACKK__ (dummy INT)`;
+        await this.tryExecuteSqlWithoutCls(createTableStatement);
+        return true;
+      }
+      catch(error) {
+        return false;
+      }
     }
   }
 
@@ -202,18 +207,26 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async tryExecuteSqlWithoutCls<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
+  async tryExecuteSqlWithoutCls<T>(sqlStatement: string, values?: any[], shouldReportError = true): Promise<Field[]> {
     log(Severity.DEBUG, 'Database DDL operation', sqlStatement);
 
     try {
       const result = await this.pool.query(sqlStatement, values);
+      if (sqlStatement.startsWith('CREATE') || sqlStatement.startsWith('ALTER')) {
+        log(Severity.INFO, 'Database initialization operation', '', {
+          sqlStatement,
+          function: 'PostgreSqlDbManager.tryExecuteSqlWithoutCls'
+        })
+      }
       return result.fields;
     } catch (error) {
-      defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.host);
-      log(Severity.ERROR, error.message, error.stack ?? '', {
-        sqlStatement,
-        function: 'PostgreSqlDbManager.tryExecuteSqlWithoutCls'
-      });
+      if (shouldReportError) {
+        defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.host);
+        log(Severity.ERROR, error.message, error.stack ?? '', {
+          sqlStatement,
+          function: 'PostgreSqlDbManager.tryExecuteSqlWithoutCls'
+        });
+      }
       throw error;
     }
   }

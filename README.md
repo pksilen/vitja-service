@@ -11,6 +11,7 @@ TODO:
   - All array checking must be changed because type name ending can be  | null instead of []
   - Find all slice(0, -2) calls also
 - Support dynamic filters with Map-type argument property
+  _filters in input argument
   filters: Filter[]
    Filter : { fieldName: string, operator?: '>=' | '<=' | '!=' ..., value: any }
    -assert fieldName is a legal column name

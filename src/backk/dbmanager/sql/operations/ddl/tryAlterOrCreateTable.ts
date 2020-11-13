@@ -1,6 +1,6 @@
-import AbstractDbManager from "../../../AbstractDbManager";
-import tryAlterTable from "./tryAlterTable";
-import tryCreateTable from "./tryCreateTable";
+import AbstractDbManager from '../../../AbstractDbManager';
+import tryAlterTable from './tryAlterTable';
+import tryCreateTable from './tryCreateTable';
 
 export default async function tryAlterOrCreateTable(
   dbManager: AbstractDbManager,
@@ -10,7 +10,11 @@ export default async function tryAlterOrCreateTable(
 ) {
   let fields;
   try {
-    fields = await dbManager.tryExecuteSqlWithoutCls(`SELECT * FROM ${schema}.${entityName} LIMIT 1`);
+    fields = await dbManager.tryExecuteSqlWithoutCls(
+      `SELECT * FROM ${schema}.${entityName} LIMIT 1`,
+      undefined,
+      false
+    );
   } catch (error) {
     await tryCreateTable(dbManager, entityName, entityClass, schema);
     return;
