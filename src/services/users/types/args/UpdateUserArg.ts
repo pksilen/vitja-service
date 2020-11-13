@@ -22,9 +22,6 @@ export default class UpdateUserArg {
 
   paymentMethods?: PaymentMethod[];
 
-  @MaxLength(24, {
-    each: true
-  })
   @ValueUsedInTests('123')
   favoriteSalesItemIds?: string[];
 

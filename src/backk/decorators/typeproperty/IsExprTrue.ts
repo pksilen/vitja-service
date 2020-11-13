@@ -7,7 +7,7 @@ export function IsExprTrue(func: (value: any) => boolean, errorMessage: string, 
       name: 'isExprTrue',
       target: object.constructor,
       propertyName: propertyName,
-      constraints: [func],
+      constraints: ['isExprTrue', func],
       options: validationOptions,
       validator: {
         validate(value: any, args: ValidationArguments) {

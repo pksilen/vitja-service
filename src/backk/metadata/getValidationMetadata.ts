@@ -2,33 +2,52 @@ import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 
 export default function getValidationMetadata<T>(typeClass: new () => T): object {
-  const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
+  const metadataForValidations = getFromContainer(MetadataStorage).getTargetValidationMetadatas(
+    typeClass,
+    ''
+  );
   const propNameToValidationsMap: { [key: string]: string[] } = {};
 
   // noinspection FunctionWithMoreThanThreeNegationsJS
-  validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
+  metadataForValidations.forEach((validationMetadata: ValidationMetadata) => {
     if (
       validationMetadata.type !== 'conditionalValidation' &&
       validationMetadata.type !== 'nestedValidation' &&
       validationMetadata.type !== 'isInstance'
     ) {
-      const validationExpr = `${validationMetadata.type}${
-        validationMetadata.constraints?.[0] !== undefined
-          ? '(' +
-            (typeof validationMetadata.constraints[0] === 'object' &&
-            !(validationMetadata.constraints[0] instanceof RegExp)
-              ? JSON.stringify(validationMetadata.constraints[0])
-              : validationMetadata.constraints[0]) +
-            ')'
-          : ''
-      }`;
+      const validationType =
+        validationMetadata.type === 'customValidation'
+          ? validationMetadata.constraints[0]
+          : validationMetadata.type;
+
+      const validationConstraints =
+        validationMetadata.type === 'customValidation'
+          ? validationMetadata.constraints.slice(1)
+          : validationMetadata.constraints;
+
+      const validationConstraintsStr = (validationConstraints ?? [])
+        .map((validationConstraint) =>
+          typeof validationMetadata.constraints[0] === 'object' && !(validationConstraint instanceof RegExp)
+            ? JSON.stringify(validationConstraint)
+            : validationConstraint
+        )
+        .join(', ');
+
+      const separator = validationConstraintsStr ? ', ' : '';
+      const validationOptionsStr = validationMetadata.each ? separator + '{ each: true }' : '';
+
+      const validationExpr = `${validationType}${'(' +
+        validationConstraintsStr +
+        validationOptionsStr +
+        ')'}`;
 
       if (!propNameToValidationsMap[validationMetadata.propertyName]) {
         propNameToValidationsMap[validationMetadata.propertyName] = [validationExpr];
       }
 
-      if (!propNameToValidationsMap[validationMetadata.propertyName].includes(validationExpr))
+      if (!propNameToValidationsMap[validationMetadata.propertyName].includes(validationExpr)) {
         propNameToValidationsMap[validationMetadata.propertyName].push(validationExpr);
+      }
     }
   });
 
