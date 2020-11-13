@@ -1,12 +1,12 @@
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import typeAnnotationContainer from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
-import AbstractDbManager, { Field } from "../../../AbstractDbManager";
-import getEnumSqlColumnType from "./utils/getEnumSqlColumnType";
-import getSqlColumnType from "./utils/getSqlColumnType";
-import setSubEntityInfo from "./utils/setSubEntityInfo";
-import createAdditionalTable from "./utils/createAdditionalTable";
-import addJoinSpec from "./utils/addJoinSpec";
-import getTypeMetadata from "../../../../metadata/getTypeMetadata";
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import typeAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import AbstractDbManager, { Field } from '../../../AbstractDbManager';
+import getEnumSqlColumnType from './utils/getEnumSqlColumnType';
+import getSqlColumnType from './utils/getSqlColumnType';
+import setSubEntityInfo from './utils/setSubEntityInfo';
+import createAdditionalTable from './utils/createAdditionalTable';
+import addJoinSpec from './utils/addJoinSpec';
+import getTypeMetadata from '../../../../metadata/getTypeMetadata';
 
 export default async function tryAlterTable(
   dbManager: AbstractDbManager,
@@ -28,6 +28,12 @@ export default async function tryAlterTable(
         let baseFieldTypeName = fieldTypeName;
         let isArray = false;
         let sqlColumnType;
+        let canBeNull = false;
+
+        if (fieldTypeName.endsWith(' | null')) {
+          fieldTypeName = fieldTypeName.split(' | null')[0];
+          canBeNull = true;
+        }
 
         if (fieldTypeName.endsWith('[]')) {
           baseFieldTypeName = fieldTypeName.slice(0, -2);
@@ -40,7 +46,11 @@ export default async function tryAlterTable(
           sqlColumnType = getEnumSqlColumnType(baseFieldTypeName);
         }
 
-        if (!sqlColumnType && baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
+        if (
+          !sqlColumnType &&
+          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
+          baseFieldTypeName[0] !== '('
+        ) {
           setSubEntityInfo(entityName, baseFieldTypeName);
         } else if (isArray) {
           const idFieldName = await createAdditionalTable(
@@ -54,7 +64,8 @@ export default async function tryAlterTable(
           addJoinSpec(entityName, fieldName, idFieldName);
         } else {
           const isUnique = typeAnnotationContainer.isTypePropertyUnique(entityClass, fieldName);
-          alterTableStatement += fieldName + ' ' + sqlColumnType + (isUnique ? ' UNIQUE' : '');
+          alterTableStatement +=
+            fieldName + ' ' + sqlColumnType + (canBeNull ? '' : 'NOT NULL') + (isUnique ? ' UNIQUE' : '');
           await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
         }
       }
