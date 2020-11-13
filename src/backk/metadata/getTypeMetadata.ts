@@ -35,8 +35,13 @@ export default function getTypeMetadata<T>(
       }
     }
 
+    let isNullable = false;
     if (validationMetadata.type === 'conditionalValidation') {
-      propNameToIsOptionalMap[validationMetadata.propertyName] = true;
+      if (validationMetadata.constraints[1] === 'isOptional') {
+        propNameToIsOptionalMap[validationMetadata.propertyName] = true;
+      } else if (validationMetadata.constraints[1] === 'isNullable'){
+        isNullable = true;
+      }
     }
 
     switch (validationMetadata.type) {
@@ -84,6 +89,11 @@ export default function getTypeMetadata<T>(
         propNameToPropTypeMap[validationMetadata.propertyName] =
           (propNameToPropTypeMap[validationMetadata.propertyName] ?? '') + '[]';
         break;
+    }
+
+    if (isNullable) {
+      propNameToPropTypeMap[validationMetadata.propertyName] =
+        (propNameToPropTypeMap[validationMetadata.propertyName] ?? '') + ' | null';
     }
 
     const hasMatchesValidation = !!validationMetadatas.find(

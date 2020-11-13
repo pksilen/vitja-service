@@ -2,8 +2,6 @@
 
 TODO:
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
-  - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)
-  - Use @ValidateIf(o => o.propertyName !== null)
   - Add | null also to type's metadata
   - if type metadata does not have | null after array checking, make SQL field NOT NULL
   - All array checking must be changed because type name ending can be  | null instead of []

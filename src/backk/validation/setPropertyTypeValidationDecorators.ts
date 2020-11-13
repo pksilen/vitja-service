@@ -255,7 +255,8 @@ export default function setPropertyTypeValidationDecorators(
               type: ValidationTypes.CONDITIONAL_VALIDATION,
               target: typeClass,
               propertyName,
-              constraints: [(obj: any) => obj[propertyName] !== null]
+              constraints: [(object: any) => object[propertyName] !== null, 'isNullable'],
+              validationOptions: { each: propertyTypeName.endsWith('[]') }
             };
 
             getFromContainer(MetadataStorage).addValidationMetadata(
@@ -273,7 +274,7 @@ export default function setPropertyTypeValidationDecorators(
               constraints: [
                 (object: any) => {
                   return object[propertyName] !== null && object[propertyName] !== undefined;
-                }
+                }, 'isOptional'
               ],
               propertyName
             };
