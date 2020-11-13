@@ -1,6 +1,6 @@
 import BaseService from '../service/BaseService';
 import generateServicesMetadata from '../metadata/generateServicesMetadata';
-import parseServiceTypeNames from '../parser/parseServiceTypeNames';
+import parseServiceFunctionNameToArgAndReturnTypeNameMaps from '../parser/parseServiceFunctionNameToArgAndReturnTypeNameMaps';
 import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
 import setPropertyTypeValidationDecorators from '../validation/setPropertyTypeValidationDecorators';
 import setNestedTypeValidationDecorators from '../validation/setNestedTypeValidationDecorators';
@@ -22,7 +22,7 @@ export default function initializeController(controller: any, controllerInitOpti
         throw new Error('livenessCheckService is a reserved internal service name.');
       }
 
-      const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = parseServiceTypeNames(
+      const [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap] = parseServiceFunctionNameToArgAndReturnTypeNameMaps(
         serviceName,
         getSrcFilePathNameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
       );

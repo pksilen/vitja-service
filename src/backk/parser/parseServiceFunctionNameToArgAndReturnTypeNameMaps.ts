@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { parseSync } from '@babel/core';
 
-export default function parseServiceTypeNames(
+export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
   serviceName: string,
   serviceFileName: string
 ): [{ [key: string]: string }, { [key: string]: string }] {

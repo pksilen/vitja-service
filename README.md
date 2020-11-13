@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- If auto added Order By statements already exists, don't add them twice
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)
   - Use @ValidateIf(o => o.propertyName !== null)
@@ -9,6 +8,7 @@ TODO:
   - if type metadata does not have | null after array checking, make SQL field NOT NULL
   - All array checking must be changed because type name ending can be  | null instead of []
   - Find all slice(0, -2) calls also
+  - support (type | null)[]
 - Support dynamic filters with Map-type argument property
   _filters in input argument
   filters: Filter[]

@@ -77,6 +77,7 @@ export default function setPropertyTypeValidationDecorators(
           const propertyName = classBodyNode.key.name;
           let finalPropertyTypeName: string;
           let propertyTypeName;
+          let canBeNull = false;
 
           if (classBodyNode.typeAnnotation === undefined) {
             if (typeof classBodyNode.value?.value === 'number') {
@@ -101,6 +102,11 @@ export default function setPropertyTypeValidationDecorators(
               propertyTypeNameStart.column + 2,
               propertyTypeNameEnd.column
             );
+
+            if (propertyTypeName.endsWith(' | null')) {
+              propertyTypeName = propertyTypeName.split(' | null')[0];
+              canBeNull = true;
+            }
 
             finalPropertyTypeName = propertyTypeName.split('[]')[0];
           }
@@ -236,11 +242,24 @@ export default function setPropertyTypeValidationDecorators(
             const arrayValidationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.IS_ARRAY,
               target: typeClass,
-              propertyName
+              propertyName,
             };
 
             getFromContainer(MetadataStorage).addValidationMetadata(
               new ValidationMetadata(arrayValidationMetadataArgs)
+            );
+          }
+
+          if (canBeNull) {
+            const canBeNullValidationMetadataArgs: ValidationMetadataArgs = {
+              type: ValidationTypes.CONDITIONAL_VALIDATION,
+              target: typeClass,
+              propertyName,
+              constraints: [(obj: any) => obj[propertyName] !== null]
+            };
+
+            getFromContainer(MetadataStorage).addValidationMetadata(
+              new ValidationMetadata(canBeNullValidationMetadataArgs)
             );
           }
 
