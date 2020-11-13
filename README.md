@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
--customvalidations in metadata with correct validation names
 - If auto added Order By statements already exists, don't add them twice
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
   - in setPropertyTypeValidationDecorators, check if ends with | null (after checking if is array)

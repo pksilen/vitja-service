@@ -1,11 +1,10 @@
 import _ from 'lodash';
 import tryGetProjection from './tryGetProjection';
 import getSqlColumnFromProjection from '../utils/columns/getSqlColumnFromProjection';
-import assertIsColumnName from '../../../../../assertions/assertIsColumnName';
 import assertIsSortDirection from '../../../../../assertions/assertIsSortDirection';
 import SortBy from '../../../../../types/postqueryoperations/SortBy';
 import getFieldsForEntity from '../utils/columns/getFieldsForEntity';
-import createErrorMessageWithStatusCode from "../../../../../errors/createErrorMessageWithStatusCode";
+import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
 
 export default function tryGetOrderByClause<T>(
   schema: string,
@@ -15,7 +14,9 @@ export default function tryGetOrderByClause<T>(
 ) {
   const fields: string[] = [];
   getFieldsForEntity(schema, fields, entityClass, Types, {}, '', true);
-  const idFields = fields.filter((field) => field.endsWith('.id'));
+  const idFields = fields.filter(
+    (field) => field.endsWith('.id') && !sortBys?.find(({ sortField }) => field !== sortField)
+  );
   const sortedIdFields = _.sortBy(idFields, (field) => field.length);
   const idFieldsSortBys = sortedIdFields.join(' ASC, ');
 
