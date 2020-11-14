@@ -12,7 +12,7 @@ import { FunctionMetadata } from './FunctionMetadata';
 import getValidationMetadata from './getValidationMetadata';
 import getTypeDocumentation from './getTypeDocumentation';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
-import getTypeInfoFromMetadataTypeName from '../utils/type/getTypeInfoFromMetadataTypeName';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 export default function generateServicesMetadata<T>(controller: T, isFirstRound = true): ServiceMetadata[] {
   return Object.entries(controller)
@@ -123,7 +123,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
           const returnValueTypeName: string = (controller as any)[`${serviceName}Types`]
             .functionNameToReturnTypeNameMap[functionName];
 
-          const { baseTypeName, canBeErrorResponse } = getTypeInfoFromMetadataTypeName(returnValueTypeName);
+          const { baseTypeName, canBeErrorResponse } = getTypeInfoForTypeName(returnValueTypeName);
 
           if (!canBeErrorResponse) {
             throw new Error(

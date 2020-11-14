@@ -1,4 +1,4 @@
-export default function getTypeInfoFromMetadataTypeName(typeName: string) {
+export default function getTypeInfoForTypeName(typeName: string) {
   let canBeErrorResponse = false;
   if (typeName.endsWith(' | ErrorResponse')) {
     // noinspection AssignmentToFunctionParameterJS

@@ -10,7 +10,7 @@ import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
-import getTypeInfoFromMetadataTypeName from '../../../../utils/type/getTypeInfoFromMetadataTypeName';
+import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 
 export default async function createEntity<T>(
   dbManager: PostgreSqlDbManager,
@@ -56,7 +56,7 @@ export default async function createEntity<T>(
 
     Object.entries({ ...entityMetadata, ...additionalMetadata }).forEach(
       ([fieldName, fieldTypeName]: [any, any]) => {
-        const { baseTypeName, isArrayType } = getTypeInfoFromMetadataTypeName(fieldTypeName);
+        const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
 
         if (
           !isArrayType &&
@@ -94,7 +94,7 @@ export default async function createEntity<T>(
     await forEachAsyncParallel(
       Object.entries(entityMetadata),
       async ([fieldName, fieldTypeName]: [any, any]) => {
-        const {baseTypeName, isArrayType } = getTypeInfoFromMetadataTypeName(fieldTypeName);
+        const {baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
         const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
 
         if (

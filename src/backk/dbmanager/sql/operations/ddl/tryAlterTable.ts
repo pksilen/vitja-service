@@ -7,7 +7,7 @@ import setSubEntityInfo from './utils/setSubEntityInfo';
 import createAdditionalTable from './utils/createAdditionalTable';
 import addJoinSpec from './utils/addJoinSpec';
 import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
-import getTypeInfoFromMetadataTypeName from "../../../../utils/type/getTypeInfoFromMetadataTypeName";
+import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
 
 export default async function tryAlterTable(
   dbManager: AbstractDbManager,
@@ -26,7 +26,7 @@ export default async function tryAlterTable(
 
       if (!doesFieldExistInDatabase) {
         let alterTableStatement = `ALTER TABLE ${schema}.${entityName} ADD `;
-        const  { baseTypeName, isArrayType, isNullableType } = getTypeInfoFromMetadataTypeName(fieldTypeName);
+        const  { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
         let sqlColumnType = getSqlColumnType(fieldName, baseTypeName);
 
         if (!sqlColumnType && baseTypeName[0] === '(') {

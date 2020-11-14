@@ -8,7 +8,7 @@ import getSqlColumnType from './utils/getSqlColumnType';
 import createAdditionalTable from './utils/createAdditionalTable';
 import addJoinSpec from './utils/addJoinSpec';
 import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
-import getTypeInfoFromMetadataTypeName from "../../../../utils/type/getTypeInfoFromMetadataTypeName";
+import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
 
 export default async function tryCreateTable(
   dbManager: AbstractDbManager,
@@ -24,7 +24,7 @@ export default async function tryCreateTable(
   await forEachAsyncSequential(
     Object.entries({ ...entityMetadata, ...(idColumn ? {} : { id: 'string' }) }),
     async ([fieldName, fieldTypeName]: [any, any]) => {
-      const {baseTypeName, isArrayType, isNullableType } = getTypeInfoFromMetadataTypeName(fieldTypeName);
+      const {baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
       let sqlColumnType
 
       if (fieldName === '_id') {

@@ -6,7 +6,7 @@ import Redis from "ioredis";
 import tryAuthorize from "../authorization/tryAuthorize";
 import BaseService from "../service/BaseService";
 import tryVerifyCaptchaToken from "../captcha/tryVerifyCaptchaToken";
-import getTypeInfoFromMetadataTypeName from "../utils/type/getTypeInfoFromMetadataTypeName";
+import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
 import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
 import UsersBaseService from "../users/UsersBaseService";
 import { ServiceMetadata } from "../metadata/ServiceMetadata";
@@ -149,7 +149,7 @@ export default async function tryExecuteServiceFunction(
                 (serviceMetadata: ServiceMetadata) => serviceMetadata.serviceName === serviceName
               );
 
-              const { baseTypeName } = getTypeInfoFromMetadataTypeName(
+              const { baseTypeName } = getTypeInfoForTypeName(
                 serviceMetadata.types[serviceFunctionArgumentTypeName][propName]
               );
 
@@ -163,7 +163,7 @@ export default async function tryExecuteServiceFunction(
               (serviceMetadata: ServiceMetadata) => serviceMetadata.serviceName === serviceName
             );
 
-            const { baseTypeName } = getTypeInfoFromMetadataTypeName(
+            const { baseTypeName } = getTypeInfoForTypeName(
               serviceMetadata.types[serviceFunctionArgumentTypeName][propName]
             );
 
@@ -299,7 +299,7 @@ export default async function tryExecuteServiceFunction(
       }
 
       if (response !== undefined) {
-        const serviceFunctionBaseReturnTypeName = getTypeInfoFromMetadataTypeName(
+        const serviceFunctionBaseReturnTypeName = getTypeInfoForTypeName(
           controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName]
         ).baseTypeName;
 
