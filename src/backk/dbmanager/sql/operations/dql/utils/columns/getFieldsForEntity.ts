@@ -1,5 +1,5 @@
 import { Projection } from "../../../../../../types/postqueryoperations/Projection";
-import getTypeMetadata from "../../../../../../metadata/getTypeMetadata";
+import getPropertyNameToPropertyTypeNameMap from "../../../../../../metadata/getPropertyNameToPropertyTypeNameMap";
 import typePropertyAnnotationContainer
   from "../../../../../../decorators/typeproperty/typePropertyAnnotationContainer";
 import shouldIncludeField from "./shouldIncludeField";
@@ -13,7 +13,7 @@ export default function getFieldsForEntity(
   fieldPath: string,
   isInternalCall = false
 ) {
-  const entityMetadata = getTypeMetadata(entityClass as any);
+  const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
 
   Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [string, any]) => {
     if (!isInternalCall && typePropertyAnnotationContainer.isTypePropertyPrivate(entityClass, fieldName)) {

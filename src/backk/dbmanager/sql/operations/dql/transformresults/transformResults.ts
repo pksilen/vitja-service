@@ -1,20 +1,19 @@
-import getTypeMetadata from "../../../../../metadata/getTypeMetadata";
+import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import getTypeInfoFromMetadataType from '../../../../../utils/type/getTypeInfoFromMetadataType';
 
 function transformResult(result: any, entityClass: Function, Types: object) {
-  const entityMetadata = getTypeMetadata(entityClass as any);
+  const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
 
   Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [any, any]) => {
-    let baseFieldTypeName = fieldTypeName;
-    let isArray = false;
+    const { baseTypeName, isArrayType } = getTypeInfoFromMetadataType(fieldTypeName);
 
-    if (fieldTypeName.endsWith('[]')) {
-      baseFieldTypeName = fieldTypeName.slice(0, -2);
-      isArray = true;
-    }
-
-    if ( baseFieldTypeName !== 'Date' && baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
-      transformResult(result[fieldName], (Types as any)[baseFieldTypeName], Types);
-    } else if (isArray && result[fieldName]) {
+    if (
+      baseTypeName !== 'Date' &&
+      baseTypeName[0] === baseTypeName[0].toUpperCase() &&
+      baseTypeName[0] !== '('
+    ) {
+      transformResult(result[fieldName], (Types as any)[baseTypeName], Types);
+    } else if (isArrayType && result[fieldName]) {
       const singularFieldName = fieldName.slice(0, -1);
       result[fieldName] = result[fieldName].map((obj: any) => obj[singularFieldName]);
     }

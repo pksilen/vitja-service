@@ -1,28 +1,28 @@
-import { HttpException } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
-import { createNamespace } from 'cls-hooked';
-import _ from 'lodash';
-import Redis from 'ioredis';
-import tryAuthorize from '../authorization/tryAuthorize';
-import BaseService from '../service/BaseService';
-import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
-import getTypeInfoFromMetadataType from '../utils/type/getTypeInfoFromMetadataType';
-import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
-import UsersBaseService from '../users/UsersBaseService';
-import { ServiceMetadata } from '../metadata/ServiceMetadata';
-import tryValidateObject from '../validation/tryValidateObject';
-import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
-import tryValidateResponse from '../validation/tryValidateResponse';
-import isErrorResponse from '../errors/isErrorResponse';
-import getReturnValueBaseType from '../utils/type/getReturnValueBaseType';
-import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
-import createErrorResponseFromError from '../errors/createErrorResponseFromError';
-import log, { Severity } from '../observability/logging/log';
-import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import { HttpStatusCodes } from '../constants/constants';
-import getNamespacedServiceName from '../utils/getServiceNamespace';
-import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
-import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
+import { HttpException } from "@nestjs/common";
+import { plainToClass } from "class-transformer";
+import { createNamespace } from "cls-hooked";
+import _ from "lodash";
+import Redis from "ioredis";
+import tryAuthorize from "../authorization/tryAuthorize";
+import BaseService from "../service/BaseService";
+import tryVerifyCaptchaToken from "../captcha/tryVerifyCaptchaToken";
+import getTypeInfoFromMetadataType from "../utils/type/getTypeInfoFromMetadataType";
+import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
+import UsersBaseService from "../users/UsersBaseService";
+import { ServiceMetadata } from "../metadata/ServiceMetadata";
+import tryValidateObject from "../validation/tryValidateObject";
+import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
+import tryValidateResponse from "../validation/tryValidateResponse";
+import isErrorResponse from "../errors/isErrorResponse";
+import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
+import createErrorResponseFromError from "../errors/createErrorResponseFromError";
+import log, { Severity } from "../observability/logging/log";
+import serviceFunctionAnnotationContainer
+  from "../decorators/service/function/serviceFunctionAnnotationContainer";
+import { HttpStatusCodes } from "../constants/constants";
+import getNamespacedServiceName from "../utils/getServiceNamespace";
+import AuditLoggingService from "../observability/logging/audit/AuditLoggingService";
+import createAuditLogEntry from "../observability/logging/audit/createAuditLogEntry";
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -299,9 +299,9 @@ export default async function tryExecuteServiceFunction(
       }
 
       if (response !== undefined) {
-        const serviceFunctionBaseReturnTypeName = getReturnValueBaseType(
+        const serviceFunctionBaseReturnTypeName = getTypeInfoFromMetadataType(
           controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName]
-        );
+        ).baseTypeName;
 
         const ServiceFunctionReturnType = controller[serviceName]['Types'][serviceFunctionBaseReturnTypeName];
 

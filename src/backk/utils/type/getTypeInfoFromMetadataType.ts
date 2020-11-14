@@ -1,4 +1,8 @@
 export default function getTypeInfoFromMetadataType(typeStr: string) {
+  if (typeStr.endsWith(' | ErrorResponse')) {
+    // noinspection AssignmentToFunctionParameterJS
+    typeStr = typeStr.split(' | ErrorResponse')[0];
+  }
   const isOptionalType = typeStr.startsWith('?');
   const nonOptionalTypeName = isOptionalType ? typeStr.slice(1) : typeStr;
   const [typeName, defaultValueStr] = nonOptionalTypeName.split(' = ');
@@ -14,24 +18,24 @@ export default function getTypeInfoFromMetadataType(typeStr: string) {
   }
 
   let typeNameWithoutParentheses = nonArrayTypeName;
-  if (nonArrayTypeName.startsWith('(') && nonArrayTypeName.endsWith(')')) {
+  if (isArrayType && nonArrayTypeName.startsWith('(') && nonArrayTypeName.endsWith(')')) {
     typeNameWithoutParentheses = nonArrayTypeName.slice(1, -1);
   }
 
-  let isNullable = false;
+  let isNullableType = false;
   let baseTypeName = typeNameWithoutParentheses;
   if (typeNameWithoutParentheses.endsWith(' | null')) {
-    isNullable = true;
+    isNullableType = true;
     baseTypeName = typeNameWithoutParentheses.split(' | null')[0];
   }
 
   if (baseTypeName.endsWith('[]') || baseTypeName.startsWith('Array<')) {
-    throw new Error('Array type with null type is not allowed, use empty array to denote a missing value.')
+    throw new Error('Array type with null type is not allowed, use empty array to denote a missing value.');
   }
 
   return {
     baseTypeName,
-    isNullable,
+    isNullableType,
     isOptionalType,
     isArrayType,
     defaultValueStr

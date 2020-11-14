@@ -5,7 +5,7 @@ import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import { RecursivePartial } from "../../../../types/RecursivePartial";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import getTypeMetadata from "../../../../metadata/getTypeMetadata";
+import getPropertyNameToPropertyTypeNameMap from "../../../../metadata/getPropertyNameToPropertyTypeNameMap";
 import { Entity } from "../../../../types/Entity";
 import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
 import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
@@ -57,7 +57,7 @@ export default async function updateEntitiesBy<T extends Entity>(
         ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
     }
 
-    const entityMetadata = getTypeMetadata(entityClass as any);
+    const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
     const columns: any = [];
     const values: any = [];
     const promises: Array<Promise<any>> = [];

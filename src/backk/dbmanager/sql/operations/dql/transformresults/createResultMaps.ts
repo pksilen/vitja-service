@@ -1,6 +1,7 @@
 import shouldIncludeField from '../utils/columns/shouldIncludeField';
 import { Projection } from '../../../../../types/postqueryoperations/Projection';
-import getTypeMetadata from '../../../../../metadata/getTypeMetadata';
+import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import getTypeInfoFromMetadataType from '../../../../../utils/type/getTypeInfoFromMetadataType';
 
 function updateResultMaps(
   entityClassOrName: Function | string,
@@ -13,7 +14,7 @@ function updateResultMaps(
 ) {
   const entityMetadata =
     typeof entityClassOrName === 'function'
-      ? getTypeMetadata(entityClassOrName as any)
+      ? getPropertyNameToPropertyTypeNameMap(entityClassOrName as any)
       : suppliedEntityMetadata;
 
   const entityName = typeof entityClassOrName === 'function' ? entityClassOrName.name : entityClassOrName;
@@ -27,23 +28,17 @@ function updateResultMaps(
     associations: [] as object[]
   };
 
-  Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [any, any]) => {
-    let baseFieldTypeName = fieldTypeName;
-    let isArray = false;
-
-    if (fieldTypeName.endsWith('[]')) {
-      baseFieldTypeName = fieldTypeName.slice(0, -2);
-      isArray = true;
-    }
+  Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [string, any]) => {
+    const { baseTypeName, isArrayType } = getTypeInfoFromMetadataType(fieldTypeName);
 
     if (
-      isArray &&
-      baseFieldTypeName !== 'Date' &&
-      baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-      baseFieldTypeName[0] !== '('
+      isArrayType &&
+      baseTypeName !== 'Date' &&
+      baseTypeName[0] === baseTypeName[0].toUpperCase() &&
+      baseTypeName[0] !== '('
     ) {
       if (shouldIncludeField(fieldName, fieldPath, projection)) {
-        const relationEntityName = baseFieldTypeName;
+        const relationEntityName = baseTypeName;
 
         resultMap.collections.push({
           name: fieldName,
@@ -61,9 +56,13 @@ function updateResultMaps(
           entityClassOrName as Function
         );
       }
-    } else if ( baseFieldTypeName !== 'Date' && baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
+    } else if (
+      baseTypeName !== 'Date' &&
+      baseTypeName[0] === baseTypeName[0].toUpperCase() &&
+      baseTypeName[0] !== '('
+    ) {
       if (shouldIncludeField(fieldName, fieldPath, projection)) {
-        const relationEntityName = baseFieldTypeName;
+        const relationEntityName = baseTypeName;
 
         resultMap.associations.push({
           name: fieldName,
@@ -81,7 +80,7 @@ function updateResultMaps(
           entityClassOrName as Function
         );
       }
-    } else if (isArray) {
+    } else if (isArrayType) {
       if (shouldIncludeField(fieldName, fieldPath, projection)) {
         const relationEntityName = entityName + fieldName.slice(0, -1);
 

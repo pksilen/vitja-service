@@ -5,11 +5,12 @@ import isErrorResponse from '../../../../errors/isErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getTypeMetadata from '../../../../metadata/getTypeMetadata';
+import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import getTypeInfoFromMetadataType from '../../../../utils/type/getTypeInfoFromMetadataType';
 
 export default async function createEntity<T>(
   dbManager: PostgreSqlDbManager,
@@ -46,7 +47,7 @@ export default async function createEntity<T>(
       await tryExecutePreHooks(preHooks);
     }
 
-    const entityMetadata = getTypeMetadata(entityClass as any);
+    const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
     const additionalMetadata = Object.keys(entity)
       .filter((itemKey) => itemKey.endsWith('Id'))
       .reduce((accumulatedMetadata, itemKey) => ({ ...accumulatedMetadata, [itemKey]: 'integer' }), {});
@@ -55,17 +56,13 @@ export default async function createEntity<T>(
 
     Object.entries({ ...entityMetadata, ...additionalMetadata }).forEach(
       ([fieldName, fieldTypeName]: [any, any]) => {
-        let baseFieldTypeName = fieldTypeName;
-        let isArray = false;
-
-        if (fieldTypeName.endsWith('[]')) {
-          baseFieldTypeName = fieldTypeName.slice(0, -2);
-          isArray = true;
-        }
+        const { baseTypeName, isArrayType } = getTypeInfoFromMetadataType(fieldTypeName);
 
         if (
-          !isArray &&
-          (baseFieldTypeName[0] !== baseFieldTypeName[0].toUpperCase() || baseFieldTypeName[0] === '(' || baseFieldTypeName === 'Date') &&
+          !isArrayType &&
+          (baseTypeName[0] !== baseTypeName[0].toUpperCase() ||
+            baseTypeName[0] === '(' ||
+            baseTypeName === 'Date') &&
           fieldName !== '_id'
         ) {
           columns.push(fieldName);
@@ -97,20 +94,14 @@ export default async function createEntity<T>(
     await forEachAsyncParallel(
       Object.entries(entityMetadata),
       async ([fieldName, fieldTypeName]: [any, any]) => {
-        let baseFieldTypeName = fieldTypeName;
-        let isArray = false;
+        const {baseTypeName, isArrayType } = getTypeInfoFromMetadataType(fieldTypeName);
         const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
 
-        if (fieldTypeName.endsWith('[]')) {
-          baseFieldTypeName = fieldTypeName.slice(0, -2);
-          isArray = true;
-        }
-
         if (
-          isArray &&
-          baseFieldTypeName !== 'Date' &&
-          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-          baseFieldTypeName[0] !== '('
+          isArrayType &&
+          baseTypeName !== 'Date' &&
+          baseTypeName[0] === baseTypeName[0].toUpperCase() &&
+          baseTypeName[0] !== '('
         ) {
           if (
             _.uniqBy((entity as any)[fieldName], (subItem: any) => subItem.id).length !==
@@ -119,7 +110,7 @@ export default async function createEntity<T>(
             throw new Error(createErrorMessageWithStatusCode('Duplicate id values in ' + fieldName, 400));
           }
 
-          const relationEntityName = baseFieldTypeName;
+          const relationEntityName = baseTypeName;
           await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index) => {
             subItem[idFieldName] = _id;
 
@@ -130,8 +121,8 @@ export default async function createEntity<T>(
                 throw new Error(
                   createErrorMessageWithStatusCode(
                     'Invalid id values in ' +
-                    fieldName +
-                    '. Id values must be consecutive numbers starting from zero.',
+                      fieldName +
+                      '. Id values must be consecutive numbers starting from zero.',
                     400
                   )
                 );
@@ -151,11 +142,11 @@ export default async function createEntity<T>(
             }
           });
         } else if (
-          baseFieldTypeName !== 'Date' &&
-          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-          baseFieldTypeName[0] !== '('
+          baseTypeName !== 'Date' &&
+          baseTypeName[0] === baseTypeName[0].toUpperCase() &&
+          baseTypeName[0] !== '('
         ) {
-          const relationEntityName = baseFieldTypeName;
+          const relationEntityName = baseTypeName;
           const subItem = (entity as any)[fieldName];
           subItem[idFieldName] = _id;
           const subItemOrErrorResponse: any | ErrorResponse = await createEntity(
@@ -169,7 +160,7 @@ export default async function createEntity<T>(
           if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
             throw subItemOrErrorResponse;
           }
-        } else if (isArray) {
+        } else if (isArrayType) {
           await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index: number) => {
             const insertStatement = `INSERT INTO ${dbManager.schema}.${entityClass.name +
               fieldName.slice(0, -1)} (id, ${idFieldName}, ${fieldName.slice(

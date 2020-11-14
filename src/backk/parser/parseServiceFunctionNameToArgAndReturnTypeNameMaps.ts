@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs';
 import { parseSync } from '@babel/core';
+import isValidFunctionArgumentTypeName from '../utils/type/isValidFunctionArgumentTypeName';
 
 export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
   serviceName: string,
@@ -15,8 +16,8 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
     ]
   });
   const serviceClassName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
-  const functionNameToParamTypeNameMap: { [key: string]: string } = {};
-  const functionNameToReturnTypeNameMap: { [key: string]: string } = {};
+  const functionNameToFunctionArgumentTypeNameMap: { [key: string]: string } = {};
+  const functionNameToFunctionReturnValueTypeNameMap: { [key: string]: string } = {};
 
   const nodes = (ast as any).program.body;
   for (const node of nodes) {
@@ -30,25 +31,20 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
           const functionName = classBodyNode.key.name;
 
           if (classBodyNode.params.length >= 1) {
-            const paramTypeNameStart = classBodyNode.params[0].typeAnnotation.loc.start;
-            const paramTypeNameEnd = classBodyNode.params[0].typeAnnotation.loc.end;
-            const paramTypeName = fileRows[paramTypeNameStart.line - 1].slice(
-              paramTypeNameStart.column + 2,
-              paramTypeNameEnd.column
+            const functionArgumentTypeNameStart = classBodyNode.params[0].typeAnnotation.loc.start;
+            const functionArgumentTypeNameEnd = classBodyNode.params[0].typeAnnotation.loc.end;
+            const functionArgumentTypeName = fileRows[functionArgumentTypeNameStart.line - 1].slice(
+              functionArgumentTypeNameStart.column + 2,
+              functionArgumentTypeNameEnd.column
             );
 
-            if (
-              (paramTypeName.charAt(0) === paramTypeName.charAt(0).toLowerCase() &&
-                paramTypeName.charAt(0) !== '_') ||
-              paramTypeName.endsWith('[]') ||
-              paramTypeName.startsWith('Array<')
-            ) {
+            if (!isValidFunctionArgumentTypeName(functionArgumentTypeName)) {
               throw new Error(
                 serviceName + '.' + functionName + ': input argument type must be a user-defined class type'
               );
             }
 
-            functionNameToParamTypeNameMap[functionName] = paramTypeName;
+            functionNameToFunctionArgumentTypeNameMap[functionName] = functionArgumentTypeName;
           }
 
           const returnTypeNameStart = classBodyNode.returnType.typeAnnotation.loc.start;
@@ -62,11 +58,11 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
             returnTypeName = returnTypeName.slice(8, -1);
           }
 
-          functionNameToReturnTypeNameMap[functionName] = returnTypeName;
+          functionNameToFunctionReturnValueTypeNameMap[functionName] = returnTypeName;
         }
       }
     }
   }
 
-  return [functionNameToParamTypeNameMap, functionNameToReturnTypeNameMap];
+  return [functionNameToFunctionArgumentTypeNameMap, functionNameToFunctionReturnValueTypeNameMap];
 }

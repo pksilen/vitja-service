@@ -7,7 +7,8 @@ import setSubEntityInfo from './utils/setSubEntityInfo';
 import getSqlColumnType from './utils/getSqlColumnType';
 import createAdditionalTable from './utils/createAdditionalTable';
 import addJoinSpec from './utils/addJoinSpec';
-import getTypeMetadata from '../../../../metadata/getTypeMetadata';
+import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import getTypeInfoFromMetadataType from "../../../../utils/type/getTypeInfoFromMetadataType";
 
 export default async function tryCreateTable(
   dbManager: AbstractDbManager,
@@ -15,7 +16,7 @@ export default async function tryCreateTable(
   entityClass: Function,
   schema: string | undefined
 ) {
-  const entityMetadata = getTypeMetadata(entityClass as any);
+  const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
   let createTableStatement = `CREATE TABLE ${schema}.${entityName} (`;
   let fieldCnt = 0;
   const idColumn = Object.keys(entityMetadata).find((fieldName) => fieldName === '_id' || fieldName === 'id');
@@ -23,38 +24,26 @@ export default async function tryCreateTable(
   await forEachAsyncSequential(
     Object.entries({ ...entityMetadata, ...(idColumn ? {} : { id: 'string' }) }),
     async ([fieldName, fieldTypeName]: [any, any]) => {
-      let baseFieldTypeName = fieldTypeName;
-      let isArray = false;
-      let sqlColumnType;
-      let canBeNull = false;
-
-      if (fieldTypeName.endsWith(' | null')) {
-        fieldTypeName = fieldTypeName.split(' | null')[0];
-        canBeNull = true;
-      }
-
-      if (fieldTypeName.endsWith('[]')) {
-        baseFieldTypeName = fieldTypeName.slice(0, -2);
-        isArray = true;
-      }
+      const {baseTypeName, isArrayType, isNullableType } = getTypeInfoFromMetadataType(fieldTypeName);
+      let sqlColumnType
 
       if (fieldName === '_id') {
         sqlColumnType = 'BIGSERIAL PRIMARY KEY';
       } else {
-        sqlColumnType = getSqlColumnType(fieldName, baseFieldTypeName);
+        sqlColumnType = getSqlColumnType(fieldName, baseTypeName);
       }
 
-      if (!sqlColumnType && baseFieldTypeName[0] === '(') {
-        sqlColumnType = getEnumSqlColumnType(baseFieldTypeName);
+      if (!sqlColumnType && baseTypeName[0] === '(') {
+        sqlColumnType = getEnumSqlColumnType(baseTypeName);
       }
 
       if (
         !sqlColumnType &&
-        baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-        baseFieldTypeName[0] !== '('
+        baseTypeName[0] === baseTypeName[0].toUpperCase() &&
+        baseTypeName[0] !== '('
       ) {
-        setSubEntityInfo(entityName, baseFieldTypeName);
-      } else if (isArray) {
+        setSubEntityInfo(entityName, baseTypeName);
+      } else if (isArrayType) {
         const idFieldName = await createAdditionalTable(
           schema,
           entityName,
@@ -70,7 +59,7 @@ export default async function tryCreateTable(
         }
         const isUnique = typeAnnotationContainer.isTypePropertyUnique(entityClass, fieldName);
         createTableStatement +=
-          fieldName + ' ' + sqlColumnType + (canBeNull ? '' : 'NOT NULL') + (isUnique ? ' UNIQUE' : '');
+          fieldName + ' ' + sqlColumnType + (isNullableType ? '' : 'NOT NULL') + (isUnique ? ' UNIQUE' : '');
         fieldCnt++;
       }
     }

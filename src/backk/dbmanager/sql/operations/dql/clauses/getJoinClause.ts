@@ -1,5 +1,5 @@
 import entityContainer from '../../../../../decorators/entity/entityAnnotationContainer';
-import getTypeMetadata from '../../../../../metadata/getTypeMetadata';
+import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
 import { Projection } from '../../../../../types/postqueryoperations/Projection';
 import shouldIncludeField from '../utils/columns/shouldIncludeField';
 
@@ -39,7 +39,7 @@ export default function getJoinClause(
     joinClause = joinClauseParts.filter((joinClausePart) => joinClausePart).join(' ');
   }
 
-  const entityMetadata = getTypeMetadata(entityClass as any);
+  const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
 
   Object.entries(entityMetadata).forEach(([, fieldTypeName]: [any, any]) => {
     let baseFieldTypeName = fieldTypeName;

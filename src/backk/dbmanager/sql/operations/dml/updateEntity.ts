@@ -7,7 +7,7 @@ import getEntityById from '../dql/getEntityById';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getTypeMetadata from '../../../../metadata/getTypeMetadata';
+import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/Entity';
@@ -46,7 +46,7 @@ export default async function updateEntity<T extends Entity>(
       await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     }
 
-    const entityMetadata = getTypeMetadata(entityClass as any);
+    const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
     const columns: any = [];
     const values: any = [];
     const promises: Array<Promise<any>> = [];

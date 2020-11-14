@@ -4,7 +4,7 @@ import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import getEntityById from '../dql/getEntityById';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getTypeMetadata from '../../../../metadata/getTypeMetadata';
+import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
@@ -36,7 +36,7 @@ export default async function deleteEntityById<T extends object>(
       await tryExecutePreHooks(preHooks, itemOrErrorResponse);
     }
 
-    const typeMetadata = getTypeMetadata(entityClass);
+    const typeMetadata = getPropertyNameToPropertyTypeNameMap(entityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {

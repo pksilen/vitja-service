@@ -3,7 +3,7 @@ import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata"
 
 const typeNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 
-export default function getTypeMetadata<T>(
+export default function getPropertyNameToPropertyTypeNameMap<T>(
   TypeClass: new () => T,
   isGeneration = false,
   isFirstRound = false

@@ -7,7 +7,7 @@ import SortBy from '../types/postqueryoperations/SortBy';
 import IdAndUserId from '../types/id/IdAndUserId';
 import Id from '../types/id/Id';
 import { ServiceMetadata } from './ServiceMetadata';
-import getTypeMetadata from './getTypeMetadata';
+import getPropertyNameToPropertyTypeNameMap from './getPropertyNameToPropertyTypeNameMap';
 import { FunctionMetadata } from './FunctionMetadata';
 import getValidationMetadata from './getValidationMetadata';
 import getTypeDocumentation from './getTypeDocumentation';
@@ -25,7 +25,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
 
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
-          const typeObject = getTypeMetadata(typeClass, true, isFirstRound);
+          const typeObject = getPropertyNameToPropertyTypeNameMap(typeClass, true, isFirstRound);
           return { ...accumulatedTypes, [typeName]: typeObject };
         },
         {}
@@ -82,9 +82,6 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             );
           }
 
-          const returnValueTypeName: string = (controller as any)[`${serviceName}Types`]
-            .functionNameToReturnTypeNameMap[functionName];
-
           if (paramTypeName !== undefined && !(controller as any)[serviceName].Types[paramTypeName]) {
             if (paramTypeName === '_Id') {
               (controller as any)[serviceName].Types[paramTypeName] = _Id;
@@ -117,6 +114,9 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             }
           }
 
+          const returnValueTypeName: string = (controller as any)[`${serviceName}Types`]
+            .functionNameToReturnTypeNameMap[functionName];
+
           const returnValueParts = returnValueTypeName.split('|');
           if (returnValueParts.length > 1) {
             const errorResponseType = returnValueParts[1].trim();
@@ -135,10 +135,6 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
           }
           if (finalReturnValueTypeName.startsWith('Array<')) {
             finalReturnValueTypeName = finalReturnValueTypeName.slice(6, -1);
-          }
-
-          if (finalReturnValueTypeName.startsWith('Partial<')) {
-            finalReturnValueTypeName = finalReturnValueTypeName.slice(8, -1);
           }
 
           if (
