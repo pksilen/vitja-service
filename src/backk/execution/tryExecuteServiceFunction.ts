@@ -6,7 +6,7 @@ import Redis from 'ioredis';
 import tryAuthorize from '../authorization/tryAuthorize';
 import BaseService from '../service/BaseService';
 import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
-import getPropertyBaseTypeName from '../utils/type/getPropertyBaseTypeName';
+import getTypeInfoFromMetadataType from '../utils/type/getTypeInfoFromMetadataType';
 import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
 import UsersBaseService from '../users/UsersBaseService';
 import { ServiceMetadata } from '../metadata/ServiceMetadata';
@@ -149,7 +149,7 @@ export default async function tryExecuteServiceFunction(
                 (serviceMetadata: ServiceMetadata) => serviceMetadata.serviceName === serviceName
               );
 
-              const baseTypeName = getPropertyBaseTypeName(
+              const { baseTypeName } = getTypeInfoFromMetadataType(
                 serviceMetadata.types[serviceFunctionArgumentTypeName][propName]
               );
 
@@ -163,7 +163,7 @@ export default async function tryExecuteServiceFunction(
               (serviceMetadata: ServiceMetadata) => serviceMetadata.serviceName === serviceName
             );
 
-            const baseTypeName = getPropertyBaseTypeName(
+            const { baseTypeName } = getTypeInfoFromMetadataType(
               serviceMetadata.types[serviceFunctionArgumentTypeName][propName]
             );
 

@@ -89,6 +89,17 @@ export default function setPropertyTypeValidationDecorators(
             } else if (typeof classBodyNode.value?.value === 'string') {
               propertyTypeName = 'string';
               finalPropertyTypeName = 'string';
+            } else if (
+              typeof classBodyNode.value?.value === 'object' ||
+              typeof classBodyNode.value?.value === 'bigint' ||
+              typeof classBodyNode.value?.value === 'symbol'
+            ) {
+              throw new Error(
+                'Default value must a scalar (number, boolean or string) for property: ' +
+                  propertyName +
+                  ' in ' +
+                  typeClass.name
+              );
             } else {
               throw new Error(
                 'Missing type annotation for property: ' + propertyName + ' in ' + typeClass.name
@@ -242,7 +253,7 @@ export default function setPropertyTypeValidationDecorators(
             const arrayValidationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.IS_ARRAY,
               target: typeClass,
-              propertyName,
+              propertyName
             };
 
             getFromContainer(MetadataStorage).addValidationMetadata(
@@ -274,7 +285,8 @@ export default function setPropertyTypeValidationDecorators(
               constraints: [
                 (object: any) => {
                   return object[propertyName] !== null && object[propertyName] !== undefined;
-                }, 'isOptional'
+                },
+                'isOptional'
               ],
               propertyName
             };

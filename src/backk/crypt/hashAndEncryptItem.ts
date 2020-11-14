@@ -5,6 +5,7 @@ import shouldEncryptValue from './shouldEncryptValue';
 import shouldHashValue from './shouldHashValue';
 import shouldUseRandomInitializationVector from './shouldUseRandomInitializationVector';
 import getTypeMetadata from "../metadata/getTypeMetadata";
+import getTypeInfoFromMetadataType from "../utils/type/getTypeInfoFromMetadataType";
 
 async function hashOrEncryptItemValues(
   item: { [key: string]: any },
@@ -16,7 +17,7 @@ async function hashOrEncryptItemValues(
       if (typeof propertyValue[0] === 'object') {
         const entityMetadata = getTypeMetadata(EntityClass);
         await forEachAsyncParallel(propertyValue, async (pv: any) => {
-          await hashOrEncryptItemValues(pv, (Types as any)[entityMetadata[propertyName].slice(0, -2)], Types);
+          await hashOrEncryptItemValues(pv, (Types as any)[getTypeInfoFromMetadataType(entityMetadata[propertyName]).baseTypeName], Types);
         });
       } else if (shouldHashValue(propertyName, EntityClass)) {
         if (typeof propertyValue[0] !== 'string') {

@@ -2,10 +2,13 @@
 
 TODO:
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
-  - if type metadata does not have | null after array checking, make SQL field NOT NULL
   - All array checking must be changed because type name ending can be  | null instead of []
   - Find all slice(0, -2) calls also
+  - Extract type name getting code
+  - Support Array<>
+  - Don't allow type[] | null
   - support (type | null)[]
+
 - Support dynamic filters with Map-type argument property
   _filters in input argument
   filters: Filter[]
