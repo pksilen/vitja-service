@@ -11,8 +11,8 @@ import getPropertyNameToPropertyTypeNameMap from './getPropertyNameToPropertyTyp
 import { FunctionMetadata } from './FunctionMetadata';
 import getValidationMetadata from './getValidationMetadata';
 import getTypeDocumentation from './getTypeDocumentation';
-import DefaultPostQueryOperationsArg from '../types/postqueryoperations/args/DefaultPostQueryOperationsArg';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
+import getTypeInfoFromMetadataTypeName from '../utils/type/getTypeInfoFromMetadataTypeName';
 
 export default function generateServicesMetadata<T>(controller: T, isFirstRound = true): ServiceMetadata[] {
   return Object.entries(controller)
@@ -60,15 +60,14 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             throw new Error(serviceName + '.' + functionName + ': is missing authorization annotation');
           }
 
-          const paramTypeName = (controller as any)[`${serviceName}Types`].functionNameToParamTypeNameMap[
-            functionName
-          ];
+          const functionArgumentTypeName = (controller as any)[`${serviceName}Types`]
+            .functionNameToParamTypeNameMap[functionName];
 
           if (
             !isFirstRound &&
             functionName.startsWith('create') &&
-            paramTypeName &&
-            !(typesMetadata as any)[paramTypeName].captchaToken &&
+            functionArgumentTypeName &&
+            !(typesMetadata as any)[functionArgumentTypeName].captchaToken &&
             !serviceFunctionAnnotationContainer.hasNoCaptchaAnnotationForServiceFunction(
               service.constructor,
               functionName
@@ -82,23 +81,30 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             );
           }
 
-          if (paramTypeName !== undefined && !(controller as any)[serviceName].Types[paramTypeName]) {
-            if (paramTypeName === '_Id') {
-              (controller as any)[serviceName].Types[paramTypeName] = _Id;
-            } else if (paramTypeName === 'Id') {
-              (controller as any)[serviceName].Types[paramTypeName] = Id;
-            } else if (paramTypeName === 'IdsAndDefaultPostQueryOperationsArg') {
-              (controller as any)[serviceName].Types[paramTypeName] = IdsAndDefaultPostQueryOperationsArg;
-            } else if (paramTypeName === 'IdAndUserId') {
-              (controller as any)[serviceName].Types[paramTypeName] = IdAndUserId;
+          if (
+            functionArgumentTypeName !== undefined &&
+            !(controller as any)[serviceName].Types[functionArgumentTypeName]
+          ) {
+            if (functionArgumentTypeName === '_Id') {
+              (controller as any)[serviceName].Types[functionArgumentTypeName] = _Id;
+            } else if (functionArgumentTypeName === 'Id') {
+              (controller as any)[serviceName].Types[functionArgumentTypeName] = Id;
+            } else if (functionArgumentTypeName === 'IdsAndDefaultPostQueryOperationsArg') {
+              (controller as any)[serviceName].Types[
+                functionArgumentTypeName
+              ] = IdsAndDefaultPostQueryOperationsArg;
+            } else if (functionArgumentTypeName === 'IdAndUserId') {
+              (controller as any)[serviceName].Types[functionArgumentTypeName] = IdAndUserId;
             } else {
-              throw new Error('Type: ' + paramTypeName + ' is not found in ' + serviceName + '.Types');
+              throw new Error(
+                'Type: ' + functionArgumentTypeName + ' is not found in ' + serviceName + '.Types'
+              );
             }
           }
 
-          if (paramTypeName !== undefined) {
+          if (functionArgumentTypeName !== undefined) {
             let proto = Object.getPrototypeOf(
-              new ((controller as any)[serviceName].Types[paramTypeName] as new () => any)()
+              new ((controller as any)[serviceName].Types[functionArgumentTypeName] as new () => any)()
             );
             while (proto !== Object.prototype) {
               if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
@@ -117,44 +123,27 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
           const returnValueTypeName: string = (controller as any)[`${serviceName}Types`]
             .functionNameToReturnTypeNameMap[functionName];
 
-          const returnValueParts = returnValueTypeName.split('|');
-          if (returnValueParts.length > 1) {
-            const errorResponseType = returnValueParts[1].trim();
-            if (errorResponseType !== 'ErrorResponse') {
-              throw new Error(
-                serviceName +
-                  '.' +
-                  functionName +
-                  ": return type's right hand side type must be ErrorResponse"
-              );
-            }
-          }
-          let finalReturnValueTypeName = returnValueParts[0].trim();
-          if (finalReturnValueTypeName.endsWith('[]')) {
-            finalReturnValueTypeName = finalReturnValueTypeName.slice(0, -2);
-          }
-          if (finalReturnValueTypeName.startsWith('Array<')) {
-            finalReturnValueTypeName = finalReturnValueTypeName.slice(6, -1);
+          const { baseTypeName, canBeErrorResponse } = getTypeInfoFromMetadataTypeName(returnValueTypeName);
+
+          if (!canBeErrorResponse) {
+            throw new Error(
+              serviceName + '.' + functionName + ": return type's right hand side type must be ErrorResponse"
+            );
           }
 
-          if (
-            finalReturnValueTypeName !== 'void' &&
-            !(controller as any)[serviceName].Types[finalReturnValueTypeName]
-          ) {
-            if (finalReturnValueTypeName === '_Id') {
-              (controller as any)[serviceName].Types[finalReturnValueTypeName] = _Id;
-            } else if (finalReturnValueTypeName === 'Id') {
-              (controller as any)[serviceName].Types[finalReturnValueTypeName] = Id;
+          if (baseTypeName !== 'void' && !(controller as any)[serviceName].Types[baseTypeName]) {
+            if (baseTypeName === '_Id') {
+              (controller as any)[serviceName].Types[baseTypeName] = _Id;
+            } else if (baseTypeName === 'Id') {
+              (controller as any)[serviceName].Types[baseTypeName] = Id;
             } else {
-              throw new Error(
-                'Type: ' + finalReturnValueTypeName + ' is not found in ' + serviceName + '.Types'
-              );
+              throw new Error('Type: ' + baseTypeName + ' is not found in ' + serviceName + '.Types');
             }
           }
 
-          if (finalReturnValueTypeName !== 'void') {
+          if (baseTypeName !== 'void') {
             let proto = Object.getPrototypeOf(
-              new ((controller as any)[serviceName].Types[finalReturnValueTypeName] as new () => any)()
+              new ((controller as any)[serviceName].Types[baseTypeName] as new () => any)()
             );
             while (proto !== Object.prototype) {
               if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
@@ -170,12 +159,13 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
               service.constructor,
               functionName
             ),
-            argType: paramTypeName,
+            argType: functionArgumentTypeName,
             returnValueType: returnValueTypeName,
-            errors: serviceFunctionAnnotationContainer.getErrorsForServiceFunction(
-              service.constructor,
-              functionName
-            ) ?? []
+            errors:
+              serviceFunctionAnnotationContainer.getErrorsForServiceFunction(
+                service.constructor,
+                functionName
+              ) ?? []
           };
         });
 

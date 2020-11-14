@@ -1,7 +1,7 @@
 import getPropertyNameToPropertyTypeNameMap from './getPropertyNameToPropertyTypeNameMap';
 import testValueContainer from '../decorators/typeproperty/testing/testValueContainer';
 import getValidationConstraint from '../validation/getValidationConstraint';
-import getTypeInfoFromMetadataType from '../utils/type/getTypeInfoFromMetadataType';
+import getTypeInfoFromMetadataTypeName from '../utils/type/getTypeInfoFromMetadataTypeName';
 
 export default function getRemoteResponseTestValue<T>(
   ResponseClass: new () => T,
@@ -11,7 +11,7 @@ export default function getRemoteResponseTestValue<T>(
 
   Object.entries(getPropertyNameToPropertyTypeNameMap(ResponseClass)).forEach(
     ([propertyName, propertyTypeName]: [string, string]) => {
-      const { baseTypeName, defaultValueStr, isOptionalType } = getTypeInfoFromMetadataType(propertyTypeName);
+      const { baseTypeName, defaultValueStr, isOptionalType } = getTypeInfoFromMetadataTypeName(propertyTypeName);
       if (isOptionalType && defaultValueStr === undefined) {
         return;
       }

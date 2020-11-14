@@ -1,7 +1,7 @@
 import shouldIncludeField from '../utils/columns/shouldIncludeField';
 import { Projection } from '../../../../../types/postqueryoperations/Projection';
 import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
-import getTypeInfoFromMetadataType from '../../../../../utils/type/getTypeInfoFromMetadataType';
+import getTypeInfoFromMetadataTypeName from '../../../../../utils/type/getTypeInfoFromMetadataTypeName';
 
 function updateResultMaps(
   entityClassOrName: Function | string,
@@ -29,7 +29,7 @@ function updateResultMaps(
   };
 
   Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [string, any]) => {
-    const { baseTypeName, isArrayType } = getTypeInfoFromMetadataType(fieldTypeName);
+    const { baseTypeName, isArrayType } = getTypeInfoFromMetadataTypeName(fieldTypeName);
 
     if (
       isArrayType &&

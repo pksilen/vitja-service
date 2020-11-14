@@ -2,7 +2,7 @@ import decrypt from './decrypt';
 import encrypt from './encrypt';
 import shouldEncryptValue from './shouldEncryptValue';
 import getPropertyNameToPropertyTypeNameMap from '../metadata/getPropertyNameToPropertyTypeNameMap';
-import getTypeInfoFromMetadataType from '../utils/type/getTypeInfoFromMetadataType';
+import getTypeInfoFromMetadataTypeName from '../utils/type/getTypeInfoFromMetadataTypeName';
 
 function decryptItemValues(item: { [key: string]: any }, EntityClass: new () => any, Types: object) {
   if (item === null) {
@@ -16,7 +16,7 @@ function decryptItemValues(item: { [key: string]: any }, EntityClass: new () => 
         propertyValue.forEach((pv: any) => {
           decryptItemValues(
             pv,
-            (Types as any)[getTypeInfoFromMetadataType(entityMetadata[propertyName]).baseTypeName],
+            (Types as any)[getTypeInfoFromMetadataTypeName(entityMetadata[propertyName]).baseTypeName],
             Types
           );
         });

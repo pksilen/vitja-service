@@ -1,6 +1,15 @@
+import { hasSrcFilenameForTypeName } from "../file/getSrcFilePathNameForTypeName";
+
 export default function isValidFunctionArgumentTypeName(typeName: string): boolean {
-  return typeName.charAt(0) === typeName.charAt(0).toUpperCase() &&
-  !typeName.endsWith('[]') &&
-  !typeName.startsWith('Array<') &&
-  !typeName.includes('|')
+  if (
+    typeName === '_Id' ||
+    typeName === 'Id' ||
+    typeName === 'DefaultPostQueryOperationsArg' ||
+    typeName === 'IdsAndDefaultPostQueryOperationsArg' ||
+    typeName === 'SortBy' ||
+    typeName === 'IdAndUserId'
+  ) {
+    return true;
+  }
+  return hasSrcFilenameForTypeName(typeName);
 }
