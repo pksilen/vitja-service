@@ -11,6 +11,7 @@ import { PreHook } from '../../../hooks/PreHook';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 
 export default async function createEntity<T>(
   dbManager: PostgreSqlDbManager,
@@ -58,13 +59,7 @@ export default async function createEntity<T>(
       ([fieldName, fieldTypeName]: [any, any]) => {
         const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
 
-        if (
-          !isArrayType &&
-          (baseTypeName[0] !== baseTypeName[0].toUpperCase() ||
-            baseTypeName[0] === '(' ||
-            baseTypeName === 'Date') &&
-          fieldName !== '_id'
-        ) {
+        if (!isArrayType && !isEntityTypeName(baseTypeName) && fieldName !== '_id') {
           columns.push(fieldName);
           if (fieldName === 'id' || fieldName.endsWith('Id')) {
             const numericId = parseInt((entity as any)[fieldName], 10);
@@ -94,15 +89,10 @@ export default async function createEntity<T>(
     await forEachAsyncParallel(
       Object.entries(entityMetadata),
       async ([fieldName, fieldTypeName]: [any, any]) => {
-        const {baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
+        const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
         const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
 
-        if (
-          isArrayType &&
-          baseTypeName !== 'Date' &&
-          baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-          baseTypeName[0] !== '('
-        ) {
+        if (isArrayType && isEntityTypeName(baseTypeName)) {
           if (
             _.uniqBy((entity as any)[fieldName], (subItem: any) => subItem.id).length !==
             (entity as any)[fieldName].length
@@ -141,11 +131,7 @@ export default async function createEntity<T>(
               throw subItemOrErrorResponse;
             }
           });
-        } else if (
-          baseTypeName !== 'Date' &&
-          baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-          baseTypeName[0] !== '('
-        ) {
+        } else if (isEntityTypeName(baseTypeName)) {
           const relationEntityName = baseTypeName;
           const subItem = (entity as any)[fieldName];
           subItem[idFieldName] = _id;

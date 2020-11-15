@@ -8,7 +8,8 @@ import getSqlColumnType from './utils/getSqlColumnType';
 import createAdditionalTable from './utils/createAdditionalTable';
 import addJoinSpec from './utils/addJoinSpec';
 import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
-import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
+import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 
 export default async function tryCreateTable(
   dbManager: AbstractDbManager,
@@ -24,8 +25,8 @@ export default async function tryCreateTable(
   await forEachAsyncSequential(
     Object.entries({ ...entityMetadata, ...(idColumn ? {} : { id: 'string' }) }),
     async ([fieldName, fieldTypeName]: [any, any]) => {
-      const {baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
-      let sqlColumnType
+      const { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
+      let sqlColumnType;
 
       if (fieldName === '_id') {
         sqlColumnType = 'BIGSERIAL PRIMARY KEY';
@@ -37,11 +38,7 @@ export default async function tryCreateTable(
         sqlColumnType = getEnumSqlColumnType(baseTypeName);
       }
 
-      if (
-        !sqlColumnType &&
-        baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-        baseTypeName[0] !== '('
-      ) {
+      if (!sqlColumnType && isEntityTypeName(baseTypeName)) {
         setSubEntityInfo(entityName, baseTypeName);
       } else if (isArrayType) {
         const idFieldName = await createAdditionalTable(

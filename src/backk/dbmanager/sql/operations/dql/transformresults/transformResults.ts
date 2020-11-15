@@ -1,5 +1,6 @@
 import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../../utils/type/isEntityTypeName';
 
 function transformResult(result: any, entityClass: Function, Types: object) {
   const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
@@ -7,11 +8,7 @@ function transformResult(result: any, entityClass: Function, Types: object) {
   Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [any, any]) => {
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
 
-    if (
-      baseTypeName !== 'Date' &&
-      baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-      baseTypeName[0] !== '('
-    ) {
+    if (isEntityTypeName(baseTypeName)) {
       transformResult(result[fieldName], (Types as any)[baseTypeName], Types);
     } else if (isArrayType && result[fieldName]) {
       const singularFieldName = fieldName.slice(0, -1);

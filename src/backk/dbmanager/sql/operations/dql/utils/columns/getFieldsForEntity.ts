@@ -3,6 +3,7 @@ import getPropertyNameToPropertyTypeNameMap from '../../../../../../metadata/get
 import typePropertyAnnotationContainer from '../../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import shouldIncludeField from './shouldIncludeField';
 import getTypeInfoForTypeName from '../../../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../../../utils/type/isEntityTypeName';
 
 export default function getFieldsForEntity(
   schema: string,
@@ -26,11 +27,7 @@ export default function getFieldsForEntity(
 
       const { baseTypeName, isArrayType } = getTypeInfoForTypeName(entityPropertyTypeName);
 
-      if (
-        baseTypeName !== 'Date' &&
-        baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-        baseTypeName[0] !== '('
-      ) {
+      if (isEntityTypeName(baseTypeName)) {
         getFieldsForEntity(
           schema,
           fields,

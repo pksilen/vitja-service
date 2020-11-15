@@ -13,6 +13,7 @@ import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/Entity';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
@@ -64,12 +65,7 @@ export default async function updateEntity<T extends Entity>(
           entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
         const idFieldName = _id === undefined ? 'id' : '_id';
 
-        if (
-          isArrayType &&
-          baseTypeName !== 'Date' &&
-          baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-          baseTypeName[0] !== '('
-        ) {
+        if (isArrayType && isEntityTypeName(baseTypeName)) {
           promises.push(
             forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
               subItem[foreignIdFieldName] = _id;
@@ -87,11 +83,7 @@ export default async function updateEntity<T extends Entity>(
               }
             })
           );
-        } else if (
-          baseTypeName !== 'Date' &&
-          baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-          baseTypeName[0] !== '('
-        ) {
+        } else if (isEntityTypeName(baseTypeName)) {
           const subItem = (restOfItem as any)[fieldName];
           subItem[foreignIdFieldName] = _id;
           const possibleErrorResponse = await updateEntity(

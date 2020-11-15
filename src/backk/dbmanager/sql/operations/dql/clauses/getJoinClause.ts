@@ -3,6 +3,7 @@ import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPro
 import { Projection } from '../../../../../types/postqueryoperations/Projection';
 import shouldIncludeField from '../utils/columns/shouldIncludeField';
 import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../../utils/type/isEntityTypeName';
 
 export default function getJoinClause(
   schema: string,
@@ -45,11 +46,7 @@ export default function getJoinClause(
   Object.entries(entityMetadata).forEach(([, fieldTypeName]: [any, any]) => {
     const { baseTypeName } = getTypeInfoForTypeName(fieldTypeName);
 
-    if (
-      baseTypeName !== 'Date' &&
-      baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-      baseTypeName[0] !== '('
-    ) {
+    if (isEntityTypeName(baseTypeName)) {
       joinClause += getJoinClause(schema, projection, (Types as any)[baseTypeName], Types);
     }
   });

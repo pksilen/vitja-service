@@ -7,7 +7,8 @@ import setSubEntityInfo from './utils/setSubEntityInfo';
 import createAdditionalTable from './utils/createAdditionalTable';
 import addJoinSpec from './utils/addJoinSpec';
 import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
-import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
+import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 
 export default async function tryAlterTable(
   dbManager: AbstractDbManager,
@@ -26,18 +27,14 @@ export default async function tryAlterTable(
 
       if (!doesFieldExistInDatabase) {
         let alterTableStatement = `ALTER TABLE ${schema}.${entityName} ADD `;
-        const  { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
+        const { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
         let sqlColumnType = getSqlColumnType(fieldName, baseTypeName);
 
         if (!sqlColumnType && baseTypeName[0] === '(') {
           sqlColumnType = getEnumSqlColumnType(baseTypeName);
         }
 
-        if (
-          !sqlColumnType &&
-          baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-          baseTypeName[0] !== '('
-        ) {
+        if (!sqlColumnType && isEntityTypeName(baseTypeName)) {
           setSubEntityInfo(entityName, baseTypeName);
         } else if (isArrayType) {
           const idFieldName = await createAdditionalTable(
@@ -52,7 +49,11 @@ export default async function tryAlterTable(
         } else {
           const isUnique = typeAnnotationContainer.isTypePropertyUnique(entityClass, fieldName);
           alterTableStatement +=
-            fieldName + ' ' + sqlColumnType + (isNullableType ? '' : 'NOT NULL') + (isUnique ? ' UNIQUE' : '');
+            fieldName +
+            ' ' +
+            sqlColumnType +
+            (isNullableType ? '' : 'NOT NULL') +
+            (isUnique ? ' UNIQUE' : '');
           await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
         }
       }
