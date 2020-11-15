@@ -14,6 +14,10 @@ import { Entity } from '../../../../types/Entity';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
@@ -31,17 +35,7 @@ export default async function updateEntity<T extends Entity>(
       await hashAndEncryptItem(restOfItem, entityClass as any, Types);
     }
 
-    if (
-      !dbManager.getClsNamespace()?.get('localTransaction') &&
-      !dbManager.getClsNamespace()?.get('globalTransaction')
-    ) {
-      await dbManager.tryBeginTransaction();
-      didStartTransaction = true;
-      dbManager.getClsNamespace()?.set('localTransaction', true);
-      dbManager
-        .getClsNamespace()
-        ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
-    }
+    didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     if (shouldCheckIfItemExists) {
       const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
@@ -152,23 +146,16 @@ export default async function updateEntity<T extends Entity>(
     }
 
     await Promise.all(promises);
-
-    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.tryCommitTransaction();
-    }
+    await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
   } catch (errorOrErrorResponse) {
     if (isRecursiveCall) {
       throw errorOrErrorResponse;
     }
-    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.tryRollbackTransaction();
-    }
+    await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
       : createErrorResponseFromError(errorOrErrorResponse);
   } finally {
-    if (didStartTransaction) {
-      dbManager.getClsNamespace()?.set('localTransaction', false);
-    }
+    cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
 }

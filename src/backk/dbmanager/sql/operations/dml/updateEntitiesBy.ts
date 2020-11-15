@@ -15,6 +15,11 @@ import tryGetProjection from '../dql/clauses/tryGetProjection';
 import getSqlColumnFromProjection from '../dql/utils/columns/getSqlColumnFromProjection';
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import { HttpStatusCodes } from '../../../../constants/constants';
 
 export default async function updateEntitiesBy<T extends Entity>(
   dbManager: PostgreSqlDbManager,
@@ -38,7 +43,9 @@ export default async function updateEntitiesBy<T extends Entity>(
       );
     } catch (error) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
+      throw new Error(
+        createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, HttpStatusCodes.BAD_REQUEST)
+      );
     }
 
     // noinspection AssignmentToFunctionParameterJS
@@ -52,18 +59,7 @@ export default async function updateEntitiesBy<T extends Entity>(
       }
     }
 
-    if (
-      !dbManager.getClsNamespace()?.get('localTransaction') &&
-      !dbManager.getClsNamespace()?.get('globalTransaction')
-    ) {
-      await dbManager.tryBeginTransaction();
-      didStartTransaction = true;
-      dbManager.getClsNamespace()?.set('localTransaction', true);
-      dbManager
-        .getClsNamespace()
-        ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
-    }
-
+    didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass as any);
     const columns: any = [];
     const values: any = [];
@@ -115,7 +111,12 @@ export default async function updateEntitiesBy<T extends Entity>(
           const numericId = parseInt(_id, 10);
           if (isNaN(numericId)) {
             // noinspection ExceptionCaughtLocallyJS
-            throw new Error(createErrorMessageWithStatusCode(idFieldName + ': must be a numeric id', 400));
+            throw new Error(
+              createErrorMessageWithStatusCode(
+                idFieldName + ': must be a numeric id',
+                HttpStatusCodes.BAD_REQUEST
+              )
+            );
           }
 
           promises.push(
@@ -155,23 +156,16 @@ export default async function updateEntitiesBy<T extends Entity>(
     }
 
     await Promise.all(promises);
-
-    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.tryCommitTransaction();
-    }
+    await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
   } catch (errorOrErrorResponse) {
     if (isRecursiveCall) {
       throw errorOrErrorResponse;
     }
-    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.tryRollbackTransaction();
-    }
+    await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
       : createErrorResponseFromError(errorOrErrorResponse);
   } finally {
-    if (didStartTransaction) {
-      dbManager.getClsNamespace()?.set('localTransaction', false);
-    }
+    cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
 }

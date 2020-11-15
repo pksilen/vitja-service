@@ -1,6 +1,5 @@
 import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import _ from 'lodash';
 import isErrorResponse from '../../../../errors/isErrorResponse';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
@@ -12,6 +11,11 @@ import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQ
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import { HttpStatusCodes } from '../../../../constants/constants';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 
 export default async function createEntity<T>(
   dbManager: PostgreSqlDbManager,
@@ -32,17 +36,7 @@ export default async function createEntity<T>(
       await hashAndEncryptItem(entity, entityClass, Types);
     }
 
-    if (
-      !dbManager.getClsNamespace()?.get('localTransaction') &&
-      !dbManager.getClsNamespace()?.get('globalTransaction')
-    ) {
-      await dbManager.tryBeginTransaction();
-      didStartTransaction = true;
-      dbManager.getClsNamespace()?.set('localTransaction', true);
-      dbManager
-        .getClsNamespace()
-        ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
-    }
+    didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     if (!isRecursiveCall && preHooks) {
       await tryExecutePreHooks(preHooks);
@@ -67,7 +61,7 @@ export default async function createEntity<T>(
               throw new Error(
                 createErrorMessageWithStatusCode(
                   entityClass.name + '.' + fieldName + ': must be a numeric id',
-                  400
+                  HttpStatusCodes.BAD_REQUEST
                 )
               );
             }
@@ -90,66 +84,60 @@ export default async function createEntity<T>(
       Object.entries(entityMetadata),
       async ([fieldName, fieldTypeName]: [any, any]) => {
         const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
-        const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+        const foreignIdFieldName =
+          entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+        const subEntityOrEntities = (entity as any)[fieldName];
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
-          if (
-            _.uniqBy((entity as any)[fieldName], (subItem: any) => subItem.id).length !==
-            (entity as any)[fieldName].length
-          ) {
-            throw new Error(createErrorMessageWithStatusCode('Duplicate id values in ' + fieldName, 400));
-          }
-
           const relationEntityName = baseTypeName;
-          await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index) => {
-            subItem[idFieldName] = _id;
+          await forEachAsyncParallel(subEntityOrEntities, async (subEntity: any, index) => {
+            subEntity[foreignIdFieldName] = _id;
 
-            if (subItem.id === undefined) {
-              subItem.id = index;
+            if (subEntity.id === undefined) {
+              subEntity.id = index;
             } else {
-              if (parseInt(subItem.id, 10) !== index) {
+              if (parseInt(subEntity.id, 10) !== index) {
                 throw new Error(
                   createErrorMessageWithStatusCode(
                     'Invalid id values in ' +
                       fieldName +
                       '. Id values must be consecutive numbers starting from zero.',
-                    400
+                    HttpStatusCodes.BAD_REQUEST
                   )
                 );
               }
             }
 
-            const subItemOrErrorResponse: any | ErrorResponse = await createEntity(
+            const subEntityOrErrorResponse: any | ErrorResponse = await createEntity(
               dbManager,
-              subItem,
+              subEntity,
               (Types as any)[relationEntityName],
               preHooks,
               postQueryOperations,
               true
             );
-            if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
-              throw subItemOrErrorResponse;
+            if ('errorMessage' in subEntityOrErrorResponse && isErrorResponse(subEntityOrErrorResponse)) {
+              throw subEntityOrErrorResponse;
             }
           });
-        } else if (isEntityTypeName(baseTypeName)) {
+        } else if (isEntityTypeName(baseTypeName) && subEntityOrEntities !== null) {
           const relationEntityName = baseTypeName;
-          const subItem = (entity as any)[fieldName];
-          subItem[idFieldName] = _id;
-          const subItemOrErrorResponse: any | ErrorResponse = await createEntity(
+          subEntityOrEntities[foreignIdFieldName] = _id;
+          const subEntityOrErrorResponse: any | ErrorResponse = await createEntity(
             dbManager,
-            subItem,
+            subEntityOrEntities,
             (Types as any)[relationEntityName],
             preHooks,
             postQueryOperations,
             true
           );
-          if ('errorMessage' in subItemOrErrorResponse && isErrorResponse(subItemOrErrorResponse)) {
-            throw subItemOrErrorResponse;
+          if ('errorMessage' in subEntityOrErrorResponse && isErrorResponse(subEntityOrErrorResponse)) {
+            throw subEntityOrErrorResponse;
           }
         } else if (isArrayType) {
           await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index: number) => {
             const insertStatement = `INSERT INTO ${dbManager.schema}.${entityClass.name +
-              fieldName.slice(0, -1)} (id, ${idFieldName}, ${fieldName.slice(
+              fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
               0,
               -1
             )}) VALUES(${index}, $1, $2)`;
@@ -164,26 +152,17 @@ export default async function createEntity<T>(
         ? ({} as any)
         : await dbManager.getEntityById(_id, entityClass, postQueryOperations);
 
-    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.tryCommitTransaction();
-    }
-
+    await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return response;
   } catch (errorOrErrorResponse) {
     if (isRecursiveCall) {
       throw errorOrErrorResponse;
     }
-
-    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.tryRollbackTransaction();
-    }
-
+    await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
       : createErrorResponseFromError(errorOrErrorResponse);
   } finally {
-    if (didStartTransaction) {
-      dbManager.getClsNamespace()?.set('localTransaction', false);
-    }
+    cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
 }

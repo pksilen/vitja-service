@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
 - Null value for defaultPaymentMethod
 - Support dynamic filters with Map-type argument property
   _filters in input argument
@@ -19,15 +18,15 @@ TODO:
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
   - Update default prometheus metrics
-- Add boolean field to entity to test it
-- User has SalesItems and Orders subentities
-- New entities: User has Friends, Posts, show posts from friends
-  - GetEntitiesByIn: get Posts where userId in User's friendIds
-- Unit testaa: shouldIncludeField eri keissit
 - Response headers added:
   - X-content-type-options: nosniff
   - Strict-Transport-Security: max-age 
-Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
+- Add boolean field to entity to test it
+- User has SalesItems and Orders subentities
+ - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
+- New entities: User has Friends, Posts, show posts from friends
+  - GetEntitiesByIn: get Posts where userId in User's friendIds
+- Unit testaa: shouldIncludeField eri keissit
 
 TODO NEXT RELEASE:
 - getDbManager support for multiple dbmanagers

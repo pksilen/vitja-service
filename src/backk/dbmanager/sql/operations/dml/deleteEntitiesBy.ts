@@ -1,15 +1,19 @@
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import entityContainer, { JoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
-import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
-import encrypt from "../../../../crypt/encrypt";
-import tryGetProjection from "../dql/clauses/tryGetProjection";
-import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
-import getSqlColumnFromProjection from "../dql/utils/columns/getSqlColumnFromProjection";
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import entityContainer, { JoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import isErrorResponse from '../../../../errors/isErrorResponse';
+import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
+import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
+import encrypt from '../../../../crypt/encrypt';
+import tryGetProjection from '../dql/clauses/tryGetProjection';
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import getSqlColumnFromProjection from '../dql/utils/columns/getSqlColumnFromProjection';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 
 export default async function deleteEntitiesBy<T extends object>(
   dbManager: PostgreSqlDbManager,
@@ -21,21 +25,15 @@ export default async function deleteEntitiesBy<T extends object>(
   let didStartTransaction = false;
 
   try {
-    if (
-      !dbManager.getClsNamespace()?.get('globalTransaction') &&
-      !dbManager.getClsNamespace()?.get('localTransaction')
-    ) {
-      await dbManager.tryBeginTransaction();
-      didStartTransaction = true;
-      dbManager.getClsNamespace()?.set('localTransaction', true);
-      dbManager
-        .getClsNamespace()
-        ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
-    }
-
+    didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     let projection;
     try {
-      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, entityClass, Types);
+      projection = tryGetProjection(
+        dbManager.schema,
+        { includeResponseFields: [fieldName] },
+        entityClass,
+        Types
+      );
     } catch (error) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
@@ -65,19 +63,13 @@ export default async function deleteEntitiesBy<T extends object>(
       ])
     ]);
 
-    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.tryCommitTransaction();
-    }
+    await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
   } catch (errorOrErrorResponse) {
-    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.tryRollbackTransaction();
-    }
+    await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
       : createErrorResponseFromError(errorOrErrorResponse);
   } finally {
-    if (didStartTransaction) {
-      dbManager.getClsNamespace()?.set('localTransaction', false);
-    }
+    cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
 }

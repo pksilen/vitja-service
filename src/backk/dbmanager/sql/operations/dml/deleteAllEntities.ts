@@ -3,6 +3,10 @@ import entityContainer, { JoinSpec } from '../../../../decorators/entity/entityA
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 
 export default async function deleteAllEntities<T>(
   dbManager: PostgreSqlDbManager,
@@ -11,17 +15,7 @@ export default async function deleteAllEntities<T>(
   let didStartTransaction = false;
 
   try {
-    if (
-      !dbManager.getClsNamespace()?.get('globalTransaction') &&
-      !dbManager.getClsNamespace()?.get('localTransaction')
-    ) {
-      await dbManager.tryBeginTransaction();
-      didStartTransaction = true;
-      dbManager.getClsNamespace()?.set('localTransaction', true);
-      dbManager
-        .getClsNamespace()
-        ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
-    }
+    didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     await Promise.all([
       forEachAsyncParallel(
@@ -33,17 +27,11 @@ export default async function deleteAllEntities<T>(
       dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${entityClass.name}`)
     ]);
 
-    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.tryCommitTransaction();
-    }
+    await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
   } catch (error) {
-    if (didStartTransaction && !dbManager.getClsNamespace()?.get('globalTransaction')) {
-      await dbManager.tryRollbackTransaction();
-    }
+    await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return createErrorResponseFromError(error);
   } finally {
-    if (didStartTransaction) {
-      dbManager.getClsNamespace()?.set('localTransaction', false);
-    }
+    cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
 }
