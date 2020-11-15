@@ -25,7 +25,7 @@ export default async function updateEntitiesBy<T extends Entity>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,
-  { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
+  { _id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
@@ -68,7 +68,7 @@ export default async function updateEntitiesBy<T extends Entity>(
     await forEachAsyncSequential(
       Object.entries(entityMetadata),
       async ([fieldName, fieldTypeName]: [any, any]) => {
-        if ((restOfItem as any)[fieldName] === undefined) {
+        if ((restOfEntity as any)[fieldName] === undefined) {
           return;
         }
 
@@ -76,14 +76,15 @@ export default async function updateEntitiesBy<T extends Entity>(
         const foreignIdFieldName =
           EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
         const idFieldName = _id === undefined ? 'id' : '_id';
+        const subEntityOrEntities = (restOfEntity as any)[fieldName];
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
           promises.push(
-            forEachAsyncParallel((restOfItem as any)[fieldName], async (subEntity: any) => {
+            forEachAsyncParallel(subEntityOrEntities, async (subEntity: any) => {
               const possibleErrorResponse = await updateEntitiesBy(
                 dbManager,
                 foreignIdFieldName,
-                _id ?? restOfItem.id,
+                _id ?? restOfEntity.id,
                 subEntity,
                 (Types as any)[baseTypeName],
                 true
@@ -94,12 +95,12 @@ export default async function updateEntitiesBy<T extends Entity>(
               }
             })
           );
-        } else if (isEntityTypeName(baseTypeName)) {
+        } else if (isEntityTypeName(baseTypeName) && subEntityOrEntities !== null) {
           const possibleErrorResponse = await updateEntitiesBy(
             dbManager,
             foreignIdFieldName,
-            _id ?? restOfItem.id,
-            (restOfItem as any)[fieldName],
+            _id ?? restOfEntity.id,
+            subEntityOrEntities,
             (Types as any)[baseTypeName],
             true
           );
@@ -120,7 +121,7 @@ export default async function updateEntitiesBy<T extends Entity>(
           }
 
           promises.push(
-            forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any, index) => {
+            forEachAsyncParallel((restOfEntity as any)[fieldName], async (subItem: any, index) => {
               const deleteStatement = `DELETE FROM ${dbManager.schema}.${EntityClass.name +
                 fieldName.slice(0, -1)} WHERE ${idFieldName} = $1`;
               await dbManager.tryExecuteSql(deleteStatement, [_id]);
@@ -134,9 +135,9 @@ export default async function updateEntitiesBy<T extends Entity>(
             })
           );
         } else if (fieldName !== '_id' && fieldName !== 'id') {
-          if ((restOfItem as any)[fieldName] !== undefined) {
+          if ((restOfEntity as any)[fieldName] !== undefined) {
             columns.push(fieldName);
-            values.push((restOfItem as any)[fieldName]);
+            values.push((restOfEntity as any)[fieldName]);
           }
         }
       }

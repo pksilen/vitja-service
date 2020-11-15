@@ -18,11 +18,12 @@ import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransa
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import { HttpStatusCodes } from '../../../../constants/constants';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
-  { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
-  entityClass: new () => T,
+  { _id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
+  EntityClass: new () => T,
   preHooks?: PreHook | PreHook[],
   shouldCheckIfItemExists: boolean = true,
   isRecursiveCall = false
@@ -32,17 +33,17 @@ export default async function updateEntity<T extends Entity>(
   try {
     const Types = dbManager.getTypes();
     if (!isRecursiveCall) {
-      await hashAndEncryptItem(restOfItem, entityClass as any, Types);
+      await hashAndEncryptItem(restOfEntity, EntityClass as any, Types);
     }
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     if (shouldCheckIfItemExists) {
-      const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
+      const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, undefined, true);
       await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     }
 
-    const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
+    const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass as any);
     const columns: any = [];
     const values: any = [];
     const promises: Array<Promise<any>> = [];
@@ -50,18 +51,19 @@ export default async function updateEntity<T extends Entity>(
     await forEachAsyncSequential(
       Object.entries(entityMetadata),
       async ([fieldName, fieldTypeName]: [any, any]) => {
-        if ((restOfItem as any)[fieldName] === undefined) {
+        if ((restOfEntity as any)[fieldName] === undefined) {
           return;
         }
 
         const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
         const foreignIdFieldName =
-          entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+          EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
         const idFieldName = _id === undefined ? 'id' : '_id';
+        const subEntityOrEntities = (restOfEntity as any)[fieldName];
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
           promises.push(
-            forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
+            forEachAsyncParallel(subEntityOrEntities, async (subItem: any) => {
               subItem[foreignIdFieldName] = _id;
               const possibleErrorResponse = await updateEntity(
                 dbManager,
@@ -77,12 +79,11 @@ export default async function updateEntity<T extends Entity>(
               }
             })
           );
-        } else if (isEntityTypeName(baseTypeName)) {
-          const subItem = (restOfItem as any)[fieldName];
-          subItem[foreignIdFieldName] = _id;
+        } else if (isEntityTypeName(baseTypeName) && subEntityOrEntities !== null) {
+          subEntityOrEntities[foreignIdFieldName] = _id;
           const possibleErrorResponse = await updateEntity(
             dbManager,
-            subItem,
+            subEntityOrEntities,
             (Types as any)[baseTypeName],
             undefined,
             false,
@@ -96,16 +97,21 @@ export default async function updateEntity<T extends Entity>(
           const numericId = parseInt(_id, 10);
           if (isNaN(numericId)) {
             // noinspection ExceptionCaughtLocallyJS
-            throw new Error(createErrorMessageWithStatusCode(idFieldName + ': must be a numeric id', 400));
+            throw new Error(
+              createErrorMessageWithStatusCode(
+                idFieldName + ': must be a numeric id',
+                HttpStatusCodes.BAD_REQUEST
+              )
+            );
           }
 
           promises.push(
-            forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any, index) => {
-              const deleteStatement = `DELETE FROM ${dbManager.schema}.${entityClass.name +
+            forEachAsyncParallel((restOfEntity as any)[fieldName], async (subItem: any, index) => {
+              const deleteStatement = `DELETE FROM ${dbManager.schema}.${EntityClass.name +
                 fieldName.slice(0, -1)} WHERE ${foreignIdFieldName} = $1`;
               await dbManager.tryExecuteSql(deleteStatement, [_id]);
 
-              const insertStatement = `INSERT INTO ${dbManager.schema}.${entityClass.name +
+              const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name +
                 fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
                 0,
                 -1
@@ -114,9 +120,9 @@ export default async function updateEntity<T extends Entity>(
             })
           );
         } else if (fieldName !== '_id' && fieldName !== 'id') {
-          if ((restOfItem as any)[fieldName] !== undefined) {
+          if ((restOfEntity as any)[fieldName] !== undefined) {
             columns.push(fieldName);
-            values.push((restOfItem as any)[fieldName]);
+            values.push((restOfEntity as any)[fieldName]);
           }
         }
       }
@@ -128,18 +134,21 @@ export default async function updateEntity<T extends Entity>(
 
     const idFieldName = _id === undefined ? 'id' : '_id';
 
-    const numericId = parseInt(_id === undefined ? restOfItem.id ?? 0 : (_id as any), 10);
+    const numericId = parseInt(_id === undefined ? restOfEntity.id ?? 0 : (_id as any), 10);
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(
-        createErrorMessageWithStatusCode(entityClass.name + '.' + idFieldName + ': must be a numeric id', 400)
+        createErrorMessageWithStatusCode(
+          EntityClass.name + '.' + idFieldName + ': must be a numeric id',
+          HttpStatusCodes.BAD_REQUEST
+        )
       );
     }
 
     if (setStatements) {
       promises.push(
         dbManager.tryExecuteSql(
-          `UPDATE ${dbManager.schema}.${entityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
+          `UPDATE ${dbManager.schema}.${EntityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
           [numericId, ...values]
         )
       );

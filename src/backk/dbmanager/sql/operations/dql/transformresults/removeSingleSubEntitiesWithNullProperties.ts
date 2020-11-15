@@ -1,15 +1,18 @@
 function removeSingleSubEntitiesWithNullPropertiesInObject(object: any) {
-  Object.entries(object).forEach(([key, value]) => {
-    if (Array.isArray(value) && value.length === 1 && typeof value[0] === 'object') {
-      const emptyValueCount = Object.values(value[0]).filter(
+  Object.entries(object).forEach(([key, value]: [string, any]) => {
+    if (
+      (Array.isArray(value) && value.length === 1 && typeof value[0] === 'object') ||
+      (typeof value === 'object' && !(value instanceof Date) && value !== null)
+    ) {
+      const emptyValueCount = Object.values(value[0] ?? value).filter(
         (subValue) => subValue === null || subValue === undefined
       ).length;
-      if (emptyValueCount === Object.values(value[0]).length) {
+      if (emptyValueCount === Object.values(value[0] ?? value).length) {
         object[key] = [];
         return;
       }
     }
-    if (typeof value === 'object' && value !== null) {
+    if (typeof value === 'object' && !(value instanceof Date) && value !== null) {
       if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
         value.forEach((subValue) => removeSingleSubEntitiesWithNullPropertiesInObject(subValue));
       } else {
@@ -40,6 +43,6 @@ export default function removeSingleSubEntitiesWithNullProperties(rows: any[]) {
   });
 
   if (rows.length > 0) {
-   removeUndefinedIds(rows[0]);
+    removeUndefinedIds(rows[0]);
   }
 }
