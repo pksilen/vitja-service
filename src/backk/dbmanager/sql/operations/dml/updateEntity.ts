@@ -12,6 +12,7 @@ import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/Entity';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
@@ -58,21 +59,16 @@ export default async function updateEntity<T extends Entity>(
           return;
         }
 
-        let baseFieldTypeName = fieldTypeName;
-        let isArray = false;
-        const foreignIdFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+        const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
+        const foreignIdFieldName =
+          entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
         const idFieldName = _id === undefined ? 'id' : '_id';
 
-        if (fieldTypeName.endsWith('[]')) {
-          baseFieldTypeName = fieldTypeName.slice(0, -2);
-          isArray = true;
-        }
-
         if (
-          isArray &&
-          baseFieldTypeName !== 'Date' &&
-          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-          baseFieldTypeName[0] !== '('
+          isArrayType &&
+          baseTypeName !== 'Date' &&
+          baseTypeName[0] === baseTypeName[0].toUpperCase() &&
+          baseTypeName[0] !== '('
         ) {
           promises.push(
             forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
@@ -80,7 +76,7 @@ export default async function updateEntity<T extends Entity>(
               const possibleErrorResponse = await updateEntity(
                 dbManager,
                 subItem,
-                (Types as any)[baseFieldTypeName],
+                (Types as any)[baseTypeName],
                 undefined,
                 false,
                 true
@@ -92,16 +88,16 @@ export default async function updateEntity<T extends Entity>(
             })
           );
         } else if (
-          baseFieldTypeName !== 'Date' &&
-          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-          baseFieldTypeName[0] !== '('
+          baseTypeName !== 'Date' &&
+          baseTypeName[0] === baseTypeName[0].toUpperCase() &&
+          baseTypeName[0] !== '('
         ) {
           const subItem = (restOfItem as any)[fieldName];
           subItem[foreignIdFieldName] = _id;
           const possibleErrorResponse = await updateEntity(
             dbManager,
             subItem,
-            (Types as any)[baseFieldTypeName],
+            (Types as any)[baseTypeName],
             undefined,
             false,
             true
@@ -110,7 +106,7 @@ export default async function updateEntity<T extends Entity>(
           if (possibleErrorResponse) {
             throw possibleErrorResponse;
           }
-        } else if (isArray) {
+        } else if (isArrayType) {
           const numericId = parseInt(_id, 10);
           if (isNaN(numericId)) {
             // noinspection ExceptionCaughtLocallyJS

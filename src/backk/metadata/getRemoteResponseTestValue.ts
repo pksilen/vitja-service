@@ -11,7 +11,7 @@ export default function getRemoteResponseTestValue<T>(
 
   Object.entries(getPropertyNameToPropertyTypeNameMap(ResponseClass)).forEach(
     ([propertyName, propertyTypeName]: [string, string]) => {
-      const { baseTypeName, defaultValueStr, isOptionalType } = getTypeInfoForTypeName(propertyTypeName);
+      const { baseTypeName, defaultValueStr, isArrayType, isOptionalType } = getTypeInfoForTypeName(propertyTypeName);
       if (isOptionalType && defaultValueStr === undefined) {
         return;
       }
@@ -45,7 +45,7 @@ export default function getRemoteResponseTestValue<T>(
         sampleArg[propertyName] = getRemoteResponseTestValue(types?.[propertyName]);
       }
 
-      if (baseTypeName.endsWith('[]')) {
+      if (isArrayType) {
         if (propertyName.endsWith('Ids') && testValue === undefined) {
           sampleArg[propertyName] = ['0'];
         } else {

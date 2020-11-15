@@ -1,65 +1,76 @@
-import { Projection } from "../../../../../../types/postqueryoperations/Projection";
-import getPropertyNameToPropertyTypeNameMap from "../../../../../../metadata/getPropertyNameToPropertyTypeNameMap";
-import typePropertyAnnotationContainer
-  from "../../../../../../decorators/typeproperty/typePropertyAnnotationContainer";
-import shouldIncludeField from "./shouldIncludeField";
+import { Projection } from '../../../../../../types/postqueryoperations/Projection';
+import getPropertyNameToPropertyTypeNameMap from '../../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import typePropertyAnnotationContainer from '../../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import shouldIncludeField from './shouldIncludeField';
+import getTypeInfoForTypeName from '../../../../../../utils/type/getTypeInfoForTypeName';
 
 export default function getFieldsForEntity(
   schema: string,
   fields: string[],
-  entityClass: Function,
+  EntityClass: Function,
   Types: object,
   projection: Projection,
   fieldPath: string,
   isInternalCall = false
 ) {
-  const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
+  const entityPropertyNameToPropertyTypeNameMap = getPropertyNameToPropertyTypeNameMap(EntityClass as any);
 
-  Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [string, any]) => {
-    if (!isInternalCall && typePropertyAnnotationContainer.isTypePropertyPrivate(entityClass, fieldName)) {
-      return;
-    }
-
-    let baseFieldTypeName = fieldTypeName;
-    let isArray = false;
-
-    if (fieldTypeName.endsWith('[]')) {
-      baseFieldTypeName = fieldTypeName.slice(0, -2);
-      isArray = true;
-    }
-
-    if ( baseFieldTypeName !== 'Date' && baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
-      getFieldsForEntity(
-        schema,
-        fields,
-        (Types as any)[baseFieldTypeName],
-        Types,
-        projection,
-        fieldPath + fieldName + '.'
-      );
-    } else if (isArray) {
-      if (shouldIncludeField(fieldName, fieldPath, projection)) {
-        const relationEntityName = entityClass.name + fieldName.slice(0, -1);
-        const idFieldName = entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
-        fields.push(`${schema}.${relationEntityName}.${idFieldName} AS ${relationEntityName}_${idFieldName}`);
-
-        const singularFieldName = fieldName.slice(0, -1);
-
-        fields.push(
-          `${schema}.${relationEntityName}.${singularFieldName} AS ${relationEntityName}_${singularFieldName}`
-        );
-        fields.push(`${schema}.${relationEntityName}.id AS ${relationEntityName}_id`);
+  Object.entries(entityPropertyNameToPropertyTypeNameMap).forEach(
+    ([entityPropertyName, entityPropertyTypeName]: [string, any]) => {
+      if (
+        !isInternalCall &&
+        typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, entityPropertyName)
+      ) {
+        return;
       }
-    } else {
-      if (shouldIncludeField(fieldName, fieldPath, projection)) {
-        if (fieldName === '_id' || fieldName === 'id' || fieldName.endsWith('Id')) {
+
+      const { baseTypeName, isArrayType } = getTypeInfoForTypeName(entityPropertyTypeName);
+
+      if (
+        baseTypeName !== 'Date' &&
+        baseTypeName[0] === baseTypeName[0].toUpperCase() &&
+        baseTypeName[0] !== '('
+      ) {
+        getFieldsForEntity(
+          schema,
+          fields,
+          (Types as any)[baseTypeName],
+          Types,
+          projection,
+          fieldPath + entityPropertyName + '.'
+        );
+      } else if (isArrayType) {
+        if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
+          const relationEntityName = EntityClass.name + entityPropertyName.slice(0, -1);
+          const idFieldName = EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
           fields.push(
-            `CAST(${schema}.${entityClass.name}.${fieldName} AS VARCHAR) AS ${entityClass.name}_${fieldName}`
+            `${schema}.${relationEntityName}.${idFieldName} AS ${relationEntityName}_${idFieldName}`
           );
-        } else {
-          fields.push(`${schema}.${entityClass.name}.${fieldName} AS ${entityClass.name}_${fieldName}`);
+
+          const singularFieldName = entityPropertyName.slice(0, -1);
+
+          fields.push(
+            `${schema}.${relationEntityName}.${singularFieldName} AS ${relationEntityName}_${singularFieldName}`
+          );
+          fields.push(`${schema}.${relationEntityName}.id AS ${relationEntityName}_id`);
+        }
+      } else {
+        if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
+          if (
+            entityPropertyName === '_id' ||
+            entityPropertyName === 'id' ||
+            entityPropertyName.endsWith('Id')
+          ) {
+            fields.push(
+              `CAST(${schema}.${EntityClass.name}.${entityPropertyName} AS VARCHAR) AS ${EntityClass.name}_${entityPropertyName}`
+            );
+          } else {
+            fields.push(
+              `${schema}.${EntityClass.name}.${entityPropertyName} AS ${EntityClass.name}_${entityPropertyName}`
+            );
+          }
         }
       }
     }
-  });
+  );
 }

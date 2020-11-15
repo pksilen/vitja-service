@@ -2,6 +2,7 @@ import shouldIncludeField from '../utils/columns/shouldIncludeField';
 import { Projection } from '../../../../../types/postqueryoperations/Projection';
 import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../../utils/type/isEntityTypeName';
 
 function updateResultMaps(
   entityClassOrName: Function | string,
@@ -31,12 +32,7 @@ function updateResultMaps(
   Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [string, any]) => {
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
 
-    if (
-      isArrayType &&
-      baseTypeName !== 'Date' &&
-      baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-      baseTypeName[0] !== '('
-    ) {
+    if (isArrayType && isEntityTypeName(baseTypeName)) {
       if (shouldIncludeField(fieldName, fieldPath, projection)) {
         const relationEntityName = baseTypeName;
 
@@ -56,11 +52,7 @@ function updateResultMaps(
           entityClassOrName as Function
         );
       }
-    } else if (
-      baseTypeName !== 'Date' &&
-      baseTypeName[0] === baseTypeName[0].toUpperCase() &&
-      baseTypeName[0] !== '('
-    ) {
+    } else if (isEntityTypeName(baseTypeName)) {
       if (shouldIncludeField(fieldName, fieldPath, projection)) {
         const relationEntityName = baseTypeName;
 

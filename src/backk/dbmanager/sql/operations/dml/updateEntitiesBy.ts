@@ -1,25 +1,27 @@
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import { RecursivePartial } from "../../../../types/RecursivePartial";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import getPropertyNameToPropertyTypeNameMap from "../../../../metadata/getPropertyNameToPropertyTypeNameMap";
-import { Entity } from "../../../../types/Entity";
-import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
-import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
-import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
-import encrypt from "../../../../crypt/encrypt";
-import tryGetProjection from "../dql/clauses/tryGetProjection";
-import getSqlColumnFromProjection from "../dql/utils/columns/getSqlColumnFromProjection";
+import isErrorResponse from '../../../../errors/isErrorResponse';
+import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import { RecursivePartial } from '../../../../types/RecursivePartial';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import { Entity } from '../../../../types/Entity';
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
+import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
+import encrypt from '../../../../crypt/encrypt';
+import tryGetProjection from '../dql/clauses/tryGetProjection';
+import getSqlColumnFromProjection from '../dql/utils/columns/getSqlColumnFromProjection';
+import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 
 export default async function updateEntitiesBy<T extends Entity>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,
   { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
-  entityClass: new () => T,
+  EntityClass: new () => T,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   const Types = dbManager.getTypes();
@@ -28,7 +30,12 @@ export default async function updateEntitiesBy<T extends Entity>(
   try {
     let projection;
     try {
-      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, entityClass, Types);
+      projection = tryGetProjection(
+        dbManager.schema,
+        { includeResponseFields: [fieldName] },
+        EntityClass,
+        Types
+      );
     } catch (error) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
@@ -57,7 +64,7 @@ export default async function updateEntitiesBy<T extends Entity>(
         ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);
     }
 
-    const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
+    const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass as any);
     const columns: any = [];
     const values: any = [];
     const promises: Array<Promise<any>> = [];
@@ -69,31 +76,20 @@ export default async function updateEntitiesBy<T extends Entity>(
           return;
         }
 
-        let baseFieldTypeName = fieldTypeName;
-        let isArray = false;
+        const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
         const foreignIdFieldName =
-          entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+          EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
         const idFieldName = _id === undefined ? 'id' : '_id';
 
-        if (fieldTypeName.endsWith('[]')) {
-          baseFieldTypeName = fieldTypeName.slice(0, -2);
-          isArray = true;
-        }
-
-        if (
-          isArray &&
-          baseFieldTypeName !== 'Date' &&
-          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-          baseFieldTypeName[0] !== '('
-        ) {
+        if (isArrayType && isEntityTypeName(baseTypeName)) {
           promises.push(
-            forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any) => {
+            forEachAsyncParallel((restOfItem as any)[fieldName], async (subEntity: any) => {
               const possibleErrorResponse = await updateEntitiesBy(
                 dbManager,
                 foreignIdFieldName,
                 _id ?? restOfItem.id,
-                subItem,
-                (Types as any)[baseFieldTypeName],
+                subEntity,
+                (Types as any)[baseTypeName],
                 true
               );
 
@@ -102,24 +98,20 @@ export default async function updateEntitiesBy<T extends Entity>(
               }
             })
           );
-        } else if (
-          baseFieldTypeName !== 'Date' &&
-          baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() &&
-          baseFieldTypeName[0] !== '('
-        ) {
+        } else if (isEntityTypeName(baseTypeName)) {
           const possibleErrorResponse = await updateEntitiesBy(
             dbManager,
             foreignIdFieldName,
             _id ?? restOfItem.id,
             (restOfItem as any)[fieldName],
-            (Types as any)[baseFieldTypeName],
+            (Types as any)[baseTypeName],
             true
           );
 
           if (possibleErrorResponse) {
             throw possibleErrorResponse;
           }
-        } else if (isArray) {
+        } else if (isArrayType) {
           const numericId = parseInt(_id, 10);
           if (isNaN(numericId)) {
             // noinspection ExceptionCaughtLocallyJS
@@ -128,11 +120,11 @@ export default async function updateEntitiesBy<T extends Entity>(
 
           promises.push(
             forEachAsyncParallel((restOfItem as any)[fieldName], async (subItem: any, index) => {
-              const deleteStatement = `DELETE FROM ${dbManager.schema}.${entityClass.name +
+              const deleteStatement = `DELETE FROM ${dbManager.schema}.${EntityClass.name +
                 fieldName.slice(0, -1)} WHERE ${idFieldName} = $1`;
               await dbManager.tryExecuteSql(deleteStatement, [_id]);
 
-              const insertStatement = `INSERT INTO ${dbManager.schema}.${entityClass.name +
+              const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name +
                 fieldName.slice(0, -1)} (id, ${idFieldName}, ${fieldName.slice(
                 0,
                 -1
@@ -156,7 +148,7 @@ export default async function updateEntitiesBy<T extends Entity>(
     if (setStatements) {
       promises.push(
         dbManager.tryExecuteSql(
-          `UPDATE ${dbManager.schema}.${entityClass.name} SET ${setStatements} WHERE ${fieldName} = $1`,
+          `UPDATE ${dbManager.schema}.${EntityClass.name} SET ${setStatements} WHERE ${fieldName} = $1`,
           [fieldValue, ...values]
         )
       );

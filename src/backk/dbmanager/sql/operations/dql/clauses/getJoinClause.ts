@@ -2,6 +2,7 @@ import entityContainer from '../../../../../decorators/entity/entityAnnotationCo
 import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
 import { Projection } from '../../../../../types/postqueryoperations/Projection';
 import shouldIncludeField from '../utils/columns/shouldIncludeField';
+import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
 
 export default function getJoinClause(
   schema: string,
@@ -42,14 +43,14 @@ export default function getJoinClause(
   const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
 
   Object.entries(entityMetadata).forEach(([, fieldTypeName]: [any, any]) => {
-    let baseFieldTypeName = fieldTypeName;
+    const { baseTypeName } = getTypeInfoForTypeName(fieldTypeName);
 
-    if (fieldTypeName.endsWith('[]')) {
-      baseFieldTypeName = fieldTypeName.slice(0, -2);
-    }
-
-    if ( baseFieldTypeName !== 'Date' && baseFieldTypeName[0] === baseFieldTypeName[0].toUpperCase() && baseFieldTypeName[0] !== '(') {
-      joinClause += getJoinClause(schema, projection, (Types as any)[baseFieldTypeName], Types);
+    if (
+      baseTypeName !== 'Date' &&
+      baseTypeName[0] === baseTypeName[0].toUpperCase() &&
+      baseTypeName[0] !== '('
+    ) {
+      joinClause += getJoinClause(schema, projection, (Types as any)[baseTypeName], Types);
     }
   });
 

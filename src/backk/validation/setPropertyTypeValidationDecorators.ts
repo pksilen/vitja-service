@@ -5,6 +5,7 @@ import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetad
 import { readFileSync } from 'fs';
 import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
 import SortBy from '../types/postqueryoperations/SortBy';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -75,20 +76,21 @@ export default function setPropertyTypeValidationDecorators(
       for (const classBodyNode of node.declaration.body.body) {
         if (classBodyNode.type === 'ClassProperty') {
           const propertyName = classBodyNode.key.name;
-          let finalPropertyTypeName: string;
+          let baseTypeName: string;
           let propertyTypeName;
-          let canBeNull = false;
+          let isNullableType = false;
+          let isArrayType = false;
 
           if (classBodyNode.typeAnnotation === undefined) {
             if (typeof classBodyNode.value?.value === 'number') {
               propertyTypeName = 'number';
-              finalPropertyTypeName = 'number';
+              baseTypeName = 'number';
             } else if (typeof classBodyNode.value?.value === 'boolean') {
               propertyTypeName = 'boolean';
-              finalPropertyTypeName = 'boolean';
+              baseTypeName = 'boolean';
             } else if (typeof classBodyNode.value?.value === 'string') {
               propertyTypeName = 'string';
-              finalPropertyTypeName = 'string';
+              baseTypeName = 'string';
             } else if (
               typeof classBodyNode.value?.value === 'object' ||
               typeof classBodyNode.value?.value === 'bigint' ||
@@ -114,12 +116,7 @@ export default function setPropertyTypeValidationDecorators(
               propertyTypeNameEnd.column
             );
 
-            if (propertyTypeName.endsWith(' | null')) {
-              propertyTypeName = propertyTypeName.split(' | null')[0];
-              canBeNull = true;
-            }
-
-            finalPropertyTypeName = propertyTypeName.split('[]')[0];
+            ({ baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(propertyTypeName));
           }
           let validationType;
           let constraints;
@@ -136,7 +133,7 @@ export default function setPropertyTypeValidationDecorators(
                 target: typeClass,
                 propertyName,
                 constraints: ['maxLengthAndMatches', 24, /^[a-f\d]{1,24}$/],
-                validationOptions: { each: propertyTypeName.endsWith('[]') }
+                validationOptions: { each: isArrayType }
               };
 
               getFromContainer(MetadataStorage).addValidationMetadata(
@@ -146,9 +143,9 @@ export default function setPropertyTypeValidationDecorators(
           }
 
           // noinspection IfStatementWithTooManyBranchesJS
-          if (finalPropertyTypeName === 'boolean') {
+          if (baseTypeName === 'boolean') {
             validationType = ValidationTypes.IS_BOOLEAN;
-          } else if (finalPropertyTypeName === 'number') {
+          } else if (baseTypeName === 'number') {
             if (
               !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.IS_INT) &&
               !doesPropertyContainCustomValidation(typeClass, propertyName, 'isBigInt')
@@ -156,38 +153,35 @@ export default function setPropertyTypeValidationDecorators(
               validationType = ValidationTypes.IS_NUMBER;
               constraints = [{}];
             }
-          } else if (finalPropertyTypeName === 'string') {
+          } else if (baseTypeName === 'string') {
             validationType = ValidationTypes.IS_STRING;
-          } else if (finalPropertyTypeName === 'Date') {
+          } else if (baseTypeName === 'Date') {
             validationType = ValidationTypes.IS_DATE;
-          } else if (finalPropertyTypeName.charAt(0).match(/^[_$A-Z]$/)) {
+          } else if (baseTypeName.charAt(0).match(/^[_$A-Z]$/)) {
             validationType = ValidationTypes.IS_INSTANCE;
-            if (Types[finalPropertyTypeName]) {
-              constraints = [Types[finalPropertyTypeName]];
-            } else if (finalPropertyTypeName === 'SortBy') {
+            if (Types[baseTypeName]) {
+              constraints = [Types[baseTypeName]];
+            } else if (baseTypeName === 'SortBy') {
               constraints = [SortBy];
             } else {
               throw new Error(
                 'Type: ' +
-                  finalPropertyTypeName +
+                  baseTypeName +
                   ' not found in ' +
                   serviceName.charAt(0).toUpperCase() +
                   serviceName.slice(1) +
                   '.Types'
               );
             }
-          } else if (finalPropertyTypeName !== 'any') {
+          } else if (baseTypeName !== 'any') {
             validationType = ValidationTypes.IS_IN;
 
-            if (
-              finalPropertyTypeName[0] === '(' &&
-              finalPropertyTypeName[finalPropertyTypeName.length - 1] === ')'
-            ) {
-              finalPropertyTypeName = finalPropertyTypeName.slice(1, -1);
+            if (baseTypeName[0] === '(' && baseTypeName[baseTypeName.length - 1] === ')') {
+              baseTypeName = baseTypeName.slice(1, -1);
             }
 
             let enumType: any;
-            const enumValues = finalPropertyTypeName.split('|').map((enumValue) => {
+            const enumValues = baseTypeName.split('|').map((enumValue) => {
               const trimmedEnumValue = enumValue.trim();
               const validator = new Validator();
 
@@ -195,7 +189,7 @@ export default function setPropertyTypeValidationDecorators(
                 if (enumType === 'string') {
                   throw new Error(
                     'All enum values must be of same type: ' +
-                      finalPropertyTypeName +
+                      baseTypeName +
                       ' in ' +
                       typeClassName +
                       '.' +
@@ -213,7 +207,7 @@ export default function setPropertyTypeValidationDecorators(
                 if (enumType === 'number') {
                   throw new Error(
                     'All enum values must be of same type: ' +
-                      finalPropertyTypeName +
+                      baseTypeName +
                       ' in ' +
                       typeClassName +
                       '.' +
@@ -238,7 +232,7 @@ export default function setPropertyTypeValidationDecorators(
               target: typeClass,
               propertyName,
               constraints,
-              validationOptions: { each: propertyTypeName.endsWith('[]') }
+              validationOptions: { each: isArrayType }
             };
 
             getFromContainer(MetadataStorage).addValidationMetadata(
@@ -261,17 +255,17 @@ export default function setPropertyTypeValidationDecorators(
             );
           }
 
-          if (canBeNull) {
-            const canBeNullValidationMetadataArgs: ValidationMetadataArgs = {
+          if (isNullableType) {
+            const isNullableValidationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.CONDITIONAL_VALIDATION,
               target: typeClass,
               propertyName,
               constraints: [(object: any) => object[propertyName] !== null, 'isNullable'],
-              validationOptions: { each: propertyTypeName.endsWith('[]') }
+              validationOptions: { each: isArrayType }
             };
 
             getFromContainer(MetadataStorage).addValidationMetadata(
-              new ValidationMetadata(canBeNullValidationMetadataArgs)
+              new ValidationMetadata(isNullableValidationMetadataArgs)
             );
           }
 
