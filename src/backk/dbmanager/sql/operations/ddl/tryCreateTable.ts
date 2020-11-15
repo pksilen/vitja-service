@@ -56,7 +56,7 @@ export default async function tryCreateTable(
         }
         const isUnique = typeAnnotationContainer.isTypePropertyUnique(entityClass, fieldName);
         createTableStatement +=
-          fieldName + ' ' + sqlColumnType + (isNullableType ? '' : 'NOT NULL') + (isUnique ? ' UNIQUE' : '');
+          fieldName + ' ' + sqlColumnType + (isNullableType || fieldName === 'id' ? '' : ' NOT NULL') + (isUnique ? ' UNIQUE' : '');
         fieldCnt++;
       }
     }

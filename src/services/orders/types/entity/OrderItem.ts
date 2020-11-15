@@ -23,7 +23,7 @@ export default class OrderItem extends Id {
   @MaxLength(1024)
   @ExpectInTestsToEvaluateTrue(
     ({ state, trackingUrl }) =>
-      (state === 'toBeDelivered' && trackingUrl === '') || (state !== 'toBeDelivered' && trackingUrl !== '')
+      (state === 'toBeDelivered' && trackingUrl ===  null) || (state !== 'toBeDelivered' && trackingUrl !== null)
   )
-  trackingUrl!: string;
+  trackingUrl!: string | null;
 }

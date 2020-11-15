@@ -63,7 +63,7 @@ export default class OrdersServiceImpl extends OrdersService {
           id: index.toString(),
           salesItemId,
           state: 'toBeDelivered',
-          trackingUrl: '',
+          trackingUrl: null,
           deliveryTimestampInSecs: 0
         }))
       },
@@ -92,7 +92,7 @@ export default class OrdersServiceImpl extends OrdersService {
       {
         salesItemId,
         state: 'toBeDelivered',
-        trackingUrl: '',
+        trackingUrl: null,
         deliveryTimestampInSecs: 0
       },
       Order,

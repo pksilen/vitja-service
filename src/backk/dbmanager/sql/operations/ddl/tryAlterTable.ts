@@ -52,7 +52,7 @@ export default async function tryAlterTable(
             fieldName +
             ' ' +
             sqlColumnType +
-            (isNullableType ? '' : 'NOT NULL') +
+            (isNullableType || fieldName === 'id' ? '' : ' NOT NULL') +
             (isUnique ? ' UNIQUE' : '');
           await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
         }

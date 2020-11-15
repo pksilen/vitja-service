@@ -6,6 +6,7 @@ const subPropertyNamesWhoseValuesShouldBeEncrypted = [
   'displayname',
   'display_name',
   'address',
+  'addr',
   'lastname',
   'last_name',
   'surname',
@@ -131,7 +132,7 @@ export default function shouldEncryptValue(propertyName: string, EntityClass?: F
     return entityPropertyNameToShouldEncryptValueMap[`${EntityClass.name}${propertyName}`];
   }
 
-  const shouldEncryptValue =
+  const shouldEncryptValue = propertyName.endsWith('Ip') ||
     (EntityClass && typePropertyAnnotationContainer.isTypePropertyEncrypted(EntityClass, propertyName)) ||
     (subPropertyNamesWhoseValuesShouldBeEncrypted.some(
       (subPropertyName) =>

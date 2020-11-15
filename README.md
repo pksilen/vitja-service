@@ -2,9 +2,7 @@
 
 TODO:
 - Null value support for fields (createOrder: trackingUrl ja deliveredTime nulls)
-  - All array checking must be changed because type name ending can be  | null instead of []
-  - Find all slice(0, -2) calls also
-
+- Null value for defaultPaymentMethod
 - Support dynamic filters with Map-type argument property
   _filters in input argument
   -https://hasura.io/

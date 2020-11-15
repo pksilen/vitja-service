@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import log, { Severity } from '../../observability/logging/log';
 import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
 import isErrorResponse from '../../errors/isErrorResponse';
-import getRemoteResponseTestValue from '../../metadata/getRemoteResponseTestValue';
+import getRemoteResponseTestValue from './getRemoteResponseTestValue';
 import { getNamespace } from 'cls-hooked';
 import defaultServiceMetrics from '../../observability/metrics/defaultServiceMetrics';
 import { HttpStatusCodes } from '../../constants/constants';

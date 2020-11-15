@@ -1,7 +1,7 @@
-import getPropertyNameToPropertyTypeNameMap from './getPropertyNameToPropertyTypeNameMap';
-import testValueContainer from '../decorators/typeproperty/testing/testValueContainer';
-import getValidationConstraint from '../validation/getValidationConstraint';
-import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import getPropertyNameToPropertyTypeNameMap from '../../metadata/getPropertyNameToPropertyTypeNameMap';
+import testValueContainer from '../../decorators/typeproperty/testing/testValueContainer';
+import getValidationConstraint from '../../validation/getValidationConstraint';
+import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 
 export default function getRemoteResponseTestValue<T>(
   ResponseClass: new () => T,
