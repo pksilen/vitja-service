@@ -4,8 +4,8 @@ import hash from './hash';
 import shouldEncryptValue from './shouldEncryptValue';
 import shouldHashValue from './shouldHashValue';
 import shouldUseRandomInitializationVector from './shouldUseRandomInitializationVector';
-import getPropertyNameToPropertyTypeNameMap from "../metadata/getPropertyNameToPropertyTypeNameMap";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import getPropertyNameToPropertyTypeNameMap from '../metadata/getPropertyNameToPropertyTypeNameMap';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 async function hashOrEncryptEntityValues(
   entity: { [key: string]: any },
@@ -17,7 +17,11 @@ async function hashOrEncryptEntityValues(
       if (typeof propertyValue[0] === 'object' && propertyValue[0] !== null) {
         const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass);
         await forEachAsyncParallel(propertyValue, async (pv: any) => {
-          await hashOrEncryptEntityValues(pv, (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName], Types);
+          await hashOrEncryptEntityValues(
+            pv,
+            (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],
+            Types
+          );
         });
       } else if (shouldHashValue(propertyName, EntityClass)) {
         await forEachAsyncParallel(propertyValue, async (_, index) => {
@@ -44,7 +48,11 @@ async function hashOrEncryptEntityValues(
       }
     } else if (typeof propertyValue === 'object' && propertyValue !== null) {
       const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass);
-      await hashOrEncryptEntityValues(propertyValue, (Types as any)[entityMetadata[propertyName]], Types);
+      await hashOrEncryptEntityValues(
+        propertyValue,
+        (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],
+        Types
+      );
     } else if (propertyValue !== null && shouldHashValue(propertyName, EntityClass)) {
       if (typeof propertyValue !== 'string') {
         throw new Error(EntityClass.name + '.' + propertyName + ' must be string in order to hash it');

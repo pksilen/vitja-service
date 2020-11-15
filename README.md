@@ -14,6 +14,7 @@ TODO:
   paginations: [{ fieldName?: string, pageNumber, pageSize }]
 - @ManyToMany
 - npm mysql2 for MariaDb/MySql
+  - mysql distributed tracing
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.

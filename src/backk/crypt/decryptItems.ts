@@ -1,8 +1,8 @@
-import decrypt from "./decrypt";
-import encrypt from "./encrypt";
-import shouldEncryptValue from "./shouldEncryptValue";
-import getPropertyNameToPropertyTypeNameMap from "../metadata/getPropertyNameToPropertyTypeNameMap";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import decrypt from './decrypt';
+import encrypt from './encrypt';
+import shouldEncryptValue from './shouldEncryptValue';
+import getPropertyNameToPropertyTypeNameMap from '../metadata/getPropertyNameToPropertyTypeNameMap';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 function decryptItemValues(item: { [key: string]: any }, EntityClass: new () => any, Types: object) {
   if (item === null) {
@@ -32,7 +32,11 @@ function decryptItemValues(item: { [key: string]: any }, EntityClass: new () => 
       }
     } else if (typeof propertyValue === 'object' && propertyValue !== null) {
       const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass);
-      decryptItemValues(propertyValue, (Types as any)[entityMetadata[propertyName]], Types);
+      decryptItemValues(
+        propertyValue,
+        (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],
+        Types
+      );
     } else if (propertyValue !== null && shouldEncryptValue(propertyName, EntityClass)) {
       if (typeof propertyValue !== 'string') {
         throw new Error(EntityClass.name + '.' + propertyName + ' must be string in order to encrypt it');

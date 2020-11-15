@@ -18,7 +18,7 @@ export default class UpdateUserArg {
   @MaxLength(256)
   city?: string;
 
-  defaultPaymentMethod?: DefaultPaymentMethod;
+  defaultPaymentMethod?: DefaultPaymentMethod | null;
 
   paymentMethods?: PaymentMethod[];
 

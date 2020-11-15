@@ -241,7 +241,7 @@ export default function setPropertyTypeValidationDecorators(
           }
 
           if (
-            propertyTypeName.endsWith('[]') &&
+            isArrayType &&
             !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.IS_ARRAY)
           ) {
             const arrayValidationMetadataArgs: ValidationMetadataArgs = {

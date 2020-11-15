@@ -43,7 +43,7 @@ export default class User extends _Id {
 
   loyaltyDiscountLevel!: 0 | 25 | 50;
 
-  defaultPaymentMethod!: DefaultPaymentMethod;
+  defaultPaymentMethod!: DefaultPaymentMethod | null;
   paymentMethods!: PaymentMethod[];
 
   @ValueUsedInTests('123')

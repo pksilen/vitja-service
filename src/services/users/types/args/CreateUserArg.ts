@@ -42,7 +42,7 @@ export default class CreateUserArg {
 
   loyaltyDiscountLevel!: 0 | 25 | 50;
 
-  defaultPaymentMethod!: DefaultPaymentMethod;
+  defaultPaymentMethod!: DefaultPaymentMethod | null;
 
   paymentMethods!: PaymentMethod[];
 

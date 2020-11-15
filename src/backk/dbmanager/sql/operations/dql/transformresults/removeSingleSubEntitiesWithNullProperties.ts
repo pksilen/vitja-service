@@ -8,7 +8,7 @@ function removeSingleSubEntitiesWithNullPropertiesInObject(object: any) {
         (subValue) => subValue === null || subValue === undefined
       ).length;
       if (emptyValueCount === Object.values(value[0] ?? value).length) {
-        object[key] = [];
+        object[key] = Array.isArray(value) ? [] : null;
         return;
       }
     }

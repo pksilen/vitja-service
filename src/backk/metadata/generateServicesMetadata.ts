@@ -198,7 +198,9 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
           ...typesMetadata,
           ErrorResponse: {
             statusCode: 'integer',
-            errorMessage: 'string'
+            errorCode: '?string',
+            errorMessage: 'string',
+            stackTrace: '?string'
           }
         },
         typesDocumentation,
