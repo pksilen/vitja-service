@@ -30,16 +30,8 @@ export default abstract class AbstractDbManager {
     return this.Types;
   }
 
-  setClsNamespaceName(clsNamespaceName: string) {
-    this.clsNamespaceName = clsNamespaceName;
-  }
-
   getClsNamespace(): Namespace | undefined {
-    if (!this.clsNamespaceName) {
-      throw new Error('CLS namespace name must be set before calling getClsNamespace');
-    }
-
-    return getNamespace(this.clsNamespaceName);
+    return getNamespace('serviceFunctionExecution');
   }
 
   abstract getDbManagerType(): string;

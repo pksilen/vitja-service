@@ -1,28 +1,27 @@
-import { HttpException } from "@nestjs/common";
-import { plainToClass } from "class-transformer";
-import { createNamespace } from "cls-hooked";
-import _ from "lodash";
-import Redis from "ioredis";
-import tryAuthorize from "../authorization/tryAuthorize";
-import BaseService from "../service/BaseService";
-import tryVerifyCaptchaToken from "../captcha/tryVerifyCaptchaToken";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
-import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
-import UsersBaseService from "../users/UsersBaseService";
-import { ServiceMetadata } from "../metadata/ServiceMetadata";
-import tryValidateObject from "../validation/tryValidateObject";
-import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
-import tryValidateResponse from "../validation/tryValidateResponse";
-import isErrorResponse from "../errors/isErrorResponse";
-import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
-import createErrorResponseFromError from "../errors/createErrorResponseFromError";
-import log, { Severity } from "../observability/logging/log";
-import serviceFunctionAnnotationContainer
-  from "../decorators/service/function/serviceFunctionAnnotationContainer";
-import { HttpStatusCodes } from "../constants/constants";
-import getNamespacedServiceName from "../utils/getServiceNamespace";
-import AuditLoggingService from "../observability/logging/audit/AuditLoggingService";
-import createAuditLogEntry from "../observability/logging/audit/createAuditLogEntry";
+import { HttpException } from '@nestjs/common';
+import { plainToClass } from 'class-transformer';
+import { createNamespace } from 'cls-hooked';
+import _ from 'lodash';
+import Redis from 'ioredis';
+import tryAuthorize from '../authorization/tryAuthorize';
+import BaseService from '../service/BaseService';
+import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
+import UsersBaseService from '../users/UsersBaseService';
+import { ServiceMetadata } from '../metadata/ServiceMetadata';
+import tryValidateObject from '../validation/tryValidateObject';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import tryValidateResponse from '../validation/tryValidateResponse';
+import isErrorResponse from '../errors/isErrorResponse';
+import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
+import createErrorResponseFromError from '../errors/createErrorResponseFromError';
+import log, { Severity } from '../observability/logging/log';
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import { HttpStatusCodes } from '../constants/constants';
+import getNamespacedServiceName from '../utils/getServiceNamespace';
+import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
+import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -59,7 +58,7 @@ export default async function tryExecuteServiceFunction(
         createErrorFromErrorMessageAndThrowError(
           createErrorMessageWithStatusCode(
             'Service function cannot be called with HTTP GET. Use HTTP POST instead',
-            400
+            HttpStatusCodes.BAD_REQUEST
           )
         );
       }
@@ -73,7 +72,7 @@ export default async function tryExecuteServiceFunction(
         createErrorFromErrorMessageAndThrowError(
           createErrorMessageWithStatusCode(
             'Invalid or too long service function argument. Argument must be a URI encoded JSON object string',
-            400
+            HttpStatusCodes.BAD_REQUEST
           )
         );
       }
@@ -84,7 +83,7 @@ export default async function tryExecuteServiceFunction(
         resp?.send(controller.servicesMetadata);
       }
       createErrorFromErrorMessageAndThrowError(
-        createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, 400)
+        createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, HttpStatusCodes.BAD_REQUEST)
       );
     } else if (serviceFunction === 'livenessCheckService.isAlive') {
       resp?.send();
@@ -97,13 +96,16 @@ export default async function tryExecuteServiceFunction(
 
     if (!controller[serviceName]) {
       createErrorFromErrorMessageAndThrowError(
-        createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, 400)
+        createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, HttpStatusCodes.BAD_REQUEST)
       );
     }
 
     if (!controller[serviceName][functionName]) {
       createErrorFromErrorMessageAndThrowError(
-        createErrorMessageWithStatusCode(`Unknown function: ${serviceName}.${functionName}`, 400)
+        createErrorMessageWithStatusCode(
+          `Unknown function: ${serviceName}.${functionName}`,
+          HttpStatusCodes.BAD_REQUEST
+        )
       );
     }
 
@@ -111,13 +113,13 @@ export default async function tryExecuteServiceFunction(
       createErrorFromErrorMessageAndThrowError(
         createErrorMessageWithStatusCode(
           `Invalid service function argument. Argument must be a JSON object string`,
-          400
+          HttpStatusCodes.BAD_REQUEST
         )
       );
     }
 
     if (serviceFunctionArgument?.captchaToken) {
-      tryVerifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
+      await tryVerifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
     }
 
     const usersService = Object.values(controller).find((service) => service instanceof UsersBaseService);
@@ -177,7 +179,7 @@ export default async function tryExecuteServiceFunction(
 
       if (!instantiatedServiceFunctionArgument) {
         createErrorFromErrorMessageAndThrowError(
-          createErrorMessageWithStatusCode('Missing service function argument', 400)
+          createErrorMessageWithStatusCode('Missing service function argument', HttpStatusCodes.BAD_REQUEST)
         );
       }
 
@@ -220,11 +222,7 @@ export default async function tryExecuteServiceFunction(
 
     if (!response) {
       const dbManager = (controller[serviceName] as BaseService).getDbManager();
-
       const clsNamespace = createNamespace('serviceFunctionExecution');
-      if (dbManager) {
-        dbManager.setClsNamespaceName('serviceFunctionExecution');
-      }
       response = await clsNamespace.runAndReturn(async () => {
         clsNamespace.set('authHeader', headers.Authorization);
         clsNamespace.set('dbLocalTransactionCount', 0);
@@ -245,6 +243,7 @@ export default async function tryExecuteServiceFunction(
 
           if (
             clsNamespace.get('dbLocalTransactionCount') > 1 &&
+            clsNamespace.get('remoteServiceCallCount') === 0 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
               controller[serviceName].constructor,
               functionName
@@ -266,7 +265,7 @@ export default async function tryExecuteServiceFunction(
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
               serviceFunction +
-                ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction'
+                ': database manager operation and remote service call must be executed inside a transaction and database manager operation should be executed before remote service call or service function must be annotated with @NoTransaction if no transaction is needed'
             );
           } else if (
             clsNamespace.get('remoteServiceCallCount') > 1 &&
