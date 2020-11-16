@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Null value for defaultPaymentMethod
 - Support dynamic filters with Map-type argument property
   _filters in input argument
   -https://hasura.io/
@@ -10,6 +9,11 @@ TODO:
    -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
    - getEntitiesByFilter, updateEntitiesByFilter, deleteEntitiesByFilter
+- Allow one remote service call only after dbManager calls
+    - Don't allow dbManager calls after remote service call
+- NoDistributedTransaction annotatiton should have a 'reason' parameter that cannot be empty string
+- ExecuteMultipleInParallel 
+- ExecuteMultipleInSequence
 - allow paging for sub entities using window functions
   paginations: [{ fieldName?: string, pageNumber, pageSize }]
 - @ManyToMany
