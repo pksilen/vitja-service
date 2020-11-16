@@ -8,8 +8,7 @@ TODO:
    Filter : { fieldName: string, operator?: '>=' | '<=' | '!=' ..., value: any }
    -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
-   - getEntitiesByFilter, updateEntitiesByFilter, deleteEntitiesByFilter
-- ExecuteMultipleInParallel 
+   - getEntitiesByFilter, updateEntitiesByFilter, deleteEntitiesByFilter 
 - ExecuteMultipleInSequence
 - allow paging for sub entities using window functions
   paginations: [{ fieldName?: string, pageNumber, pageSize }]

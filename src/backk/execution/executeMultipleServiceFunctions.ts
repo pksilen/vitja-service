@@ -3,8 +3,10 @@ import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import { ServiceFunctionCall } from './ServiceFunctionCall';
 import { ServiceFunctionCallResponse } from './ServiceFunctionCallResponse';
 import PartialResponse from './PartialResponse';
+import forEachAsyncSequential from '../utils/forEachAsyncSequential';
 
-export default async function executeMultipleServiceFunctionsInParallel(
+export default async function executeMultipleServiceFunctions(
+  concurrent: boolean,
   controller: any,
   serviceFunctionArgument: object,
   headers: { [key: string]: string },
@@ -13,8 +15,9 @@ export default async function executeMultipleServiceFunctionsInParallel(
 ): Promise<void | object> {
   const serviceFunctionCallIdToResponseMap: { [key: string]: ServiceFunctionCallResponse } = {};
   const statusCodes: number[] = [];
+  const forEachFunc = concurrent ? forEachAsyncParallel : forEachAsyncSequential;
 
-  await forEachAsyncParallel(
+  await forEachFunc(
     Object.entries(serviceFunctionArgument),
     async ([serviceFunctionCallId, { serviceFunctionName, serviceFunctionArgument }]: [
       string,

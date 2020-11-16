@@ -22,7 +22,7 @@ import { HttpStatusCodes } from '../constants/constants';
 import getNamespacedServiceName from '../utils/getServiceNamespace';
 import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
 import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
-import executeMultipleServiceFunctionsInParallel from './executeMultipleServiceFunctionsInParallel';
+import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -39,8 +39,11 @@ export default async function tryExecuteServiceFunction(
   resp?: any,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
-  if (serviceFunction === 'executeMultipleInParallel') {
-    return executeMultipleServiceFunctionsInParallel(
+  if (serviceFunction === 'executeAllInParallel') {
+    return executeMultipleServiceFunctions(true, controller, serviceFunctionArgument, headers, resp, options);
+  } else if (serviceFunction === 'executeAllInSequence') {
+    return executeMultipleServiceFunctions(
+      false,
       controller,
       serviceFunctionArgument,
       headers,
