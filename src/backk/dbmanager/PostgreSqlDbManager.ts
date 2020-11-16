@@ -27,9 +27,9 @@ import log, { Severity } from '../observability/logging/log';
 import addSubEntities from './sql/operations/dml/addSubEntities';
 import getSubEntities from './sql/operations/dql/getSubEntities';
 import startDbOperation from './utils/startDbOperation';
-import recordDbOperationDuration from "./utils/recordDbOperationDuration";
-import deleteEntitiesBy from "./sql/operations/dml/deleteEntitiesBy";
-import updateEntitiesBy from "./sql/operations/dml/updateEntitiesBy";
+import recordDbOperationDuration from './utils/recordDbOperationDuration';
+import deleteEntitiesBy from './sql/operations/dml/deleteEntitiesBy';
+import updateEntitiesBy from './sql/operations/dml/updateEntitiesBy';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -78,8 +78,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         const createTableStatement = `CREATE TABLE ${this.schema}.__BACKK__ (dummy INT)`;
         await this.tryExecuteSqlWithoutCls(createTableStatement);
         return true;
-      }
-      catch(error) {
+      } catch (error) {
         return false;
       }
     }
@@ -89,7 +88,8 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     log(Severity.DEBUG, 'Acquire database connection', '');
 
     try {
-      this.getClsNamespace()?.set('connection', await this.pool.connect());
+      const connection = await this.pool.connect();
+      this.getClsNamespace()?.set('connection', connection);
       this.getClsNamespace()?.set('localTransaction', false);
       this.getClsNamespace()?.set('globalTransaction', false);
       if (this.firstDbOperationFailureTimeInMillis) {
@@ -189,6 +189,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryExecuteSql<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
+    if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
+      this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
+    }
+
     log(Severity.DEBUG, 'Database DML operation', sqlStatement);
 
     try {
@@ -207,7 +211,11 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async tryExecuteSqlWithoutCls<T>(sqlStatement: string, values?: any[], shouldReportError = true): Promise<Field[]> {
+  async tryExecuteSqlWithoutCls<T>(
+    sqlStatement: string,
+    values?: any[],
+    shouldReportError = true
+  ): Promise<Field[]> {
     log(Severity.DEBUG, 'Database DDL operation', sqlStatement);
 
     try {
@@ -216,7 +224,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
         log(Severity.INFO, 'Database initialization operation', '', {
           sqlStatement,
           function: 'PostgreSqlDbManager.tryExecuteSqlWithoutCls'
-        })
+        });
       }
       return result.fields;
     } catch (error) {
@@ -232,6 +240,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryExecuteQuery(sqlStatement: string, values?: any[]): Promise<QueryResult<any>> {
+    if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
+      this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
+    }
+
     log(Severity.DEBUG, 'Database DQL operation', sqlStatement);
 
     try {
@@ -264,6 +276,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryExecuteQueryWithConfig(queryConfig: QueryConfig): Promise<QueryResult<any>> {
+    if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
+      this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
+    }
+
     log(Severity.DEBUG, 'Database DQL operation', queryConfig.text);
 
     try {
@@ -542,7 +558,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   deleteEntitiesBy<T extends object>(
     fieldName: string,
     fieldValue: T[keyof T],
-    entityClass: new () => T,
+    entityClass: new () => T
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.deleteEntitiesBy');
     const response = deleteEntitiesBy(this, fieldName, fieldValue, entityClass);

@@ -11,7 +11,6 @@ TODO:
    - getEntitiesByFilter, updateEntitiesByFilter, deleteEntitiesByFilter
 - Allow one remote service call only after dbManager calls
     - Don't allow dbManager calls after remote service call
-- NoDistributedTransaction annotatiton should have a 'reason' parameter that cannot be empty string
 - ExecuteMultipleInParallel 
 - ExecuteMultipleInSequence
 - allow paging for sub entities using window functions

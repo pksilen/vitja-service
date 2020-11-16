@@ -227,6 +227,7 @@ export default async function tryExecuteServiceFunction(
         clsNamespace.set('authHeader', headers.Authorization);
         clsNamespace.set('dbLocalTransactionCount', 0);
         clsNamespace.set('remoteServiceCallCount', 0);
+        clsNamespace.set('dbManagerOperationAfterRemoteServiceCall', false);
         let response;
 
         // noinspection ExceptionCaughtLocallyJS
@@ -252,10 +253,10 @@ export default async function tryExecuteServiceFunction(
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
               serviceFunction +
-                ': multiple database manager operations must be executed inside a transaction or service function must be annotated with @NoTransaction'
+                ": multiple database manager operations must be executed inside a transaction (use database manager's executeInsideTransaction method) or service function must be annotated with @NoTransaction"
             );
           } else if (
-            clsNamespace.get('dbLocalTransactionCount') === 1 &&
+            clsNamespace.get('dbLocalTransactionCount') >= 1 &&
             clsNamespace.get('remoteServiceCallCount') === 1 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
               controller[serviceName].constructor,
@@ -265,9 +266,9 @@ export default async function tryExecuteServiceFunction(
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
               serviceFunction +
-                ': database manager operation and remote service call must be executed inside a transaction and database manager operation should be executed before remote service call or service function must be annotated with @NoTransaction if no transaction is needed'
+              ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction if no transaction is needed'
             );
-          } else if (
+          }  else if (
             clsNamespace.get('remoteServiceCallCount') > 1 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonDistributedTransactional(
               controller[serviceName].constructor,
@@ -278,6 +279,12 @@ export default async function tryExecuteServiceFunction(
             throw new Error(
               serviceFunction +
                 ": multiple remote service calls cannot be executed because distributed transactions are not supported. To allow multiple remote service calls that don't require a transaction, annotate service function with @NoDistributedTransaction"
+            );
+          } else if(clsNamespace.get('dbManagerOperationAfterRemoteServiceCall')) {
+            // noinspection ExceptionCaughtLocallyJS
+            throw new Error(
+              serviceFunction +
+              ': database manager operation(s) that can fail cannot be called after a remote service call that cannot be rolled back. Alternatively, service function must be annotated with @NoDistributedTransaction if no distributed transaction is needed'
             );
           }
         } catch (error) {
