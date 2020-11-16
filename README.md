@@ -9,8 +9,6 @@ TODO:
    -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
    - getEntitiesByFilter, updateEntitiesByFilter, deleteEntitiesByFilter
-- Allow one remote service call only after dbManager calls
-    - Don't allow dbManager calls after remote service call
 - ExecuteMultipleInParallel 
 - ExecuteMultipleInSequence
 - allow paging for sub entities using window functions

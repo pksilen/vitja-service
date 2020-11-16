@@ -22,6 +22,7 @@ import { HttpStatusCodes } from '../constants/constants';
 import getNamespacedServiceName from '../utils/getServiceNamespace';
 import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
 import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
+import executeMultipleServiceFunctionsInParallel from './executeMultipleServiceFunctionsInParallel';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -38,6 +39,16 @@ export default async function tryExecuteServiceFunction(
   resp?: any,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
+  if (serviceFunction === 'executeMultipleInParallel') {
+    return executeMultipleServiceFunctionsInParallel(
+      controller,
+      serviceFunctionArgument,
+      headers,
+      resp,
+      options
+    );
+  }
+
   const [serviceName, functionName] = serviceFunction.split('.');
   let response;
   let storedError;
@@ -266,9 +277,9 @@ export default async function tryExecuteServiceFunction(
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
               serviceFunction +
-              ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction if no transaction is needed'
+                ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction if no transaction is needed'
             );
-          }  else if (
+          } else if (
             clsNamespace.get('remoteServiceCallCount') > 1 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonDistributedTransactional(
               controller[serviceName].constructor,
@@ -280,11 +291,11 @@ export default async function tryExecuteServiceFunction(
               serviceFunction +
                 ": multiple remote service calls cannot be executed because distributed transactions are not supported. To allow multiple remote service calls that don't require a transaction, annotate service function with @NoDistributedTransaction"
             );
-          } else if(clsNamespace.get('dbManagerOperationAfterRemoteServiceCall')) {
+          } else if (clsNamespace.get('dbManagerOperationAfterRemoteServiceCall')) {
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
               serviceFunction +
-              ': database manager operation(s) that can fail cannot be called after a remote service call that cannot be rolled back. Alternatively, service function must be annotated with @NoDistributedTransaction if no distributed transaction is needed'
+                ': database manager operation(s) that can fail cannot be called after a remote service call that cannot be rolled back. Alternatively, service function must be annotated with @NoDistributedTransaction if no distributed transaction is needed'
             );
           }
         } catch (error) {
