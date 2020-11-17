@@ -18,9 +18,12 @@ export default function initializeController(controller: any, controllerInitOpti
     ([, service]: [string, any]) => service instanceof BaseService
   );
 
-  const servicesUniqueByDbManager = _.uniqBy(
-    serviceNameToServiceEntries,
-    ([, service]: [string, any]) => service.getDbManager()
+  if (serviceNameToServiceEntries.length === 0) {
+    throw new Error(controller.constructor + ': No services defined. Services must extend from BaseService.');
+  }
+
+  const servicesUniqueByDbManager = _.uniqBy(serviceNameToServiceEntries, ([, service]: [string, any]) =>
+    service.getDbManager()
   );
 
   if (servicesUniqueByDbManager.length > 1) {

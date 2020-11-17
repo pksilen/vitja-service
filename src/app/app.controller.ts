@@ -20,7 +20,7 @@ import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
 import UsersService from '../services/users/UsersService';
 import ResponseCacheConfigService from '../backk/cache/ResponseCacheConfigService';
 import AuditLoggingService from '../backk/observability/logging/audit/AuditLoggingService';
-import initializeController from '../backk/initialization/initializeController';
+import initializeController from '../backk/controller/initializeController';
 
 // noinspection JSUnusedLocalSymbols,OverlyComplexFunctionJS
 @Controller()

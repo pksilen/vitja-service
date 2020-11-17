@@ -1,6 +1,6 @@
 import { HttpException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
-import { createNamespace } from 'cls-hooked';
+import { createNamespace, getNamespace } from "cls-hooked";
 import _ from 'lodash';
 import Redis from 'ioredis';
 import tryAuthorize from '../authorization/tryAuthorize';
@@ -23,6 +23,7 @@ import getNamespacedServiceName from '../utils/getServiceNamespace';
 import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
 import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
 import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
+import PartialResponse from "./PartialResponse";
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -39,11 +40,40 @@ export default async function tryExecuteServiceFunction(
   resp?: any,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
-  if (serviceFunction === 'executeAllInParallel') {
-    return executeMultipleServiceFunctions(true, controller, serviceFunctionArgument, headers, resp, options);
-  } else if (serviceFunction === 'executeAllInSequence') {
+  if (serviceFunction === 'executeAllInParallelWithoutTransaction') {
+    return executeMultipleServiceFunctions(
+      true,
+      false,
+      controller,
+      serviceFunctionArgument,
+      headers,
+      resp,
+      options
+    );
+  } else if (serviceFunction === 'executeAllInSequenceWithoutTransaction') {
     return executeMultipleServiceFunctions(
       false,
+      false,
+      controller,
+      serviceFunctionArgument,
+      headers,
+      resp,
+      options
+    );
+  } else if (serviceFunction === 'executeAllInParallelInsideTransaction') {
+    return executeMultipleServiceFunctions(
+      true,
+      true,
+      controller,
+      serviceFunctionArgument,
+      headers,
+      resp,
+      options
+    );
+  } else if (serviceFunction === 'executeAllInSequenceInsideTransaction') {
+    return executeMultipleServiceFunctions(
+      false,
+      true,
       controller,
       serviceFunctionArgument,
       headers,

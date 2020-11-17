@@ -30,6 +30,7 @@ import startDbOperation from './utils/startDbOperation';
 import recordDbOperationDuration from './utils/recordDbOperationDuration';
 import deleteEntitiesBy from './sql/operations/dml/deleteEntitiesBy';
 import updateEntitiesBy from './sql/operations/dml/updateEntitiesBy';
+import { getNamespace } from 'cls-hooked';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -85,6 +86,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryReserveDbConnectionFromPool(): Promise<void> {
+    if (getNamespace('multipleServiceFunctionExecutions')?.get('connection')) {
+      return;
+    }
+
     log(Severity.DEBUG, 'Acquire database connection', '');
 
     try {
@@ -113,6 +118,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   tryReleaseDbConnectionBackToPool() {
+    if (getNamespace('multipleServiceFunctionExecutions')?.get('connection')) {
+      return;
+    }
+
     log(Severity.DEBUG, 'Release database connection', '');
 
     try {
@@ -314,6 +323,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async executeInsideTransaction<T>(
     executable: () => Promise<T | ErrorResponse>
   ): Promise<T | ErrorResponse> {
+    if (getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction')) {
+      return await executable();
+    }
+
     this.getClsNamespace()?.set('globalTransaction', true);
 
     try {
