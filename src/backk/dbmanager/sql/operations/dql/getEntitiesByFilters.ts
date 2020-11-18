@@ -7,10 +7,11 @@ import createErrorResponseFromError from "../../../../errors/createErrorResponse
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import UserDefinedFilter from "../../../../types/UserDefinedFilter";
 
-export default async function getEntities<T>(
+export default async function getEntitiesByFilters<T>(
   dbManager: PostgreSqlDbManager,
-  filters: Partial<T> | SqlExpression[],
+  filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
   entityClass: new () => T,
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {

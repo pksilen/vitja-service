@@ -125,7 +125,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       ];
     }
 
-    return this.dbManager.getEntities(filters, SalesItem, postQueryOps);
+    return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOps);
   }
 
   @AllowForSelf()

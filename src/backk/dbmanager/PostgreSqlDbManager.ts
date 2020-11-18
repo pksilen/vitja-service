@@ -6,7 +6,7 @@ import SqlExpression from './sql/expressions/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import isErrorResponse from '../errors/isErrorResponse';
 import createEntity from './sql/operations/dml/createEntity';
-import getEntities from './sql/operations/dql/getEntities';
+import getEntitiesByFilters from './sql/operations/dql/getEntitiesByFilters';
 import getEntitiesCount from './sql/operations/dql/getEntitiesCount';
 import getEntityById from './sql/operations/dql/getEntityById';
 import getEntityBy from './sql/operations/dql/getEntityBy';
@@ -31,6 +31,7 @@ import recordDbOperationDuration from './utils/recordDbOperationDuration';
 import deleteEntitiesBy from './sql/operations/dml/deleteEntitiesBy';
 import updateEntitiesBy from './sql/operations/dml/updateEntitiesBy';
 import { getNamespace } from 'cls-hooked';
+import UserDefinedFilter from "../types/UserDefinedFilter";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -442,13 +443,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async getEntities<T>(
-    filters: Partial<T> | SqlExpression[],
+  async getEntitiesByFilters<T>(
+    filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntities');
-    const response = getEntities(this, filters, entityClass, postQueryOperations);
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntitiesByFilters');
+    const response = getEntitiesByFilters(this, filters, entityClass, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

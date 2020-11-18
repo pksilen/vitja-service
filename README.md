@@ -9,6 +9,7 @@ TODO:
    -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
    - getEntitiesByFilter, updateEntitiesByFilter, deleteEntitiesByFilter 
+  - support functions in fieldName, like cast(fieldName AS INTEGER)
 - allow paging for sub entities using window functions
   paginations: [{ fieldName?: string, pageNumber, pageSize }]
 - @ManyToMany

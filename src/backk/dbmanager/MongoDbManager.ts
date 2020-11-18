@@ -12,6 +12,7 @@ import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOpera
 import createErrorResponseFromError from "../errors/createErrorResponseFromError";
 import createErrorResponseFromErrorMessageAndStatusCode
   from "../errors/createErrorResponseFromErrorMessageAndStatusCode";
+import UserDefinedFilter from "../types/UserDefinedFilter";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -109,8 +110,8 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error();
   }
 
-  async getEntities<T>(
-    filters: FilterQuery<T> | Partial<T> | SqlExpression[],
+  async getEntitiesByFilters<T>(
+    filters: FilterQuery<T> | Partial<T> | UserDefinedFilter[],
     entityClass: new () => T,
     { pageNumber, pageSize, sortBys, ...projection }: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {

@@ -10,6 +10,7 @@ import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOpera
 import { Injectable } from '@nestjs/common';
 import isErrorResponse from '../errors/isErrorResponse';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
+import UserDefinedFilter from "../types/UserDefinedFilter";
 
 export interface Field {
   name: string;
@@ -102,8 +103,8 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
-  abstract getEntities<T>(
-    filters: FilterQuery<T> | Partial<T> | SqlExpression[],
+  abstract getEntitiesByFilters<T>(
+    filters: FilterQuery<T> | Partial<T> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
