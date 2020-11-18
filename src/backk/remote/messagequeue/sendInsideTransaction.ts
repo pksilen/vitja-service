@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { sendOneOrMore, SendToOptions } from './sendTo';
-import parseRemoteServiceFunctionCallUrlParts from '../utils/parseServiceFunctionCallUrlParts';
+import parseRemoteServiceFunctionCallUrlParts from '../utils/parseRemoteServiceFunctionCallUrlParts';
 
 export interface Send {
   serviceFunctionCallUrl: string;

@@ -29,7 +29,7 @@ export default async function call<T>(
       clsNamespace?.get('mutatingRemoteServiceCallCount') + 1
     );
   }
-  
+
   log(Severity.DEBUG, 'Call sync remote service', '', { remoteServiceFunctionCallUrl });
   defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceFunctionCallUrl);
 

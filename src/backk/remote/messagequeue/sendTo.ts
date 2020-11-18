@@ -4,7 +4,7 @@ import { getNamespace } from 'cls-hooked';
 import { Send } from './sendInsideTransaction';
 import sendOneOrMoreToKafka, { SendAcknowledgementType } from './kafka/sendOneOrMoreToKafka';
 import sendOneOrMoreToRedis from './redis/sendOneOrMoreToRedis';
-import parseRemoteServiceFunctionCallUrlParts from '../utils/parseServiceFunctionCallUrlParts';
+import parseRemoteServiceFunctionCallUrlParts from '../utils/parseRemoteServiceFunctionCallUrlParts';
 
 export interface SendToOptions {
   compressionType?: CompressionTypes;

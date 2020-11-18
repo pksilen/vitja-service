@@ -7,7 +7,7 @@ import { Send } from '../sendInsideTransaction';
 import log, { Severity } from '../../../observability/logging/log';
 import { CanonicalCode } from '@opentelemetry/api';
 import createErrorResponseFromError from '../../../errors/createErrorResponseFromError';
-import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseServiceFunctionCallUrlParts';
+import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseRemoteServiceFunctionCallUrlParts';
 import { ErrorResponse } from '../../../types/ErrorResponse';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
 import logCreator from './logCreator';

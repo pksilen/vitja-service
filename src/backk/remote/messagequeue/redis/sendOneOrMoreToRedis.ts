@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 import { Send } from '../sendInsideTransaction';
-import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseServiceFunctionCallUrlParts';
+import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseRemoteServiceFunctionCallUrlParts';
 import { getNamespace } from 'cls-hooked';
 import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
 import log, { Severity } from '../../../observability/logging/log';
