@@ -1,4 +1,4 @@
-export default function parseServiceFunctionCallUrlParts(remoteServiceUrl: string) {
+export default function parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl: string) {
   const scheme = remoteServiceUrl.slice(0, 5);
   let broker, topic, db, serviceFunction;
 

@@ -198,7 +198,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryExecuteSql<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
-    if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
+    if (this.getClsNamespace()?.get('mutatingRemoteServiceCallCount') > 0) {
       this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
     }
 
@@ -249,7 +249,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryExecuteQuery(sqlStatement: string, values?: any[]): Promise<QueryResult<any>> {
-    if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
+    if (this.getClsNamespace()?.get('mutatingRemoteServiceCallCount') > 0) {
       this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
     }
 
@@ -285,7 +285,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async tryExecuteQueryWithConfig(queryConfig: QueryConfig): Promise<QueryResult<any>> {
-    if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
+    if (this.getClsNamespace()?.get('mutatingRemoteServiceCallCount') > 0) {
       this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
     }
 

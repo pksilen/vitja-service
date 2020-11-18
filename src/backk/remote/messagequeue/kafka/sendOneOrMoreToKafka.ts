@@ -7,7 +7,7 @@ import { Send } from '../sendInsideTransaction';
 import log, { Severity } from '../../../observability/logging/log';
 import { CanonicalCode } from '@opentelemetry/api';
 import createErrorResponseFromError from '../../../errors/createErrorResponseFromError';
-import parseServiceFunctionCallUrlParts from '../../utils/parseServiceFunctionCallUrlParts';
+import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseServiceFunctionCallUrlParts';
 import { ErrorResponse } from '../../../types/ErrorResponse';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
 import logCreator from './logCreator';
@@ -25,7 +25,7 @@ export default async function sendOneOrMoreToKafka(
   sends: Send[],
   isTransactional: boolean
 ): Promise<void | ErrorResponse> {
-  const { broker, topic } = parseServiceFunctionCallUrlParts(sends[0].serviceFunctionCallUrl);
+  const { broker, topic } = parseRemoteServiceFunctionCallUrlParts(sends[0].serviceFunctionCallUrl);
 
   if (!kafkaBrokerToKafkaClientMap[broker]) {
     kafkaBrokerToKafkaClientMap[broker] = new Kafka({
@@ -64,7 +64,7 @@ export default async function sendOneOrMoreToKafka(
     await forEachAsyncSequential(
       sends,
       async ({ responseUrl, serviceFunctionCallUrl, options, serviceFunctionArgument }: Send) => {
-        const { serviceFunction } = parseServiceFunctionCallUrlParts(serviceFunctionCallUrl);
+        const { serviceFunction } = parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl);
         log(Severity.DEBUG, 'Send to remote service for execution', '', {
           serviceFunctionCallUrl: serviceFunctionCallUrl,
           serviceFunction

@@ -270,7 +270,7 @@ export default async function tryExecuteServiceFunction(
       response = await clsNamespace.runAndReturn(async () => {
         clsNamespace.set('authHeader', headers.Authorization);
         clsNamespace.set('dbLocalTransactionCount', 0);
-        clsNamespace.set('remoteServiceCallCount', 0);
+        clsNamespace.set('mutatingRemoteServiceCallCount', 0);
         clsNamespace.set('dbManagerOperationAfterRemoteServiceCall', false);
         let response;
 
@@ -288,7 +288,7 @@ export default async function tryExecuteServiceFunction(
 
           if (
             clsNamespace.get('dbLocalTransactionCount') > 1 &&
-            clsNamespace.get('remoteServiceCallCount') === 0 &&
+            clsNamespace.get('mutatingRemoteServiceCallCount') === 0 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
               controller[serviceName].constructor,
               functionName
@@ -301,7 +301,7 @@ export default async function tryExecuteServiceFunction(
             );
           } else if (
             clsNamespace.get('dbLocalTransactionCount') >= 1 &&
-            clsNamespace.get('remoteServiceCallCount') === 1 &&
+            clsNamespace.get('mutatingRemoteServiceCallCount') === 1 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
               controller[serviceName].constructor,
               functionName
@@ -313,7 +313,7 @@ export default async function tryExecuteServiceFunction(
                 ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction if no transaction is needed'
             );
           } else if (
-            clsNamespace.get('remoteServiceCallCount') > 1 &&
+            clsNamespace.get('mutatingRemoteServiceCallCount') > 1 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonDistributedTransactional(
               controller[serviceName].constructor,
               functionName

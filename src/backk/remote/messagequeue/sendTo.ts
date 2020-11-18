@@ -4,7 +4,7 @@ import { getNamespace } from 'cls-hooked';
 import { Send } from './sendInsideTransaction';
 import sendOneOrMoreToKafka, { SendAcknowledgementType } from './kafka/sendOneOrMoreToKafka';
 import sendOneOrMoreToRedis from './redis/sendOneOrMoreToRedis';
-import parseServiceFunctionCallUrlParts from '../utils/parseServiceFunctionCallUrlParts';
+import parseRemoteServiceFunctionCallUrlParts from '../utils/parseServiceFunctionCallUrlParts';
 
 export interface SendToOptions {
   compressionType?: CompressionTypes;
@@ -13,9 +13,9 @@ export interface SendToOptions {
 
 export async function sendOneOrMore(sends: Send[], isTransactional: boolean): Promise<void | ErrorResponse> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
-  clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
+  clsNamespace?.set('mutatingRemoteServiceCallCount', clsNamespace?.get('mutatingRemoteServiceCallCount') + 1);
 
-  const { scheme } = parseServiceFunctionCallUrlParts(sends[0].serviceFunctionCallUrl);
+  const { scheme } = parseRemoteServiceFunctionCallUrlParts(sends[0].serviceFunctionCallUrl);
 
   if (scheme === 'kafka') {
     return await sendOneOrMoreToKafka(sends, isTransactional);

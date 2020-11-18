@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Transaction handling for executeMultiple
 - count mutating remote services for remoteServicesCallCount ==> mutatingRemoteServicesCallCount
 - Execute multiples with or without transaction may not have mutating remote service calls (remoteServiceCallCount === 0)
 - Support dynamic filters with Map-type argument property

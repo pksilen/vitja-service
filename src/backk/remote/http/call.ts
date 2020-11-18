@@ -7,6 +7,8 @@ import getRemoteResponseTestValue from './getRemoteResponseTestValue';
 import { getNamespace } from 'cls-hooked';
 import defaultServiceMetrics from '../../observability/metrics/defaultServiceMetrics';
 import { HttpStatusCodes } from '../../constants/constants';
+import parseRemoteServiceFunctionCallUrlParts from '../utils/parseRemoteServiceFunctionCallUrlParts';
+import isMutatingServiceFunction from '../../utils/isMutatingServiceFunction';
 
 export interface HttpRequestOptions {
   httpMethod?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -18,8 +20,16 @@ export default async function call<T>(
   options?: HttpRequestOptions,
   ResponseClass?: new () => T
 ): Promise<T | ErrorResponse> {
-  const clsNamespace = getNamespace('serviceFunctionExecution');
-  clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
+  const { serviceFunction } = parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionCallUrl);
+
+  if (isMutatingServiceFunction(serviceFunction)) {
+    const clsNamespace = getNamespace('serviceFunctionExecution');
+    clsNamespace?.set(
+      'mutatingRemoteServiceCallCount',
+      clsNamespace?.get('mutatingRemoteServiceCallCount') + 1
+    );
+  }
+  
   log(Severity.DEBUG, 'Call sync remote service', '', { remoteServiceFunctionCallUrl });
   defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceFunctionCallUrl);
 
