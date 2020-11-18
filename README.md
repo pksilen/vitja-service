@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- Connection and Transaction handling for executeMultiple
+- Transaction handling for executeMultiple
 - count mutating remote services for remoteServicesCallCount ==> mutatingRemoteServicesCallCount
 - Execute multiples with or without transaction may not have mutating remote service calls (remoteServiceCallCount === 0)
 - Support dynamic filters with Map-type argument property
@@ -12,7 +12,6 @@ TODO:
    -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
    - getEntitiesByFilter, updateEntitiesByFilter, deleteEntitiesByFilter 
-
 - allow paging for sub entities using window functions
   paginations: [{ fieldName?: string, pageNumber, pageSize }]
 - @ManyToMany

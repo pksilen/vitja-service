@@ -7,8 +7,46 @@ import forEachAsyncSequential from '../utils/forEachAsyncSequential';
 import { createNamespace } from 'cls-hooked';
 import BaseService from '../service/BaseService';
 
+async function executeMultiple<T>(
+  isConcurrent: boolean,
+  serviceFunctionArgument: object,
+  controller: any,
+  headers: { [p: string]: string },
+  options: ExecuteServiceFunctionOptions | undefined,
+  serviceFunctionCallIdToResponseMap: { [p: string]: ServiceFunctionCallResponse },
+  resp: any,
+  statusCodes: number[]
+) {
+  const forEachFunc = isConcurrent ? forEachAsyncParallel : forEachAsyncSequential;
+
+  await forEachFunc(
+    Object.entries(serviceFunctionArgument),
+    async ([serviceFunctionCallId, { serviceFunctionName, serviceFunctionArgument }]: [
+      string,
+      ServiceFunctionCall
+    ]) => {
+      const partialResponse = new PartialResponse();
+
+      await tryExecuteServiceFunction(
+        controller,
+        serviceFunctionName,
+        serviceFunctionArgument,
+        headers,
+        partialResponse,
+        options
+      );
+
+      serviceFunctionCallIdToResponseMap[serviceFunctionCallId] = {
+        statusCode: resp.getStatusCode(),
+        response: partialResponse.getResponse()
+      };
+      statusCodes.push(resp.getStatusCode());
+    }
+  );
+}
+
 export default async function executeMultipleServiceFunctions(
-  concurrent: boolean,
+  isConcurrent: boolean,
   shouldExecuteInsideTransaction: boolean,
   controller: any,
   serviceFunctionArgument: object,
@@ -18,7 +56,6 @@ export default async function executeMultipleServiceFunctions(
 ): Promise<void | object> {
   const serviceFunctionCallIdToResponseMap: { [key: string]: ServiceFunctionCallResponse } = {};
   const statusCodes: number[] = [];
-  const forEachFunc = concurrent ? forEachAsyncParallel : forEachAsyncSequential;
   const services = Object.values(controller).filter((service) => service instanceof BaseService);
   const dbManager = (services as BaseService[])[0].getDbManager();
 
@@ -27,30 +64,33 @@ export default async function executeMultipleServiceFunctions(
     clsNamespace.set('connection', true);
     await dbManager.tryReserveDbConnectionFromPool();
 
-    await forEachFunc(
-      Object.entries(serviceFunctionArgument),
-      async ([serviceFunctionCallId, { serviceFunctionName, serviceFunctionArgument }]: [
-        string,
-        ServiceFunctionCall
-      ]) => {
-        const partialResponse = new PartialResponse();
-
-        await tryExecuteServiceFunction(
-          controller,
-          serviceFunctionName,
+    if (shouldExecuteInsideTransaction) {
+      clsNamespace.set('globalTransaction', true);
+      await dbManager.executeInsideTransaction(async () => {
+        await executeMultiple(
+          isConcurrent,
           serviceFunctionArgument,
+          controller,
           headers,
-          partialResponse,
-          options
+          options,
+          serviceFunctionCallIdToResponseMap,
+          resp,
+          statusCodes
         );
-
-        serviceFunctionCallIdToResponseMap[serviceFunctionCallId] = {
-          statusCode: resp.getStatusCode(),
-          response: partialResponse.getResponse()
-        };
-        statusCodes.push(resp.getStatusCode());
-      }
-    );
+      });
+      clsNamespace.set('globalTransaction', false);
+    } else {
+      await executeMultiple(
+        isConcurrent,
+        serviceFunctionArgument,
+        controller,
+        headers,
+        options,
+        serviceFunctionCallIdToResponseMap,
+        resp,
+        statusCodes
+      );
+    }
   });
 
   dbManager.tryReleaseDbConnectionBackToPool();
