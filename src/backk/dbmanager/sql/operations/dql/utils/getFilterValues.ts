@@ -2,7 +2,23 @@ import SqlExpression from '../../../expressions/SqlExpression';
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
 import SqlInExpression from '../../../expressions/SqlInExpression';
 
-export default function getFilterValues<T>(filters: Partial<T> | SqlExpression[] | UserDefinedFilter[]) {
+function getUserDefinedFilterValues(filters: UserDefinedFilter[]): object {
+  return filters.reduce((accumulatedFilterValues, { fieldName, operator, value, filters }, index) => {
+    if (operator === 'OR') {
+      return getUserDefinedFilterValues(filters ?? []);
+    }
+    return {
+      ...accumulatedFilterValues,
+      ...(operator === 'IN' || operator === 'NOT IN'
+        ? new SqlInExpression(fieldName, value)
+        : { [fieldName + index]: value })
+    };
+  }, {});
+}
+
+export default function getFilterValues<T>(
+  filters: Partial<T> | SqlExpression[] | UserDefinedFilter[]
+): object {
   if (Array.isArray(filters)) {
     if (filters.length === 0) {
       return {};
@@ -15,15 +31,7 @@ export default function getFilterValues<T>(filters: Partial<T> | SqlExpression[]
         {}
       );
     } else {
-      return (filters as UserDefinedFilter[]).reduce(
-        (accumulatedFilterValues, { fieldName, operator, value }) => ({
-          ...accumulatedFilterValues,
-          ...(operator === 'IN' || operator === 'NOT IN'
-            ? new SqlInExpression(fieldName, value)
-            : { [fieldName]: value })
-        }),
-        {}
-      );
+      return getUserDefinedFilterValues(filters as UserDefinedFilter[]);
     }
   }
 

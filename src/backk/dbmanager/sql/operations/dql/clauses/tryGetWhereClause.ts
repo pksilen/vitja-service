@@ -21,7 +21,7 @@ export default function tryGetWhereClause<T>(
         .join(' AND ');
     } else {
       filtersSql = (filters as UserDefinedFilter[])
-        .map((userDefinedFilter) => toSqlString(userDefinedFilter))
+        .map((userDefinedFilter, index) => toSqlString(userDefinedFilter, index))
         .join(' AND ');
     }
   } else {

@@ -1,5 +1,5 @@
-import { IsIn, IsOptional, IsString } from "class-validator";
-import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
+import { IsArray, IsIn, IsInstance, IsOptional, IsString, ValidateNested } from "class-validator";
+import MaxLengthAndMatches from '../../decorators/typeproperty/MaxLengthAndMatches';
 
 export default class UserDefinedFilter {
   @IsString()
@@ -20,7 +20,14 @@ export default class UserDefinedFilter {
     | 'LIKE'
     | 'NOT LIKE'
     | 'IS NULL'
-    | 'IS NOT NULL';
+    | 'IS NOT NULL'
+    | 'OR';
 
   value: any;
+
+  @IsOptional()
+  @IsInstance(UserDefinedFilter, { each: true })
+  @ValidateNested({ each: true })
+  @IsArray()
+  filters?: UserDefinedFilter[];
 }
