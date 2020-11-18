@@ -1,4 +1,4 @@
-import { IsArray, IsIn, IsInstance, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsIn, IsInstance, IsOptional, IsString, ValidateNested } from 'class-validator';
 import MaxLengthAndMatches from '../../decorators/typeproperty/MaxLengthAndMatches';
 
 export default class UserDefinedFilter {
@@ -7,7 +7,50 @@ export default class UserDefinedFilter {
   fieldName!: string;
 
   @IsOptional()
-  @IsIn(['=', '!=', '>', '<', '>=', '<=', 'IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'IS NULL', 'IS NOT NULL'])
+  @IsIn([
+    'ABS',
+    'CEILING',
+    'FLOOR',
+    'ROUND',
+    'LENGTH',
+    'LOWER',
+    'LTRIM',
+    'RTRIM',
+    'TRIM',
+    'UPPER',
+    'DAY',
+    'HOUR',
+    'MINUTE',
+    'MONTH',
+    'QUARTER',
+    'SECOND',
+    'WEEK',
+    'WEEKDAY',
+    'YEAR'
+  ])
+  fieldFunction?:
+    | 'ABS'
+    | 'CEILING'
+    | 'FLOOR'
+    | 'ROUND'
+    | 'LENGTH'
+    | 'LOWER'
+    | 'LTRIM'
+    | 'RTRIM'
+    | 'TRIM'
+    | 'UPPER'
+    | 'DAY'
+    | 'HOUR'
+    | 'MINUTE'
+    | 'MONTH'
+    | 'QUARTER'
+    | 'SECOND'
+    | 'WEEK'
+    | 'WEEKDAY'
+    | 'YEAR';
+
+  @IsOptional()
+  @IsIn(['=', '!=', '>', '<', '>=', '<=', 'IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'IS NULL', 'IS NOT NULL', 'OR'])
   operator?:
     | '='
     | '!='

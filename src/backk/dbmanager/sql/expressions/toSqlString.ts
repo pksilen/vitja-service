@@ -2,20 +2,39 @@ import UserDefinedFilter from '../../../types/userdefinedfilters/UserDefinedFilt
 import SqlInExpression from './SqlInExpression';
 
 export default function toSqlString(
-  { fieldName, operator, value, filters }: UserDefinedFilter,
+  { fieldName, fieldFunction, operator, value, filters }: UserDefinedFilter,
   index: number | string
 ): string {
+  let fieldExpression = fieldName;
+  if (fieldFunction) {
+    if (
+      fieldFunction !== 'YEAR' &&
+      fieldFunction !== 'MONTH' &&
+      fieldFunction !== 'DAY' &&
+      fieldFunction != 'WEEKDAY' &&
+      fieldFunction != 'WEEK' &&
+      fieldFunction !== 'QUARTER' &&
+      fieldFunction !== 'HOUR' &&
+      fieldFunction !== 'MINUTE' &&
+      fieldFunction !== 'SECOND'
+    ) {
+      fieldExpression = fieldFunction + '({{' + fieldName + '}})';
+    } else {
+      fieldExpression = 'EXTRACT(' + fieldFunction + ' FROM {{' + fieldName + '}})';
+    }
+  }
+
   if (operator === 'IN' || operator === 'NOT IN') {
-    return new SqlInExpression(fieldName, value).toSqlString();
+    return new SqlInExpression(fieldName, value, fieldExpression).toSqlString();
   } else if (operator === 'IS NULL' || operator === 'IS NOT NULL') {
-    return `{{${fieldName}}} ${operator}`;
+    return `${fieldExpression} ${operator}`;
   } else if (!operator) {
-    return `{{${fieldName}}} = :${fieldName}${index}`;
+    return `${fieldExpression} = :${fieldName}${index}`;
   } else if (operator === 'OR' && filters) {
     return filters
       .map((userDefinedFilter, orFilterIndex) => toSqlString(userDefinedFilter, `${index}_${orFilterIndex}`))
       .join(' OR ');
   }
 
-  return `{{${fieldName}}} ${operator} :${fieldName}${index}`;
+  return `${fieldExpression} ${operator} :${fieldName}${index}`;
 }

@@ -2,7 +2,6 @@
 
 TODO:
 - Support dynamic filters with Map-type argument property
-  - support OR expressions
   - support functions in fieldName, like cast(fieldName AS INTEGER)
 - allow paging for sub entities using window functions
   paginations: [{ fieldName?: string, pageNumber, pageSize }]

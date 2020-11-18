@@ -1,7 +1,11 @@
 import SqlExpression from './SqlExpression';
 
 export default class SqlInExpression extends SqlExpression {
-  constructor(readonly fieldName: string, readonly inExpressionValues?: any[]) {
+  constructor(
+    readonly fieldName: string,
+    readonly inExpressionValues?: any[],
+    readonly fieldExpression?: string
+  ) {
     super('', {});
   }
 
@@ -32,6 +36,8 @@ export default class SqlInExpression extends SqlExpression {
       .map((_, index) => ':' + this.fieldName + (index + 1).toString())
       .join(', ');
 
-    return '{{' + this.fieldName + '}} ' + ' IN (' + values + ')';
+    return (
+      '{{' + (this.fieldExpression ? this.fieldExpression : this.fieldName) + '}} ' + ' IN (' + values + ')'
+    );
   }
 }
