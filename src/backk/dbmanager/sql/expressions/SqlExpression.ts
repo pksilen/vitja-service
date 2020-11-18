@@ -3,7 +3,7 @@ export default class SqlExpression {
   constructor(readonly expression: string, readonly values?: object) {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  toSqlString(schema: string, entityName: string): string {
+  toSqlString(): string {
     return this.expression;
   }
 

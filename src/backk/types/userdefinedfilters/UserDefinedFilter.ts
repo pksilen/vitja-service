@@ -1,5 +1,5 @@
 import { IsIn, IsOptional, IsString } from "class-validator";
-import MaxLengthAndMatches from "../decorators/typeproperty/MaxLengthAndMatches";
+import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
 
 export default class UserDefinedFilter {
   @IsString()

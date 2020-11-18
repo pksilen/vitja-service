@@ -12,7 +12,7 @@ import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOpera
 import createErrorResponseFromError from "../errors/createErrorResponseFromError";
 import createErrorResponseFromErrorMessageAndStatusCode
   from "../errors/createErrorResponseFromErrorMessageAndStatusCode";
-import UserDefinedFilter from "../types/UserDefinedFilter";
+import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {

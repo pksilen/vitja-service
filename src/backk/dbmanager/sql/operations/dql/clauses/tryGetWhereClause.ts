@@ -1,21 +1,29 @@
 import SqlExpression from '../../../expressions/SqlExpression';
 import tryGetProjection from './tryGetProjection';
 import getSqlColumnFromProjection from '../utils/columns/getSqlColumnFromProjection';
-import createErrorMessageWithStatusCode from "../../../../../errors/createErrorMessageWithStatusCode";
+import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
+import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
+import toSqlString from '../../../expressions/toSqlString';
 
 export default function tryGetWhereClause<T>(
   schema: string,
-  filters: Partial<T> | SqlExpression[],
+  filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
   entityClass: Function,
   Types: object
 ) {
   let filtersSql: string;
 
-  if (Array.isArray(filters)) {
-    filtersSql = filters
-      .filter((sqlExpression) => sqlExpression.hasValues())
-      .map((sqlExpression) => sqlExpression.toSqlString(schema, entityClass.name))
-      .join(' AND ');
+  if (Array.isArray(filters) && filters.length > 0) {
+    if (filters[0] instanceof SqlExpression) {
+      filtersSql = (filters as SqlExpression[])
+        .filter((sqlExpression) => sqlExpression.hasValues())
+        .map((sqlExpression) => sqlExpression.toSqlString())
+        .join(' AND ');
+    } else {
+      filtersSql = (filters as UserDefinedFilter[])
+        .map((userDefinedFilter) => toSqlString(userDefinedFilter))
+        .join(' AND ');
+    }
   } else {
     filtersSql = Object.entries(filters)
       .filter(([, fieldValue]) => fieldValue !== undefined)

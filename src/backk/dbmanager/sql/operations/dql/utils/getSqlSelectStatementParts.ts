@@ -7,13 +7,14 @@ import tryGetWhereClause from "../clauses/tryGetWhereClause";
 import getFilterValues from "./getFilterValues";
 import tryGetSortClause from "../clauses/tryGetOrderByClause";
 import getPagingClause from "../clauses/getPagingClause";
+import UserDefinedFilter from "../../../../../types/userdefinedfilters/UserDefinedFilter";
 
 export default function getSqlSelectStatementParts<T>(
   dbManager: PostgreSqlDbManager,
   { pageNumber, pageSize, sortBys, ...projection }: PostQueryOperations,
   entityClass: new () => T,
   Types: object,
-  filters?: Partial<T> | SqlExpression[],
+  filters?: Partial<T> | SqlExpression[] | UserDefinedFilter[],
   isInternalCall = false
 ) {
   const columns = tryGetProjection(dbManager.schema, projection, entityClass, Types, isInternalCall);

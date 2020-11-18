@@ -7,7 +7,7 @@ import createErrorResponseFromError from "../../../../errors/createErrorResponse
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
-import UserDefinedFilter from "../../../../types/UserDefinedFilter";
+import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
 
 export default async function getEntitiesByFilters<T>(
   dbManager: PostgreSqlDbManager,

@@ -23,7 +23,7 @@ export default class SqlInExpression extends SqlExpression {
     return this.inExpressionValues !== undefined && this.inExpressionValues.length > 0;
   }
 
-  toSqlString(schema: string, entityName: string): string {
+  toSqlString(): string {
     if (!this.inExpressionValues) {
       return '';
     }

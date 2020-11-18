@@ -2,11 +2,6 @@
 
 TODO:
 - Support dynamic filters with Map-type argument property
-  _filters in input argument
-  -https://hasura.io/
-  filters: Filter[]
-   Filter : { fieldName: string, operator?: '>=' | '<=' | '!=' ..., value: any }
-   -assert fieldName is a legal column name
    creates SQL WHERE fragment 'fieldName >= :fieldName', e.g. quantity >= :quantity
    - getEntitiesByFilter, updateEntitiesByFilter, deleteEntitiesByFilter 
   - support functions in fieldName, like cast(fieldName AS INTEGER)
@@ -47,6 +42,7 @@ TODO NEXT RELEASE:
   - backend metadata fetch urls are given in env variable as parameter
 
 Release 3:
+  -https://hasura.io/
 - Create opentelemetry kafkajs plugin
 - Create opentelemetry mysql2 plugin
 - gRPC support (convert using protobufjs toObject)

@@ -10,7 +10,7 @@ import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOpera
 import { Injectable } from '@nestjs/common';
 import isErrorResponse from '../errors/isErrorResponse';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import UserDefinedFilter from "../types/UserDefinedFilter";
+import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
 
 export interface Field {
   name: string;

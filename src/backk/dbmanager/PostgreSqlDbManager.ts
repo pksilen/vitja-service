@@ -31,7 +31,7 @@ import recordDbOperationDuration from './utils/recordDbOperationDuration';
 import deleteEntitiesBy from './sql/operations/dml/deleteEntitiesBy';
 import updateEntitiesBy from './sql/operations/dml/updateEntitiesBy';
 import { getNamespace } from 'cls-hooked';
-import UserDefinedFilter from "../types/UserDefinedFilter";
+import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
