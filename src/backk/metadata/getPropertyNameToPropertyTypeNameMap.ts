@@ -111,6 +111,24 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
       );
     }
 
+    if (validationMetadata.type === 'isArray') {
+      const arrayMaxSizeValidationMetadata = validationMetadatas.find(
+        (otherValidationMetadata: ValidationMetadata) =>
+          otherValidationMetadata.propertyName === validationMetadata.propertyName &&
+          otherValidationMetadata.type === 'arrayMaxSize'
+      );
+
+      if (!arrayMaxSizeValidationMetadata) {
+        throw new Error(
+          'Property ' +
+          TypeClass.name +
+          '.' +
+          validationMetadata.propertyName +
+          ' has array type and must have @ArrayMaxSize annotation'
+        );
+      }
+    }
+
     if (isGeneration && !isFirstRound) {
       if (
         validationMetadata.type === 'isInt' ||

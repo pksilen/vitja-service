@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Option to disallow executeMultipleServiceFunctions
 - Array property types must have ArrayMaxSize annotation
 - ArrayMaxSize Annotation is not checked in response validation
 - AddSubEntity/Entities-methods should check if more can be added based on ArrayMaxSize annotation
@@ -18,6 +17,7 @@ TODO:
   - X-content-type-options: nosniff
   - Strict-Transport-Security: max-age 
 - Add boolean field (User: isVerified) to entity to test it
+- Possibility to define enum type in separate file (SalesItem, GetSalesItemArg)
 - User has SalesItems and Orders subentities
  - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - New entities: User has Friends, Posts, show posts from friends
