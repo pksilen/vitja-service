@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Test 
 - Option to disallow executeMultipleServiceFunctions
 - Array property types must have ArrayMaxSize annotation
 - ArrayMaxSize Annotation is not checked in response validation

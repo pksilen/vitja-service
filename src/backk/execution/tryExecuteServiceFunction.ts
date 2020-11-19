@@ -1,35 +1,35 @@
-import { HttpException } from "@nestjs/common";
-import { plainToClass } from "class-transformer";
-import { createNamespace } from "cls-hooked";
-import _ from "lodash";
-import Redis from "ioredis";
-import tryAuthorize from "../authorization/tryAuthorize";
-import BaseService from "../service/BaseService";
-import tryVerifyCaptchaToken from "../captcha/tryVerifyCaptchaToken";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
-import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
-import UsersBaseService from "../users/UsersBaseService";
-import { ServiceMetadata } from "../metadata/ServiceMetadata";
-import tryValidateObject from "../validation/tryValidateObject";
-import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
-import tryValidateResponse from "../validation/tryValidateResponse";
-import isErrorResponse from "../errors/isErrorResponse";
-import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
-import createErrorResponseFromError from "../errors/createErrorResponseFromError";
-import log, { Severity } from "../observability/logging/log";
-import serviceFunctionAnnotationContainer
-  from "../decorators/service/function/serviceFunctionAnnotationContainer";
-import { HttpStatusCodes } from "../constants/constants";
-import getNamespacedServiceName from "../utils/getServiceNamespace";
-import AuditLoggingService from "../observability/logging/audit/AuditLoggingService";
-import createAuditLogEntry from "../observability/logging/audit/createAuditLogEntry";
-import executeMultipleServiceFunctions from "./executeMultipleServiceFunctions";
+import { HttpException } from '@nestjs/common';
+import { plainToClass } from 'class-transformer';
+import { createNamespace } from 'cls-hooked';
+import _ from 'lodash';
+import Redis from 'ioredis';
+import tryAuthorize from '../authorization/tryAuthorize';
+import BaseService from '../service/BaseService';
+import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
+import UsersBaseService from '../users/UsersBaseService';
+import { ServiceMetadata } from '../metadata/ServiceMetadata';
+import tryValidateObject from '../validation/tryValidateObject';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import tryValidateResponse from '../validation/tryValidateResponse';
+import isErrorResponse from '../errors/isErrorResponse';
+import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
+import createErrorResponseFromError from '../errors/createErrorResponseFromError';
+import log, { Severity } from '../observability/logging/log';
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import { HttpStatusCodes } from '../constants/constants';
+import getNamespacedServiceName from '../utils/getServiceNamespace';
+import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
+import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
+import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
   allowedServiceFunctionsRegExpForHttpGetMethod?: RegExp;
   deniedServiceFunctionsForForHttpGetMethod?: string[];
   isMetadataServiceEnabled?: boolean;
+  isMultipleServiceFunctionExecutionsAllowed?: boolean;
 }
 
 export default async function tryExecuteServiceFunction(
@@ -40,46 +40,48 @@ export default async function tryExecuteServiceFunction(
   resp?: any,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
-  if (serviceFunction === 'executeMultipleInParallelWithoutTransaction') {
-    return executeMultipleServiceFunctions(
-      true,
-      false,
-      controller,
-      serviceFunctionArgument,
-      headers,
-      resp,
-      options
-    );
-  } else if (serviceFunction === 'executeMultipleInSequenceWithoutTransaction') {
-    return executeMultipleServiceFunctions(
-      false,
-      false,
-      controller,
-      serviceFunctionArgument,
-      headers,
-      resp,
-      options
-    );
-  } else if (serviceFunction === 'executeMultopleInParallelInsideTransaction') {
-    return executeMultipleServiceFunctions(
-      true,
-      true,
-      controller,
-      serviceFunctionArgument,
-      headers,
-      resp,
-      options
-    );
-  } else if (serviceFunction === 'executeMultipleInSequenceInsideTransaction') {
-    return executeMultipleServiceFunctions(
-      false,
-      true,
-      controller,
-      serviceFunctionArgument,
-      headers,
-      resp,
-      options
-    );
+  if (options?.isMultipleServiceFunctionExecutionsAllowed ?? true) {
+    if (serviceFunction === 'executeMultipleInParallelWithoutTransaction') {
+      return executeMultipleServiceFunctions(
+        true,
+        false,
+        controller,
+        serviceFunctionArgument,
+        headers,
+        resp,
+        options
+      );
+    } else if (serviceFunction === 'executeMultipleInSequenceWithoutTransaction') {
+      return executeMultipleServiceFunctions(
+        false,
+        false,
+        controller,
+        serviceFunctionArgument,
+        headers,
+        resp,
+        options
+      );
+    } else if (serviceFunction === 'executeMultopleInParallelInsideTransaction') {
+      return executeMultipleServiceFunctions(
+        true,
+        true,
+        controller,
+        serviceFunctionArgument,
+        headers,
+        resp,
+        options
+      );
+    } else if (serviceFunction === 'executeMultipleInSequenceInsideTransaction') {
+      return executeMultipleServiceFunctions(
+        false,
+        true,
+        controller,
+        serviceFunctionArgument,
+        headers,
+        resp,
+        options
+      );
+    }
   }
 
   const [serviceName, functionName] = serviceFunction.split('.');
