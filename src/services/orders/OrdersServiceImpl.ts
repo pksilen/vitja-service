@@ -16,7 +16,7 @@ import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
 import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import IdAndUserId from '../../backk/types/id/IdAndUserId';
+import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
 import ShoppingCartItem from '../shoppingcart/types/entities/ShoppingCartItem';
 import {
   DELETE_ORDER_NOT_ALLOWED,
@@ -48,6 +48,7 @@ export default class OrdersServiceImpl extends OrdersService {
     super(dbManager, Types);
   }
 
+  @AllowForTests()
   deleteAllOrders(): Promise<void | ErrorResponse> {
     return this.dbManager.deleteAllEntities(Order);
   }
@@ -101,12 +102,12 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForSelf()
-  getOrdersByUserId({ userId, _postQueryOperations }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
-    return this.dbManager.getEntitiesBy('userId', userId, Order, _postQueryOperations);
+  getOrdersByUserId({ userId, ...postQueryOperations }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
+    return this.dbManager.getEntitiesBy('userId', userId, Order, postQueryOperations);
   }
 
   @AllowForSelf()
-  getOrderById({ _id }: IdAndUserId): Promise<Order | ErrorResponse> {
+  getOrderById({ _id }: _IdAndUserId): Promise<Order | ErrorResponse> {
     return this.dbManager.getEntityById(_id, Order);
   }
 
@@ -159,7 +160,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForSelf()
-  deleteOrderById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
+  deleteOrderById({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, Order, [
       {
         entityJsonPath: 'orderItems[?(@.state != "toBeDelivered")]',

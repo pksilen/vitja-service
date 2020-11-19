@@ -2,9 +2,9 @@ import serviceFunctionAnnotationContainer from '../decorators/service/function/s
 import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
 import BaseService from '../service/BaseService';
 import _Id from '../types/id/_Id';
-import IdsAndDefaultPostQueryOperationsArg from '../types/postqueryoperations/args/IdsAndDefaultPostQueryOperationsArg';
+import _IdsAndDefaultPostQueryOperations from '../types/postqueryoperations/_IdsAndDefaultPostQueryOperations';
 import SortBy from '../types/postqueryoperations/SortBy';
-import IdAndUserId from '../types/id/IdAndUserId';
+import _IdAndUserId from '../types/id/_IdAndUserId';
 import Id from '../types/id/Id';
 import { ServiceMetadata } from './ServiceMetadata';
 import getPropertyNameToPropertyTypeNameMap from './getPropertyNameToPropertyTypeNameMap';
@@ -41,9 +41,6 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
         )
         .map((functionName: string) => {
           if (
-            !serviceAnnotationContainer.isServiceAllowedForInternalUse(ServiceClass) &&
-            !serviceAnnotationContainer.isServiceAllowedForEveryUser(ServiceClass) &&
-            serviceAnnotationContainer.getAllowedUserRoles(ServiceClass).length === 0 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForSelf(ServiceClass, functionName) &&
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(
               ServiceClass,
@@ -89,12 +86,12 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
               (controller as any)[serviceName].Types[functionArgumentTypeName] = _Id;
             } else if (functionArgumentTypeName === 'Id') {
               (controller as any)[serviceName].Types[functionArgumentTypeName] = Id;
-            } else if (functionArgumentTypeName === 'IdsAndDefaultPostQueryOperationsArg') {
+            } else if (functionArgumentTypeName === '_IdsAndDefaultPostQueryOperations') {
               (controller as any)[serviceName].Types[
                 functionArgumentTypeName
-              ] = IdsAndDefaultPostQueryOperationsArg;
-            } else if (functionArgumentTypeName === 'IdAndUserId') {
-              (controller as any)[serviceName].Types[functionArgumentTypeName] = IdAndUserId;
+              ] = _IdsAndDefaultPostQueryOperations;
+            } else if (functionArgumentTypeName === '_IdAndUserId') {
+              (controller as any)[serviceName].Types[functionArgumentTypeName] = _IdAndUserId;
             } else {
               throw new Error(
                 'Type: ' + functionArgumentTypeName + ' is not found in ' + serviceName + '.Types'
@@ -108,10 +105,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             );
             while (proto !== Object.prototype) {
               if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
-                if (proto.constructor.name === 'DefaultPostQueryOperationsArg') {
-                  (controller as any)[serviceName].Types[
-                    'DefaultPostQueryOperations'
-                  ] = DefaultPostQueryOperations;
+                if (proto.constructor.name === 'DefaultPostQueryOperations') {
                   (controller as any)[serviceName].Types['SortBy'] = SortBy;
                 }
                 (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;

@@ -1,5 +1,4 @@
-import DefaultPostQueryOperationsArg from '../../../../backk/types/postqueryoperations/args/DefaultPostQueryOperationsArg'
-
-export default class GetByUserIdArg extends DefaultPostQueryOperationsArg {
+export default class GetByUserIdArg {
   ...UserId;
+  ...DefaultPostQueryOperations;
 }

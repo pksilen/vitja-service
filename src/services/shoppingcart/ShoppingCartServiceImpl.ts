@@ -8,7 +8,7 @@ import ShoppingCartService from './ShoppingCartService';
 import CreateShoppingCartArg from './types/args/CreateShoppingCartArg';
 import ShoppingCart from './types/entities/ShoppingCart';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import IdAndUserId from '../../backk/types/id/IdAndUserId';
+import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
 import getErrorResponseOrResultOf from '../../backk/utils/getErrorResponseOrResultOf';
 import ShoppingCartItem from './types/entities/ShoppingCartItem';
 import { SHOPPING_CART_ALREADY_EXISTS } from './errors/shoppingCartServiceErrors';
@@ -17,6 +17,7 @@ import AddShoppingCartItemArg from './types/args/AddShoppingCartItemArg';
 import RemoveShoppingCartItemByIdArg from './types/args/RemoveShoppingCartItemByIdArg';
 import { SALES_ITEM_STATE_MUST_BE_FOR_SALE } from '../salesitems/errors/salesItemsServiceErrors';
 import SalesItemsService from '../salesitems/SalesItemsService';
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -37,6 +38,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     super(dbManager, Types);
   }
 
+  @AllowForTests()
   deleteAllShoppingCarts(): Promise<void | ErrorResponse> {
     return this.dbManager.deleteAllEntities(ShoppingCart);
   }
@@ -105,7 +107,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  deleteShoppingCartById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
+  deleteShoppingCartById({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, ShoppingCart);
   }
 }

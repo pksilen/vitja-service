@@ -20,6 +20,7 @@ import DefaultPaymentMethod from "./types/entities/DefaultPaymentMethod";
 import PaymentMethod from "./types/entities/PaymentMethod";
 import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/usersServiceErrors";
 import { Errors } from "../../backk/decorators/service/function/Errors";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -42,6 +43,7 @@ export default class UsersServiceImpl extends UsersService {
     super(dbManager, Types);
   }
 
+  @AllowForTests()
   deleteAllUsers(): Promise<void | ErrorResponse> {
     return this.dbManager.deleteAllEntities(User);
   }

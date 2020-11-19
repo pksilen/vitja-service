@@ -17,8 +17,8 @@ import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
 import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
 import { SalesItem } from './types/entities/SalesItem';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import IdsAndDefaultPostQueryOperationsArg from '../../backk/types/postqueryoperations/args/IdsAndDefaultPostQueryOperationsArg';
-import IdAndUserId from '../../backk/types/id/IdAndUserId';
+import _IdsAndDefaultPostQueryOperations from '../../backk/types/postqueryoperations/_IdsAndDefaultPostQueryOperations';
+import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
 import _Id from '../../backk/types/id/_Id';
 import SortBy from '../../backk/types/postqueryoperations/SortBy';
 import {
@@ -27,6 +27,7 @@ import {
   SALES_ITEM_STATE_MUST_BE_FOR_SALE
 } from './errors/salesItemsServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -47,6 +48,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     super(dbManager, Types);
   }
 
+  @AllowForTests()
   deleteAllSalesItems(): Promise<void | ErrorResponse> {
     return this.dbManager.deleteAllEntities(SalesItem);
   }
@@ -131,17 +133,17 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @AllowForSelf()
   getSalesItemsByUserId({
     userId,
-    _postQueryOperations
+    ...postQueryOperations
   }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getEntitiesBy('userId', userId, SalesItem, _postQueryOperations);
+    return this.dbManager.getEntitiesBy('userId', userId, SalesItem, postQueryOperations);
   }
 
   @AllowForEveryUser()
   getSalesItemsByIds({
     _ids,
-    _postQueryOperations
-  }: IdsAndDefaultPostQueryOperationsArg): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getEntitiesByIds(_ids, SalesItem, _postQueryOperations);
+    ...postQueryOperations
+  }: _IdsAndDefaultPostQueryOperations): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getEntitiesByIds(_ids, SalesItem, postQueryOperations);
   }
 
   @AllowForEveryUser()
@@ -180,7 +182,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }
 
   @AllowForSelf()
-  deleteSalesItemById({ _id }: IdAndUserId): Promise<void | ErrorResponse> {
+  deleteSalesItemById({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, SalesItem);
   }
 }

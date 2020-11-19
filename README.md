@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Support dynamic filters with Map-type argument property
-  - support functions in fieldName, like cast(fieldName AS INTEGER)
 - allow paging for sub entities using window functions
   paginations: [{ fieldName?: string, pageNumber, pageSize }]
 - @ManyToMany
@@ -15,7 +13,7 @@ TODO:
 - Response headers added:
   - X-content-type-options: nosniff
   - Strict-Transport-Security: max-age 
-- Add boolean field to entity to test it
+- Add boolean field (User: isVerified) to entity to test it
 - User has SalesItems and Orders subentities
  - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - New entities: User has Friends, Posts, show posts from friends

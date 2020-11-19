@@ -46,10 +46,10 @@ export default function setPropertyTypeValidationDecorators(
   if (
     typeClassName === '_Id' ||
     typeClassName === 'Id' ||
-    typeClassName === 'DefaultPostQueryOperationsArg' ||
-    typeClassName === 'IdsAndDefaultPostQueryOperationsArg' ||
+    typeClassName === 'DefaultPostQueryOperations' ||
+    typeClassName === '_IdsAndDefaultPostQueryOperations' ||
     typeClassName === 'SortBy' ||
-    typeClassName === 'IdAndUserId'
+    typeClassName === '_IdAndUserId'
   ) {
     return;
   }

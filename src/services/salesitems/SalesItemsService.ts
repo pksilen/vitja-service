@@ -5,9 +5,9 @@ import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
 import UpdateSalesItemArg from "./types/args/UpdateSalesItemArg";
 import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
 import { SalesItem } from "./types/entities/SalesItem";
-import IdAndUserId from "../../backk/types/id/IdAndUserId";
+import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import IdsAndDefaultPostQueryOperationsArg from "../../backk/types/postqueryoperations/args/IdsAndDefaultPostQueryOperationsArg";
+import _IdsAndDefaultPostQueryOperations from "../../backk/types/postqueryoperations/_IdsAndDefaultPostQueryOperations";
 import _Id from "../../backk/types/id/_Id";
 
 export default abstract class SalesItemsService extends BaseService {
@@ -15,8 +15,8 @@ export default abstract class SalesItemsService extends BaseService {
   abstract createSalesItem(arg: CreateSalesItemArg): Promise<SalesItem | ErrorResponse>;
   abstract getSalesItems(arg: GetSalesItemsArg): Promise<SalesItem[] | ErrorResponse>;
   abstract getSalesItemsByUserId(arg: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse>;
-  abstract getSalesItemsByIds(arg: IdsAndDefaultPostQueryOperationsArg): Promise<SalesItem[] | ErrorResponse>;
-  abstract getSalesItemById(_id: _Id): Promise<SalesItem | ErrorResponse>;
+  abstract getSalesItemsByIds(arg: _IdsAndDefaultPostQueryOperations): Promise<SalesItem[] | ErrorResponse>;
+  abstract getSalesItemById(arg: _Id): Promise<SalesItem | ErrorResponse>;
   abstract updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse>;
 
   abstract updateSalesItemState(
@@ -24,5 +24,5 @@ export default abstract class SalesItemsService extends BaseService {
     requiredCurrentState?: 'forSale' | 'sold'
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteSalesItemById(idAndUserId: IdAndUserId): Promise<void | ErrorResponse>;
+  abstract deleteSalesItemById(arg: _IdAndUserId): Promise<void | ErrorResponse>;
 }

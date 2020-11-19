@@ -4,10 +4,10 @@ export default function isValidFunctionArgumentTypeName(typeName: string): boole
   if (
     typeName === '_Id' ||
     typeName === 'Id' ||
-    typeName === 'DefaultPostQueryOperationsArg' ||
-    typeName === 'IdsAndDefaultPostQueryOperationsArg' ||
+    typeName === 'DefaultPostQueryOperations' ||
+    typeName === 'IdsAndDefaultPostQueryOperations' ||
     typeName === 'SortBy' ||
-    typeName === 'IdAndUserId'
+    typeName === '_IdAndUserId'
   ) {
     return true;
   }

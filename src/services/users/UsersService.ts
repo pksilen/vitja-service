@@ -10,9 +10,9 @@ import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
 export default abstract class UsersService extends UsersBaseService {
   abstract deleteAllUsers(): Promise<void | ErrorResponse>;
   abstract createUser(arg: CreateUserArg): Promise<UserResponse | ErrorResponse>;
-  abstract getUserByUserName(userName: UserName): Promise<UserResponse | ErrorResponse>;
-  abstract getUserById(_id: _Id): Promise<UserResponse | ErrorResponse>;
+  abstract getUserByUserName(arg: UserName): Promise<UserResponse | ErrorResponse>;
+  abstract getUserById(arg: _Id): Promise<UserResponse | ErrorResponse>;
   abstract updateUser(arg: UpdateUserArg): Promise<void | ErrorResponse>;
   abstract changeUserPassword(arg: ChangeUserPasswordArg): Promise<void | ErrorResponse>;
-  abstract deleteUserById(_id: _Id): Promise<void | ErrorResponse>;
+  abstract deleteUserById(arg: _Id): Promise<void | ErrorResponse>;
 }
