@@ -1,4 +1,4 @@
-import { IsEmail, MaxLength } from "class-validator";
+import { ArrayMaxSize, IsEmail, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import UniqueIndex from "../../../../backk/decorators/entity/UniqueIndex";
 import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
@@ -44,8 +44,11 @@ export default class User extends _Id {
   loyaltyDiscountLevel!: 0 | 25 | 50;
 
   defaultPaymentMethod!: DefaultPaymentMethod | null;
+
+  @ArrayMaxSize(10)
   paymentMethods!: PaymentMethod[];
 
   @ValueUsedInTests('123')
+  @ArrayMaxSize(100)
   favoriteSalesItemIds!: string[];
 }

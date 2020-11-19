@@ -1,9 +1,9 @@
-import { IsInt, Max, MaxLength, Min } from 'class-validator';
-import SortBy from '../../../../backk/types/postqueryoperations/SortBy';
-import DefaultPostQueryOperations from '../../../../backk/types/postqueryoperations/DefaultPostQueryOperations';
-import { PostQueryOperations } from '../../../../backk/types/postqueryoperations/PostQueryOperations';
+import { ArrayMaxSize, ArrayUnique, IsInt, Max, MaxLength, Min } from "class-validator";
+import SortBy from "../../../../backk/types/postqueryoperations/SortBy";
+import DefaultPostQueryOperations
+  from "../../../../backk/types/postqueryoperations/DefaultPostQueryOperations";
 
-export default class GetSalesItemsArg extends DefaultPostQueryOperations implements PostQueryOperations {
+export default class GetSalesItemsArg extends DefaultPostQueryOperations {
   @MaxLength(512)
   textFilter?: string;
 
@@ -21,18 +21,10 @@ export default class GetSalesItemsArg extends DefaultPostQueryOperations impleme
   maxPrice?: number;
 
   @MaxLength(512, { each: true })
+  @ArrayMaxSize(50)
+  @ArrayUnique()
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];
 
-  sortBys: SortBy[] = [{ sortField: '_id', sortDirection: 'DESC' }];
+  sortBys: SortBy[] = [{ fieldName: '_id', sortDirection: 'DESC' }];
   // or alternatively [new SortBys('_id', 'DESC')];
-
-  @IsInt()
-  @Min(1)
-  @Max(1000)
-  pageNumber = 1;
-
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  pageSize = 50;
 }

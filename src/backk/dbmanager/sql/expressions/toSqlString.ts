@@ -31,9 +31,9 @@ export default function toSqlString(
   } else if (!operator) {
     return `${fieldExpression} = :${fieldName}${index}`;
   } else if (operator === 'OR' && filters) {
-    return filters
+    return ' (' + filters
       .map((userDefinedFilter, orFilterIndex) => toSqlString(userDefinedFilter, `${index}_${orFilterIndex}`))
-      .join(' OR ');
+      .join(' OR ') + ') ';
   }
 
   return `${fieldExpression} ${operator} :${fieldName}${index}`;

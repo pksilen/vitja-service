@@ -1,4 +1,4 @@
-import { IsInt, Max, Min } from 'class-validator';
+import { ArrayMaxSize, IsInt, Max, Min } from "class-validator";
 import Entity from '../../../../backk/decorators/entity/Entity';
 import { ExpectInTestsToEvaluateTrue } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue';
 import OrderItem from './OrderItem';
@@ -9,6 +9,7 @@ import { MAX_INT_VALUE } from '../../../../backk/constants/constants';
 export default class Order extends _Id {
   userId!: string;
 
+  @ArrayMaxSize(50)
   orderItems!: OrderItem[];
 
   @IsInt()

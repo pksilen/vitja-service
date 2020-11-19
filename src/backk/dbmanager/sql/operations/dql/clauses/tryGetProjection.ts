@@ -1,7 +1,7 @@
-import getFieldsFromGraphQlOrJson from '../../../../../graphql/getFieldsFromGraphQlOrJson';
-import { Projection } from '../../../../../types/postqueryoperations/Projection';
-import getFieldsForEntity from '../utils/columns/getFieldsForEntity';
-import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
+import getFieldsFromGraphQlOrJson from "../../../../../graphql/getFieldsFromGraphQlOrJson";
+import { Projection } from "../../../../../types/postqueryoperations/Projection";
+import getFieldsForEntity from "../utils/columns/getFieldsForEntity";
+import createErrorMessageWithStatusCode from "../../../../../errors/createErrorMessageWithStatusCode";
 
 export default function tryGetProjection(
   schema: string,

@@ -125,7 +125,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         if (sortBys) {
           const sortObj = sortBys.reduce(
-            (accumulatedSortObj, { sortField, sortDirection }) => ({
+            (accumulatedSortObj, { fieldName, sortDirection }) => ({
               ...accumulatedSortObj,
               sortField: sortDirection === 'ASC' ? 1 : -1
             }),

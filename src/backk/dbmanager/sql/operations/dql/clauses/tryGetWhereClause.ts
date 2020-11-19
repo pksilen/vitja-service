@@ -4,10 +4,12 @@ import getSqlColumnFromProjection from '../utils/columns/getSqlColumnFromProject
 import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
 import toSqlString from '../../../expressions/toSqlString';
+import SubPagination from '../../../../../types/postqueryoperations/SubPagination';
 
 export default function tryGetWhereClause<T>(
   schema: string,
   filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
+  subPaginations: SubPagination[] | undefined,
   entityClass: Function,
   Types: object
 ) {
@@ -48,6 +50,17 @@ export default function tryGetWhereClause<T>(
     const sqlColumn = getSqlColumnFromProjection(projection);
     filtersSql = filtersSql.replace(new RegExp(fieldNameTemplate, 'g'), sqlColumn);
   });
+
+  if (subPaginations) {
+    const rankFilters = subPaginations.map(({ fieldName, pageNumber, pageSize }) => {
+      const minRank = (pageNumber - 1) * pageSize;
+      const maxRank = minRank + pageSize;
+      const rankFieldName = fieldName.replace('.', '_') + '_rank';
+      return `${rankFieldName} >= ${minRank} AND ${rankFieldName} < ${maxRank}`;
+    });
+
+    filtersSql = filtersSql ? ' AND ' + rankFilters.join(' AND ') : rankFilters.join(' AND ');
+  }
 
   return filtersSql ? `WHERE ${filtersSql}` : '';
 }

@@ -67,13 +67,13 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       SalesItem,
       {
         hookFunc: async () => {
-          const activeSalesItemCountOrErrorResponse = await this.dbManager.getEntitiesCount(
+          const usersActiveSalesItemCountOrErrorResponse = await this.dbManager.getEntitiesCount(
             { userId: arg.userId, state: 'forSale' },
             SalesItem
           );
-          return typeof activeSalesItemCountOrErrorResponse === 'number'
-            ? activeSalesItemCountOrErrorResponse <= 100
-            : activeSalesItemCountOrErrorResponse;
+          return typeof usersActiveSalesItemCountOrErrorResponse === 'number'
+            ? usersActiveSalesItemCountOrErrorResponse <= 100
+            : usersActiveSalesItemCountOrErrorResponse;
         },
         error: MAXIMUM_SALES_ITEM_COUNT_EXCEEDED
       }

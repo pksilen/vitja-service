@@ -1,7 +1,7 @@
 import { PostQueryOperations } from "./PostQueryOperations";
 import SortBy from "./SortBy";
 import {
-  ArrayMaxSize,
+  ArrayMaxSize, ArrayUnique,
   IsArray,
   IsInstance,
   IsInt,
@@ -20,6 +20,7 @@ export default class DefaultPostQueryOperations implements PostQueryOperations {
   @MaxLength(4096, { each: true })
   @IsArray()
   @ArrayMaxSize(100)
+  @ArrayUnique()
   includeResponseFields?: string[] = [];
 
   @IsOptional()
@@ -27,6 +28,7 @@ export default class DefaultPostQueryOperations implements PostQueryOperations {
   @MaxLength(4096, { each: true })
   @IsArray()
   @ArrayMaxSize(100)
+  @ArrayUnique()
   excludeResponseFields?: string[] = [];
 
   @IsOptional()

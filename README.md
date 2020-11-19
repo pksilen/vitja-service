@@ -4,8 +4,10 @@ TODO:
 - allow paging for sub entities using window functions
   paginations: [{ fieldName?: string, pageNumber, pageSize }]
 - Array property types must have ArrayMaxSize annotation
-- Don't validate array max size in response validation
-- Add-methods should check if more can be added
+- ArrayMaxSize Annotation is not checked in response validation
+- AddSubEntity/Entities-methods should check if more can be added based on ArrayMaxSize annotation
+- UpdateEntity: possibility via a flag to modify subentities arrays
+- UsersService: new AllowForInternalUse function DeleteSoldFavoriteSalesItemIds
 - @ManyToMany
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
@@ -18,6 +20,7 @@ TODO:
   - Strict-Transport-Security: max-age 
 - Add boolean field (User: isVerified) to entity to test it
 - User has SalesItems and Orders subentities
+- Define SubEntity to be a @RemoteEntity (for queries, remote joins)
  - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - New entities: User has Friends, Posts, show posts from friends
   - GetEntitiesByIn: get Posts where userId in User's friendIds
