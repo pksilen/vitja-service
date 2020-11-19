@@ -115,7 +115,7 @@
       testProperties:
         argumentPropertyName1: sortBys
         argumentPropertyValue1:
-          - sortField: price
+          - fieldName: price
             sortDirection: DESC
         responsePropertyName: price
         responsePropertyValue: 2
@@ -129,7 +129,7 @@
         argumentPropertyValue2: 1
         argumentPropertyName3: sortBys
         argumentPropertyValue3:
-          - sortField: price
+          - fieldName: price
             sortDirection: DESC
         responsePropertyName: price
         responsePropertyValue: 1

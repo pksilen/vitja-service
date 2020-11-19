@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO:
-- allow paging for sub entities using window functions
-  paginations: [{ fieldName?: string, pageNumber, pageSize }]
+- Test 
+- Option to disallow executeMultipleServiceFunctions
 - Array property types must have ArrayMaxSize annotation
 - ArrayMaxSize Annotation is not checked in response validation
 - AddSubEntity/Entities-methods should check if more can be added based on ArrayMaxSize annotation
@@ -20,7 +20,6 @@ TODO:
   - Strict-Transport-Security: max-age 
 - Add boolean field (User: isVerified) to entity to test it
 - User has SalesItems and Orders subentities
-- Define SubEntity to be a @RemoteEntity (for queries, remote joins)
  - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - New entities: User has Friends, Posts, show posts from friends
   - GetEntitiesByIn: get Posts where userId in User's friendIds

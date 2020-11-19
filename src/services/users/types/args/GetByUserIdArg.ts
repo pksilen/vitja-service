@@ -4,6 +4,7 @@
 
 import {
   ArrayMaxSize,
+  ArrayUnique,
   IsArray,
   IsInstance,
   IsInt,
@@ -29,6 +30,7 @@ export default class GetByUserIdArg {
   })
   @IsArray()
   @ArrayMaxSize(100)
+  @ArrayUnique()
   includeResponseFields?: string[] = [];
 
   @IsOptional()
@@ -40,6 +42,7 @@ export default class GetByUserIdArg {
   })
   @IsArray()
   @ArrayMaxSize(100)
+  @ArrayUnique()
   excludeResponseFields?: string[] = [];
 
   @IsOptional()

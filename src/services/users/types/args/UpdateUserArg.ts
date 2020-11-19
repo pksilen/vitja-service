@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsString, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsString, MaxLength } from 'class-validator';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
@@ -20,9 +20,11 @@ export default class UpdateUserArg {
 
   defaultPaymentMethod?: DefaultPaymentMethod | null;
 
+  @ArrayMaxSize(10)
   paymentMethods?: PaymentMethod[];
 
   @ValueUsedInTests('123')
+  @ArrayMaxSize(100)
   favoriteSalesItemIds?: string[];
 
   @IsString()

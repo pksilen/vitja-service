@@ -51,7 +51,7 @@ export default function tryGetWhereClause<T>(
     filtersSql = filtersSql.replace(new RegExp(fieldNameTemplate, 'g'), sqlColumn);
   });
 
-  if (subPaginations) {
+  if (subPaginations && subPaginations.length > 0) {
     const rankFilters = subPaginations.map(({ fieldName, pageNumber, pageSize }) => {
       const minRank = (pageNumber - 1) * pageSize;
       const maxRank = minRank + pageSize;

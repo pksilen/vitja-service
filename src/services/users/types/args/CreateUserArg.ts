@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsEmail, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsEmail, MaxLength } from 'class-validator';
 import { Private } from '../../../../backk/decorators/service/function/Private';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
 import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
@@ -44,9 +44,11 @@ export default class CreateUserArg {
 
   defaultPaymentMethod!: DefaultPaymentMethod | null;
 
+  @ArrayMaxSize(10)
   paymentMethods!: PaymentMethod[];
 
   @ValueUsedInTests('123')
+  @ArrayMaxSize(100)
   favoriteSalesItemIds!: string[];
 
   @MaxLength(512)

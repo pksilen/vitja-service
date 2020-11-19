@@ -22,13 +22,11 @@ export default async function call<T>(
 ): Promise<T | ErrorResponse> {
   const { serviceFunction } = parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionCallUrl);
 
-  if (isMutatingServiceFunction(serviceFunction)) {
-    const clsNamespace = getNamespace('serviceFunctionExecution');
-    clsNamespace?.set(
-      'mutatingRemoteServiceCallCount',
-      clsNamespace?.get('mutatingRemoteServiceCallCount') + 1
-    );
-  }
+  const clsNamespace = getNamespace('serviceFunctionExecution');
+  clsNamespace?.set(
+    'remoteServiceCallCount',
+    clsNamespace?.get('remoteServiceCallCount') + 1
+  );
 
   log(Severity.DEBUG, 'Call sync remote service', '', { remoteServiceFunctionCallUrl });
   defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceFunctionCallUrl);

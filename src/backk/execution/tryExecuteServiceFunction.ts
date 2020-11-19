@@ -1,29 +1,29 @@
-import { HttpException } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
-import { createNamespace, getNamespace } from "cls-hooked";
-import _ from 'lodash';
-import Redis from 'ioredis';
-import tryAuthorize from '../authorization/tryAuthorize';
-import BaseService from '../service/BaseService';
-import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
-import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
-import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
-import UsersBaseService from '../users/UsersBaseService';
-import { ServiceMetadata } from '../metadata/ServiceMetadata';
-import tryValidateObject from '../validation/tryValidateObject';
-import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
-import tryValidateResponse from '../validation/tryValidateResponse';
-import isErrorResponse from '../errors/isErrorResponse';
-import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
-import createErrorResponseFromError from '../errors/createErrorResponseFromError';
-import log, { Severity } from '../observability/logging/log';
-import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import { HttpStatusCodes } from '../constants/constants';
-import getNamespacedServiceName from '../utils/getServiceNamespace';
-import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
-import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
-import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
-import PartialResponse from "./PartialResponse";
+import { HttpException } from "@nestjs/common";
+import { plainToClass } from "class-transformer";
+import { createNamespace } from "cls-hooked";
+import _ from "lodash";
+import Redis from "ioredis";
+import tryAuthorize from "../authorization/tryAuthorize";
+import BaseService from "../service/BaseService";
+import tryVerifyCaptchaToken from "../captcha/tryVerifyCaptchaToken";
+import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
+import UsersBaseService from "../users/UsersBaseService";
+import { ServiceMetadata } from "../metadata/ServiceMetadata";
+import tryValidateObject from "../validation/tryValidateObject";
+import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
+import tryValidateResponse from "../validation/tryValidateResponse";
+import isErrorResponse from "../errors/isErrorResponse";
+import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
+import createErrorResponseFromError from "../errors/createErrorResponseFromError";
+import log, { Severity } from "../observability/logging/log";
+import serviceFunctionAnnotationContainer
+  from "../decorators/service/function/serviceFunctionAnnotationContainer";
+import { HttpStatusCodes } from "../constants/constants";
+import getNamespacedServiceName from "../utils/getServiceNamespace";
+import AuditLoggingService from "../observability/logging/audit/AuditLoggingService";
+import createAuditLogEntry from "../observability/logging/audit/createAuditLogEntry";
+import executeMultipleServiceFunctions from "./executeMultipleServiceFunctions";
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -40,7 +40,7 @@ export default async function tryExecuteServiceFunction(
   resp?: any,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
-  if (serviceFunction === 'executeAllInParallelWithoutTransaction') {
+  if (serviceFunction === 'executeMultipleInParallelWithoutTransaction') {
     return executeMultipleServiceFunctions(
       true,
       false,
@@ -50,7 +50,7 @@ export default async function tryExecuteServiceFunction(
       resp,
       options
     );
-  } else if (serviceFunction === 'executeAllInSequenceWithoutTransaction') {
+  } else if (serviceFunction === 'executeMultipleInSequenceWithoutTransaction') {
     return executeMultipleServiceFunctions(
       false,
       false,
@@ -60,7 +60,7 @@ export default async function tryExecuteServiceFunction(
       resp,
       options
     );
-  } else if (serviceFunction === 'executeAllInParallelInsideTransaction') {
+  } else if (serviceFunction === 'executeMultopleInParallelInsideTransaction') {
     return executeMultipleServiceFunctions(
       true,
       true,
@@ -70,7 +70,7 @@ export default async function tryExecuteServiceFunction(
       resp,
       options
     );
-  } else if (serviceFunction === 'executeAllInSequenceInsideTransaction') {
+  } else if (serviceFunction === 'executeMultipleInSequenceInsideTransaction') {
     return executeMultipleServiceFunctions(
       false,
       true,
@@ -270,7 +270,7 @@ export default async function tryExecuteServiceFunction(
       response = await clsNamespace.runAndReturn(async () => {
         clsNamespace.set('authHeader', headers.Authorization);
         clsNamespace.set('dbLocalTransactionCount', 0);
-        clsNamespace.set('mutatingRemoteServiceCallCount', 0);
+        clsNamespace.set('remoteServiceCallCount', 0);
         clsNamespace.set('dbManagerOperationAfterRemoteServiceCall', false);
         let response;
 
@@ -288,7 +288,7 @@ export default async function tryExecuteServiceFunction(
 
           if (
             clsNamespace.get('dbLocalTransactionCount') > 1 &&
-            clsNamespace.get('mutatingRemoteServiceCallCount') === 0 &&
+            clsNamespace.get('remoteServiceCallCount') === 0 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
               controller[serviceName].constructor,
               functionName
@@ -301,7 +301,7 @@ export default async function tryExecuteServiceFunction(
             );
           } else if (
             clsNamespace.get('dbLocalTransactionCount') >= 1 &&
-            clsNamespace.get('mutatingRemoteServiceCallCount') === 1 &&
+            clsNamespace.get('remoteServiceCallCount') === 1 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonTransactional(
               controller[serviceName].constructor,
               functionName
@@ -313,7 +313,7 @@ export default async function tryExecuteServiceFunction(
                 ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction if no transaction is needed'
             );
           } else if (
-            clsNamespace.get('mutatingRemoteServiceCallCount') > 1 &&
+            clsNamespace.get('remoteServiceCallCount') > 1 &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonDistributedTransactional(
               controller[serviceName].constructor,
               functionName
