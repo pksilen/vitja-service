@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 
 export default class UpdateSalesItemArg {
@@ -35,6 +35,7 @@ export default class UpdateSalesItemArg {
   @MaxLength(2097152, {
     each: true
   })
+  @ArrayMaxSize(10)
   secondaryImageDataUris?: string[];
 
   lastModifiedTimestamp?: Date;

@@ -1,5 +1,8 @@
 import { Projection } from "./Projection";
-import { Paging } from "./Paging";
+import { Pagination } from "./Pagination";
 import { SortBys } from "./SortBys";
+import SubPagination from "./SubPagination";
 
-export interface PostQueryOperations extends Projection, SortBys, Paging {}
+export interface PostQueryOperations extends Projection, SortBys, Pagination {
+  subPaginations: SubPagination[];
+}

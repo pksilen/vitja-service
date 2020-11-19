@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsNumber, Max, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, IsNumber, Max, MaxLength, Min } from 'class-validator';
 
 export default class CreateSalesItemArg {
   userId!: string;
@@ -34,6 +34,7 @@ export default class CreateSalesItemArg {
   @MaxLength(2097152, {
     each: true
   })
+  @ArrayMaxSize(10)
   secondaryImageDataUris!: string[];
 
   lastModifiedTimestamp!: Date;

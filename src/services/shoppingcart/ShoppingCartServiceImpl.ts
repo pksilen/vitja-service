@@ -72,7 +72,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       shoppingCartItemId,
       ShoppingCart,
       {
-        entityJsonPath: `shoppingCartItems[?(@.id == '${shoppingCartItemId}')]`,
+        currentEntityJsonPath: `shoppingCartItems[?(@.id == '${shoppingCartItemId}')]`,
         hookFunc: async ([{ salesItemId }]) =>
           await this.salesItemService.updateSalesItemState({ _id: salesItemId, state: 'forSale' })
       }

@@ -3,6 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import {
+  ArrayMaxSize,
   IsArray,
   IsInstance,
   IsInt,
@@ -14,6 +15,7 @@ import {
   ValidateNested
 } from 'class-validator';
 import SortBy from '../../../../backk/types/postqueryoperations/SortBy';
+import SubPagination from '../../../../backk/types/postqueryoperations/SubPagination';
 
 export default class GetByUserIdArg {
   userId!: string;
@@ -26,6 +28,7 @@ export default class GetByUserIdArg {
     each: true
   })
   @IsArray()
+  @ArrayMaxSize(100)
   includeResponseFields?: string[] = [];
 
   @IsOptional()
@@ -36,19 +39,8 @@ export default class GetByUserIdArg {
     each: true
   })
   @IsArray()
+  @ArrayMaxSize(100)
   excludeResponseFields?: string[] = [];
-
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  @Max(10000)
-  pageNumber: number = 1;
-
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  @Max(10000)
-  pageSize: number = 50;
 
   @IsOptional()
   @IsInstance(SortBy, {
@@ -56,5 +48,27 @@ export default class GetByUserIdArg {
   })
   @ValidateNested()
   @IsArray()
+  @ArrayMaxSize(25)
   sortBys: SortBy[] = [new SortBy('_id', 'ASC')];
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  pageNumber: number = 1;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  pageSize: number = 50;
+
+  @IsOptional()
+  @IsInstance(SubPagination, {
+    each: true
+  })
+  @ValidateNested()
+  @IsArray()
+  @ArrayMaxSize(25)
+  subPaginations: SubPagination[] = [];
 }

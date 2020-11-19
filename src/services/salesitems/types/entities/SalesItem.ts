@@ -1,4 +1,4 @@
-import { IsInt, IsNumber, Max, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, IsInt, IsNumber, Max, MaxLength, Min } from "class-validator";
 import Entity from '../../../../backk/decorators/entity/Entity';
 import { ExpectInTestsToEvaluateTrue } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue';
 import _Id from '../../../../backk/types/id/_Id';
@@ -33,6 +33,7 @@ export class SalesItem extends _Id {
   primaryImageDataUri!: string;
 
   @MaxLength(2097152, { each: true })
+  @ArrayMaxSize(10)
   secondaryImageDataUris!: string[];
 
   state!: 'forSale' | 'sold';

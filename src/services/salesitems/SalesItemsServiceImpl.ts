@@ -155,7 +155,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
   async updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity(arg, SalesItem, {
-      entityJsonPath: '$',
+      currentEntityJsonPath: '$',
       hookFunc: async ([{ _id, state, price }]) =>
         (await this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem)) || state === 'forSale',
       error: SALES_ITEM_STATE_MUST_BE_FOR_SALE
@@ -173,7 +173,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       SalesItem,
       requiredCurrentState
         ? {
-            entityJsonPath: 'state',
+            currentEntityJsonPath: 'state',
             hookFunc: ([state]) => state === requiredCurrentState,
             error: INVALID_SALES_ITEM_STATE
           }

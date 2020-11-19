@@ -3,6 +3,9 @@
 TODO:
 - allow paging for sub entities using window functions
   paginations: [{ fieldName?: string, pageNumber, pageSize }]
+- Array property types must have ArrayMaxSize annotation
+- Don't validate array max size in response validation
+- Add-methods should check if more can be added
 - @ManyToMany
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing

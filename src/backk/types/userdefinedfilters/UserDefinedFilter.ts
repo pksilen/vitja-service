@@ -1,4 +1,12 @@
-import { IsArray, IsIn, IsInstance, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsIn,
+  IsInstance,
+  IsOptional,
+  IsString,
+  ValidateNested
+} from "class-validator";
 import MaxLengthAndMatches from '../../decorators/typeproperty/MaxLengthAndMatches';
 
 export default class UserDefinedFilter {
@@ -72,5 +80,6 @@ export default class UserDefinedFilter {
   @IsInstance(UserDefinedFilter, { each: true })
   @ValidateNested({ each: true })
   @IsArray()
+  @ArrayMaxSize(10)
   filters?: UserDefinedFilter[];
 }

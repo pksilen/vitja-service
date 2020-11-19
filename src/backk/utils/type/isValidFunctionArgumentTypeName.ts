@@ -7,6 +7,7 @@ export default function isValidFunctionArgumentTypeName(typeName: string): boole
     typeName === 'DefaultPostQueryOperations' ||
     typeName === 'IdsAndDefaultPostQueryOperations' ||
     typeName === 'SortBy' ||
+    typeName === 'SubPagination' ||
     typeName === '_IdAndUserId'
   ) {
     return true;

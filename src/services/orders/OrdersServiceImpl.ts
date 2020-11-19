@@ -79,7 +79,7 @@ export default class OrdersServiceImpl extends OrdersService {
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<void | ErrorResponse> {
     return this.dbManager.removeSubEntityById(orderId, 'orderItems', orderItemId, Order, {
-      entityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
+      currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
       hookFunc: ([state]) => state === 'toBeDelivered',
       error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
     });
@@ -125,7 +125,7 @@ export default class OrdersServiceImpl extends OrdersService {
       },
       Order,
       {
-        entityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
+        currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
         hookFunc: ([state]) => state === 'toBeDelivered',
         error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
       }
@@ -143,7 +143,7 @@ export default class OrdersServiceImpl extends OrdersService {
       { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
       Order,
       {
-        entityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
+        currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
         hookFunc: async ([{ salesItemId, state }]) =>
           (newState === 'returned'
             ? await this.salesItemsService.updateSalesItemState(
@@ -163,13 +163,13 @@ export default class OrdersServiceImpl extends OrdersService {
   deleteOrderById({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, Order, [
       {
-        entityJsonPath: 'orderItems[?(@.state != "toBeDelivered")]',
+        currentEntityJsonPath: 'orderItems[?(@.state != "toBeDelivered")]',
         hookFunc: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
         error: DELETE_ORDER_NOT_ALLOWED,
         disregardInTests: true
       },
       {
-        entityJsonPath: 'orderItems[*].salesItemId',
+        currentEntityJsonPath: 'orderItems[*].salesItemId',
         hookFunc: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
       }
     ]);

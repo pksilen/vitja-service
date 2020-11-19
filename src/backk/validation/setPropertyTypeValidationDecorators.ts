@@ -6,6 +6,7 @@ import { readFileSync } from 'fs';
 import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
 import SortBy from '../types/postqueryoperations/SortBy';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import SubPagination from '../types/postqueryoperations/SubPagination';
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -49,6 +50,7 @@ export default function setPropertyTypeValidationDecorators(
     typeClassName === 'DefaultPostQueryOperations' ||
     typeClassName === '_IdsAndDefaultPostQueryOperations' ||
     typeClassName === 'SortBy' ||
+    typeClassName === 'SubPagination' ||
     typeClassName === '_IdAndUserId'
   ) {
     return;
@@ -163,6 +165,8 @@ export default function setPropertyTypeValidationDecorators(
               constraints = [Types[baseTypeName]];
             } else if (baseTypeName === 'SortBy') {
               constraints = [SortBy];
+            } else if (baseTypeName === 'SubPagination') {
+              constraints = [SubPagination];
             } else {
               throw new Error(
                 'Type: ' +
