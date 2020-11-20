@@ -1,11 +1,9 @@
 # Vitja service
 
 TODO:
-- ArrayMaxSize Annotation is not checked in response validation
 - AddSubEntity/Entities-methods should check if more can be added based on ArrayMaxSize annotation
 - UpdateEntity: possibility via a flag to modify subentities arrays
 - UsersService: new AllowForInternalUse function DeleteSoldFavoriteSalesItemIds
-- DefaultRateLimitingService for Redis
 - Captcha type
 - _IdAndVersion, _IdAndLastModifiedTimestamp, _IdAndVersionAndLastModifiedTimestamp
 - if entity has 'version' property, generate ETag for response

@@ -11,7 +11,6 @@ import getPropertyNameToPropertyTypeNameMap from './getPropertyNameToPropertyTyp
 import { FunctionMetadata } from './FunctionMetadata';
 import getValidationMetadata from './getValidationMetadata';
 import getTypeDocumentation from './getTypeDocumentation';
-import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 export default function generateServicesMetadata<T>(controller: T, isFirstRound = true): ServiceMetadata[] {
