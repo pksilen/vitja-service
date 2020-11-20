@@ -30,6 +30,7 @@ export interface ExecuteServiceFunctionOptions {
   deniedServiceFunctionsForForHttpGetMethod?: string[];
   isMetadataServiceEnabled?: boolean;
   isMultipleServiceFunctionExecutionsAllowed?: boolean;
+  maxServiceFunctionCountInMultipleServiceFunctionExecution?: number;
 }
 
 export default async function tryExecuteServiceFunction(
@@ -40,7 +41,20 @@ export default async function tryExecuteServiceFunction(
   resp?: any,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
-  if (options?.isMultipleServiceFunctionExecutionsAllowed ?? true) {
+  if (options?.isMultipleServiceFunctionExecutionsAllowed ?? false) {
+    if (options?.maxServiceFunctionCountInMultipleServiceFunctionExecution) {
+      if (
+        Object.keys(serviceFunctionArgument).length >
+        options?.maxServiceFunctionCountInMultipleServiceFunctionExecution
+      ) {
+        createErrorFromErrorMessageAndThrowError(
+          createErrorMessageWithStatusCode('Too many service functions called', HttpStatusCodes.BAD_REQUEST)
+        );
+      }
+    } else {
+      throw new Error('Missing maxServiceFunctionCountInMultipleServiceFunctionExecution option');
+    }
+
     if (serviceFunction === 'executeMultipleInParallelWithoutTransaction') {
       return executeMultipleServiceFunctions(
         true,

@@ -1,11 +1,24 @@
 # Vitja service
 
 TODO:
-- Array property types must have ArrayMaxSize annotation
+- Default executeMultiple is false and multiple servicefunction count must be given
 - ArrayMaxSize Annotation is not checked in response validation
 - AddSubEntity/Entities-methods should check if more can be added based on ArrayMaxSize annotation
 - UpdateEntity: possibility via a flag to modify subentities arrays
 - UsersService: new AllowForInternalUse function DeleteSoldFavoriteSalesItemIds
+- DefaultRateLimitingService for Redis
+- Captcha type
+- _IdAndVersion, _IdAndLastModifiedTimestamp, _IdAndVersionAndLastModifiedTimestamp
+- if entity has 'version' property, generate ETag for response
+- if entity has 'version', auto-increment upon updates
+- if entity has 'lastModifiedTimestamp', auto-update on updates
+- CreateOrderArg should have shopping cart id which is deleted
+- executeInsideRemoteTransaction
+  - call remote service TransactionService.startTransaction, rollbackTransaction, commitTransactoini
+- IMplement TransactionService
+  - generate transaction id in response for TransactionService.startTransaction
+  - one same connection for transaction id
+  - remote caller gives transaction id in HTTP header Backk-transaction-id
 - @ManyToMany
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing

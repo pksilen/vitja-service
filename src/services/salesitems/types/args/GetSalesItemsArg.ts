@@ -15,7 +15,7 @@ export default class GetSalesItemsArg extends DefaultPostQueryOperations {
 
   @ArrayMaxSize(10)
   productCategories?: ('Vehicles' | 'Clothes')[];
-  
+
   @ArrayMaxSize(10)
   productSubCategories?: ('Vehicles' | 'Clothes')[];
 
