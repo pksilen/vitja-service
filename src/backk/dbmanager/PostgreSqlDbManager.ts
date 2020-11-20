@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 // @ts-ignore
 import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field } from './AbstractDbManager';
+import AbstractDbManager, { Field, UpdateMode } from './AbstractDbManager';
 import isErrorResponse from '../errors/isErrorResponse';
 import createEntity from './sql/operations/dml/createEntity';
 import getEntitiesByFilters from './sql/operations/dql/getEntitiesByFilters';
@@ -31,7 +31,7 @@ import recordDbOperationDuration from './utils/recordDbOperationDuration';
 import deleteEntitiesBy from './sql/operations/dml/deleteEntitiesBy';
 import updateEntitiesBy from './sql/operations/dml/updateEntitiesBy';
 import { getNamespace } from 'cls-hooked';
-import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
+import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -538,10 +538,16 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    shouldCheckIfItemExists: boolean = true
+    subEntitiesUpdateMode: UpdateMode = 'patch'
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntity');
-    const response = updateEntity(this, entity, entityClass, preHooks, shouldCheckIfItemExists);
+    const response = updateEntity(
+      this,
+      entity,
+      entityClass,
+      preHooks,
+      subEntitiesUpdateMode
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

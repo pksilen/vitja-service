@@ -19,13 +19,17 @@ import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTran
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import { HttpStatusCodes } from '../../../../constants/constants';
+import { UpdateMode } from '../../../AbstractDbManager';
+import getSubEntitiesByAction from './utils/getSubEntitiesByAction';
+import deleteEntityById from './deleteEntityById';
+import createEntity from './createEntity';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
-  { _id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
+  { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
   preHooks?: PreHook | PreHook[],
-  shouldCheckIfItemExists: boolean = true,
+  subEntitiesUpdateMode: UpdateMode = 'patch',
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   let didStartTransaction = false;
@@ -38,8 +42,11 @@ export default async function updateEntity<T extends Entity>(
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
-    if (shouldCheckIfItemExists) {
-      const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, undefined, true);
+    let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
+    if (!isRecursiveCall || subEntitiesUpdateMode === 'update') {
+      currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
+    }
+    if (!isRecursiveCall) {
       await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     }
 
@@ -59,18 +66,60 @@ export default async function updateEntity<T extends Entity>(
         const foreignIdFieldName =
           EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
         const idFieldName = _id === undefined ? 'id' : '_id';
-        const subEntityOrEntities = (restOfEntity as any)[fieldName];
+        let subEntityOrEntities = (restOfEntity as any)[fieldName];
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
+          // noinspection ReuseOfLocalVariableJS
+          if (subEntitiesUpdateMode === 'update') {
+            const { subEntitiesToDelete, subEntitiesToAdd, subEntitiesToUpdate } = getSubEntitiesByAction(
+              subEntityOrEntities,
+              (currentEntityOrErrorResponse as any)[fieldName]
+            );
+
+            promises.push(
+              forEachAsyncParallel(subEntitiesToDelete, async (subEntity: any) => {
+                const possibleErrorResponse = await deleteEntityById(
+                  dbManager,
+                  subEntity.id,
+                  (Types as any)[baseTypeName]
+                );
+
+                if (possibleErrorResponse) {
+                  throw possibleErrorResponse;
+                }
+              })
+            );
+
+            promises.push(
+              forEachAsyncParallel(subEntitiesToDelete, async (subEntity: any) => {
+                const createdEntityOrErrorResponse = await createEntity(
+                  dbManager,
+                  subEntity,
+                  (Types as any)[baseTypeName],
+                  undefined,
+                  undefined,
+                  false,
+                  false
+                );
+
+                if (isErrorResponse(createdEntityOrErrorResponse)) {
+                  throw createdEntityOrErrorResponse;
+                }
+              })
+            );
+
+            // noinspection ReuseOfLocalVariableJS
+            subEntityOrEntities = subEntitiesToUpdate;
+          }
           promises.push(
-            forEachAsyncParallel(subEntityOrEntities, async (subItem: any) => {
-              subItem[foreignIdFieldName] = _id;
+            forEachAsyncParallel(subEntityOrEntities, async (subEntity: any) => {
+              subEntity[foreignIdFieldName] = _id;
               const possibleErrorResponse = await updateEntity(
                 dbManager,
-                subItem,
+                subEntity,
                 (Types as any)[baseTypeName],
                 undefined,
-                false,
+                subEntitiesUpdateMode,
                 true
               );
 
@@ -86,7 +135,7 @@ export default async function updateEntity<T extends Entity>(
             subEntityOrEntities,
             (Types as any)[baseTypeName],
             undefined,
-            false,
+            subEntitiesUpdateMode,
             true
           );
 
@@ -134,7 +183,7 @@ export default async function updateEntity<T extends Entity>(
 
     const idFieldName = _id === undefined ? 'id' : '_id';
 
-    const numericId = parseInt(_id === undefined ? restOfEntity.id ?? 0 : (_id as any), 10);
+    const numericId = parseInt(_id === undefined ? id ?? 0 : (_id as any), 10);
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(

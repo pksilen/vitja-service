@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- AddSubEntity/Entities-methods should check if more can be added based on ArrayMaxSize annotation
 - UpdateEntity: possibility via a flag to modify subentities arrays
 - UsersService: new AllowForInternalUse function DeleteSoldFavoriteSalesItemIds
 - Captcha type

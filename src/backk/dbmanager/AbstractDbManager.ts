@@ -10,11 +10,13 @@ import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOpera
 import { Injectable } from '@nestjs/common';
 import isErrorResponse from '../errors/isErrorResponse';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
+import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
 
 export interface Field {
   name: string;
 }
+
+export type UpdateMode = 'patch' | 'update';
 
 @Injectable()
 export default abstract class AbstractDbManager {
@@ -39,7 +41,11 @@ export default abstract class AbstractDbManager {
   abstract getDbHost(): string;
   abstract tryExecute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T>;
   abstract tryExecuteSql<T>(sqlStatement: string): Promise<Field[]>;
-  abstract tryExecuteSqlWithoutCls<T>(sqlStatement: string, values?: any[], shouldReportError?: boolean): Promise<Field[]>;
+  abstract tryExecuteSqlWithoutCls<T>(
+    sqlStatement: string,
+    values?: any[],
+    shouldReportError?: boolean
+  ): Promise<Field[]>;
   abstract isDbReady(): Promise<boolean>;
   abstract tryReserveDbConnectionFromPool(): Promise<void>;
   abstract tryReleaseDbConnectionBackToPool(): void;
@@ -157,18 +163,25 @@ export default abstract class AbstractDbManager {
   abstract updateEntity<T extends Entity>(
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[]
+    preHooks?: PreHook | PreHook[],
+    subEntitiesUpdateMode?: UpdateMode
   ): Promise<void | ErrorResponse>;
 
   updateEntities<T extends Entity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[]
+    preHooks?: PreHook | PreHook[],
+    subEntitiesUpdateMode?: UpdateMode
   ): Promise<void | ErrorResponse> {
     return this.executeInsideTransaction(async () => {
       try {
         return await forEachAsyncParallel(entities, async (entity, index) => {
-          const possibleErrorResponse = await this.updateEntity(entity, entityClass, preHooks);
+          const possibleErrorResponse = await this.updateEntity(
+            entity,
+            entityClass,
+            preHooks,
+            subEntitiesUpdateMode
+          );
           if (possibleErrorResponse) {
             possibleErrorResponse.errorMessage =
               'Entity ' + index + ': ' + possibleErrorResponse.errorMessage;

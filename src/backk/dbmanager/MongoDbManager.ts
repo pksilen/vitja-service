@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { FilterQuery, MongoClient, ObjectId } from "mongodb";
 import { SalesItem } from "../../services/salesitems/types/entities/SalesItem";
 import SqlExpression from "./sql/expressions/SqlExpression";
-import AbstractDbManager, { Field } from "./AbstractDbManager";
+import AbstractDbManager, { Field, UpdateMode } from "./AbstractDbManager";
 import getMongoDbProjection from "./mongodb/getMongoDbProjection";
 import { ErrorResponse } from "../types/ErrorResponse";
 import { RecursivePartial } from "../types/RecursivePartial";
@@ -279,7 +279,8 @@ export default class MongoDbManager extends AbstractDbManager {
   async updateEntity<T extends Entity>(
     { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[]
+    preHooks?: PreHook | PreHook[],
+    subEntitiesUpdateMode: UpdateMode = 'patch'
   ): Promise<void | ErrorResponse> {
     // TODO add precondition check
     try {
