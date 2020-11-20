@@ -16,8 +16,6 @@ export interface Field {
   name: string;
 }
 
-export type UpdateMode = 'patch' | 'update';
-
 @Injectable()
 export default abstract class AbstractDbManager {
   private clsNamespaceName: string | undefined = undefined;
@@ -164,14 +162,14 @@ export default abstract class AbstractDbManager {
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    subEntitiesUpdateMode?: UpdateMode
+    allowSubEntitiesAdditionAndRemoval?: boolean
   ): Promise<void | ErrorResponse>;
 
   updateEntities<T extends Entity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    subEntitiesUpdateMode?: UpdateMode
+    shouldAllowSubEntitiesAdditionAndRemoval?: boolean
   ): Promise<void | ErrorResponse> {
     return this.executeInsideTransaction(async () => {
       try {
@@ -180,7 +178,7 @@ export default abstract class AbstractDbManager {
             entity,
             entityClass,
             preHooks,
-            subEntitiesUpdateMode
+            shouldAllowSubEntitiesAdditionAndRemoval
           );
           if (possibleErrorResponse) {
             possibleErrorResponse.errorMessage =

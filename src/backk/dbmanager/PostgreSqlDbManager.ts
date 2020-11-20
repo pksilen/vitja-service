@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 // @ts-ignore
 import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field, UpdateMode } from './AbstractDbManager';
+import AbstractDbManager, { Field } from './AbstractDbManager';
 import isErrorResponse from '../errors/isErrorResponse';
 import createEntity from './sql/operations/dml/createEntity';
 import getEntitiesByFilters from './sql/operations/dql/getEntitiesByFilters';
@@ -538,16 +538,10 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    subEntitiesUpdateMode: UpdateMode = 'patch'
+    allowSubEntitiesAdditionAndRemoval: boolean = false
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntity');
-    const response = updateEntity(
-      this,
-      entity,
-      entityClass,
-      preHooks,
-      subEntitiesUpdateMode
-    );
+    const response = updateEntity(this, entity, entityClass, preHooks, allowSubEntitiesAdditionAndRemoval);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

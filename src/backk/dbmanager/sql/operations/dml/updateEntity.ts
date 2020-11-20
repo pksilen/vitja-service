@@ -1,35 +1,34 @@
-import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
-import isErrorResponse from '../../../../errors/isErrorResponse';
-import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import getEntityById from '../dql/getEntityById';
-import { RecursivePartial } from '../../../../types/RecursivePartial';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { PreHook } from '../../../hooks/PreHook';
-import { Entity } from '../../../../types/Entity';
-import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
-import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
-import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import { HttpStatusCodes } from '../../../../constants/constants';
-import { UpdateMode } from '../../../AbstractDbManager';
-import getSubEntitiesByAction from './utils/getSubEntitiesByAction';
-import deleteEntityById from './deleteEntityById';
-import createEntity from './createEntity';
+import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
+import isErrorResponse from "../../../../errors/isErrorResponse";
+import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import getEntityById from "../dql/getEntityById";
+import { RecursivePartial } from "../../../../types/RecursivePartial";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import getPropertyNameToPropertyTypeNameMap from "../../../../metadata/getPropertyNameToPropertyTypeNameMap";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { PreHook } from "../../../hooks/PreHook";
+import { Entity } from "../../../../types/Entity";
+import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
+import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import { HttpStatusCodes } from "../../../../constants/constants";
+import getSubEntitiesByAction from "./utils/getSubEntitiesByAction";
+import deleteEntityById from "./deleteEntityById";
+import createEntity from "./createEntity";
 
 export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
   { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
   preHooks?: PreHook | PreHook[],
-  subEntitiesUpdateMode: UpdateMode = 'patch',
+  shouldAllowSubEntitiesAdditionAndRemoval: boolean = false,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   let didStartTransaction = false;
@@ -43,7 +42,7 @@ export default async function updateEntity<T extends Entity>(
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
-    if (!isRecursiveCall || subEntitiesUpdateMode === 'update') {
+    if (!isRecursiveCall || shouldAllowSubEntitiesAdditionAndRemoval) {
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
     }
     if (!isRecursiveCall) {
@@ -70,7 +69,7 @@ export default async function updateEntity<T extends Entity>(
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
           // noinspection ReuseOfLocalVariableJS
-          if (subEntitiesUpdateMode === 'update') {
+          if (shouldAllowSubEntitiesAdditionAndRemoval) {
             const { subEntitiesToDelete, subEntitiesToAdd, subEntitiesToUpdate } = getSubEntitiesByAction(
               subEntityOrEntities,
               (currentEntityOrErrorResponse as any)[fieldName]
@@ -119,7 +118,7 @@ export default async function updateEntity<T extends Entity>(
                 subEntity,
                 (Types as any)[baseTypeName],
                 undefined,
-                subEntitiesUpdateMode,
+                shouldAllowSubEntitiesAdditionAndRemoval,
                 true
               );
 
@@ -135,7 +134,7 @@ export default async function updateEntity<T extends Entity>(
             subEntityOrEntities,
             (Types as any)[baseTypeName],
             undefined,
-            subEntitiesUpdateMode,
+            shouldAllowSubEntitiesAdditionAndRemoval,
             true
           );
 
