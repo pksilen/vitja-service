@@ -8,6 +8,7 @@ export default async function tryValidateResponse(response: object, ReturnType: 
   const instantiatedResponse = plainToClass(ReturnType, response);
   try {
     await validateOrReject(instantiatedResponse, {
+      groups: ['__backk_response__'],
       whitelist: true,
       forbidNonWhitelisted: true,
       skipMissingProperties: true

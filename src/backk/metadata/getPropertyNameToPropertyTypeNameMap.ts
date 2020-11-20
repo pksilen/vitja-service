@@ -35,6 +35,14 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
       }
     }
 
+    if (validationMetadata.type !== 'arrayMaxSize' && validationMetadata.type !== 'arrayUnique') {
+      if (!validationMetadata.groups?.includes('__backk_response__')) {
+        validationMetadata.groups = validationMetadata.groups?.concat('__backk_response__') ?? [
+          '__backk_response__'
+        ];
+      }
+    }
+
     let isNullable = false;
     if (validationMetadata.type === 'conditionalValidation') {
       if (validationMetadata.constraints[1] === 'isOptional') {

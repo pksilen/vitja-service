@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Default executeMultiple is false and multiple servicefunction count must be given
 - ArrayMaxSize Annotation is not checked in response validation
 - AddSubEntity/Entities-methods should check if more can be added based on ArrayMaxSize annotation
 - UpdateEntity: possibility via a flag to modify subentities arrays
