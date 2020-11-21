@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- _IdAndVersion, _IdAndLastModifiedTimestamp, _IdAndVersionAndLastModifiedTimestamp
+- _IdAndVersionAndLastModifiedTimestamp
 - if entity has 'version' property, generate ETag for response
 - if entity has 'version', auto-increment upon updates
 - if entity has 'lastModifiedTimestamp', auto-update on updates
