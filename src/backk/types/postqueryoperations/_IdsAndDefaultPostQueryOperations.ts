@@ -9,4 +9,6 @@ export default class _IdsAndDefaultPostQueryOperations extends DefaultPostQueryO
   @IsArray()
   @ArrayMaxSize(1000)
   _ids!: string[];
+
+  pageSize: number = 100
 }

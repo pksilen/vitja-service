@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- UpdateEntity: possibility via a flag to modify subentities arrays
 - UsersService: new AllowForInternalUse function DeleteSoldFavoriteSalesItemIds
 - Captcha type
 - _IdAndVersion, _IdAndLastModifiedTimestamp, _IdAndVersionAndLastModifiedTimestamp

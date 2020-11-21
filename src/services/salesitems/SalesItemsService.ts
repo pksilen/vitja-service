@@ -15,7 +15,7 @@ export default abstract class SalesItemsService extends BaseService {
   abstract createSalesItem(arg: CreateSalesItemArg): Promise<SalesItem | ErrorResponse>;
   abstract getSalesItems(arg: GetSalesItemsArg): Promise<SalesItem[] | ErrorResponse>;
   abstract getSalesItemsByUserId(arg: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse>;
-  abstract getSalesItemsByIds(arg: _IdsAndDefaultPostQueryOperations): Promise<SalesItem[] | ErrorResponse>;
+  abstract getSalesItemsForSaleByIds(arg: _IdsAndDefaultPostQueryOperations): Promise<SalesItem[] | ErrorResponse>;
   abstract getSalesItemById(arg: _Id): Promise<SalesItem | ErrorResponse>;
   abstract updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse>;
 

@@ -27,7 +27,7 @@ import {
   SALES_ITEM_STATE_MUST_BE_FOR_SALE
 } from './errors/salesItemsServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -139,11 +139,15 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }
 
   @AllowForEveryUser()
-  getSalesItemsByIds({
+  getSalesItemsForSaleByIds({
     _ids,
     ...postQueryOperations
   }: _IdsAndDefaultPostQueryOperations): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getEntitiesByIds(_ids, SalesItem, postQueryOperations);
+    return this.dbManager.getEntitiesByFilters(
+      [new SqlEquals({ state: 'forSale' }), new SqlInExpression('_id', _ids)],
+      SalesItem,
+      postQueryOperations
+    );
   }
 
   @AllowForEveryUser()
