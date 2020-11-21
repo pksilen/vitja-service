@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Captcha type
 - _IdAndVersion, _IdAndLastModifiedTimestamp, _IdAndVersionAndLastModifiedTimestamp
 - if entity has 'version' property, generate ETag for response
 - if entity has 'version', auto-increment upon updates
