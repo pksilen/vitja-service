@@ -410,6 +410,13 @@ export default async function tryExecuteServiceFunction(
             });
           }
         }
+        if (response.version) {
+          if (typeof resp.header === 'function') {
+            resp?.header('ETag', response.version);
+          } else if (typeof resp.set === 'function') {
+            resp?.set('ETag', response.version);
+          }
+        }
       }
     }
 
