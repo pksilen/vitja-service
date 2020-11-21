@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- UsersService: new AllowForInternalUse function DeleteSoldFavoriteSalesItemIds
 - Captcha type
 - _IdAndVersion, _IdAndLastModifiedTimestamp, _IdAndVersionAndLastModifiedTimestamp
 - if entity has 'version' property, generate ETag for response

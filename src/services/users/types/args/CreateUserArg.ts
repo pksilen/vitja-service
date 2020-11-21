@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { ArrayMaxSize, IsEmail, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsEmail, IsString, MaxLength } from 'class-validator';
 import { Private } from '../../../../backk/decorators/service/function/Private';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
 import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
@@ -51,6 +51,7 @@ export default class CreateUserArg {
   @ArrayMaxSize(100)
   favoriteSalesItemIds!: string[];
 
+  @IsString()
   @MaxLength(512)
   captchaToken!: string;
 }

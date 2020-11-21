@@ -1,6 +1,4 @@
 export default class CreateUserArg {
   ...Omit<User, '_id'>;
-
-  @MaxLength(512)
-  captchaToken!: string;
+  ...Captcha;
 }
