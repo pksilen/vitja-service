@@ -1,11 +1,11 @@
 # Vitja service
 
 TODO
-- _IdAndCreatedAtTimestamp
 - _IdAndVersionAndCreateAtTimestamp
 - _IdAndVersionAndCreaAtAndLastMod
 - if entity has createdAtTimestamp, auto-update on create
 - CreateOrderArg should have shopping cart id which is deleted
+- Try read type files from node_modules/backk/src directory
 - executeInsideRemoteTransaction
   - call remote service TransactionService.startTransaction, rollbackTransaction, commitTransactoini
 - IMplement TransactionService
