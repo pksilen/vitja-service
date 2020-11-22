@@ -2,7 +2,12 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
+import { IsString } from 'class-validator';
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+
 export default class UpdateSalesItemStateArg {
+  @IsString()
+  @MaxLengthAndMatches(24, /^[a-f\d]+$/)
   _id!: string;
 
   state!: 'forSale' | 'sold';

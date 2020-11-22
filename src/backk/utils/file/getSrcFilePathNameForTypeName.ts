@@ -26,6 +26,20 @@ export function hasSrcFilenameForTypeName(typeName: string) {
   return !!foundFilePathName;
 }
 
+export function hasBackkSrcFilenameForTypeName(typeName: string) {
+  const srcFilePathNames = getFileNamesRecursively(process.cwd() + '/src');
+  let backkSrcFilePathNames: string[] = [];
+  if (existsSync(process.cwd() + '/node_modules/backk/src')) {
+    backkSrcFilePathNames = getFileNamesRecursively(process.cwd() + '/node_modules/backk/src');
+  }
+
+  const foundFilePathName = [...srcFilePathNames, ...backkSrcFilePathNames].find((filePathName: string) => {
+    return filePathName.includes('backk') && filePathName.endsWith('/' + typeName + '.ts');
+  });
+
+  return !!foundFilePathName;
+}
+
 export default function getSrcFilePathNameForTypeName(typeName: string): string {
   const srcFilePathNames = getFileNamesRecursively(process.cwd() + '/src');
   let backkSrcFilePathNames: string[] = [];

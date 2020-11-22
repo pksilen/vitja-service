@@ -7,25 +7,8 @@ import getSrcFilePathNameForTypeName, {
 } from '../utils/file/getSrcFilePathNameForTypeName';
 
 function getDeclarationsFor(typeName: string, originatingTypeFilePathName: string) {
-  let fileContentsStr;
-  let typeFilePathName;
-
-  if (typeName === '_Id') {
-    fileContentsStr = `  
-    export default class _Id {
-      _id!: string;
-    }
-    `;
-  } else if (typeName === 'Id') {
-    fileContentsStr = `
-    export default class Id {
-      id!: string;
-    }
-    `;
-  } else {
-    typeFilePathName = getSrcFilePathNameForTypeName(typeName);
-    fileContentsStr = readFileSync(typeFilePathName, { encoding: 'UTF-8' });
-  }
+  const typeFilePathName = getSrcFilePathNameForTypeName(typeName);
+  const fileContentsStr = readFileSync(typeFilePathName, { encoding: 'UTF-8' });
 
   const ast = parseSync(fileContentsStr, {
     plugins: [
@@ -99,21 +82,7 @@ export default function parseTypescriptLinesForTypeName(
     typeFilePathName = getSrcFilePathNameForTypeName(typeName);
     fileContentsStr = readFileSync(typeFilePathName, { encoding: 'UTF-8' });
   } else {
-    if (typeName === '_Id') {
-      fileContentsStr = `
-    export default class _Id {
-      _id!: string;
-    }
-    `;
-    } else if (typeName === 'Id') {
-      fileContentsStr = `
-    export default class Id {
-      id!: string;
-    }
-    `;
-    }  else {
-      throw new Error('Unsupported type: ' + typeName);
-    }
+    throw new Error('Unsupported type: ' + typeName);
   }
 
   const ast = parseSync(fileContentsStr, {

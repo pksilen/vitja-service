@@ -3,7 +3,7 @@ import { getFromContainer, MetadataStorage, ValidationTypes, Validator } from 'c
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import { readFileSync } from 'fs';
-import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
+import getSrcFilePathNameForTypeName, { hasBackkSrcFilenameForTypeName } from "../utils/file/getSrcFilePathNameForTypeName";
 import SortBy from '../types/postqueryoperations/SortBy';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import SubPagination from '../types/postqueryoperations/SubPagination';
@@ -44,15 +44,7 @@ export default function setPropertyTypeValidationDecorators(
 ) {
   const typeClassName = typeClass.name;
 
-  if (
-    typeClassName === '_Id' ||
-    typeClassName === 'Id' ||
-    typeClassName === 'DefaultPostQueryOperations' ||
-    typeClassName === '_IdsAndDefaultPostQueryOperations' ||
-    typeClassName === 'SortBy' ||
-    typeClassName === 'SubPagination' ||
-    typeClassName === '_IdAndUserId'
-  ) {
+  if (hasBackkSrcFilenameForTypeName(typeClassName)) {
     return;
   }
 

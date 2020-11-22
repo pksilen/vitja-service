@@ -2,14 +2,17 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsEmail, MaxLength } from 'class-validator';
+import { IsEmail, IsString, MaxLength } from 'class-validator';
 import { Private } from '../../../../backk/decorators/service/function/Private';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
 import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
 import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
 
 export default class ChangeUserPasswordArg {
+  @IsString()
+  @MaxLengthAndMatches(24, /^[a-f\d]+$/)
   _id!: string;
 
   @MaxLength(512)
