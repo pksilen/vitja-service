@@ -369,7 +369,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   }
 
   async createEntity<T>(
-    entity: Omit<T, '_id'>,
+    entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations,

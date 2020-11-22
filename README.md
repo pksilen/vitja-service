@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- if entity has createdAtTimestamp, auto-update on create
 - Don't test createdAtTimestamp in response
 - CreateOrderArg should have shopping cart id which is deleted
 - Try read type files from node_modules/backk/src directory

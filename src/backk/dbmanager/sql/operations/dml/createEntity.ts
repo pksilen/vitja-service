@@ -19,7 +19,7 @@ import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransact
 
 export default async function createEntity<T>(
   dbManager: PostgreSqlDbManager,
-  entity: Omit<T, '_id'>,
+  entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
   entityClass: new () => T,
   preHooks?: PreHook | PreHook[],
   postQueryOperations?: PostQueryOperations,

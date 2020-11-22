@@ -59,7 +59,7 @@ export default abstract class AbstractDbManager {
   ): Promise<T | ErrorResponse>;
 
   async createEntities<T>(
-    entities: Array<Omit<T, '_id'>>,
+    entities: Array<Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>>,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations

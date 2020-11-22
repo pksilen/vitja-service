@@ -59,7 +59,6 @@ export default class OrdersServiceImpl extends OrdersService {
     return await this.dbManager.createEntity(
       {
         ...restOfArg,
-        createdTimestampInSecs: Math.round(Date.now() / 1000),
         orderItems: salesItemIds.map((salesItemId, index) => ({
           id: index.toString(),
           salesItemId,
