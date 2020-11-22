@@ -7,7 +7,7 @@ import getMongoDbProjection from "./mongodb/getMongoDbProjection";
 import { ErrorResponse } from "../types/ErrorResponse";
 import { RecursivePartial } from "../types/RecursivePartial";
 import { PreHook } from "./hooks/PreHook";
-import { Entity } from "../types/Entity";
+import { Entity } from "../types/entities/Entity";
 import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
 import createErrorResponseFromError from "../errors/createErrorResponseFromError";
 import createErrorResponseFromErrorMessageAndStatusCode
@@ -71,7 +71,7 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    // TODO implement maxItemCount
+    // auto-update version/lastmodifiedtimestamp
     try {
       const writeOperationResult = await this.tryExecute((client) =>
         client
@@ -96,6 +96,7 @@ export default class MongoDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     throw new Error();
+    // auto-update version/lastmodifiedtimestamp
   }
 
   addSubEntities<T extends Entity, U extends object>(
@@ -108,6 +109,7 @@ export default class MongoDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     throw new Error();
+    // auto-update version/lastmodifiedtimestamp
   }
 
   async getEntitiesByFilters<T>(
@@ -283,6 +285,7 @@ export default class MongoDbManager extends AbstractDbManager {
     shouldAllowSubEntitiesAdditionAndRemoval?: boolean
   ): Promise<void | ErrorResponse> {
     // TODO add precondition check
+    // auto-update version/lastmodifiedtimestamp
     try {
       const updateOperationResult = await this.tryExecute((client) =>
         client
@@ -306,6 +309,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entityClass: new () => T
   ): Promise<void | ErrorResponse> {
     throw new Error();
+    // auto-update version/lastmodifiedtimestamp
   }
 
   async deleteEntityById<T>(
@@ -343,6 +347,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
+    // auto-update version/lastmodifiedtimestamp
     return Promise.resolve();
   }
 
@@ -353,6 +358,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
+    // auto-update version/lastmodifiedtimestamp
     return Promise.resolve();
   }
 

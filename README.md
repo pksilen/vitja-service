@@ -1,9 +1,9 @@
 # Vitja service
 
 TODO:
-- if entity has 'version' property, generate ETag for response
 - if entity has 'version', auto-increment upon updates
 - if entity has 'lastModifiedTimestamp', auto-update on updates
+- If-None-Match request header support
 - CreateOrderArg should have shopping cart id which is deleted
 - executeInsideRemoteTransaction
   - call remote service TransactionService.startTransaction, rollbackTransaction, commitTransactoini

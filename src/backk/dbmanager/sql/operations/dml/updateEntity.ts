@@ -1,27 +1,27 @@
-import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import getEntityById from "../dql/getEntityById";
-import { RecursivePartial } from "../../../../types/RecursivePartial";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import getPropertyNameToPropertyTypeNameMap from "../../../../metadata/getPropertyNameToPropertyTypeNameMap";
-import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
-import { PreHook } from "../../../hooks/PreHook";
-import { Entity } from "../../../../types/Entity";
-import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
-import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
-import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
-import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
-import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
-import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
-import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import { HttpStatusCodes } from "../../../../constants/constants";
-import getSubEntitiesByAction from "./utils/getSubEntitiesByAction";
-import deleteEntityById from "./deleteEntityById";
-import createEntity from "./createEntity";
+import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
+import isErrorResponse from '../../../../errors/isErrorResponse';
+import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import getEntityById from '../dql/getEntityById';
+import { RecursivePartial } from '../../../../types/RecursivePartial';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
+import { PreHook } from '../../../hooks/PreHook';
+import { Entity } from '../../../../types/entities/Entity';
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import { HttpStatusCodes } from '../../../../constants/constants';
+import getSubEntitiesByAction from './utils/getSubEntitiesByAction';
+import deleteEntityById from './deleteEntityById';
+import createEntity from './createEntity';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
@@ -170,7 +170,11 @@ export default async function updateEntity<T extends Entity>(
         } else if (fieldName !== '_id' && fieldName !== 'id') {
           if ((restOfEntity as any)[fieldName] !== undefined) {
             columns.push(fieldName);
-            values.push((restOfEntity as any)[fieldName]);
+            if (fieldName === 'version') {
+              values.push((parseInt((currentEntityOrErrorResponse as any).version, 10) + 1).toString());
+            } else {
+              values.push((restOfEntity as any)[fieldName]);
+            }
           }
         }
       }

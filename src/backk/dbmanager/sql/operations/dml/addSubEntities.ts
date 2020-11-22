@@ -3,7 +3,7 @@ import entityAnnotationContainer from '../../../../decorators/entity/entityAnnot
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import { Entity } from '../../../../types/Entity';
+import { Entity } from '../../../../types/entities/Entity';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
@@ -18,6 +18,7 @@ import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
 import { HttpStatusCodes } from '../../../../constants/constants';
+import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeeded';
 
 export default async function addSubEntities<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -35,6 +36,7 @@ export default async function addSubEntities<T extends Entity, U extends object>
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     const currentEntityOrErrorResponse = await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
+    await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
     const parentIdValue = JSONPath({ json: currentEntityOrErrorResponse, path: '$._id' })[0];
     const parentIdFieldName = entityAnnotationContainer.getAdditionIdPropertyName(SubEntityClass.name);
     const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath }).reduce(

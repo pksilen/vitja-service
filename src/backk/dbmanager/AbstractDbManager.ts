@@ -5,7 +5,7 @@ import SqlExpression from './sql/expressions/SqlExpression';
 import { RecursivePartial } from '../types/RecursivePartial';
 import { ErrorResponse } from '../types/ErrorResponse';
 import { PreHook } from './hooks/PreHook';
-import { Entity } from '../types/Entity';
+import { Entity } from '../types/entities/Entity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import { Injectable } from '@nestjs/common';
 import isErrorResponse from '../errors/isErrorResponse';

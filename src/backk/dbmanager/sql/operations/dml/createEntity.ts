@@ -67,7 +67,11 @@ export default async function createEntity<T>(
             }
             values.push(numericId);
           } else {
-            values.push((entity as any)[fieldName]);
+            if (fieldName === 'version') {
+              values.push('1');
+            } else {
+              values.push((entity as any)[fieldName]);
+            }
           }
         }
       }

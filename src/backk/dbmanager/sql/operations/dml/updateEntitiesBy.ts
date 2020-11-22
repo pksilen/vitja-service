@@ -6,7 +6,7 @@ import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
-import { Entity } from '../../../../types/Entity';
+import { Entity } from '../../../../types/entities/Entity';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
 import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
@@ -20,6 +20,7 @@ import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTran
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import { HttpStatusCodes } from '../../../../constants/constants';
+import getEntityById from '../dql/getEntityById';
 
 export default async function updateEntitiesBy<T extends Entity>(
   dbManager: PostgreSqlDbManager,
@@ -137,7 +138,24 @@ export default async function updateEntitiesBy<T extends Entity>(
         } else if (fieldName !== '_id' && fieldName !== 'id') {
           if ((restOfEntity as any)[fieldName] !== undefined) {
             columns.push(fieldName);
-            values.push((restOfEntity as any)[fieldName]);
+            if (fieldName === 'version') {
+              const currentEntityOrErrorResponse = await getEntityById(
+                dbManager,
+                (restOfEntity as any)._id,
+                EntityClass
+              );
+
+              if (
+                'errorMessage' in currentEntityOrErrorResponse &&
+                isErrorResponse(currentEntityOrErrorResponse)
+              ) {
+                throw currentEntityOrErrorResponse;
+              }
+
+              values.push((parseInt((currentEntityOrErrorResponse as any).version, 10) + 1).toString());
+            } else {
+              values.push((restOfEntity as any)[fieldName]);
+            }
           }
         }
       }
