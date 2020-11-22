@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- _IdAndVersionAndCreateAtTimestamp
 - _IdAndVersionAndCreaAtAndLastMod
 - if entity has createdAtTimestamp, auto-update on create
 - CreateOrderArg should have shopping cart id which is deleted
