@@ -1,10 +1,9 @@
-import { ArrayMaxSize, IsNumber, Max, MaxLength, Min } from "class-validator";
-import Entity from "../../../../backk/decorators/entity/Entity";
-import _IdAndCreatedAtTimestampAndLastModifiedTimestamp
-  from "../../../../backk/types/id/_IdAndCreatedAtTimestampAndLastModifiedTimestamp";
+import { ArrayMaxSize, IsNumber, Max, MaxLength, Min } from 'class-validator';
+import Entity from '../../../../backk/decorators/entity/Entity';
+import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp from '../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp';
 
 @Entity()
-export class SalesItem extends _IdAndCreatedAtTimestampAndLastModifiedTimestamp {
+export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
   userId!: string;
 
   @MaxLength(64)
