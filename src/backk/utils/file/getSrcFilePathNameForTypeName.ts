@@ -1,4 +1,4 @@
-import { Dirent, readdirSync } from 'fs';
+import { Dirent, readdirSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
 export function getFileNamesRecursively(directory: string): string[] {
@@ -13,9 +13,13 @@ export function getFileNamesRecursively(directory: string): string[] {
 }
 
 export function hasSrcFilenameForTypeName(typeName: string) {
-  const filePathNames = getFileNamesRecursively(process.cwd() + '/src');
+  const srcFilePathNames = getFileNamesRecursively(process.cwd() + '/src');
+  let backkSrcFilePathNames: string[] = [];
+  if (existsSync(process.cwd() + '/node_modules/backk/src')) {
+    backkSrcFilePathNames = getFileNamesRecursively(process.cwd() + '/node_modules/backk/src');
+  }
 
-  const foundFilePathName = filePathNames.find((filePathName: string) => {
+  const foundFilePathName = [...srcFilePathNames, ...backkSrcFilePathNames].find((filePathName: string) => {
     return filePathName.endsWith('/' + typeName + '.ts');
   });
 
@@ -23,11 +27,17 @@ export function hasSrcFilenameForTypeName(typeName: string) {
 }
 
 export default function getSrcFilePathNameForTypeName(typeName: string): string {
-  const filePathNames = getFileNamesRecursively(process.cwd() + '/src');
+  const srcFilePathNames = getFileNamesRecursively(process.cwd() + '/src');
+  let backkSrcFilePathNames: string[] = [];
+  if (existsSync(process.cwd() + '/node_modules/backk/src')) {
+    backkSrcFilePathNames = getFileNamesRecursively(process.cwd() + '/node_modules/backk/src');
+  }
 
-  const foundFilePathNames = filePathNames.filter((filePathName: string) => {
-    return filePathName.endsWith('/' + typeName + '.ts');
-  });
+  const foundFilePathNames = [...srcFilePathNames, ...backkSrcFilePathNames].filter(
+    (filePathName: string) => {
+      return filePathName.endsWith('/' + typeName + '.ts');
+    }
+  );
 
   if (foundFilePathNames.length === 0) {
     throw new Error('File not found for type: ' + typeName);

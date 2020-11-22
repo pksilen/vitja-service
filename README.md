@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Make deliveryTimestampInSecs as Date
 - Try read type files from node_modules/backk/src directory
 - executeInsideRemoteTransaction
   - call remote service TransactionService.startTransaction, rollbackTransaction, commitTransactoini
