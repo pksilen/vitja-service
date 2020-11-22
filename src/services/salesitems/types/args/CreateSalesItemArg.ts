@@ -36,6 +36,4 @@ export default class CreateSalesItemArg {
   })
   @ArrayMaxSize(10)
   secondaryImageDataUris!: string[];
-
-  lastModifiedTimestamp!: Date;
 }

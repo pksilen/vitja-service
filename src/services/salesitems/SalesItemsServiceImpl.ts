@@ -60,7 +60,6 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.createEntity(
       {
         ...arg,
-        createdTimestampInSecs: Math.round(Date.now() / 1000),
         state: 'forSale',
         previousPrice: -1
       },

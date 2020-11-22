@@ -1,4 +1,4 @@
 export default class UpdateSalesItemArg {
-  ...Omit<Partial<SalesItem>, 'previousPrice' | 'state' | 'createdTimestampInSecs'>;
+  ...Omit<Partial<SalesItem>, 'previousPrice' | 'state' | 'createdAtTimestamp' | 'lastModifiedTimestamp'>;
   ..._Id;
 }

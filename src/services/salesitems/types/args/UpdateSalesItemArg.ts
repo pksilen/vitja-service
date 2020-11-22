@@ -3,7 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { ArrayMaxSize, IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
-import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 
 export default class UpdateSalesItemArg {
   userId?: string;
@@ -37,8 +37,6 @@ export default class UpdateSalesItemArg {
   })
   @ArrayMaxSize(10)
   secondaryImageDataUris?: string[];
-
-  lastModifiedTimestamp?: Date;
 
   @IsString()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)

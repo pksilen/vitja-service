@@ -3,7 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { ArrayMaxSize, IsString, MaxLength } from 'class-validator';
-import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';

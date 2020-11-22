@@ -1,8 +1,9 @@
 # Vitja service
 
 TODO
-- _IdAndVersionAndCreaAtAndLastMod
+- Modify existing types to extend from _IdAndCreatedAtTimestamp
 - if entity has createdAtTimestamp, auto-update on create
+- Don't test createdAtTimestamp in response
 - CreateOrderArg should have shopping cart id which is deleted
 - Try read type files from node_modules/backk/src directory
 - executeInsideRemoteTransaction
