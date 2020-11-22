@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- If-None-Match request header support
 - _IdAndCreatedAtTimestamp
 - _IdAndVersionAndCreateAtTimestamp
 - _IdAndVersionAndCreaAtAndLastMod
