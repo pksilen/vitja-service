@@ -25,6 +25,7 @@ import {
 } from './errors/ordersServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import executeForAll from '../../backk/utils/executeForAll';
+import ShoppingCartService from '../shoppingcart/ShoppingCartService';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -32,6 +33,7 @@ export default class OrdersServiceImpl extends OrdersService {
   constructor(
     dbManager: AbstractDbManager,
     private readonly salesItemsService: SalesItemsService,
+    private readonly shoppingCartService: ShoppingCartService,
     @Optional()
     readonly Types = {
       AddOrderItemArg,
@@ -55,10 +57,14 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForSelf()
   @NoCaptcha()
-  async createOrder({ salesItemIds, ...restOfArg }: CreateOrderArg): Promise<Order | ErrorResponse> {
+  async createOrder({
+    salesItemIds,
+    shoppingCartId,
+    userId
+  }: CreateOrderArg): Promise<Order | ErrorResponse> {
     return await this.dbManager.createEntity(
       {
-        ...restOfArg,
+        userId,
         orderItems: salesItemIds.map((salesItemId, index) => ({
           id: index.toString(),
           salesItemId,
@@ -68,8 +74,11 @@ export default class OrdersServiceImpl extends OrdersService {
         }))
       },
       Order,
+
       {
-        hookFunc: async () => await this.updateSalesItemStates(salesItemIds, 'sold', 'forSale')
+        hookFunc: async () =>
+          (await this.updateSalesItemStates(salesItemIds, 'sold', 'forSale')) ||
+          (await this.shoppingCartService.deleteShoppingCartById({ _id: shoppingCartId, userId }))
       }
     );
   }
