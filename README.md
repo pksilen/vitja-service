@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- No testing for 'version' and 'lastmodifiedtimestamp' return values
 - If-None-Match request header support
 - _IdAndCreatedAtTimestamp
 - _IdAndVersionAndCreateAtTimestamp

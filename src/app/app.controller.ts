@@ -44,6 +44,7 @@ export class AppController {
   processGetRequests(
     @Headers('authorization') authHeader: string,
     @Headers('x-forwarded-for') xForwardedForHeader: string,
+    @Headers('if-none-match') ifNoneMatchHeader: string,
     @Param() params: { serviceFunctionName: string },
     @Query('arg') serviceFunctionArgument: object,
     @Res() response: any
@@ -53,7 +54,11 @@ export class AppController {
       this,
       params.serviceFunctionName,
       serviceFunctionArgument,
-      { Authorization: authHeader, 'X-Forwarded-For': xForwardedForHeader },
+      {
+        Authorization: authHeader,
+        'X-Forwarded-For': xForwardedForHeader,
+        'If-None-Match': ifNoneMatchHeader
+      },
       response,
       {
         httpMethod: 'GET',
@@ -67,6 +72,7 @@ export class AppController {
   processPostRequests(
     @Headers('authorization') authHeader: string,
     @Headers('x-forwarded-for') xForwardedForHeader: string,
+    @Headers('if-none-match') ifNoneMatchHeader: string,
     @Param() params: { serviceFunctionName: string },
     @Body() serviceFunctionArgument: object,
     @Res() response: any
@@ -76,7 +82,11 @@ export class AppController {
       this,
       params.serviceFunctionName,
       serviceFunctionArgument,
-      { Authorization: authHeader, 'X-Forwarded-For': xForwardedForHeader },
+      {
+        Authorization: authHeader,
+        'X-Forwarded-For': xForwardedForHeader,
+        'If-None-Match': ifNoneMatchHeader
+      },
       response
     );
   }

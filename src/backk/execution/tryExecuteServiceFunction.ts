@@ -410,7 +410,12 @@ export default async function tryExecuteServiceFunction(
             });
           }
         }
+
         if (response.version) {
+          if (response.version === headers['If-None-Match']) {
+            response = undefined;
+            resp?.status(HttpStatusCodes.NOT_MODIFIED);
+          }
           if (typeof resp.header === 'function') {
             resp?.header('ETag', response.version);
           } else if (typeof resp.set === 'function') {
