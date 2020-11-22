@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Modify existing types to extend from _IdAndCreatedAtTimestamp
 - if entity has createdAtTimestamp, auto-update on create
 - Don't test createdAtTimestamp in response
 - CreateOrderArg should have shopping cart id which is deleted
