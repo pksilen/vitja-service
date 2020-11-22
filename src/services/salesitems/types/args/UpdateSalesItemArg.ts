@@ -2,10 +2,13 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { ArrayMaxSize, IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, IsDate, IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 
 export default class UpdateSalesItemArg {
+  @IsDate()
+  createdAtTimestamp?: Date;
+
   userId?: string;
 
   @MaxLength(64)

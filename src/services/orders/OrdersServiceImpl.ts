@@ -70,7 +70,7 @@ export default class OrdersServiceImpl extends OrdersService {
           salesItemId,
           state: 'toBeDelivered',
           trackingUrl: null,
-          deliveryTimestampInSecs: 0
+          deliveryTimestamp: null
         }))
       },
       Order,
@@ -102,7 +102,7 @@ export default class OrdersServiceImpl extends OrdersService {
         salesItemId,
         state: 'toBeDelivered',
         trackingUrl: null,
-        deliveryTimestampInSecs: 0
+        deliveryTimestamp: null
       },
       Order,
       OrderItem

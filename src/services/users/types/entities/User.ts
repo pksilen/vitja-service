@@ -3,7 +3,7 @@ import Entity from "../../../../backk/decorators/entity/Entity";
 import UniqueIndex from "../../../../backk/decorators/entity/UniqueIndex";
 import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
 import { IsExprTrue } from "../../../../backk/decorators/typeproperty/IsExprTrue";
-import { ValueUsedInTests } from "../../../../backk/decorators/typeproperty/testing/ValueUsedInTests";
+import { TestValue } from "../../../../backk/decorators/typeproperty/testing/TestValue";
 import DefaultPaymentMethod from "./DefaultPaymentMethod";
 import PaymentMethod from "./PaymentMethod";
 import _Id from "../../../../backk/types/id/_Id";
@@ -15,7 +15,7 @@ import { Private } from "../../../../backk/decorators/service/function/Private";
 export default class User extends _Id {
   @MaxLength(512)
   @IsEmail()
-  @ValueUsedInTests('test@test.com')
+  @TestValue('test@test.com')
   userName!: string;
 
   @Private()
@@ -29,7 +29,7 @@ export default class User extends _Id {
     'Password may not contain username'
   )
   @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
-  @ValueUsedInTests('Jepulis0!')
+  @TestValue('Jepulis0!')
   password!: string;
 
   @MaxLength(512)
@@ -48,7 +48,7 @@ export default class User extends _Id {
   @ArrayMaxSize(10)
   paymentMethods!: PaymentMethod[];
 
-  @ValueUsedInTests('123')
+  @TestValue('123')
   @ArrayMaxSize(100)
   favoriteSalesItemIds!: string[];
 }

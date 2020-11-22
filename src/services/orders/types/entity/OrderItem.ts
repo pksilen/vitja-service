@@ -1,27 +1,23 @@
-import { IsInt, Max, MaxLength, Min } from 'class-validator';
-import Entity from '../../../../backk/decorators/entity/Entity';
-import { ExpectInTestsToEvaluateTrue } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue';
-import Id from '../../../../backk/types/id/Id';
-import { MAX_INT_VALUE } from "../../../../backk/constants/constants";
+import { MaxLength } from "class-validator";
+import Entity from "../../../../backk/decorators/entity/Entity";
+import { ExpectToEvaluateTrueInTests } from "../../../../backk/decorators/typeproperty/testing/ExpectToEvaluateTrueInTests";
+import Id from "../../../../backk/types/id/Id";
 
 @Entity()
 export default class OrderItem extends Id {
   salesItemId!: string;
 
-  @IsInt()
-  @Min(0)
-  @Max(MAX_INT_VALUE)
-  @ExpectInTestsToEvaluateTrue(
-    ({ state, deliveryTimestampInSecs }) =>
-      (state === 'toBeDelivered' && deliveryTimestampInSecs === 0) ||
-      (state !== 'toBeDelivered' && deliveryTimestampInSecs !== 0)
+  @ExpectToEvaluateTrueInTests(
+    ({ state, deliveryTimestamp }) =>
+      (state === 'toBeDelivered' && deliveryTimestamp === null) ||
+      (state !== 'toBeDelivered' && deliveryTimestamp !== null)
   )
-  deliveryTimestampInSecs!: number;
+  deliveryTimestamp!: Date | null;
 
   state!: 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned';
 
   @MaxLength(1024)
-  @ExpectInTestsToEvaluateTrue(
+  @ExpectToEvaluateTrueInTests(
     ({ state, trackingUrl }) =>
       (state === 'toBeDelivered' && trackingUrl ===  null) || (state !== 'toBeDelivered' && trackingUrl !== null)
   )

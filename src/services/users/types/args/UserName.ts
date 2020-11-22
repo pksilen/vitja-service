@@ -3,11 +3,11 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { IsEmail, MaxLength } from 'class-validator';
-import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
+import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
 
 export default class UserName {
   @MaxLength(512)
   @IsEmail()
-  @ValueUsedInTests('test@test.com')
+  @TestValue('test@test.com')
   userName!: string;
 }

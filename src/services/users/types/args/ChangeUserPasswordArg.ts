@@ -7,14 +7,14 @@ import { Private } from '../../../../backk/decorators/service/function/Private';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
 import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
 import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
-import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
+import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
 
 export default class ChangeUserPasswordArg {
   _id!: string;
 
   @MaxLength(512)
   @IsEmail()
-  @ValueUsedInTests('test@test.com')
+  @TestValue('test@test.com')
   userName!: string;
 
   @Private()
@@ -28,10 +28,10 @@ export default class ChangeUserPasswordArg {
     'Password may not contain username'
   )
   @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
-  @ValueUsedInTests('Jepulis0!')
+  @TestValue('Jepulis0!')
   password!: string;
 
   @MaxLength(512)
-  @ValueUsedInTests('Jepulis0!')
+  @TestValue('Jepulis0!')
   currentPassword!: string;
 }

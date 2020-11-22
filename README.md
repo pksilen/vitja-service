@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO
-- CreateOrderArg should have shopping cart id which is deleted
+- Make deliveryTimestampInSecs as Date
 - Try read type files from node_modules/backk/src directory
 - executeInsideRemoteTransaction
   - call remote service TransactionService.startTransaction, rollbackTransaction, commitTransactoini

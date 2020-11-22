@@ -4,7 +4,7 @@
 
 import { ArrayMaxSize, IsString, MaxLength } from 'class-validator';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
-import { ValueUsedInTests } from '../../../../backk/decorators/typeproperty/testing/ValueUsedInTests';
+import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 
@@ -23,7 +23,7 @@ export default class UpdateUserArg {
   @ArrayMaxSize(10)
   paymentMethods?: PaymentMethod[];
 
-  @ValueUsedInTests('123')
+  @TestValue('123')
   @ArrayMaxSize(100)
   favoriteSalesItemIds?: string[];
 

@@ -2,27 +2,23 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsInt, Max, MaxLength, Min } from 'class-validator';
-import { MAX_INT_VALUE } from '../../../../backk/constants/constants';
-import { ExpectInTestsToEvaluateTrue } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue';
+import { MaxLength } from 'class-validator';
+import { ExpectToEvaluateTrueInTests } from '../../../../backk/decorators/typeproperty/testing/ExpectToEvaluateTrueInTests';
 
 export default class DeliverOrderItemArg {
   orderId!: string;
 
   orderItemId!: string;
 
-  @IsInt()
-  @Min(0)
-  @Max(MAX_INT_VALUE)
-  @ExpectInTestsToEvaluateTrue(
-    ({ state, deliveryTimestampInSecs }) =>
-      (state === 'toBeDelivered' && deliveryTimestampInSecs === 0) ||
-      (state !== 'toBeDelivered' && deliveryTimestampInSecs !== 0)
+  @ExpectToEvaluateTrueInTests(
+    ({ state, deliveryTimestamp }) =>
+      (state === 'toBeDelivered' && deliveryTimestamp === null) ||
+      (state !== 'toBeDelivered' && deliveryTimestamp !== null)
   )
-  deliveryTimestampInSecs!: number;
+  deliveryTimestamp!: Date | null;
 
   @MaxLength(1024)
-  @ExpectInTestsToEvaluateTrue(
+  @ExpectToEvaluateTrueInTests(
     ({ state, trackingUrl }) =>
       (state === 'toBeDelivered' && trackingUrl === null) ||
       (state !== 'toBeDelivered' && trackingUrl !== null)
