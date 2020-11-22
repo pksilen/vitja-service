@@ -69,6 +69,8 @@ export default async function createEntity<T>(
           } else {
             if (fieldName === 'version') {
               values.push('1');
+            } else if (fieldName === 'lastModifiedTimestamp') {
+              values.push(new Date())
             } else {
               values.push((entity as any)[fieldName]);
             }

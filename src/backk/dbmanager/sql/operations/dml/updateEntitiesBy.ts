@@ -138,7 +138,7 @@ export default async function updateEntitiesBy<T extends Entity>(
         } else if (fieldName !== '_id' && fieldName !== 'id') {
           if ((restOfEntity as any)[fieldName] !== undefined) {
             columns.push(fieldName);
-            if (fieldName === 'version') {
+            if (fieldName === 'version' || fieldName === 'lastModifiedTimestamp') {
               const currentEntityOrErrorResponse = await getEntityById(
                 dbManager,
                 (restOfEntity as any)._id,
@@ -152,7 +152,11 @@ export default async function updateEntitiesBy<T extends Entity>(
                 throw currentEntityOrErrorResponse;
               }
 
-              values.push((parseInt((currentEntityOrErrorResponse as any).version, 10) + 1).toString());
+              if (fieldName === 'version') {
+                values.push((parseInt((currentEntityOrErrorResponse as any).version, 10) + 1).toString());
+              } else if (fieldName === 'lastModifiedTimestamp') {
+                values.push(new Date());
+              }
             } else {
               values.push((restOfEntity as any)[fieldName]);
             }

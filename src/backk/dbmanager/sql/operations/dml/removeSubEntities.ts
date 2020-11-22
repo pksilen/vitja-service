@@ -14,7 +14,8 @@ import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransa
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import tryUpdateEntityVersionIfNeeded from "./utils/tryUpdateEntityVersionIfNeeded";
+import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeeded';
+import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
 
 export default async function removeSubEntities<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -30,6 +31,7 @@ export default async function removeSubEntities<T extends Entity, U extends obje
     const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, undefined, true);
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
+    await tryUpdateEntityLastModifiedTimestampIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
     const currentEntityInstance = plainToClass(EntityClass, currentEntityOrErrorResponse);
     const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesPath });
 

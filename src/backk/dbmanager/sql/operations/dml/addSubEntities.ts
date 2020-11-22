@@ -19,6 +19,8 @@ import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata'
 import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
 import { HttpStatusCodes } from '../../../../constants/constants';
 import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeeded';
+import tryUpdateEntityLastModifiedTimestampIfNeeded
+  from "./utils/tryUpdateEntityLastModifiedTimestampIfNeeded";
 
 export default async function addSubEntities<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -37,6 +39,7 @@ export default async function addSubEntities<T extends Entity, U extends object>
     const currentEntityOrErrorResponse = await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
+    await tryUpdateEntityLastModifiedTimestampIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
     const parentIdValue = JSONPath({ json: currentEntityOrErrorResponse, path: '$._id' })[0];
     const parentIdFieldName = entityAnnotationContainer.getAdditionIdPropertyName(SubEntityClass.name);
     const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath }).reduce(

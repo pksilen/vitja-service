@@ -172,6 +172,8 @@ export default async function updateEntity<T extends Entity>(
             columns.push(fieldName);
             if (fieldName === 'version') {
               values.push((parseInt((currentEntityOrErrorResponse as any).version, 10) + 1).toString());
+            } else if (fieldName === 'lastModifiedTimestamp') {
+              values.push(new Date());
             } else {
               values.push((restOfEntity as any)[fieldName]);
             }

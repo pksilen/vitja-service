@@ -1,11 +1,11 @@
 import { ArrayMaxSize, IsInt, IsNumber, Max, MaxLength, Min } from "class-validator";
-import Entity from '../../../../backk/decorators/entity/Entity';
-import { ExpectInTestsToEvaluateTrue } from '../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue';
-import _Id from '../../../../backk/types/id/_Id';
-import { MAX_INT_VALUE } from '../../../../backk/constants/constants';
+import Entity from "../../../../backk/decorators/entity/Entity";
+import { ExpectInTestsToEvaluateTrue } from "../../../../backk/decorators/typeproperty/testing/ExpectInTestsToEvaluateTrue";
+import { MAX_INT_VALUE } from "../../../../backk/constants/constants";
+import _IdAndLastModifiedTimestamp from "../../../../backk/types/id/_IdAndLastModifiedTimestamp";
 
 @Entity()
-export class SalesItem extends _Id {
+export class SalesItem extends _IdAndLastModifiedTimestamp {
   userId!: string;
 
   @MaxLength(64)
@@ -47,6 +47,4 @@ export class SalesItem extends _Id {
       createdTimestampInSecs > Math.round(Date.now() / 1000 - 60)
   )
   createdTimestampInSecs!: number;
-
-  lastModifiedTimestamp!: Date;
 }
