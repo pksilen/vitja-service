@@ -1,13 +1,6 @@
 # Vitja service
 
 TODO
-- Implement TransactionService
-  - one same connection for transaction id
-  - remote caller gives transaction id in HTTP header Backk-transaction-id
-- ExecuteMultipleInsideTransaction is ExecuteMultipleInsideLocalTransaction, don't allow executeInsideremoteTransaction calls
-- ExecuteMultipleInsideDistributedTransaction, don't allow executeInsideRemoteTransaction calls, but allow remote services to be called and wrap all them of in needed remoteTransactions
-- ExecuteMultipleXXXX, create tracing span
-- executeInsideRemoteTransaction, create tracing span
 - executeMultiple use previous response value as argument for next
 - Response headers added:
   - X-content-type-options: nosniff
@@ -29,6 +22,8 @@ TODO
 - Unit testaa: shouldIncludeField eri keissit
 
 TODO NEXT RELEASE:
+- remote service calls can have rollback action and commit action
+  - Deletes can move stuff to shadow table and in commit clear from shadow table and do delete
 - Add implementation for FOREIGN KEY REFERENCES in CREATE TABLE
 - Default loginService, signUpService, passwordReset service
     - Login route, check Referer header exists and domain ending is correct, eg. https://<something>.domain.com
@@ -46,10 +41,13 @@ TODO NEXT RELEASE:
   - backend metadata fetch urls are given in env variable as parameter
 
 Release 3:
-  -https://hasura.io/
 - Create opentelemetry kafkajs plugin
 - Create opentelemetry mysql2 plugin
 - gRPC support (convert using protobufjs toObject)
   - generate typescript classes from .proto IDL files
 - Add support for POstgreSql/MySql CHECK and DEFAULT, GENERATED ALWAYS AS column constraint in CREATE TABLE
 - For javascript CEP: http://alasql.org/
+  - Read a kafka consumer batch and put in in-memory table and perform sql and
+    update in memory hash table for values and every 1 minute put data to cassandra
+    
+-https://hasura.io/

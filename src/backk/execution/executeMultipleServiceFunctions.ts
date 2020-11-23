@@ -1,3 +1,4 @@
+import Mustache from 'mustache';
 import tryExecuteServiceFunction, { ExecuteServiceFunctionOptions } from './tryExecuteServiceFunction';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import { ServiceFunctionCall } from './ServiceFunctionCall';
@@ -27,10 +28,18 @@ async function executeMultiple<T>(
     ]) => {
       const partialResponse = new PartialResponse();
 
+      let renderedServiceFunctionArgument = serviceFunctionArgument;
+      if (options?.shouldAllowTemplatesInMultipleServiceFunctionExecution ?? false) {
+        renderedServiceFunctionArgument = Mustache.render(
+          JSON.stringify(serviceFunctionArgument),
+          serviceFunctionCallIdToResponseMap
+        );
+      }
+
       await tryExecuteServiceFunction(
         controller,
         serviceFunctionName,
-        serviceFunctionArgument,
+        renderedServiceFunctionArgument,
         headers,
         partialResponse,
         options

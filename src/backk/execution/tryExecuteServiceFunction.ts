@@ -31,6 +31,7 @@ export interface ExecuteServiceFunctionOptions {
   isMetadataServiceEnabled?: boolean;
   isMultipleServiceFunctionExecutionsAllowed?: boolean;
   maxServiceFunctionCountInMultipleServiceFunctionExecution?: number;
+  shouldAllowTemplatesInMultipleServiceFunctionExecution?: boolean;
 }
 
 export default async function tryExecuteServiceFunction(
