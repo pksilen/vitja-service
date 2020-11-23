@@ -9,6 +9,7 @@ import addJoinSpec from './utils/addJoinSpec';
 import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
+import isEnumTypeName from "../../../../utils/type/isEnumTypeName";
 
 export default async function tryAlterTable(
   dbManager: AbstractDbManager,
@@ -30,7 +31,7 @@ export default async function tryAlterTable(
         const { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
         let sqlColumnType = getSqlColumnType(fieldName, baseTypeName);
 
-        if (!sqlColumnType && baseTypeName[0] === '(') {
+        if (!sqlColumnType && isEnumTypeName(baseTypeName)) {
           sqlColumnType = getEnumSqlColumnType(baseTypeName);
         }
 

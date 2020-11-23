@@ -1,6 +1,7 @@
 import { ArrayMaxSize, IsNumber, Max, MaxLength, Min } from 'class-validator';
 import Entity from '../../../../backk/decorators/entity/Entity';
 import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp from '../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp';
+import { Area } from "../enums/Area";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
@@ -12,7 +13,7 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   @MaxLength(1024)
   description!: string;
 
-  area!: 'Area1' | 'Area2' | 'Area3';
+  area!: Area;
   productDepartment!: 'Vehicles' | 'Clothes';
   productCategory!: 'Vehicles' | 'Clothes';
   productSubCategory!: 'Vehicles' | 'Clothes';

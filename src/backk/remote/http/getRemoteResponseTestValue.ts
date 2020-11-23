@@ -2,6 +2,8 @@ import getPropertyNameToPropertyTypeNameMap from '../../metadata/getPropertyName
 import testValueContainer from '../../decorators/typeproperty/testing/testValueContainer';
 import getValidationConstraint from '../../validation/getValidationConstraint';
 import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
+import isEnumTypeName from '../../utils/type/isEnumTypeName';
+import parseEnumValuesFromSrcFile from '../../typescript-parser/parseEnumValuesFromSrcFile';
 
 export default function getRemoteResponseTestValue<T>(
   ResponseClass: new () => T,
@@ -11,7 +13,9 @@ export default function getRemoteResponseTestValue<T>(
 
   Object.entries(getPropertyNameToPropertyTypeNameMap(ResponseClass)).forEach(
     ([propertyName, propertyTypeName]: [string, string]) => {
-      const { baseTypeName, defaultValueStr, isArrayType, isOptionalType } = getTypeInfoForTypeName(propertyTypeName);
+      const { baseTypeName, defaultValueStr, isArrayType, isOptionalType } = getTypeInfoForTypeName(
+        propertyTypeName
+      );
       if (isOptionalType && defaultValueStr === undefined) {
         return;
       }
@@ -33,8 +37,13 @@ export default function getRemoteResponseTestValue<T>(
         sampleArg[propertyName] = 'abc';
       } else if (baseTypeName.startsWith('Date')) {
         sampleArg[propertyName] = `'${new Date(0).toISOString()}'`;
-      } else if (baseTypeName.startsWith('(')) {
-        const enumValues = baseTypeName.slice(1).split(/[|)]/);
+      } else if (isEnumTypeName(baseTypeName)) {
+        let enumValues;
+        if (baseTypeName.startsWith('(')) {
+          enumValues = baseTypeName.slice(1).split(/[|)]/);
+        } else {
+          enumValues = parseEnumValuesFromSrcFile(baseTypeName);
+        }
         sampleArg[propertyName] =
           enumValues[0][0] === "'"
             ? enumValues[0].split("'")[1]

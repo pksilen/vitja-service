@@ -3,10 +3,14 @@ import { getFromContainer, MetadataStorage, ValidationTypes, Validator } from 'c
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import { readFileSync } from 'fs';
-import getSrcFilePathNameForTypeName, { hasBackkSrcFilenameForTypeName } from "../utils/file/getSrcFilePathNameForTypeName";
+import getSrcFilePathNameForTypeName, {
+  hasBackkSrcFilenameForTypeName,
+  hasSrcFilenameForTypeName
+} from "../utils/file/getSrcFilePathNameForTypeName";
 import SortBy from '../types/postqueryoperations/SortBy';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import SubPagination from '../types/postqueryoperations/SubPagination';
+import parseEnumValuesFromSrcFile from "../typescript-parser/parseEnumValuesFromSrcFile";
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -159,6 +163,10 @@ export default function setPropertyTypeValidationDecorators(
               constraints = [SortBy];
             } else if (baseTypeName === 'SubPagination') {
               constraints = [SubPagination];
+            } else if (hasSrcFilenameForTypeName(baseTypeName)) {
+              const enumValues = parseEnumValuesFromSrcFile(baseTypeName);
+              validationType = ValidationTypes.IS_IN;
+              constraints = [enumValues];
             } else {
               throw new Error(
                 'Type: ' +

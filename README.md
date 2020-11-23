@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO
-- Add boolean field (User: isVerified) to entity to test it
 - Possibility to define enum type in separate file (SalesItem, GetSalesItemArg)
+- Fill Serivces Types with 'eval'
 - @ManyToMany
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
