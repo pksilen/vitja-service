@@ -17,6 +17,8 @@ export default class CreateUserArg {
   @TestValue('test@test.com')
   userName!: string;
 
+  isBusinessUser!: boolean;
+
   @Private()
   @Documentation('Password doc goes here...')
   @IsExprTrue(

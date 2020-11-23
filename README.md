@@ -1,9 +1,6 @@
 # Vitja service
 
 TODO
-- Response headers added:
-  - X-content-type-options: nosniff
-  - Strict-Transport-Security: max-age 
 - Add boolean field (User: isVerified) to entity to test it
 - Possibility to define enum type in separate file (SalesItem, GetSalesItemArg)
 - @ManyToMany

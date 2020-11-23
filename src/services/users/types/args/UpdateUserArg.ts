@@ -9,6 +9,8 @@ import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 
 export default class UpdateUserArg {
+  isBusinessUser?: boolean;
+
   @MaxLength(512)
   streetAddress?: string;
 

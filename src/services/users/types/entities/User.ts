@@ -18,6 +18,8 @@ export default class User extends _Id {
   @TestValue('test@test.com')
   userName!: string;
 
+  isBusinessUser!: boolean;
+
   @Private()
   @Documentation('Password doc goes here...')
   @IsExprTrue(
