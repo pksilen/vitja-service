@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO
-- executeInsideRemoteTransaction
-  - call remote service TransactionService.startTransaction, rollbackTransaction, commitTransactoini
 - add uuid library
 - Implement TransactionService
   - generate transaction id (uuid) for argument of TransactionService.startTransaction
