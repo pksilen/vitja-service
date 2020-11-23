@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- executeMultiple use previous response value as argument for next
 - Response headers added:
   - X-content-type-options: nosniff
   - Strict-Transport-Security: max-age 

@@ -18,7 +18,7 @@ import defaultServiceMetrics from '../observability/metrics/defaultServiceMetric
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
 import log, { Severity } from '../observability/logging/log';
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import { HttpStatusCodes } from '../constants/constants';
+import { HttpStatusCodes, MAX_INT_VALUE } from "../constants/constants";
 import getNamespacedServiceName from '../utils/getServiceNamespace';
 import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
 import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
@@ -438,6 +438,14 @@ export default async function tryExecuteServiceFunction(
       } else if (typeof resp.set === 'function') {
         resp?.set('Cache-Control', 'max-age=' + ttl);
       }
+    }
+
+    if (typeof resp.header === 'function') {
+      resp?.header('X-content-type-options', 'nosniff');
+      resp?.header('Strict-Transport-Security', 'max-age=' + MAX_INT_VALUE + '; includeSubDomains');
+    } else if (typeof resp.set === 'function') {
+      resp?.set('X-content-type-options', 'nosniff');
+      resp?.set('Strict-Transport-Security', 'max-age=' + MAX_INT_VALUE + '; includeSubDomains');
     }
 
     resp?.send(response);
