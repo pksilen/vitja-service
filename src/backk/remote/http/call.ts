@@ -1,14 +1,12 @@
-import { ErrorResponse, errorResponseSymbol } from '../../types/ErrorResponse';
-import fetch from 'node-fetch';
-import log, { Severity } from '../../observability/logging/log';
-import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
-import isErrorResponse from '../../errors/isErrorResponse';
-import getRemoteResponseTestValue from './getRemoteResponseTestValue';
-import { getNamespace } from 'cls-hooked';
-import defaultServiceMetrics from '../../observability/metrics/defaultServiceMetrics';
-import { HttpStatusCodes } from '../../constants/constants';
-import parseRemoteServiceFunctionCallUrlParts from '../utils/parseRemoteServiceFunctionCallUrlParts';
-import isMutatingServiceFunction from '../../utils/isMutatingServiceFunction';
+import { ErrorResponse, errorResponseSymbol } from "../../types/ErrorResponse";
+import fetch from "node-fetch";
+import log, { Severity } from "../../observability/logging/log";
+import createErrorResponseFromError from "../../errors/createErrorResponseFromError";
+import isErrorResponse from "../../errors/isErrorResponse";
+import getRemoteResponseTestValue from "./getRemoteResponseTestValue";
+import { getNamespace } from "cls-hooked";
+import defaultServiceMetrics from "../../observability/metrics/defaultServiceMetrics";
+import { HttpStatusCodes } from "../../constants/constants";
 
 export interface HttpRequestOptions {
   httpMethod?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -20,8 +18,6 @@ export default async function call<T>(
   options?: HttpRequestOptions,
   ResponseClass?: new () => T
 ): Promise<T | ErrorResponse> {
-  const { serviceFunction } = parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionCallUrl);
-
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set(
     'remoteServiceCallCount',

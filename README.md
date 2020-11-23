@@ -3,10 +3,23 @@
 TODO
 - executeInsideRemoteTransaction
   - call remote service TransactionService.startTransaction, rollbackTransaction, commitTransactoini
-- IMplement TransactionService
-  - generate transaction id in response for TransactionService.startTransaction
+- add uuid library
+- Implement TransactionService
+  - generate transaction id (uuid) for argument of TransactionService.startTransaction
+  - add tracing id
   - one same connection for transaction id
   - remote caller gives transaction id in HTTP header Backk-transaction-id
+- ExecuteMultipleInsideTransaction is ExecuteMultipleInsideLocalTransaction, don't allow executeInsideremoteTransaction calls
+- ExecuteMultipleInsideDistributedTransaction, don't allow executeInsideRemoteTransaction calls, but allow remote services to be called and wrap all them of in needed remoteTransactions
+- ExecuteMultipleXXXX, create tracing span
+- executeInsideRemoteTransaction, create tracing span
+- executeMultiple use previous response value as argument for next
+
+- Response headers added:
+  - X-content-type-options: nosniff
+  - Strict-Transport-Security: max-age 
+- Add boolean field (User: isVerified) to entity to test it
+- Possibility to define enum type in separate file (SalesItem, GetSalesItemArg)
 - @ManyToMany
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
@@ -14,13 +27,9 @@ TODO
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
   - Update default prometheus metrics
-- Response headers added:
-  - X-content-type-options: nosniff
-  - Strict-Transport-Security: max-age 
-- Add boolean field (User: isVerified) to entity to test it
-- Possibility to define enum type in separate file (SalesItem, GetSalesItemArg)
 - User has SalesItems and Orders subentities
- - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
+- Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
+
 - New entities: User has Friends, Posts, show posts from friends
   - GetEntitiesByIn: get Posts where userId in User's friendIds
 - Unit testaa: shouldIncludeField eri keissit
