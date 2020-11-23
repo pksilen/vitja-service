@@ -2,8 +2,6 @@
 
 TODO
 - Implement TransactionService
-  - generate transaction id (uuid) for argument of TransactionService.startTransaction
-  - add tracing id
   - one same connection for transaction id
   - remote caller gives transaction id in HTTP header Backk-transaction-id
 - ExecuteMultipleInsideTransaction is ExecuteMultipleInsideLocalTransaction, don't allow executeInsideremoteTransaction calls

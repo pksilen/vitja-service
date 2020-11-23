@@ -65,8 +65,8 @@ export default async function executeMultipleServiceFunctions(
     await dbManager.tryReserveDbConnectionFromPool();
 
     if (shouldExecuteInsideTransaction) {
-      clsNamespace.set('globalTransaction', true);
       await dbManager.executeInsideTransaction(async () => {
+        clsNamespace.set('globalTransaction', true);
         await executeMultiple(
           isConcurrent,
           serviceFunctionArgument,
@@ -77,8 +77,8 @@ export default async function executeMultipleServiceFunctions(
           resp,
           statusCodes
         );
+        clsNamespace.set('globalTransaction', false);
       });
-      clsNamespace.set('globalTransaction', false);
     } else {
       await executeMultiple(
         isConcurrent,
