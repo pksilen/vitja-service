@@ -9,8 +9,8 @@ import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import OrdersService from './OrdersService';
 import CreateOrderArg from './types/args/CreateOrderArg';
 import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
-import Order from './types/entity/Order';
-import OrderItem from './types/entity/OrderItem';
+import Order from './types/entities/Order';
+import OrderItem from './types/entities/OrderItem';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
@@ -26,6 +26,8 @@ import {
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import executeForAll from '../../backk/utils/executeForAll';
 import ShoppingCartService from '../shoppingcart/ShoppingCartService';
+import { SalesItemState } from '../salesitems/types/enums/SalesItemState';
+import { OrderState } from './types/enum/OrderState';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -161,7 +163,7 @@ export default class OrdersServiceImpl extends OrdersService {
                 },
                 'sold'
               )
-            : false) || state === OrdersServiceImpl.getPreviousStateFor(newState),
+            : false) || state === OrdersServiceImpl.getPreviousOrderStateFor(newState),
         error: INVALID_ORDER_ITEM_STATE
       }
     );
@@ -185,8 +187,8 @@ export default class OrdersServiceImpl extends OrdersService {
 
   private async updateSalesItemStates(
     salesItemIds: string[],
-    newState: 'forSale' | 'sold',
-    currentState?: 'forSale' | 'sold'
+    newState: SalesItemState,
+    currentState?: SalesItemState
   ): Promise<void | ErrorResponse> {
     return await executeForAll(
       salesItemIds,
@@ -201,9 +203,7 @@ export default class OrdersServiceImpl extends OrdersService {
     );
   }
 
-  private static getPreviousStateFor(
-    newState: 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned'
-  ): 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned' {
+  private static getPreviousOrderStateFor(newState: OrderState): OrderState {
     switch (newState) {
       case 'delivered':
         return 'delivering';

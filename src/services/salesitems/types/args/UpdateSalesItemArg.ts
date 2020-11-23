@@ -4,6 +4,9 @@
 
 import { ArrayMaxSize, IsDate, IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import { Area } from '../enums/Area';
+import { Category } from '../enums/Category';
+import { Department } from '../enums/Department';
 
 export default class UpdateSalesItemArg {
   @IsDate()
@@ -17,13 +20,13 @@ export default class UpdateSalesItemArg {
   @MaxLength(1024)
   description?: string;
 
-  area?: 'Area1' | 'Area2' | 'Area3';
+  area?: Area;
 
-  productDepartment?: 'Vehicles' | 'Clothes';
+  productDepartment?: Department;
 
-  productCategory?: 'Vehicles' | 'Clothes';
+  productCategory?: Category;
 
-  productSubCategory?: 'Vehicles' | 'Clothes';
+  productSubCategory?: Category;
 
   @IsNumber({
     maxDecimalPlaces: 2

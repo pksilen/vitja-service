@@ -4,11 +4,12 @@
 
 import { IsString } from 'class-validator';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import { SalesItemState } from '../enums/SalesItemState';
 
 export default class UpdateSalesItemStateArg {
   @IsString()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
   _id!: string;
 
-  state!: 'forSale' | 'sold';
+  state!: SalesItemState;
 }

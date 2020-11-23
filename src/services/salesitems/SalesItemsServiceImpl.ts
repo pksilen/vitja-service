@@ -28,6 +28,7 @@ import {
 } from './errors/salesItemsServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import { SalesItemState } from "./types/enums/SalesItemState";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -169,7 +170,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @Errors([INVALID_SALES_ITEM_STATE])
   updateSalesItemState(
     arg: UpdateSalesItemStateArg,
-    requiredCurrentState?: 'forSale' | 'sold'
+    requiredCurrentState?: SalesItemState
   ): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity(
       arg,

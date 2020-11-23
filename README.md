@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Possibility to define enum type in separate file (SalesItem, GetSalesItemArg)
 - Fill Serivces Types with 'eval'
 - @ManyToMany
 - npm mysql2 for MariaDb/MySql

@@ -2,6 +2,9 @@ import { ArrayMaxSize, IsNumber, Max, MaxLength, Min } from 'class-validator';
 import Entity from '../../../../backk/decorators/entity/Entity';
 import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp from '../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp';
 import { Area } from "../enums/Area";
+import { Department } from "../enums/Department";
+import { Category } from "../enums/Category";
+import { SalesItemState } from "../enums/SalesItemState";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
@@ -14,9 +17,9 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   description!: string;
 
   area!: Area;
-  productDepartment!: 'Vehicles' | 'Clothes';
-  productCategory!: 'Vehicles' | 'Clothes';
-  productSubCategory!: 'Vehicles' | 'Clothes';
+  productDepartment!: Department;
+  productCategory!: Category;
+  productSubCategory!: Category;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
@@ -35,5 +38,5 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   @ArrayMaxSize(10)
   secondaryImageDataUris!: string[];
 
-  state!: 'forSale' | 'sold';
+  state!: SalesItemState;
 }

@@ -2,7 +2,7 @@ import BaseService from "../../backk/service/BaseService";
 import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
 import CreateOrderArg from "./types/args/CreateOrderArg";
 import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
-import Order from "./types/entity/Order";
+import Order from "./types/entities/Order";
 import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
 import AddOrderItemArg from "./types/args/AddOrderItemArg";
 import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";

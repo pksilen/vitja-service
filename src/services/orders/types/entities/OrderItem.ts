@@ -2,6 +2,7 @@ import { MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { ExpectToEvaluateTrueInTests } from "../../../../backk/decorators/typeproperty/testing/ExpectToEvaluateTrueInTests";
 import Id from "../../../../backk/types/id/Id";
+import { OrderState } from "../enum/OrderState";
 
 @Entity()
 export default class OrderItem extends Id {
@@ -14,7 +15,7 @@ export default class OrderItem extends Id {
   )
   deliveryTimestamp!: Date | null;
 
-  state!: 'toBeDelivered' | 'delivering' | 'delivered' | 'returning' | 'returned';
+  state!: OrderState;
 
   @MaxLength(1024)
   @ExpectToEvaluateTrueInTests(

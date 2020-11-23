@@ -3,6 +3,9 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { ArrayMaxSize, IsNumber, Max, MaxLength, Min } from 'class-validator';
+import { Area } from '../enums/Area';
+import { Category } from '../enums/Category';
+import { Department } from '../enums/Department';
 
 export default class CreateSalesItemArg {
   userId!: string;
@@ -13,13 +16,13 @@ export default class CreateSalesItemArg {
   @MaxLength(1024)
   description!: string;
 
-  area!: 'Area1' | 'Area2' | 'Area3';
+  area!: Area;
 
-  productDepartment!: 'Vehicles' | 'Clothes';
+  productDepartment!: Department;
 
-  productCategory!: 'Vehicles' | 'Clothes';
+  productCategory!: Category;
 
-  productSubCategory!: 'Vehicles' | 'Clothes';
+  productSubCategory!: Category;
 
   @IsNumber({
     maxDecimalPlaces: 2
