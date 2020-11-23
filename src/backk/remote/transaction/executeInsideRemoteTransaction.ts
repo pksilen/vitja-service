@@ -1,7 +1,8 @@
-import { ErrorResponse } from "../../types/ErrorResponse";
-import isErrorResponse from "../../errors/isErrorResponse";
-import call from "../http/call";
-import sendTo from "../messagequeue/sendTo";
+import { v4 as uuidv4 } from 'uuid';
+import { ErrorResponse } from '../../types/ErrorResponse';
+import isErrorResponse from '../../errors/isErrorResponse';
+import call from '../http/call';
+import sendTo from '../messagequeue/sendTo';
 
 export default async function executeInsideRemoteTransaction<T>(
   remoteServiceFunctionCallUrl: string,
@@ -10,14 +11,19 @@ export default async function executeInsideRemoteTransaction<T>(
   if (!remoteServiceFunctionCallUrl.endsWith('TransactionService')) {
     throw new Error('remote service function call url must end with TransactionService');
   }
+
   const isSyncCall = remoteServiceFunctionCallUrl.startsWith('https://');
 
   let possibleErrorResponse: ErrorResponse | void;
-  const startTransactionUrl = remoteServiceFunctionCallUrl + '.' + 'beginTransaction';
+  const beginTransactionUrl = remoteServiceFunctionCallUrl + '.' + 'beginTransaction';
+  const beginTransactionArgument = {
+    transactionId: uuidv4()
+  };
+
   if (isSyncCall) {
-    possibleErrorResponse = await call<void>(startTransactionUrl, {});
+    possibleErrorResponse = await call<void>(beginTransactionUrl, beginTransactionArgument);
   } else {
-    possibleErrorResponse = await sendTo(startTransactionUrl, {});
+    possibleErrorResponse = await sendTo(beginTransactionUrl, beginTransactionArgument);
   }
 
   if (possibleErrorResponse) {

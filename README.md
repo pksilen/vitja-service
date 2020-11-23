@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- add uuid library
 - Implement TransactionService
   - generate transaction id (uuid) for argument of TransactionService.startTransaction
   - add tracing id
@@ -12,7 +11,6 @@ TODO
 - ExecuteMultipleXXXX, create tracing span
 - executeInsideRemoteTransaction, create tracing span
 - executeMultiple use previous response value as argument for next
-
 - Response headers added:
   - X-content-type-options: nosniff
   - Strict-Transport-Security: max-age 
