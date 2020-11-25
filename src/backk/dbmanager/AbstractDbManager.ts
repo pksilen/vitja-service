@@ -11,6 +11,7 @@ import { Injectable } from '@nestjs/common';
 import isErrorResponse from '../errors/isErrorResponse';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
+import BaseService from '../service/BaseService';
 
 export interface Field {
   name: string;
@@ -18,17 +19,16 @@ export interface Field {
 
 @Injectable()
 export default abstract class AbstractDbManager {
-  private clsNamespaceName: string | undefined = undefined;
-  private Types: object = {};
+  private services: BaseService[] = [];
   readonly dbName?: string;
   readonly schema?: string;
 
-  addTypes(Types: object) {
-    this.Types = { ...this.Types, ...Types };
+  addService(service: BaseService) {
+    this.services.push(service);
   }
 
   getTypes(): Readonly<object> {
-    return this.Types;
+    return this.services.reduce((types, service) => ({ ...types, ...service.Types }), {});
   }
 
   getClsNamespace(): Namespace | undefined {

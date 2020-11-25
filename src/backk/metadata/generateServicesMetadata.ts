@@ -1,17 +1,14 @@
-import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
-import BaseService from '../service/BaseService';
-import _Id from '../types/id/_Id';
-import _IdsAndDefaultPostQueryOperations from '../types/postqueryoperations/_IdsAndDefaultPostQueryOperations';
-import SortBy from '../types/postqueryoperations/SortBy';
-import _IdAndUserId from '../types/id/_IdAndUserId';
-import Id from '../types/id/Id';
-import { ServiceMetadata } from './ServiceMetadata';
-import getPropertyNameToPropertyTypeNameMap from './getPropertyNameToPropertyTypeNameMap';
-import { FunctionMetadata } from './FunctionMetadata';
-import getValidationMetadata from './getValidationMetadata';
-import getTypeDocumentation from './getTypeDocumentation';
-import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import serviceFunctionAnnotationContainer
+  from "../decorators/service/function/serviceFunctionAnnotationContainer";
+import serviceAnnotationContainer from "../decorators/service/serviceAnnotationContainer";
+import BaseService from "../service/BaseService";
+import { ServiceMetadata } from "./ServiceMetadata";
+import getPropertyNameToPropertyTypeNameMap from "./getPropertyNameToPropertyTypeNameMap";
+import { FunctionMetadata } from "./FunctionMetadata";
+import getValidationMetadata from "./getValidationMetadata";
+import getTypeDocumentation from "./getTypeDocumentation";
+import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import generateClassFromSrcFile from "../typescript-parser/generateClassFromSrcFile";
 
 export default function generateServicesMetadata<T>(controller: T, isFirstRound = true): ServiceMetadata[] {
   return Object.entries(controller)
@@ -29,6 +26,15 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
         },
         {}
       );
+
+      const publicTypesMetadata = Object.entries((controller as any)[serviceName].PublicTypes ?? {}).reduce(
+        (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
+          const typeObject = getPropertyNameToPropertyTypeNameMap(typeClass, true, isFirstRound);
+          return { ...accumulatedTypes, [typeName]: typeObject };
+        },
+        {}
+      );
+
 
       const functions: FunctionMetadata[] = functionNames
         .filter(
@@ -81,21 +87,9 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             functionArgumentTypeName !== undefined &&
             !(controller as any)[serviceName].Types[functionArgumentTypeName]
           ) {
-            if (functionArgumentTypeName === '_Id') {
-              (controller as any)[serviceName].Types[functionArgumentTypeName] = _Id;
-            } else if (functionArgumentTypeName === 'Id') {
-              (controller as any)[serviceName].Types[functionArgumentTypeName] = Id;
-            } else if (functionArgumentTypeName === '_IdsAndDefaultPostQueryOperations') {
-              (controller as any)[serviceName].Types[
-                functionArgumentTypeName
-              ] = _IdsAndDefaultPostQueryOperations;
-            } else if (functionArgumentTypeName === '_IdAndUserId') {
-              (controller as any)[serviceName].Types[functionArgumentTypeName] = _IdAndUserId;
-            } else {
-              throw new Error(
-                'Type: ' + functionArgumentTypeName + ' is not found in ' + serviceName + '.Types'
-              );
-            }
+            const FunctionArgumentClass = generateClassFromSrcFile(functionArgumentTypeName);
+            (controller as any)[serviceName].Types[functionArgumentTypeName] = FunctionArgumentClass;
+            (controller as any)[serviceName].PublicTypes[functionArgumentTypeName] = FunctionArgumentClass;
           }
 
           if (functionArgumentTypeName !== undefined) {
@@ -104,9 +98,6 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             );
             while (proto !== Object.prototype) {
               if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
-                if (proto.constructor.name === 'DefaultPostQueryOperations') {
-                  (controller as any)[serviceName].Types['SortBy'] = SortBy;
-                }
                 (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
               }
               proto = Object.getPrototypeOf(proto);
@@ -125,13 +116,9 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
           }
 
           if (baseTypeName !== 'void' && !(controller as any)[serviceName].Types[baseTypeName]) {
-            if (baseTypeName === '_Id') {
-              (controller as any)[serviceName].Types[baseTypeName] = _Id;
-            } else if (baseTypeName === 'Id') {
-              (controller as any)[serviceName].Types[baseTypeName] = Id;
-            } else {
-              throw new Error('Type: ' + baseTypeName + ' is not found in ' + serviceName + '.Types');
-            }
+            const FunctionReturnValueClass = generateClassFromSrcFile(baseTypeName);
+            (controller as any)[serviceName].Types[baseTypeName] = FunctionReturnValueClass;
+            (controller as any)[serviceName].PublicTypes[baseTypeName] = FunctionReturnValueClass;
           }
 
           if (baseTypeName !== 'void') {
@@ -187,6 +174,14 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
         serviceName,
         serviceDocumentation: serviceAnnotationContainer.getDocumentationForService(service.constructor),
         functions,
+        publicTypes: {
+          ...publicTypesMetadata,
+          ErrorResponse: {
+            statusCode: 'integer',
+            errorCode: '?string',
+            errorMessage: 'string',
+            stackTrace: '?string'
+          }},
         types: {
           ...typesMetadata,
           ErrorResponse: {

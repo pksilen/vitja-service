@@ -6,11 +6,12 @@ import { readFileSync } from 'fs';
 import getSrcFilePathNameForTypeName, {
   hasBackkSrcFilenameForTypeName,
   hasSrcFilenameForTypeName
-} from "../utils/file/getSrcFilePathNameForTypeName";
+} from '../utils/file/getSrcFilePathNameForTypeName';
 import SortBy from '../types/postqueryoperations/SortBy';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import SubPagination from '../types/postqueryoperations/SubPagination';
-import parseEnumValuesFromSrcFile from "../typescript-parser/parseEnumValuesFromSrcFile";
+import parseEnumValuesFromSrcFile from '../typescript-parser/parseEnumValuesFromSrcFile';
+import generateClassFromSrcFile from "../typescript-parser/generateClassFromSrcFile";
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -157,6 +158,9 @@ export default function setPropertyTypeValidationDecorators(
             validationType = ValidationTypes.IS_DATE;
           } else if (baseTypeName.charAt(0).match(/^[_$A-Z]$/)) {
             validationType = ValidationTypes.IS_INSTANCE;
+            if (baseTypeName === 'OrderItem') {
+               Types[baseTypeName] = generateClassFromSrcFile(baseTypeName);
+            }
             if (Types[baseTypeName]) {
               constraints = [Types[baseTypeName]];
             } else if (baseTypeName === 'SortBy') {

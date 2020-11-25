@@ -141,7 +141,7 @@ export default async function tryExecuteServiceFunction(
 
     if (serviceFunction === 'metadataService.getServicesMetadata') {
       if (!options || options.isMetadataServiceEnabled === undefined || options.isMetadataServiceEnabled) {
-        resp?.send(controller.servicesMetadata);
+        resp?.send(controller.publicServicesMetadata);
       }
       createErrorFromErrorMessageAndThrowError(
         createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, HttpStatusCodes.BAD_REQUEST)

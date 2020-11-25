@@ -7,6 +7,7 @@ import setPropertyTypeValidationDecorators from '../validation/setPropertyTypeVa
 import setNestedTypeValidationDecorators from '../validation/setNestedTypeValidationDecorators';
 import writeTestsPostmanCollectionExportFile from '../postman/writeTestsPostmanCollectionExportFile';
 import writeApiPostmanCollectionExportFile from '../postman/writeApiPostmanCollectionExportFile';
+import generateTypesForServices from "../metadata/generateTypesForService";
 
 export interface ControllerInitOptions {
   generatePostmanTestFile?: boolean;
@@ -51,7 +52,7 @@ export default function initializeController(controller: any, controllerInitOpti
     };
   });
 
-  generateServicesMetadata(controller, true);
+  generateTypesForServices(controller,);
 
   Object.entries(controller)
     .filter(([, value]: [string, any]) => typeof value === 'object' && value.constructor !== Object)
@@ -64,7 +65,26 @@ export default function initializeController(controller: any, controllerInitOpti
     });
 
   const servicesMetadata = generateServicesMetadata(controller, false);
-  controller.servicesMetadata = servicesMetadata;
+  controller.publicServicesMetadata = servicesMetadata.map((serviceMetadata) => {
+    const {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      types, // NOSONAR
+      publicTypes,
+      serviceName,
+      functions,
+      validations,
+      serviceDocumentation,
+      typesDocumentation
+    } = serviceMetadata;
+    return {
+      serviceName,
+      serviceDocumentation,
+      functions,
+      types: publicTypes,
+      typesDocumentation,
+      validations
+    };
+  });
 
   if (process.env.NODE_ENV === 'development' && (controllerInitOptions?.generatePostmanTestFile ?? true)) {
     writeTestsPostmanCollectionExportFile(controller, servicesMetadata);
