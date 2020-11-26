@@ -23,6 +23,7 @@ export default function generateTypesForServices<T>(controller: T) {
           (controller as any)[serviceName].PublicTypes[functionArgumentTypeName] = FunctionArgumentClass;
         }
 
+
         if (functionArgumentTypeName !== undefined) {
           let proto = Object.getPrototypeOf(
             new ((controller as any)[serviceName].Types[functionArgumentTypeName] as new () => any)()

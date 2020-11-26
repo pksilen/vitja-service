@@ -2,7 +2,6 @@ import { readFileSync } from 'fs';
 import * as ts from 'typescript';
 import path from 'path';
 import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
-import { getFromContainer, MetadataStorage } from "class-validator";
 
 export default function generateClassFromSrcFile(typeName: string) {
   const srcFilePathName = getSrcFilePathNameForTypeName(typeName);
@@ -13,15 +12,23 @@ export default function generateClassFromSrcFile(typeName: string) {
       module: ts.ModuleKind.CommonJS,
       target: ts.ScriptTarget.ES2017,
       emitDecoratorMetadata: true,
-      experimentalDecorators: true
+      experimentalDecorators: true,
+      esModuleInterop: true,
+      incremental: true
     }
   });
 
-  const newOutputText = result.outputText.replace(
+  const outputRows = result.outputText.split('\n');
+  let newOutputText = outputRows.slice(0, -2).join('\n') + '\n' + '(' + typeName + ')';
+  newOutputText = newOutputText.replace(
     /require\("\.{2}\//g,
     'require("../../../dist' + srcDirectory + '/../'
   );
+  newOutputText = newOutputText.replace(
+    /require\("\.\//g,
+    'require("../../../dist' + srcDirectory + '/'
+  );
+
   const generatedClass = eval(newOutputText);
-  console.log(getFromContainer(MetadataStorage).getTargetValidationMetadatas(generatedClass, ''));
   return generatedClass;
 }

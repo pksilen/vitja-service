@@ -7,8 +7,6 @@ import getPropertyNameToPropertyTypeNameMap from "./getPropertyNameToPropertyTyp
 import { FunctionMetadata } from "./FunctionMetadata";
 import getValidationMetadata from "./getValidationMetadata";
 import getTypeDocumentation from "./getTypeDocumentation";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
-import generateClassFromSrcFile from "../typescript-parser/generateClassFromSrcFile";
 
 export default function generateServicesMetadata<T>(controller: T, isFirstRound = true): ServiceMetadata[] {
   return Object.entries(controller)
@@ -34,7 +32,6 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
         },
         {}
       );
-
 
       const functions: FunctionMetadata[] = functionNames
         .filter(
@@ -83,55 +80,9 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             );
           }
 
-          if (
-            functionArgumentTypeName !== undefined &&
-            !(controller as any)[serviceName].Types[functionArgumentTypeName]
-          ) {
-            const FunctionArgumentClass = generateClassFromSrcFile(functionArgumentTypeName);
-            (controller as any)[serviceName].Types[functionArgumentTypeName] = FunctionArgumentClass;
-            (controller as any)[serviceName].PublicTypes[functionArgumentTypeName] = FunctionArgumentClass;
-          }
-
-          if (functionArgumentTypeName !== undefined) {
-            let proto = Object.getPrototypeOf(
-              new ((controller as any)[serviceName].Types[functionArgumentTypeName] as new () => any)()
-            );
-            while (proto !== Object.prototype) {
-              if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
-                (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
-              }
-              proto = Object.getPrototypeOf(proto);
-            }
-          }
 
           const returnValueTypeName: string = (controller as any)[`${serviceName}Types`]
             .functionNameToReturnTypeNameMap[functionName];
-
-          const { baseTypeName, canBeErrorResponse } = getTypeInfoForTypeName(returnValueTypeName);
-
-          if (!canBeErrorResponse) {
-            throw new Error(
-              serviceName + '.' + functionName + ": return type's right hand side type must be ErrorResponse"
-            );
-          }
-
-          if (baseTypeName !== 'void' && !(controller as any)[serviceName].Types[baseTypeName]) {
-            const FunctionReturnValueClass = generateClassFromSrcFile(baseTypeName);
-            (controller as any)[serviceName].Types[baseTypeName] = FunctionReturnValueClass;
-            (controller as any)[serviceName].PublicTypes[baseTypeName] = FunctionReturnValueClass;
-          }
-
-          if (baseTypeName !== 'void') {
-            let proto = Object.getPrototypeOf(
-              new ((controller as any)[serviceName].Types[baseTypeName] as new () => any)()
-            );
-            while (proto !== Object.prototype) {
-              if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
-                (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
-              }
-              proto = Object.getPrototypeOf(proto);
-            }
-          }
 
           return {
             functionName,

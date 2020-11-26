@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import AbstractDbManager from "../dbmanager/AbstractDbManager";
 import ReadinessCheckService from "./ReadinessCheckService";
-import { AllowForEveryUser } from "../decorators/service/function/AllowForEveryUser";
 import { ErrorResponse } from "../types/ErrorResponse";
 import createErrorResponseFromErrorMessageAndStatusCode
   from "../errors/createErrorResponseFromErrorMessageAndStatusCode";
@@ -12,7 +11,7 @@ import { AllowForInternalUse } from "../decorators/service/function/AllowForInte
 @Injectable()
 export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
   constructor(dbManager: AbstractDbManager) {
-    super(dbManager, {});
+    super(dbManager);
   }
 
   @AllowForInternalUse()

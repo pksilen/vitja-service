@@ -24,18 +24,9 @@ import { AllowForTests } from "../../backk/decorators/service/function/AllowForT
 export default class ShoppingCartServiceImpl extends ShoppingCartService {
   constructor(
     dbManager: AbstractDbManager,
-    private readonly salesItemService: SalesItemsService,
-    @Optional()
-    readonly Types = {
-      AddShoppingCartItemArg,
-      CreateShoppingCartArg,
-      ShoppingCart,
-      ShoppingCartItem,
-      UserId,
-      RemoveShoppingCartItemByIdArg
-    }
+    private readonly salesItemService: SalesItemsService
   ) {
-    super(dbManager, Types);
+    super(dbManager);
   }
 
   @AllowForTests()

@@ -1,17 +1,14 @@
-import { parseSync } from '@babel/core';
-import { getFromContainer, MetadataStorage, ValidationTypes, Validator } from 'class-validator';
-import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
-import { readFileSync } from 'fs';
+import { parseSync } from "@babel/core";
+import { getFromContainer, MetadataStorage, ValidationTypes, Validator } from "class-validator";
+import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
+import { ValidationMetadataArgs } from "class-validator/metadata/ValidationMetadataArgs";
+import { readFileSync } from "fs";
 import getSrcFilePathNameForTypeName, {
   hasBackkSrcFilenameForTypeName,
   hasSrcFilenameForTypeName
-} from '../utils/file/getSrcFilePathNameForTypeName';
-import SortBy from '../types/postqueryoperations/SortBy';
-import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
-import SubPagination from '../types/postqueryoperations/SubPagination';
-import parseEnumValuesFromSrcFile from '../typescript-parser/parseEnumValuesFromSrcFile';
-import generateClassFromSrcFile from "../typescript-parser/generateClassFromSrcFile";
+} from "../utils/file/getSrcFilePathNameForTypeName";
+import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import parseEnumValuesFromSrcFile from "../typescript-parser/parseEnumValuesFromSrcFile";
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -158,15 +155,8 @@ export default function setPropertyTypeValidationDecorators(
             validationType = ValidationTypes.IS_DATE;
           } else if (baseTypeName.charAt(0).match(/^[_$A-Z]$/)) {
             validationType = ValidationTypes.IS_INSTANCE;
-            if (baseTypeName === 'OrderItem') {
-               Types[baseTypeName] = generateClassFromSrcFile(baseTypeName);
-            }
             if (Types[baseTypeName]) {
               constraints = [Types[baseTypeName]];
-            } else if (baseTypeName === 'SortBy') {
-              constraints = [SortBy];
-            } else if (baseTypeName === 'SubPagination') {
-              constraints = [SubPagination];
             } else if (hasSrcFilenameForTypeName(baseTypeName)) {
               const enumValues = parseEnumValuesFromSrcFile(baseTypeName);
               validationType = ValidationTypes.IS_IN;

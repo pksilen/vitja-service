@@ -8,6 +8,7 @@ import setNestedTypeValidationDecorators from '../validation/setNestedTypeValida
 import writeTestsPostmanCollectionExportFile from '../postman/writeTestsPostmanCollectionExportFile';
 import writeApiPostmanCollectionExportFile from '../postman/writeApiPostmanCollectionExportFile';
 import generateTypesForServices from "../metadata/generateTypesForService";
+import getNestedClasses from "../metadata/getNestedClasses";
 
 export interface ControllerInitOptions {
   generatePostmanTestFile?: boolean;
@@ -58,6 +59,7 @@ export default function initializeController(controller: any, controllerInitOpti
     .filter(([, value]: [string, any]) => typeof value === 'object' && value.constructor !== Object)
     .forEach(([serviceName]: [string, any]) => {
       const targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean } = {};
+      getNestedClasses(Object.keys(controller[serviceName].Types ?? {}), controller[serviceName].Types);
       Object.entries(controller[serviceName].Types ?? {}).forEach(([, typeClass]: [string, any]) => {
         setPropertyTypeValidationDecorators(typeClass, serviceName, controller[serviceName].Types);
         setNestedTypeValidationDecorators(typeClass, targetAndPropNameToHasNestedValidationMap);

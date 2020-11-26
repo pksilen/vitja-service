@@ -27,20 +27,9 @@ import { AllowForTests } from "../../backk/decorators/service/function/AllowForT
 @Injectable()
 export default class UsersServiceImpl extends UsersService {
   constructor(
-    dbManager: AbstractDbManager,
-    @Optional()
-    Types = {
-      ChangeUserPasswordArg,
-      DefaultPaymentMethod,
-      PaymentMethod,
-      UpdateUserArg,
-      User,
-      UserName,
-      CreateUserArg,
-      UserResponse
-    }
+    dbManager: AbstractDbManager
   ) {
-    super(dbManager, Types);
+    super(dbManager);
   }
 
   @AllowForTests()
