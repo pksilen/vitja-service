@@ -28,7 +28,7 @@ export default function generateClassFromSrcFile(typeName: string) {
   let newOutputText = outputRows.slice(0, -2).join('\n') + '\n' + '(' + typeName + ')';
   newOutputText = newOutputText.replace(
     /require\("\.{2}\//g,
-    'require("../../../dist' + srcDirectory + '/../'
+    'require("../../../../dist' + srcDirectory + '/../'
   );
   newOutputText = newOutputText.replace(
     /require\("\.\//g,
