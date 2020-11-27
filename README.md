@@ -1,11 +1,11 @@
 # Vitja service
 
 TODO
-- Fill Serivces Types with 'eval'
-- When finding type src file, check that only one file is found
-- When finding src file, it should not be same as internal type name
 - ScheduleCronJob annotation
+  -create annotation
   -store to persistent volume readwritemany path
+  -install cron module
+  -create scheduler
 - ExecuteScheduled url path to execute function at given timepoint
   store to persistent volume readwritemany path
   - loop to check if execution should be done

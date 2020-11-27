@@ -8,7 +8,7 @@ import getSrcFilePathNameForTypeName, {
   hasSrcFilenameForTypeName
 } from "../utils/file/getSrcFilePathNameForTypeName";
 import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
-import parseEnumValuesFromSrcFile from "../typescript-parser/parseEnumValuesFromSrcFile";
+import parseEnumValuesFromSrcFile from "../typescript/parser/parseEnumValuesFromSrcFile";
 
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');

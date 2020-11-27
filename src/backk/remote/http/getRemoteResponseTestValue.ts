@@ -3,7 +3,7 @@ import testValueContainer from '../../decorators/typeproperty/testing/testValueC
 import getValidationConstraint from '../../validation/getValidationConstraint';
 import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 import isEnumTypeName from '../../utils/type/isEnumTypeName';
-import parseEnumValuesFromSrcFile from '../../typescript-parser/parseEnumValuesFromSrcFile';
+import parseEnumValuesFromSrcFile from '../../typescript/parser/parseEnumValuesFromSrcFile';
 
 export default function getRemoteResponseTestValue<T>(
   ResponseClass: new () => T,

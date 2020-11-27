@@ -1,11 +1,12 @@
 import { readFileSync } from 'fs';
 import * as ts from 'typescript';
 import path from 'path';
-import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
-import types from "../types/types";
+import getSrcFilePathNameForTypeName from '../../utils/file/getSrcFilePathNameForTypeName';
+import types from "../../types/types";
 
 export default function generateClassFromSrcFile(typeName: string) {
   if ((types as any)[typeName]) {
+    // TODO check that typeName cannot be found in src folder, because it is overlapping with built-in backk type
     return (types as any)[typeName];
   }
 

@@ -1,5 +1,5 @@
 import BaseService from '../service/BaseService';
-import generateClassFromSrcFile from '../typescript-parser/generateClassFromSrcFile';
+import generateClassFromSrcFile from '../typescript/generator/generateClassFromSrcFile';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 export default function generateTypesForServices<T>(controller: T) {

@@ -1,4 +1,4 @@
-import parseEnumValuesFromSrcFile from '../../typescript-parser/parseEnumValuesFromSrcFile';
+import parseEnumValuesFromSrcFile from '../../typescript/parser/parseEnumValuesFromSrcFile';
 import entityAnnotationContainer from "../../decorators/entity/entityAnnotationContainer";
 
 export default function isEnumTypeName(typeName: string): boolean {

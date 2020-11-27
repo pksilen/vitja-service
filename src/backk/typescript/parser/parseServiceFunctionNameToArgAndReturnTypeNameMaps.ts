@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { parseSync } from '@babel/core';
-import isValidFunctionArgumentTypeName from '../utils/type/isValidFunctionArgumentTypeName';
+import isValidFunctionArgumentTypeName from '../../utils/type/isValidFunctionArgumentTypeName';
 
 export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
   serviceName: string,

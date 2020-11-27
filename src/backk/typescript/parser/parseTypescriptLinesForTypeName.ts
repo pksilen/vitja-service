@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import getSrcFilePathNameForTypeName, {
   hasSrcFilenameForTypeName
-} from '../utils/file/getSrcFilePathNameForTypeName';
+} from '../../utils/file/getSrcFilePathNameForTypeName';
 
 function getDeclarationsFor(typeName: string, originatingTypeFilePathName: string) {
   const typeFilePathName = getSrcFilePathNameForTypeName(typeName);

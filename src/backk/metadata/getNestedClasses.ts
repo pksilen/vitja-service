@@ -2,7 +2,7 @@ import { parseSync } from '@babel/core';
 import { readFileSync } from 'fs';
 import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
-import generateClassFromSrcFile from '../typescript-parser/generateClassFromSrcFile';
+import generateClassFromSrcFile from '../typescript/generator/generateClassFromSrcFile';
 import isEnumTypeName from '../utils/type/isEnumTypeName';
 
 export default function getNestedClasses(

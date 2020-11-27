@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { parseSync } from '@babel/core';
-import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
+import getSrcFilePathNameForTypeName from '../../utils/file/getSrcFilePathNameForTypeName';
 
 export default function parseEnumValuesFromSrcFile(typeName: string) {
   const fileContentsStr = readFileSync(getSrcFilePathNameForTypeName(typeName), { encoding: 'UTF-8' });

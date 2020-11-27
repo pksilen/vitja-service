@@ -1,4 +1,4 @@
-import parseEnumValuesFromSrcFile from "../../../../../typescript-parser/parseEnumValuesFromSrcFile";
+import parseEnumValuesFromSrcFile from "../../../../../typescript/parser/parseEnumValuesFromSrcFile";
 import getSrcFilePathNameForTypeName from "../../../../../utils/file/getSrcFilePathNameForTypeName";
 
 export default function getEnumSqlColumnType(baseFieldTypeName: string) {

@@ -4,9 +4,9 @@ import { exec } from 'child_process';
 import util from 'util';
 import { readFileSync, writeFileSync } from 'fs';
 import _ from 'lodash';
-import { getFileNamesRecursively } from '../utils/file/getSrcFilePathNameForTypeName';
-import getTypeFilePathNameFor from '../utils/file/getTypeFilePathNameFor';
-import parseTypescriptLinesForTypeName from './parseTypescriptLinesForTypeName';
+import { getFileNamesRecursively } from '../../utils/file/getSrcFilePathNameForTypeName';
+import getTypeFilePathNameFor from '../../utils/file/getTypeFilePathNameFor';
+import parseTypescriptLinesForTypeName from '../parser/parseTypescriptLinesForTypeName';
 
 const promisifiedExec = util.promisify(exec);
 
