@@ -67,6 +67,7 @@ export default function initializeController(controller: any, controllerInitOpti
     });
 
   const servicesMetadata = generateServicesMetadata(controller, false);
+  controller.servicesMetadata = servicesMetadata;
   controller.publicServicesMetadata = servicesMetadata.map((serviceMetadata) => {
     const {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

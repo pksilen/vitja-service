@@ -2,7 +2,13 @@
 
 TODO
 - Fill Serivces Types with 'eval'
-- When finding type src file, give path to file as param
+- When finding type src file, check that only one file is found
+- When finding src file, it should not be same as internal type name
+- ScheduleCronJob annotation
+  -store to persistent volume readwritemany path
+- ExecuteScheduled url path to execute function at given timepoint
+  store to persistent volume readwritemany path
+  - loop to check if execution should be done
 - @ManyToMany
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing

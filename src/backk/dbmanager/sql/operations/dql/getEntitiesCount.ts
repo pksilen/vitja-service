@@ -10,21 +10,23 @@ import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount
 export default async function getEntitiesCount<T>(
   dbManager: PostgreSqlDbManager,
   filters: Partial<T> | SqlExpression[] | undefined,
-  entityClass: new () => T
+  EntityClass: new () => T
 ): Promise<number | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
   const Types = dbManager.getTypes();
 
   try {
     const { joinClause, whereClause, filterValues } = getSqlSelectStatementParts(
       dbManager,
       new DefaultPostQueryOperations(),
-      entityClass,
+      EntityClass,
       Types
     );
 
     const result = await dbManager.tryExecuteQueryWithConfig(
-      pg(`SELECT COUNT(*) FROM ${dbManager.schema}.${entityClass.name} ${joinClause} ${whereClause}`)(
+      pg(`SELECT COUNT(*) FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} ${whereClause}`)(
         filterValues
       )
     );

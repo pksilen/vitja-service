@@ -6,7 +6,7 @@ import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
-import { Entity } from '../../../../types/entities/Entity';
+import { Entity } from '../../../../types/Entity';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
 import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
@@ -30,6 +30,8 @@ export default async function updateEntitiesBy<T extends Entity>(
   EntityClass: new () => T,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
   const Types = dbManager.getTypes();
   let didStartTransaction = false;
 

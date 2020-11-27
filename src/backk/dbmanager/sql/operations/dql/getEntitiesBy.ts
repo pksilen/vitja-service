@@ -18,9 +18,11 @@ export default async function getEntitiesBy<T>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,
-  entityClass: new () => T,
+  EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
   const Types = dbManager.getTypes();
 
   try {
@@ -28,7 +30,7 @@ export default async function getEntitiesBy<T>(
 
     let projection;
     try {
-      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, entityClass, Types);
+      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, EntityClass, Types);
     } catch (error) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
@@ -46,12 +48,12 @@ export default async function getEntitiesBy<T>(
     const { columns, joinClause, sortClause, pagingClause } = getSqlSelectStatementParts(
       dbManager,
       postQueryOperations,
-      entityClass,
+      EntityClass,
       Types
     );
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema}.${entityClass.name} ${joinClause} WHERE ${fieldName} = $1 ${sortClause} ${pagingClause}`,
+      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${fieldName} = $1 ${sortClause} ${pagingClause}`,
       [fieldValue]
     );
 
@@ -62,7 +64,7 @@ export default async function getEntitiesBy<T>(
       );
     }
 
-    return transformRowsToObjects(result, entityClass, postQueryOperations, Types);
+    return transformRowsToObjects(result, EntityClass, postQueryOperations, Types);
   } catch (error) {
     return createErrorResponseFromError(error);
   }

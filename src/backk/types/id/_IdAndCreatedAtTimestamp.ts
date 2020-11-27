@@ -1,5 +1,5 @@
 import _Id from "./_Id";
-import { Entity } from "../entities/Entity";
+import { Entity } from "../Entity";
 import { IsDate } from "class-validator";
 
 // eslint-disable-next-line @typescript-eslint/class-name-casing

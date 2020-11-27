@@ -20,20 +20,23 @@ import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransact
 export default async function createEntity<T>(
   dbManager: PostgreSqlDbManager,
   entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
-  entityClass: new () => T,
+  EntityClass: new () => T,
   preHooks?: PreHook | PreHook[],
   postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false,
   shouldReturnItem = true
 ): Promise<T | ErrorResponse> {
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
   let didStartTransaction = false;
   let sqlStatement;
+
   // noinspection ExceptionCaughtLocallyJS
   try {
     const Types = dbManager.getTypes();
 
     if (!isRecursiveCall) {
-      await hashAndEncryptItem(entity, entityClass, Types);
+      await hashAndEncryptItem(entity, EntityClass, Types);
     }
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
@@ -42,7 +45,7 @@ export default async function createEntity<T>(
       await tryExecutePreHooks(preHooks);
     }
 
-    const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
+    const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass as any);
     const additionalMetadata = Object.keys(entity)
       .filter((itemKey) => itemKey.endsWith('Id'))
       .reduce((accumulatedMetadata, itemKey) => ({ ...accumulatedMetadata, [itemKey]: 'integer' }), {});
@@ -60,7 +63,7 @@ export default async function createEntity<T>(
             if (isNaN(numericId)) {
               throw new Error(
                 createErrorMessageWithStatusCode(
-                  entityClass.name + '.' + fieldName + ': must be a numeric id',
+                  EntityClass.name + '.' + fieldName + ': must be a numeric id',
                   HttpStatusCodes.BAD_REQUEST
                 )
               );
@@ -82,7 +85,7 @@ export default async function createEntity<T>(
     const sqlColumns = columns.map((fieldName: any) => fieldName).join(', ');
     const sqlValuePlaceholders = columns.map((_: any, index: number) => `$${index + 1}`).join(', ');
     const getIdSqlStatement = Object.keys(entityMetadata).includes('_id') ? 'RETURNING _id' : '';
-    sqlStatement = `INSERT INTO ${dbManager.schema}.${entityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`;
+    sqlStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`;
     const result = await dbManager.tryExecuteQuery(sqlStatement, values);
     const _id = result.rows[0]?._id?.toString();
 
@@ -91,7 +94,7 @@ export default async function createEntity<T>(
       async ([fieldName, fieldTypeName]: [any, any]) => {
         const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
         const foreignIdFieldName =
-          entityClass.name.charAt(0).toLowerCase() + entityClass.name.slice(1) + 'Id';
+          EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
         const subEntityOrEntities = (entity as any)[fieldName];
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
@@ -142,7 +145,7 @@ export default async function createEntity<T>(
           }
         } else if (isArrayType) {
           await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index: number) => {
-            const insertStatement = `INSERT INTO ${dbManager.schema}.${entityClass.name +
+            const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name +
               fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
               0,
               -1
@@ -156,7 +159,7 @@ export default async function createEntity<T>(
     const response =
       isRecursiveCall || !shouldReturnItem
         ? ({} as any)
-        : await dbManager.getEntityById(_id, entityClass, postQueryOperations);
+        : await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return response;

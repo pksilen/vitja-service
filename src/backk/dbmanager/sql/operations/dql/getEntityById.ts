@@ -14,11 +14,13 @@ import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount
 export default async function getEntityById<T>(
   dbManager: PostgreSqlDbManager,
   _id: string,
-  entityClass: new () => T,
+  EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
   isInternalCall = false
 ): Promise<T | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
   const Types = dbManager.getTypes();
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
@@ -26,13 +28,13 @@ export default async function getEntityById<T>(
     const { columns, joinClause } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,
-      entityClass,
+      EntityClass,
       Types,
       undefined,
       isInternalCall
     );
 
-    const typeMetadata = getPropertyNameToPropertyTypeNameMap(entityClass);
+    const typeMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
@@ -41,7 +43,7 @@ export default async function getEntityById<T>(
     }
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema}.${entityClass.name} ${joinClause} WHERE ${dbManager.schema}.${entityClass.name}.${idFieldName} = $1`,
+      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${dbManager.schema}.${EntityClass.name}.${idFieldName} = $1`,
       [numericId]
     );
 
@@ -49,7 +51,7 @@ export default async function getEntityById<T>(
       return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
     }
 
-    return transformRowsToObjects(result, entityClass, finalPostQueryOperations, Types)[0];
+    return transformRowsToObjects(result, EntityClass, finalPostQueryOperations, Types)[0];
   } catch (error) {
     return createErrorResponseFromError(error);
   }

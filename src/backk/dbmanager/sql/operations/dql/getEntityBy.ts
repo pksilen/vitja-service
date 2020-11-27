@@ -16,10 +16,12 @@ export default async function getEntityBy<T>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T],
-  entityClass: new () => T,
+  EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
   const Types = dbManager.getTypes();
   const item = {
     [fieldName]: fieldValue
@@ -34,12 +36,12 @@ export default async function getEntityBy<T>(
     const { columns, joinClause } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,
-      entityClass,
+      EntityClass,
       Types
     );
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema}.${entityClass.name} ${joinClause} WHERE ${fieldName} = $1`,
+      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${fieldName} = $1`,
       [(item as any)[fieldName]]
     );
 
@@ -50,7 +52,7 @@ export default async function getEntityBy<T>(
       );
     }
 
-    return transformRowsToObjects(result, entityClass, finalPostQueryOperations, Types)[0];
+    return transformRowsToObjects(result, EntityClass, finalPostQueryOperations, Types)[0];
   } catch (error) {
     return createErrorResponseFromError(error);
   }

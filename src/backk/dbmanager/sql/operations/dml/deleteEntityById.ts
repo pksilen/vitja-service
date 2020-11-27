@@ -17,20 +17,22 @@ import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransact
 export default async function deleteEntityById<T extends object>(
   dbManager: PostgreSqlDbManager,
   _id: string,
-  entityClass: new () => T,
+  EntityClass: new () => T,
   preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
   let didStartTransaction = false;
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     if (preHooks) {
-      const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, undefined, true);
+      const itemOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, undefined, true);
       await tryExecutePreHooks(preHooks, itemOrErrorResponse);
     }
 
-    const typeMetadata = getPropertyNameToPropertyTypeNameMap(entityClass);
+    const typeMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
@@ -40,7 +42,7 @@ export default async function deleteEntityById<T extends object>(
 
     await Promise.all([
       forEachAsyncParallel(
-        Object.values(entityContainer.entityNameToJoinsMap[entityClass.name] || {}),
+        Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: JoinSpec) => {
           await dbManager.tryExecuteSql(
             `DELETE FROM ${dbManager.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} = $1`,
@@ -49,7 +51,7 @@ export default async function deleteEntityById<T extends object>(
         }
       ),
       dbManager.tryExecuteSql(
-        `DELETE FROM ${dbManager.schema}.${entityClass.name} WHERE ${dbManager.schema}.${entityClass.name}.${idFieldName} = $1`,
+        `DELETE FROM ${dbManager.schema}.${EntityClass.name} WHERE ${dbManager.schema}.${EntityClass.name}.${idFieldName} = $1`,
         [numericId]
       )
     ]);

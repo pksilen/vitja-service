@@ -19,8 +19,10 @@ export default async function deleteEntitiesBy<T extends object>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,
-  entityClass: new () => T
+  EntityClass: new () => T
 ): Promise<void | ErrorResponse> {
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
   const Types = dbManager.getTypes();
   let didStartTransaction = false;
 
@@ -31,7 +33,7 @@ export default async function deleteEntitiesBy<T extends object>(
       projection = tryGetProjection(
         dbManager.schema,
         { includeResponseFields: [fieldName] },
-        entityClass,
+        EntityClass,
         Types
       );
     } catch (error) {
@@ -50,15 +52,15 @@ export default async function deleteEntitiesBy<T extends object>(
 
     await Promise.all([
       forEachAsyncParallel(
-        Object.values(entityContainer.entityNameToJoinsMap[entityClass.name] || {}),
+        Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: JoinSpec) => {
           await dbManager.tryExecuteSql(
-            `DELETE FROM ${dbManager.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} IN (SELECT _id FROM ${dbManager.schema}.${entityClass.name} WHERE ${fieldName} = $1)`,
+            `DELETE FROM ${dbManager.schema}.${joinSpec.joinTableName} WHERE ${joinSpec.joinTableFieldName} IN (SELECT _id FROM ${dbManager.schema}.${EntityClass.name} WHERE ${fieldName} = $1)`,
             [fieldValue]
           );
         }
       ),
-      dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${entityClass.name} WHERE ${fieldName} = $1`, [
+      dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${EntityClass.name} WHERE ${fieldName} = $1`, [
         fieldValue
       ])
     ]);

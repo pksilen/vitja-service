@@ -11,14 +11,16 @@ export default async function getSubEntities<T extends object, U>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   subEntityPath: string,
-  entityClass: new () => T,
+  EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
   responseMode?: 'first' | 'all'
 ): Promise<U | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
 
   try {
-    const itemOrErrorResponse = await getEntityById(dbManager, _id, entityClass, postQueryOperations);
+    const itemOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, postQueryOperations);
     if ('errorMessage' in itemOrErrorResponse) {
       return itemOrErrorResponse;
     }

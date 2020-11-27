@@ -19,7 +19,7 @@ import getEntitiesByIds from './sql/operations/dql/getEntitiesByIds';
 import { ErrorResponse } from '../types/ErrorResponse';
 import { RecursivePartial } from '../types/RecursivePartial';
 import { PreHook } from './hooks/PreHook';
-import { Entity } from '../types/entities/Entity';
+import { Entity } from '../types/Entity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';

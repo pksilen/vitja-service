@@ -10,8 +10,10 @@ import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransact
 
 export default async function deleteAllEntities<T>(
   dbManager: PostgreSqlDbManager,
-  entityClass: new () => T
+  EntityClass: new () => T
 ): Promise<void | ErrorResponse> {
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
   let didStartTransaction = false;
 
   try {
@@ -19,12 +21,12 @@ export default async function deleteAllEntities<T>(
 
     await Promise.all([
       forEachAsyncParallel(
-        Object.values(entityContainer.entityNameToJoinsMap[entityClass.name] || {}),
+        Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: JoinSpec) => {
           await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${joinSpec.joinTableName}`);
         }
       ),
-      dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${entityClass.name}`)
+      dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${EntityClass.name}`)
     ]);
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

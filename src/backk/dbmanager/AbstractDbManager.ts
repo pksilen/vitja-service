@@ -5,7 +5,7 @@ import SqlExpression from './sql/expressions/SqlExpression';
 import { RecursivePartial } from '../types/RecursivePartial';
 import { ErrorResponse } from '../types/ErrorResponse';
 import { PreHook } from './hooks/PreHook';
-import { Entity } from '../types/entities/Entity';
+import { Entity } from '../types/Entity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import { Injectable } from '@nestjs/common';
 import isErrorResponse from '../errors/isErrorResponse';
@@ -29,6 +29,10 @@ export default abstract class AbstractDbManager {
 
   getTypes(): Readonly<object> {
     return this.services.reduce((types, service) => ({ ...types, ...service.Types }), {});
+  }
+
+  getType(typeName: string) {
+    return (this.getTypes() as any)[typeName];
   }
 
   getClsNamespace(): Namespace | undefined {

@@ -3,7 +3,7 @@ import entityAnnotationContainer from '../../../../decorators/entity/entityAnnot
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import { Entity } from '../../../../types/entities/Entity';
+import { Entity } from '../../../../types/Entity';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
@@ -32,6 +32,10 @@ export default async function addSubEntities<T extends Entity, U extends object>
   preHooks?: PreHook | PreHook[],
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
+  // noinspection AssignmentToFunctionParameterJS
+  SubEntityClass = dbManager.getType(SubEntityClass.name);
   let didStartTransaction = false;
 
   try {

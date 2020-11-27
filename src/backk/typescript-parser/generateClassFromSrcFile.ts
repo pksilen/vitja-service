@@ -2,8 +2,13 @@ import { readFileSync } from 'fs';
 import * as ts from 'typescript';
 import path from 'path';
 import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
+import types from "../types/types";
 
 export default function generateClassFromSrcFile(typeName: string) {
+  if ((types as any)[typeName]) {
+    return (types as any)[typeName];
+  }
+
   const srcFilePathName = getSrcFilePathNameForTypeName(typeName);
   const fileContentsStr = readFileSync(srcFilePathName, { encoding: 'UTF-8' });
   const srcDirectory = path.dirname(srcFilePathName).split(/src/)[1];

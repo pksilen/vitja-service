@@ -12,10 +12,12 @@ import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedF
 export default async function getEntitiesByFilters<T>(
   dbManager: PostgreSqlDbManager,
   filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
-  entityClass: new () => T,
+  EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
+  // noinspection AssignmentToFunctionParameterJS
+  EntityClass = dbManager.getType(EntityClass.name);
   const Types = dbManager.getTypes();
 
   try {
@@ -26,15 +28,15 @@ export default async function getEntitiesByFilters<T>(
       filterValues,
       sortClause,
       pagingClause
-    } = getSqlSelectStatementParts(dbManager, postQueryOperations, entityClass, Types, filters);
+    } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, Types, filters);
 
     const result = await dbManager.tryExecuteQueryWithConfig(
       pg(
-        `SELECT ${columns} FROM ${dbManager.schema}.${entityClass.name} ${joinClause} ${whereClause} ${sortClause} ${pagingClause}`
+        `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} ${whereClause} ${sortClause} ${pagingClause}`
       )(filterValues)
     );
 
-    return transformRowsToObjects(result, entityClass, postQueryOperations, Types);
+    return transformRowsToObjects(result, EntityClass, postQueryOperations, Types);
   } catch (error) {
     return createErrorResponseFromError(error);
   }
