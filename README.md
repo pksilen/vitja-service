@@ -4,7 +4,6 @@ TODO
 - ScheduleCronJob annotation
   -create annotation
   -store to persistent volume readwritemany path
-  -install cron module
   -create scheduler
 - ExecuteScheduled url path to execute function at given timepoint
   store to persistent volume readwritemany path

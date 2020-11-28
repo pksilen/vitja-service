@@ -13,6 +13,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToErrorsMap: { [key: string]: ErrorCodeAndMessage[] } = {};
   private readonly serviceFunctionNameToIsNotTransactionalMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsNotDistributedTransactionalMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToCronScheduleMap: { [key: string]: string } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -66,6 +67,10 @@ class ServiceFunctionAnnotationContainer {
 
   addNonDistributedTransactionalServiceFunction(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToIsNotDistributedTransactionalMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
+  addCronScheduleForServiceFunction(serviceClass: Function, functionName: string, cronSchedule: string) {
+    this.serviceFunctionNameToCronScheduleMap[`${serviceClass.name}${functionName}`] = cronSchedule;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -229,6 +234,18 @@ class ServiceFunctionAnnotationContainer {
     }
 
     return false;
+  }
+
+  getCronScheduleForServiceFunction(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.serviceFunctionNameToCronScheduleMap[`${serviceClass.name}${functionName}`] !== undefined) {
+        return this.serviceFunctionNameToCronScheduleMap[`${serviceClass.name}${functionName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return undefined;
   }
 }
 
