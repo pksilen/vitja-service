@@ -2,10 +2,8 @@
 
 TODO
 - ExecuteScheduled url path to execute function at given timepoint
-  store to persistent volume readwritemany path
-  - loop to check if execution should be done
+- Retry database operations for scheduling
 - create single backk init method for main.ts
-- Refactor UpdateEntitiesBy to be shallow
 - @ManyToMany
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing

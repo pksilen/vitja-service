@@ -112,6 +112,13 @@ export default class MongoDbManager extends AbstractDbManager {
     // auto-update version/lastmodifiedtimestamp
   }
 
+  getAllEntities<T>(
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T[] | ErrorResponse> {
+    throw new Error('Not implemented');
+  }
+
   async getEntitiesByFilters<T>(
     filters: FilterQuery<T> | Partial<T> | UserDefinedFilter[],
     entityClass: new () => T,
@@ -310,17 +317,6 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
   ): Promise<void | ErrorResponse> {
     throw new Error('Not implemented');
-  }
-
-  updateEntitiesBy<T extends Entity>(
-    fieldName: string,
-    fieldValue: T[keyof T],
-    entity: RecursivePartial<T> & { _id: string },
-    entityClass: new () => T,
-    preHooks?: PreHook | PreHook[]
-  ): Promise<void | ErrorResponse> {
-    throw new Error();
-    // auto-update version/lastmodifiedtimestamp
   }
 
   async deleteEntityById<T>(

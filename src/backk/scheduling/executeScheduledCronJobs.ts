@@ -5,7 +5,7 @@ import serviceFunctionAnnotationContainer from '../decorators/service/function/s
 import call from '../remote/http/call';
 import getServiceName from '../utils/getServiceName';
 import getServiceNamespace from '../utils/getServiceNamespace';
-import CronJobScheduling from '../entities/CronJobScheduling';
+import CronJobScheduling from './entities/CronJobScheduling';
 import isErrorResponse from '../errors/isErrorResponse';
 import findAsyncSequential from '../utils/findAsyncSequential';
 import delay from '../utils/delay';

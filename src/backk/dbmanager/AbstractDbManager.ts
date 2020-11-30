@@ -111,6 +111,11 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
+  abstract getAllEntities<T>(
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T[] | ErrorResponse>;
+
   abstract getEntitiesByFilters<T>(
     filters: FilterQuery<T> | Partial<T> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T,
@@ -200,14 +205,6 @@ export default abstract class AbstractDbManager {
     fieldName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
-    entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
-  ): Promise<void | ErrorResponse>;
-
-  abstract updateEntitiesBy<T extends Entity>(
-    fieldName: string,
-    fieldValue: T[keyof T],
-    entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
   ): Promise<void | ErrorResponse>;

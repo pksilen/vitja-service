@@ -1,38 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import { Pool, QueryConfig, QueryResult, types } from 'pg';
-import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field } from './AbstractDbManager';
-import isErrorResponse from '../errors/isErrorResponse';
-import createEntity from './sql/operations/dml/createEntity';
-import getEntitiesByFilters from './sql/operations/dql/getEntitiesByFilters';
-import getEntitiesCount from './sql/operations/dql/getEntitiesCount';
-import getEntityById from './sql/operations/dql/getEntityById';
-import getEntityBy from './sql/operations/dql/getEntityBy';
-import getEntitiesBy from './sql/operations/dql/getEntitiesBy';
-import updateEntity from './sql/operations/dml/updateEntity';
-import deleteEntityById from './sql/operations/dml/deleteEntityById';
-import removeSubEntities from './sql/operations/dml/removeSubEntities';
-import deleteAllEntities from './sql/operations/dml/deleteAllEntities';
-import getEntitiesByIds from './sql/operations/dql/getEntitiesByIds';
-import { ErrorResponse } from '../types/ErrorResponse';
-import { RecursivePartial } from '../types/RecursivePartial';
-import { PreHook } from './hooks/PreHook';
-import { Entity } from '../types/Entity';
-import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
-import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
-import createErrorResponseFromError from '../errors/createErrorResponseFromError';
-import log, { Severity } from '../observability/logging/log';
-import addSubEntities from './sql/operations/dml/addSubEntities';
-import getSubEntities from './sql/operations/dql/getSubEntities';
-import startDbOperation from './utils/startDbOperation';
-import recordDbOperationDuration from './utils/recordDbOperationDuration';
-import deleteEntitiesBy from './sql/operations/dml/deleteEntitiesBy';
-import updateEntitiesBy from './sql/operations/dml/updateEntitiesBy';
-import { getNamespace } from 'cls-hooked';
-import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
+import { Pool, QueryConfig, QueryResult, types } from "pg";
+import SqlExpression from "./sql/expressions/SqlExpression";
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import isErrorResponse from "../errors/isErrorResponse";
+import createEntity from "./sql/operations/dml/createEntity";
+import getEntitiesByFilters from "./sql/operations/dql/getEntitiesByFilters";
+import getEntitiesCount from "./sql/operations/dql/getEntitiesCount";
+import getEntityById from "./sql/operations/dql/getEntityById";
+import getEntityBy from "./sql/operations/dql/getEntityBy";
+import getEntitiesBy from "./sql/operations/dql/getEntitiesBy";
+import updateEntity from "./sql/operations/dml/updateEntity";
+import deleteEntityById from "./sql/operations/dml/deleteEntityById";
+import removeSubEntities from "./sql/operations/dml/removeSubEntities";
+import deleteAllEntities from "./sql/operations/dml/deleteAllEntities";
+import getEntitiesByIds from "./sql/operations/dql/getEntitiesByIds";
+import { ErrorResponse } from "../types/ErrorResponse";
+import { RecursivePartial } from "../types/RecursivePartial";
+import { PreHook } from "./hooks/PreHook";
+import { Entity } from "../types/Entity";
+import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
+import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
+import createErrorResponseFromError from "../errors/createErrorResponseFromError";
+import log, { Severity } from "../observability/logging/log";
+import addSubEntities from "./sql/operations/dml/addSubEntities";
+import getSubEntities from "./sql/operations/dql/getSubEntities";
+import startDbOperation from "./utils/startDbOperation";
+import recordDbOperationDuration from "./utils/recordDbOperationDuration";
+import deleteEntitiesBy from "./sql/operations/dml/deleteEntitiesBy";
+import { getNamespace } from "cls-hooked";
+import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
 import updateEntityBy from "./sql/operations/dml/updateEntityBy";
+import getAllEntities from "./sql/operations/dql/getAllEntities";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -444,6 +444,16 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return response;
   }
 
+  async getAllEntities<T>(
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T[] | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntitiesByFilters');
+    const response = getAllEntities(this, entityClass, postQueryOperations);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
   async getEntitiesByFilters<T>(
     filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T,
@@ -556,19 +566,6 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntitiesBy');
     const response = updateEntityBy(this, fieldName, fieldValue, entity, entityClass, preHooks);
-    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-    return response;
-  }
-
-  updateEntitiesBy<T extends Entity>(
-    fieldName: string,
-    fieldValue: T[keyof T],
-    entity: RecursivePartial<T> & { _id: string },
-    entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
-  ): Promise<void | ErrorResponse> {
-    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntitiesBy');
-    const response = updateEntitiesBy(this, fieldName, fieldValue, entity, entityClass, preHooks);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
