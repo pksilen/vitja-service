@@ -2,7 +2,6 @@
 
 TODO
 - ScheduleCronJob annotation
-  -executionTryIntervals
   -has AllowedForInternalUse annotation
 - ExecuteScheduled url path to execute function at given timepoint
   store to persistent volume readwritemany path

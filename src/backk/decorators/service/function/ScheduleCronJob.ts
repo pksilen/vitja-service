@@ -14,5 +14,10 @@ export function ScheduleCronJob(cronSchedule: string, retryIntervalsInSecs: numb
       functionName,
       retryIntervalsInSecs
     );
+
+    serviceFunctionAnnotationContainer.addServiceFunctionAllowedForInternalUse(
+      object.constructor,
+      functionName
+    );
   };
 }
