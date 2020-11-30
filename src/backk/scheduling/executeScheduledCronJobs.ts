@@ -1,13 +1,15 @@
-import { CronJob } from 'cron';
-import parser from 'cron-parser';
-import AbstractDbManager from '../dbmanager/AbstractDbManager';
-import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import call from '../remote/http/call';
-import getServiceName from '../utils/getServiceName';
-import getServiceNamespace from '../utils/getServiceNamespace';
-import JobScheduling from '../entities/JobScheduling';
-import isErrorResponse from '../errors/isErrorResponse';
-import { ErrorResponse } from '../types/ErrorResponse';
+import { CronJob } from "cron";
+import parser from "cron-parser";
+import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import serviceFunctionAnnotationContainer
+  from "../decorators/service/function/serviceFunctionAnnotationContainer";
+import call from "../remote/http/call";
+import getServiceName from "../utils/getServiceName";
+import getServiceNamespace from "../utils/getServiceNamespace";
+import JobScheduling from "../entities/JobScheduling";
+import isErrorResponse from "../errors/isErrorResponse";
+import findAsyncSequential from "../utils/findAsyncSequential";
+import delay from "../utils/delay";
 
 const cronJobs: { [key: string]: CronJob } = {};
 
@@ -20,10 +22,21 @@ function createLastScheduledJobs(dbManager: AbstractDbManager) {
           serviceFunctionName,
           JobScheduling
         );
-        if ('errorMessage' in entityOrErrorResponse && isErrorResponse(entityOrErrorResponse)) {
-          const interval = parser.parseExpression(cronSchedule);
+
+        const interval = parser.parseExpression(cronSchedule);
+        if ('errorMessage' in entityOrErrorResponse) {
           await dbManager.createEntity(
             {
+              serviceFunctionName,
+              lastScheduledTimestamp: new Date(0),
+              nextScheduledTimestamp: interval.next().toDate()
+            },
+            JobScheduling
+          );
+        } else if (entityOrErrorResponse.lastScheduledTimestamp.valueOf() !== 0) {
+          await dbManager.updateEntity(
+            {
+              _id: entityOrErrorResponse._id,
               serviceFunctionName,
               lastScheduledTimestamp: new Date(0),
               nextScheduledTimestamp: interval.next().toDate()
@@ -55,7 +68,7 @@ export default function executeScheduledCronJobs(dbManager: AbstractDbManager) {
         );
 
         if (!possibleErrorResponse) {
-          await call(
+          const possibleErrorResponse = await call(
             'http://' +
               getServiceName() +
               '.' +
@@ -63,6 +76,25 @@ export default function executeScheduledCronJobs(dbManager: AbstractDbManager) {
               '.svc.cluster.local:80/' +
               serviceFunctionName
           );
+
+          if (isErrorResponse(possibleErrorResponse)) {
+            const retryIntervalsInSecs = serviceFunctionAnnotationContainer.getServiceFunctionNameToRetryIntervalsInSecsMap()[
+              serviceFunctionName
+            ];
+
+            findAsyncSequential(retryIntervalsInSecs, async (retryIntervalInSecs) => {
+              await delay(retryIntervalInSecs * 1000);
+              const possibleErrorResponse = await call(
+                'http://' +
+                  getServiceName() +
+                  '.' +
+                  getServiceNamespace() +
+                  '.svc.cluster.local:80/' +
+                  serviceFunctionName
+              );
+              return !isErrorResponse(possibleErrorResponse);
+            });
+          }
         }
       });
       cronJobs[serviceFunctionName] = job;

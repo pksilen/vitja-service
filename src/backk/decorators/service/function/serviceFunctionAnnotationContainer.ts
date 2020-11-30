@@ -14,6 +14,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToIsNotTransactionalMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsNotDistributedTransactionalMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToCronScheduleMap: { [key: string]: string } = {};
+  private readonly serviceFunctionNameToRetryIntervalsInSecsMap: { [key: string]: number[] } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -71,6 +72,16 @@ class ServiceFunctionAnnotationContainer {
 
   addCronScheduleForServiceFunction(serviceClass: Function, functionName: string, cronSchedule: string) {
     this.serviceFunctionNameToCronScheduleMap[`${serviceClass.name}${functionName}`] = cronSchedule;
+  }
+
+  addRetryIntervalsInSecsForServiceFunction(
+    serviceClass: Function,
+    functionName: string,
+    retryIntervalsInSecs: number[]
+  ) {
+    this.serviceFunctionNameToRetryIntervalsInSecsMap[
+      `${serviceClass.name}${functionName}`
+    ] = retryIntervalsInSecs;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -243,6 +254,10 @@ class ServiceFunctionAnnotationContainer {
 
   getServiceFunctionNameToCronScheduleMap() {
     return this.serviceFunctionNameToCronScheduleMap;
+  }
+
+  getServiceFunctionNameToRetryIntervalsInSecsMap() {
+    return this.serviceFunctionNameToRetryIntervalsInSecsMap;
   }
 }
 

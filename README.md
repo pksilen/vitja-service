@@ -2,7 +2,6 @@
 
 TODO
 - ScheduleCronJob annotation
-  -store last triggered job timestamp to db
   -executionTryIntervals
   -has AllowedForInternalUse annotation
 - ExecuteScheduled url path to execute function at given timepoint
