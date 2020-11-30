@@ -196,11 +196,20 @@ export default abstract class AbstractDbManager {
     });
   }
 
+  abstract updateEntityBy<T extends Entity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    entity: RecursivePartial<T>,
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[],
+  ): Promise<void | ErrorResponse>;
+
   abstract updateEntitiesBy<T extends Entity>(
     fieldName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T> & { _id: string },
-    entityClass: new () => T
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[],
   ): Promise<void | ErrorResponse>;
 
   abstract deleteEntityById<T extends object>(

@@ -32,6 +32,7 @@ import deleteEntitiesBy from './sql/operations/dml/deleteEntitiesBy';
 import updateEntitiesBy from './sql/operations/dml/updateEntitiesBy';
 import { getNamespace } from 'cls-hooked';
 import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
+import updateEntityBy from "./sql/operations/dml/updateEntityBy";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -546,14 +547,28 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return response;
   }
 
+  updateEntityBy<T extends Entity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    entity: RecursivePartial<T>,
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[],
+  ): Promise<void | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntitiesBy');
+    const response = updateEntityBy(this, fieldName, fieldValue, entity, entityClass, preHooks);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
   updateEntitiesBy<T extends Entity>(
     fieldName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T> & { _id: string },
-    entityClass: new () => T
+    entityClass: new () => T,
+    preHooks?: PreHook | PreHook[],
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntitiesBy');
-    const response = updateEntitiesBy(this, fieldName, fieldValue, entity, entityClass);
+    const response = updateEntitiesBy(this, fieldName, fieldValue, entity, entityClass, preHooks);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

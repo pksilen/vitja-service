@@ -53,14 +53,6 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
       }
     );
 
-    try {
-      await dbManager.tryExecuteSqlWithoutCls(
-        `SELECT * FROM ${dbManager.schema}.__BACKK__LAST_SCHEDULED_JOB LIMIT 1`
-      );
-    } catch (error) {
-      const createTableStatement = `CREATE TABLE ${dbManager.schema}.__BACKK__LAST_SCHEDULED_JOB (serviceFunction VARCHAR PRIMARY KEY, lastScheduledTimestamp TIMESTAMP)`;
-      await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
-    }
   } catch (error) {
     logError(error);
     return false;
