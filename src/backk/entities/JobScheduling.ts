@@ -10,7 +10,7 @@ export default class JobScheduling extends _Id {
   @MaxLength(8192)
   serviceFunctionArgument!: string;
 
-  scheduledAtTimestamp!: Date;
+  scheduledExecutionTimestamp!: Date;
 
   @MaxLength(64)
   executionSchedulingId!: string;

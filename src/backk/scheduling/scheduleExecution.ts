@@ -3,10 +3,11 @@ import { CronJob } from 'cron';
 import tryExecuteServiceFunction from '../execution/tryExecuteServiceFunction';
 import findAsyncSequential from '../utils/findAsyncSequential';
 import delay from '../utils/delay';
-import call from '../remote/http/call';
-import getServiceName from '../utils/getServiceName';
-import getServiceNamespace from '../utils/getServiceNamespace';
-import isErrorResponse from '../errors/isErrorResponse';
+import { createNamespace } from 'cls-hooked';
+import BaseService from '../service/BaseService';
+import JobScheduling from '../entities/JobScheduling';
+
+const scheduledJobs: { [key: string]: CronJob } = {};
 
 export default function scheduleExecution(
   controller: any,
@@ -16,39 +17,67 @@ export default function scheduleExecution(
 ) {
   const {
     serviceFunctionName,
-    executionTimestampStr,
+    scheduledExecutionTimestamp,
     serviceFunctionArgument,
     retryIntervalsInSecs
   }: {
     serviceFunctionName: string;
-    executionTimestampStr: string;
+    scheduledExecutionTimestamp: string;
     serviceFunctionArgument: any;
     retryIntervalsInSecs: number[];
   } = scheduledExecutionArgument;
 
+  const retryIntervalsInSecsStr = retryIntervalsInSecs.join(',');
+
+  const serviceFunctionArgumentStr = JSON.stringify(serviceFunctionArgument);
   const executionSchedulingId = crypto
     .createHash('sha256')
-    .update(serviceFunctionName + executionTimestampStr + JSON.stringify(serviceFunctionArgument))
+    .update(serviceFunctionName + scheduledExecutionTimestamp + serviceFunctionArgumentStr)
     .digest('hex');
 
-  const executionTimestamp = new Date(Date.parse(executionTimestampStr));
+  const scheduledExecutionTimestampAsDate = new Date(Date.parse(scheduledExecutionTimestamp));
 
-  // write to database CronJobScheduling
-  // write scheduling pod id
+  const [serviceName] = serviceFunctionName.split('.');
+  const dbManager = (controller[serviceName] as BaseService).getDbManager();
+  const clsNamespace = createNamespace('serviceFunctionExecution');
+  clsNamespace.run(async () => {
+    await dbManager.tryReserveDbConnectionFromPool();
+    await dbManager.createEntity(
+      {
+        executionSchedulingId,
+        serviceFunctionName,
+        retryIntervalsInSecs: retryIntervalsInSecsStr,
+        scheduledExecutionTimestamp: scheduledExecutionTimestampAsDate,
+        schedulingServiceInstanceId: process.env.SERVICE_INSTANCE_ID ?? '',
+        serviceFunctionArgument: serviceFunctionArgumentStr
+      },
+      JobScheduling
+    );
+    dbManager.tryReleaseDbConnectionBackToPool();
+  });
 
-  const job = new CronJob(executionTimestamp, async () => {
+  const job = new CronJob(scheduledExecutionTimestampAsDate, async () => {
     try {
-      await tryExecuteServiceFunction(controller, serviceFunctionName, serviceFunctionArgument, {});
+      await tryExecuteServiceFunction(controller, serviceFunctionName, serviceFunctionArgument, headers);
+      delete scheduledJobs[executionSchedulingId];
     } catch (error) {
-      findAsyncSequential(retryIntervalsInSecs, async (retryIntervalInSecs) => {
+      await findAsyncSequential(retryIntervalsInSecs, async (retryIntervalInSecs) => {
         await delay(retryIntervalInSecs * 1000);
         try {
-          await tryExecuteServiceFunction(controller, serviceFunctionName, serviceFunctionArgument, {});
+          await tryExecuteServiceFunction(controller, serviceFunctionName, serviceFunctionArgument, headers);
           return true;
         } catch (error) {
           return false;
         }
       });
+      delete scheduledJobs[executionSchedulingId];
     }
+  });
+
+  scheduledJobs[executionSchedulingId] = job;
+  job.start();
+
+  resp?.send({
+    executionSchedulingId
   });
 }
