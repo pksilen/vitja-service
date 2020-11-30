@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO
-- ScheduleCronJob annotation
-  -has AllowedForInternalUse annotation
 - ExecuteScheduled url path to execute function at given timepoint
   store to persistent volume readwritemany path
   - loop to check if execution should be done

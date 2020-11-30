@@ -7,7 +7,17 @@ export default class JobScheduling extends _Id {
   @MaxLength(512)
   serviceFunctionName!: string;
 
-  lastScheduledTimestamp!: Date;
+  @MaxLength(8192)
+  serviceFunctionArgument!: string;
 
-  nextScheduledTimestamp!: Date;
+  scheduledAtTimestamp!: Date;
+
+  @MaxLength(64)
+  executionSchedulingId!: string;
+
+  @MaxLength(512)
+  retryIntervalsInSecs!: string;
+
+  @MaxLength(512)
+  schedulingServiceInstanceId!: string;
 }
