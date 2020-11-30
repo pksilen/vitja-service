@@ -21,6 +21,8 @@ import UsersService from '../services/users/UsersService';
 import ResponseCacheConfigService from '../backk/cache/ResponseCacheConfigService';
 import AuditLoggingService from '../backk/observability/logging/audit/AuditLoggingService';
 import initializeController from '../backk/controller/initializeController';
+import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
+import executeScheduledCronJobs from "../backk/scheduling/executeScheduledCronJobs";
 
 // noinspection JSUnusedLocalSymbols,OverlyComplexFunctionJS
 @Controller()

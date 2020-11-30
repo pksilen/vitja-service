@@ -5,7 +5,7 @@ import entityAnnotationContainer from '../../../../decorators/entity/entityAnnot
 import tryAlterOrCreateTable from './tryAlterOrCreateTable';
 import tryCreateIndex from './tryCreateIndex';
 import tryCreateUniqueIndex from './tryCreateUniqueIndex';
-import log, { logError, Severity } from "../../../../observability/logging/log";
+import log, { logError, Severity } from '../../../../observability/logging/log';
 
 const dbManagerToIsInitializedMap: { [key: string]: boolean } = {};
 
@@ -52,6 +52,15 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
         });
       }
     );
+
+    try {
+      await dbManager.tryExecuteSqlWithoutCls(
+        `SELECT * FROM ${dbManager.schema}.__BACKK__LAST_SCHEDULED_JOB LIMIT 1`
+      );
+    } catch (error) {
+      const createTableStatement = `CREATE TABLE ${dbManager.schema}.__BACKK__LAST_SCHEDULED_JOB (serviceFunction VARCHAR PRIMARY KEY, lastScheduledTimestamp TIMESTAMP)`;
+      await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
+    }
   } catch (error) {
     logError(error);
     return false;

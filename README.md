@@ -2,12 +2,14 @@
 
 TODO
 - ScheduleCronJob annotation
-  -create annotation
-  -store to persistent volume readwritemany path
+  -store last triggered job timestamp to db
   -create scheduler
+  -executionTryIntervals
+  -has AllowedForInternalUse annotation
 - ExecuteScheduled url path to execute function at given timepoint
   store to persistent volume readwritemany path
   - loop to check if execution should be done
+- create single backk init method for main.ts
 - @ManyToMany
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing

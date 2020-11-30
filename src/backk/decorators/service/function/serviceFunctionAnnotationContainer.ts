@@ -215,7 +215,9 @@ class ServiceFunctionAnnotationContainer {
   isServiceFunctionNonTransactional(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.serviceFunctionNameToIsNotTransactionalMap[`${serviceClass.name}${functionName}`] !== undefined) {
+      if (
+        this.serviceFunctionNameToIsNotTransactionalMap[`${serviceClass.name}${functionName}`] !== undefined
+      ) {
         return true;
       }
       proto = Object.getPrototypeOf(proto);
@@ -227,7 +229,10 @@ class ServiceFunctionAnnotationContainer {
   isServiceFunctionNonDistributedTransactional(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.serviceFunctionNameToIsNotDistributedTransactionalMap[`${serviceClass.name}${functionName}`] !== undefined) {
+      if (
+        this.serviceFunctionNameToIsNotDistributedTransactionalMap[`${serviceClass.name}${functionName}`] !==
+        undefined
+      ) {
         return true;
       }
       proto = Object.getPrototypeOf(proto);
@@ -236,16 +241,8 @@ class ServiceFunctionAnnotationContainer {
     return false;
   }
 
-  getCronScheduleForServiceFunction(serviceClass: Function, functionName: string) {
-    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
-    while (proto !== Object.prototype) {
-      if (this.serviceFunctionNameToCronScheduleMap[`${serviceClass.name}${functionName}`] !== undefined) {
-        return this.serviceFunctionNameToCronScheduleMap[`${serviceClass.name}${functionName}`];
-      }
-      proto = Object.getPrototypeOf(proto);
-    }
-
-    return undefined;
+  getServiceFunctionNameToCronScheduleMap() {
+    return this.serviceFunctionNameToCronScheduleMap;
   }
 }
 
