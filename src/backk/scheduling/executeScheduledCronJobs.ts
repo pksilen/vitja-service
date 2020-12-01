@@ -13,50 +13,7 @@ import { createNamespace } from 'cls-hooked';
 
 const cronJobs: { [key: string]: CronJob } = {};
 
-function createLastScheduledJobs(dbManager: AbstractDbManager) {
-  Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()).forEach(
-    ([serviceFunctionName, cronSchedule]) => {
-      const clsNamespace = createNamespace('serviceFunctionExecution');
-      clsNamespace.run(async () => {
-        await dbManager.tryReserveDbConnectionFromPool();
-        await dbManager.executeInsideTransaction(async () => {
-          const entityOrErrorResponse = await dbManager.getEntityBy(
-            'serviceFunctionName',
-            serviceFunctionName,
-            CronJobScheduling
-          );
-
-          const interval = parser.parseExpression(cronSchedule);
-          if ('errorMessage' in entityOrErrorResponse) {
-            await dbManager.createEntity(
-              {
-                serviceFunctionName,
-                lastScheduledTimestamp: new Date(0),
-                nextScheduledTimestamp: interval.next().toDate()
-              },
-              CronJobScheduling
-            );
-          } else if (entityOrErrorResponse.lastScheduledTimestamp.valueOf() !== 0) {
-            await dbManager.updateEntity(
-              {
-                _id: entityOrErrorResponse._id,
-                serviceFunctionName,
-                lastScheduledTimestamp: new Date(0),
-                nextScheduledTimestamp: interval.next().toDate()
-              },
-              CronJobScheduling
-            );
-          }
-        });
-        dbManager.tryReleaseDbConnectionBackToPool();
-      });
-    }
-  );
-}
-
 export default function executeScheduledCronJobs(dbManager: AbstractDbManager) {
-  createLastScheduledJobs(dbManager);
-
   Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()).forEach(
     ([serviceFunctionName, cronSchedule]) => {
       const job = new CronJob(cronSchedule, async () => {
@@ -108,6 +65,7 @@ export default function executeScheduledCronJobs(dbManager: AbstractDbManager) {
           }
         }
       });
+
       cronJobs[serviceFunctionName] = job;
       job.start();
     }

@@ -6,6 +6,7 @@ import tryAlterOrCreateTable from './tryAlterOrCreateTable';
 import tryCreateIndex from './tryCreateIndex';
 import tryCreateUniqueIndex from './tryCreateUniqueIndex';
 import log, { logError, Severity } from '../../../../observability/logging/log';
+import initializeCronJobSchedulingTable from "../../../../scheduling/initializeCronJobSchedulingTable";
 
 const dbManagerToIsInitializedMap: { [key: string]: boolean } = {};
 
@@ -52,6 +53,8 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
         });
       }
     );
+
+    initializeCronJobSchedulingTable(dbManager);
 
   } catch (error) {
     logError(error);
