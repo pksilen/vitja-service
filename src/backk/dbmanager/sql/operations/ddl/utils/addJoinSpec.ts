@@ -1,15 +1,21 @@
-import entityAnnotationContainer from '../../../../../decorators/entity/entityAnnotationContainer';
+import entityAnnotationContainer, {
+  EntityJoinSpec
+} from '../../../../../decorators/entity/entityAnnotationContainer';
 
-export default function addJoinSpec(entityName: string, fieldName: string, idFieldName: string) {
-  const joinSpec = {
-    joinTableName: entityName + fieldName.slice(0, -1),
-    fieldName: '_id',
-    joinTableFieldName: idFieldName
+export default function addJoinSpec(
+  entityName: string,
+  fieldName: string,
+  subEntityForeignIdFieldName: string
+) {
+  const entityJoinSpec: EntityJoinSpec = {
+    subEntityTableName: entityName + fieldName.slice(0, -1),
+    entityIdFieldName: '_id',
+    subEntityForeignIdFieldName
   };
 
   if (entityAnnotationContainer.entityNameToJoinsMap[entityName]) {
-    entityAnnotationContainer.entityNameToJoinsMap[entityName].push(joinSpec);
+    entityAnnotationContainer.entityNameToJoinsMap[entityName].push(entityJoinSpec);
   } else {
-    entityAnnotationContainer.entityNameToJoinsMap[entityName] = [joinSpec];
+    entityAnnotationContainer.entityNameToJoinsMap[entityName] = [entityJoinSpec];
   }
 }

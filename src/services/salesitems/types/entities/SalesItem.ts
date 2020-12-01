@@ -19,6 +19,7 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   description!: string;
 
   @ManyToMany()
+  @ArrayMaxSize(25)
   tags!: Tag[];
 
   area!: Area;

@@ -3,7 +3,7 @@ import entityAnnotationContainer from '../../../../decorators/entity/entityAnnot
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import { Entity } from '../../../../types/Entity';
+import { Entity } from '../../../../types/entities/Entity';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
@@ -19,10 +19,11 @@ import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata'
 import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
 import { HttpStatusCodes } from '../../../../constants/constants';
 import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeeded';
-import tryUpdateEntityLastModifiedTimestampIfNeeded
-  from "./utils/tryUpdateEntityLastModifiedTimestampIfNeeded";
+import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
+import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import { SubEntity } from "../../../../types/entities/SubEntity";
 
-export default async function addSubEntities<T extends Entity, U extends object>(
+export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: PostgreSqlDbManager,
   _id: string,
   subEntitiesPath: string,
@@ -44,8 +45,6 @@ export default async function addSubEntities<T extends Entity, U extends object>
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
     await tryUpdateEntityLastModifiedTimestampIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
-    const parentIdValue = JSONPath({ json: currentEntityOrErrorResponse, path: '$._id' })[0];
-    const parentIdFieldName = entityAnnotationContainer.getAdditionIdPropertyName(SubEntityClass.name);
     const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath }).reduce(
       (maxSubItemId: number, subItem: any) => {
         const subItemId = parseInt(subItem.id);
@@ -54,21 +53,21 @@ export default async function addSubEntities<T extends Entity, U extends object>
       -1
     );
 
-    const parentEntityAndPropertyName = findParentEntityAndPropertyNameForSubEntity(
+    const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
       EntityClass,
       SubEntityClass,
       dbManager.getTypes()
     );
 
-    if (parentEntityAndPropertyName) {
+    if (parentEntityClassAndPropertyNameForSubEntity) {
       const metadataForValidations = getFromContainer(MetadataStorage).getTargetValidationMetadatas(
-        parentEntityAndPropertyName[0],
+        parentEntityClassAndPropertyNameForSubEntity[0],
         ''
       );
 
       const foundArrayMaxSizeValidation = metadataForValidations.find(
         (validationMetadata: ValidationMetadata) =>
-          validationMetadata.propertyName === parentEntityAndPropertyName[1] &&
+          validationMetadata.propertyName === parentEntityClassAndPropertyNameForSubEntity[1] &&
           validationMetadata.type === 'arrayMaxSize'
       );
 
@@ -78,31 +77,65 @@ export default async function addSubEntities<T extends Entity, U extends object>
       ) {
         // noinspection ExceptionCaughtLocallyJS
         throw createErrorResponseFromErrorMessageAndStatusCode(
-          parentEntityAndPropertyName[0].name +
+          parentEntityClassAndPropertyNameForSubEntity[0].name +
             '.' +
-            parentEntityAndPropertyName[1] +
+            parentEntityClassAndPropertyNameForSubEntity[1] +
             ': Cannot add new entity. Maximum allowed entities limit reached',
           HttpStatusCodes.BAD_REQUEST
         );
       }
     }
 
+    const foreignIdFieldName = entityAnnotationContainer.getForeignIdFieldName(SubEntityClass.name);
     await forEachAsyncParallel(newSubEntities, async (newSubEntity, index) => {
-      const createdItemOrErrorResponse = await dbManager.createEntity(
-        {
-          ...newSubEntity,
-          [parentIdFieldName]: parentIdValue,
-          id: (maxSubItemId + 1 + index).toString()
-        } as any,
-        SubEntityClass,
-        undefined,
-        postQueryOperations,
-        false
-      );
+      if (
+        parentEntityClassAndPropertyNameForSubEntity &&
+        typePropertyAnnotationContainer.isTypePropertyManyToMany(
+          parentEntityClassAndPropertyNameForSubEntity[0],
+          parentEntityClassAndPropertyNameForSubEntity[1]
+        )
+      ) {
+        let subEntityOrErrorResponse = await dbManager.getEntityById(newSubEntity._id ?? '', SubEntityClass);
+        if ('errorMessage' in subEntityOrErrorResponse) {
+          subEntityOrErrorResponse = await dbManager.createEntity(
+            newSubEntity as any,
+            SubEntityClass,
+            undefined,
+            undefined,
+            false
+          );
+          if ('errorMessage' in subEntityOrErrorResponse) {
+            // noinspection ExceptionCaughtLocallyJS
+            throw subEntityOrErrorResponse;
+          }
+        }
 
-      if ('errorMessage' in createdItemOrErrorResponse && isErrorResponse(createdItemOrErrorResponse)) {
-        // noinspection ExceptionCaughtLocallyJS
-        throw createdItemOrErrorResponse;
+        const associationTable = `${EntityClass.name}_${SubEntityClass}`;
+        const {
+          entityForeignIdFieldName,
+          subEntityForeignIdFieldName
+        } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTable);
+        dbManager.tryExecuteSql(
+          `INSERT INTO ${dbManager.schema}.${associationTable} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES ($1, $2)`,
+          [(currentEntityOrErrorResponse as any)._id, subEntityOrErrorResponse._id]
+        );
+      } else {
+        const subEntityOrErrorResponse = await dbManager.createEntity(
+          {
+            ...newSubEntity,
+            [foreignIdFieldName]: (currentEntityOrErrorResponse as any)._id,
+            id: (maxSubItemId + 1 + index).toString()
+          } as any,
+          SubEntityClass,
+          undefined,
+          undefined,
+          false
+        );
+
+        if ('errorMessage' in subEntityOrErrorResponse && isErrorResponse(subEntityOrErrorResponse)) {
+          // noinspection ExceptionCaughtLocallyJS
+          throw subEntityOrErrorResponse;
+        }
       }
     });
 

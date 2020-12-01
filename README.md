@@ -2,8 +2,8 @@
 
 TODO
 - @ManyToMany
-  - trycreateTable changes
-  - tryaltertable changes
+  -addSubEntities
+- Return value Types cannot have 'errorMessage' property
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany

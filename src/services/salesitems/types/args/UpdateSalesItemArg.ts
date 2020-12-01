@@ -2,16 +2,15 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { ArrayMaxSize, IsDate, IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import Tag from '../entities/Tag';
 import { Area } from '../enums/Area';
 import { Category } from '../enums/Category';
 import { Department } from '../enums/Department';
 
 export default class UpdateSalesItemArg {
-  @IsDate()
-  createdAtTimestamp?: Date;
-
   userId?: string;
 
   @MaxLength(64)
@@ -19,6 +18,10 @@ export default class UpdateSalesItemArg {
 
   @MaxLength(1024)
   description?: string;
+
+  @ManyToMany()
+  @ArrayMaxSize(25)
+  tags?: Tag[];
 
   area?: Area;
 

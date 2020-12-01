@@ -1,5 +1,5 @@
 export interface ManyToManyRelationTableSpec {
-  tableName: string;
+  associationTableName: string;
   entityForeignIdFieldName: string;
   subEntityForeignIdFieldName: string;
 }
@@ -13,7 +13,7 @@ export interface EntityJoinSpec {
 class EntityAnnotationContainer {
   readonly entityNameToClassMap: { [key: string]: Function } = {};
   readonly entityNameToAdditionalSqlCreateTableStatementOptionsMap: { [key: string]: string } = {};
-  readonly entityNameToAdditionalIdPropertyNamesMap: { [key: string]: string[] } = {};
+  readonly entityNameToForeignIdFieldNamesMap: { [key: string]: string[] } = {};
   readonly entityNameToIndexFieldsMap: { [key: string]: string[] } = {};
   readonly entityNameToUniqueIndexFieldsMap: { [key: string]: string[] } = {};
   readonly indexNameToUsingOptionMap: { [key: string]: string | undefined } = {};
@@ -21,8 +21,15 @@ class EntityAnnotationContainer {
   readonly manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
   readonly entityNameToJoinsMap: { [key: string]: EntityJoinSpec[] } = {};
 
-  getAdditionIdPropertyName(entityName: string): string {
-    return this.entityNameToAdditionalIdPropertyNamesMap[entityName][0];
+  getForeignIdFieldName(entityName: string): string {
+    return this.entityNameToForeignIdFieldNamesMap[entityName][0];
+  }
+
+  getManyToManyRelationTableSpec(associationTableName: string) {
+    return this.manyToManyRelationTableSpecs.find(
+      (manyToManyRelationTableSpec) =>
+        manyToManyRelationTableSpec.associationTableName === associationTableName
+    ) as ManyToManyRelationTableSpec;
   }
 
   addEntityNameAndClass(entityName: string, entityClass: Function) {
@@ -60,10 +67,10 @@ class EntityAnnotationContainer {
   }
 
   addEntityAdditionalPropertyName(entityName: string, propertyName: string) {
-    if (this.entityNameToAdditionalIdPropertyNamesMap[entityName]) {
-      this.entityNameToAdditionalIdPropertyNamesMap[entityName].push(propertyName);
+    if (this.entityNameToForeignIdFieldNamesMap[entityName]) {
+      this.entityNameToForeignIdFieldNamesMap[entityName].push(propertyName);
     } else {
-      this.entityNameToAdditionalIdPropertyNamesMap[entityName] = [propertyName];
+      this.entityNameToForeignIdFieldNamesMap[entityName] = [propertyName];
     }
   }
 

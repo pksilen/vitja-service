@@ -11,7 +11,7 @@ export default function setSubEntityInfo(
 ) {
   if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
     const manyToManyRelationTableSpec: ManyToManyRelationTableSpec = {
-      tableName: entityName + '_' + subEntityName,
+      associationTableName: entityName + '_' + subEntityName,
       entityForeignIdFieldName: entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id',
       subEntityForeignIdFieldName: subEntityName.charAt(0).toLowerCase() + subEntityName.slice(1) + 'Id'
     }
@@ -20,12 +20,12 @@ export default function setSubEntityInfo(
   } else {
     const subEntityForeignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
 
-    if (entityAnnotationContainer.entityNameToAdditionalIdPropertyNamesMap[subEntityName]) {
-      entityAnnotationContainer.entityNameToAdditionalIdPropertyNamesMap[subEntityName].push(
+    if (entityAnnotationContainer.entityNameToForeignIdFieldNamesMap[subEntityName]) {
+      entityAnnotationContainer.entityNameToForeignIdFieldNamesMap[subEntityName].push(
         subEntityForeignIdFieldName
       );
     } else {
-      entityAnnotationContainer.entityNameToAdditionalIdPropertyNamesMap[subEntityName] = [
+      entityAnnotationContainer.entityNameToForeignIdFieldNamesMap[subEntityName] = [
         subEntityForeignIdFieldName
       ];
     }

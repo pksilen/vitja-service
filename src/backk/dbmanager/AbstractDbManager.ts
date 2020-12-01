@@ -5,13 +5,14 @@ import SqlExpression from './sql/expressions/SqlExpression';
 import { RecursivePartial } from '../types/RecursivePartial';
 import { ErrorResponse } from '../types/ErrorResponse';
 import { PreHook } from './hooks/PreHook';
-import { Entity } from '../types/Entity';
+import { Entity } from '../types/entities/Entity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import { Injectable } from '@nestjs/common';
 import isErrorResponse from '../errors/isErrorResponse';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
 import BaseService from '../service/BaseService';
+import { SubEntity } from "../types/entities/SubEntity";
 
 export interface Field {
   name: string;
@@ -91,7 +92,7 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract addSubEntity<T extends Entity, U extends object>(
+  abstract addSubEntity<T extends Entity, U extends SubEntity>(
     _id: string,
     subEntitiesPath: string,
     newSubEntity: Omit<U, 'id'>,

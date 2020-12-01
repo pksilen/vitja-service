@@ -38,7 +38,7 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
     );
 
     await forEachAsyncSequential(
-      Object.entries(entityAnnotationContainer.entityNameToAdditionalIdPropertyNamesMap),
+      Object.entries(entityAnnotationContainer.entityNameToForeignIdFieldNamesMap),
       async ([entityName, additionalPropertyNames]: [any, any]) => {
         const fields = await dbManager.tryExecuteSqlWithoutCls(
           `SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`
@@ -56,11 +56,11 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
 
     await forEachAsyncSequential(
       entityAnnotationContainer.manyToManyRelationTableSpecs,
-      async ({ tableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
+      async ({ associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
         try {
-          await dbManager.tryExecuteSqlWithoutCls(`SELECT * FROM ${dbManager.schema}.${tableName} LIMIT 1`);
+          await dbManager.tryExecuteSqlWithoutCls(`SELECT * FROM ${dbManager.schema}.${associationTableName} LIMIT 1`);
         } catch (error) {
-          const createTableStatement = `CREATE TABLE ${dbManager.schema}.${tableName} (${entityForeignIdFieldName} BIGINT PRIMARY KEY, ${subEntityForeignIdFieldName} BIGINT)`;
+          const createTableStatement = `CREATE TABLE ${dbManager.schema}.${associationTableName} (${entityForeignIdFieldName} BIGINT PRIMARY KEY, ${subEntityForeignIdFieldName} BIGINT)`;
           await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
         }
       }

@@ -1,21 +1,24 @@
-import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import isErrorResponse from '../../../../errors/isErrorResponse';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { PreHook } from '../../../hooks/PreHook';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
-import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
-import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import { HttpStatusCodes } from '../../../../constants/constants';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import isErrorResponse from "../../../../errors/isErrorResponse";
+import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import getPropertyNameToPropertyTypeNameMap from "../../../../metadata/getPropertyNameToPropertyTypeNameMap";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { PreHook } from "../../../hooks/PreHook";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
+import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import { HttpStatusCodes } from "../../../../constants/constants";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
 
 export default async function createEntity<T>(
   dbManager: PostgreSqlDbManager,
@@ -98,35 +101,61 @@ export default async function createEntity<T>(
         const subEntityOrEntities = (entity as any)[fieldName];
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
-          const relationEntityName = baseTypeName;
           await forEachAsyncParallel(subEntityOrEntities, async (subEntity: any, index) => {
-            subEntity[foreignIdFieldName] = _id;
-
-            if (subEntity.id === undefined) {
-              subEntity.id = index;
-            } else {
-              if (parseInt(subEntity.id, 10) !== index) {
-                throw new Error(
-                  createErrorMessageWithStatusCode(
-                    'Invalid id values in ' +
-                      fieldName +
-                      '. Id values must be consecutive numbers starting from zero.',
-                    HttpStatusCodes.BAD_REQUEST
-                  )
+            const SubEntityClass = (Types as any)[baseTypeName]
+            if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
+              let subEntityOrErrorResponse: any | ErrorResponse = await dbManager.getEntityById(subEntity._id ?? '', SubEntityClass);
+              if ('errorMessage' in subEntityOrErrorResponse) {
+                subEntityOrErrorResponse = await dbManager.createEntity(
+                  subEntity,
+                  SubEntityClass,
+                  undefined,
+                  undefined,
+                  false
                 );
+                if ('errorMessage' in subEntityOrErrorResponse) {
+                  // noinspection ExceptionCaughtLocallyJS
+                  throw subEntityOrErrorResponse;
+                }
               }
-            }
 
-            const subEntityOrErrorResponse: any | ErrorResponse = await createEntity(
-              dbManager,
-              subEntity,
-              (Types as any)[relationEntityName],
-              preHooks,
-              postQueryOperations,
-              true
-            );
-            if ('errorMessage' in subEntityOrErrorResponse && isErrorResponse(subEntityOrErrorResponse)) {
-              throw subEntityOrErrorResponse;
+              const associationTable = `${EntityClass.name}_${SubEntityClass}`;
+              const {
+                entityForeignIdFieldName,
+                subEntityForeignIdFieldName
+              } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTable);
+              dbManager.tryExecuteSql(
+                `INSERT INTO ${dbManager.schema}.${associationTable} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES ($1, $2)`,
+                [_id, subEntityOrErrorResponse._id]
+              );
+            } else {
+              subEntity[foreignIdFieldName] = _id;
+              if (subEntity.id === undefined) {
+                subEntity.id = index;
+              } else {
+                if (parseInt(subEntity.id, 10) !== index) {
+                  throw new Error(
+                    createErrorMessageWithStatusCode(
+                      'Invalid id values in ' +
+                        fieldName +
+                        '. Id values must be consecutive numbers starting from zero.',
+                      HttpStatusCodes.BAD_REQUEST
+                    )
+                  );
+                }
+              }
+
+              const subEntityOrErrorResponse: any | ErrorResponse = await dbManager.createEntity(
+                subEntity,
+                SubEntityClass,
+                preHooks,
+                postQueryOperations,
+                false
+              );
+
+              if ('errorMessage' in subEntityOrErrorResponse && isErrorResponse(subEntityOrErrorResponse)) {
+                throw subEntityOrErrorResponse;
+              }
             }
           });
         } else if (isEntityTypeName(baseTypeName) && subEntityOrEntities !== null) {
@@ -158,7 +187,7 @@ export default async function createEntity<T>(
 
     const response =
       isRecursiveCall || !shouldReturnItem
-        ? ({} as any)
+        ? ({ _id } as any)
         : await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

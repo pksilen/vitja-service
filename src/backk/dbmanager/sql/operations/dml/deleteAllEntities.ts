@@ -26,6 +26,11 @@ export default async function deleteAllEntities<T>(
           await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${joinSpec.subEntityTableName}`);
         }
       ),
+      forEachAsyncParallel(entityContainer.manyToManyRelationTableSpecs, async ({ associationTableName }) => {
+        if (associationTableName.startsWith(EntityClass.name)) {
+          await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${associationTableName}`);
+        }
+      }),
       dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${EntityClass.name}`)
     ]);
 

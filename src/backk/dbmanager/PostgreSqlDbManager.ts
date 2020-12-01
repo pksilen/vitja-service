@@ -19,7 +19,7 @@ import getEntitiesByIds from "./sql/operations/dql/getEntitiesByIds";
 import { ErrorResponse } from "../types/ErrorResponse";
 import { RecursivePartial } from "../types/RecursivePartial";
 import { PreHook } from "./hooks/PreHook";
-import { Entity } from "../types/Entity";
+import { Entity } from "../types/entities/Entity";
 import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
 import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
 import createErrorResponseFromError from "../errors/createErrorResponseFromError";
@@ -33,6 +33,7 @@ import { getNamespace } from "cls-hooked";
 import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
 import updateEntityBy from "./sql/operations/dml/updateEntityBy";
 import getAllEntities from "./sql/operations/dql/getAllEntities";
+import { SubEntity } from "../types/entities/SubEntity";
 
 @Injectable()
 export default class PostgreSqlDbManager extends AbstractDbManager {
@@ -418,7 +419,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async addSubEntities<T extends Entity, U extends object>(
+  async addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
     subEntitiesPath: string,
     newSubEntities: Array<Omit<U, 'id'>>,

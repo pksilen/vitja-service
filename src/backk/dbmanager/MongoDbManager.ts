@@ -7,12 +7,13 @@ import getMongoDbProjection from "./mongodb/getMongoDbProjection";
 import { ErrorResponse } from "../types/ErrorResponse";
 import { RecursivePartial } from "../types/RecursivePartial";
 import { PreHook } from "./hooks/PreHook";
-import { Entity } from "../types/Entity";
+import { Entity } from "../types/entities/Entity";
 import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
 import createErrorResponseFromError from "../errors/createErrorResponseFromError";
 import createErrorResponseFromErrorMessageAndStatusCode
   from "../errors/createErrorResponseFromErrorMessageAndStatusCode";
 import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
+import { SubEntity } from "../types/entities/SubEntity";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -99,7 +100,7 @@ export default class MongoDbManager extends AbstractDbManager {
     // auto-update version/lastmodifiedtimestamp
   }
 
-  addSubEntities<T extends Entity, U extends object>(
+  addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
     subEntitiesPath: string,
     newSubEntities: Array<Omit<U, 'id'>>,

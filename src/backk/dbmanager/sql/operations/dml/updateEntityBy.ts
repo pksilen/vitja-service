@@ -6,7 +6,7 @@ import { RecursivePartial } from "../../../../types/RecursivePartial";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import getPropertyNameToPropertyTypeNameMap from "../../../../metadata/getPropertyNameToPropertyTypeNameMap";
-import { Entity } from "../../../../types/Entity";
+import { Entity } from "../../../../types/entities/Entity";
 import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
 import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
 import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";

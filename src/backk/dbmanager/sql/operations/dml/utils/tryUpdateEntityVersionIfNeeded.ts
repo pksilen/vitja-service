@@ -1,7 +1,7 @@
 import { ErrorResponse } from '../../../../../types/ErrorResponse';
 import updateEntity from '../updateEntity';
 import PostgreSqlDbManager from '../../../../PostgreSqlDbManager';
-import { Entity } from '../../../../../types/Entity';
+import { Entity } from '../../../../../types/entities/Entity';
 import isErrorResponse from '../../../../../errors/isErrorResponse';
 
 export default async function tryUpdateEntityVersionIfNeeded<T extends Entity>(
