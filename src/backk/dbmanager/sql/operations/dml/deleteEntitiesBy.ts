@@ -60,6 +60,11 @@ export default async function deleteEntitiesBy<T extends object>(
           );
         }
       ),
+      forEachAsyncParallel(entityContainer.manyToManyRelationTableSpecs, async ({ associationTableName, entityForeignIdFieldName }) => {
+        if (associationTableName.startsWith(EntityClass.name)) {
+          await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${associationTableName} WHERE ${entityForeignIdFieldName} IN (SELECT _id FROM ${dbManager.schema}.${EntityClass.name} WHERE ${fieldName} = $1)`);
+        }
+      }),
       dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${EntityClass.name} WHERE ${fieldName} = $1`, [
         fieldValue
       ])

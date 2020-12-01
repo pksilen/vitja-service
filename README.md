@@ -2,7 +2,7 @@
 
 TODO
 - @ManyToMany
-  -addSubEntities
+  -
 - Return value Types cannot have 'errorMessage' property
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
