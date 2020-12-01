@@ -12,7 +12,7 @@ import isErrorResponse from '../../../../errors/isErrorResponse';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 
 export default async function deleteEntityById<T extends object>(
   dbManager: PostgreSqlDbManager,
@@ -48,6 +48,17 @@ export default async function deleteEntityById<T extends object>(
             `DELETE FROM ${dbManager.schema}.${joinSpec.subEntityTableName} WHERE ${joinSpec.subEntityForeignIdFieldName} = $1`,
             [numericId]
           );
+        }
+      ),
+      forEachAsyncParallel(
+        entityContainer.manyToManyRelationTableSpecs,
+        async ({ associationTableName, entityForeignIdFieldName }) => {
+          if (associationTableName.startsWith(EntityClass.name)) {
+            await dbManager.tryExecuteSql(
+              `DELETE FROM ${dbManager.schema}.${associationTableName} WHERE ${entityForeignIdFieldName} = $1`,
+              [numericId]
+            );
+          }
         }
       ),
       dbManager.tryExecuteSql(
