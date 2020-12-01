@@ -5,6 +5,8 @@ import { Area } from "../enums/Area";
 import { Department } from "../enums/Department";
 import { Category } from "../enums/Category";
 import { SalesItemState } from "../enums/SalesItemState";
+import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
+import Tag from "./Tag";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
@@ -15,6 +17,9 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
 
   @MaxLength(1024)
   description!: string;
+
+  @ManyToMany()
+  tags!: Tag[];
 
   area!: Area;
   productDepartment!: Department;

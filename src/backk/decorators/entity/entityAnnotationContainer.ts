@@ -1,13 +1,13 @@
 export interface ManyToManyRelationTableSpec {
   tableName: string;
-  id1Name: string;
-  id2Name: string;
+  entityForeignIdFieldName: string;
+  subEntityForeignIdFieldName: string;
 }
 
-export interface JoinSpec {
-  joinTableName: string;
-  fieldName: string;
-  joinTableFieldName: string;
+export interface EntityJoinSpec {
+  subEntityTableName: string;
+  entityIdFieldName: string;
+  subEntityForeignIdFieldName: string;
 }
 
 class EntityAnnotationContainer {
@@ -19,7 +19,7 @@ class EntityAnnotationContainer {
   readonly indexNameToUsingOptionMap: { [key: string]: string | undefined } = {};
   readonly indexNameToAdditionalSqlCreateIndexStatementOptionsMap: { [key: string]: string | undefined } = {};
   readonly manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
-  readonly entityNameToJoinsMap: { [key: string]: JoinSpec[] } = {};
+  readonly entityNameToJoinsMap: { [key: string]: EntityJoinSpec[] } = {};
 
   getAdditionIdPropertyName(entityName: string): string {
     return this.entityNameToAdditionalIdPropertyNamesMap[entityName][0];

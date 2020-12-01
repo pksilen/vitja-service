@@ -40,7 +40,7 @@ export default async function tryCreateTable(
       }
 
       if (!sqlColumnType && isEntityTypeName(baseTypeName)) {
-        setSubEntityInfo(entityName, baseTypeName);
+        setSubEntityInfo(entityName, entityClass, fieldName, baseTypeName);
       } else if (isArrayType) {
         const idFieldName = await createAdditionalTable(
           schema,

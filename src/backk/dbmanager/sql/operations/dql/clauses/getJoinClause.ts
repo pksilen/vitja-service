@@ -15,25 +15,25 @@ export default function getJoinClause(
 
   if (entityContainer.entityNameToJoinsMap[entityClass.name]) {
     const joinClauseParts = entityContainer.entityNameToJoinsMap[entityClass.name].map((joinSpec) => {
-      if (!shouldIncludeField('id', schema + joinSpec.joinTableName, projection)) {
+      if (!shouldIncludeField('id', schema + joinSpec.subEntityTableName, projection)) {
         return '';
       }
 
       let joinClausePart = 'LEFT JOIN ';
-      joinClausePart += schema + '.' + joinSpec.joinTableName;
+      joinClausePart += schema + '.' + joinSpec.subEntityTableName;
       joinClausePart += ' ON ';
       joinClausePart +=
         schema +
         '.' +
         entityClass.name +
         '.' +
-        joinSpec.fieldName +
+        joinSpec.entityIdFieldName +
         ' = ' +
         schema +
         '.' +
-        joinSpec.joinTableName +
+        joinSpec.subEntityTableName +
         '.' +
-        joinSpec.joinTableFieldName;
+        joinSpec.subEntityForeignIdFieldName;
 
       return joinClausePart;
     });

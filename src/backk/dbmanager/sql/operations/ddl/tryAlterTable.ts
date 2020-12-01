@@ -36,7 +36,7 @@ export default async function tryAlterTable(
         }
 
         if (!sqlColumnType && isEntityTypeName(baseTypeName)) {
-          setSubEntityInfo(entityName, baseTypeName);
+          setSubEntityInfo(entityName, entityClass, fieldName, baseTypeName);
         } else if (isArrayType) {
           const idFieldName = await createAdditionalTable(
             schema,

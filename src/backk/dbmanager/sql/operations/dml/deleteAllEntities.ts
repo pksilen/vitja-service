@@ -1,5 +1,5 @@
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import entityContainer, { JoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
+import entityContainer, { EntityJoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
 import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
@@ -22,8 +22,8 @@ export default async function deleteAllEntities<T>(
     await Promise.all([
       forEachAsyncParallel(
         Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
-        async (joinSpec: JoinSpec) => {
-          await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${joinSpec.joinTableName}`);
+        async (joinSpec: EntityJoinSpec) => {
+          await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${joinSpec.subEntityTableName}`);
         }
       ),
       dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${EntityClass.name}`)

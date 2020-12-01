@@ -40,11 +40,11 @@ class TypePropertyAnnotationContainer {
     this.typePropertyNameToIsManyToManyMap[`${Type.name}${propertyName}`] = true;
   }
 
-  getDocumentationForTypeProperty(Type: Function, functionName: string) {
+  getDocumentationForTypeProperty(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.typePropertyNameToDocStringMap[`${Type.name}${functionName}`] !== undefined) {
-        return this.typePropertyNameToDocStringMap[`${Type.name}${functionName}`];
+      if (this.typePropertyNameToDocStringMap[`${Type.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToDocStringMap[`${Type.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
@@ -52,11 +52,11 @@ class TypePropertyAnnotationContainer {
     return undefined;
   }
 
-  isTypePropertyUnique(Type: Function, functionName: string) {
+  isTypePropertyUnique(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.typePropertyNameToIsUniqueMap[`${Type.name}${functionName}`] !== undefined) {
-        return this.typePropertyNameToIsUniqueMap[`${Type.name}${functionName}`];
+      if (this.typePropertyNameToIsUniqueMap[`${Type.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsUniqueMap[`${Type.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
@@ -64,11 +64,11 @@ class TypePropertyAnnotationContainer {
     return false;
   }
 
-  isTypePropertyNotHashed(Type: Function, functionName: string) {
+  isTypePropertyNotHashed(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.typePropertyNameToIsNotHashedMap[`${Type.name}${functionName}`] !== undefined) {
-        return this.typePropertyNameToIsNotHashedMap[`${Type.name}${functionName}`];
+      if (this.typePropertyNameToIsNotHashedMap[`${Type.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsNotHashedMap[`${Type.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
@@ -76,11 +76,11 @@ class TypePropertyAnnotationContainer {
     return false;
   }
 
-  isTypePropertyHashed(Type: Function, functionName: string) {
+  isTypePropertyHashed(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.typePropertyNameToIsHashedMap[`${Type.name}${functionName}`] !== undefined) {
-        return this.typePropertyNameToIsHashedMap[`${Type.name}${functionName}`];
+      if (this.typePropertyNameToIsHashedMap[`${Type.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsHashedMap[`${Type.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
@@ -88,11 +88,11 @@ class TypePropertyAnnotationContainer {
     return false;
   }
 
-  isTypePropertyEncrypted(Type: Function, functionName: string) {
+  isTypePropertyEncrypted(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.typePropertyNameToIsEncryptedMap[`${Type.name}${functionName}`] !== undefined) {
-        return this.typePropertyNameToIsEncryptedMap[`${Type.name}${functionName}`];
+      if (this.typePropertyNameToIsEncryptedMap[`${Type.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsEncryptedMap[`${Type.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
@@ -100,11 +100,11 @@ class TypePropertyAnnotationContainer {
     return false;
   }
 
-  isTypePropertyNotEncrypted(Type: Function, functionName: string) {
+  isTypePropertyNotEncrypted(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.typePropertyNameToIsNotEncryptedMap[`${Type.name}${functionName}`] !== undefined) {
-        return this.typePropertyNameToIsNotEncryptedMap[`${Type.name}${functionName}`];
+      if (this.typePropertyNameToIsNotEncryptedMap[`${Type.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsNotEncryptedMap[`${Type.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
@@ -112,11 +112,11 @@ class TypePropertyAnnotationContainer {
     return false;
   }
 
-  isTypePropertyPrivate(Type: Function, functionName: string) {
+  isTypePropertyPrivate(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.typePropertyNameToIsPrivateMap[`${Type.name}${functionName}`] !== undefined) {
-        return this.typePropertyNameToIsPrivateMap[`${Type.name}${functionName}`];
+      if (this.typePropertyNameToIsPrivateMap[`${Type.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsPrivateMap[`${Type.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
@@ -124,11 +124,11 @@ class TypePropertyAnnotationContainer {
     return false;
   }
 
-  isTypePropertyManyToMany(Type: Function, functionName: string) {
+  isTypePropertyManyToMany(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.typePropertyNameToIsManyToManyMap[`${Type.name}${functionName}`] !== undefined) {
-        return this.typePropertyNameToIsManyToManyMap[`${Type.name}${functionName}`];
+      if (this.typePropertyNameToIsManyToManyMap[`${Type.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsManyToManyMap[`${Type.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
