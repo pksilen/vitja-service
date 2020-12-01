@@ -16,6 +16,11 @@ import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeeded';
 import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import findParentEntityAndPropertyNameForSubEntity
+  from "../../../../metadata/findParentEntityAndPropertyNameForSubEntity";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
 
 export default async function removeSubEntities<T extends Entity, U extends object>(
   dbManager: PostgreSqlDbManager,
@@ -38,9 +43,33 @@ export default async function removeSubEntities<T extends Entity, U extends obje
     const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesPath });
 
     await forEachAsyncParallel(subEntities, async (subEntity: any) => {
-      const possibleErrorResponse = await deleteEntityById(dbManager, subEntity.id, subEntity.constructor);
-      if (possibleErrorResponse) {
-        throw possibleErrorResponse;
+      const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
+        EntityClass,
+        subEntity.constructor,
+        dbManager.getTypes()
+      );
+      if (
+        parentEntityClassAndPropertyNameForSubEntity &&
+        typePropertyAnnotationContainer.isTypePropertyManyToMany(
+          parentEntityClassAndPropertyNameForSubEntity[0],
+          parentEntityClassAndPropertyNameForSubEntity[1]
+        )
+      ) {
+        const associationTableName = `${EntityClass.name}_${subEntity.constructor}`;
+        const {
+          entityForeignIdFieldName,
+          subEntityForeignIdFieldName
+        } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
+        const numericId = parseInt(_id, 10);
+        await dbManager.tryExecuteSql(
+          `DELETE FROM ${dbManager.schema}.${associationTableName} WHERE ${entityForeignIdFieldName} = $1 AND ${subEntityForeignIdFieldName} = $2`,
+          [numericId, subEntity._id]
+        );
+      } else {
+        const possibleErrorResponse = await deleteEntityById(dbManager, subEntity.id, subEntity.constructor);
+        if (possibleErrorResponse) {
+          throw possibleErrorResponse;
+        }
       }
     });
 
