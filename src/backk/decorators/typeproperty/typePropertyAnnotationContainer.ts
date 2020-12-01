@@ -6,6 +6,7 @@ class TypePropertyAnnotationContainer {
   private readonly typePropertyNameToIsEncryptedMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsNotEncryptedMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsPrivateMap: { [key: string]: boolean } = {};
+  private readonly typePropertyNameToIsManyToManyMap: { [key: string]: boolean } = {};
 
   addDocumentationForTypeProperty(Type: Function, propertyName: string, docString: string) {
     this.typePropertyNameToDocStringMap[`${Type.name}${propertyName}`] = docString;
@@ -33,6 +34,10 @@ class TypePropertyAnnotationContainer {
 
   setTypePropertyAsPrivate(Type: Function, propertyName: string) {
     this.typePropertyNameToIsPrivateMap[`${Type.name}${propertyName}`] = true;
+  }
+
+  setTypePropertyAsManyToMany(Type: Function, propertyName: string) {
+    this.typePropertyNameToIsManyToManyMap[`${Type.name}${propertyName}`] = true;
   }
 
   getDocumentationForTypeProperty(Type: Function, functionName: string) {
@@ -112,6 +117,18 @@ class TypePropertyAnnotationContainer {
     while (proto !== Object.prototype) {
       if (this.typePropertyNameToIsPrivateMap[`${Type.name}${functionName}`] !== undefined) {
         return this.typePropertyNameToIsPrivateMap[`${Type.name}${functionName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isTypePropertyManyToMany(Type: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (Type as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.typePropertyNameToIsManyToManyMap[`${Type.name}${functionName}`] !== undefined) {
+        return this.typePropertyNameToIsManyToManyMap[`${Type.name}${functionName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
