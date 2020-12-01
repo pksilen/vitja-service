@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- ExecuteScheduled url path to execute function at given timepoint
 - Retry database operations for scheduling
 - create single backk init method for main.ts
 - @ManyToMany

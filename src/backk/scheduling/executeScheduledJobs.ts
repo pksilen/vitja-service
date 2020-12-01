@@ -1,5 +1,4 @@
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
-import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
 import { CronJob } from 'cron';
 import { createNamespace } from 'cls-hooked';
 import call from '../remote/http/call';
@@ -29,6 +28,7 @@ export default async function executeScheduledJobs(dbManager: AbstractDbManager)
   jobSchedulingsOrErrorResponse.forEach(
     ({
       _id,
+      executionSchedulingId,
       retryIntervalsInSecs,
       scheduledExecutionTimestamp,
       serviceFunctionName,
@@ -40,7 +40,7 @@ export default async function executeScheduledJobs(dbManager: AbstractDbManager)
         clsNamespace.run(async () => {
           await dbManager.tryReserveDbConnectionFromPool();
           possibleErrorResponse = await dbManager.deleteEntityById(_id, JobScheduling, {
-            hookFunc: (entity) => entity !== undefined
+            hookFunc: (jobScheduling) => jobScheduling !== undefined
           });
           dbManager.tryReleaseDbConnectionBackToPool();
         });
@@ -53,7 +53,7 @@ export default async function executeScheduledJobs(dbManager: AbstractDbManager)
               getServiceNamespace() +
               '.svc.cluster.local:80/' +
               serviceFunctionName,
-            JSON.parse(serviceFunctionArgument)
+            { ...JSON.parse(serviceFunctionArgument), executionSchedulingId }
           );
 
           if (isErrorResponse(possibleErrorResponse)) {
@@ -67,7 +67,7 @@ export default async function executeScheduledJobs(dbManager: AbstractDbManager)
                   getServiceNamespace() +
                   '.svc.cluster.local:80/' +
                   serviceFunctionName,
-                JSON.parse(serviceFunctionArgument)
+                { ...JSON.parse(serviceFunctionArgument), executionSchedulingId }
               );
               return !isErrorResponse(possibleErrorResponse);
             });

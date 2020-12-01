@@ -11,15 +11,22 @@ import AbstractDbManager from '../dbmanager/AbstractDbManager';
 
 const scheduledJobs: { [key: string]: CronJob } = {};
 
-function removeScheduledJob(dbManager: AbstractDbManager, executionSchedulingId: string, _id: string) {
+async function removeScheduledJob(dbManager: AbstractDbManager, executionSchedulingId: string, _id: string) {
   delete scheduledJobs[executionSchedulingId];
 
   const clsNamespace = createNamespace('serviceFunctionExecution');
-  clsNamespace.run(async () => {
+  await clsNamespace.runAndReturn(async () => {
     await dbManager.tryReserveDbConnectionFromPool();
-    await dbManager.deleteEntityById(_id, JobScheduling);
+    const possibleErrorResponse = await dbManager.deleteEntityById(_id, JobScheduling, {
+      hookFunc: (jobScheduling) => jobScheduling !== undefined
+    });
     dbManager.tryReleaseDbConnectionBackToPool();
+    if (possibleErrorResponse) {
+      return false;
+    }
   });
+
+  return true;
 }
 
 export default function scheduleJobExecution(
@@ -77,8 +84,15 @@ export default function scheduleJobExecution(
 
   const job = new CronJob(scheduledExecutionTimestampAsDate, async () => {
     try {
-      await tryExecuteServiceFunction(controller, serviceFunctionName, serviceFunctionArgument, headers);
-      removeScheduledJob(dbManager, executionSchedulingId, (entityOrErrorResponse as JobScheduling)._id);
+      if (
+        await removeScheduledJob(
+          dbManager,
+          executionSchedulingId,
+          (entityOrErrorResponse as JobScheduling)._id
+        )
+      ) {
+        await tryExecuteServiceFunction(controller, serviceFunctionName, serviceFunctionArgument, headers);
+      }
     } catch (error) {
       await findAsyncSequential(retryIntervalsInSecs, async (retryIntervalInSecs) => {
         await delay(retryIntervalInSecs * 1000);
@@ -89,7 +103,7 @@ export default function scheduleJobExecution(
           return false;
         }
       });
-      removeScheduledJob(dbManager, executionSchedulingId, (entityOrErrorResponse as JobScheduling)._id);
+
     }
   });
 
