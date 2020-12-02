@@ -11,11 +11,14 @@ import createErrorResponseFromErrorMessageAndStatusCode
 import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import tryGetProjection from "./clauses/tryGetProjection";
+import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
+import getSqlColumnFromProjection from "./utils/columns/getSqlColumnFromProjection";
 
 export default async function getEntityBy<T>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
-  fieldValue: T[keyof T],
+  fieldValue: T[keyof T] | string,
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
@@ -23,14 +26,24 @@ export default async function getEntityBy<T>(
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass.name);
   const Types = dbManager.getTypes();
-  const item = {
-    [fieldName]: fieldValue
-  };
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
   try {
-    if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
-      (item as any)[fieldName] = encrypt(fieldValue as any, false);
+    let projection;
+    try {
+      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, EntityClass, Types);
+    } catch (error) {
+      // noinspection ExceptionCaughtLocallyJS
+      throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
+    }
+
+    // noinspection AssignmentToFunctionParameterJS
+    fieldName = getSqlColumnFromProjection(projection);
+
+    const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
+    if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
+      // noinspection AssignmentToFunctionParameterJS
+      fieldValue = encrypt(fieldValue as any, false);
     }
 
     const { columns, joinClause } = getSqlSelectStatementParts(
@@ -42,7 +55,7 @@ export default async function getEntityBy<T>(
 
     const result = await dbManager.tryExecuteQuery(
       `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${fieldName} = $1`,
-      [(item as any)[fieldName]]
+      [fieldValue]
     );
 
     if (result.rows.length === 0) {

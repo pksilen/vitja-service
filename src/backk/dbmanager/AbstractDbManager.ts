@@ -172,14 +172,14 @@ export default abstract class AbstractDbManager {
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    allowSubEntitiesAdditionAndRemoval?: boolean
+    allowAdditionAndRemovalForSubEntities?: Function[]
   ): Promise<void | ErrorResponse>;
 
   updateEntities<T extends Entity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    shouldAllowSubEntitiesAdditionAndRemoval?: boolean
+    allowAdditionAndRemovalForSubEntities?: Function[]
   ): Promise<void | ErrorResponse> {
     return this.executeInsideTransaction(async () => {
       try {
@@ -188,7 +188,7 @@ export default abstract class AbstractDbManager {
             entity,
             entityClass,
             preHooks,
-            shouldAllowSubEntitiesAdditionAndRemoval
+            allowAdditionAndRemovalForSubEntities
           );
           if (possibleErrorResponse) {
             possibleErrorResponse.errorMessage =

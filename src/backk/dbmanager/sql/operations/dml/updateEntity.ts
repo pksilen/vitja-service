@@ -22,13 +22,15 @@ import { HttpStatusCodes } from '../../../../constants/constants';
 import getSubEntitiesByAction from './utils/getSubEntitiesByAction';
 import deleteEntityById from './deleteEntityById';
 import createEntity from './createEntity';
+import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
   { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
   preHooks?: PreHook | PreHook[],
-  shouldAllowSubEntitiesAdditionAndRemoval: boolean = false,
+  allowAdditionAndRemovalForSubEntities?: Function[],
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
@@ -44,7 +46,7 @@ export default async function updateEntity<T extends Entity>(
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
-    if (!isRecursiveCall || shouldAllowSubEntitiesAdditionAndRemoval) {
+    if (!isRecursiveCall || allowAdditionAndRemovalForSubEntities) {
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
     }
     if (!isRecursiveCall) {
@@ -68,10 +70,11 @@ export default async function updateEntity<T extends Entity>(
           EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
         const idFieldName = _id === undefined ? 'id' : '_id';
         let subEntityOrEntities = (restOfEntity as any)[fieldName];
+        const SubEntityClass = (Types as any)[baseTypeName];
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
           // noinspection ReuseOfLocalVariableJS
-          if (shouldAllowSubEntitiesAdditionAndRemoval) {
+          if (allowAdditionAndRemovalForSubEntities?.includes(SubEntityClass)) {
             const { subEntitiesToDelete, subEntitiesToAdd, subEntitiesToUpdate } = getSubEntitiesByAction(
               subEntityOrEntities,
               (currentEntityOrErrorResponse as any)[fieldName]
@@ -79,32 +82,54 @@ export default async function updateEntity<T extends Entity>(
 
             promises.push(
               forEachAsyncParallel(subEntitiesToDelete, async (subEntity: any) => {
-                const possibleErrorResponse = await deleteEntityById(
-                  dbManager,
-                  subEntity.id,
-                  (Types as any)[baseTypeName]
-                );
-
-                if (possibleErrorResponse) {
-                  throw possibleErrorResponse;
+                if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
+                  const associationTableName = `${EntityClass.name}_${SubEntityClass}`;
+                  const {
+                    entityForeignIdFieldName,
+                    subEntityForeignIdFieldName
+                  } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
+                  await dbManager.tryExecuteSql(
+                    `DELETE FROM ${dbManager.schema}.${associationTableName} WHERE ${entityForeignIdFieldName} = $1 AND ${subEntityForeignIdFieldName} = $2`,
+                    [parseInt(_id ?? id, 10), subEntity._id]
+                  );
+                } else {
+                  const possibleErrorResponse = await deleteEntityById(
+                    dbManager,
+                    subEntity.id,
+                    SubEntityClass
+                  );
+                  if (possibleErrorResponse) {
+                    throw possibleErrorResponse;
+                  }
                 }
               })
             );
 
             promises.push(
-              forEachAsyncParallel(subEntitiesToDelete, async (subEntity: any) => {
-                const createdEntityOrErrorResponse = await createEntity(
-                  dbManager,
-                  subEntity,
-                  (Types as any)[baseTypeName],
-                  undefined,
-                  undefined,
-                  false,
-                  false
-                );
-
-                if (isErrorResponse(createdEntityOrErrorResponse)) {
-                  throw createdEntityOrErrorResponse;
+              forEachAsyncParallel(subEntitiesToAdd, async (subEntity: any) => {
+                if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
+                  const associationTableName = `${EntityClass.name}_${SubEntityClass}`;
+                  const {
+                    entityForeignIdFieldName,
+                    subEntityForeignIdFieldName
+                  } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
+                  dbManager.tryExecuteSql(
+                    `INSERT INTO ${dbManager.schema}.${associationTableName} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES ($1, $2)`,
+                    [parseInt(_id ?? id, 10), subEntity._id]
+                  );
+                } else {
+                  const createdEntityOrErrorResponse = await createEntity(
+                    dbManager,
+                    subEntity,
+                    SubEntityClass,
+                    undefined,
+                    undefined,
+                    false,
+                    false
+                  );
+                  if (isErrorResponse(createdEntityOrErrorResponse)) {
+                    throw createdEntityOrErrorResponse;
+                  }
                 }
               })
             );
@@ -112,23 +137,26 @@ export default async function updateEntity<T extends Entity>(
             // noinspection ReuseOfLocalVariableJS
             subEntityOrEntities = subEntitiesToUpdate;
           }
-          promises.push(
-            forEachAsyncParallel(subEntityOrEntities, async (subEntity: any) => {
-              subEntity[foreignIdFieldName] = _id;
-              const possibleErrorResponse = await updateEntity(
-                dbManager,
-                subEntity,
-                (Types as any)[baseTypeName],
-                undefined,
-                shouldAllowSubEntitiesAdditionAndRemoval,
-                true
-              );
 
-              if (possibleErrorResponse) {
-                throw possibleErrorResponse;
-              }
-            })
-          );
+          if (!typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
+            promises.push(
+              forEachAsyncParallel(subEntityOrEntities, async (subEntity: any) => {
+                subEntity[foreignIdFieldName] = _id;
+                const possibleErrorResponse = await updateEntity(
+                  dbManager,
+                  subEntity,
+                  SubEntityClass,
+                  undefined,
+                  allowAdditionAndRemovalForSubEntities,
+                  true
+                );
+
+                if (possibleErrorResponse) {
+                  throw possibleErrorResponse;
+                }
+              })
+            );
+          }
         } else if (isEntityTypeName(baseTypeName) && subEntityOrEntities !== null) {
           subEntityOrEntities[foreignIdFieldName] = _id;
           const possibleErrorResponse = await updateEntity(
@@ -136,7 +164,7 @@ export default async function updateEntity<T extends Entity>(
             subEntityOrEntities,
             (Types as any)[baseTypeName],
             undefined,
-            shouldAllowSubEntitiesAdditionAndRemoval,
+            allowAdditionAndRemovalForSubEntities,
             true
           );
 

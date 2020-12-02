@@ -3,6 +3,18 @@
 TODO
 - @ManyToMany
   -
+- allowAdditionAndRemovalForSubEntities make not optional
+  - replace Functions with same name functions from dbManager getTypes()
+- Allow subentity addition removal for User to update paymentMethods
+- Add @Unique annotation for userName field
+- getEntityBy/UpdateEntityBy fieldnames must have @Unique annotation
+- AllowForInternalUse => AllowForClusterInternalUse
+- Entity fields must be public or private, if  missing, give error
+- Entity field can be reaadonly
+  - Not included in sample arg
+  - Included in type metadata validation
+  - validate isUndefined
+- Private => AllowForServiceInternalUse
 - Return value Types cannot have 'errorMessage' property
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing

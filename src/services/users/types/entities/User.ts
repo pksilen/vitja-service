@@ -43,6 +43,7 @@ export default class User extends _Id {
   @MaxLength(256)
   city!: string;
 
+  @Private()
   loyaltyDiscountLevel!: 0 | 25 | 50;
 
   defaultPaymentMethod!: DefaultPaymentMethod | null;

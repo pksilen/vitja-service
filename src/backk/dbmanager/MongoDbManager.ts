@@ -290,7 +290,7 @@ export default class MongoDbManager extends AbstractDbManager {
     { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    shouldAllowSubEntitiesAdditionAndRemoval?: boolean
+    allowAdditionAndRemovalForSubEntities?: Function[]
   ): Promise<void | ErrorResponse> {
     // TODO add precondition check
     // auto-update version/lastmodifiedtimestamp
