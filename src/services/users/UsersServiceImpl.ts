@@ -1,4 +1,4 @@
-import { Injectable, Optional } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import * as argon2 from "argon2";
 import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
 import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
@@ -16,8 +16,6 @@ import UsersService from "./UsersService";
 import _Id from "../../backk/types/id/_Id";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
-import DefaultPaymentMethod from "./types/entities/DefaultPaymentMethod";
-import PaymentMethod from "./types/entities/PaymentMethod";
 import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/usersServiceErrors";
 import { Errors } from "../../backk/decorators/service/function/Errors";
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";

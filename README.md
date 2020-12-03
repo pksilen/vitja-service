@@ -3,7 +3,7 @@
 TODO
 - allowAdditionAndRemovalForSubEntities make not optional
   - replace Functions with same name functions from dbManager getTypes()
-- Create tagsService
+
     - createTag
     - getTagsByFilter
     - deleteAllTags

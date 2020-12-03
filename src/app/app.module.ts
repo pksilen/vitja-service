@@ -20,6 +20,8 @@ import ResponseCacheConfigService from '../backk/cache/ResponseCacheConfigServic
 import ResponseCacheConfigServiceImpl from '../services/responsecacheconfig/ResponseCacheConfigServiceImpl';
 import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
 import AuditLoggingServiceImpl from "../services/auditlogging/AuditLoggingServiceImpl";
+import TagsService from "../services/tags/TagsService";
+import TagsServiceImpl from "../services/tags/TagsServiceImpl";
 
 @Module({
   imports: [],
@@ -39,6 +41,7 @@ import AuditLoggingServiceImpl from "../services/auditlogging/AuditLoggingServic
       )
     },
     { provide: SalesItemsService, useClass: SalesItemsServiceImpl },
+    { provide: TagsService, useClass: TagsServiceImpl },
     { provide: UsersService, useClass: UsersServiceImpl },
     { provide: OrdersService, useClass: OrdersServiceImpl },
     { provide: ShoppingCartService, useClass: ShoppingCartServiceImpl }

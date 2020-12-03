@@ -9,22 +9,21 @@ import {
   Post,
   Query,
   Res
-} from '@nestjs/common';
-import AuthorizationService from '../backk/authorization/AuthorizationService';
-import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
-import tryExecuteServiceFunction from '../backk/execution/tryExecuteServiceFunction';
-import ReadinessCheckService from '../backk/readinesscheck/ReadinessCheckService';
-import OrdersService from '../services/orders/OrdersService';
-import SalesItemsService from '../services/salesitems/SalesItemsService';
-import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
-import UsersService from '../services/users/UsersService';
-import ResponseCacheConfigService from '../backk/cache/ResponseCacheConfigService';
-import AuditLoggingService from '../backk/observability/logging/audit/AuditLoggingService';
-import initializeController from '../backk/controller/initializeController';
-import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
-import executeScheduledCronJobs from "../backk/scheduling/executeScheduledCronJobs";
+} from "@nestjs/common";
+import AuthorizationService from "../backk/authorization/AuthorizationService";
+import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
+import tryExecuteServiceFunction from "../backk/execution/tryExecuteServiceFunction";
+import ReadinessCheckService from "../backk/readinesscheck/ReadinessCheckService";
+import OrdersService from "../services/orders/OrdersService";
+import SalesItemsService from "../services/salesitems/SalesItemsService";
+import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
+import UsersService from "../services/users/UsersService";
+import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigService";
+import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
+import initializeController from "../backk/controller/initializeController";
+import TagsService from "../services/tags/TagsService";
 
-// noinspection JSUnusedLocalSymbols,OverlyComplexFunctionJS
+// noinspection JSUnusedLocalSymbols
 @Controller()
 export class AppController {
   constructor(
@@ -34,6 +33,7 @@ export class AppController {
     private readonly auditLoggingService: AuditLoggingService,
     private readonly authorizationService: AuthorizationService,
     private readonly usersService: UsersService,
+    private readonly tagsService: TagsService,
     private readonly salesItemsService: SalesItemsService,
     private readonly shoppingCartService: ShoppingCartService,
     private readonly ordersService: OrdersService
