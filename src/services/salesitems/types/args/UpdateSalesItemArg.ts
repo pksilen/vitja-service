@@ -5,7 +5,7 @@
 import { ArrayMaxSize, IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
 import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
-import Tag from '../entities/Tag';
+import Tag from '../../../tags/entities/Tag';
 import { Area } from '../enums/Area';
 import { Category } from '../enums/Category';
 import { Department } from '../enums/Department';

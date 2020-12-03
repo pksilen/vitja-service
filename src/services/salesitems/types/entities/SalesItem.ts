@@ -6,7 +6,7 @@ import { Department } from "../enums/Department";
 import { Category } from "../enums/Category";
 import { SalesItemState } from "../enums/SalesItemState";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
-import Tag from "./Tag";
+import Tag from "../../../tags/entities/Tag";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
