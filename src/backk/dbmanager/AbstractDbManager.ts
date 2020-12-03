@@ -32,8 +32,8 @@ export default abstract class AbstractDbManager {
     return this.services.reduce((types, service) => ({ ...types, ...service.Types }), {});
   }
 
-  getType(typeName: string) {
-    return (this.getTypes() as any)[typeName];
+  getType(Type: new() => any): new() => any{
+    return (this.getTypes() as any)[Type.name] ?? Type;
   }
 
   getClsNamespace(): Namespace | undefined {

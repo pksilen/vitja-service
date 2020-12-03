@@ -22,7 +22,7 @@ export default async function getEntitiesBy<T>(
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   const Types = dbManager.getTypes();
 
   try {
@@ -47,8 +47,7 @@ export default async function getEntitiesBy<T>(
     const { columns, joinClause, sortClause, pagingClause } = getSqlSelectStatementParts(
       dbManager,
       postQueryOperations,
-      EntityClass,
-      Types
+      EntityClass
     );
 
     const result = await dbManager.tryExecuteQuery(

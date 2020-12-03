@@ -30,7 +30,7 @@ export default async function removeSubEntities<T extends Entity, U extends obje
   preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
 
   try {

@@ -14,15 +14,13 @@ export default async function getAllEntities<T>(
 ): Promise<T[] | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
-  const Types = dbManager.getTypes();
+  EntityClass = dbManager.getType(EntityClass);
 
   try {
     const { columns, joinClause, sortClause, pagingClause } = getSqlSelectStatementParts(
       dbManager,
       postQueryOperations ?? { ...new DefaultPostQueryOperations(), pageSize: Number.MAX_SAFE_INTEGER },
-      EntityClass,
-      Types
+      EntityClass
     );
 
     const result = await dbManager.tryExecuteQuery(
@@ -33,7 +31,7 @@ export default async function getAllEntities<T>(
       result,
       EntityClass,
       postQueryOperations ?? { ...new DefaultPostQueryOperations(), pageSize: Number.MAX_SAFE_INTEGER },
-      Types
+      dbManager.getTypes()
     );
   } catch (error) {
     return createErrorResponseFromError(error);

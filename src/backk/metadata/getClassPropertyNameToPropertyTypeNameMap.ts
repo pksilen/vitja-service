@@ -14,7 +14,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
 
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
   const propNameToIsOptionalMap: { [key: string]: boolean } = {};
-  const propNameToPropTypeMap: { [key: string]: string } = {};
+  const propNameToPropTypeNameMap: { [key: string]: string } = {};
   const propNameToDefaultValueMap: { [key: string]: any } = {};
 
   const typeObject = new Class();
@@ -54,54 +54,54 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
 
     switch (validationMetadata.type) {
       case 'isBoolean':
-        propNameToPropTypeMap[validationMetadata.propertyName] =
-          'boolean' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+        propNameToPropTypeNameMap[validationMetadata.propertyName] =
+          'boolean' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
         break;
       case 'isNumber':
-        propNameToPropTypeMap[validationMetadata.propertyName] =
-          'number' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+        propNameToPropTypeNameMap[validationMetadata.propertyName] =
+          'number' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
         break;
       case 'isString':
-        propNameToPropTypeMap[validationMetadata.propertyName] =
-          'string' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+        propNameToPropTypeNameMap[validationMetadata.propertyName] =
+          'string' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
         break;
       case 'isInt':
-        propNameToPropTypeMap[validationMetadata.propertyName] =
-          'integer' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+        propNameToPropTypeNameMap[validationMetadata.propertyName] =
+          'integer' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
         break;
       case 'isDate':
-        propNameToPropTypeMap[validationMetadata.propertyName] =
-          'Date' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+        propNameToPropTypeNameMap[validationMetadata.propertyName] =
+          'Date' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
         break;
       case 'customValidation':
         if (validationMetadata.constraints[0] === 'isBigInt') {
-          propNameToPropTypeMap[validationMetadata.propertyName] =
-            'bigint' + (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+          propNameToPropTypeNameMap[validationMetadata.propertyName] =
+            'bigint' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
         }
         break;
       case 'isIn':
-        propNameToPropTypeMap[validationMetadata.propertyName] =
+        propNameToPropTypeNameMap[validationMetadata.propertyName] =
           '(' +
           validationMetadata.constraints[0]
             .map((value: any) => (typeof value === 'string' ? `'${value}'` : `${value}`))
             .join('|') +
           ')' +
-          (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+          (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
         break;
       case 'isInstance':
-        propNameToPropTypeMap[validationMetadata.propertyName] =
+        propNameToPropTypeNameMap[validationMetadata.propertyName] =
           validationMetadata.constraints[0].name +
-          (propNameToPropTypeMap[validationMetadata.propertyName] ?? '');
+          (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
         break;
       case 'isArray':
-        propNameToPropTypeMap[validationMetadata.propertyName] =
-          (propNameToPropTypeMap[validationMetadata.propertyName] ?? '') + '[]';
+        propNameToPropTypeNameMap[validationMetadata.propertyName] =
+          (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '') + '[]';
         break;
     }
 
     if (isNullable) {
-      propNameToPropTypeMap[validationMetadata.propertyName] =
-        (propNameToPropTypeMap[validationMetadata.propertyName] ?? '') + ' | null';
+      propNameToPropTypeNameMap[validationMetadata.propertyName] =
+        (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '') + ' | null';
     }
 
     const hasMatchesValidation = !!validationMetadatas.find(
@@ -297,12 +297,16 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     }
   });
 
-  const metadata = Object.entries(propNameToPropTypeMap).reduce(
-    (accumulatedTypeObject, [propName, propType]) => {
+  const metadata = Object.entries(propNameToPropTypeNameMap).reduce(
+    (accumulatedTypeObject, [propName, propTypeName]) => {
+      let finalPropType = propTypeName;
+      if (propNameToIsOptionalMap[propName] && propTypeName.includes(' ') && propTypeName[0] !== '(') {
+        finalPropType = '(' + propTypeName + ')';
+      }
       return {
         ...accumulatedTypeObject,
         [propName]:
-          (propNameToIsOptionalMap[propName] ? '?' + propType : propType) +
+          (propNameToIsOptionalMap[propName] ? '?' + finalPropType : finalPropType) +
           (propNameToDefaultValueMap[propName] === undefined
             ? ''
             : ` = ${JSON.stringify(propNameToDefaultValueMap[propName])}`)

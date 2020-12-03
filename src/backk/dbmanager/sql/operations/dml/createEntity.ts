@@ -30,7 +30,7 @@ export default async function createEntity<T>(
   shouldReturnItem = true
 ): Promise<T | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
   let sqlStatement;
 
@@ -39,7 +39,6 @@ export default async function createEntity<T>(
     const Types = dbManager.getTypes();
 
     if (!isRecursiveCall) {
-      console.log(entity);
       await hashAndEncryptItem(entity, EntityClass, Types);
     }
 
@@ -122,13 +121,14 @@ export default async function createEntity<T>(
                 }
               }
 
-              const associationTable = `${EntityClass.name}_${SubEntityClass}`;
+              const associationTableName = `${EntityClass.name}_${SubEntityClass.name}`;
               const {
                 entityForeignIdFieldName,
                 subEntityForeignIdFieldName
-              } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTable);
-              dbManager.tryExecuteSql(
-                `INSERT INTO ${dbManager.schema}.${associationTable} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES ($1, $2)`,
+              } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
+
+              await dbManager.tryExecuteSql(
+                `INSERT INTO ${dbManager.schema}.${associationTableName} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES ($1, $2)`,
                 [_id, subEntityOrErrorResponse._id]
               );
             } else {

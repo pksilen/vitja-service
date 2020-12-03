@@ -61,7 +61,7 @@ export default function getJoinClause(
         entityForeignIdFieldName + ' LEFT JOIN ' +
         schema + '.' + subEntityTableName + ' ON ' +
         schema + '.' + associationTableName + '.' + subEntityForeignIdFieldName + ' = ' +
-        schema + '.' + subEntityTableName + '_id'
+        schema + '.' + subEntityTableName + '._id'
         ;
 
       return joinClausePart;

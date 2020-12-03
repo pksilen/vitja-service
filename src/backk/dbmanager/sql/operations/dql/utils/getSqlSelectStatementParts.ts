@@ -14,10 +14,10 @@ export default function getSqlSelectStatementParts<T>(
   dbManager: PostgreSqlDbManager,
   { pageNumber, pageSize, sortBys, subPaginations, ...projection }: PostQueryOperations,
   entityClass: new () => T,
-  Types: object,
   filters?: Partial<T> | SqlExpression[] | UserDefinedFilter[],
   isInternalCall = false
 ) {
+  const Types = dbManager.getTypes();
   const projectionColumns = tryGetProjection(dbManager.schema, projection, entityClass, Types, isInternalCall);
   const windowClauses = tryGetWindowClausesForSubPaginations(
     dbManager.schema,

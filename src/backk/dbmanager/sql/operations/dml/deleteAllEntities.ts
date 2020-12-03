@@ -13,7 +13,7 @@ export default async function deleteAllEntities<T>(
   EntityClass: new () => T
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
 
   try {

@@ -14,15 +14,14 @@ export default async function getEntitiesCount<T>(
 ): Promise<number | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   const Types = dbManager.getTypes();
 
   try {
     const { joinClause, whereClause, filterValues } = getSqlSelectStatementParts(
       dbManager,
       new DefaultPostQueryOperations(),
-      EntityClass,
-      Types
+      EntityClass
     );
 
     const result = await dbManager.tryExecuteQueryWithConfig(

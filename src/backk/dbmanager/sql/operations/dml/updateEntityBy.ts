@@ -21,7 +21,7 @@ export default async function updateEntityBy<T extends Entity>(
   preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
 
   try {

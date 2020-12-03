@@ -22,8 +22,7 @@ export default async function getEntitiesByIds<T>(
     const { columns, joinClause, sortClause, pagingClause } = getSqlSelectStatementParts(
       dbManager,
       postQueryOperations,
-      entityClass,
-      Types
+      entityClass
     );
 
     const numericIds = _ids.map((id) => {

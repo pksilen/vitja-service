@@ -30,7 +30,7 @@ export default class TagsServiceImpl extends TagsService {
   @AllowForEveryUser()
   getTagsWhoseNameContains({ name }: TagName): Promise<Tag[] | ErrorResponse> {
     return this.dbManager.getEntitiesByFilters(
-      [new SqlExpression('name LIKE "%:name%"', { name })],
+      [new SqlExpression('name LIKE :name', { name: `%${name}%` })],
       Tag,
       new DefaultPostQueryOperations()
     );

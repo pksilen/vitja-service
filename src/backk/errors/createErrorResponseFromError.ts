@@ -19,8 +19,8 @@ export default function createErrorResponseFromError(error: Error): ErrorRespons
     errorMessage = errorMessage.trim();
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    log(Severity.DEBUG, errorMessage, error.stack ?? '', { errorCode, statusCode });
+  if (process.env.NODE_ENV === 'development' && statusCode >= 500) {
+    log(Severity.ERROR, errorMessage, error.stack ?? '', { errorCode, statusCode });
   }
 
   return {

@@ -17,7 +17,7 @@ export default async function getEntitiesByFilters<T>(
 ): Promise<T[] | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   const Types = dbManager.getTypes();
 
   try {
@@ -28,7 +28,7 @@ export default async function getEntitiesByFilters<T>(
       filterValues,
       sortClause,
       pagingClause
-    } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, Types, filters);
+    } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters);
 
     const result = await dbManager.tryExecuteQueryWithConfig(
       pg(

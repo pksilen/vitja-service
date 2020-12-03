@@ -104,7 +104,6 @@ const subPropertyNamesWhoseValuesShouldBeEncrypted = [
 
 const propertyNamesWhoseValuesShouldBeEncrypted = [
   'user',
-  'name',
   'ssn',
   'cvc',
   'cvv',

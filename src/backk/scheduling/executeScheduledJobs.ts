@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import { CronJob } from 'cron';
 import { createNamespace } from 'cls-hooked';

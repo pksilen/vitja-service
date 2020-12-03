@@ -17,7 +17,7 @@ export default async function getSubEntities<T extends object, U>(
 ): Promise<U | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
 
   try {
     const itemOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, postQueryOperations);

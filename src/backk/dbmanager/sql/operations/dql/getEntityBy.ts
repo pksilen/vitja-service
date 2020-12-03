@@ -24,7 +24,7 @@ export default async function getEntityBy<T>(
 ): Promise<T | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   const Types = dbManager.getTypes();
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
@@ -48,8 +48,7 @@ export default async function getEntityBy<T>(
     const { columns, joinClause } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,
-      EntityClass,
-      Types
+      EntityClass
     );
 
     const result = await dbManager.tryExecuteQuery(

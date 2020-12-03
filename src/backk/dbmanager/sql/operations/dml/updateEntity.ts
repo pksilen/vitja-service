@@ -34,7 +34,7 @@ export default async function updateEntity<T extends Entity>(
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
 
   try {

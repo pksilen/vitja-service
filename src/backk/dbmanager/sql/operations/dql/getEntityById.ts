@@ -20,7 +20,7 @@ export default async function getEntityById<T>(
 ): Promise<T | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   const Types = dbManager.getTypes();
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
@@ -29,7 +29,6 @@ export default async function getEntityById<T>(
       dbManager,
       finalPostQueryOperations,
       EntityClass,
-      Types,
       undefined,
       isInternalCall
     );

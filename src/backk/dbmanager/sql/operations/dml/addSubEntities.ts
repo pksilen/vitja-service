@@ -34,9 +34,9 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
-  EntityClass = dbManager.getType(EntityClass.name);
+  EntityClass = dbManager.getType(EntityClass);
   // noinspection AssignmentToFunctionParameterJS
-  SubEntityClass = dbManager.getType(SubEntityClass.name);
+  SubEntityClass = dbManager.getType(SubEntityClass);
   let didStartTransaction = false;
 
   try {

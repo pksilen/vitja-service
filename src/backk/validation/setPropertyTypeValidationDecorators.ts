@@ -10,6 +10,15 @@ import getSrcFilePathNameForTypeName, {
 import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
 import parseEnumValuesFromSrcFile from "../typescript/parser/parseEnumValuesFromSrcFile";
 
+function getPropertyValidationOfType(typeClass: Function, propertyName: string, validationType: string) {
+  const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
+
+  return validationMetadatas.find(
+    (validationMetadata: ValidationMetadata) =>
+      validationMetadata.propertyName === propertyName && validationMetadata.type === validationType
+  );
+}
+
 function doesPropertyContainValidation(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
 
@@ -267,9 +276,11 @@ export default function setPropertyTypeValidationDecorators(
             );
           }
 
+          const conditionalValidation = getPropertyValidationOfType(typeClass, propertyTypeName, ValidationTypes.CONDITIONAL_VALIDATION);
+
           if (
             classBodyNode.optional &&
-            !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.CONDITIONAL_VALIDATION)
+            (!conditionalValidation || conditionalValidation.constraints[1] !== 'isOptional')
           ) {
             const optionalValidationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.CONDITIONAL_VALIDATION,
