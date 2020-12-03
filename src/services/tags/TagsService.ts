@@ -5,6 +5,6 @@ import TagName from "./args/TagName";
 
 export default abstract class TagsService extends BaseService {
   abstract deleteAllTags(): Promise<void | ErrorResponse>;
-  abstract createTag(name: TagName): Promise<Tag | ErrorResponse>;
-  abstract getTagsWhoseNameContains(name: TagName): Promise<Tag[] | ErrorResponse>;
+  abstract createTag(arg: TagName): Promise<Tag | ErrorResponse>;
+  abstract getTagsWhoseNameContains(arg: TagName): Promise<Tag[] | ErrorResponse>;
 }

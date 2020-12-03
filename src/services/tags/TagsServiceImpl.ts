@@ -1,16 +1,18 @@
-import { Injectable } from "@nestjs/common";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import TagsService from "./TagsService";
-import Tag from "./entities/Tag";
-import TagName from "./args/TagName";
+import { Injectable } from '@nestjs/common';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import TagsService from './TagsService';
+import Tag from './entities/Tag';
+import TagName from './args/TagName';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
+import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
 
 @Injectable()
 export default class TagsServiceImpl extends TagsService {
-  constructor(
-    dbManager: AbstractDbManager
-  ) {
+  constructor(dbManager: AbstractDbManager) {
     super(dbManager);
   }
 
@@ -19,11 +21,18 @@ export default class TagsServiceImpl extends TagsService {
     return this.dbManager.deleteAllEntities(Tag);
   }
 
-  createTag(name: TagName): Promise<Tag | ErrorResponse> {
-    throw new Error('Not implemented')
+  @AllowForEveryUser()
+  @NoCaptcha()
+  createTag({ name }: TagName): Promise<Tag | ErrorResponse> {
+    return this.dbManager.createEntity({ name }, Tag);
   }
 
-  getTagsWhoseNameContains(name: TagName): Promise<Tag[] | ErrorResponse> {
-    throw new Error('Not implemented')
+  @AllowForEveryUser()
+  getTagsWhoseNameContains({ name }: TagName): Promise<Tag[] | ErrorResponse> {
+    return this.dbManager.getEntitiesByFilters(
+      [new SqlExpression('name LIKE "%:name%"', { name })],
+      Tag,
+      new DefaultPostQueryOperations()
+    );
   }
 }
