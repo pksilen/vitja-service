@@ -7,7 +7,7 @@ import getEntityById from '../dql/getEntityById';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/entities/Entity';
@@ -53,7 +53,7 @@ export default async function updateEntity<T extends Entity>(
       await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     }
 
-    const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass as any);
+    const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
     const columns: any = [];
     const values: any = [];
     const promises: Array<Promise<any>> = [];
@@ -185,11 +185,11 @@ export default async function updateEntity<T extends Entity>(
 
           promises.push(
             forEachAsyncParallel((restOfEntity as any)[fieldName], async (subItem: any, index) => {
-              const deleteStatement = `DELETE FROM ${dbManager.schema}.${EntityClass.name +
+              const deleteStatement = `DELETE FROM ${dbManager.schema}.${EntityClass.name + '_' +
                 fieldName.slice(0, -1)} WHERE ${foreignIdFieldName} = $1`;
               await dbManager.tryExecuteSql(deleteStatement, [_id]);
 
-              const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name +
+              const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name + '_' +
                 fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
                 0,
                 -1

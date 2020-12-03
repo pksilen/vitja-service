@@ -1,7 +1,7 @@
 import decrypt from './decrypt';
 import encrypt from './encrypt';
 import shouldEncryptValue from './shouldEncryptValue';
-import getPropertyNameToPropertyTypeNameMap from '../metadata/getPropertyNameToPropertyTypeNameMap';
+import getClassPropertyNameToPropertyTypeNameMap from '../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 function decryptItemValues(item: { [key: string]: any }, EntityClass: new () => any, Types: object) {
@@ -12,7 +12,7 @@ function decryptItemValues(item: { [key: string]: any }, EntityClass: new () => 
   Object.entries(item).forEach(([propertyName, propertyValue]) => {
     if (Array.isArray(propertyValue) && propertyValue.length > 0) {
       if (typeof propertyValue[0] === 'object' && propertyValue[0] !== null) {
-        const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass);
+        const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
         propertyValue.forEach((pv: any) => {
           decryptItemValues(
             pv,
@@ -31,7 +31,7 @@ function decryptItemValues(item: { [key: string]: any }, EntityClass: new () => 
         });
       }
     } else if (typeof propertyValue === 'object' && propertyValue !== null) {
-      const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass);
+      const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
       decryptItemValues(
         propertyValue,
         (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],

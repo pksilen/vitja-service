@@ -36,13 +36,12 @@ export default async function getEntitiesBy<T>(
       throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
     }
 
-    // noinspection AssignmentToFunctionParameterJS
-    fieldName = getSqlColumnFromProjection(projection);
+    const finalFieldName = getSqlColumnFromProjection(projection);
 
     const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
+    let finalFieldValue = fieldValue;
     if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
-      // noinspection AssignmentToFunctionParameterJS
-      fieldValue = encrypt(fieldValue as any, false);
+      finalFieldValue = encrypt(fieldValue as any, false);
     }
 
     const { columns, joinClause, sortClause, pagingClause } = getSqlSelectStatementParts(
@@ -53,8 +52,8 @@ export default async function getEntitiesBy<T>(
     );
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${fieldName} = $1 ${sortClause} ${pagingClause}`,
-      [fieldValue]
+      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${finalFieldName} = $1 ${sortClause} ${pagingClause}`,
+      [finalFieldValue]
     );
 
     if (result.rows.length === 0) {

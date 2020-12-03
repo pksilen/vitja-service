@@ -7,17 +7,17 @@ import getServiceNamespace from '../utils/getServiceNamespace';
 import isErrorResponse from '../errors/isErrorResponse';
 import findAsyncSequential from '../utils/findAsyncSequential';
 import delay from '../utils/delay';
-import JobScheduling from './entities/JobScheduling';
+import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
 import { ErrorResponse } from '../types/ErrorResponse';
 
 const cronJobs: { [key: string]: CronJob } = {};
 
 export default async function executeScheduledJobs(dbManager: AbstractDbManager) {
   const clsNamespace = createNamespace('serviceFunctionExecution');
-  let jobSchedulingsOrErrorResponse: JobScheduling[] | ErrorResponse | undefined;
+  let jobSchedulingsOrErrorResponse: __Backk__JobScheduling[] | ErrorResponse | undefined;
   await clsNamespace.runAndReturn(async () => {
     await dbManager.tryReserveDbConnectionFromPool();
-    jobSchedulingsOrErrorResponse = await dbManager.getAllEntities(JobScheduling);
+    jobSchedulingsOrErrorResponse = await dbManager.getAllEntities(__Backk__JobScheduling);
     dbManager.tryReleaseDbConnectionBackToPool();
   });
 
@@ -39,7 +39,7 @@ export default async function executeScheduledJobs(dbManager: AbstractDbManager)
         let possibleErrorResponse;
         clsNamespace.run(async () => {
           await dbManager.tryReserveDbConnectionFromPool();
-          possibleErrorResponse = await dbManager.deleteEntityById(_id, JobScheduling, {
+          possibleErrorResponse = await dbManager.deleteEntityById(_id, __Backk__JobScheduling, {
             hookFunc: (jobScheduling) => jobScheduling !== undefined
           });
           dbManager.tryReleaseDbConnectionBackToPool();

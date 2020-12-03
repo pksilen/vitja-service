@@ -1,9 +1,9 @@
-import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../../utils/type/isEntityTypeName';
 
 function transformResult(result: any, entityClass: Function, Types: object) {
-  const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
+  const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(entityClass as any);
 
   Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [any, any]) => {
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);

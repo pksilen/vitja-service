@@ -1,15 +1,18 @@
 # Vitja service
 
 TODO
-- @ManyToMany
-  -
 - allowAdditionAndRemovalForSubEntities make not optional
   - replace Functions with same name functions from dbManager getTypes()
+- Create tagsService
+    - createTag
+    - getTagsByFilter
+    - deleteAllTags
 - Allow subentity addition removal for User to update paymentMethods
 - Add @Unique annotation for userName field
 - getEntityBy/UpdateEntityBy fieldnames must have @Unique annotation
 - AllowForInternalUse => AllowForClusterInternalUse
 - Entity fields must be public or private, if  missing, give error
+  - Return value tests, check that private fields is undefined
 - Entity field can be reaadonly
   - Not included in sample arg
   - Included in type metadata validation
@@ -22,6 +25,7 @@ TODO
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
   - Update default prometheus metrics
+- check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 

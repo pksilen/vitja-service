@@ -1,5 +1,5 @@
 import { Projection } from '../../../../../../types/postqueryoperations/Projection';
-import getPropertyNameToPropertyTypeNameMap from '../../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import typePropertyAnnotationContainer from '../../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import shouldIncludeField from './shouldIncludeField';
 import getTypeInfoForTypeName from '../../../../../../utils/type/getTypeInfoForTypeName';
@@ -14,7 +14,7 @@ export default function getFieldsForEntity(
   fieldPath: string,
   isInternalCall = false
 ) {
-  const entityPropertyNameToPropertyTypeNameMap = getPropertyNameToPropertyTypeNameMap(EntityClass as any);
+  const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
 
   Object.entries(entityPropertyNameToPropertyTypeNameMap).forEach(
     ([entityPropertyName, entityPropertyTypeName]: [string, any]) => {
@@ -38,7 +38,7 @@ export default function getFieldsForEntity(
         );
       } else if (isArrayType) {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
-          const relationEntityName = EntityClass.name + entityPropertyName.slice(0, -1);
+          const relationEntityName = EntityClass.name + '_' + entityPropertyName.slice(0, -1);
           const idFieldName = EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
           fields.push(
             `${schema}.${relationEntityName}.${idFieldName} AS ${relationEntityName}_${idFieldName}`

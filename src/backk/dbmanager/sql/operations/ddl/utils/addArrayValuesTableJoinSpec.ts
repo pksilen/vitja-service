@@ -2,13 +2,13 @@ import entityAnnotationContainer, {
   EntityJoinSpec
 } from '../../../../../decorators/entity/entityAnnotationContainer';
 
-export default function addJoinSpec(
+export default function addArrayValuesTableJoinSpec(
   entityName: string,
   fieldName: string,
   subEntityForeignIdFieldName: string
 ) {
   const entityJoinSpec: EntityJoinSpec = {
-    subEntityTableName: entityName + fieldName.slice(0, -1),
+    subEntityTableName: entityName + '_' + fieldName.slice(0, -1),
     entityIdFieldName: '_id',
     subEntityForeignIdFieldName
   };

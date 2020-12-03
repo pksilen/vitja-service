@@ -1,5 +1,5 @@
 import entityContainer from '../../../../../decorators/entity/entityAnnotationContainer';
-import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import { Projection } from '../../../../../types/postqueryoperations/Projection';
 import shouldIncludeField from '../utils/columns/shouldIncludeField';
 import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
@@ -69,7 +69,7 @@ export default function getJoinClause(
 
   joinClause = joinClause + ' ' + joinClauseParts.join(' ');
 
-  const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
+  const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(entityClass as any);
 
   Object.entries(entityMetadata).forEach(([, fieldTypeName]: [any, any]) => {
     const { baseTypeName } = getTypeInfoForTypeName(fieldTypeName);

@@ -2,7 +2,7 @@ import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import getPropertyNameToPropertyTypeNameMap from "../../../../metadata/getPropertyNameToPropertyTypeNameMap";
+import getClassPropertyNameToPropertyTypeNameMap from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
 import createErrorResponseFromErrorMessageAndStatusCode
@@ -34,7 +34,7 @@ export default async function getEntityById<T>(
       isInternalCall
     );
 
-    const typeMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass);
+    const typeMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {

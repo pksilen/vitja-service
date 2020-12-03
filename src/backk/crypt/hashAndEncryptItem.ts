@@ -4,7 +4,7 @@ import hash from './hash';
 import shouldEncryptValue from './shouldEncryptValue';
 import shouldHashValue from './shouldHashValue';
 import shouldUseRandomInitializationVector from './shouldUseRandomInitializationVector';
-import getPropertyNameToPropertyTypeNameMap from '../metadata/getPropertyNameToPropertyTypeNameMap';
+import getClassPropertyNameToPropertyTypeNameMap from '../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 async function hashOrEncryptEntityValues(
@@ -15,7 +15,7 @@ async function hashOrEncryptEntityValues(
   await forEachAsyncParallel(Object.entries(entity), async ([propertyName, propertyValue]) => {
     if (Array.isArray(propertyValue) && propertyValue.length > 0) {
       if (typeof propertyValue[0] === 'object' && propertyValue[0] !== null) {
-        const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass);
+        const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
         await forEachAsyncParallel(propertyValue, async (pv: any) => {
           await hashOrEncryptEntityValues(
             pv,
@@ -47,7 +47,7 @@ async function hashOrEncryptEntityValues(
         });
       }
     } else if (typeof propertyValue === 'object' && propertyValue !== null) {
-      const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass);
+      const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
       await hashOrEncryptEntityValues(
         propertyValue,
         (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],

@@ -4,9 +4,9 @@ import AbstractDbManager, { Field } from '../../../AbstractDbManager';
 import getEnumSqlColumnType from './utils/getEnumSqlColumnType';
 import getSqlColumnType from './utils/getSqlColumnType';
 import setSubEntityInfo from './utils/setSubEntityInfo';
-import createAdditionalTable from './utils/createAdditionalTable';
-import addJoinSpec from './utils/addJoinSpec';
-import getPropertyNameToPropertyTypeNameMap from '../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import createArrayValuesTable from './utils/createArrayValuesTable';
+import addArrayValuesTableJoinSpec from './utils/addArrayValuesTableJoinSpec';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 import isEnumTypeName from "../../../../utils/type/isEnumTypeName";
@@ -18,7 +18,7 @@ export default async function tryAlterTable(
   schema: string | undefined,
   databaseFields: Field[]
 ) {
-  const entityMetadata = getPropertyNameToPropertyTypeNameMap(entityClass as any);
+  const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(entityClass as any);
   await forEachAsyncParallel(
     Object.entries(entityMetadata),
     async ([fieldName, fieldTypeName]: [any, any]) => {
@@ -38,15 +38,15 @@ export default async function tryAlterTable(
         if (!sqlColumnType && isEntityTypeName(baseTypeName)) {
           setSubEntityInfo(entityName, entityClass, fieldName, baseTypeName);
         } else if (isArrayType) {
-          const idFieldName = await createAdditionalTable(
+          await createArrayValuesTable(
             schema,
             entityName,
             fieldName,
             sqlColumnType ?? '',
             dbManager
           );
-
-          addJoinSpec(entityName, fieldName, idFieldName);
+          const foreignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
+          addArrayValuesTableJoinSpec(entityName, fieldName, foreignIdFieldName);
         } else {
           const isUnique = typeAnnotationContainer.isTypePropertyUnique(entityClass, fieldName);
           alterTableStatement +=

@@ -3,7 +3,7 @@ import serviceFunctionAnnotationContainer
 import serviceAnnotationContainer from "../decorators/service/serviceAnnotationContainer";
 import BaseService from "../service/BaseService";
 import { ServiceMetadata } from "./ServiceMetadata";
-import getPropertyNameToPropertyTypeNameMap from "./getPropertyNameToPropertyTypeNameMap";
+import getClassPropertyNameToPropertyTypeNameMap from "./getClassPropertyNameToPropertyTypeNameMap";
 import { FunctionMetadata } from "./FunctionMetadata";
 import getValidationMetadata from "./getValidationMetadata";
 import getTypeDocumentation from "./getTypeDocumentation";
@@ -19,7 +19,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
 
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
-          const typeObject = getPropertyNameToPropertyTypeNameMap(typeClass, true, isFirstRound);
+          const typeObject = getClassPropertyNameToPropertyTypeNameMap(typeClass, true, isFirstRound);
           return { ...accumulatedTypes, [typeName]: typeObject };
         },
         {}
@@ -27,7 +27,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
 
       const publicTypesMetadata = Object.entries((controller as any)[serviceName].PublicTypes ?? {}).reduce(
         (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
-          const typeObject = getPropertyNameToPropertyTypeNameMap(typeClass, true, isFirstRound);
+          const typeObject = getClassPropertyNameToPropertyTypeNameMap(typeClass, true, isFirstRound);
           return { ...accumulatedTypes, [typeName]: typeObject };
         },
         {}

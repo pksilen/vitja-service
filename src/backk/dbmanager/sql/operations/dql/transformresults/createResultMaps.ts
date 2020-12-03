@@ -1,6 +1,6 @@
 import shouldIncludeField from '../utils/columns/shouldIncludeField';
 import { Projection } from '../../../../../types/postqueryoperations/Projection';
-import getPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getPropertyNameToPropertyTypeNameMap';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../../utils/type/isEntityTypeName';
 
@@ -15,7 +15,7 @@ function updateResultMaps(
 ) {
   const entityMetadata =
     typeof entityClassOrName === 'function'
-      ? getPropertyNameToPropertyTypeNameMap(entityClassOrName as any)
+      ? getClassPropertyNameToPropertyTypeNameMap(entityClassOrName as any)
       : suppliedEntityMetadata;
 
   const entityName = typeof entityClassOrName === 'function' ? entityClassOrName.name : entityClassOrName;
@@ -74,7 +74,7 @@ function updateResultMaps(
       }
     } else if (isArrayType) {
       if (shouldIncludeField(fieldName, fieldPath, projection)) {
-        const relationEntityName = entityName + fieldName.slice(0, -1);
+        const relationEntityName = entityName + '_' + fieldName.slice(0, -1);
 
         resultMap.collections.push({
           name: fieldName,

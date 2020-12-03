@@ -4,7 +4,7 @@ import isErrorResponse from "../../../../errors/isErrorResponse";
 import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import getPropertyNameToPropertyTypeNameMap from "../../../../metadata/getPropertyNameToPropertyTypeNameMap";
+import getClassPropertyNameToPropertyTypeNameMap from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 import { PreHook } from "../../../hooks/PreHook";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
@@ -39,6 +39,7 @@ export default async function createEntity<T>(
     const Types = dbManager.getTypes();
 
     if (!isRecursiveCall) {
+      console.log(entity);
       await hashAndEncryptItem(entity, EntityClass, Types);
     }
 
@@ -48,7 +49,7 @@ export default async function createEntity<T>(
       await tryExecutePreHooks(preHooks);
     }
 
-    const entityMetadata = getPropertyNameToPropertyTypeNameMap(EntityClass as any);
+    const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
     const additionalMetadata = Object.keys(entity)
       .filter((itemKey) => itemKey.endsWith('Id'))
       .reduce((accumulatedMetadata, itemKey) => ({ ...accumulatedMetadata, [itemKey]: 'integer' }), {});
@@ -106,11 +107,13 @@ export default async function createEntity<T>(
             if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
               let subEntityOrErrorResponse: any | ErrorResponse = await dbManager.getEntityById(subEntity._id ?? '', SubEntityClass);
               if ('errorMessage' in subEntityOrErrorResponse) {
-                subEntityOrErrorResponse = await dbManager.createEntity(
+                subEntityOrErrorResponse = await createEntity(
+                  dbManager,
                   subEntity,
                   SubEntityClass,
                   undefined,
                   undefined,
+                  true,
                   false
                 );
                 if ('errorMessage' in subEntityOrErrorResponse) {
@@ -145,11 +148,13 @@ export default async function createEntity<T>(
                 }
               }
 
-              const subEntityOrErrorResponse: any | ErrorResponse = await dbManager.createEntity(
+              const subEntityOrErrorResponse: any | ErrorResponse = await createEntity(
+                dbManager,
                 subEntity,
                 SubEntityClass,
                 preHooks,
                 postQueryOperations,
+                true,
                 false
               );
 
@@ -167,14 +172,15 @@ export default async function createEntity<T>(
             (Types as any)[relationEntityName],
             preHooks,
             postQueryOperations,
-            true
+            true,
+            false
           );
           if ('errorMessage' in subEntityOrErrorResponse && isErrorResponse(subEntityOrErrorResponse)) {
             throw subEntityOrErrorResponse;
           }
         } else if (isArrayType) {
           await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index: number) => {
-            const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name +
+            const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name + '_' +
               fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
               0,
               -1

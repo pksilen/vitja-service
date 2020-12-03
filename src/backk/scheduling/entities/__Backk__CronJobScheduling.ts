@@ -3,7 +3,7 @@ import _Id from "../../types/id/_Id";
 import { MaxLength } from "class-validator";
 
 @Entity()
-export default class CronJobScheduling extends _Id {
+export default class __Backk__CronJobScheduling extends _Id {
   @MaxLength(512)
   serviceFunctionName!: string;
 

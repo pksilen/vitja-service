@@ -1,4 +1,4 @@
-import getPropertyNameToPropertyTypeNameMap from '../../metadata/getPropertyNameToPropertyTypeNameMap';
+import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import testValueContainer from '../../decorators/typeproperty/testing/testValueContainer';
 import getValidationConstraint from '../../validation/getValidationConstraint';
 import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
@@ -11,7 +11,7 @@ export default function getRemoteResponseTestValue<T>(
 ) {
   const sampleArg: { [key: string]: any } = {};
 
-  Object.entries(getPropertyNameToPropertyTypeNameMap(ResponseClass)).forEach(
+  Object.entries(getClassPropertyNameToPropertyTypeNameMap(ResponseClass)).forEach(
     ([propertyName, propertyTypeName]: [string, string]) => {
       const { baseTypeName, defaultValueStr, isArrayType, isOptionalType } = getTypeInfoForTypeName(
         propertyTypeName

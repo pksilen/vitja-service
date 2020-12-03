@@ -2,7 +2,7 @@ import AbstractDbManager from "../dbmanager/AbstractDbManager";
 import serviceFunctionAnnotationContainer
   from "../decorators/service/function/serviceFunctionAnnotationContainer";
 import { createNamespace } from "cls-hooked";
-import CronJobScheduling from "./entities/CronJobScheduling";
+import __Backk__CronJobScheduling from "./entities/__Backk__CronJobScheduling";
 import parser from "cron-parser";
 
 export default function initializeCronJobSchedulingTable(dbManager: AbstractDbManager) {
@@ -15,7 +15,7 @@ export default function initializeCronJobSchedulingTable(dbManager: AbstractDbMa
           const entityOrErrorResponse = await dbManager.getEntityBy(
             'serviceFunctionName',
             serviceFunctionName,
-            CronJobScheduling
+            __Backk__CronJobScheduling
           );
 
           const interval = parser.parseExpression(cronSchedule);
@@ -26,7 +26,7 @@ export default function initializeCronJobSchedulingTable(dbManager: AbstractDbMa
                 lastScheduledTimestamp: new Date(0),
                 nextScheduledTimestamp: interval.next().toDate()
               },
-              CronJobScheduling
+              __Backk__CronJobScheduling
             );
           } else if (entityOrErrorResponse.lastScheduledTimestamp.valueOf() !== 0) {
             await dbManager.updateEntity(
@@ -36,7 +36,7 @@ export default function initializeCronJobSchedulingTable(dbManager: AbstractDbMa
                 lastScheduledTimestamp: new Date(0),
                 nextScheduledTimestamp: interval.next().toDate()
               },
-              CronJobScheduling
+              __Backk__CronJobScheduling
             );
           }
         });

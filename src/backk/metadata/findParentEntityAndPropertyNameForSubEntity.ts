@@ -1,4 +1,4 @@
-import getPropertyNameToPropertyTypeNameMap from './getPropertyNameToPropertyTypeNameMap';
+import getClassPropertyNameToPropertyTypeNameMap from './getClassPropertyNameToPropertyTypeNameMap';
 import isEntityTypeName from '../utils/type/isEntityTypeName';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
@@ -7,7 +7,7 @@ export default function findParentEntityAndPropertyNameForSubEntity(
   SubEntityClass: new () => any,
   Types: any
 ): [Function, string] | undefined {
-  const entityPropertyNameToPropertyTypeNameMap = getPropertyNameToPropertyTypeNameMap(EntityClass);
+  const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
 
   const foundPropertyEntry = Object.entries(entityPropertyNameToPropertyTypeNameMap).find(
     ([, propertyTypeName]) => getTypeInfoForTypeName(propertyTypeName).baseTypeName === SubEntityClass.name

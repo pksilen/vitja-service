@@ -5,7 +5,7 @@ import serviceFunctionAnnotationContainer from '../decorators/service/function/s
 import call from '../remote/http/call';
 import getServiceName from '../utils/getServiceName';
 import getServiceNamespace from '../utils/getServiceNamespace';
-import CronJobScheduling from './entities/CronJobScheduling';
+import __Backk__CronJobScheduling from './entities/__Backk__CronJobScheduling';
 import isErrorResponse from '../errors/isErrorResponse';
 import findAsyncSequential from '../utils/findAsyncSequential';
 import delay from '../utils/delay';
@@ -26,7 +26,7 @@ export default function executeScheduledCronJobs(dbManager: AbstractDbManager) {
             'serviceFunctionName',
             serviceFunctionName,
             { lastScheduledTimestamp: new Date(), nextScheduledTimestamp: interval.next().toDate() },
-            CronJobScheduling,
+            __Backk__CronJobScheduling,
             {
               hookFunc: ({ nextScheduledTimestamp }) =>
                 Math.abs(Date.now() - nextScheduledTimestamp.valueOf()) < 500

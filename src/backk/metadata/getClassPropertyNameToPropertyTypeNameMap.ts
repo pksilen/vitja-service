@@ -1,23 +1,23 @@
 import { getFromContainer, MetadataStorage } from "class-validator";
 import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
 
-const typeNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
+const classNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 
-export default function getPropertyNameToPropertyTypeNameMap<T>(
-  TypeClass: new () => T,
+export default function getClassPropertyNameToPropertyTypeNameMap<T>(
+  Class: new () => T,
   isGeneration = false,
   isFirstRound = false
 ): { [key: string]: string } {
-  if (!isGeneration && typeNameToMetadataMap[TypeClass.name]) {
-    return typeNameToMetadataMap[TypeClass.name];
+  if (!isGeneration && classNameToMetadataMap[Class.name]) {
+    return classNameToMetadataMap[Class.name];
   }
 
-  const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(TypeClass, '');
+  const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
   const propNameToIsOptionalMap: { [key: string]: boolean } = {};
   const propNameToPropTypeMap: { [key: string]: string } = {};
   const propNameToDefaultValueMap: { [key: string]: any } = {};
 
-  const typeObject = new TypeClass();
+  const typeObject = new Class();
   Object.entries(typeObject).forEach(([propName, defaultValue]: [string, any]) => {
     propNameToDefaultValueMap[propName] = defaultValue;
   });
@@ -112,7 +112,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
     if (isGeneration && isFirstRound && hasMatchesValidation) {
       throw new Error(
         'Property ' +
-          TypeClass.name +
+          Class.name +
           '.' +
           validationMetadata.propertyName +
           ': Use @MaxLengthAndMatches or @MaxLengthAndMatchesAll instead of @Matches'
@@ -129,7 +129,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
       if (!arrayMaxSizeValidationMetadata) {
         throw new Error(
           'Property ' +
-          TypeClass.name +
+          Class.name +
           '.' +
           validationMetadata.propertyName +
           ' has array type and must have @ArrayMaxSize annotation'
@@ -158,7 +158,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
         if (minValidationMetadata === undefined || maxValidationMetadata === undefined) {
           throw new Error(
             'Property ' +
-              TypeClass.name +
+              Class.name +
               '.' +
               validationMetadata.propertyName +
               ' has numeric type and must have @Min and @Max annotations'
@@ -168,7 +168,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
         if (minValidationMetadata.constraints[0] > maxValidationMetadata.constraints[0]) {
           throw new Error(
             'Property ' +
-              TypeClass.name +
+              Class.name +
               '.' +
               validationMetadata.propertyName +
               ' has @Min validation that is greater than @Max validation'
@@ -178,7 +178,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
         if (validationMetadata.type === 'isInt' && minValidationMetadata.constraints[0] < -2147483648) {
           throw new Error(
             'Property ' +
-              TypeClass.name +
+              Class.name +
               '.' +
               validationMetadata.propertyName +
               ' has @Min validation value must be equal or greater than -2147483648'
@@ -188,7 +188,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
         if (validationMetadata.type === 'isInt' && maxValidationMetadata.constraints[0] > 2147483647) {
           throw new Error(
             'Property ' +
-              TypeClass.name +
+              Class.name +
               '.' +
               validationMetadata.propertyName +
               ' @Max validation value must be equal or less than 2147483647'
@@ -202,7 +202,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
         ) {
           throw new Error(
             'Property ' +
-              TypeClass.name +
+              Class.name +
               '.' +
               validationMetadata.propertyName +
               ' has @Min validation value must be equal or greater than ' +
@@ -217,7 +217,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
         ) {
           throw new Error(
             'Property ' +
-              TypeClass.name +
+              Class.name +
               '.' +
               validationMetadata.propertyName +
               ' @Max validation value must be equal or less than ' +
@@ -228,7 +228,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
         if (validationMetadata.type === 'isNumber' && minValidationMetadata.constraints[0] < -(10 ** 308)) {
           throw new Error(
             'Property ' +
-              TypeClass.name +
+              Class.name +
               '.' +
               validationMetadata.propertyName +
               ' @Min validation value must be equal or greater than -1E308'
@@ -238,7 +238,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
         if (validationMetadata.type === 'isNumber' && maxValidationMetadata.constraints[0] > 10 ** 308) {
           throw new Error(
             'Property ' +
-              TypeClass.name +
+              Class.name +
               '.' +
               validationMetadata.propertyName +
               ' @Max validation value must be equal or less than 1E308'
@@ -287,7 +287,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
         ) {
           throw new Error(
             'Property ' +
-              TypeClass.name +
+              Class.name +
               '.' +
               validationMetadata.propertyName +
               ' has string type and must have either @Length, @MaxLength, @MaxLengthAndMatches or @MaxLengthAndMatchesAll annotation'
@@ -312,7 +312,7 @@ export default function getPropertyNameToPropertyTypeNameMap<T>(
   );
 
   if (!isGeneration) {
-    typeNameToMetadataMap[TypeClass.name] = metadata;
+    classNameToMetadataMap[Class.name] = metadata;
   }
 
   return metadata;
