@@ -9,6 +9,7 @@ import getSrcFilePathNameForTypeName, {
 } from "../utils/file/getSrcFilePathNameForTypeName";
 import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
 import parseEnumValuesFromSrcFile from "../typescript/parser/parseEnumValuesFromSrcFile";
+import typePropertyAnnotationContainer from "../decorators/typeproperty/typePropertyAnnotationContainer";
 
 function getPropertyValidationOfType(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -48,18 +49,18 @@ function doesPropertyContainCustomValidation(
 }
 
 // noinspection FunctionWithMultipleLoopsJS,OverlyComplexFunctionJS,FunctionTooLongJS,FunctionWithMoreThanThreeNegationsJS
-export default function setPropertyTypeValidationDecorators(
-  typeClass: Function,
+export default function setClassPropertyValidationDecorators(
+  Class: Function,
   serviceName: string,
   Types: { [key: string]: new () => any }
 ) {
-  const typeClassName = typeClass.name;
+  const className = Class.name;
 
-  if (hasBackkSrcFilenameForTypeName(typeClassName)) {
+  if (hasBackkSrcFilenameForTypeName(className)) {
     return;
   }
 
-  const fileContentsStr = readFileSync(getSrcFilePathNameForTypeName(typeClassName), { encoding: 'UTF-8' });
+  const fileContentsStr = readFileSync(getSrcFilePathNameForTypeName(className), { encoding: 'UTF-8' });
   const fileRows = fileContentsStr.split('\n');
 
   const ast = parseSync(fileContentsStr, {
@@ -76,7 +77,7 @@ export default function setPropertyTypeValidationDecorators(
     if (
       (node.type === 'ExportDefaultDeclaration' || node.type === 'ExportNamedDeclaration') &&
       node.declaration.type === 'ClassDeclaration' &&
-      node.declaration.id.name === typeClassName
+      node.declaration.id.name === className
     ) {
       for (const classBodyNode of node.declaration.body.body) {
         if (classBodyNode.type === 'ClassProperty') {
@@ -85,6 +86,11 @@ export default function setPropertyTypeValidationDecorators(
           let propertyTypeName;
           let isNullableType = false;
           let isArrayType = false;
+
+          const isPrivateProperty = classBodyNode.accessibility !== 'public'
+          if (isPrivateProperty) {
+            typePropertyAnnotationContainer.setTypePropertyAsPrivate(Class, propertyName);
+          }
 
           if (classBodyNode.typeAnnotation === undefined) {
             if (typeof classBodyNode.value?.value === 'number') {
@@ -105,11 +111,11 @@ export default function setPropertyTypeValidationDecorators(
                 'Default value must a scalar (number, boolean or string) for property: ' +
                   propertyName +
                   ' in ' +
-                  typeClass.name
+                  Class.name
               );
             } else {
               throw new Error(
-                'Missing type annotation for property: ' + propertyName + ' in ' + typeClass.name
+                'Missing type annotation for property: ' + propertyName + ' in ' + Class.name
               );
             }
           } else {
@@ -132,10 +138,10 @@ export default function setPropertyTypeValidationDecorators(
             propertyName.endsWith('Id') ||
             propertyName.endsWith('Ids')
           ) {
-            if (!doesPropertyContainCustomValidation(typeClass, propertyName, 'maxLengthAndMatches')) {
+            if (!doesPropertyContainCustomValidation(Class, propertyName, 'maxLengthAndMatches')) {
               const validationMetadataArgs: ValidationMetadataArgs = {
                 type: ValidationTypes.CUSTOM_VALIDATION,
-                target: typeClass,
+                target: Class,
                 propertyName,
                 constraints: ['maxLengthAndMatches', 24, /^[a-f\d]{1,24}$/],
                 validationOptions: { each: isArrayType }
@@ -152,8 +158,8 @@ export default function setPropertyTypeValidationDecorators(
             validationType = ValidationTypes.IS_BOOLEAN;
           } else if (baseTypeName === 'number') {
             if (
-              !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.IS_INT) &&
-              !doesPropertyContainCustomValidation(typeClass, propertyName, 'isBigInt')
+              !doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_INT) &&
+              !doesPropertyContainCustomValidation(Class, propertyName, 'isBigInt')
             ) {
               validationType = ValidationTypes.IS_NUMBER;
               constraints = [{}];
@@ -198,7 +204,7 @@ export default function setPropertyTypeValidationDecorators(
                     'All enum values must be of same type: ' +
                       baseTypeName +
                       ' in ' +
-                      typeClassName +
+                      className +
                       '.' +
                       propertyName
                   );
@@ -216,7 +222,7 @@ export default function setPropertyTypeValidationDecorators(
                     'All enum values must be of same type: ' +
                       baseTypeName +
                       ' in ' +
-                      typeClassName +
+                      className +
                       '.' +
                       propertyName
                   );
@@ -225,7 +231,7 @@ export default function setPropertyTypeValidationDecorators(
                 return trimmedEnumValue.slice(1, -1);
               } else {
                 throw new Error(
-                  'Enum values cannot contain | character in ' + typeClassName + '.' + propertyName
+                  'Enum values cannot contain | character in ' + className + '.' + propertyName
                 );
               }
             });
@@ -233,10 +239,10 @@ export default function setPropertyTypeValidationDecorators(
             constraints = [enumValues];
           }
 
-          if (validationType && !doesPropertyContainValidation(typeClass, propertyName, validationType)) {
+          if (validationType && !doesPropertyContainValidation(Class, propertyName, validationType)) {
             const validationMetadataArgs: ValidationMetadataArgs = {
               type: validationType,
-              target: typeClass,
+              target: Class,
               propertyName,
               constraints,
               validationOptions: { each: isArrayType }
@@ -249,11 +255,11 @@ export default function setPropertyTypeValidationDecorators(
 
           if (
             isArrayType &&
-            !doesPropertyContainValidation(typeClass, propertyName, ValidationTypes.IS_ARRAY)
+            !doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ARRAY)
           ) {
             const arrayValidationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.IS_ARRAY,
-              target: typeClass,
+              target: Class,
               propertyName
             };
 
@@ -265,7 +271,7 @@ export default function setPropertyTypeValidationDecorators(
           if (isNullableType) {
             const isNullableValidationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.CONDITIONAL_VALIDATION,
-              target: typeClass,
+              target: Class,
               propertyName,
               constraints: [(object: any) => object[propertyName] !== null, 'isNullable'],
               validationOptions: { each: isArrayType }
@@ -276,7 +282,7 @@ export default function setPropertyTypeValidationDecorators(
             );
           }
 
-          const conditionalValidation = getPropertyValidationOfType(typeClass, propertyTypeName, ValidationTypes.CONDITIONAL_VALIDATION);
+          const conditionalValidation = getPropertyValidationOfType(Class, propertyTypeName, ValidationTypes.CONDITIONAL_VALIDATION);
 
           if (
             classBodyNode.optional &&
@@ -284,7 +290,7 @@ export default function setPropertyTypeValidationDecorators(
           ) {
             const optionalValidationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.CONDITIONAL_VALIDATION,
-              target: typeClass,
+              target: Class,
               constraints: [
                 (object: any) => {
                   return object[propertyName] !== null && object[propertyName] !== undefined;

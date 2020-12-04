@@ -6,21 +6,21 @@ import { OrderState } from "../enum/OrderState";
 
 @Entity()
 export default class OrderItem extends Id {
-  salesItemId!: string;
+  public salesItemId!: string;
 
   @ExpectToEvaluateTrueInTests(
     ({ state, deliveryTimestamp }) =>
       (state === 'toBeDelivered' && deliveryTimestamp === null) ||
       (state !== 'toBeDelivered' && deliveryTimestamp !== null)
   )
-  deliveryTimestamp!: Date | null;
+  public deliveryTimestamp!: Date | null;
 
-  state!: OrderState;
+  public state!: OrderState;
 
   @MaxLength(1024)
   @ExpectToEvaluateTrueInTests(
     ({ state, trackingUrl }) =>
       (state === 'toBeDelivered' && trackingUrl ===  null) || (state !== 'toBeDelivered' && trackingUrl !== null)
   )
-  trackingUrl!: string | null;
+  public trackingUrl!: string | null;
 }

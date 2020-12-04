@@ -3,9 +3,11 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { ArrayMaxSize } from 'class-validator';
+import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 import ShoppingCartItem from '../entities/ShoppingCartItem';
 
 export default class CreateShoppingCartArg {
+  @Unique()
   userId!: string;
 
   @ArrayMaxSize(50)

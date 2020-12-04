@@ -3,7 +3,7 @@ import BaseService from '../service/BaseService';
 import generateServicesMetadata from '../metadata/generateServicesMetadata';
 import parseServiceFunctionNameToArgAndReturnTypeNameMaps from '../typescript/parser/parseServiceFunctionNameToArgAndReturnTypeNameMaps';
 import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
-import setPropertyTypeValidationDecorators from '../validation/setPropertyTypeValidationDecorators';
+import setClassPropertyValidationDecorators from '../validation/setClassPropertyValidationDecorators';
 import setNestedTypeValidationDecorators from '../validation/setNestedTypeValidationDecorators';
 import writeTestsPostmanCollectionExportFile from '../postman/writeTestsPostmanCollectionExportFile';
 import writeApiPostmanCollectionExportFile from '../postman/writeApiPostmanCollectionExportFile';
@@ -61,7 +61,7 @@ export default function initializeController(controller: any, controllerInitOpti
       const targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean } = {};
       getNestedClasses(Object.keys(controller[serviceName].Types ?? {}), controller[serviceName].Types);
       Object.entries(controller[serviceName].Types ?? {}).forEach(([, typeClass]: [string, any]) => {
-        setPropertyTypeValidationDecorators(typeClass, serviceName, controller[serviceName].Types);
+        setClassPropertyValidationDecorators(typeClass, serviceName, controller[serviceName].Types);
         setNestedTypeValidationDecorators(typeClass, targetAndPropNameToHasNestedValidationMap);
       }, {});
     });

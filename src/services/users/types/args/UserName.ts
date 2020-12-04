@@ -4,10 +4,12 @@
 
 import { IsEmail, MaxLength } from 'class-validator';
 import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
+import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 
 export default class UserName {
+  @Unique()
   @MaxLength(512)
   @IsEmail()
   @TestValue('test@test.com')
-  userName!: string;
+  public userName!: string;
 }

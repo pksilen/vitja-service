@@ -3,23 +3,23 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { ArrayMaxSize, IsEmail, IsString, MaxLength } from 'class-validator';
-import { Private } from '../../../../backk/decorators/service/function/Private';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
 import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
 import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
 import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
+import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 
 export default class CreateUserArg {
+  @Unique()
   @MaxLength(512)
   @IsEmail()
   @TestValue('test@test.com')
-  userName!: string;
+  public userName!: string;
 
-  isBusinessUser!: boolean;
+  public isBusinessUser!: boolean;
 
-  @Private()
   @Documentation('Password doc goes here...')
   @IsExprTrue(
     ({ password }) => !password.toLowerCase().includes('password'),
@@ -34,24 +34,24 @@ export default class CreateUserArg {
   password!: string;
 
   @MaxLength(512)
-  streetAddress!: string;
+  public streetAddress!: string;
 
   @MaxLength(32)
-  postalCode!: string;
+  public postalCode!: string;
 
   @MaxLength(256)
-  city!: string;
+  public city!: string;
 
-  loyaltyDiscountLevel!: 0 | 25 | 50;
+  public readonly loyaltyDiscountLevel!: 0 | 25 | 50;
 
-  defaultPaymentMethod!: DefaultPaymentMethod | null;
+  public defaultPaymentMethod!: DefaultPaymentMethod | null;
 
   @ArrayMaxSize(10)
-  paymentMethods!: PaymentMethod[];
+  public paymentMethods!: PaymentMethod[];
 
   @TestValue('123')
   @ArrayMaxSize(100)
-  favoriteSalesItemIds!: string[];
+  public favoriteSalesItemIds!: string[];
 
   @IsString()
   @MaxLength(512)

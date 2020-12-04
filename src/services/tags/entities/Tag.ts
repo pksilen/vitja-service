@@ -5,5 +5,5 @@ import { MaxLength } from "class-validator";
 @Entity()
 export default class Tag extends _Id {
   @MaxLength(64)
-  name!: string;
+  public name!: string;
 }

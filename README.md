@@ -1,10 +1,9 @@
 # Vitja service
 
 TODO
-- Rename By methods to Where methods
-- Entity fields must be public or private, if  missing, give error
-  - Return value tests, check that private fields is undefined
-- Entity field can be reaadonly
+- Entity fields must be public or otherwise private
+- if field is private, list in service type validations
+- Entity field can be readonly
   - Not included in sample arg
   - Included in type metadata validation
   - validate isUndefined

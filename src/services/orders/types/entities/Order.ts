@@ -5,8 +5,8 @@ import _IdAndCreatedAtTimestamp from "../../../../backk/types/id/_IdAndCreatedAt
 
 @Entity()
 export default class Order extends _IdAndCreatedAtTimestamp {
-  userId!: string;
+  public userId!: string;
 
   @ArrayMaxSize(50)
-  orderItems!: OrderItem[];
+  public orderItems!: OrderItem[];
 }

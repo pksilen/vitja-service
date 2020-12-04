@@ -8,7 +8,6 @@ import DefaultPaymentMethod from "./DefaultPaymentMethod";
 import PaymentMethod from "./PaymentMethod";
 import _Id from "../../../../backk/types/id/_Id";
 import LengthAndMatchesAll from "../../../../backk/decorators/typeproperty/LengthOrMatchesAll";
-import { Private } from "../../../../backk/decorators/service/function/Private";
 import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 
 @Entity()
@@ -18,11 +17,10 @@ export default class User extends _Id {
   @MaxLength(512)
   @IsEmail()
   @TestValue('test@test.com')
-  userName!: string;
+  public userName!: string;
 
-  isBusinessUser!: boolean;
+  public isBusinessUser!: boolean;
 
-  @Private()
   @Documentation('Password doc goes here...')
   @IsExprTrue(
     ({ password }) => !password.toLowerCase().includes('password'),
@@ -37,22 +35,22 @@ export default class User extends _Id {
   password!: string;
 
   @MaxLength(512)
-  streetAddress!: string;
+  public streetAddress!: string;
 
   @MaxLength(32)
-  postalCode!: string;
+  public postalCode!: string;
 
   @MaxLength(256)
-  city!: string;
+  public city!: string;
 
-  loyaltyDiscountLevel!: 0 | 25 | 50;
+  public readonly loyaltyDiscountLevel!: 0 | 25 | 50;
 
-  defaultPaymentMethod!: DefaultPaymentMethod | null;
+  public defaultPaymentMethod!: DefaultPaymentMethod | null;
 
   @ArrayMaxSize(10)
-  paymentMethods!: PaymentMethod[];
+  public paymentMethods!: PaymentMethod[];
 
   @TestValue('123')
   @ArrayMaxSize(100)
-  favoriteSalesItemIds!: string[];
+  public favoriteSalesItemIds!: string[];
 }

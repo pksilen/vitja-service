@@ -7,8 +7,8 @@ import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 @Entity()
 export default class ShoppingCart extends _Id {
   @Unique()
-  userId!: string;
+  public userId!: string;
 
   @ArrayMaxSize(50)
-  shoppingCartItems!: ShoppingCartItem[];
+  public shoppingCartItems!: ShoppingCartItem[];
 }

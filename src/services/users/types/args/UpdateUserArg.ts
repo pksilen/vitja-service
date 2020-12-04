@@ -9,25 +9,25 @@ import DefaultPaymentMethod from '../entities/DefaultPaymentMethod';
 import PaymentMethod from '../entities/PaymentMethod';
 
 export default class UpdateUserArg {
-  isBusinessUser?: boolean;
+  public isBusinessUser?: boolean;
 
   @MaxLength(512)
-  streetAddress?: string;
+  public streetAddress?: string;
 
   @MaxLength(32)
-  postalCode?: string;
+  public postalCode?: string;
 
   @MaxLength(256)
-  city?: string;
+  public city?: string;
 
-  defaultPaymentMethod?: DefaultPaymentMethod | null;
+  public defaultPaymentMethod?: DefaultPaymentMethod | null;
 
   @ArrayMaxSize(10)
-  paymentMethods?: PaymentMethod[];
+  public paymentMethods?: PaymentMethod[];
 
   @TestValue('123')
   @ArrayMaxSize(100)
-  favoriteSalesItemIds?: string[];
+  public favoriteSalesItemIds?: string[];
 
   @IsString()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
