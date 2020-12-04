@@ -300,7 +300,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   const metadata = Object.entries(propNameToPropTypeNameMap).reduce(
     (accumulatedTypeObject, [propName, propTypeName]) => {
       let finalPropType = propTypeName;
-      if (propNameToIsOptionalMap[propName] && propTypeName.includes(' ') && propTypeName[0] !== '(') {
+      if (propNameToIsOptionalMap[propName] && propTypeName.includes(' | null') && propTypeName[0] !== '(') {
         finalPropType = '(' + propTypeName + ')';
       }
       return {

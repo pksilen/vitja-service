@@ -9,6 +9,11 @@ export default function getTypeInfoForTypeName(typeName: string) {
   const isOptionalType = typeName.startsWith('?');
   // noinspection AssignmentToFunctionParameterJS
   typeName = isOptionalType ? typeName.slice(1) : typeName;
+  if (typeName.startsWith('(') && typeName.endsWith(')') && typeName.includes(' | null')) {
+    // noinspection AssignmentToFunctionParameterJS
+    typeName = typeName.slice(1, -1);
+  }
+
   let defaultValueStr;
   [typeName, defaultValueStr] = typeName.split(' = ');
 
