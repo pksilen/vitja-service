@@ -8,8 +8,8 @@ import ShoppingCartItem from '../entities/ShoppingCartItem';
 
 export default class CreateShoppingCartArg {
   @Unique()
-  userId!: string;
+  public userId!: string;
 
   @ArrayMaxSize(50)
-  shoppingCartItems!: ShoppingCartItem[];
+  public shoppingCartItems!: ShoppingCartItem[];
 }

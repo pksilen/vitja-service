@@ -15,7 +15,7 @@ export default class DeliverOrderItemArg {
       (state === 'toBeDelivered' && deliveryTimestamp === null) ||
       (state !== 'toBeDelivered' && deliveryTimestamp !== null)
   )
-  deliveryTimestamp!: Date | null;
+  public deliveryTimestamp!: Date | null;
 
   @MaxLength(1024)
   @ExpectToEvaluateTrueInTests(
@@ -23,5 +23,5 @@ export default class DeliverOrderItemArg {
       (state === 'toBeDelivered' && trackingUrl === null) ||
       (state !== 'toBeDelivered' && trackingUrl !== null)
   )
-  trackingUrl!: string | null;
+  public trackingUrl!: string | null;
 }

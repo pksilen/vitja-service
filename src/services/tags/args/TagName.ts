@@ -6,5 +6,5 @@ import { MaxLength } from 'class-validator';
 
 export default class TagName {
   @MaxLength(64)
-  name!: string;
+  public name!: string;
 }

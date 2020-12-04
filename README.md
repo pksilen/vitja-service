@@ -1,13 +1,12 @@
 # Vitja service
 
 TODO
-- Entity fields must be public or otherwise private
 - if field is private, list in service type validations
+- Private method => AllowForServiceInternalUse
 - Entity field can be readonly
   - Not included in sample arg
   - Included in type metadata validation
   - validate isUndefined
-- Private method => AllowForServiceInternalUse
 - Return value Types cannot have 'errorMessage' property
 - service methods can have a string/number/boolean arguments with annotations
   -generate Arg class with auto-generated name from service and method name

@@ -10,39 +10,39 @@ import { Category } from '../enums/Category';
 import { Department } from '../enums/Department';
 
 export default class CreateSalesItemArg {
-  userId!: string;
+  public userId!: string;
 
   @MaxLength(64)
-  title!: string;
+  public title!: string;
 
   @MaxLength(1024)
-  description!: string;
+  public description!: string;
 
   @ManyToMany()
   @ArrayMaxSize(25)
-  tags!: Tag[];
+  public tags!: Tag[];
 
-  area!: Area;
+  public area!: Area;
 
-  productDepartment!: Department;
+  public productDepartment!: Department;
 
-  productCategory!: Category;
+  public productCategory!: Category;
 
-  productSubCategory!: Category;
+  public productSubCategory!: Category;
 
   @IsNumber({
     maxDecimalPlaces: 2
   })
   @Min(0)
   @Max(1000000000)
-  price!: number;
+  public price!: number;
 
   @MaxLength(2097152)
-  primaryImageDataUri!: string;
+  public primaryImageDataUri!: string;
 
   @MaxLength(2097152, {
     each: true
   })
   @ArrayMaxSize(10)
-  secondaryImageDataUris!: string[];
+  public secondaryImageDataUris!: string[];
 }

@@ -9,5 +9,5 @@ export default class UpdateOrderItemStateArg {
 
   orderItemId!: string;
 
-  newState!: OrderState;
+  public newState!: OrderState;
 }

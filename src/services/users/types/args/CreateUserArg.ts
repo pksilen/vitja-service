@@ -55,5 +55,5 @@ export default class CreateUserArg {
 
   @IsString()
   @MaxLength(512)
-  captchaToken!: string;
+  public captchaToken!: string;
 }

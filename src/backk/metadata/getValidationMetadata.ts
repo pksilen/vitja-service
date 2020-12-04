@@ -1,11 +1,9 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 
-export default function getValidationMetadata<T>(typeClass: new () => T): object {
-  const metadataForValidations = getFromContainer(MetadataStorage).getTargetValidationMetadatas(
-    typeClass,
-    ''
-  );
+export default function getValidationMetadata<T>(Class: new () => T): object {
+  const metadataForValidations = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
   const propNameToValidationsMap: { [key: string]: string[] } = {};
 
   // noinspection FunctionWithMoreThanThreeNegationsJS
@@ -47,6 +45,13 @@ export default function getValidationMetadata<T>(typeClass: new () => T): object
 
       if (!propNameToValidationsMap[validationMetadata.propertyName].includes(validationExpr)) {
         propNameToValidationsMap[validationMetadata.propertyName].push(validationExpr);
+      }
+
+      if (
+        typePropertyAnnotationContainer.isTypePropertyPrivate(Class, validationMetadata.propertyName) &&
+        !propNameToValidationsMap[validationMetadata.propertyName].includes('isPrivate()')
+      ) {
+        propNameToValidationsMap[validationMetadata.propertyName].push('isPrivate()');
       }
     }
   });

@@ -11,5 +11,5 @@ export default class UpdateSalesItemStateArg {
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
   _id!: string;
 
-  state!: SalesItemState;
+  public state!: SalesItemState;
 }
