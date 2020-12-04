@@ -14,7 +14,7 @@ import createErrorMessageWithStatusCode from "../../../../errors/createErrorMess
 import getSqlColumnFromProjection from "./utils/columns/getSqlColumnFromProjection";
 import { HttpStatusCodes } from "../../../../constants/constants";
 
-export default async function getEntitiesBy<T>(
+export default async function getEntitiesWhere<T>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,

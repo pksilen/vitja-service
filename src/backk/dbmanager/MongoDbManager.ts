@@ -230,7 +230,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async getEntityBy<T>(
+  async getEntityWhere<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
@@ -257,7 +257,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async getEntitiesBy<T>(
+  async getEntitiesWhere<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
@@ -310,7 +310,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  updateEntityBy<T extends Entity>(
+  updateEntityWhere<T extends Entity>(
     fieldName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
@@ -341,7 +341,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  deleteEntitiesBy<T extends object>(
+  deleteEntitiesWhere<T extends object>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T

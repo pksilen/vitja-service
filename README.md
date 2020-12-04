@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- AllowForInternalUse => AllowForClusterInternalUse
 - Rename By methods to Where methods
 - Entity fields must be public or private, if  missing, give error
   - Return value tests, check that private fields is undefined

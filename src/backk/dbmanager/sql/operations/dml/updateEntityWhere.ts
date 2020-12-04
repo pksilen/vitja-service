@@ -10,9 +10,9 @@ import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
 import { PreHook } from "../../../hooks/PreHook";
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
-import getEntityBy from "../dql/getEntityBy";
+import getEntityWhere from "../dql/getEntityWhere";
 
-export default async function updateEntityBy<T extends Entity>(
+export default async function updateEntityWhere<T extends Entity>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,
@@ -26,7 +26,7 @@ export default async function updateEntityBy<T extends Entity>(
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    const currentEntityOrErrorResponse = await getEntityBy(dbManager, fieldName, fieldValue, EntityClass);
+    const currentEntityOrErrorResponse = await getEntityWhere(dbManager, fieldName, fieldValue, EntityClass);
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     const possibleErrorResponse = await dbManager.updateEntity(
       { _id: (currentEntityOrErrorResponse as T)._id, ...entity },

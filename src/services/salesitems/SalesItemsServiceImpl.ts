@@ -122,7 +122,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     userId,
     ...postQueryOperations
   }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getEntitiesBy('userId', userId, SalesItem, postQueryOperations);
+    return this.dbManager.getEntitiesWhere('userId', userId, SalesItem, postQueryOperations);
   }
 
   @AllowForEveryUser()

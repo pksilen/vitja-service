@@ -17,7 +17,7 @@ import getSqlColumnFromProjection from "./utils/columns/getSqlColumnFromProjecti
 import typePropertyAnnotationContainer
   from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
 
-export default async function getEntityBy<T>(
+export default async function getEntityWhere<T>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,

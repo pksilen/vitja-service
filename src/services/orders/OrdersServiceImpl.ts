@@ -100,7 +100,7 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForSelf()
   getOrdersByUserId({ userId, ...postQueryOperations }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
-    return this.dbManager.getEntitiesBy('userId', userId, Order, postQueryOperations);
+    return this.dbManager.getEntitiesWhere('userId', userId, Order, postQueryOperations);
   }
 
   @AllowForSelf()

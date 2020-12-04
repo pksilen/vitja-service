@@ -15,7 +15,7 @@ import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTran
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 
-export default async function deleteEntitiesBy<T extends object>(
+export default async function deleteEntitiesWhere<T extends object>(
   dbManager: PostgreSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,

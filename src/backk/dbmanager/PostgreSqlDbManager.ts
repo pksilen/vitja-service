@@ -9,8 +9,8 @@ import createEntity from "./sql/operations/dml/createEntity";
 import getEntitiesByFilters from "./sql/operations/dql/getEntitiesByFilters";
 import getEntitiesCount from "./sql/operations/dql/getEntitiesCount";
 import getEntityById from "./sql/operations/dql/getEntityById";
-import getEntityBy from "./sql/operations/dql/getEntityBy";
-import getEntitiesBy from "./sql/operations/dql/getEntitiesBy";
+import getEntityWhere from "./sql/operations/dql/getEntityWhere";
+import getEntitiesWhere from "./sql/operations/dql/getEntitiesWhere";
 import updateEntity from "./sql/operations/dml/updateEntity";
 import deleteEntityById from "./sql/operations/dml/deleteEntityById";
 import removeSubEntities from "./sql/operations/dml/removeSubEntities";
@@ -28,10 +28,10 @@ import addSubEntities from "./sql/operations/dml/addSubEntities";
 import getSubEntities from "./sql/operations/dql/getSubEntities";
 import startDbOperation from "./utils/startDbOperation";
 import recordDbOperationDuration from "./utils/recordDbOperationDuration";
-import deleteEntitiesBy from "./sql/operations/dml/deleteEntitiesBy";
+import deleteEntitiesWhere from "./sql/operations/dml/deleteEntitiesWhere";
 import { getNamespace } from "cls-hooked";
 import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
-import updateEntityBy from "./sql/operations/dml/updateEntityBy";
+import updateEntityWhere from "./sql/operations/dml/updateEntityWhere";
 import getAllEntities from "./sql/operations/dql/getAllEntities";
 import { SubEntity } from "../types/entities/SubEntity";
 
@@ -522,26 +522,26 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async getEntityBy<T>(
+  async getEntityWhere<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntityBy');
-    const response = getEntityBy(this, fieldName, fieldValue, entityClass, postQueryOperations);
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntityWhere');
+    const response = getEntityWhere(this, fieldName, fieldValue, entityClass, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
-  async getEntitiesBy<T>(
+  async getEntitiesWhere<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntitiesBy');
-    const response = getEntitiesBy(this, fieldName, fieldValue, entityClass, postQueryOperations);
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.getEntitiesWhere');
+    const response = getEntitiesWhere(this, fieldName, fieldValue, entityClass, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -558,7 +558,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  updateEntityBy<T extends Entity>(
+  updateEntityWhere<T extends Entity>(
     fieldName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
@@ -566,7 +566,7 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntitiesBy');
-    const response = updateEntityBy(this, fieldName, fieldValue, entity, entityClass, preHooks);
+    const response = updateEntityWhere(this, fieldName, fieldValue, entity, entityClass, preHooks);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -582,13 +582,13 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  deleteEntitiesBy<T extends object>(
+  deleteEntitiesWhere<T extends object>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T
   ): Promise<void | ErrorResponse> {
-    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.deleteEntitiesBy');
-    const response = deleteEntitiesBy(this, fieldName, fieldValue, entityClass);
+    const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.deleteEntitiesWhere');
+    const response = deleteEntitiesWhere(this, fieldName, fieldValue, entityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

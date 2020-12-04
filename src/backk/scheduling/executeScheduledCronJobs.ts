@@ -22,7 +22,7 @@ export default function executeScheduledCronJobs(dbManager: AbstractDbManager) {
         const clsNamespace = createNamespace('serviceFunctionExecution');
         clsNamespace.run(async () => {
           await dbManager.tryReserveDbConnectionFromPool();
-          possibleErrorResponse = await dbManager.updateEntityBy(
+          possibleErrorResponse = await dbManager.updateEntityWhere(
             'serviceFunctionName',
             serviceFunctionName,
             { lastScheduledTimestamp: new Date(), nextScheduledTimestamp: interval.next().toDate() },

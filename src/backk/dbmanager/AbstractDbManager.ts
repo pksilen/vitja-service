@@ -154,14 +154,14 @@ export default abstract class AbstractDbManager {
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
-  abstract getEntityBy<T>(
+  abstract getEntityWhere<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
-  abstract getEntitiesBy<T>(
+  abstract getEntitiesWhere<T>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
@@ -202,7 +202,7 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract updateEntityBy<T extends Entity>(
+  abstract updateEntityWhere<T extends Entity>(
     fieldName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
@@ -237,7 +237,7 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract deleteEntitiesBy<T extends object>(
+  abstract deleteEntitiesWhere<T extends object>(
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T
