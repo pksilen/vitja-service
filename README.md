@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- getEntityBy/UpdateEntityBy fieldnames must have @Unique annotation
 - AllowForInternalUse => AllowForClusterInternalUse
 - Rename By methods to Where methods
 - Entity fields must be public or private, if  missing, give error

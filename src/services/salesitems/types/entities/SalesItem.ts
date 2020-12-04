@@ -1,17 +1,16 @@
-import { ArrayMaxSize, IsNumber, Max, MaxLength, Min } from 'class-validator';
-import Entity from '../../../../backk/decorators/entity/Entity';
-import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp from '../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp';
+import { ArrayMaxSize, IsNumber, Max, MaxLength, Min } from "class-validator";
+import Entity from "../../../../backk/decorators/entity/Entity";
+import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp
+  from "../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp";
 import { Area } from "../enums/Area";
 import { Department } from "../enums/Department";
 import { Category } from "../enums/Category";
 import { SalesItemState } from "../enums/SalesItemState";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
 import Tag from "../../../tags/entities/Tag";
-import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
-  @Unique()
   userId!: string;
 
   @MaxLength(64)
