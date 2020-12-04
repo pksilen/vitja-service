@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO
-- 
-- Allow subentity addition removal for User to update paymentMethods
 - Add @Unique annotation for userName field
 - getEntityBy/UpdateEntityBy fieldnames must have @Unique annotation
 - AllowForInternalUse => AllowForClusterInternalUse
