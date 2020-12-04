@@ -1,21 +1,21 @@
 # Vitja service
 
 TODO
-- allowAdditionAndRemovalForSubEntities make not optional
-  - replace Functions with same name functions from dbManager getTypes()
+- 
 - Allow subentity addition removal for User to update paymentMethods
 - Add @Unique annotation for userName field
 - getEntityBy/UpdateEntityBy fieldnames must have @Unique annotation
 - AllowForInternalUse => AllowForClusterInternalUse
+- Rename By methods to Where methods
 - Entity fields must be public or private, if  missing, give error
   - Return value tests, check that private fields is undefined
 - Entity field can be reaadonly
   - Not included in sample arg
   - Included in type metadata validation
   - validate isUndefined
-- Private => AllowForServiceInternalUse
+- Private method => AllowForServiceInternalUse
 - Return value Types cannot have 'errorMessage' property
-- service methods can have a string/number/boolean argument with annotations
+- service methods can have a string/number/boolean arguments with annotations
   -generate Arg class with auto-generated name from service and method name
   -traspile and eval class and use it
 - npm mysql2 for MariaDb/MySql

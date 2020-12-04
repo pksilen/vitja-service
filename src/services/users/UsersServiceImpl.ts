@@ -60,7 +60,7 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   updateUser(arg: UpdateUserArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity(arg, User, []);
+    return this.dbManager.updateEntity(arg, User, 'all');
   }
 
   @AllowForSelf()
