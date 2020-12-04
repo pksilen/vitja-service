@@ -6,7 +6,7 @@ import createErrorResponseFromErrorMessageAndStatusCode
   from "../errors/createErrorResponseFromErrorMessageAndStatusCode";
 import initializeDatabase, { isDbInitialized } from "../dbmanager/sql/operations/ddl/initializeDatabase";
 import { HttpStatusCodes } from "../constants/constants";
-import { AllowForInternalUse } from "../decorators/service/function/AllowForInternalUse";
+import { AllowForClusterInternalUse } from "../decorators/service/function/AllowForClusterInternalUse";
 
 @Injectable()
 export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
@@ -14,7 +14,7 @@ export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
     super(dbManager);
   }
 
-  @AllowForInternalUse()
+  @AllowForClusterInternalUse()
   async isReady(): Promise<void | ErrorResponse> {
     if (!isDbInitialized(this.dbManager) && !(await initializeDatabase(this.dbManager))) {
       return createErrorResponseFromErrorMessageAndStatusCode(

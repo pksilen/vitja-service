@@ -44,7 +44,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
         .map((functionName: string) => {
           if (
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForSelf(ServiceClass, functionName) &&
-            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(
+            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(
               ServiceClass,
               functionName
             ) &&

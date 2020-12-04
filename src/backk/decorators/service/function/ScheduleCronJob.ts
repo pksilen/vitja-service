@@ -15,7 +15,7 @@ export function ScheduleCronJob(cronSchedule: string, retryIntervalsInSecs: numb
       retryIntervalsInSecs
     );
 
-    serviceFunctionAnnotationContainer.addServiceFunctionAllowedForInternalUse(
+    serviceFunctionAnnotationContainer.addServiceFunctionAllowedForClusterInternalUse(
       object.constructor,
       functionName
     );

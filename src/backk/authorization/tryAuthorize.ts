@@ -23,8 +23,8 @@ export default async function tryAuthorize(
 
   if (authHeader === undefined) {
     if (
-      serviceAnnotationContainer.isServiceAllowedForInternalUse(ServiceClass) ||
-      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(ServiceClass, functionName)
+      serviceAnnotationContainer.isServiceAllowedForClusterInternalUse(ServiceClass) ||
+      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(ServiceClass, functionName)
     ) {
       return;
     }
@@ -80,8 +80,8 @@ export default async function tryAuthorize(
   if (
     process.env.NODE_ENV === 'development' &&
     (serviceFunctionAnnotationContainer.isServiceFunctionAllowedForTests(ServiceClass, functionName) ||
-      serviceAnnotationContainer.isServiceAllowedForInternalUse(ServiceClass) ||
-      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForInternalUse(ServiceClass, functionName))
+      serviceAnnotationContainer.isServiceAllowedForClusterInternalUse(ServiceClass) ||
+      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(ServiceClass, functionName))
   ) {
     return;
   }

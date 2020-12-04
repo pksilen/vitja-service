@@ -1,7 +1,7 @@
 class ServiceAnnotationContainer {
   private serviceClassNameToHasNoAutoTestsAnnotationMap: { [key: string]: boolean } = {};
   private serviceClassNameToIsAllowedForEveryUserMap: { [key: string]: boolean } = {};
-  private serviceClassNameToIsAllowedForInternalUseMap: { [key: string]: boolean } = {};
+  private serviceClassNameToIsAllowedForClusterInternalUseMap: { [key: string]: boolean } = {};
   private serviceClassNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
   private serviceClassNameToDocStringMap: { [key: string]: string } = {};
 
@@ -17,8 +17,8 @@ class ServiceAnnotationContainer {
     this.serviceClassNameToIsAllowedForEveryUserMap[serviceClass.name] = true;
   }
 
-  addServiceAllowedForInternalUse(serviceClass: Function) {
-    this.serviceClassNameToIsAllowedForInternalUseMap[serviceClass.name] = true;
+  addServiceAllowedForClusterInternalUse(serviceClass: Function) {
+    this.serviceClassNameToIsAllowedForClusterInternalUseMap[serviceClass.name] = true;
   }
 
   addDocumentationForService(serviceClass: Function, docString: string) {
@@ -49,10 +49,10 @@ class ServiceAnnotationContainer {
     return false;
   }
 
-  isServiceAllowedForInternalUse(serviceClass: Function) {
+  isServiceAllowedForClusterInternalUse(serviceClass: Function) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.serviceClassNameToIsAllowedForInternalUseMap[proto.constructor.name] !== undefined) {
+      if (this.serviceClassNameToIsAllowedForClusterInternalUseMap[proto.constructor.name] !== undefined) {
         return true;
       }
       proto = Object.getPrototypeOf(proto);

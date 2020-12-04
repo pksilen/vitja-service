@@ -3,7 +3,7 @@ import { ErrorCodeAndMessage } from '../../../dbmanager/hooks/PreHook';
 class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsAllowedForEveryUserMap: { [key: string]: boolean } = {};
-  private readonly serviceFunctionNameToIsAllowedForInternalUseMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToIsAllowedForClusterInternalUseMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsAllowedForSelfMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsPrivateMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
@@ -28,8 +28,8 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToIsAllowedForEveryUserMap[`${serviceClass.name}${functionName}`] = true;
   }
 
-  addServiceFunctionAllowedForInternalUse(serviceClass: Function, functionName: string) {
-    this.serviceFunctionNameToIsAllowedForInternalUseMap[`${serviceClass.name}${functionName}`] = true;
+  addServiceFunctionAllowedForClusterInternalUse(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToIsAllowedForClusterInternalUseMap[`${serviceClass.name}${functionName}`] = true;
   }
 
   addServiceFunctionAllowedForSelf(serviceClass: Function, functionName: string) {
@@ -113,11 +113,11 @@ class ServiceFunctionAnnotationContainer {
     return false;
   }
 
-  isServiceFunctionAllowedForInternalUse(serviceClass: Function, functionName: string) {
+  isServiceFunctionAllowedForClusterInternalUse(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToIsAllowedForInternalUseMap[`${serviceClass.name}${functionName}`] !==
+        this.serviceFunctionNameToIsAllowedForClusterInternalUseMap[`${serviceClass.name}${functionName}`] !==
         undefined
       ) {
         return true;
