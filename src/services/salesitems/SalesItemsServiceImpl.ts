@@ -3,7 +3,7 @@ import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServic
 import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
 import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
-import { Private } from '../../backk/decorators/service/function/Private';
+import { AllowForServiceInternalUseOnly } from '../../backk/decorators/service/function/AllowForServiceInternalUseOnly';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
 import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
@@ -153,7 +153,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     });
   }
 
-  @Private()
+  @AllowForServiceInternalUseOnly()
   @Errors([INVALID_SALES_ITEM_STATE])
   updateSalesItemState(
     arg: UpdateSalesItemStateArg,

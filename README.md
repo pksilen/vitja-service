@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- if field is private, list in service type validations
 - Private method => AllowForServiceInternalUse
 - Entity field can be readonly
   - Not included in sample arg
