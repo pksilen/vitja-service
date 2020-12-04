@@ -13,6 +13,7 @@
       primaryImageDataUri: abc
       secondaryImageDataUris:
         - abc
+      tags: []
     response:
       statusCode: 200
       tests:
