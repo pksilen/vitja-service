@@ -1,41 +1,38 @@
-import { Injectable } from "@nestjs/common";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
-import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
-import { Private } from "../../backk/decorators/service/function/Private";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import MongoDbManager from "../../backk/dbmanager/MongoDbManager";
-import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
-import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import SqlInExpression from "../../backk/dbmanager/sql/expressions/SqlInExpression";
-import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
-import SalesItemsService from "./SalesItemsService";
-import CreateSalesItemArg from "./types/args/CreateSalesItemArg";
-import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
-import UpdateSalesItemArg from "./types/args/UpdateSalesItemArg";
-import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
-import { SalesItem } from "./types/entities/SalesItem";
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import _IdsAndDefaultPostQueryOperations
-  from "../../backk/types/postqueryoperations/_IdsAndDefaultPostQueryOperations";
-import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
-import _Id from "../../backk/types/id/_Id";
+import { Injectable } from '@nestjs/common';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
+import { Private } from '../../backk/decorators/service/function/Private';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
+import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
+import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
+import SalesItemsService from './SalesItemsService';
+import CreateSalesItemArg from './types/args/CreateSalesItemArg';
+import GetSalesItemsArg from './types/args/GetSalesItemsArg';
+import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
+import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
+import { SalesItem } from './types/entities/SalesItem';
+import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import _IdsAndDefaultPostQueryOperations from '../../backk/types/postqueryoperations/_IdsAndDefaultPostQueryOperations';
+import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
+import _Id from '../../backk/types/id/_Id';
 import {
   INVALID_SALES_ITEM_STATE,
   MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
   SALES_ITEM_STATE_MUST_BE_FOR_SALE
-} from "./errors/salesItemsServiceErrors";
-import { Errors } from "../../backk/decorators/service/function/Errors";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import { SalesItemState } from "./types/enums/SalesItemState";
+} from './errors/salesItemsServiceErrors';
+import { Errors } from '../../backk/decorators/service/function/Errors';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import { SalesItemState } from './types/enums/SalesItemState';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class SalesItemsServiceImpl extends SalesItemsService {
-  constructor(
-    dbManager: AbstractDbManager
-  ) {
+  constructor(dbManager: AbstractDbManager) {
     super(dbManager);
   }
 
@@ -148,10 +145,10 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @AllowForSelf()
   @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
   async updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity(arg, SalesItem, {
-      currentEntityJsonPath: '$',
+    return this.dbManager.updateEntity(arg, SalesItem, [], {
       hookFunc: async ([{ _id, state, price }]) =>
-        (await this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem)) || state === 'forSale',
+        (await this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, [])) ||
+        state === 'forSale',
       error: SALES_ITEM_STATE_MUST_BE_FOR_SALE
     });
   }
@@ -165,6 +162,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.updateEntity(
       arg,
       SalesItem,
+      [],
       requiredCurrentState
         ? {
             currentEntityJsonPath: 'state',

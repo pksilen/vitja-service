@@ -29,12 +29,15 @@ export default async function updateEntity<T extends Entity>(
   dbManager: PostgreSqlDbManager,
   { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
+  allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
   preHooks?: PreHook | PreHook[],
-  allowAdditionAndRemovalForSubEntities?: Function[],
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
+  const finalAllowAdditionAndRemovalForSubEntities = Array.isArray(allowAdditionAndRemovalForSubEntityClasses)
+    ? allowAdditionAndRemovalForSubEntityClasses.map((SubEntityClass) => dbManager.getType(SubEntityClass))
+    : allowAdditionAndRemovalForSubEntityClasses;
   let didStartTransaction = false;
 
   try {
@@ -46,7 +49,7 @@ export default async function updateEntity<T extends Entity>(
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
-    if (!isRecursiveCall || allowAdditionAndRemovalForSubEntities) {
+    if (!isRecursiveCall || allowAdditionAndRemovalForSubEntityClasses) {
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
     }
     if (!isRecursiveCall) {
@@ -74,7 +77,10 @@ export default async function updateEntity<T extends Entity>(
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
           // noinspection ReuseOfLocalVariableJS
-          if (allowAdditionAndRemovalForSubEntities?.includes(SubEntityClass)) {
+          if (
+            finalAllowAdditionAndRemovalForSubEntities === 'all' ||
+            finalAllowAdditionAndRemovalForSubEntities?.includes(SubEntityClass)
+          ) {
             const { subEntitiesToDelete, subEntitiesToAdd, subEntitiesToUpdate } = getSubEntitiesByAction(
               subEntityOrEntities,
               (currentEntityOrErrorResponse as any)[fieldName]
@@ -146,8 +152,8 @@ export default async function updateEntity<T extends Entity>(
                   dbManager,
                   subEntity,
                   SubEntityClass,
+                  allowAdditionAndRemovalForSubEntityClasses,
                   undefined,
-                  allowAdditionAndRemovalForSubEntities,
                   true
                 );
 
@@ -163,8 +169,8 @@ export default async function updateEntity<T extends Entity>(
             dbManager,
             subEntityOrEntities,
             (Types as any)[baseTypeName],
+            allowAdditionAndRemovalForSubEntityClasses,
             undefined,
-            allowAdditionAndRemovalForSubEntities,
             true
           );
 
@@ -185,11 +191,13 @@ export default async function updateEntity<T extends Entity>(
 
           promises.push(
             forEachAsyncParallel((restOfEntity as any)[fieldName], async (subItem: any, index) => {
-              const deleteStatement = `DELETE FROM ${dbManager.schema}.${EntityClass.name + '_' +
+              const deleteStatement = `DELETE FROM ${dbManager.schema}.${EntityClass.name +
+                '_' +
                 fieldName.slice(0, -1)} WHERE ${foreignIdFieldName} = $1`;
               await dbManager.tryExecuteSql(deleteStatement, [_id]);
 
-              const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name + '_' +
+              const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name +
+                '_' +
                 fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
                 0,
                 -1

@@ -549,11 +549,11 @@ export default class PostgreSqlDbManager extends AbstractDbManager {
   async updateEntity<T extends Entity>(
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
-    allowAdditionAndRemovalForSubEntities?: Function[]
+    allowAdditionAndRemovalForSubEntityClasses: (new() => any)[] | 'all',
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation('PostgreSqlDbManager.updateEntity');
-    const response = updateEntity(this, entity, entityClass, preHooks, allowAdditionAndRemovalForSubEntities);
+    const response = updateEntity(this, entity, entityClass, allowAdditionAndRemovalForSubEntityClasses, preHooks);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

@@ -171,15 +171,15 @@ export default abstract class AbstractDbManager {
   abstract updateEntity<T extends Entity>(
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
+    allowAdditionAndRemovalForSubEntityClasses: (new() => any)[] | 'all',
     preHooks?: PreHook | PreHook[],
-    allowAdditionAndRemovalForSubEntities?: Function[]
   ): Promise<void | ErrorResponse>;
 
   updateEntities<T extends Entity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
-    allowAdditionAndRemovalForSubEntities?: Function[]
+    allowAdditionAndRemovalForSubEntityClasses: (new() => any)[] | 'all',
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     return this.executeInsideTransaction(async () => {
       try {
@@ -187,8 +187,8 @@ export default abstract class AbstractDbManager {
           const possibleErrorResponse = await this.updateEntity(
             entity,
             entityClass,
-            preHooks,
-            allowAdditionAndRemovalForSubEntities
+            allowAdditionAndRemovalForSubEntityClasses,
+            preHooks
           );
           if (possibleErrorResponse) {
             possibleErrorResponse.errorMessage =

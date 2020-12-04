@@ -289,8 +289,8 @@ export default class MongoDbManager extends AbstractDbManager {
   async updateEntity<T extends Entity>(
     { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
-    allowAdditionAndRemovalForSubEntities?: Function[]
+    allowAdditionAndRemovalForSubEntityClasses: (new() => any)[] | 'all',
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     // TODO add precondition check
     // auto-update version/lastmodifiedtimestamp

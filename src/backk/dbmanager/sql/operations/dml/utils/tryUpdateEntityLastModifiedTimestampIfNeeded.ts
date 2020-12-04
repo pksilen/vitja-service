@@ -21,7 +21,7 @@ export default async function tryUpdateEntityLastModifiedTimestampIfNeeded<T ext
     const possibleErrorResponse = await updateEntity(
       dbManager,
       { lastModifiedTimestamp, _id: currentEntityOrErrorResponse._id } as any,
-      EntityClass
+      EntityClass, []
     );
     if (possibleErrorResponse) {
       throw possibleErrorResponse;

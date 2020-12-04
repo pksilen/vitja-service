@@ -36,7 +36,7 @@ export default function initializeCronJobSchedulingTable(dbManager: AbstractDbMa
                 lastScheduledTimestamp: new Date(0),
                 nextScheduledTimestamp: interval.next().toDate()
               },
-              __Backk__CronJobScheduling
+              __Backk__CronJobScheduling, []
             );
           }
         });

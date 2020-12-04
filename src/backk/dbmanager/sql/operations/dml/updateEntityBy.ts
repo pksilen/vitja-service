@@ -30,7 +30,7 @@ export default async function updateEntityBy<T extends Entity>(
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     const possibleErrorResponse = await dbManager.updateEntity(
       { _id: (currentEntityOrErrorResponse as T)._id, ...entity },
-      EntityClass
+      EntityClass, []
     );
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return possibleErrorResponse;

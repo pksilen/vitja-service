@@ -22,7 +22,7 @@ export default async function tryUpdateEntityVersionIfNeeded<T extends Entity>(
     const possibleErrorResponse = await updateEntity(
       dbManager,
       { version, _id: currentEntityOrErrorResponse._id } as any,
-      EntityClass
+      EntityClass, []
     );
     if (possibleErrorResponse) {
       throw possibleErrorResponse;

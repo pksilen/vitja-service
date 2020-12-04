@@ -121,6 +121,7 @@ export default class OrdersServiceImpl extends OrdersService {
         orderItems: [{ state: 'delivering' as 'delivering', id: orderItemId, ...restOfArg }]
       },
       Order,
+      [],
       {
         currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
         hookFunc: ([state]) => state === 'toBeDelivered',
@@ -139,6 +140,7 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.updateEntity(
       { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
       Order,
+      [],
       {
         currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
         hookFunc: async ([{ salesItemId, state }]) =>
