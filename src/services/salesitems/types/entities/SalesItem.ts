@@ -7,9 +7,11 @@ import { Category } from "../enums/Category";
 import { SalesItemState } from "../enums/SalesItemState";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
 import Tag from "../../../tags/entities/Tag";
+import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
+  @Unique()
   userId!: string;
 
   @MaxLength(64)

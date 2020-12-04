@@ -14,6 +14,8 @@ import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount
 import tryGetProjection from "./clauses/tryGetProjection";
 import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
 import getSqlColumnFromProjection from "./utils/columns/getSqlColumnFromProjection";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
 
 export default async function getEntityBy<T>(
   dbManager: PostgreSqlDbManager,
@@ -22,6 +24,10 @@ export default async function getEntityBy<T>(
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
+  if (!fieldName.includes('.') && !typePropertyAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName)) {
+    throw new Error(`Field ${EntityClass}.${fieldName} values must be annotated with @Unique annotation`)
+  }
+
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
@@ -60,6 +66,11 @@ export default async function getEntityBy<T>(
       return createErrorResponseFromErrorMessageAndStatusCode(
         `Item with ${fieldName}: ${fieldValue} not found`,
         404
+      );
+    } else if (result.rows.length > 1) {
+      return createErrorResponseFromErrorMessageAndStatusCode(
+        `Field ${fieldName} values must be unique`,
+        500
       );
     }
 

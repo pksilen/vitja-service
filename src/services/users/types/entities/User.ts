@@ -14,6 +14,7 @@ import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 @Entity()
 @UniqueIndex(['userName'])
 export default class User extends _Id {
+  @Unique()
   @MaxLength(512)
   @IsEmail()
   @TestValue('test@test.com')
@@ -22,7 +23,6 @@ export default class User extends _Id {
   isBusinessUser!: boolean;
 
   @Private()
-  @Unique()
   @Documentation('Password doc goes here...')
   @IsExprTrue(
     ({ password }) => !password.toLowerCase().includes('password'),

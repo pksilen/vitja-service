@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Add @Unique annotation for userName field
 - getEntityBy/UpdateEntityBy fieldnames must have @Unique annotation
 - AllowForInternalUse => AllowForClusterInternalUse
 - Rename By methods to Where methods
