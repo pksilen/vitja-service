@@ -1,7 +1,7 @@
 /* eslint-disable no-constant-condition */
 import Redis from 'ioredis';
 import getServiceName from '../../../utils/getServiceName';
-import tryExecuteServiceFunction from '../../../execution/tryExecuteServiceFunction';
+import tryExecuteServiceMethod from '../../../execution/tryExecuteServiceMethod';
 import isErrorResponse from '../../../errors/isErrorResponse';
 import { ErrorResponse } from '../../../types/ErrorResponse';
 import { HttpStatusCodes } from '../../../constants/constants';
@@ -25,7 +25,7 @@ export default async function consumeFromRedis(
       log(Severity.DEBUG, 'Redis: consume message from queue', '', { broker, topic });
       const { serviceFunction, serviceFunctionArgument, headers } = JSON.parse(valueJson);
 
-      const response = await tryExecuteServiceFunction(
+      const response = await tryExecuteServiceMethod(
         controller,
         serviceFunction,
         serviceFunctionArgument,

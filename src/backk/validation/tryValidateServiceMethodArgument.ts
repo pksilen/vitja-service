@@ -1,20 +1,28 @@
-import { validateOrReject } from "class-validator";
-import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
-import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
-import getValidationErrors from "./getValidationErrors";
+import { validateOrReject } from 'class-validator';
+import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import getValidationErrors from './getValidationErrors';
 
-export default async function tryValidateServiceMethodArgument(obj: object): Promise<void> {
+export default async function tryValidateServiceMethodArgument(
+  methodName: string,
+  obj: object
+): Promise<void> {
   try {
     await validateOrReject(obj, {
       groups: ['__backk_firstRound__']
     });
 
+    const isCreateMethod =
+      methodName.startsWith('create') || methodName.startsWith('add') || methodName.startsWith('insert');
+
     await validateOrReject(obj, {
       whitelist: true,
-      forbidNonWhitelisted: true
+      forbidNonWhitelisted: true,
+      groups: ['__backk_argument__', ...(isCreateMethod ? ['__backk_create__'] : [])]
     });
   } catch (validationErrors) {
-    const errorMessage = 'Error code invalidArgument: Invalid argument: ' + getValidationErrors(validationErrors);
+    const errorMessage =
+      'Error code invalidArgument: Invalid argument: ' + getValidationErrors(validationErrors);
     createErrorFromErrorMessageAndThrowError(createErrorMessageWithStatusCode(errorMessage, 400));
   }
 }

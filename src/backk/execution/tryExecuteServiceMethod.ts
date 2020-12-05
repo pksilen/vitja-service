@@ -35,7 +35,7 @@ export interface ExecuteServiceFunctionOptions {
   shouldAllowTemplatesInMultipleServiceFunctionExecution?: boolean;
 }
 
-export default async function tryExecuteServiceFunction(
+export default async function tryExecuteServiceMethod(
   controller: any,
   serviceFunction: string,
   serviceFunctionArgument: any,
@@ -247,7 +247,7 @@ export default async function tryExecuteServiceFunction(
         );
       }
 
-      await tryValidateServiceMethodArgument(instantiatedServiceFunctionArgument);
+      await tryValidateServiceMethodArgument(functionName, instantiatedServiceFunctionArgument);
     }
 
     if (

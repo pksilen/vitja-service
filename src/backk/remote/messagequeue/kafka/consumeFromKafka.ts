@@ -2,7 +2,7 @@ import { Kafka } from 'kafkajs';
 import getServiceName from '../../../utils/getServiceName';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
 import logCreator from './logCreator';
-import tryExecuteServiceFunction from '../../../execution/tryExecuteServiceFunction';
+import tryExecuteServiceMethod from '../../../execution/tryExecuteServiceMethod';
 import tracerProvider from '../../../observability/distributedtracinig/tracerProvider';
 import log, { Severity } from '../../../observability/logging/log';
 import { CanonicalCode, Span } from '@opentelemetry/api';
@@ -148,7 +148,7 @@ export default async function consumeFromKafka(
       eachMessage: async ({ message: { key, value, headers } }) => {
         const serviceFunction = key.toString();
         const serviceFunctionArgument = JSON.parse(value?.toString() ?? '');
-        const response = await tryExecuteServiceFunction(
+        const response = await tryExecuteServiceMethod(
           controller,
           serviceFunction,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

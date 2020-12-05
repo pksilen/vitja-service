@@ -1,5 +1,5 @@
 import Mustache from 'mustache';
-import tryExecuteServiceFunction, { ExecuteServiceFunctionOptions } from './tryExecuteServiceFunction';
+import tryExecuteServiceMethod, { ExecuteServiceFunctionOptions } from './tryExecuteServiceMethod';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import { ServiceFunctionCall } from './ServiceFunctionCall';
 import { ServiceFunctionCallResponse } from './ServiceFunctionCallResponse';
@@ -36,7 +36,7 @@ async function executeMultiple<T>(
         );
       }
 
-      await tryExecuteServiceFunction(
+      await tryExecuteServiceMethod(
         controller,
         serviceFunctionName,
         renderedServiceFunctionArgument,

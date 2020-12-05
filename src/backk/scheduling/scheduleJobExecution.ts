@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { CronJob } from 'cron';
-import tryExecuteServiceFunction from '../execution/tryExecuteServiceFunction';
+import tryExecuteServiceMethod from '../execution/tryExecuteServiceMethod';
 import findAsyncSequential from '../utils/findAsyncSequential';
 import delay from '../utils/delay';
 import { createNamespace } from 'cls-hooked';
@@ -91,13 +91,13 @@ export default function scheduleJobExecution(
           (entityOrErrorResponse as __Backk__JobScheduling)._id
         )
       ) {
-        await tryExecuteServiceFunction(controller, serviceFunctionName, serviceFunctionArgument, headers);
+        await tryExecuteServiceMethod(controller, serviceFunctionName, serviceFunctionArgument, headers);
       }
     } catch (error) {
       await findAsyncSequential(retryIntervalsInSecs, async (retryIntervalInSecs) => {
         await delay(retryIntervalInSecs * 1000);
         try {
-          await tryExecuteServiceFunction(controller, serviceFunctionName, serviceFunctionArgument, headers);
+          await tryExecuteServiceMethod(controller, serviceFunctionName, serviceFunctionArgument, headers);
           return true;
         } catch (error) {
           return false;

@@ -49,6 +49,18 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       }
     }
 
+    if (
+      (validationMetadata.type !== 'customValidation' ||
+        (validationMetadata.type === 'customValidation' &&
+          validationMetadata.constraints[0] !== 'isUndefined'))
+    ) {
+      if (!validationMetadata.groups?.includes('__backk_argument__')) {
+        validationMetadata.groups = validationMetadata.groups?.concat('__backk_argument__') ?? [
+          '__backk_argument__'
+        ];
+      }
+    }
+
     let isNullable = false;
     if (validationMetadata.type === 'conditionalValidation') {
       if (validationMetadata.constraints[1] === 'isOptional') {

@@ -1,15 +1,15 @@
-import { parseSync } from "@babel/core";
-import { getFromContainer, MetadataStorage, ValidationTypes, Validator } from "class-validator";
-import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
-import { ValidationMetadataArgs } from "class-validator/metadata/ValidationMetadataArgs";
-import { readFileSync } from "fs";
+import { parseSync } from '@babel/core';
+import { getFromContainer, MetadataStorage, ValidationTypes, Validator } from 'class-validator';
+import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
+import { readFileSync } from 'fs';
 import getSrcFilePathNameForTypeName, {
   hasBackkSrcFilenameForTypeName,
   hasSrcFilenameForTypeName
-} from "../utils/file/getSrcFilePathNameForTypeName";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
-import parseEnumValuesFromSrcFile from "../typescript/parser/parseEnumValuesFromSrcFile";
-import typePropertyAnnotationContainer from "../decorators/typeproperty/typePropertyAnnotationContainer";
+} from '../utils/file/getSrcFilePathNameForTypeName';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFromSrcFile';
+import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 
 function getPropertyValidationOfType(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -31,12 +31,12 @@ function doesPropertyContainValidation(typeClass: Function, propertyName: string
   return foundValidation !== undefined;
 }
 
-function doesPropertyContainCustomValidation(
-  typeClass: Function,
+export function doesClassPropertyContainCustomValidation(
+  Class: Function,
   propertyName: string,
   validationType: string
 ) {
-  const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
+  const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
 
   const foundValidation = validationMetadatas.find(
     (validationMetadata: ValidationMetadata) =>
@@ -87,7 +87,7 @@ export default function setClassPropertyValidationDecorators(
           let isNullableType = false;
           let isArrayType = false;
 
-          const isPrivateProperty = classBodyNode.accessibility !== 'public'
+          const isPrivateProperty = classBodyNode.accessibility !== 'public';
           if (isPrivateProperty) {
             typePropertyAnnotationContainer.setTypePropertyAsPrivate(Class, propertyName);
           }
@@ -101,9 +101,9 @@ export default function setClassPropertyValidationDecorators(
               validationOptions: { each: isArrayType }
             };
 
-            getFromContainer(MetadataStorage).addValidationMetadata(
-              new ValidationMetadata(validationMetadataArgs)
-            );
+            const validationMetadata = new ValidationMetadata(validationMetadataArgs);
+            validationMetadata.groups = ['__backk_create__'];
+            getFromContainer(MetadataStorage).addValidationMetadata(validationMetadata);
           }
 
           if (classBodyNode.typeAnnotation === undefined) {
@@ -128,9 +128,7 @@ export default function setClassPropertyValidationDecorators(
                   Class.name
               );
             } else {
-              throw new Error(
-                'Missing type annotation for property: ' + propertyName + ' in ' + Class.name
-              );
+              throw new Error('Missing type annotation for property: ' + propertyName + ' in ' + Class.name);
             }
           } else {
             const propertyTypeNameStart = classBodyNode.typeAnnotation.loc.start;
@@ -152,7 +150,7 @@ export default function setClassPropertyValidationDecorators(
             propertyName.endsWith('Id') ||
             propertyName.endsWith('Ids')
           ) {
-            if (!doesPropertyContainCustomValidation(Class, propertyName, 'maxLengthAndMatches')) {
+            if (!doesClassPropertyContainCustomValidation(Class, propertyName, 'maxLengthAndMatches')) {
               const validationMetadataArgs: ValidationMetadataArgs = {
                 type: ValidationTypes.CUSTOM_VALIDATION,
                 target: Class,
@@ -173,7 +171,7 @@ export default function setClassPropertyValidationDecorators(
           } else if (baseTypeName === 'number') {
             if (
               !doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_INT) &&
-              !doesPropertyContainCustomValidation(Class, propertyName, 'isBigInt')
+              !doesClassPropertyContainCustomValidation(Class, propertyName, 'isBigInt')
             ) {
               validationType = ValidationTypes.IS_NUMBER;
               constraints = [{}];
@@ -267,10 +265,7 @@ export default function setClassPropertyValidationDecorators(
             );
           }
 
-          if (
-            isArrayType &&
-            !doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ARRAY)
-          ) {
+          if (isArrayType && !doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ARRAY)) {
             const arrayValidationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.IS_ARRAY,
               target: Class,
@@ -296,7 +291,11 @@ export default function setClassPropertyValidationDecorators(
             );
           }
 
-          const conditionalValidation = getPropertyValidationOfType(Class, propertyTypeName, ValidationTypes.CONDITIONAL_VALIDATION);
+          const conditionalValidation = getPropertyValidationOfType(
+            Class,
+            propertyTypeName,
+            ValidationTypes.CONDITIONAL_VALIDATION
+          );
 
           if (
             classBodyNode.optional &&

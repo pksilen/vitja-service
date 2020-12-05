@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 import AuthorizationService from "../backk/authorization/AuthorizationService";
 import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
-import tryExecuteServiceFunction from "../backk/execution/tryExecuteServiceFunction";
+import tryExecuteServiceMethod from "../backk/execution/tryExecuteServiceMethod";
 import ReadinessCheckService from "../backk/readinesscheck/ReadinessCheckService";
 import OrdersService from "../services/orders/OrdersService";
 import SalesItemsService from "../services/salesitems/SalesItemsService";
@@ -52,7 +52,7 @@ export class AppController {
     @Res() response: any
   ) {
     // noinspection JSIgnoredPromiseFromCall
-    tryExecuteServiceFunction(
+    tryExecuteServiceMethod(
       this,
       params.serviceFunctionName,
       serviceFunctionArgument,
@@ -80,7 +80,7 @@ export class AppController {
     @Res() response: any
   ) {
     // noinspection JSIgnoredPromiseFromCall
-    tryExecuteServiceFunction(
+    tryExecuteServiceMethod(
       this,
       params.serviceFunctionName,
       serviceFunctionArgument,
