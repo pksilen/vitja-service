@@ -3,7 +3,7 @@ import { registerDecorator, ValidationOptions, ValidationArguments } from 'class
 export default function IsUndefined(validationOptions?: ValidationOptions) {
   return function (object: Record<string, any>, propertyName: string) {
     registerDecorator({
-      name: 'isBigInt',
+      name: 'isUndefined',
       target: object.constructor,
       propertyName: propertyName,
       constraints: ['isUndefined'],

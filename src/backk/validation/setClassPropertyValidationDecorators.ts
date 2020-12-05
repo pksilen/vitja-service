@@ -92,6 +92,20 @@ export default function setClassPropertyValidationDecorators(
             typePropertyAnnotationContainer.setTypePropertyAsPrivate(Class, propertyName);
           }
 
+          if (classBodyNode.readonly) {
+            const validationMetadataArgs: ValidationMetadataArgs = {
+              type: ValidationTypes.CUSTOM_VALIDATION,
+              target: Class,
+              propertyName,
+              constraints: ['isUndefined'],
+              validationOptions: { each: isArrayType }
+            };
+
+            getFromContainer(MetadataStorage).addValidationMetadata(
+              new ValidationMetadata(validationMetadataArgs)
+            );
+          }
+
           if (classBodyNode.typeAnnotation === undefined) {
             if (typeof classBodyNode.value?.value === 'number') {
               propertyTypeName = 'number';

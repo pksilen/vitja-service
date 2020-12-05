@@ -39,7 +39,8 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       validationMetadata.type !== 'arrayMaxSize' &&
       validationMetadata.type !== 'arrayUnique' &&
       (validationMetadata.type !== 'customValidation' ||
-        (validationMetadata.type === 'customValidation' && validationMetadata.constraints[0] !== 'isUndefined'))
+        (validationMetadata.type === 'customValidation' &&
+          validationMetadata.constraints[0] !== 'isUndefined'))
     ) {
       if (!validationMetadata.groups?.includes('__backk_response__')) {
         validationMetadata.groups = validationMetadata.groups?.concat('__backk_response__') ?? [
