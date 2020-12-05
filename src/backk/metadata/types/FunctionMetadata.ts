@@ -1,4 +1,4 @@
-import { ErrorCodeAndMessage } from "../dbmanager/hooks/PreHook";
+import { ErrorCodeAndMessage } from "../../dbmanager/hooks/PreHook";
 
 export type FunctionMetadata = {
   functionName: string;

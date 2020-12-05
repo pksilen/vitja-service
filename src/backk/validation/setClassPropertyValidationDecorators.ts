@@ -102,7 +102,11 @@ export default function setClassPropertyValidationDecorators(
             };
 
             const validationMetadata = new ValidationMetadata(validationMetadataArgs);
-            validationMetadata.groups = ['__backk_create__'];
+            if (propertyName === '_id') {
+              validationMetadata.groups = ['__backk_create__'];
+            } else {
+              validationMetadata.groups = ['__backk_create__', '__backk_update__'];
+            }
             getFromContainer(MetadataStorage).addValidationMetadata(validationMetadata);
           }
 

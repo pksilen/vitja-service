@@ -9,7 +9,7 @@ import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
 import UsersBaseService from '../users/UsersBaseService';
-import { ServiceMetadata } from '../metadata/ServiceMetadata';
+import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import tryValidateServiceMethodArgument from '../validation/tryValidateServiceMethodArgument';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
 import tryValidateServiceMethodResponse from '../validation/tryValidateServiceMethodResponse';

@@ -15,10 +15,17 @@ export default async function tryValidateServiceMethodArgument(
     const isCreateMethod =
       methodName.startsWith('create') || methodName.startsWith('add') || methodName.startsWith('insert');
 
+    const isUpdateMethod =
+      methodName.startsWith('update') || methodName.startsWith('modify') || methodName.startsWith('change');
+
     await validateOrReject(obj, {
       whitelist: true,
       forbidNonWhitelisted: true,
-      groups: ['__backk_argument__', ...(isCreateMethod ? ['__backk_create__'] : [])]
+      groups: [
+        '__backk_argument__',
+        ...(isCreateMethod ? ['__backk_create__'] : []),
+        ...(isUpdateMethod ? ['__backk_update__'] : [])
+      ]
     });
   } catch (validationErrors) {
     const errorMessage =

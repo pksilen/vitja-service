@@ -46,13 +46,6 @@ export default function getValidationMetadata<T>(Class: new () => T): object {
       if (!propNameToValidationsMap[validationMetadata.propertyName].includes(validationExpr)) {
         propNameToValidationsMap[validationMetadata.propertyName].push(validationExpr);
       }
-
-      if (
-        typePropertyAnnotationContainer.isTypePropertyPrivate(Class, validationMetadata.propertyName) &&
-        !propNameToValidationsMap[validationMetadata.propertyName].includes('isPrivate()')
-      ) {
-        propNameToValidationsMap[validationMetadata.propertyName].push('isPrivate()');
-      }
     }
   });
 

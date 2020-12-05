@@ -2,11 +2,12 @@ import serviceFunctionAnnotationContainer
   from "../decorators/service/function/serviceFunctionAnnotationContainer";
 import serviceAnnotationContainer from "../decorators/service/serviceAnnotationContainer";
 import BaseService from "../service/BaseService";
-import { ServiceMetadata } from "./ServiceMetadata";
+import { ServiceMetadata } from "./types/ServiceMetadata";
 import getClassPropertyNameToPropertyTypeNameMap from "./getClassPropertyNameToPropertyTypeNameMap";
-import { FunctionMetadata } from "./FunctionMetadata";
+import { FunctionMetadata } from "./types/FunctionMetadata";
 import getValidationMetadata from "./getValidationMetadata";
 import getTypeDocumentation from "./getTypeDocumentation";
+import getTypePropertyModifiers from "./getTypePropertyModifiers";
 
 export default function generateServicesMetadata<T>(controller: T, isFirstRound = true): ServiceMetadata[] {
   return Object.entries(controller)
@@ -111,6 +112,16 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
         {}
       );
 
+      const propertyModifiers = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
+        (accumulatedPropertyModifiers, [typeName, typeClass]: [string, any]) => {
+          const  propertyModifiers = getTypePropertyModifiers((typesMetadata as any)[typeName], typeClass);
+          return Object.keys(propertyModifiers).length > 0
+            ? { ...accumulatedPropertyModifiers, [typeName]: propertyModifiers }
+            : accumulatedPropertyModifiers;
+        },
+        {}
+      );
+
       const typesDocumentation = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypesDocumentation, [typeName, typeClass]: [string, any]) => {
           const typeDocumentation = getTypeDocumentation((typesMetadata as any)[typeName], typeClass);
@@ -142,6 +153,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             stackTrace: '?string'
           }
         },
+        propertyModifiers,
         typesDocumentation,
         validations: validationMetadatas
       };
