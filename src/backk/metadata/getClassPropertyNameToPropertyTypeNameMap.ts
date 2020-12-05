@@ -1,5 +1,5 @@
-import { getFromContainer, MetadataStorage } from "class-validator";
-import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
+import { getFromContainer, MetadataStorage } from 'class-validator';
+import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 
 const classNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 
@@ -35,7 +35,12 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       }
     }
 
-    if (validationMetadata.type !== 'arrayMaxSize' && validationMetadata.type !== 'arrayUnique') {
+    if (
+      validationMetadata.type !== 'arrayMaxSize' &&
+      validationMetadata.type !== 'arrayUnique' &&
+      (validationMetadata.type !== 'customValidation' ||
+        (validationMetadata.type === 'customValidation' && validationMetadata.constraints[0] !== 'isUndefined'))
+    ) {
       if (!validationMetadata.groups?.includes('__backk_response__')) {
         validationMetadata.groups = validationMetadata.groups?.concat('__backk_response__') ?? [
           '__backk_response__'
@@ -47,7 +52,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     if (validationMetadata.type === 'conditionalValidation') {
       if (validationMetadata.constraints[1] === 'isOptional') {
         propNameToIsOptionalMap[validationMetadata.propertyName] = true;
-      } else if (validationMetadata.constraints[1] === 'isNullable'){
+      } else if (validationMetadata.constraints[1] === 'isNullable') {
         isNullable = true;
       }
     }
@@ -129,10 +134,10 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       if (!arrayMaxSizeValidationMetadata) {
         throw new Error(
           'Property ' +
-          Class.name +
-          '.' +
-          validationMetadata.propertyName +
-          ' has array type and must have @ArrayMaxSize annotation'
+            Class.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' has array type and must have @ArrayMaxSize annotation'
         );
       }
     }

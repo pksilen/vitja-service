@@ -6,5 +6,5 @@ import { Entity } from "../entities/Entity";
 export default class _Id implements Entity {
   @IsString()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
-  _id!: string;
+  readonly _id!: string;
 }

@@ -10,9 +10,9 @@ import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
 import UsersBaseService from '../users/UsersBaseService';
 import { ServiceMetadata } from '../metadata/ServiceMetadata';
-import tryValidateObject from '../validation/tryValidateObject';
+import tryValidateServiceMethodArgument from '../validation/tryValidateServiceMethodArgument';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
-import tryValidateResponse from '../validation/tryValidateResponse';
+import tryValidateServiceMethodResponse from '../validation/tryValidateServiceMethodResponse';
 import isErrorResponse from '../errors/isErrorResponse';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
@@ -247,7 +247,7 @@ export default async function tryExecuteServiceFunction(
         );
       }
 
-      await tryValidateObject(instantiatedServiceFunctionArgument);
+      await tryValidateServiceMethodArgument(instantiatedServiceFunctionArgument);
     }
 
     if (
@@ -376,9 +376,9 @@ export default async function tryExecuteServiceFunction(
         const ServiceFunctionReturnType = controller[serviceName]['Types'][serviceFunctionBaseReturnTypeName];
 
         if (Array.isArray(response) && response.length > 0 && typeof response[0] === 'object') {
-          await tryValidateResponse(response[0], ServiceFunctionReturnType);
+          await tryValidateServiceMethodResponse(response[0], ServiceFunctionReturnType);
         } else if (typeof response === 'object') {
-          await tryValidateResponse(response, ServiceFunctionReturnType);
+          await tryValidateServiceMethodResponse(response, ServiceFunctionReturnType);
         }
 
         if (

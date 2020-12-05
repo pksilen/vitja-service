@@ -3,7 +3,7 @@ import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromE
 import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
 import getValidationErrors from "./getValidationErrors";
 
-export default async function tryValidateObject(obj: object): Promise<void> {
+export default async function tryValidateServiceMethodArgument(obj: object): Promise<void> {
   try {
     await validateOrReject(obj, {
       groups: ['__backk_firstRound__']

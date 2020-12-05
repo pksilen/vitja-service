@@ -1,15 +1,15 @@
 # Vitja service
 
 TODO
-- Private method => AllowForServiceInternalUse
 - Entity field can be readonly
   - Not included in sample arg
   - Included in type metadata validation
   - validate isUndefined
+  - In update methods, allow _id field to be defined
 - Return value Types cannot have 'errorMessage' property
 - service methods can have a string/number/boolean arguments with annotations
   -generate Arg class with auto-generated name from service and method name
-  -traspile and eval class and use it
+  -transpile and eval class and use it
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
