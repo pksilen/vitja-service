@@ -57,6 +57,10 @@ export default async function createEntity<T>(
 
     Object.entries({ ...entityMetadata, ...additionalMetadata }).forEach(
       ([fieldName, fieldTypeName]: [any, any]) => {
+        if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
+          return;
+        }
+
         const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
 
         if (!isArrayType && !isEntityTypeName(baseTypeName) && fieldName !== '_id') {

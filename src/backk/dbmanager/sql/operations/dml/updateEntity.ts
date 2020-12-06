@@ -67,6 +67,9 @@ export default async function updateEntity<T extends Entity>(
         if ((restOfEntity as any)[fieldName] === undefined) {
           return;
         }
+        if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
+          return;
+        }
 
         const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
         const foreignIdFieldName =
