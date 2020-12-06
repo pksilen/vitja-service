@@ -7,5 +7,5 @@ export default class _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp
   extends _IdAndVersionAndCreatedAtTimestamp
   implements Entity {
   @IsDate()
-  lastModifiedTimestamp!: Date;
+  readonly lastModifiedTimestamp!: Date;
 }

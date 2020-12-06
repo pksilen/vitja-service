@@ -7,5 +7,5 @@ export default class _IdAndVersion extends _Id implements Entity {
   @IsString()
   @MaxLength(25)
   @IsNumberString()
-  version!: string;
+  readonly version!: string;
 }

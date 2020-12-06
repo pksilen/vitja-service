@@ -31,5 +31,5 @@ export default class UpdateUserArg {
 
   @IsString()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
-  _id!: string;
+  readonly _id!: string;
 }

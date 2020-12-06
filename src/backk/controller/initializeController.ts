@@ -53,7 +53,7 @@ export default function initializeController(controller: any, controllerInitOpti
     };
   });
 
-  generateTypesForServices(controller,);
+  generateTypesForServices(controller);
 
   Object.entries(controller)
     .filter(([, value]: [string, any]) => typeof value === 'object' && value.constructor !== Object)
@@ -66,7 +66,7 @@ export default function initializeController(controller: any, controllerInitOpti
       }, {});
     });
 
-  const servicesMetadata = generateServicesMetadata(controller, false);
+  const servicesMetadata = generateServicesMetadata(controller);
   controller.servicesMetadata = servicesMetadata;
   controller.publicServicesMetadata = servicesMetadata.map((serviceMetadata) => {
     const {

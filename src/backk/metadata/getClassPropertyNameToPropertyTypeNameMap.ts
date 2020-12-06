@@ -6,7 +6,7 @@ const classNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   Class: new () => T,
   isGeneration = false,
-  isFirstRound = false
+  isResponseValueType: boolean | undefined = undefined
 ): { [key: string]: string } {
   if (!isGeneration && classNameToMetadataMap[Class.name]) {
     return classNameToMetadataMap[Class.name];
@@ -23,6 +23,11 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   });
 
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
+    if (isResponseValueType && validationMetadata.propertyName === 'errorMessage') {
+      throw new Error(
+        Class.name + ' may not contain property errorMessage'
+      );
+    }
     if (
       validationMetadata.type === 'maxLength' ||
       validationMetadata.type === 'conditionalValidation' ||
@@ -50,9 +55,8 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     }
 
     if (
-      (validationMetadata.type !== 'customValidation' ||
-        (validationMetadata.type === 'customValidation' &&
-          validationMetadata.constraints[0] !== 'isUndefined'))
+      validationMetadata.type !== 'customValidation' ||
+      (validationMetadata.type === 'customValidation' && validationMetadata.constraints[0] !== 'isUndefined')
     ) {
       if (!validationMetadata.groups?.includes('__backk_argument__')) {
         validationMetadata.groups = validationMetadata.groups?.concat('__backk_argument__') ?? [
@@ -127,7 +131,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         propertyName === validationMetadata.propertyName && type === 'matches'
     );
 
-    if (isGeneration && isFirstRound && hasMatchesValidation) {
+    if (isGeneration  && hasMatchesValidation) {
       throw new Error(
         'Property ' +
           Class.name +
@@ -155,7 +159,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       }
     }
 
-    if (isGeneration && !isFirstRound) {
+    if (isGeneration) {
       if (
         validationMetadata.type === 'isInt' ||
         validationMetadata.type === 'isNumber' ||

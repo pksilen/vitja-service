@@ -6,5 +6,5 @@ import { IsDate } from "class-validator";
 export default class _IdAndCreatedAtTimestampAndLastModifiedTimestamp extends _IdAndCreatedAtTimestamp
   implements Entity {
   @IsDate()
-  lastModifiedTimestamp!: Date;
+  readonly lastModifiedTimestamp!: Date;
 }

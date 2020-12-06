@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO
-- Entity field can be readonly
-  - Included in type metadata: propertyModifiers
 - Return value Types cannot have 'errorMessage' property
 - service methods can have a string/number/boolean arguments with annotations
   -generate Arg class with auto-generated name from service and method name

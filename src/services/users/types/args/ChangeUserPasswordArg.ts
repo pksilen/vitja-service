@@ -13,7 +13,7 @@ import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 export default class ChangeUserPasswordArg {
   @IsString()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
-  _id!: string;
+  readonly _id!: string;
 
   @Unique()
   @MaxLength(512)

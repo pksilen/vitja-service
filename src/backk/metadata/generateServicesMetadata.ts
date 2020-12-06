@@ -1,15 +1,14 @@
-import serviceFunctionAnnotationContainer
-  from "../decorators/service/function/serviceFunctionAnnotationContainer";
-import serviceAnnotationContainer from "../decorators/service/serviceAnnotationContainer";
-import BaseService from "../service/BaseService";
-import { ServiceMetadata } from "./types/ServiceMetadata";
-import getClassPropertyNameToPropertyTypeNameMap from "./getClassPropertyNameToPropertyTypeNameMap";
-import { FunctionMetadata } from "./types/FunctionMetadata";
-import getValidationMetadata from "./getValidationMetadata";
-import getTypeDocumentation from "./getTypeDocumentation";
-import getTypePropertyModifiers from "./getTypePropertyModifiers";
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
+import BaseService from '../service/BaseService';
+import { ServiceMetadata } from './types/ServiceMetadata';
+import getClassPropertyNameToPropertyTypeNameMap from './getClassPropertyNameToPropertyTypeNameMap';
+import { FunctionMetadata } from './types/FunctionMetadata';
+import getValidationMetadata from './getValidationMetadata';
+import getTypeDocumentation from './getTypeDocumentation';
+import getTypePropertyModifiers from './getTypePropertyModifiers';
 
-export default function generateServicesMetadata<T>(controller: T, isFirstRound = true): ServiceMetadata[] {
+export default function generateServicesMetadata<T>(controller: T): ServiceMetadata[] {
   return Object.entries(controller)
     .filter(([, service]: [string, any]) => service instanceof BaseService)
     .map(([serviceName, service]: [string, any]) => {
@@ -19,8 +18,11 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
       );
 
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
-        (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
-          const typeObject = getClassPropertyNameToPropertyTypeNameMap(typeClass, true, isFirstRound);
+        (accumulatedTypes, [typeName, Class]: [string, any]) => {
+          const isResponseValueType = Object.values(
+            (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
+          ).includes(typeName);
+          const typeObject = getClassPropertyNameToPropertyTypeNameMap(Class, true, isResponseValueType);
           return { ...accumulatedTypes, [typeName]: typeObject };
         },
         {}
@@ -28,7 +30,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
 
       const publicTypesMetadata = Object.entries((controller as any)[serviceName].PublicTypes ?? {}).reduce(
         (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
-          const typeObject = getClassPropertyNameToPropertyTypeNameMap(typeClass, true, isFirstRound);
+          const typeObject = getClassPropertyNameToPropertyTypeNameMap(typeClass, true);
           return { ...accumulatedTypes, [typeName]: typeObject };
         },
         {}
@@ -64,7 +66,6 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             .functionNameToParamTypeNameMap[functionName];
 
           if (
-            !isFirstRound &&
             (functionName.startsWith('create') || functionName.startsWith('insert')) &&
             functionArgumentTypeName &&
             !(typesMetadata as any)[functionArgumentTypeName].captchaToken &&
@@ -80,7 +81,6 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
                 ': argument type must implement Captcha or service function must be annotated with NoCaptcha annotation'
             );
           }
-
 
           const returnValueTypeName: string = (controller as any)[`${serviceName}Types`]
             .functionNameToReturnTypeNameMap[functionName];
@@ -114,7 +114,7 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
 
       const propertyModifiers = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedPropertyModifiers, [typeName, typeClass]: [string, any]) => {
-          const  propertyModifiers = getTypePropertyModifiers((typesMetadata as any)[typeName], typeClass);
+          const propertyModifiers = getTypePropertyModifiers((typesMetadata as any)[typeName], typeClass);
           return Object.keys(propertyModifiers).length > 0
             ? { ...accumulatedPropertyModifiers, [typeName]: propertyModifiers }
             : accumulatedPropertyModifiers;
@@ -143,7 +143,8 @@ export default function generateServicesMetadata<T>(controller: T, isFirstRound 
             errorCode: '?string',
             errorMessage: 'string',
             stackTrace: '?string'
-          }},
+          }
+        },
         types: {
           ...typesMetadata,
           ErrorResponse: {

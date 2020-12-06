@@ -36,7 +36,7 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(-1)
   @Max(1000000000)
-  public previousPrice!: number;
+  public readonly previousPrice!: number;
 
   @MaxLength(2097152)
   public primaryImageDataUri!: string;
@@ -45,5 +45,5 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   @ArrayMaxSize(10)
   public secondaryImageDataUris!: string[];
 
-  public state!: SalesItemState;
+  public readonly state!: SalesItemState;
 }

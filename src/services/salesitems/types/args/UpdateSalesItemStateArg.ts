@@ -9,7 +9,7 @@ import { SalesItemState } from '../enums/SalesItemState';
 export default class UpdateSalesItemStateArg {
   @IsString()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
-  _id!: string;
+  readonly _id!: string;
 
-  public state!: SalesItemState;
+  public readonly state!: SalesItemState;
 }
