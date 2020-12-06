@@ -5,7 +5,6 @@ import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
 import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import UserId from "../users/types/args/UserId";
 import ShoppingCartService from "./ShoppingCartService";
-import CreateShoppingCartArg from "./types/args/CreateShoppingCartArg";
 import ShoppingCart from "./types/entities/ShoppingCart";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
@@ -22,10 +21,7 @@ import { AllowForTests } from "../../backk/decorators/service/function/AllowForT
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class ShoppingCartServiceImpl extends ShoppingCartService {
-  constructor(
-    dbManager: AbstractDbManager,
-    private readonly salesItemService: SalesItemsService
-  ) {
+  constructor(dbManager: AbstractDbManager, private readonly salesItemService: SalesItemsService) {
     super(dbManager);
   }
 
@@ -37,7 +33,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @NoCaptcha()
   @AllowForSelf()
   @Errors([SHOPPING_CART_ALREADY_EXISTS])
-  async createShoppingCart(arg: CreateShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
+  async createShoppingCart(arg: ShoppingCart): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.createEntity(arg, ShoppingCart, {
       hookFunc: async () => {
         const shoppingCartCountOrErrorResponse = await this.dbManager.getEntitiesCount(
@@ -65,7 +61,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       {
         currentEntityJsonPath: `shoppingCartItems[?(@.id == '${shoppingCartItemId}')]`,
         hookFunc: async ([{ salesItemId }]) =>
-          await this.salesItemService.updateSalesItemState({ _id: salesItemId, state: 'forSale' })
+          await this.salesItemService.updateSalesItemState({ _id: salesItemId, newState: 'forSale' })
       }
     );
   }

@@ -7,6 +7,7 @@ class TypePropertyAnnotationContainer {
   private readonly typePropertyNameToIsNotEncryptedMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsPrivateMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsManyToManyMap: { [key: string]: boolean } = {};
+  private readonly typePropertyNameToIsTransientMap: { [key: string]: boolean } = {};
 
   addDocumentationForTypeProperty(Type: Function, propertyName: string, docString: string) {
     this.typePropertyNameToDocStringMap[`${Type.name}${propertyName}`] = docString;
@@ -39,6 +40,11 @@ class TypePropertyAnnotationContainer {
   setTypePropertyAsManyToMany(Type: Function, propertyName: string) {
     this.typePropertyNameToIsManyToManyMap[`${Type.name}${propertyName}`] = true;
   }
+
+  setTypePropertyAsTransient(Type: Function, propertyName: string) {
+    this.typePropertyNameToIsTransientMap[`${Type.name}${propertyName}`] = true;
+  }
+
 
   getDocumentationForTypeProperty(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
@@ -129,6 +135,18 @@ class TypePropertyAnnotationContainer {
     while (proto !== Object.prototype) {
       if (this.typePropertyNameToIsManyToManyMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
         return this.typePropertyNameToIsManyToManyMap[`${proto.constructor.name}${propertyName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isTypePropertyTransient(Type: Function, propertyName: string) {
+    let proto = Object.getPrototypeOf(new (Type as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.typePropertyNameToIsTransientMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsTransientMap[`${proto.constructor.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }

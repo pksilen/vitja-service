@@ -19,7 +19,7 @@ export default class ChangeUserPasswordArg {
   @MaxLength(512)
   @IsEmail()
   @TestValue('test@test.com')
-  public userName!: string;
+  userName!: string;
 
   @Documentation('Password doc goes here...')
   @IsExprTrue(
@@ -32,9 +32,18 @@ export default class ChangeUserPasswordArg {
   )
   @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
   @TestValue('Jepulis0!')
-  password!: string;
-
-  @MaxLength(512)
-  @TestValue('Jepulis0!')
   currentPassword!: string;
+
+  @Documentation('Password doc goes here...')
+  @IsExprTrue(
+    ({ password }) => !password.toLowerCase().includes('password'),
+    'Password may not contain word password'
+  )
+  @IsExprTrue(
+    ({ password, userName }) => (userName ? !password.toLowerCase().includes(userName.toLowerCase()) : true),
+    'Password may not contain username'
+  )
+  @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
+  @TestValue('Jepulis0!')
+  newPassword!: string;
 }

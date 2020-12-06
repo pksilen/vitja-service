@@ -77,6 +77,18 @@ class EntityAnnotationContainer {
   addManyToManyRelationTableSpec(manyToManyRelationTableSpec: ManyToManyRelationTableSpec) {
     this.manyToManyRelationTableSpecs.push(manyToManyRelationTableSpec);
   }
+
+  isEntity(Class: Function) {
+    let proto = Object.getPrototypeOf(new (Class as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.entityNameToClassMap[proto.constructor.name] !== undefined) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
 }
 
 export default new EntityAnnotationContainer();

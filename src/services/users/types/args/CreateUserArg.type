@@ -1,4 +1,0 @@
-export default class CreateUserArg {
-  ...Omit<User, '_id'>;
-  ...Captcha;
-}

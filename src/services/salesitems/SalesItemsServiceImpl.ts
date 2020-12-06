@@ -11,9 +11,7 @@ import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
 import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
 import SalesItemsService from './SalesItemsService';
-import CreateSalesItemArg from './types/args/CreateSalesItemArg';
 import GetSalesItemsArg from './types/args/GetSalesItemsArg';
-import UpdateSalesItemArg from './types/args/UpdateSalesItemArg';
 import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
 import { SalesItem } from './types/entities/SalesItem';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
@@ -44,7 +42,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @NoCaptcha()
   @AllowForSelf()
   @Errors([MAXIMUM_SALES_ITEM_COUNT_EXCEEDED])
-  async createSalesItem(arg: CreateSalesItemArg): Promise<SalesItem | ErrorResponse> {
+  async createSalesItem(arg: SalesItem): Promise<SalesItem | ErrorResponse> {
     return this.dbManager.createEntity(
       {
         ...arg,
@@ -144,7 +142,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
 
   @AllowForSelf()
   @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
-  async updateSalesItem(arg: UpdateSalesItemArg): Promise<void | ErrorResponse> {
+  async updateSalesItem(arg: SalesItem): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity(arg, SalesItem, [], {
       hookFunc: async ([{ _id, state, price }]) =>
         (await this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, [])) ||
@@ -156,17 +154,16 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @AllowForServiceInternalUseOnly()
   @Errors([INVALID_SALES_ITEM_STATE])
   updateSalesItemState(
-    arg: UpdateSalesItemStateArg,
+    { _id, newState }: UpdateSalesItemStateArg,
     requiredCurrentState?: SalesItemState
   ): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity(
-      arg,
+      { _id, state: newState },
       SalesItem,
       [],
       requiredCurrentState
         ? {
-            currentEntityJsonPath: 'state',
-            hookFunc: ([state]) => state === requiredCurrentState,
+            hookFunc: ([{state}]) => state === requiredCurrentState,
             error: INVALID_SALES_ITEM_STATE
           }
         : undefined

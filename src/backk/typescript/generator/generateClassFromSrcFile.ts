@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import * as ts from 'typescript';
 import path from 'path';
 import getSrcFilePathNameForTypeName from '../../utils/file/getSrcFilePathNameForTypeName';
-import types from "../../types/types";
+import types from '../../types/types';
 
 export default function generateClassFromSrcFile(typeName: string) {
   if ((types as any)[typeName]) {
@@ -30,10 +30,7 @@ export default function generateClassFromSrcFile(typeName: string) {
     /require\("\.{2}\//g,
     'require("../../../../dist' + srcDirectory + '/../'
   );
-  newOutputText = newOutputText.replace(
-    /require\("\.\//g,
-    'require("../../../dist' + srcDirectory + '/'
-  );
+  newOutputText = newOutputText.replace(/require\("\.\//g, 'require("../../../../dist' + srcDirectory + '/');
 
   const generatedClass = eval(newOutputText);
   return generatedClass;

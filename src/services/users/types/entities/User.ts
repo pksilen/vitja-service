@@ -9,15 +9,16 @@ import PaymentMethod from "./PaymentMethod";
 import _Id from "../../../../backk/types/id/_Id";
 import LengthAndMatchesAll from "../../../../backk/decorators/typeproperty/LengthOrMatchesAll";
 import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
+import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
 
 @Entity()
 @UniqueIndex(['userName'])
-export default class User extends _Id {
+export default class User extends _IdAndCaptcha {
   @Unique()
   @MaxLength(512)
   @IsEmail()
   @TestValue('test@test.com')
-  public userName!: string;
+  userName!: string;
 
   public isBusinessUser!: boolean;
 

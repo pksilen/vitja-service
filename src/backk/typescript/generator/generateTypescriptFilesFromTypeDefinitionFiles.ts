@@ -87,13 +87,17 @@ function generateTypescriptFileFor(
           return pickedKeyPart.trim().split(/["']/)[1];
         });
 
-        const keyToNewKeyMap: { [key: string]: string } = {};
+        const keyToNewKeyMap: { [key: string]: string[] } = {};
         pickedKeyParts.forEach((pickedKeyPart) => {
           if (pickedKeyPart.includes(' as ')) {
             let [key, newKey] = pickedKeyPart.trim().split(' as ');
             key = key.split(/["']/)[1];
             newKey = newKey.split(/["']/)[1];
-            keyToNewKeyMap[key] = newKey;
+            if (keyToNewKeyMap[key]) {
+              keyToNewKeyMap[key].push(newKey);
+            } else {
+              keyToNewKeyMap[key] = [newKey];
+            }
           }
         });
 

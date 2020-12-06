@@ -1,10 +1,9 @@
 # Vitja service
 
 TODO
-- Return value Types cannot have 'errorMessage' property
-- service methods can have a string/number/boolean arguments with annotations
-  -generate Arg class with auto-generated name from service and method name
-  -transpile and eval class and use it
+- Transient annotation
+- On update private field must be undefined
+- make default value for allowAdditionAndRemoval.. as []
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany

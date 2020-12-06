@@ -1,3 +1,0 @@
-export default class UpdateSalesItemStateArg {
-  ...Pick<SalesItem, '_id' | 'state'>;
-}

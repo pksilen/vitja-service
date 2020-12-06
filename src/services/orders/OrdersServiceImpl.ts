@@ -63,7 +63,6 @@ export default class OrdersServiceImpl extends OrdersService {
         }))
       },
       Order,
-
       {
         hookFunc: async () =>
           (await this.updateSalesItemStates(salesItemIds, 'sold', 'forSale')) ||
@@ -148,7 +147,7 @@ export default class OrdersServiceImpl extends OrdersService {
             ? await this.salesItemsService.updateSalesItemState(
                 {
                   _id: salesItemId,
-                  state: 'forSale'
+                  newState: 'forSale'
                 },
                 'sold'
               )
@@ -185,7 +184,7 @@ export default class OrdersServiceImpl extends OrdersService {
         await this.salesItemsService.updateSalesItemState(
           {
             _id: salesItemId,
-            state: newState
+            newState
           },
           currentState
         )

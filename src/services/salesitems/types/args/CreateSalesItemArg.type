@@ -1,3 +1,0 @@
-export default class CreateSalesItemArg {
-  ...Omit<SalesItem, '_id' | 'previousPrice' | 'state' | 'version' | 'createdAtTimestamp' | 'lastModifiedTimestamp'>;
-}

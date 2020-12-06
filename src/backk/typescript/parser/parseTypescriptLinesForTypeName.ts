@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { parseSync } from '@babel/core';
 import generate from '@babel/generator';
 import { readFileSync } from 'fs';
@@ -73,7 +74,7 @@ export default function parseTypescriptLinesForTypeName(
   keys: string[],
   keyType: 'omit' | 'pick',
   originatingTypeFilePathName: string,
-  keyToNewKeyMap?: { [key: string]: string }
+  keyToNewKeyMap?: { [key: string]: string[] }
 ): [string[], any[]] {
   let typeFilePathName;
   let fileContentsStr;
@@ -146,7 +147,16 @@ export default function parseTypescriptLinesForTypeName(
             }
 
             if (keyToNewKeyMap && keyToNewKeyMap[propertyName]) {
-              classBodyNode.key.name = keyToNewKeyMap[propertyName];
+              keyToNewKeyMap[propertyName].forEach((newKey) => {
+                const classProperty = _.cloneDeep(classBodyNode);
+                classProperty.key.name = newKey;
+                if (isBaseTypeOptional) {
+                  classProperty.optional = true;
+                  classProperty.definite = false;
+                }
+                finalClassPropertyDeclarations.push(classProperty);
+              });
+              return;
             }
           }
         }

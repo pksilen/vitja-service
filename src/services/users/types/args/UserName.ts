@@ -11,5 +11,5 @@ export default class UserName {
   @MaxLength(512)
   @IsEmail()
   @TestValue('test@test.com')
-  public userName!: string;
+  userName!: string;
 }

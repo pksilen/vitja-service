@@ -1,3 +1,0 @@
-export default class CreateShoppingCartArg {
-  ...Omit<ShoppingCart, '_id'>;
-}

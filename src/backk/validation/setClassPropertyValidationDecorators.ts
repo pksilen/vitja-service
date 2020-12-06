@@ -10,6 +10,7 @@ import getSrcFilePathNameForTypeName, {
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFromSrcFile';
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
+import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 
 function getPropertyValidationOfType(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
@@ -88,11 +89,11 @@ export default function setClassPropertyValidationDecorators(
           let isArrayType = false;
 
           const isPrivateProperty = classBodyNode.accessibility !== 'public';
-          if (isPrivateProperty) {
+          if (isPrivateProperty && entityAnnotationContainer.isEntity(Class)) {
             typePropertyAnnotationContainer.setTypePropertyAsPrivate(Class, propertyName);
           }
 
-          if (classBodyNode.readonly) {
+          if (classBodyNode.readonly && entityAnnotationContainer.isEntity(Class)) {
             const validationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.CUSTOM_VALIDATION,
               target: Class,
@@ -320,6 +321,24 @@ export default function setClassPropertyValidationDecorators(
             getFromContainer(MetadataStorage).addValidationMetadata(
               new ValidationMetadata(optionalValidationMetadataArgs)
             );
+          }
+
+          if (propertyName !== '_id' && entityAnnotationContainer.isEntity(Class)) {
+            const optionalValidationMetadataArgs: ValidationMetadataArgs = {
+              type: ValidationTypes.CONDITIONAL_VALIDATION,
+              target: Class,
+              constraints: [
+                (object: any) => {
+                  return object[propertyName] !== null && object[propertyName] !== undefined;
+                },
+                'isOptional'
+              ],
+              propertyName
+            };
+
+            const validationMetadata = new ValidationMetadata(optionalValidationMetadataArgs);
+            validationMetadata.groups = ['__backk_update__'];
+            getFromContainer(MetadataStorage).addValidationMetadata(validationMetadata);
           }
         }
       }

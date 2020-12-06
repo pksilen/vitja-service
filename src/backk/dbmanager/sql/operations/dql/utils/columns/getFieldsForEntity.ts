@@ -20,7 +20,8 @@ export default function getFieldsForEntity(
     ([entityPropertyName, entityPropertyTypeName]: [string, any]) => {
       if (
         !isInternalCall &&
-        typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, entityPropertyName)
+        (typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, entityPropertyName) ||
+        typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, entityPropertyName))
       ) {
         return;
       }
