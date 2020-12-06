@@ -1,8 +1,7 @@
 # Vitja service
 
 TODO
-- On update private field must be undefined
-- make default value for allowAdditionAndRemoval.. as []
+- isTransient() type metadata
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany

@@ -16,9 +16,28 @@ import SortBy from "./postqueryoperations/SortBy";
 import SubPagination from "./postqueryoperations/SubPagination";
 import Captcha from "./Captcha";
 import UserDefinedFilter from "./userdefinedfilters/UserDefinedFilter";
+import _IdAndCaptcha from "./id/_IdAndCaptcha";
+import _IdAndCaptchaAndCreatedAtTimestamp from "./id/_IdAndCaptchaAndCreatedAtTimestamp";
+import _IdAndCaptchaAndLastModifiedTimestamp from "./id/_IdAndCaptchaAndLastModifiedTimestamp";
+import _IdAndCaptchaAndCreatedAtTimestampAndLastModifiedTimestamp
+  from "./id/_IdAndCaptchaAndCreatedAtTimestampAndLastModifiedTimestamp";
+import _IdAndCaptchaAndVersion from "./id/_IdAndCaptchaAndVersion";
+import _IdAndCaptchaAndVersionAndCreatedAtTimestamp from "./id/_IdAndCaptchaAndVersionAndCreatedAtTimestamp";
+import _IdAndCaptchaAndVersionAndLastModifiedTimestamp
+  from "./id/_IdAndCaptchaAndVersionAndLastModifiedTimestamp";
+import _IdAndCaptchaAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp
+  from "./id/_IdAndCaptchaAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp";
 
 const types = {
   _Id,
+  _IdAndCaptcha,
+  _IdAndCaptchaAndCreatedAtTimestamp,
+  _IdAndCaptchaAndLastModifiedTimestamp,
+  _IdAndCaptchaAndCreatedAtTimestampAndLastModifiedTimestamp,
+  _IdAndCaptchaAndVersion,
+  _IdAndCaptchaAndVersionAndCreatedAtTimestamp,
+  _IdAndCaptchaAndVersionAndLastModifiedTimestamp,
+  _IdAndCaptchaAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp,
   _IdAndCreatedAtTimestamp,
   _IdAndCreatedAtTimestampAndLastModifiedTimestamp,
   _IdAndLastModifiedTimestamp,
