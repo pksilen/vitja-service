@@ -1,6 +1,5 @@
-import { getFromContainer, MetadataStorage } from 'class-validator';
-import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
+import { getFromContainer, MetadataStorage } from "class-validator";
+import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
 
 export default function getValidationMetadata<T>(Class: new () => T): object {
   const metadataForValidations = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');

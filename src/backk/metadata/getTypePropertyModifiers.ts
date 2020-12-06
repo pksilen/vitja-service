@@ -8,7 +8,14 @@ export default function getTypePropertyModifiers<T>(
   return Object.keys(typeMetadata ?? {}).reduce((accumulatedTypePropertyModifiers, propertyName) => {
     const isPrivate = typePropertyAnnotationContainer.isTypePropertyPrivate(Class, propertyName);
     const isReadonly = doesClassPropertyContainCustomValidation(Class, propertyName, 'isUndefined');
-    const typePropertyModifiers = isPrivate ? 'private' : 'public' + ' ' + isReadonly ? 'readonly' : '';
+    const isTransient = typePropertyAnnotationContainer.isTypePropertyTransient(Class, propertyName);
+    const typePropertyModifiers = isPrivate
+      ? 'private'
+      : 'public' + isTransient
+      ? ' transient'
+      : '' + isReadonly
+      ? ' readonly'
+      : '';
 
     return {
       ...accumulatedTypePropertyModifiers,
