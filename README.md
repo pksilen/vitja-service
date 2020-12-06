@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Transient annotation
 - On update private field must be undefined
 - make default value for allowAdditionAndRemoval.. as []
 - npm mysql2 for MariaDb/MySql

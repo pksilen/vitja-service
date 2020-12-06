@@ -91,6 +91,18 @@ export default function setClassPropertyValidationDecorators(
           const isPrivateProperty = classBodyNode.accessibility !== 'public';
           if (isPrivateProperty && entityAnnotationContainer.isEntity(Class)) {
             typePropertyAnnotationContainer.setTypePropertyAsPrivate(Class, propertyName);
+
+            const validationMetadataArgs: ValidationMetadataArgs = {
+              type: ValidationTypes.CUSTOM_VALIDATION,
+              target: Class,
+              propertyName,
+              constraints: ['isUndefined'],
+              validationOptions: { each: isArrayType }
+            };
+
+            const validationMetadata = new ValidationMetadata(validationMetadataArgs);
+            validationMetadata.groups = ['__backk_update__'];
+            getFromContainer(MetadataStorage).addValidationMetadata(validationMetadata);
           }
 
           if (classBodyNode.readonly && entityAnnotationContainer.isEntity(Class)) {
