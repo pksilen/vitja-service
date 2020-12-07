@@ -69,10 +69,32 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       validationMetadata.type !== 'customValidation' ||
       (validationMetadata.type === 'customValidation' && validationMetadata.constraints[0] !== 'isUndefined')
     ) {
-      if (!validationMetadata.groups?.includes('__backk_argument__')) {
-        validationMetadata.groups = validationMetadata.groups?.concat('__backk_argument__') ?? [
-          '__backk_argument__'
-        ];
+      const undefinedValidation = validationMetadatas.find(
+        ({ propertyName, type }: ValidationMetadata) =>
+          propertyName === validationMetadata.propertyName &&
+          type === 'customValidation' &&
+          validationMetadata.constraints?.[0] === 'isUndefined'
+      );
+
+      if (undefinedValidation) {
+        if (!validationMetadata.groups?.includes(undefinedValidation.groups[0])) {
+          validationMetadata.groups = validationMetadata.groups?.concat(undefinedValidation.groups[0]) ?? [
+            undefinedValidation.groups[0]
+          ];
+        }
+        if (undefinedValidation.groups[1]) {
+          if (!validationMetadata.groups?.includes(undefinedValidation.groups[1])) {
+            validationMetadata.groups = validationMetadata.groups?.concat(undefinedValidation.groups[1]) ?? [
+              undefinedValidation.groups[1]
+            ];
+          }
+        }
+      } else {
+        if (!validationMetadata.groups?.includes('__backk_argument__')) {
+          validationMetadata.groups = validationMetadata.groups?.concat('__backk_argument__') ?? [
+            '__backk_argument__'
+          ];
+        }
       }
     }
 
