@@ -9,13 +9,10 @@ export default function getTypePropertyModifiers<T>(
     const isPrivate = typePropertyAnnotationContainer.isTypePropertyPrivate(Class, propertyName);
     const isReadonly = doesClassPropertyContainCustomValidation(Class, propertyName, 'isUndefined');
     const isTransient = typePropertyAnnotationContainer.isTypePropertyTransient(Class, propertyName);
-    const typePropertyModifiers = isPrivate
-      ? 'private'
-      : 'public' + isTransient
-      ? ' transient'
-      : '' + isReadonly
-      ? ' readonly'
-      : '';
+    const typePropertyModifiers =
+      (isPrivate ? 'private' : 'public') +
+      (isTransient ? ' transient' : '') +
+      (isReadonly ? ' readonly' : '');
 
     return {
       ...accumulatedTypePropertyModifiers,

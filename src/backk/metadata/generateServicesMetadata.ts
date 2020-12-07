@@ -101,7 +101,7 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           };
         });
 
-      const validationMetadatas = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
+      const validationMetadatas = Object.entries((controller as any)[serviceName].PublicTypes ?? {}).reduce(
         (accumulatedTypes, [typeName, typeClass]: [string, any]) => {
           const validationMetadata = getValidationMetadata(typeClass);
           if (Object.keys(validationMetadata).length > 0) {
@@ -112,7 +112,7 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
         {}
       );
 
-      const propertyModifiers = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
+      const propertyModifiers = Object.entries((controller as any)[serviceName].PublicTypes ?? {}).reduce(
         (accumulatedPropertyModifiers, [typeName, typeClass]: [string, any]) => {
           const propertyModifiers = getTypePropertyModifiers((typesMetadata as any)[typeName], typeClass);
           return Object.keys(propertyModifiers).length > 0
@@ -121,7 +121,7 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
         },
         {}
       );
-
+     
       const typesDocumentation = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypesDocumentation, [typeName, typeClass]: [string, any]) => {
           const typeDocumentation = getTypeDocumentation((typesMetadata as any)[typeName], typeClass);

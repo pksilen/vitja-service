@@ -76,6 +76,7 @@ export default function initializeController(controller: any, controllerInitOpti
       serviceName,
       functions,
       validations,
+      propertyModifiers,
       serviceDocumentation,
       typesDocumentation
     } = serviceMetadata;
@@ -84,6 +85,7 @@ export default function initializeController(controller: any, controllerInitOpti
       serviceDocumentation,
       functions,
       types: publicTypes,
+      propertyModifiers,
       typesDocumentation,
       validations
     };

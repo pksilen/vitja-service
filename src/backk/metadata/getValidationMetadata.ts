@@ -7,16 +7,17 @@ export default function getValidationMetadata<T>(Class: new () => T): object {
 
   // noinspection FunctionWithMoreThanThreeNegationsJS
   metadataForValidations.forEach((validationMetadata: ValidationMetadata) => {
+    const validationType =
+      validationMetadata.type === 'customValidation'
+        ? validationMetadata.constraints[0]
+        : validationMetadata.type;
+
     if (
       validationMetadata.type !== 'conditionalValidation' &&
       validationMetadata.type !== 'nestedValidation' &&
-      validationMetadata.type !== 'isInstance'
+      validationMetadata.type !== 'isInstance' &&
+      validationType !== 'isUndefined'
     ) {
-      const validationType =
-        validationMetadata.type === 'customValidation'
-          ? validationMetadata.constraints[0]
-          : validationMetadata.type;
-
       const validationConstraints =
         validationMetadata.type === 'customValidation'
           ? validationMetadata.constraints.slice(1)
