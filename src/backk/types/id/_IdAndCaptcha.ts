@@ -7,5 +7,5 @@ export default class _IdAndCaptcha extends _Id {
   @Transient()
   @IsString()
   @MaxLength(512)
-  public captchaToken!: string;
+  captchaToken!: string;
 }

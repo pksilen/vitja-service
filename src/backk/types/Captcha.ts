@@ -5,5 +5,5 @@ export default class Captcha {
   @Transient()
   @IsString()
   @MaxLength(512)
-  public captchaToken!: string;
+  captchaToken!: string;
 }
