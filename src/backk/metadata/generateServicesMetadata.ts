@@ -121,7 +121,7 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
         },
         {}
       );
-     
+
       const typesDocumentation = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypesDocumentation, [typeName, typeClass]: [string, any]) => {
           const typeDocumentation = getTypeDocumentation((typesMetadata as any)[typeName], typeClass);

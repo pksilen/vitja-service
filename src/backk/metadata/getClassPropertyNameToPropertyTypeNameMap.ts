@@ -78,7 +78,10 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
 
     let isNullable = false;
     if (validationMetadata.type === 'conditionalValidation') {
-      if (validationMetadata.constraints[1] === 'isOptional') {
+      if (
+        validationMetadata.constraints[1] === 'isOptional' &&
+        validationMetadata.groups[0] !== '__backk_update__'
+      ) {
         propNameToIsOptionalMap[validationMetadata.propertyName] = true;
       } else if (validationMetadata.constraints[1] === 'isNullable') {
         isNullable = true;

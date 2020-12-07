@@ -35,7 +35,8 @@ function doesPropertyContainValidation(typeClass: Function, propertyName: string
 export function doesClassPropertyContainCustomValidation(
   Class: Function,
   propertyName: string,
-  validationType: string
+  validationType: string,
+  disregardGroup?: string
 ) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
 
@@ -43,7 +44,8 @@ export function doesClassPropertyContainCustomValidation(
     (validationMetadata: ValidationMetadata) =>
       validationMetadata.propertyName === propertyName &&
       validationMetadata.type === 'customValidation' &&
-      validationMetadata.constraints[0] === validationType
+      validationMetadata.constraints[0] === validationType &&
+      (!disregardGroup || (disregardGroup && validationMetadata.groups[0] !== disregardGroup))
   );
 
   return foundValidation !== undefined;
