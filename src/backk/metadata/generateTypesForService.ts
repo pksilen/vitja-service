@@ -23,14 +23,18 @@ export default function generateTypesForServices<T>(controller: T) {
           (controller as any)[serviceName].PublicTypes[functionArgumentTypeName] = FunctionArgumentClass;
         }
 
-
         if (functionArgumentTypeName !== undefined) {
           let proto = Object.getPrototypeOf(
             new ((controller as any)[serviceName].Types[functionArgumentTypeName] as new () => any)()
           );
           while (proto !== Object.prototype) {
-            if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
-              (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
+            if (
+              functionArgumentTypeName !== proto.constructor.name &&
+              !(controller as any)[serviceName].Types[functionArgumentTypeName + ':' + proto.constructor.name]
+            ) {
+              (controller as any)[serviceName].Types[
+                functionArgumentTypeName + ':' + proto.constructor.name
+              ] = proto.constructor;
             }
             proto = Object.getPrototypeOf(proto);
           }
@@ -58,8 +62,12 @@ export default function generateTypesForServices<T>(controller: T) {
             new ((controller as any)[serviceName].Types[baseTypeName] as new () => any)()
           );
           while (proto !== Object.prototype) {
-            if (!(controller as any)[serviceName].Types[proto.constructor.name]) {
-              (controller as any)[serviceName].Types[proto.constructor.name] = proto.constructor;
+            if (
+              baseTypeName !== proto.constructor.name &&
+              !(controller as any)[serviceName].Types[baseTypeName + ':' + proto.constructor.name]
+            ) {
+              (controller as any)[serviceName].Types[baseTypeName + ':' + proto.constructor.name] =
+                proto.constructor;
             }
             proto = Object.getPrototypeOf(proto);
           }

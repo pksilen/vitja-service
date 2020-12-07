@@ -13,6 +13,18 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   }
 
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
+  const prototypes = [];
+  let prototype = Object.getPrototypeOf(new Class());
+  while (prototype !== Object.prototype) {
+    prototypes.push(prototype);
+    prototype = Object.getPrototypeOf(prototype);
+  }
+  prototypes.reverse();
+  prototypes.forEach((prototype) => {
+    validationMetadatas.sort(({ target }) => (target === prototype.constructor ? -1 : 0));
+  });
+  validationMetadatas.reverse();
+
   const propNameToIsOptionalMap: { [key: string]: boolean } = {};
   const propNameToPropTypeNameMap: { [key: string]: string } = {};
   const propNameToDefaultValueMap: { [key: string]: any } = {};
@@ -24,10 +36,9 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
 
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
     if (isResponseValueType && validationMetadata.propertyName === 'errorMessage') {
-      throw new Error(
-        Class.name + ' may not contain property errorMessage'
-      );
+      throw new Error(Class.name + ' may not contain property errorMessage');
     }
+
     if (
       validationMetadata.type === 'maxLength' ||
       validationMetadata.type === 'conditionalValidation' ||
@@ -131,7 +142,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         propertyName === validationMetadata.propertyName && type === 'matches'
     );
 
-    if (isGeneration  && hasMatchesValidation) {
+    if (isGeneration && hasMatchesValidation) {
       throw new Error(
         'Property ' +
           Class.name +
@@ -337,7 +348,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     {}
   );
 
-  if (!isGeneration) {
+  if (!classNameToMetadataMap[Class.name]) {
     classNameToMetadataMap[Class.name] = metadata;
   }
 

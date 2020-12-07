@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- isTransient() type metadata
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany

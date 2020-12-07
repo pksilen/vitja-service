@@ -13,6 +13,11 @@ export function getFileNamesRecursively(directory: string): string[] {
 }
 
 export function hasSrcFilenameForTypeName(typeName: string) {
+  if (typeName.includes(':')) {
+    // noinspection AssignmentToFunctionParameterJS
+    typeName = typeName.split(':')[1];
+  }
+
   const srcFilePathNames = getFileNamesRecursively(process.cwd() + '/src');
   let backkSrcFilePathNames: string[] = [];
   if (existsSync(process.cwd() + '/node_modules/backk/src')) {
@@ -27,6 +32,11 @@ export function hasSrcFilenameForTypeName(typeName: string) {
 }
 
 export function hasBackkSrcFilenameForTypeName(typeName: string) {
+  if (typeName.includes(':')) {
+    // noinspection AssignmentToFunctionParameterJS
+    typeName = typeName.split(':')[1];
+  }
+
   const srcFilePathNames = getFileNamesRecursively(process.cwd() + '/src');
   let backkSrcFilePathNames: string[] = [];
   if (existsSync(process.cwd() + '/node_modules/backk/src')) {
@@ -41,6 +51,11 @@ export function hasBackkSrcFilenameForTypeName(typeName: string) {
 }
 
 export default function getSrcFilePathNameForTypeName(typeName: string): string {
+  if (typeName.includes(':')) {
+    // noinspection AssignmentToFunctionParameterJS
+    typeName = typeName.split(':')[1];
+  }
+
   const srcFilePathNames = getFileNamesRecursively(process.cwd() + '/src');
   let backkSrcFilePathNames: string[] = [];
   if (existsSync(process.cwd() + '/node_modules/backk/src')) {
