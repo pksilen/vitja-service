@@ -11,6 +11,8 @@ import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getC
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 import isEnumTypeName from "../../../../utils/type/isEnumTypeName";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
 
 export default async function tryCreateTable(
   dbManager: AbstractDbManager,
@@ -26,6 +28,10 @@ export default async function tryCreateTable(
   await forEachAsyncSequential(
     Object.entries({ ...entityMetadata, ...(idColumn ? {} : { id: 'string' }) }),
     async ([fieldName, fieldTypeName]: [any, any]) => {
+      if (typePropertyAnnotationContainer.isTypePropertyTransient(entityClass, fieldName)) {
+        return;
+      }
+
       const { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
       let sqlColumnType;
 

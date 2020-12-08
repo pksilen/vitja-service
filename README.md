@@ -9,11 +9,9 @@ TODO
   - Update default prometheus metrics
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities
-- Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
-
-- New entities: User has Friends, Posts, show posts from friends
-  - GetEntitiesByIn: get Posts where userId in User's friendIds
+- New entities: User has Followers (User-User manyToMany), show SalesItems from followers
 - Unit testaa: shouldIncludeField eri keissit
+- Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 
 TODO NEXT RELEASE:
 - remote service calls can have rollback action and commit action

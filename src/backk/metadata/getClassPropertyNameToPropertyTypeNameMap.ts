@@ -70,10 +70,10 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       (validationMetadata.type === 'customValidation' && validationMetadata.constraints[0] !== 'isUndefined')
     ) {
       const undefinedValidation = validationMetadatas.find(
-        ({ propertyName, type }: ValidationMetadata) =>
+        ({ propertyName, type, constraints }: ValidationMetadata) =>
           propertyName === validationMetadata.propertyName &&
           type === 'customValidation' &&
-          validationMetadata.constraints?.[0] === 'isUndefined'
+          constraints?.[0] === 'isUndefined'
       );
 
       if (undefinedValidation?.groups?.[0] === '__backk_create__' && !undefinedValidation.groups?.[1]) {
@@ -94,7 +94,8 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       } else {
         if (
           !validationMetadata.groups?.includes('__backk_none__') &&
-          !validationMetadata.groups?.includes('__backk_argument__')
+          !validationMetadata.groups?.includes('__backk_argument__') &&
+          !validationMetadata.groups?.includes('__backk_update__')
         ) {
           validationMetadata.groups = validationMetadata.groups?.concat('__backk_argument__') ?? [
             '__backk_argument__'

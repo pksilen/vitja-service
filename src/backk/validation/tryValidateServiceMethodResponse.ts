@@ -6,6 +6,7 @@ import getValidationErrors from "./getValidationErrors";
 
 export default async function tryValidateServiceMethodResponse(response: object, ReturnType: new() => any) {
   const instantiatedResponse = plainToClass(ReturnType, response);
+
   try {
     await validateOrReject(instantiatedResponse, {
       groups: ['__backk_response__'],

@@ -10,6 +10,8 @@ import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getC
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 import isEnumTypeName from "../../../../utils/type/isEnumTypeName";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
 
 export default async function tryAlterTable(
   dbManager: AbstractDbManager,
@@ -22,6 +24,10 @@ export default async function tryAlterTable(
   await forEachAsyncParallel(
     Object.entries(entityMetadata),
     async ([fieldName, fieldTypeName]: [any, any]) => {
+      if (typePropertyAnnotationContainer.isTypePropertyTransient(entityClass, fieldName)) {
+        return;
+      }
+
       const doesFieldExistInDatabase = !!databaseFields.find(
         (field) => field.name.toLowerCase() === fieldName.toLowerCase()
       );

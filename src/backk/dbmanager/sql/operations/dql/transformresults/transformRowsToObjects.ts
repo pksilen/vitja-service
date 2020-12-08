@@ -8,25 +8,25 @@ import { PostQueryOperations } from "../../../../../types/postqueryoperations/Po
 
 export default function transformRowsToObjects<T>(
   result: QueryResult<any>,
-  entityClass: { new (): T },
+  EntityClass: { new (): T },
   { pageSize, includeResponseFields, excludeResponseFields }: PostQueryOperations,
   Types: object
 ) {
-  const resultMaps = createResultMaps(entityClass, Types, { includeResponseFields, excludeResponseFields });
+  const resultMaps = createResultMaps(EntityClass, Types, { includeResponseFields, excludeResponseFields });
 
   let rows = joinjs.map(
     result.rows,
     resultMaps,
-    entityClass.name + 'Map',
-    entityClass.name.toLowerCase() + '_'
+    EntityClass.name + 'Map',
+    EntityClass.name.toLowerCase() + '_'
   );
 
   if (rows.length > pageSize) {
     rows = rows.slice(0, pageSize);
   }
 
-  transformResults(rows, entityClass, Types);
-  decryptItems(rows, entityClass, Types);
+  transformResults(rows, EntityClass, Types);
+  decryptItems(rows, EntityClass, Types);
   removeSingleSubEntitiesWithNullProperties(rows);
   return rows;
 }

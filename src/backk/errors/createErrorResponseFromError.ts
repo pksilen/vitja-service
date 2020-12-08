@@ -11,11 +11,10 @@ export default function createErrorResponseFromError(error: Error): ErrorRespons
   }
 
   let errorCode;
-  let errorMessagePrefix;
   if (errorMessage.startsWith('Error code ')) {
-    [errorCode, errorMessagePrefix, errorMessage] = errorMessage.split(':');
-    errorCode = errorCode.slice(11);
-    errorMessage = `${errorMessagePrefix ? errorMessagePrefix + ':' : ''}${errorMessage}`;
+    const [errorCodeStr, errorMessagePrefix, ...errorMessageParts] = errorMessage.split(':');
+    errorCode = errorCodeStr.slice(11);
+    errorMessage = `${errorMessagePrefix ? errorMessagePrefix + ':' : ''}${errorMessageParts.join('')}`;
     errorMessage = errorMessage.trim();
   }
 

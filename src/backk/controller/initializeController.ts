@@ -7,8 +7,9 @@ import setClassPropertyValidationDecorators from '../validation/setClassProperty
 import setNestedTypeValidationDecorators from '../validation/setNestedTypeValidationDecorators';
 import writeTestsPostmanCollectionExportFile from '../postman/writeTestsPostmanCollectionExportFile';
 import writeApiPostmanCollectionExportFile from '../postman/writeApiPostmanCollectionExportFile';
-import generateTypesForServices from "../metadata/generateTypesForService";
-import getNestedClasses from "../metadata/getNestedClasses";
+import generateTypesForServices from '../metadata/generateTypesForService';
+import getNestedClasses from '../metadata/getNestedClasses';
+import { getFromContainer, MetadataStorage } from 'class-validator';
 
 export interface ControllerInitOptions {
   generatePostmanTestFile?: boolean;
