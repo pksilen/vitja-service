@@ -7,6 +7,6 @@ import IsUndefined from "../../decorators/typeproperty/IsUndefined";
 export default class _IdAndCreatedAtTimestampAndLastModifiedTimestamp extends _IdAndCreatedAtTimestamp
   implements Entity {
   @IsUndefined({groups: ['__backk_create__', '__backk_update__']})
-  @IsDate()
+  @IsDate({ groups: ['__backk_none__'] })
   readonly lastModifiedTimestamp!: Date;
 }

@@ -76,21 +76,26 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
           validationMetadata.constraints?.[0] === 'isUndefined'
       );
 
-      if (undefinedValidation) {
-        if (!validationMetadata.groups?.includes(undefinedValidation.groups[0])) {
-          validationMetadata.groups = validationMetadata.groups?.concat(undefinedValidation.groups[0]) ?? [
-            undefinedValidation.groups[0]
+      if (undefinedValidation?.groups?.[0] === '__backk_create__' && !undefinedValidation.groups?.[1]) {
+        if (!validationMetadata.groups?.includes('__backk_update__')) {
+          validationMetadata.groups = validationMetadata.groups?.concat('__backk_update__') ?? [
+            '__backk_update__'
           ];
         }
-        if (undefinedValidation.groups[1]) {
-          if (!validationMetadata.groups?.includes(undefinedValidation.groups[1])) {
-            validationMetadata.groups = validationMetadata.groups?.concat(undefinedValidation.groups[1]) ?? [
-              undefinedValidation.groups[1]
-            ];
-          }
+      } else if (
+        undefinedValidation?.groups?.[0] === '__backk_create__' &&
+        undefinedValidation?.groups?.[1] === '__backk_update__'
+      ) {
+        if (!validationMetadata.groups?.includes('__backk_none__')) {
+          validationMetadata.groups = validationMetadata.groups?.concat('__backk_none__') ?? [
+            '__backk_none__'
+          ];
         }
       } else {
-        if (!validationMetadata.groups?.includes('__backk_argument__')) {
+        if (
+          !validationMetadata.groups?.includes('__backk_none__') &&
+          !validationMetadata.groups?.includes('__backk_argument__')
+        ) {
           validationMetadata.groups = validationMetadata.groups?.concat('__backk_argument__') ?? [
             '__backk_argument__'
           ];
