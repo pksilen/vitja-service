@@ -3,6 +3,7 @@
 TODO
 - request body is empty
 - CrudService extend from, test method names are valid
+  - Test method order is valid
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
@@ -12,8 +13,11 @@ TODO
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
-- Unit testaa: shouldIncludeField eri keissit
+- Unit testaa: shouldIncludeField eri keissit 
+- Organize adding validation groups in separate method in correct order
+  - Organize checking missing validations in seprate method
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
+
 
 TODO NEXT RELEASE:
 - remote service calls can have rollback action and commit action

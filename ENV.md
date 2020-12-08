@@ -13,3 +13,5 @@ KAFKA_DEFAULT_TOPIC_RETENTION_MS=
 Improve stack traces :
 node --async-stack-traces
  to run production build
+ 
+ManyToOne annotation is same as ManyToMany and maxArraySize is 1

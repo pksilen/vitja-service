@@ -40,9 +40,10 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     }
 
     if (
-      validationMetadata.type === 'maxLength' ||
-      validationMetadata.type === 'conditionalValidation' ||
-      validationMetadata.type === 'nestedValidation'
+      (validationMetadata.type === 'maxLength' ||
+        validationMetadata.type === 'conditionalValidation' ||
+        validationMetadata.type === 'nestedValidation') &&
+      !validationMetadata.groups?.includes('__backk_none__')
     ) {
       if (!validationMetadata.groups?.includes('__backk_firstRound__')) {
         validationMetadata.groups = validationMetadata.groups?.concat('__backk_firstRound__') ?? [
