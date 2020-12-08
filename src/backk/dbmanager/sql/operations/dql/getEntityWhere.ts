@@ -37,10 +37,11 @@ export default async function getEntityWhere<T>(
   try {
     let projection;
     try {
-      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, EntityClass, Types);
+      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, EntityClass, Types, true);
     } catch (error) {
+      console.log(error);
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
+      throw new Error(createErrorMessageWithStatusCode('Invalid query filter field name: ' + fieldName, 400));
     }
 
     const finalFieldName = getSqlColumnFromProjection(projection);

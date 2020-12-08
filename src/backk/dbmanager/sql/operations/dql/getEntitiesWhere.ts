@@ -30,7 +30,7 @@ export default async function getEntitiesWhere<T>(
 
     let projection;
     try {
-      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, EntityClass, Types);
+      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, EntityClass, Types, true);
     } catch (error) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));

@@ -5,15 +5,23 @@
 import { IsEmail, IsString, MaxLength } from 'class-validator';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
 import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
+import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
 import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 
 export default class ChangeUserPasswordArg {
-  @IsString()
-  @MaxLengthAndMatches(24, /^[a-f\d]+$/)
-  readonly _id!: string;
+  @IsUndefined({
+    groups: ['__backk_create__']
+  })
+  @IsString({
+    groups: ['__backk_update__']
+  })
+  @MaxLengthAndMatches(24, /^[a-f\d]+$/, {
+    groups: ['__backk_update__']
+  })
+  _id!: string;
 
   @Unique()
   @MaxLength(512)
