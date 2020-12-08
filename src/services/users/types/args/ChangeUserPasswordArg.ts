@@ -35,7 +35,7 @@ export default class ChangeUserPasswordArg {
     'Password may not contain word password'
   )
   @IsExprTrue(
-    ({ password, userName }) => (userName ? !password.toLowerCase().includes(userName.toLowerCase()) : true),
+    ({ password, userName }) => !password.toLowerCase().includes(userName.toLowerCase()),
     'Password may not contain username'
   )
   @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
@@ -48,10 +48,10 @@ export default class ChangeUserPasswordArg {
     'Password may not contain word password'
   )
   @IsExprTrue(
-    ({ password, userName }) => (userName ? !password.toLowerCase().includes(userName.toLowerCase()) : true),
+    ({ password, userName }) => !password.toLowerCase().includes(userName.toLowerCase()),
     'Password may not contain username'
   )
   @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
   @TestValue('Jepulis0!')
-  newPassword!: string;
+  password!: string;
 }

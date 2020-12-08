@@ -18,13 +18,19 @@ export default async function tryValidateServiceMethodArgument(
     const isUpdateMethod =
       methodName.startsWith('update') || methodName.startsWith('modify') || methodName.startsWith('change');
 
+    const isDeleteMethod =
+      methodName.startsWith('delete') ||
+      methodName.startsWith('remove') ||
+      methodName.startsWith('erase') ||
+      methodName.startsWith('destroy');
+
     await validateOrReject(obj, {
       whitelist: true,
       forbidNonWhitelisted: true,
       groups: [
         '__backk_argument__',
         ...(isCreateMethod ? ['__backk_create__'] : []),
-        ...(isUpdateMethod ? ['__backk_update__'] : [])
+        ...(isUpdateMethod || isDeleteMethod ? ['__backk_update__'] : [])
       ]
     });
   } catch (validationErrors) {

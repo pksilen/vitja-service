@@ -66,16 +66,16 @@ export default class UsersServiceImpl extends UsersService {
   changeUserPassword({
     _id,
     currentPassword,
-    newPassword,
+    password,
     userName
   }: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity(
-      { _id, password: newPassword },
+      { _id, password },
       User,
       [],
       [
         {
-          hookFunc: ([{ userName: currentUserName }]) => currentUserName === userName,
+          hookFunc: ([currentEntity]) => currentEntity.userName === userName,
           error: USER_NAME_CANNOT_BE_CHANGED
         },
         {

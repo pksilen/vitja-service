@@ -50,7 +50,7 @@ export default async function updateEntity<T extends Entity>(
 
     let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
     if (!isRecursiveCall || allowAdditionAndRemovalForSubEntityClasses) {
-      currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined);
+      currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
     }
     if (!isRecursiveCall) {
       await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);

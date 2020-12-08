@@ -27,7 +27,7 @@ export default class User extends _IdAndCaptcha {
     'Password may not contain word password'
   )
   @IsExprTrue(
-    ({ password, userName }) => (userName ? !password.toLowerCase().includes(userName.toLowerCase()) : true),
+    ({ password, userName }) => (!password.toLowerCase().includes(userName.toLowerCase())),
     'Password may not contain username'
   )
   @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
