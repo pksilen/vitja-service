@@ -34,7 +34,8 @@ export default async function deleteEntitiesWhere<T extends object>(
         dbManager.schema,
         { includeResponseFields: [fieldName] },
         EntityClass,
-        Types
+        Types,
+        true
       );
     } catch (error) {
       // noinspection ExceptionCaughtLocallyJS

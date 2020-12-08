@@ -1,21 +1,19 @@
-import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
-import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
-import encrypt from "../../../../crypt/encrypt";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import createErrorResponseFromErrorMessageAndStatusCode
-  from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
-import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
-import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
-import tryGetProjection from "./clauses/tryGetProjection";
-import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
-import getSqlColumnFromProjection from "./utils/columns/getSqlColumnFromProjection";
-import typePropertyAnnotationContainer
-  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
+import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
+import encrypt from '../../../../crypt/encrypt';
+import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import transformRowsToObjects from './transformresults/transformRowsToObjects';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
+import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import tryGetProjection from './clauses/tryGetProjection';
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import getSqlColumnFromProjection from './utils/columns/getSqlColumnFromProjection';
+import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 
 export default async function getEntityWhere<T>(
   dbManager: PostgreSqlDbManager,
@@ -24,8 +22,11 @@ export default async function getEntityWhere<T>(
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
-  if (!fieldName.includes('.') && !typePropertyAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName)) {
-    throw new Error(`Field ${EntityClass}.${fieldName} values must be annotated with @Unique annotation`)
+  if (
+    !fieldName.includes('.') &&
+    !typePropertyAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName)
+  ) {
+    throw new Error(`Field ${EntityClass}.${fieldName} values must be annotated with @Unique annotation`);
   }
 
   updateDbLocalTransactionCount(dbManager);
@@ -37,7 +38,13 @@ export default async function getEntityWhere<T>(
   try {
     let projection;
     try {
-      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, EntityClass, Types, true);
+      projection = tryGetProjection(
+        dbManager.schema,
+        { includeResponseFields: [fieldName] },
+        EntityClass,
+        Types,
+        true
+      );
     } catch (error) {
       console.log(error);
       // noinspection ExceptionCaughtLocallyJS

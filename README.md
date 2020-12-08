@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO
+- request body is empty
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany

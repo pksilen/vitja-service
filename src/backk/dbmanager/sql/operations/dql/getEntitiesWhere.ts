@@ -8,11 +8,11 @@ import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQ
 import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
-import tryGetProjection from "./clauses/tryGetProjection";
-import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
-import getSqlColumnFromProjection from "./utils/columns/getSqlColumnFromProjection";
-import { HttpStatusCodes } from "../../../../constants/constants";
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import tryGetProjection from './clauses/tryGetProjection';
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import getSqlColumnFromProjection from './utils/columns/getSqlColumnFromProjection';
+import { HttpStatusCodes } from '../../../../constants/constants';
 
 export default async function getEntitiesWhere<T>(
   dbManager: PostgreSqlDbManager,
@@ -30,7 +30,13 @@ export default async function getEntitiesWhere<T>(
 
     let projection;
     try {
-      projection = tryGetProjection(dbManager.schema, { includeResponseFields: [fieldName] }, EntityClass, Types, true);
+      projection = tryGetProjection(
+        dbManager.schema,
+        { includeResponseFields: [fieldName] },
+        EntityClass,
+        Types,
+        true
+      );
     } catch (error) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
