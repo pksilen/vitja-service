@@ -3,12 +3,13 @@ import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify";
 import { AppModule } from "./app/app.module";
 import initializeBackk from "./backk/initialization/initializeBackk";
+import { mySqlDbManager } from "./database/mySqlDatabaseManager";
 
 initializeDefaultJaegerTracing();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-  initializeBackk(app);
+  initializeBackk(app, mySqlDbManager);
 }
 
 bootstrap();

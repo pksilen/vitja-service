@@ -28,6 +28,14 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Not implemented')
   }
 
+  getTimestampType(): string {
+    throw new Error('Not implemented')
+  }
+
+  getVarCharType(maxLength: number): string {
+    throw new Error('Not implemented')
+  }
+
   async tryExecute<T>(dbOperationFunction: (client: MongoClient) => Promise<T>): Promise<T> {
     if (!this.mongoClient.isConnected()) {
       await this.mongoClient.connect();

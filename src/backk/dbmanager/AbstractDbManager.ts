@@ -42,6 +42,8 @@ export default abstract class AbstractDbManager {
   }
 
   abstract getIdColumnType(): string;
+  abstract getTimestampType(): string;
+  abstract getVarCharType(maxLength: number): string;
   abstract getDbManagerType(): string;
   abstract getDbHost(): string;
   abstract tryExecute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T>;

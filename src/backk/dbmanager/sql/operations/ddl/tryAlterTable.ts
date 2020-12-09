@@ -16,15 +16,15 @@ import typePropertyAnnotationContainer
 export default async function tryAlterTable(
   dbManager: AbstractDbManager,
   entityName: string,
-  entityClass: Function,
+  EntityClass: Function,
   schema: string | undefined,
   databaseFields: Field[]
 ) {
-  const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(entityClass as any);
+  const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
   await forEachAsyncParallel(
     Object.entries(entityMetadata),
     async ([fieldName, fieldTypeName]: [any, any]) => {
-      if (typePropertyAnnotationContainer.isTypePropertyTransient(entityClass, fieldName)) {
+      if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
         return;
       }
 
@@ -35,14 +35,14 @@ export default async function tryAlterTable(
       if (!doesFieldExistInDatabase) {
         let alterTableStatement = `ALTER TABLE ${schema}.${entityName} ADD `;
         const { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
-        let sqlColumnType = getSqlColumnType(fieldName, baseTypeName);
+        let sqlColumnType = getSqlColumnType(dbManager, EntityClass, fieldName, baseTypeName);
 
         if (!sqlColumnType && isEnumTypeName(baseTypeName)) {
           sqlColumnType = getEnumSqlColumnType(baseTypeName);
         }
 
         if (!sqlColumnType && isEntityTypeName(baseTypeName)) {
-          setSubEntityInfo(entityName, entityClass, fieldName, baseTypeName);
+          setSubEntityInfo(entityName, EntityClass, fieldName, baseTypeName);
         } else if (isArrayType) {
           await createArrayValuesTable(
             schema,
@@ -54,7 +54,7 @@ export default async function tryAlterTable(
           const foreignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
           addArrayValuesTableJoinSpec(entityName, fieldName, foreignIdFieldName);
         } else {
-          const isUnique = typeAnnotationContainer.isTypePropertyUnique(entityClass, fieldName);
+          const isUnique = typeAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName);
           alterTableStatement +=
             fieldName +
             ' ' +

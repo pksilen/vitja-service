@@ -17,10 +17,10 @@ import typePropertyAnnotationContainer
 export default async function tryCreateTable(
   dbManager: AbstractDbManager,
   entityName: string,
-  entityClass: Function,
+  EntityClass: Function,
   schema: string | undefined
 ) {
-  const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(entityClass as any);
+  const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
   let createTableStatement = `CREATE TABLE ${schema}.${entityName} (`;
   let fieldCnt = 0;
   const idColumn = Object.keys(entityMetadata).find((fieldName) => fieldName === '_id' || fieldName === 'id');
@@ -28,7 +28,7 @@ export default async function tryCreateTable(
   await forEachAsyncSequential(
     Object.entries({ ...entityMetadata, ...(idColumn ? {} : { id: 'string' }) }),
     async ([fieldName, fieldTypeName]: [any, any]) => {
-      if (typePropertyAnnotationContainer.isTypePropertyTransient(entityClass, fieldName)) {
+      if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
         return;
       }
 
@@ -36,9 +36,9 @@ export default async function tryCreateTable(
       let sqlColumnType;
 
       if (fieldName === '_id') {
-        sqlColumnType = 'BIGSERIAL PRIMARY KEY';
+        sqlColumnType = dbManager.getIdColumnType();
       } else {
-        sqlColumnType = getSqlColumnType(fieldName, baseTypeName);
+        sqlColumnType = getSqlColumnType(dbManager, EntityClass, fieldName, baseTypeName);
       }
 
       if (!sqlColumnType && isEnumTypeName(baseTypeName)) {
@@ -46,7 +46,7 @@ export default async function tryCreateTable(
       }
 
       if (!sqlColumnType && isEntityTypeName(baseTypeName)) {
-        setSubEntityInfo(entityName, entityClass, fieldName, baseTypeName);
+        setSubEntityInfo(entityName, EntityClass, fieldName, baseTypeName);
       } else if (isArrayType) {
         await createArrayValuesTable(
           schema,
@@ -61,7 +61,7 @@ export default async function tryCreateTable(
         if (fieldCnt > 0) {
           createTableStatement += ', ';
         }
-        const isUnique = typeAnnotationContainer.isTypePropertyUnique(entityClass, fieldName);
+        const isUnique = typeAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName);
         createTableStatement +=
           fieldName + ' ' + sqlColumnType + (isNullableType || fieldName === 'id' ? '' : ' NOT NULL') + (isUnique ? ' UNIQUE' : '');
         fieldCnt++;

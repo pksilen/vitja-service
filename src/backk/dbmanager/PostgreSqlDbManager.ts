@@ -44,4 +44,12 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   getIdColumnType(): string {
     return 'BIGSERIAL PRIMARY KEY'
   }
+
+  getTimestampType(): string {
+    return 'TIMESTAMPTZ';
+  }
+
+  getVarCharType(maxLength: number): string {
+    return `VARCHAR(${maxLength})`;
+  }
 }

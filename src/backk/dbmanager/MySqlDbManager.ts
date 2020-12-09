@@ -47,4 +47,12 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
   getIdColumnType(): string {
     return 'BIGINT AUTO_INCREMENT PRIMARY KEY'
   }
+
+  getTimestampType(): string {
+    return 'TIMESTAMP';
+  }
+
+  getVarCharType(maxLength: number): string {
+    return `VARCHAR(${maxLength})`;
+  }
 }

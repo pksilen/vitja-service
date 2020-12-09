@@ -1,4 +1,14 @@
-export default function getSqlColumnType(fieldName: string, baseFieldTypeName: string): string | undefined {
+import AbstractDbManager from '../../../../AbstractDbManager';
+import typePropertyAnnotationContainer
+  from "../../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import getMaxLengthValidationConstraint from "../../../../../validation/getMaxLengthValidationConstraint";
+
+export default function getSqlColumnType(
+  dbManager: AbstractDbManager,
+  EntityClass: Function,
+  fieldName: string,
+  baseFieldTypeName: string
+): string | undefined {
   switch (baseFieldTypeName) {
     case 'integer':
       return 'INTEGER';
@@ -9,12 +19,13 @@ export default function getSqlColumnType(fieldName: string, baseFieldTypeName: s
     case 'boolean':
       return 'BOOLEAN';
     case 'Date':
-      return 'TIMESTAMPTZ';
+      return dbManager.getTimestampType();
     case 'string':
       if (fieldName.endsWith('Id') || fieldName === 'id') {
         return 'BIGINT';
       } else {
-        return 'VARCHAR';
+        const maxLength = getMaxLengthValidationConstraint(EntityClass, fieldName);
+        return dbManager.getVarCharType(maxLength);
       }
   }
 
