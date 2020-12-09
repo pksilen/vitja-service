@@ -1,6 +1,6 @@
 import { MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
-import { ExpectToEvaluateTrueInTests } from "../../../../backk/decorators/typeproperty/testing/ExpectToEvaluateTrueInTests";
+import { ExpectExprTrueInTests } from "../../../../backk/decorators/typeproperty/testing/ExpectExprTrueInTests";
 import Id from "../../../../backk/types/id/Id";
 import { OrderState } from "../enum/OrderState";
 
@@ -8,7 +8,7 @@ import { OrderState } from "../enum/OrderState";
 export default class OrderItem extends Id {
   public salesItemId!: string;
 
-  @ExpectToEvaluateTrueInTests(
+  @ExpectExprTrueInTests(
     ({ state, deliveryTimestamp }) =>
       (state === 'toBeDelivered' && deliveryTimestamp === null) ||
       (state !== 'toBeDelivered' && deliveryTimestamp !== null)
@@ -18,7 +18,7 @@ export default class OrderItem extends Id {
   public state!: OrderState;
 
   @MaxLength(1024)
-  @ExpectToEvaluateTrueInTests(
+  @ExpectExprTrueInTests(
     ({ state, trackingUrl }) =>
       (state === 'toBeDelivered' && trackingUrl ===  null) || (state !== 'toBeDelivered' && trackingUrl !== null)
   )

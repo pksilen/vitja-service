@@ -1,6 +1,6 @@
 import SqlExpression from "../../expressions/SqlExpression";
 import { pg } from "yesql";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
@@ -8,7 +8,7 @@ import DefaultPostQueryOperations from "../../../../types/postqueryoperations/De
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 
 export default async function getEntitiesCount<T>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   filters: Partial<T> | SqlExpression[] | undefined,
   EntityClass: new () => T
 ): Promise<number | ErrorResponse> {

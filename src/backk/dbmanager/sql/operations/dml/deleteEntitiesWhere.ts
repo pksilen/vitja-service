@@ -1,6 +1,6 @@
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import entityContainer, { EntityJoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import isErrorResponse from '../../../../errors/isErrorResponse';
@@ -16,7 +16,7 @@ import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 
 export default async function deleteEntitiesWhere<T extends object>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,
   EntityClass: new () => T

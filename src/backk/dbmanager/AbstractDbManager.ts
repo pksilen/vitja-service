@@ -12,7 +12,7 @@ import isErrorResponse from '../errors/isErrorResponse';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
 import BaseService from '../service/BaseService';
-import { SubEntity } from "../types/entities/SubEntity";
+import { SubEntity } from '../types/entities/SubEntity';
 
 export interface Field {
   name: string;
@@ -22,7 +22,8 @@ export interface Field {
 export default abstract class AbstractDbManager {
   private services: BaseService[] = [];
   readonly dbName?: string;
-  readonly schema?: string;
+
+  constructor(public readonly schema: string) {}
 
   addService(service: BaseService) {
     this.services.push(service);
@@ -32,7 +33,7 @@ export default abstract class AbstractDbManager {
     return this.services.reduce((types, service) => ({ ...types, ...service.Types }), {});
   }
 
-  getType(Type: new() => any): new() => any{
+  getType(Type: new () => any): new () => any {
     return (this.getTypes() as any)[Type.name] ?? Type;
   }
 
@@ -171,14 +172,14 @@ export default abstract class AbstractDbManager {
   abstract updateEntity<T extends Entity>(
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    allowAdditionAndRemovalForSubEntityClasses: (new() => any)[] | 'all',
-    preHooks?: PreHook | PreHook[],
+    allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
   updateEntities<T extends Entity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
     entityClass: new () => T,
-    allowAdditionAndRemovalForSubEntityClasses: (new() => any)[] | 'all',
+    allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     return this.executeInsideTransaction(async () => {
@@ -207,7 +208,7 @@ export default abstract class AbstractDbManager {
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
   abstract deleteEntityById<T extends object>(

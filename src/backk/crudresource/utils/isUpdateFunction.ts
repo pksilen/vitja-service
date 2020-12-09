@@ -1,11 +1,13 @@
 import serviceFunctionAnnotationContainer from '../../decorators/service/function/serviceFunctionAnnotationContainer';
 
 export default function isUpdateFunction(serviceClass: Function, functionName: string) {
-  return (
+  const returnVal = (
     functionName.startsWith('update') ||
     functionName.startsWith('modify') ||
     functionName.startsWith('change') ||
     functionName.startsWith('patch') ||
-    typeof serviceClass === 'function' && serviceFunctionAnnotationContainer.isUpdateServiceFunction(serviceClass, functionName)
+    serviceFunctionAnnotationContainer.isUpdateServiceFunction(serviceClass, functionName)
   );
+
+  return returnVal;
 }

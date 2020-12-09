@@ -1,6 +1,6 @@
 import SqlExpression from "../../expressions/SqlExpression";
 import { pg } from "yesql";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
@@ -10,7 +10,7 @@ import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount
 import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
 
 export default async function getEntitiesByFilters<T>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations

@@ -1,6 +1,6 @@
 import { JSONPath } from 'jsonpath-plus';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import { Entity } from '../../../../types/entities/Entity';
@@ -24,7 +24,7 @@ import typePropertyAnnotationContainer from '../../../../decorators/typeproperty
 import { SubEntity } from "../../../../types/entities/SubEntity";
 
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   _id: string,
   subEntitiesPath: string,
   newSubEntities: Array<Omit<U, 'id'>>,

@@ -1,7 +1,7 @@
 import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
 import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
 import encrypt from '../../../../crypt/encrypt';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import transformRowsToObjects from './transformresults/transformRowsToObjects';
@@ -16,7 +16,7 @@ import getSqlColumnFromProjection from './utils/columns/getSqlColumnFromProjecti
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 
 export default async function getEntityWhere<T>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,
   EntityClass: new () => T,

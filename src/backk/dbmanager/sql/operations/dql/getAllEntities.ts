@@ -1,4 +1,4 @@
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import transformRowsToObjects from './transformresults/transformRowsToObjects';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
@@ -8,7 +8,7 @@ import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount
 import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
 
 export default async function getAllEntities<T>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {

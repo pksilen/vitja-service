@@ -1,4 +1,4 @@
-import PostgreSqlDbManager from "../backk/dbmanager/PostgreSqlDbManager";
+import AbstractSqlDbManager from "../backk/dbmanager/PostgreSqlDbManager";
 
 const POSTGRES_SCHEMA = 'public';
 const POSTGRES_USER = 'postgres';
@@ -7,7 +7,7 @@ const POSTGRES_DATABASE = 'postgres';
 const POSTGRES_PASSWORD = 'postgres';
 const POSTGRES_PORT = 5432;
 
-export const postgreSqlDbManager = new PostgreSqlDbManager(
+export const postgreSqlDbManager = new AbstractSqlDbManager(
   POSTGRES_HOST,
   POSTGRES_PORT,
   POSTGRES_USER,

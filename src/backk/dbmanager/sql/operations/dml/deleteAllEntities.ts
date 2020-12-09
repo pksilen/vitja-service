@@ -1,6 +1,6 @@
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import entityContainer, { EntityJoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
@@ -9,7 +9,7 @@ import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 
 export default async function deleteAllEntities<T>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   EntityClass: new () => T
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS

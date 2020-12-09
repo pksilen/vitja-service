@@ -1,5 +1,5 @@
 import isErrorResponse from "../../../../errors/isErrorResponse";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { RecursivePartial } from "../../../../types/RecursivePartial";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
@@ -13,7 +13,7 @@ import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 import getEntityWhere from "../dql/getEntityWhere";
 
 export default async function updateEntityWhere<T extends Entity>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,
   entity: RecursivePartial<T>,

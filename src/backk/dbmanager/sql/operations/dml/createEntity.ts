@@ -1,7 +1,7 @@
 import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import isErrorResponse from "../../../../errors/isErrorResponse";
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import getClassPropertyNameToPropertyTypeNameMap from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
@@ -21,7 +21,7 @@ import typePropertyAnnotationContainer
 import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
 
 export default async function createEntity<T>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
   EntityClass: new () => T,
   preHooks?: PreHook | PreHook[],

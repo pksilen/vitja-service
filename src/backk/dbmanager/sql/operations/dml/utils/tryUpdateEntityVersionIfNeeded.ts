@@ -1,11 +1,11 @@
 import { ErrorResponse } from '../../../../../types/ErrorResponse';
 import updateEntity from '../updateEntity';
-import PostgreSqlDbManager from '../../../../PostgreSqlDbManager';
+import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
 import { Entity } from '../../../../../types/entities/Entity';
 import isErrorResponse from '../../../../../errors/isErrorResponse';
 
 export default async function tryUpdateEntityVersionIfNeeded<T extends Entity>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   currentEntityOrErrorResponse: T | ErrorResponse,
   EntityClass: new () => T
 ) {

@@ -2,7 +2,7 @@ import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
 import isErrorResponse from '../../../../errors/isErrorResponse';
 import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import getEntityById from '../dql/getEntityById';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
@@ -26,7 +26,7 @@ import typePropertyAnnotationContainer from '../../../../decorators/typeproperty
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 
 export default async function updateEntity<T extends Entity>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
   allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',

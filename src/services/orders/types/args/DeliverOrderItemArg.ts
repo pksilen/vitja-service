@@ -3,14 +3,14 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { MaxLength } from 'class-validator';
-import { ExpectToEvaluateTrueInTests } from '../../../../backk/decorators/typeproperty/testing/ExpectToEvaluateTrueInTests';
+import { ExpectExprTrueInTests } from '../../../../backk/decorators/typeproperty/testing/ExpectExprTrueInTests';
 
 export default class DeliverOrderItemArg {
   orderId!: string;
 
   orderItemId!: string;
 
-  @ExpectToEvaluateTrueInTests(
+  @ExpectExprTrueInTests(
     ({ state, deliveryTimestamp }) =>
       (state === 'toBeDelivered' && deliveryTimestamp === null) ||
       (state !== 'toBeDelivered' && deliveryTimestamp !== null)
@@ -18,7 +18,7 @@ export default class DeliverOrderItemArg {
   public deliveryTimestamp!: Date | null;
 
   @MaxLength(1024)
-  @ExpectToEvaluateTrueInTests(
+  @ExpectExprTrueInTests(
     ({ state, trackingUrl }) =>
       (state === 'toBeDelivered' && trackingUrl === null) ||
       (state !== 'toBeDelivered' && trackingUrl !== null)

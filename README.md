@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO
-- CrudService extend from, test method names are valid
-  - Test method order is valid
 - npm mysql2 for MariaDb/MySql
   - mysql distributed tracing
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany

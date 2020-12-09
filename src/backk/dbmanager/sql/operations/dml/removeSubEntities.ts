@@ -1,7 +1,7 @@
 import { JSONPath } from 'jsonpath-plus';
 import { plainToClass } from 'class-transformer';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import getEntityById from '../dql/getEntityById';
 import deleteEntityById from './deleteEntityById';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
@@ -23,7 +23,7 @@ import typePropertyAnnotationContainer
   from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
 
 export default async function removeSubEntities<T extends Entity, U extends object>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   _id: string,
   subEntitiesPath: string,
   EntityClass: new () => T,

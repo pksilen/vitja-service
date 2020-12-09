@@ -1,4 +1,4 @@
-import PostgreSqlDbManager from '../../../../PostgreSqlDbManager';
+import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
 import { PostQueryOperations } from '../../../../../types/postqueryoperations/PostQueryOperations';
 import SqlExpression from '../../../expressions/SqlExpression';
 import tryGetProjection from '../clauses/tryGetProjection';
@@ -11,7 +11,7 @@ import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefin
 import tryGetWindowClausesForSubPaginations from '../clauses/tryGetWindowClausesForSubPaginations';
 
 export default function getSqlSelectStatementParts<T>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   { pageNumber, pageSize, sortBys, subPaginations, ...projection }: PostQueryOperations,
   entityClass: new () => T,
   filters?: Partial<T> | SqlExpression[] | UserDefinedFilter[],

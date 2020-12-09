@@ -1,4 +1,4 @@
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
@@ -10,7 +10,7 @@ import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 
 export default async function getEntitiesByIds<T>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   _ids: string[],
   entityClass: new () => T,
   postQueryOperations: PostQueryOperations

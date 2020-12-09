@@ -1,5 +1,5 @@
 import { JSONPath } from 'jsonpath-plus';
-import PostgreSqlDbManager from '../../../PostgreSqlDbManager';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import getEntityById from './getEntityById';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
@@ -8,7 +8,7 @@ import createErrorResponseFromErrorMessageAndStatusCode from "../../../../errors
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 
 export default async function getSubEntities<T extends object, U>(
-  dbManager: PostgreSqlDbManager,
+  dbManager: AbstractSqlDbManager,
   _id: string,
   subEntityPath: string,
   EntityClass: new () => T,

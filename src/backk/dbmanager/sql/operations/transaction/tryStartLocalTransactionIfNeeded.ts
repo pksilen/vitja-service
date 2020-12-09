@@ -1,6 +1,6 @@
-import PostgreSqlDbManager from "../../../PostgreSqlDbManager";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 
-export default async function tryStartLocalTransactionIfNeeded(dbManager: PostgreSqlDbManager): Promise<boolean> {
+export default async function tryStartLocalTransactionIfNeeded(dbManager: AbstractSqlDbManager): Promise<boolean> {
   if (
     !dbManager.getClsNamespace()?.get('globalTransaction') &&
     !dbManager.getClsNamespace()?.get('localTransaction')

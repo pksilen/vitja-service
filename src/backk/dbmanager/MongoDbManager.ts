@@ -20,7 +20,7 @@ export default class MongoDbManager extends AbstractDbManager {
   private readonly mongoClient: MongoClient;
 
   constructor(private readonly uri: string, public readonly dbName: string) {
-    super();
+    super('');
     this.mongoClient = new MongoClient(uri, { useNewUrlParser: true });
   }
 
