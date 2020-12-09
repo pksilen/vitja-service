@@ -164,7 +164,10 @@ export default async function tryExecuteServiceMethod(
       );
     }
 
-    if (!controller[serviceName][functionName]) {
+    const serviceFunctionResponseValueTypeName =
+      controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName];
+
+    if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
       createErrorFromErrorMessageAndThrowError(
         createErrorMessageWithStatusCode(
           `Unknown function: ${serviceName}.${functionName}`,
@@ -251,7 +254,11 @@ export default async function tryExecuteServiceMethod(
         );
       }
 
-      await tryValidateServiceMethodArgument(functionName, instantiatedServiceFunctionArgument);
+      await tryValidateServiceMethodArgument(
+        controller[serviceName],
+        functionName,
+        instantiatedServiceFunctionArgument
+      );
     }
 
     if (

@@ -4,6 +4,7 @@ import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithSt
 import getValidationErrors from './getValidationErrors';
 import { HttpStatusCodes } from "../constants/constants";
 import _Id from "../types/id/_Id";
+import isCreateFunction from "../crudresource/utils/isCreateFunction";
 
 function filterOutManyToManyIdErrors(validationErrors: ValidationError[]) {
   validationErrors.forEach((validationError) => {
@@ -35,6 +36,7 @@ function getValidationErrorConstraintsCount(validationErrors: ValidationError[])
 }
 
 export default async function tryValidateServiceMethodArgument(
+  serviceClass: Function,
   methodName: string,
   obj: object
 ): Promise<void> {
@@ -43,25 +45,13 @@ export default async function tryValidateServiceMethodArgument(
       groups: ['__backk_firstRound__']
     });
 
-    const isCreateMethod =
-      methodName.startsWith('create') || methodName.startsWith('add') || methodName.startsWith('insert');
-
-    const isUpdateMethod =
-      methodName.startsWith('update') || methodName.startsWith('modify') || methodName.startsWith('change');
-
-    const isDeleteMethod =
-      methodName.startsWith('delete') ||
-      methodName.startsWith('remove') ||
-      methodName.startsWith('erase') ||
-      methodName.startsWith('destroy');
-
     await validateOrReject(obj, {
       whitelist: true,
       forbidNonWhitelisted: true,
       groups: [
         '__backk_argument__',
-        ...(isCreateMethod ? ['__backk_create__'] : []),
-        ...(isCreateMethod ? [] : ['__backk_update__'])
+        ...(isCreateFunction(serviceClass, methodName) ? ['__backk_create__'] : []),
+        ...(isCreateFunction(serviceClass, methodName)? [] : ['__backk_update__'])
       ]
     });
   } catch (validationErrors) {

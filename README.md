@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- request body is empty
 - CrudService extend from, test method names are valid
   - Test method order is valid
 - npm mysql2 for MariaDb/MySql

@@ -27,6 +27,7 @@ import executeForAll from "../../backk/utils/executeForAll";
 import ShoppingCartService from "../shoppingcart/ShoppingCartService";
 import { SalesItemState } from "../salesitems/types/enums/SalesItemState";
 import { OrderState } from "./types/enum/OrderState";
+import { Update } from "../../backk/decorators/service/function/Update";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -107,6 +108,7 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.getEntityById(_id, Order);
   }
 
+  @Update()
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   deliverOrderItem({

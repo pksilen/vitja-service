@@ -1,4 +1,3 @@
-import BaseService from "../../backk/service/BaseService";
 import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
 import CreateOrderArg from "./types/args/CreateOrderArg";
 import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
@@ -8,8 +7,9 @@ import AddOrderItemArg from "./types/args/AddOrderItemArg";
 import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
 import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import CrudResourceService from "../../backk/crudresource/CrudResourceService";
 
-export default abstract class OrdersService extends BaseService {
+export default abstract class OrdersService extends CrudResourceService {
   abstract deleteAllOrders(): Promise<void | ErrorResponse>;
   abstract createOrder(arg: CreateOrderArg): Promise<Order | ErrorResponse>;
   abstract deleteOrderItem(arg: DeleteOrderItemArg): Promise<void | ErrorResponse>;

@@ -7,6 +7,9 @@ import { FunctionMetadata } from './types/FunctionMetadata';
 import getValidationMetadata from './getValidationMetadata';
 import getTypeDocumentation from './getTypeDocumentation';
 import getTypePropertyModifiers from './getTypePropertyModifiers';
+import CrudResourceService from "../crudresource/CrudResourceService";
+import assertFunctionNamesAreValidForCrudResourceService
+  from "../crudresource/assertFunctionNamesAreValidForCrudResourceService";
 
 export default function generateServicesMetadata<T>(controller: T): ServiceMetadata[] {
   return Object.entries(controller)
@@ -16,6 +19,10 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
       const functionNames = Object.keys(
         (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
       );
+
+      if (service instanceof CrudResourceService) {
+        assertFunctionNamesAreValidForCrudResourceService(ServiceClass, functionNames);
+      }
 
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypes, [typeName, Class]: [string, any]) => {

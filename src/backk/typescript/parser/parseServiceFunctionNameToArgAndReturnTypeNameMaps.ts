@@ -28,6 +28,10 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
     ) {
       for (const classBodyNode of node.declaration.body.body) {
         if (classBodyNode.type === 'TSDeclareMethod') {
+          if (classBodyNode.accessibility === 'private' || classBodyNode.accessibility === 'protected') {
+            // noinspection ContinueStatementJS
+            continue;
+          }
           const functionName = classBodyNode.key.name;
 
           if (classBodyNode.params.length >= 1) {

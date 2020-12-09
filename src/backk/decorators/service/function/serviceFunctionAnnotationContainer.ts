@@ -15,6 +15,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToIsNotDistributedTransactionalMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToCronScheduleMap: { [key: string]: string } = {};
   private readonly serviceFunctionNameToRetryIntervalsInSecsMap: { [key: string]: number[] } = {};
+  private readonly serviceFunctionNameToIsUpdateFunctionMap: { [key: string]: boolean } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -84,6 +85,10 @@ class ServiceFunctionAnnotationContainer {
     ] = retryIntervalsInSecs;
   }
 
+  addUpdateAnnotation(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToIsUpdateFunctionMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
@@ -118,8 +123,9 @@ class ServiceFunctionAnnotationContainer {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToIsAllowedForClusterInternalUseMap[`${proto.constructor.name}${functionName}`] !==
-        undefined
+        this.serviceFunctionNameToIsAllowedForClusterInternalUseMap[
+          `${proto.constructor.name}${functionName}`
+        ] !== undefined
       ) {
         return true;
       }
@@ -133,7 +139,8 @@ class ServiceFunctionAnnotationContainer {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToIsAllowedForSelfMap[`${proto.constructor.name}${functionName}`] !== undefined
+        this.serviceFunctionNameToIsAllowedForSelfMap[`${proto.constructor.name}${functionName}`] !==
+        undefined
       ) {
         return true;
       }
@@ -203,7 +210,9 @@ class ServiceFunctionAnnotationContainer {
   isServiceFunctionAllowedForTests(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.serviceFunctionNameToAllowedForTestsMap[`${proto.constructor.name}${functionName}`] !== undefined) {
+      if (
+        this.serviceFunctionNameToAllowedForTestsMap[`${proto.constructor.name}${functionName}`] !== undefined
+      ) {
         return true;
       }
       proto = Object.getPrototypeOf(proto);
@@ -228,7 +237,8 @@ class ServiceFunctionAnnotationContainer {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToIsNotTransactionalMap[`${proto.constructor.name}${functionName}`] !== undefined
+        this.serviceFunctionNameToIsNotTransactionalMap[`${proto.constructor.name}${functionName}`] !==
+        undefined
       ) {
         return true;
       }
@@ -242,8 +252,25 @@ class ServiceFunctionAnnotationContainer {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToIsNotDistributedTransactionalMap[`${proto.constructor.name}${functionName}`] !==
-        undefined
+        this.serviceFunctionNameToIsNotDistributedTransactionalMap[
+          `${proto.constructor.name}${functionName}`
+        ] !== undefined
+      ) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isUpdateServiceFunction(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToIsUpdateFunctionMap[
+          `${proto.constructor.name}${functionName}`
+          ] !== undefined
       ) {
         return true;
       }

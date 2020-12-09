@@ -1,4 +1,3 @@
-import BaseService from "../../backk/service/BaseService";
 import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
 import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
 import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
@@ -8,8 +7,9 @@ import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import _IdsAndDefaultPostQueryOperations
   from "../../backk/types/postqueryoperations/_IdsAndDefaultPostQueryOperations";
 import _Id from "../../backk/types/id/_Id";
+import CrudResourceService from "../../backk/crudresource/CrudResourceService";
 
-export default abstract class SalesItemsService extends BaseService {
+export default abstract class SalesItemsService extends CrudResourceService {
   abstract deleteAllSalesItems(): Promise<void | ErrorResponse>;
   abstract createSalesItem(arg: SalesItem): Promise<SalesItem | ErrorResponse>;
   abstract getSalesItems(arg: GetSalesItemsArg): Promise<SalesItem[] | ErrorResponse>;
