@@ -17,7 +17,7 @@ function filterOutManyToManyIdErrors(validationErrors: ValidationError[]) {
       );
     }
 
-    if (validationError.children.length > 0) {
+    if (validationError.children?.length > 0) {
       filterOutManyToManyIdErrors(validationError.children);
     }
   });
