@@ -1,7 +1,9 @@
-import { validateOrReject, ValidationError } from 'class-validator';
+import { getFromContainer, MetadataStorage, validateOrReject, ValidationError } from "class-validator";
 import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
 import getValidationErrors from './getValidationErrors';
+import { HttpStatusCodes } from "../constants/constants";
+import _Id from "../types/id/_Id";
 
 function filterOutManyToManyIdErrors(validationErrors: ValidationError[]) {
   validationErrors.forEach((validationError) => {
@@ -26,7 +28,7 @@ function filterOutManyToManyIdErrors(validationErrors: ValidationError[]) {
 function getValidationErrorConstraintsCount(validationErrors: ValidationError[]): number {
   return validationErrors.reduce((constraintsCount, validationError) => {
     const newConstraintsCount = constraintsCount + Object.keys(validationError.constraints ?? {}).length;
-    return validationError.children.length > 0
+    return validationError.children?.length > 0
       ? newConstraintsCount + getValidationErrorConstraintsCount(validationError.children)
       : newConstraintsCount;
   }, 0);
@@ -59,7 +61,7 @@ export default async function tryValidateServiceMethodArgument(
       groups: [
         '__backk_argument__',
         ...(isCreateMethod ? ['__backk_create__'] : []),
-        ...(isUpdateMethod || isDeleteMethod ? ['__backk_update__'] : [])
+        ...(isCreateMethod ? [] : ['__backk_update__'])
       ]
     });
   } catch (validationErrors) {
@@ -75,6 +77,8 @@ export default async function tryValidateServiceMethodArgument(
 
     const errorMessage =
       'Error code invalidArgument: Invalid argument: ' + getValidationErrors(validationErrors);
-    createErrorFromErrorMessageAndThrowError(createErrorMessageWithStatusCode(errorMessage, 400));
+    createErrorFromErrorMessageAndThrowError(
+      createErrorMessageWithStatusCode(errorMessage, HttpStatusCodes.BAD_REQUEST)
+    );
   }
 }
