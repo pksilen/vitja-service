@@ -2,7 +2,6 @@
 
 TODO
 - npm mysql2 for MariaDb/MySql
-  - mysql distributed tracing
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
@@ -17,6 +16,7 @@ TODO
 
 
 TODO NEXT RELEASE:
+- mysql2 distributed tracing
 - remote service calls can have rollback action and commit action
   - Deletes can move stuff to shadow table and in commit clear from shadow table and do delete
 - Add implementation for FOREIGN KEY REFERENCES in CREATE TABLE

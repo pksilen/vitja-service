@@ -24,6 +24,10 @@ export default class MongoDbManager extends AbstractDbManager {
     this.mongoClient = new MongoClient(uri, { useNewUrlParser: true });
   }
 
+  getIdColumnType(): string {
+    throw new Error('Not implemented')
+  }
+
   async tryExecute<T>(dbOperationFunction: (client: MongoClient) => Promise<T>): Promise<T> {
     if (!this.mongoClient.isConnected()) {
       await this.mongoClient.connect();

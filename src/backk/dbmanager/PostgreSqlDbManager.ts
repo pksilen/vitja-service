@@ -40,4 +40,8 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   getConnection(): Promise<any> {
     return this.pool.connect();
   }
+
+  getIdColumnType(): string {
+    return 'BIGSERIAL PRIMARY KEY'
+  }
 }

@@ -41,6 +41,7 @@ export default abstract class AbstractDbManager {
     return getNamespace('serviceFunctionExecution');
   }
 
+  abstract getIdColumnType(): string;
   abstract getDbManagerType(): string;
   abstract getDbHost(): string;
   abstract tryExecute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T>;
