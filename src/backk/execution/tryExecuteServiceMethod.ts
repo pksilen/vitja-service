@@ -18,12 +18,12 @@ import defaultServiceMetrics from '../observability/metrics/defaultServiceMetric
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
 import log, { Severity } from '../observability/logging/log';
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import { HttpStatusCodes, MAX_INT_VALUE } from "../constants/constants";
+import { HttpStatusCodes, MAX_INT_VALUE } from '../constants/constants';
 import getNamespacedServiceName from '../utils/getServiceNamespace';
 import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
 import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
 import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
-import scheduleJobExecution from "../scheduling/scheduleJobExecution";
+import scheduleJobExecution from '../scheduling/scheduleJobExecution';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -98,7 +98,7 @@ export default async function tryExecuteServiceMethod(
         options
       );
     } else if (serviceFunction === 'scheduleJobExecution') {
-      return scheduleJobExecution(controller, serviceFunctionArgument, headers, resp)
+      return scheduleJobExecution(controller, serviceFunctionArgument, headers, resp);
     }
   }
 
@@ -173,7 +173,14 @@ export default async function tryExecuteServiceMethod(
       );
     }
 
-    if (typeof serviceFunctionArgument !== 'object' || Array.isArray(serviceFunctionArgument)) {
+    const serviceFunctionArgumentTypeName =
+      controller[`${serviceName}Types`].functionNameToParamTypeNameMap[functionName];
+
+    if (
+      typeof serviceFunctionArgument !== 'object' ||
+      Array.isArray(serviceFunctionArgument) ||
+      (serviceFunctionArgumentTypeName && serviceFunctionArgument === null)
+    ) {
       createErrorFromErrorMessageAndThrowError(
         createErrorMessageWithStatusCode(
           `Invalid service function argument. Argument must be a JSON object string`,
@@ -196,9 +203,6 @@ export default async function tryExecuteServiceMethod(
       controller['authorizationService'],
       usersService as UsersBaseService | undefined
     );
-
-    const serviceFunctionArgumentTypeName =
-      controller[`${serviceName}Types`].functionNameToParamTypeNameMap[functionName];
 
     let instantiatedServiceFunctionArgument: any;
     if (serviceFunctionArgumentTypeName) {
