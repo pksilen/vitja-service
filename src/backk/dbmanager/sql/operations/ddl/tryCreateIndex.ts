@@ -13,11 +13,15 @@ export default async function tryCreateIndex(
   const additionalSqlCreateIndexStatementOptions =
     entityAnnotationContainer.indexNameToAdditionalSqlCreateIndexStatementOptionsMap[indexName];
 
-  const createIndexStatement = `CREATE ${
-    isUnique ? 'UNIQUE' : ''
-  } INDEX IF NOT EXISTS ${entityName}_${indexFields.join('_')} ON ${schema}.${entityName} ${
-    indexUsingOption ? 'USING ' + indexUsingOption : ''
-  } (${indexFields.join(', ')}) ${additionalSqlCreateIndexStatementOptions ?? ''}`;
+  try {
+    const createIndexStatement = `CREATE ${
+      isUnique ? 'UNIQUE' : ''
+    } INDEX ${entityName}_${indexFields.join('_')} ON ${schema}.${entityName} ${
+      indexUsingOption ? 'USING ' + indexUsingOption : ''
+    } (${indexFields.join(', ')}) ${additionalSqlCreateIndexStatementOptions ?? ''}`;
 
-  await dbManager.tryExecuteSqlWithoutCls(createIndexStatement);
+    await dbManager.tryExecuteSqlWithoutCls(createIndexStatement, undefined, false);
+  } catch(error) {
+    // NOOP
+  }
 }

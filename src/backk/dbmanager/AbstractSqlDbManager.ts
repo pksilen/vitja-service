@@ -53,7 +53,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   async isDbReady(): Promise<boolean> {
     try {
-      await this.tryExecuteSqlWithoutCls(`SELECT * FROM ${this.schema}.__Backk_`, undefined, false);
+      await this.tryExecuteSqlWithoutCls(`SELECT * FROM ${this.schema}.__Backk__`, undefined, false);
       return true;
     } catch (error) {
       try {
@@ -214,7 +214,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
           function: 'PostgreSqlDbManager.tryExecuteSqlWithoutCls'
         });
       }
-      return result.fields;
+      return result.fields ?? result[1];
     } catch (error) {
       if (shouldReportError) {
         defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());

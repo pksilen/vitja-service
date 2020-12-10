@@ -15,6 +15,7 @@ export default async function tryAlterOrCreateTable(
       undefined,
       false
     );
+    console.log(fields);
   } catch (error) {
     await tryCreateTable(dbManager, entityName, entityClass, schema);
     return;
