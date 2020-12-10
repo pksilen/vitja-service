@@ -1,5 +1,5 @@
 import mysql, { Pool } from 'mysql2/promise';
-import AbstractSqlDbManager from "./AbstractSqlDbManager";
+import AbstractSqlDbManager from './AbstractSqlDbManager';
 
 export default class MySqlDbManager extends AbstractSqlDbManager {
   private pool: Pool;
@@ -44,8 +44,12 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
     });
   }
 
+  releaseConnection(connection?: any) {
+    connection?.destroy();
+  }
+
   getIdColumnType(): string {
-    return 'BIGINT AUTO_INCREMENT PRIMARY KEY'
+    return 'BIGINT AUTO_INCREMENT PRIMARY KEY';
   }
 
   getTimestampType(): string {
@@ -53,6 +57,9 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
   }
 
   getVarCharType(maxLength: number): string {
-    return `VARCHAR(${maxLength})`;
+    if (maxLength < 16383) {
+      return `VARCHAR(${maxLength})`;
+    }
+    return 'TEXT';
   }
 }

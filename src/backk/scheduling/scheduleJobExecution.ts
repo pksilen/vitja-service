@@ -61,6 +61,7 @@ export default function scheduleJobExecution(
   const [serviceName] = serviceFunctionName.split('.');
   const dbManager = (controller[serviceName] as BaseService).getDbManager();
   const clsNamespace = createNamespace('serviceFunctionExecution');
+  // eslint-disable-next-line @typescript-eslint/camelcase
   let entityOrErrorResponse: __Backk__JobScheduling | ErrorResponse;
   clsNamespace.run(async () => {
     await dbManager.tryReserveDbConnectionFromPool();

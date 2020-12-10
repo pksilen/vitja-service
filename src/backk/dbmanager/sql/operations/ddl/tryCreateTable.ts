@@ -42,7 +42,7 @@ export default async function tryCreateTable(
       }
 
       if (!sqlColumnType && isEnumTypeName(baseTypeName)) {
-        sqlColumnType = getEnumSqlColumnType(baseTypeName);
+        sqlColumnType = getEnumSqlColumnType(dbManager, baseTypeName);
       }
 
       if (!sqlColumnType && isEntityTypeName(baseTypeName)) {

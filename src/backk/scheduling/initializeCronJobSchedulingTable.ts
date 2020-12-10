@@ -2,6 +2,7 @@ import AbstractDbManager from "../dbmanager/AbstractDbManager";
 import serviceFunctionAnnotationContainer
   from "../decorators/service/function/serviceFunctionAnnotationContainer";
 import { createNamespace } from "cls-hooked";
+// eslint-disable-next-line @typescript-eslint/camelcase
 import __Backk__CronJobScheduling from "./entities/__Backk__CronJobScheduling";
 import parser from "cron-parser";
 

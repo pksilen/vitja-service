@@ -60,7 +60,7 @@ export default function getFieldsForEntity(
             entityPropertyName.endsWith('Id')
           ) {
             fields.push(
-              `CAST(${schema}.${EntityClass.name}.${entityPropertyName} AS VARCHAR) AS ${EntityClass.name}_${entityPropertyName}`
+              `CAST(${schema}.${EntityClass.name}.${entityPropertyName} AS CHAR) AS ${EntityClass.name}_${entityPropertyName}`
             );
           } else {
             fields.push(

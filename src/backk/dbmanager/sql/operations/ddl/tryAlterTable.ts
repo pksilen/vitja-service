@@ -38,7 +38,7 @@ export default async function tryAlterTable(
         let sqlColumnType = getSqlColumnType(dbManager, EntityClass, fieldName, baseTypeName);
 
         if (!sqlColumnType && isEnumTypeName(baseTypeName)) {
-          sqlColumnType = getEnumSqlColumnType(baseTypeName);
+          sqlColumnType = getEnumSqlColumnType(dbManager,baseTypeName);
         }
 
         if (!sqlColumnType && isEntityTypeName(baseTypeName)) {

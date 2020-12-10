@@ -45,6 +45,8 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   abstract getConnection(): Promise<any>;
 
+  abstract releaseConnection(connection: any): void;
+
   async tryExecute<T>(dbOperationFunction: (pool: Pool) => Promise<T>): Promise<T> {
     throw new Error('Not implemented');
   }
@@ -104,9 +106,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     log(Severity.DEBUG, 'Release database connection', '');
 
     try {
-      this.getClsNamespace()
-        ?.get('connection')
-        .release();
+      this.releaseConnection(this.getClsNamespace()?.get('connection'));
     } catch (error) {
       log(Severity.ERROR, error.message, error.stack ?? '', {
         function: 'PostgreSqlDbManager.tryReleaseDbConnectionBackToPool'

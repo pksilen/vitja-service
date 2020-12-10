@@ -1,5 +1,5 @@
-import AbstractSqlDbManager from "./AbstractSqlDbManager";
-import { Pool, types } from "pg";
+import AbstractSqlDbManager from './AbstractSqlDbManager';
+import { Pool, types } from 'pg';
 
 export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   private pool: Pool;
@@ -41,8 +41,12 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
     return this.pool.connect();
   }
 
+  releaseConnection(connection?: any) {
+    connection?.release();
+  }
+
   getIdColumnType(): string {
-    return 'BIGSERIAL PRIMARY KEY'
+    return 'BIGSERIAL PRIMARY KEY';
   }
 
   getTimestampType(): string {
