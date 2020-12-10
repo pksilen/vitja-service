@@ -61,7 +61,9 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
       async ({ associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
         try {
           await dbManager.tryExecuteSqlWithoutCls(
-            `SELECT * FROM ${dbManager.schema}.${associationTableName} LIMIT 1`
+            `SELECT * FROM ${dbManager.schema}.${associationTableName} LIMIT 1`,
+            undefined,
+            false
           );
         } catch (error) {
           const createTableStatement = `CREATE TABLE ${dbManager.schema}.${associationTableName} (${entityForeignIdFieldName} BIGINT PRIMARY KEY, ${subEntityForeignIdFieldName} BIGINT)`;

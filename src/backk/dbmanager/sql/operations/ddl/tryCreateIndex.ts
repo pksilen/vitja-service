@@ -18,7 +18,7 @@ export default async function tryCreateIndex(
       isUnique ? 'UNIQUE' : ''
     } INDEX ${entityName}_${indexFields.join('_')} ON ${schema}.${entityName} ${
       indexUsingOption ? 'USING ' + indexUsingOption : ''
-    } (${indexFields.join(', ')}) ${additionalSqlCreateIndexStatementOptions ?? ''}`;
+    }(${indexFields.join(', ')}) ${additionalSqlCreateIndexStatementOptions ?? ''}`;
 
     await dbManager.tryExecuteSqlWithoutCls(createIndexStatement, undefined, false);
   } catch(error) {

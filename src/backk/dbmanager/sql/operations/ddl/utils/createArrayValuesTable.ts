@@ -12,7 +12,11 @@ export default async function createArrayValuesTable(
   const arrayValuesTableName = entityName + '_' + arrayValueFieldName;
 
   try {
-    await dbManager.tryExecuteSqlWithoutCls(`SELECT * FROM ${schema}.${arrayValuesTableName}`);
+    await dbManager.tryExecuteSqlWithoutCls(
+      `SELECT * FROM ${schema}.${arrayValuesTableName}`,
+      undefined,
+      false
+    );
   } catch {
     let createAdditionalTableStatement = `CREATE TABLE ${schema}.${arrayValuesTableName} (`;
 
