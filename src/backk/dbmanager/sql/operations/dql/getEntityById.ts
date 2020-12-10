@@ -50,7 +50,7 @@ export default async function getEntityById<T>(
       return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
     }
 
-    return transformRowsToObjects(result, EntityClass, finalPostQueryOperations, Types)[0];
+    return transformRowsToObjects(dbManager.getResultRows(result), EntityClass, finalPostQueryOperations, Types)[0];
   } catch (error) {
     return createErrorResponseFromError(error);
   }

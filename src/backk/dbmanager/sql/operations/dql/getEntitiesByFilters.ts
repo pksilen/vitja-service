@@ -36,7 +36,7 @@ export default async function getEntitiesByFilters<T>(
       )(filterValues)
     );
 
-    return transformRowsToObjects(result, EntityClass, postQueryOperations, Types);
+    return transformRowsToObjects(dbManager.getResultRows(result), EntityClass, postQueryOperations, Types);
   } catch (error) {
     return createErrorResponseFromError(error);
   }

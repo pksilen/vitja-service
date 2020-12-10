@@ -28,7 +28,7 @@ export default async function getAllEntities<T>(
     );
 
     return transformRowsToObjects(
-      result,
+      dbManager.getResultRows(result),
       EntityClass,
       postQueryOperations ?? { ...new DefaultPostQueryOperations(), pageSize: Number.MAX_SAFE_INTEGER },
       dbManager.getTypes()

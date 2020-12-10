@@ -1,4 +1,3 @@
-import { QueryResult } from "pg";
 import joinjs from "join-js";
 import transformResults from "./transformResults";
 import decryptItems from "../../../../../crypt/decryptItems";
@@ -7,26 +6,27 @@ import removeSingleSubEntitiesWithNullProperties from "./removeSingleSubEntities
 import { PostQueryOperations } from "../../../../../types/postqueryoperations/PostQueryOperations";
 
 export default function transformRowsToObjects<T>(
-  result: QueryResult<any>,
+  rows: any[],
   EntityClass: { new (): T },
   { pageSize, includeResponseFields, excludeResponseFields }: PostQueryOperations,
   Types: object
 ) {
   const resultMaps = createResultMaps(EntityClass, Types, { includeResponseFields, excludeResponseFields });
-
-  let rows = joinjs.map(
-    result.rows ?? result,
+  console.log()
+  let mappedRows = joinjs.map(
+    rows,
     resultMaps,
     EntityClass.name + 'Map',
     EntityClass.name.toLowerCase() + '_'
   );
 
+
   if (rows.length > pageSize) {
-    rows = rows.slice(0, pageSize);
+    mappedRows = mappedRows.slice(0, pageSize);
   }
 
-  transformResults(rows, EntityClass, Types);
-  decryptItems(rows, EntityClass, Types);
-  removeSingleSubEntitiesWithNullProperties(rows);
-  return rows;
+  transformResults(mappedRows, EntityClass, Types);
+  decryptItems(mappedRows, EntityClass, Types);
+  removeSingleSubEntitiesWithNullProperties(mappedRows);
+  return mappedRows;
 }

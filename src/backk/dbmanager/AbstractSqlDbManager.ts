@@ -47,6 +47,10 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   abstract releaseConnection(connection: any): void;
 
+  abstract getResultRows(result: any): any[];
+
+  abstract getResultFields(result: any): any[];
+
   async tryExecute<T>(dbOperationFunction: (pool: Pool) => Promise<T>): Promise<T> {
     throw new Error('Not implemented');
   }
@@ -188,7 +192,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
         ?.get('connection')
         .query(sqlStatement, values);
 
-      return result.fields;
+      return this.getResultFields(result);
     } catch (error) {
       defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());
       log(Severity.ERROR, error.message, error.stack ?? '', {
@@ -214,7 +218,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
           function: 'PostgreSqlDbManager.tryExecuteSqlWithoutCls'
         });
       }
-      return result.fields ?? result[1];
+      return this.getResultFields(result);
     } catch (error) {
       if (shouldReportError) {
         defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());

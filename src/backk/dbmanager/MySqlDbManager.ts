@@ -62,4 +62,12 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
     }
     return 'TEXT';
   }
+
+  getResultRows(result: any): any[] {
+    return result[0];
+  }
+
+  getResultFields(result: any): any[] {
+    return result[1];
+  }
 }

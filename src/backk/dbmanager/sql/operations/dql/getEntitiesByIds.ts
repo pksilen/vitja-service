@@ -1,13 +1,12 @@
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
-import createErrorResponseFromErrorMessageAndStatusCode
-  from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
-import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import transformRowsToObjects from './transformresults/transformRowsToObjects';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
@@ -44,7 +43,7 @@ export default async function getEntitiesByIds<T>(
       return createErrorResponseFromErrorMessageAndStatusCode(`Item with _ids: ${_ids} not found`, 404);
     }
 
-    return transformRowsToObjects(result, entityClass, postQueryOperations, Types);
+    return transformRowsToObjects(dbManager.getResultRows(result), entityClass, postQueryOperations, Types);
   } catch (error) {
     return createErrorResponseFromError(error);
   }

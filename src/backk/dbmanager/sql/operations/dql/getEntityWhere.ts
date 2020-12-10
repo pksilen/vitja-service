@@ -82,7 +82,12 @@ export default async function getEntityWhere<T>(
       );
     }
 
-    return transformRowsToObjects(result, EntityClass, finalPostQueryOperations, Types)[0];
+    return transformRowsToObjects(
+      dbManager.getResultRows(result),
+      EntityClass,
+      finalPostQueryOperations,
+      Types
+    )[0];
   } catch (error) {
     return createErrorResponseFromError(error);
   }

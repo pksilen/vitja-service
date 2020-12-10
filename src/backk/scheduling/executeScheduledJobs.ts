@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
-import { CronJob } from 'cron';
+import { CronJob, job } from "cron";
 import { createNamespace } from 'cls-hooked';
 import call from '../remote/http/call';
 import getServiceName from '../utils/getServiceName';

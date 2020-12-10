@@ -56,4 +56,12 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   getVarCharType(maxLength: number): string {
     return `VARCHAR(${maxLength})`;
   }
+
+  getResultRows(result: any): any[] {
+    return result.rows;
+  }
+
+  getResultFields(result: any): any[] {
+    return result.fields;
+  }
 }
