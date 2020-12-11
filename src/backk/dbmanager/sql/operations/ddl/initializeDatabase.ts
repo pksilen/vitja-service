@@ -39,18 +39,20 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
 
     await forEachAsyncSequential(
       Object.entries(entityAnnotationContainer.entityNameToForeignIdFieldNamesMap),
-      async ([entityName, additionalPropertyNames]: [any, any]) => {
+      async ([entityName, foreignIdFieldNames]: [any, any]) => {
         const fields = await dbManager.tryExecuteSqlWithoutCls(
           `SELECT * FROM ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} LIMIT 1`,
           undefined,
           false
         );
 
-        await forEachAsyncParallel(additionalPropertyNames, async (additionalPropertyName: any) => {
-          if (!fields.find((field) => field.name.toLowerCase() === additionalPropertyName.toLowerCase())) {
-            let alterTableStatement = `ALTER TABLE ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} ADD `;
-            alterTableStatement += additionalPropertyName.toLowerCase() + ' BIGINT';
-            await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
+        await forEachAsyncParallel(foreignIdFieldNames, async (foreignIdFieldName: any) => {
+          if (!fields.find((field) => field.name.toLowerCase() === foreignIdFieldName.toLowerCase())) {
+            const alterTableStatementPrefix = `ALTER TABLE ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} ADD `;
+            const addForeignIdColumnStatement = alterTableStatementPrefix + foreignIdFieldName.toLowerCase() + ' BIGINT';
+            await dbManager.tryExecuteSqlWithoutCls(addForeignIdColumnStatement);
+            const addPrimaryKeyStatement = alterTableStatementPrefix + 'PRIMARY KEY (' +  foreignIdFieldName.toLowerCase() + ', id)'
+            await dbManager.tryExecuteSqlWithoutCls(addPrimaryKeyStatement);
           }
         });
       }
