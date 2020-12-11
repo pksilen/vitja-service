@@ -98,7 +98,11 @@ export default async function updateEntity<T extends Entity>(
                     subEntityForeignIdFieldName
                   } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
                   await dbManager.tryExecuteSql(
-                    `DELETE FROM ${dbManager.schema}.${associationTableName} WHERE ${entityForeignIdFieldName} = $1 AND ${subEntityForeignIdFieldName} = $2`,
+                    `DELETE FROM ${
+                      dbManager.schema
+                    }.${associationTableName} WHERE ${entityForeignIdFieldName} = ${dbManager.getValuePlaceholder(
+                      1
+                    )} AND ${subEntityForeignIdFieldName} = ${dbManager.getValuePlaceholder(2)}`,
                     [parseInt(_id ?? id, 10), subEntity._id]
                   );
                 } else {
@@ -123,7 +127,11 @@ export default async function updateEntity<T extends Entity>(
                     subEntityForeignIdFieldName
                   } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
                   dbManager.tryExecuteSql(
-                    `INSERT INTO ${dbManager.schema}.${associationTableName} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES ($1, $2)`,
+                    `INSERT INTO ${
+                      dbManager.schema
+                    }.${associationTableName} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES (${dbManager.getValuePlaceholder(
+                      1
+                    )}, ${dbManager.getValuePlaceholder(2)})`,
                     [parseInt(_id ?? id, 10), subEntity._id]
                   );
                 } else {
@@ -196,7 +204,7 @@ export default async function updateEntity<T extends Entity>(
             forEachAsyncParallel((restOfEntity as any)[fieldName], async (subItem: any, index) => {
               const deleteStatement = `DELETE FROM ${dbManager.schema}.${EntityClass.name +
                 '_' +
-                fieldName.slice(0, -1)} WHERE ${foreignIdFieldName} = $1`;
+                fieldName.slice(0, -1)} WHERE ${foreignIdFieldName} = ${dbManager.getValuePlaceholder(1)}`;
               await dbManager.tryExecuteSql(deleteStatement, [_id]);
 
               const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name +
@@ -204,7 +212,7 @@ export default async function updateEntity<T extends Entity>(
                 fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
                 0,
                 -1
-              )}) VALUES(${index}, $1, $2)`;
+              )}) VALUES(${index}, ${dbManager.getValuePlaceholder(1)}, ${dbManager.getValuePlaceholder(2)})`;
               await dbManager.tryExecuteSql(insertStatement, [_id, subItem]);
             })
           );
@@ -224,7 +232,7 @@ export default async function updateEntity<T extends Entity>(
     );
 
     const setStatements = columns
-      .map((fieldName: string, index: number) => fieldName + ' = ' + `$${index + 2}`)
+      .map((fieldName: string, index: number) => fieldName + ' = ' + dbManager.getValuePlaceholder(index + 1))
       .join(', ');
 
     const idFieldName = _id === undefined ? 'id' : '_id';
@@ -243,8 +251,10 @@ export default async function updateEntity<T extends Entity>(
     if (setStatements) {
       promises.push(
         dbManager.tryExecuteSql(
-          `UPDATE ${dbManager.schema}.${EntityClass.name} SET ${setStatements} WHERE ${idFieldName} = $1`,
-          [numericId, ...values]
+          `UPDATE ${dbManager.schema}.${
+            EntityClass.name
+          } SET ${setStatements} WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(columns.length)}`,
+          [...values, numericId]
         )
       );
     }

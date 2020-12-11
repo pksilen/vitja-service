@@ -13,6 +13,7 @@ import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransa
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import { HttpStatusCodes } from '../../../../constants/constants';
 
 export default async function deleteEntityById<T extends object>(
   dbManager: AbstractSqlDbManager,
@@ -37,7 +38,9 @@ export default async function deleteEntityById<T extends object>(
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(createErrorMessageWithStatusCode(idFieldName + ': must be a numeric id', 400));
+      throw new Error(
+        createErrorMessageWithStatusCode(idFieldName + ': must be a numeric id', HttpStatusCodes.BAD_REQUEST)
+      );
     }
 
     await Promise.all([
@@ -45,7 +48,9 @@ export default async function deleteEntityById<T extends object>(
         Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: EntityJoinSpec) => {
           await dbManager.tryExecuteSql(
-            `DELETE FROM ${dbManager.schema}.${joinSpec.subEntityTableName} WHERE ${joinSpec.subEntityForeignIdFieldName} = $1`,
+            `DELETE FROM ${dbManager.schema}.${joinSpec.subEntityTableName} WHERE ${
+              joinSpec.subEntityForeignIdFieldName
+            } = ${dbManager.getValuePlaceholder(1)}`,
             [numericId]
           );
         }
@@ -55,14 +60,20 @@ export default async function deleteEntityById<T extends object>(
         async ({ associationTableName, entityForeignIdFieldName }) => {
           if (associationTableName.startsWith(EntityClass.name)) {
             await dbManager.tryExecuteSql(
-              `DELETE FROM ${dbManager.schema}.${associationTableName} WHERE ${entityForeignIdFieldName} = $1`,
+              `DELETE FROM ${
+                dbManager.schema
+              }.${associationTableName} WHERE ${entityForeignIdFieldName} = ${dbManager.getValuePlaceholder(
+                1
+              )}`,
               [numericId]
             );
           }
         }
       ),
       dbManager.tryExecuteSql(
-        `DELETE FROM ${dbManager.schema}.${EntityClass.name} WHERE ${dbManager.schema}.${EntityClass.name}.${idFieldName} = $1`,
+        `DELETE FROM ${dbManager.schema}.${EntityClass.name} WHERE ${dbManager.schema}.${
+          EntityClass.name
+        }.${idFieldName} = ${dbManager.getValuePlaceholder(1)}`,
         [numericId]
       )
     ]);

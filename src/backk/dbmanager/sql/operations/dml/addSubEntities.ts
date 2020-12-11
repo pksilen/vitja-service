@@ -21,7 +21,7 @@ import { HttpStatusCodes } from '../../../../constants/constants';
 import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeeded';
 import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import { SubEntity } from "../../../../types/entities/SubEntity";
+import { SubEntity } from '../../../../types/entities/SubEntity';
 
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -116,7 +116,11 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
           subEntityForeignIdFieldName
         } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTable);
         dbManager.tryExecuteSql(
-          `INSERT INTO ${dbManager.schema}.${associationTable} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES ($1, $2)`,
+          `INSERT INTO ${
+            dbManager.schema
+          }.${associationTable} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES (${dbManager.getValuePlaceholder(
+            1
+          )}, ${dbManager.getValuePlaceholder(2)})`,
           [(currentEntityOrErrorResponse as any)._id, subEntityOrErrorResponse._id]
         );
       } else {

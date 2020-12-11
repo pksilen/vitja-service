@@ -4,8 +4,9 @@ import getEntityById from './getEntityById';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import createErrorResponseFromErrorMessageAndStatusCode from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import { HttpStatusCodes } from '../../../../constants/constants';
 
 export default async function getSubEntities<T extends object, U>(
   dbManager: AbstractSqlDbManager,
@@ -32,7 +33,7 @@ export default async function getSubEntities<T extends object, U>(
     } else {
       return createErrorResponseFromErrorMessageAndStatusCode(
         'Item with _id: ' + _id + ', sub item from path ' + subEntityPath + ' not found',
-        404
+        HttpStatusCodes.NOT_FOUND
       );
     }
   } catch (error) {

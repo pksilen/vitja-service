@@ -1,24 +1,23 @@
-import hashAndEncryptItem from "../../../../crypt/hashAndEncryptItem";
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import getClassPropertyNameToPropertyTypeNameMap from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
-import { PreHook } from "../../../hooks/PreHook";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import createErrorMessageWithStatusCode from "../../../../errors/createErrorMessageWithStatusCode";
-import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
-import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
-import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
-import { HttpStatusCodes } from "../../../../constants/constants";
-import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
-import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
-import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import typePropertyAnnotationContainer
-  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
-import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import isErrorResponse from '../../../../errors/isErrorResponse';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
+import { PreHook } from '../../../hooks/PreHook';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
+import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import { HttpStatusCodes } from '../../../../constants/constants';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 
 export default async function createEntity<T>(
   dbManager: AbstractSqlDbManager,
@@ -90,11 +89,17 @@ export default async function createEntity<T>(
     );
 
     const sqlColumns = columns.map((fieldName: any) => fieldName).join(', ');
-    const sqlValuePlaceholders = columns.map((_: any, index: number) => `$${index + 1}`).join(', ');
-    const getIdSqlStatement = Object.keys(entityMetadata).includes('_id') ? 'RETURNING _id' : '';
+    const sqlValuePlaceholders = columns
+      .map((_: any, index: number) => dbManager.getValuePlaceholder(index + 1))
+      .join(', ');
+
+    const getIdSqlStatement = Object.keys(entityMetadata).includes('_id')
+      ? dbManager.getReturningIdClause()
+      : '';
+
     sqlStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`;
     const result = await dbManager.tryExecuteQuery(sqlStatement, values);
-    const _id = result.rows[0]?._id?.toString();
+    const _id = dbManager.getInsertId(result).toString();
 
     await forEachAsyncParallel(
       Object.entries(entityMetadata),
@@ -106,9 +111,12 @@ export default async function createEntity<T>(
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
           await forEachAsyncParallel(subEntityOrEntities, async (subEntity: any, index) => {
-            const SubEntityClass = (Types as any)[baseTypeName]
+            const SubEntityClass = (Types as any)[baseTypeName];
             if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-              let subEntityOrErrorResponse: any | ErrorResponse = await dbManager.getEntityById(subEntity._id ?? '', SubEntityClass);
+              let subEntityOrErrorResponse: any | ErrorResponse = await dbManager.getEntityById(
+                subEntity._id ?? '',
+                SubEntityClass
+              );
               if ('errorMessage' in subEntityOrErrorResponse) {
                 subEntityOrErrorResponse = await createEntity(
                   dbManager,
@@ -132,7 +140,11 @@ export default async function createEntity<T>(
               } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
 
               await dbManager.tryExecuteSql(
-                `INSERT INTO ${dbManager.schema}.${associationTableName} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES ($1, $2)`,
+                `INSERT INTO ${
+                  dbManager.schema
+                }.${associationTableName} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES (${dbManager.getValuePlaceholder(
+                  1
+                )}, ${dbManager.getValuePlaceholder(2)})`,
                 [_id, subEntityOrErrorResponse._id]
               );
             } else {
@@ -184,11 +196,12 @@ export default async function createEntity<T>(
           }
         } else if (isArrayType) {
           await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index: number) => {
-            const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name + '_' +
+            const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name +
+              '_' +
               fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
               0,
               -1
-            )}) VALUES(${index}, $1, $2)`;
+            )}) VALUES(${index}, ${dbManager.getValuePlaceholder(1)}, ${dbManager.getValuePlaceholder(2)})`;
             await dbManager.tryExecuteSql(insertStatement, [_id, subItem]);
           });
         }

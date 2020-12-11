@@ -39,7 +39,9 @@ export default async function getEntitiesWhere<T>(
       );
     } catch (error) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
+      throw new Error(
+        createErrorMessageWithStatusCode('Invalid query filter field name: ' + fieldName, HttpStatusCodes.BAD_REQUEST)
+      );
     }
 
     const finalFieldName = getSqlColumnFromProjection(projection);
@@ -57,7 +59,7 @@ export default async function getEntitiesWhere<T>(
     );
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${finalFieldName} = $1 ${sortClause} ${pagingClause}`,
+      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${finalFieldName} = ${dbManager.getValuePlaceholder(1)} ${sortClause} ${pagingClause}`,
       [finalFieldValue]
     );
 

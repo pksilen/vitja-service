@@ -16,11 +16,9 @@ import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeeded';
 import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
-import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
-import findParentEntityAndPropertyNameForSubEntity
-  from "../../../../metadata/findParentEntityAndPropertyNameForSubEntity";
-import typePropertyAnnotationContainer
-  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
+import findParentEntityAndPropertyNameForSubEntity from '../../../../metadata/findParentEntityAndPropertyNameForSubEntity';
+import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 
 export default async function removeSubEntities<T extends Entity, U extends object>(
   dbManager: AbstractSqlDbManager,
@@ -62,7 +60,11 @@ export default async function removeSubEntities<T extends Entity, U extends obje
         } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
         const numericId = parseInt(_id, 10);
         await dbManager.tryExecuteSql(
-          `DELETE FROM ${dbManager.schema}.${associationTableName} WHERE ${entityForeignIdFieldName} = $1 AND ${subEntityForeignIdFieldName} = $2`,
+          `DELETE FROM ${
+            dbManager.schema
+          }.${associationTableName} WHERE ${entityForeignIdFieldName} = ${dbManager.getValuePlaceholder(
+            1
+          )} AND ${subEntityForeignIdFieldName} = ${dbManager.getValuePlaceholder(2)}`,
           [numericId, subEntity._id]
         );
       } else {

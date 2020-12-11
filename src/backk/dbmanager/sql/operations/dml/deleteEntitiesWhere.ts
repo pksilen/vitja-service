@@ -14,6 +14,7 @@ import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransa
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import { HttpStatusCodes } from '../../../../constants/constants';
 
 export default async function deleteEntitiesWhere<T extends object>(
   dbManager: AbstractSqlDbManager,
@@ -39,7 +40,12 @@ export default async function deleteEntitiesWhere<T extends object>(
       );
     } catch (error) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(createErrorMessageWithStatusCode('Invalid field name: ' + fieldName, 400));
+      throw new Error(
+        createErrorMessageWithStatusCode(
+          'Invalid delete filter field name: ' + fieldName,
+          HttpStatusCodes.BAD_REQUEST
+        )
+      );
     }
 
     // noinspection AssignmentToFunctionParameterJS
@@ -56,19 +62,35 @@ export default async function deleteEntitiesWhere<T extends object>(
         Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: EntityJoinSpec) => {
           await dbManager.tryExecuteSql(
-            `DELETE FROM ${dbManager.schema}.${joinSpec.subEntityTableName} WHERE ${joinSpec.subEntityForeignIdFieldName} IN (SELECT _id FROM ${dbManager.schema}.${EntityClass.name} WHERE ${fieldName} = $1)`,
+            `DELETE FROM ${dbManager.schema}.${joinSpec.subEntityTableName} WHERE ${
+              joinSpec.subEntityForeignIdFieldName
+            } IN (SELECT _id FROM ${dbManager.schema}.${
+              EntityClass.name
+            } WHERE ${fieldName} = ${dbManager.getValuePlaceholder(1)})`,
             [fieldValue]
           );
         }
       ),
-      forEachAsyncParallel(entityContainer.manyToManyRelationTableSpecs, async ({ associationTableName, entityForeignIdFieldName }) => {
-        if (associationTableName.startsWith(EntityClass.name)) {
-          await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${associationTableName} WHERE ${entityForeignIdFieldName} IN (SELECT _id FROM ${dbManager.schema}.${EntityClass.name} WHERE ${fieldName} = $1)`);
+      forEachAsyncParallel(
+        entityContainer.manyToManyRelationTableSpecs,
+        async ({ associationTableName, entityForeignIdFieldName }) => {
+          if (associationTableName.startsWith(EntityClass.name)) {
+            await dbManager.tryExecuteSql(
+              `DELETE FROM ${
+                dbManager.schema
+              }.${associationTableName} WHERE ${entityForeignIdFieldName} IN (SELECT _id FROM ${
+                dbManager.schema
+              }.${EntityClass.name} WHERE ${fieldName} = ${dbManager.getValuePlaceholder(1)})`
+            );
+          }
         }
-      }),
-      dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${EntityClass.name} WHERE ${fieldName} = $1`, [
-        fieldValue
-      ])
+      ),
+      dbManager.tryExecuteSql(
+        `DELETE FROM ${dbManager.schema}.${
+          EntityClass.name
+        } WHERE ${fieldName} = ${dbManager.getValuePlaceholder(1)}`,
+        [fieldValue]
+      )
     ]);
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

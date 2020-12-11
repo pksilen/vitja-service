@@ -1,11 +1,11 @@
-import SqlExpression from "../../expressions/SqlExpression";
-import { pg } from "yesql";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import SqlExpression from '../../expressions/SqlExpression';
+import { pg } from 'yesql';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
@@ -15,7 +15,6 @@ export default async function getEntitiesCount<T>(
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
-  const Types = dbManager.getTypes();
 
   try {
     const { joinClause, whereClause, filterValues } = getSqlSelectStatementParts(
@@ -24,10 +23,9 @@ export default async function getEntitiesCount<T>(
       EntityClass
     );
 
-    const result = await dbManager.tryExecuteQueryWithConfig(
-      pg(`SELECT COUNT(*) FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} ${whereClause}`)(
-        filterValues
-      )
+    const result = await dbManager.tryExecuteQueryWithNamedParameters(
+      `SELECT COUNT(*) FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} ${whereClause}`,
+      filterValues
     );
 
     return result.rows[0].count;

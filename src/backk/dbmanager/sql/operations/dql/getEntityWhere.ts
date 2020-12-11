@@ -14,6 +14,7 @@ import tryGetProjection from './clauses/tryGetProjection';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import getSqlColumnFromProjection from './utils/columns/getSqlColumnFromProjection';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import { HttpStatusCodes } from '../../../../constants/constants';
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -48,7 +49,12 @@ export default async function getEntityWhere<T>(
     } catch (error) {
       console.log(error);
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(createErrorMessageWithStatusCode('Invalid query filter field name: ' + fieldName, 400));
+      throw new Error(
+        createErrorMessageWithStatusCode(
+          'Invalid query filter field name: ' + fieldName,
+          HttpStatusCodes.BAD_REQUEST
+        )
+      );
     }
 
     const finalFieldName = getSqlColumnFromProjection(projection);
@@ -66,19 +72,21 @@ export default async function getEntityWhere<T>(
     );
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${finalFieldName} = $1`,
+      `SELECT ${columns} FROM ${dbManager.schema}.${
+        EntityClass.name
+      } ${joinClause} WHERE ${finalFieldName} = ${dbManager.getValuePlaceholder(1)}`,
       [finalFieldValue]
     );
 
     if (result.rows.length === 0) {
       return createErrorResponseFromErrorMessageAndStatusCode(
         `Item with ${fieldName}: ${fieldValue} not found`,
-        404
+        HttpStatusCodes.NOT_FOUND
       );
     } else if (result.rows.length > 1) {
       return createErrorResponseFromErrorMessageAndStatusCode(
         `Field ${fieldName} values must be unique`,
-        500
+        HttpStatusCodes.INTERNAL_SERVER_ERROR
       );
     }
 

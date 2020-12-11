@@ -1,5 +1,6 @@
 import AbstractSqlDbManager from './AbstractSqlDbManager';
 import { Pool, types } from 'pg';
+import { pg } from 'yesql';
 
 export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   private pool: Pool;
@@ -63,5 +64,29 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
 
   getResultFields(result: any): any[] {
     return result.fields;
+  }
+
+  getValuePlaceholder(index: number): string {
+    return `$${index}}`;
+  }
+
+  getReturningIdClause(): string {
+    return 'RETURNING _id';
+  }
+
+  getBeginTransactionStatement(): string {
+    return 'BEGIN';
+  }
+
+  getInsertId(result: any): number {
+    return result.rows[0]._id;
+  }
+
+  executeSql(connection: any, sqlStatement: string, values?: any[]): Promise<any> {
+    return connection.query(sqlStatement, values);
+  }
+
+  executeSqlWithNamedPlaceholders(connection: any, sqlStatement: string, values: object): Promise<any> {
+    return connection.query(pg(sqlStatement)(values));
   }
 }

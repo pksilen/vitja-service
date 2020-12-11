@@ -1,13 +1,13 @@
-import SqlExpression from "../../expressions/SqlExpression";
-import { pg } from "yesql";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
-import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
+import SqlExpression from '../../expressions/SqlExpression';
+import { pg } from 'yesql';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import transformRowsToObjects from './transformresults/transformRowsToObjects';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
 
 export default async function getEntitiesByFilters<T>(
   dbManager: AbstractSqlDbManager,
@@ -30,10 +30,9 @@ export default async function getEntitiesByFilters<T>(
       pagingClause
     } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters);
 
-    const result = await dbManager.tryExecuteQueryWithConfig(
-      pg(
-        `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} ${whereClause} ${sortClause} ${pagingClause}`
-      )(filterValues)
+    const result = await dbManager.tryExecuteQueryWithNamedParameters(
+      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} ${whereClause} ${sortClause} ${pagingClause}`,
+      filterValues
     );
 
     return transformRowsToObjects(dbManager.getResultRows(result), EntityClass, postQueryOperations, Types);

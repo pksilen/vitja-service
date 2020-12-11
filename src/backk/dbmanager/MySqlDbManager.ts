@@ -1,8 +1,10 @@
 import mysql, { Pool } from 'mysql2/promise';
 import AbstractSqlDbManager from './AbstractSqlDbManager';
+import { pg } from "yesql";
 
 export default class MySqlDbManager extends AbstractSqlDbManager {
-  private pool: Pool;
+  private static readonly MAX_CHAR_TYPE_LENGTH = 16383;
+  private readonly pool: Pool;
 
   constructor(
     private readonly host: string,
@@ -57,7 +59,7 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
   }
 
   getVarCharType(maxLength: number): string {
-    if (maxLength < 16383) {
+    if (maxLength < MySqlDbManager.MAX_CHAR_TYPE_LENGTH) {
       return `VARCHAR(${maxLength})`;
     }
     return 'TEXT';
@@ -69,5 +71,33 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
 
   getResultFields(result: any): any[] {
     return result[1];
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getValuePlaceholder(index: number): string {
+    return '?';
+  }
+
+  getReturningIdClause(): string {
+    return '';
+  }
+
+  getBeginTransactionStatement(): string {
+    return 'START TRANSACTION';
+  }
+
+  getInsertId(result: any): number {
+    return result.insertId;
+  }
+
+  executeSql(connection: any, sqlStatement: string, values?: any[]): Promise<any> {
+    return connection.execute(sqlStatement, values);
+  }
+
+  executeSqlWithNamedPlaceholders(connection: any, sqlStatement: string, values: object): Promise<any> {
+    connection.config.namedPlaceholders = true;
+    const result = connection.execute(sqlStatement, values);
+    connection.config.namedPlaceholders = false;
+    return result;
   }
 }
