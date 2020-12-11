@@ -41,15 +41,15 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
       Object.entries(entityAnnotationContainer.entityNameToForeignIdFieldNamesMap),
       async ([entityName, additionalPropertyNames]: [any, any]) => {
         const fields = await dbManager.tryExecuteSqlWithoutCls(
-          `SELECT * FROM ${dbManager.schema}.${entityName} LIMIT 1`,
+          `SELECT * FROM ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} LIMIT 1`,
           undefined,
           false
         );
 
         await forEachAsyncParallel(additionalPropertyNames, async (additionalPropertyName: any) => {
           if (!fields.find((field) => field.name.toLowerCase() === additionalPropertyName.toLowerCase())) {
-            let alterTableStatement = `ALTER TABLE ${dbManager.schema}.${entityName} ADD `;
-            alterTableStatement += additionalPropertyName + ' BIGINT';
+            let alterTableStatement = `ALTER TABLE ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} ADD `;
+            alterTableStatement += additionalPropertyName.toLowerCase() + ' BIGINT';
             await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
           }
         });
@@ -61,12 +61,12 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
       async ({ associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
         try {
           await dbManager.tryExecuteSqlWithoutCls(
-            `SELECT * FROM ${dbManager.schema}.${associationTableName} LIMIT 1`,
+            `SELECT * FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} LIMIT 1`,
             undefined,
             false
           );
         } catch (error) {
-          const createTableStatement = `CREATE TABLE ${dbManager.schema}.${associationTableName} (${entityForeignIdFieldName} BIGINT PRIMARY KEY, ${subEntityForeignIdFieldName} BIGINT)`;
+          const createTableStatement = `CREATE TABLE ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()} BIGINT PRIMARY KEY, ${subEntityForeignIdFieldName.toLowerCase()} BIGINT)`;
           await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
         }
       }

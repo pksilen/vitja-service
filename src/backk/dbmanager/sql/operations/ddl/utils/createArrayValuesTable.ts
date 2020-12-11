@@ -13,15 +13,15 @@ export default async function createArrayValuesTable(
 
   try {
     await dbManager.tryExecuteSqlWithoutCls(
-      `SELECT * FROM ${schema}.${arrayValuesTableName}`,
+      `SELECT * FROM ${schema?.toLowerCase()}.${arrayValuesTableName.toLowerCase()}`,
       undefined,
       false
     );
   } catch {
-    let createAdditionalTableStatement = `CREATE TABLE ${schema}.${arrayValuesTableName} (`;
+    let createAdditionalTableStatement = `CREATE TABLE ${schema?.toLowerCase()}.${arrayValuesTableName.toLowerCase()} (`;
 
     createAdditionalTableStatement +=
-      'id BIGINT, ' + foreignIdFieldName + ' BIGINT, ' + arrayValueFieldName + ' ' + sqlColumnType + ')';
+      'id BIGINT, ' + foreignIdFieldName.toLowerCase() + ' BIGINT, ' + arrayValueFieldName.toLowerCase() + ' ' + sqlColumnType + ')';
 
     await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
   }

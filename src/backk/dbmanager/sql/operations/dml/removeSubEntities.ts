@@ -61,10 +61,10 @@ export default async function removeSubEntities<T extends Entity, U extends obje
         const numericId = parseInt(_id, 10);
         await dbManager.tryExecuteSql(
           `DELETE FROM ${
-            dbManager.schema
-          }.${associationTableName} WHERE ${entityForeignIdFieldName} = ${dbManager.getValuePlaceholder(
+            dbManager.schema.toLowerCase()
+          }.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
             1
-          )} AND ${subEntityForeignIdFieldName} = ${dbManager.getValuePlaceholder(2)}`,
+          )} AND ${subEntityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(2)}`,
           [numericId, subEntity._id]
         );
       } else {

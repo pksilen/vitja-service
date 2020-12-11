@@ -62,11 +62,9 @@ export default async function deleteEntitiesWhere<T extends object>(
         Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: EntityJoinSpec) => {
           await dbManager.tryExecuteSql(
-            `DELETE FROM ${dbManager.schema}.${joinSpec.subEntityTableName} WHERE ${
-              joinSpec.subEntityForeignIdFieldName
-            } IN (SELECT _id FROM ${dbManager.schema}.${
-              EntityClass.name
-            } WHERE ${fieldName} = ${dbManager.getValuePlaceholder(1)})`,
+            `DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()} WHERE ${joinSpec.subEntityForeignIdFieldName.toLowerCase()} IN (SELECT _id FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${fieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+              1
+            )})`,
             [fieldValue]
           );
         }
@@ -76,19 +74,17 @@ export default async function deleteEntitiesWhere<T extends object>(
         async ({ associationTableName, entityForeignIdFieldName }) => {
           if (associationTableName.startsWith(EntityClass.name)) {
             await dbManager.tryExecuteSql(
-              `DELETE FROM ${
-                dbManager.schema
-              }.${associationTableName} WHERE ${entityForeignIdFieldName} IN (SELECT _id FROM ${
-                dbManager.schema
-              }.${EntityClass.name} WHERE ${fieldName} = ${dbManager.getValuePlaceholder(1)})`
+              `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} IN (SELECT _id FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${fieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+                1
+              )})`
             );
           }
         }
       ),
       dbManager.tryExecuteSql(
-        `DELETE FROM ${dbManager.schema}.${
-          EntityClass.name
-        } WHERE ${fieldName} = ${dbManager.getValuePlaceholder(1)}`,
+        `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${fieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+          1
+        )}`,
         [fieldValue]
       )
     ]);

@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- npm mysql2 for MariaDb/MySql
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
@@ -13,6 +12,13 @@ TODO
 - Organize adding validation groups in separate method in correct order
   - Organize checking missing validations in seprate method
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
+- Starter projects:
+   http-kubernetes-mysql,
+   http-kubernetes-postgresql
+   http-kubernetes-mongodb
+   kafka-kubernetes-mysql...
+   redis-kubernetes-mysql...
+  
 
 
 TODO NEXT RELEASE:

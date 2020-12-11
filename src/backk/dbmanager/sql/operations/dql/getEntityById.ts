@@ -44,9 +44,9 @@ export default async function getEntityById<T>(
     }
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${
-        dbManager.schema
-      }.${EntityClass.name}.${idFieldName} = ${dbManager.getValuePlaceholder(1)}`,
+      `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${
+        dbManager.schema.toLowerCase()
+      }.${EntityClass.name.toLowerCase()}.${idFieldName} = ${dbManager.getValuePlaceholder(1)}`,
       [numericId]
     );
 
@@ -56,6 +56,8 @@ export default async function getEntityById<T>(
         HttpStatusCodes.NOT_FOUND
       );
     }
+
+    console.log(dbManager.getResultRows(result));
 
     return transformRowsToObjects(
       dbManager.getResultRows(result),

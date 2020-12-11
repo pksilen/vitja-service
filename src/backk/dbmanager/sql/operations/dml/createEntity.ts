@@ -88,7 +88,7 @@ export default async function createEntity<T>(
       }
     );
 
-    const sqlColumns = columns.map((fieldName: any) => fieldName).join(', ');
+    const sqlColumns = columns.map((fieldName: any) => fieldName.toLowerCase()).join(', ');
     const sqlValuePlaceholders = columns
       .map((_: any, index: number) => dbManager.getValuePlaceholder(index + 1))
       .join(', ');
@@ -97,9 +97,9 @@ export default async function createEntity<T>(
       ? dbManager.getReturningIdClause()
       : '';
 
-    sqlStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`;
+    sqlStatement = `INSERT INTO ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`;
     const result = await dbManager.tryExecuteQuery(sqlStatement, values);
-    const _id = dbManager.getInsertId(result).toString();
+    const _id = dbManager.getInsertId(result)?.toString();
 
     await forEachAsyncParallel(
       Object.entries(entityMetadata),
@@ -140,9 +140,7 @@ export default async function createEntity<T>(
               } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
 
               await dbManager.tryExecuteSql(
-                `INSERT INTO ${
-                  dbManager.schema
-                }.${associationTableName} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES (${dbManager.getValuePlaceholder(
+                `INSERT INTO ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}) VALUES (${dbManager.getValuePlaceholder(
                   1
                 )}, ${dbManager.getValuePlaceholder(2)})`,
                 [_id, subEntityOrErrorResponse._id]
@@ -196,12 +194,12 @@ export default async function createEntity<T>(
           }
         } else if (isArrayType) {
           await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index: number) => {
-            const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name +
+            const insertStatement = `INSERT INTO ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase() +
               '_' +
-              fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
+              fieldName.slice(0, -1).toLowerCase()} (id, ${foreignIdFieldName.toLowerCase()}, ${fieldName.slice(
               0,
               -1
-            )}) VALUES(${index}, ${dbManager.getValuePlaceholder(1)}, ${dbManager.getValuePlaceholder(2)})`;
+            ).toLowerCase()}) VALUES(${index}, ${dbManager.getValuePlaceholder(1)}, ${dbManager.getValuePlaceholder(2)})`;
             await dbManager.tryExecuteSql(insertStatement, [_id, subItem]);
           });
         }

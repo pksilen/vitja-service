@@ -59,7 +59,7 @@ export default async function getEntitiesWhere<T>(
     );
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} WHERE ${finalFieldName} = ${dbManager.getValuePlaceholder(1)} ${sortClause} ${pagingClause}`,
+      `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${finalFieldName} = ${dbManager.getValuePlaceholder(1)} ${sortClause} ${pagingClause}`,
       [finalFieldValue]
     );
 

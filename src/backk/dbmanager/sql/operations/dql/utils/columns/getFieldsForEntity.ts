@@ -14,13 +14,15 @@ export default function getFieldsForEntity(
   fieldPath: string,
   isInternalCall = false
 ) {
-  const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
+  const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(
+    EntityClass as any
+  );
 
   Object.entries(entityPropertyNameToPropertyTypeNameMap).forEach(
     ([entityPropertyName, entityPropertyTypeName]: [string, any]) => {
       if (
-        !isInternalCall &&
-        (typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, entityPropertyName)) ||
+        (!isInternalCall &&
+          typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, entityPropertyName)) ||
         typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, entityPropertyName)
       ) {
         return;
@@ -42,15 +44,15 @@ export default function getFieldsForEntity(
           const relationEntityName = EntityClass.name + '_' + entityPropertyName.slice(0, -1);
           const idFieldName = EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
           fields.push(
-            `${schema}.${relationEntityName}.${idFieldName} AS ${relationEntityName}_${idFieldName}`
+            `${schema.toLowerCase()}.${relationEntityName.toLowerCase()}.${idFieldName.toLowerCase()} AS ${relationEntityName.toLowerCase()}_${idFieldName.toLowerCase()}`
           );
 
           const singularFieldName = entityPropertyName.slice(0, -1);
 
           fields.push(
-            `${schema}.${relationEntityName}.${singularFieldName} AS ${relationEntityName}_${singularFieldName}`
+            `${schema.toLowerCase()}.${relationEntityName.toLowerCase()}.${singularFieldName.toLowerCase()} AS ${relationEntityName.toLowerCase()}_${singularFieldName.toLowerCase()}`
           );
-          fields.push(`${schema}.${relationEntityName}.id AS ${relationEntityName}_id`);
+          fields.push(`${schema.toLowerCase()}.${relationEntityName.toLowerCase()}.id AS ${relationEntityName.toLowerCase()}_id`);
         }
       } else {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
@@ -60,11 +62,11 @@ export default function getFieldsForEntity(
             entityPropertyName.endsWith('Id')
           ) {
             fields.push(
-              `CAST(${schema}.${EntityClass.name}.${entityPropertyName} AS CHAR) AS ${EntityClass.name}_${entityPropertyName}`
+              `CAST(${schema.toLowerCase()}.${EntityClass.name.toLowerCase()}.${entityPropertyName.toLowerCase()} AS CHAR) AS ${EntityClass.name.toLowerCase()}_${entityPropertyName.toLowerCase()}`
             );
           } else {
             fields.push(
-              `${schema}.${EntityClass.name}.${entityPropertyName} AS ${EntityClass.name}_${entityPropertyName}`
+              `${schema.toLowerCase()}.${EntityClass.name.toLowerCase()}.${entityPropertyName.toLowerCase()} AS ${EntityClass.name.toLowerCase()}_${entityPropertyName.toLowerCase()}`
             );
           }
         }

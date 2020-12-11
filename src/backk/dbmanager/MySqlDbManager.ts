@@ -86,7 +86,7 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
   }
 
   getInsertId(result: any): number {
-    return result[0].insertId;
+    return result?.[0]?.insertId;
 
   }
 

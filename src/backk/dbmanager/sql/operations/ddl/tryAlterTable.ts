@@ -33,7 +33,7 @@ export default async function tryAlterTable(
       );
 
       if (!doesFieldExistInDatabase) {
-        let alterTableStatement = `ALTER TABLE ${schema}.${entityName} ADD `;
+        let alterTableStatement = `ALTER TABLE ${schema?.toLowerCase()}.${entityName.toLowerCase()} ADD `;
         const { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
         let sqlColumnType = getSqlColumnType(dbManager, EntityClass, fieldName, baseTypeName);
 
@@ -56,7 +56,7 @@ export default async function tryAlterTable(
         } else {
           const isUnique = typeAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName);
           alterTableStatement +=
-            fieldName +
+            fieldName.toLowerCase() +
             ' ' +
             sqlColumnType +
             (isNullableType || fieldName === 'id' ? '' : ' NOT NULL') +

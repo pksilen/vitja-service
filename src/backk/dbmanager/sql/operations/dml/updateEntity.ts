@@ -99,10 +99,10 @@ export default async function updateEntity<T extends Entity>(
                   } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
                   await dbManager.tryExecuteSql(
                     `DELETE FROM ${
-                      dbManager.schema
-                    }.${associationTableName} WHERE ${entityForeignIdFieldName} = ${dbManager.getValuePlaceholder(
+                      dbManager.schema.toLowerCase()
+                    }.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
                       1
-                    )} AND ${subEntityForeignIdFieldName} = ${dbManager.getValuePlaceholder(2)}`,
+                    )} AND ${subEntityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(2)}`,
                     [parseInt(_id ?? id, 10), subEntity._id]
                   );
                 } else {
@@ -128,8 +128,8 @@ export default async function updateEntity<T extends Entity>(
                   } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
                   dbManager.tryExecuteSql(
                     `INSERT INTO ${
-                      dbManager.schema
-                    }.${associationTableName} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES (${dbManager.getValuePlaceholder(
+                      dbManager.schema.toLowerCase()
+                    }.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}) VALUES (${dbManager.getValuePlaceholder(
                       1
                     )}, ${dbManager.getValuePlaceholder(2)})`,
                     [parseInt(_id ?? id, 10), subEntity._id]
@@ -202,17 +202,17 @@ export default async function updateEntity<T extends Entity>(
 
           promises.push(
             forEachAsyncParallel((restOfEntity as any)[fieldName], async (subItem: any, index) => {
-              const deleteStatement = `DELETE FROM ${dbManager.schema}.${EntityClass.name +
+              const deleteStatement = `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase() +
                 '_' +
-                fieldName.slice(0, -1)} WHERE ${foreignIdFieldName} = ${dbManager.getValuePlaceholder(1)}`;
+                fieldName.slice(0, -1).toLowerCase()} WHERE ${foreignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(1)}`;
               await dbManager.tryExecuteSql(deleteStatement, [_id]);
 
-              const insertStatement = `INSERT INTO ${dbManager.schema}.${EntityClass.name +
+              const insertStatement = `INSERT INTO ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase() +
                 '_' +
-                fieldName.slice(0, -1)} (id, ${foreignIdFieldName}, ${fieldName.slice(
+                fieldName.slice(0, -1).toLowerCase()} (id, ${foreignIdFieldName.toLowerCase()}, ${fieldName.slice(
                 0,
                 -1
-              )}) VALUES(${index}, ${dbManager.getValuePlaceholder(1)}, ${dbManager.getValuePlaceholder(2)})`;
+              ).toLowerCase()}) VALUES(${index}, ${dbManager.getValuePlaceholder(1)}, ${dbManager.getValuePlaceholder(2)})`;
               await dbManager.tryExecuteSql(insertStatement, [_id, subItem]);
             })
           );
@@ -232,7 +232,7 @@ export default async function updateEntity<T extends Entity>(
     );
 
     const setStatements = columns
-      .map((fieldName: string, index: number) => fieldName + ' = ' + dbManager.getValuePlaceholder(index + 1))
+      .map((fieldName: string, index: number) => fieldName.toLowerCase() + ' = ' + dbManager.getValuePlaceholder(index + 1))
       .join(', ');
 
     const idFieldName = _id === undefined ? 'id' : '_id';
@@ -251,8 +251,8 @@ export default async function updateEntity<T extends Entity>(
     if (setStatements) {
       promises.push(
         dbManager.tryExecuteSql(
-          `UPDATE ${dbManager.schema}.${
-            EntityClass.name
+          `UPDATE ${dbManager.schema.toLowerCase()}.${
+            EntityClass.name.toLowerCase()
           } SET ${setStatements} WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(columns.length)}`,
           [...values, numericId]
         )

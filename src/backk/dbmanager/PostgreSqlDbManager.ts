@@ -67,7 +67,7 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   }
 
   getValuePlaceholder(index: number): string {
-    return `$${index}}`;
+    return `$${index}`;
   }
 
   getReturningIdClause(): string {
@@ -79,7 +79,7 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   }
 
   getInsertId(result: any): number {
-    return result.rows[0]._id;
+    return result?.rows[0]?._id;
   }
 
   executeSql(connection: any, sqlStatement: string, values?: any[]): Promise<any> {

@@ -48,8 +48,8 @@ export default async function deleteEntityById<T extends object>(
         Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: EntityJoinSpec) => {
           await dbManager.tryExecuteSql(
-            `DELETE FROM ${dbManager.schema}.${joinSpec.subEntityTableName} WHERE ${
-              joinSpec.subEntityForeignIdFieldName
+            `DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()} WHERE ${
+              joinSpec.subEntityForeignIdFieldName.toLowerCase()
             } = ${dbManager.getValuePlaceholder(1)}`,
             [numericId]
           );
@@ -61,8 +61,8 @@ export default async function deleteEntityById<T extends object>(
           if (associationTableName.startsWith(EntityClass.name)) {
             await dbManager.tryExecuteSql(
               `DELETE FROM ${
-                dbManager.schema
-              }.${associationTableName} WHERE ${entityForeignIdFieldName} = ${dbManager.getValuePlaceholder(
+                dbManager.schema.toLowerCase()
+              }.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
                 1
               )}`,
               [numericId]
@@ -71,9 +71,9 @@ export default async function deleteEntityById<T extends object>(
         }
       ),
       dbManager.tryExecuteSql(
-        `DELETE FROM ${dbManager.schema}.${EntityClass.name} WHERE ${dbManager.schema}.${
-          EntityClass.name
-        }.${idFieldName} = ${dbManager.getValuePlaceholder(1)}`,
+        `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${dbManager.schema.toLowerCase()}.${
+          EntityClass.name.toLowerCase()
+        }.${idFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(1)}`,
         [numericId]
       )
     ]);

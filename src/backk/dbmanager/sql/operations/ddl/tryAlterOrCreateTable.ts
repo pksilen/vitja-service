@@ -11,7 +11,7 @@ export default async function tryAlterOrCreateTable(
   let fields;
   try {
     fields = await dbManager.tryExecuteSqlWithoutCls(
-      `SELECT * FROM ${schema}.${entityName} LIMIT 1`,
+      `SELECT * FROM ${schema?.toLowerCase()}.${entityName.toLowerCase()} LIMIT 1`,
       undefined,
       false
     );

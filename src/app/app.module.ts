@@ -22,12 +22,13 @@ import AuditLoggingServiceImpl from "../services/auditlogging/AuditLoggingServic
 import TagsService from "../services/tags/TagsService";
 import TagsServiceImpl from "../services/tags/TagsServiceImpl";
 import { mySqlDbManager } from "../database/mySqlDatabaseManager";
+import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
 
 @Module({
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: mySqlDbManager },
+    { provide: AbstractDbManager, useValue: postgreSqlDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },

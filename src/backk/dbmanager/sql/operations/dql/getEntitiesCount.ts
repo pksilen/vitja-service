@@ -24,7 +24,7 @@ export default async function getEntitiesCount<T>(
     );
 
     const result = await dbManager.tryExecuteQueryWithNamedParameters(
-      `SELECT COUNT(*) FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} ${whereClause}`,
+      `SELECT COUNT(*) FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} ${whereClause}`,
       filterValues
     );
 

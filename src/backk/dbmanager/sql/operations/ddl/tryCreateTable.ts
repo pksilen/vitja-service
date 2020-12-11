@@ -21,7 +21,7 @@ export default async function tryCreateTable(
   schema: string | undefined
 ) {
   const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
-  let createTableStatement = `CREATE TABLE ${schema}.${entityName} (`;
+  let createTableStatement = `CREATE TABLE ${schema?.toLowerCase()}.${entityName.toLowerCase()} (`;
   let fieldCnt = 0;
   const idColumn = Object.keys(entityMetadata).find((fieldName) => fieldName === '_id' || fieldName === 'id');
 
@@ -63,7 +63,7 @@ export default async function tryCreateTable(
         }
         const isUnique = typeAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName);
         createTableStatement +=
-          fieldName + ' ' + sqlColumnType + (isNullableType || fieldName === 'id' ? '' : ' NOT NULL') + (isUnique ? ' UNIQUE' : '');
+          fieldName.toLowerCase() + ' ' + sqlColumnType + (isNullableType || fieldName === 'id' ? '' : ' NOT NULL') + (isUnique ? ' UNIQUE' : '');
         fieldCnt++;
       }
     }

@@ -23,15 +23,15 @@ export default async function deleteAllEntities<T>(
       forEachAsyncParallel(
         Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: EntityJoinSpec) => {
-          await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${joinSpec.subEntityTableName}`);
+          await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()}`);
         }
       ),
       forEachAsyncParallel(entityContainer.manyToManyRelationTableSpecs, async ({ associationTableName }) => {
         if (associationTableName.startsWith(EntityClass.name)) {
-          await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${associationTableName}`);
+          await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()}`);
         }
       }),
-      dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema}.${EntityClass.name}`)
+      dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()}`)
     ]);
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

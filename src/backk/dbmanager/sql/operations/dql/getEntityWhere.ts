@@ -72,9 +72,9 @@ export default async function getEntityWhere<T>(
     );
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema}.${
-        EntityClass.name
-      } ${joinClause} WHERE ${finalFieldName} = ${dbManager.getValuePlaceholder(1)}`,
+      `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${
+        EntityClass.name.toLowerCase()
+      } ${joinClause} WHERE ${finalFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(1)}`,
       [finalFieldValue]
     );
 

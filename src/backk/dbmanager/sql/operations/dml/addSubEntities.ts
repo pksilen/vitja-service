@@ -116,9 +116,7 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
           subEntityForeignIdFieldName
         } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTable);
         dbManager.tryExecuteSql(
-          `INSERT INTO ${
-            dbManager.schema
-          }.${associationTable} (${entityForeignIdFieldName}, ${subEntityForeignIdFieldName}) VALUES (${dbManager.getValuePlaceholder(
+          `INSERT INTO ${dbManager.schema.toLowerCase()}.${associationTable.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}) VALUES (${dbManager.getValuePlaceholder(
             1
           )}, ${dbManager.getValuePlaceholder(2)})`,
           [(currentEntityOrErrorResponse as any)._id, subEntityOrErrorResponse._id]

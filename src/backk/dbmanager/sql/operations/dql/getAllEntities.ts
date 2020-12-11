@@ -24,7 +24,7 @@ export default async function getAllEntities<T>(
     );
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema}.${EntityClass.name} ${joinClause} ${sortClause} ${pagingClause}`
+      `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} ${sortClause} ${pagingClause}`
     );
 
     return transformRowsToObjects(

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import { Pool, QueryConfig, QueryResult, types } from 'pg';
 import SqlExpression from './sql/expressions/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import isErrorResponse from '../errors/isErrorResponse';
@@ -67,17 +66,17 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     values: object
   ): Promise<any>;
 
-  async tryExecute<T>(dbOperationFunction: (pool: Pool) => Promise<T>): Promise<T> {
+  async tryExecute<T>(dbOperationFunction: (pool: any) => Promise<T>): Promise<T> {
     throw new Error('Not implemented');
   }
 
   async isDbReady(): Promise<boolean> {
     try {
-      await this.tryExecuteSqlWithoutCls(`SELECT * FROM ${this.schema}.__Backk__`, undefined, false);
+      await this.tryExecuteSqlWithoutCls(`SELECT * FROM ${this.schema.toLowerCase()}.__backk__`, undefined, false);
       return true;
     } catch (error) {
       try {
-        const createTableStatement = `CREATE TABLE ${this.schema}.__Backk__ (dummy INT)`;
+        const createTableStatement = `CREATE TABLE ${this.schema.toLowerCase()}.__backk__ (dummy INT)`;
         await this.tryExecuteSqlWithoutCls(createTableStatement);
         return true;
       } catch (error) {
@@ -244,7 +243,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async tryExecuteQuery(sqlStatement: string, values?: any[]): Promise<QueryResult<any>> {
+  async tryExecuteQuery(sqlStatement: string, values?: any[]): Promise<any> {
     if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
       this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
     }
@@ -278,7 +277,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async tryExecuteQueryWithNamedParameters(sqlStatement: string, values: object): Promise<QueryResult<any>> {
+  async tryExecuteQueryWithNamedParameters(sqlStatement: string, values: object): Promise<any> {
     if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
       this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
     }
@@ -421,7 +420,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    const dbOperationStartTimeInMillis = startDbOperation(this,'addSubEntities');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
 
     const response = addSubEntities(
       this,
@@ -442,7 +441,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    const dbOperationStartTimeInMillis = startDbOperation(this,'getEntitiesByFilters');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     const response = getAllEntities(this, entityClass, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
@@ -463,7 +462,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     filters: Partial<T> | SqlExpression[] | undefined,
     entityClass: new () => T
   ): Promise<number | ErrorResponse> {
-    const dbOperationStartTimeInMillis = startDbOperation(this,'getEntitiesCount');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
     const response = getEntitiesCount(this, filters, entityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;

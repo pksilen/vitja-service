@@ -1,6 +1,4 @@
-import AbstractDbManager from '../../../../AbstractDbManager';
-import typePropertyAnnotationContainer
-  from "../../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import AbstractDbManager from "../../../../AbstractDbManager";
 import getMaxLengthValidationConstraint from "../../../../../validation/getMaxLengthValidationConstraint";
 
 export default function getSqlColumnType(

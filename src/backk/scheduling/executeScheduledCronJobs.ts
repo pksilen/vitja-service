@@ -5,6 +5,7 @@ import serviceFunctionAnnotationContainer from '../decorators/service/function/s
 import call from '../remote/http/call';
 import getServiceName from '../utils/getServiceName';
 import getServiceNamespace from '../utils/getServiceNamespace';
+// eslint-disable-next-line @typescript-eslint/camelcase
 import __Backk__CronJobScheduling from './entities/__Backk__CronJobScheduling';
 import isErrorResponse from '../errors/isErrorResponse';
 import findAsyncSequential from '../utils/findAsyncSequential';
