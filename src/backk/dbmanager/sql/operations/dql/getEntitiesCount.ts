@@ -28,7 +28,7 @@ export default async function getEntitiesCount<T>(
       filterValues
     );
 
-    return result.rows[0].count;
+    return dbManager.getResultRows(result)[0].count;
   } catch (error) {
     return createErrorResponseFromError(error);
   }

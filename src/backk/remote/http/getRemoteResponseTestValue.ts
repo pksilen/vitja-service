@@ -36,7 +36,7 @@ export default function getRemoteResponseTestValue<T>(
       } else if (baseTypeName.startsWith('string')) {
         sampleArg[propertyName] = 'abc';
       } else if (baseTypeName.startsWith('Date')) {
-        sampleArg[propertyName] = `'${new Date(0).toISOString()}'`;
+        sampleArg[propertyName] = `'${new Date(1).toISOString()}'`;
       } else if (isEnumTypeName(baseTypeName)) {
         let enumValues;
         if (baseTypeName.startsWith('(')) {

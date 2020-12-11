@@ -14,7 +14,7 @@ export default class SqlInExpression extends SqlExpression {
       return this.inExpressionValues.reduce(
         (filterValues, value, index) => ({
           ...filterValues,
-          [`${this.fieldName}${index + 1}`]: value
+          [`${this.fieldName.replace('_', 'xx')}${index + 1}`]: value
         }),
         {}
       );
@@ -33,7 +33,7 @@ export default class SqlInExpression extends SqlExpression {
     }
 
     const values = this.inExpressionValues
-      .map((_, index) => ':' + this.fieldName + (index + 1).toString())
+      .map((_, index) => ':' + this.fieldName.replace('_', 'xx') + (index + 1).toString())
       .join(', ');
 
     return (
