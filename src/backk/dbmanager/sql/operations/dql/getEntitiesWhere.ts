@@ -63,7 +63,7 @@ export default async function getEntitiesWhere<T>(
       [finalFieldValue]
     );
 
-    if (result.rows.length === 0) {
+    if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorMessageAndStatusCode(
         `Item(s) with ${fieldName}: ${fieldValue} not found`,
         HttpStatusCodes.NOT_FOUND

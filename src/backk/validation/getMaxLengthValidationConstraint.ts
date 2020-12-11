@@ -1,5 +1,20 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import shouldEncryptValue from '../crypt/shouldEncryptValue';
+import encrypt from '../crypt/encrypt';
+
+function calculateMaxLength(Class: Function, propertyName: string, dataLength: number): number {
+  if (shouldEncryptValue(propertyName, Class)) {
+    const encryptedValue = encrypt(
+      Array(dataLength)
+        .fill(1)
+        .join('')
+    );
+    return encryptedValue.length;
+  }
+
+  return dataLength;
+}
 
 export default function getMaxLengthValidationConstraint(Class: Function, propertyName: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
@@ -10,7 +25,7 @@ export default function getMaxLengthValidationConstraint(Class: Function, proper
   );
 
   if (maxLengthValidation) {
-    return maxLengthValidation.constraints[0];
+    return calculateMaxLength(Class, propertyName, maxLengthValidation.constraints[0]);
   }
 
   const lengthValidation = validationMetadatas.find(
@@ -19,7 +34,7 @@ export default function getMaxLengthValidationConstraint(Class: Function, proper
   );
 
   if (lengthValidation) {
-    return lengthValidation.constraints[1];
+    return calculateMaxLength(Class, propertyName, lengthValidation.constraints[1]);
   }
 
   const lengthAndMatchesValidation = validationMetadatas.find(
@@ -30,7 +45,7 @@ export default function getMaxLengthValidationConstraint(Class: Function, proper
   );
 
   if (lengthAndMatchesValidation) {
-    return lengthAndMatchesValidation.constraints[2];
+    return calculateMaxLength(Class, propertyName, lengthAndMatchesValidation.constraints[2]);
   }
 
   const lengthAndMatchesAllValidation = validationMetadatas.find(
@@ -41,7 +56,7 @@ export default function getMaxLengthValidationConstraint(Class: Function, proper
   );
 
   if (lengthAndMatchesAllValidation) {
-    return lengthAndMatchesAllValidation.constraints[2];
+    return calculateMaxLength(Class, propertyName, lengthAndMatchesAllValidation.constraints[2]);
   }
 
   const maxLengthAndMatchesValidation = validationMetadatas.find(
@@ -52,7 +67,7 @@ export default function getMaxLengthValidationConstraint(Class: Function, proper
   );
 
   if (maxLengthAndMatchesValidation) {
-    return maxLengthAndMatchesValidation.constraints[1];
+    return calculateMaxLength(Class, propertyName, maxLengthAndMatchesValidation.constraints[1]);
   }
 
   const maxLengthAndMatchesAllValidation = validationMetadatas.find(
@@ -63,7 +78,7 @@ export default function getMaxLengthValidationConstraint(Class: Function, proper
   );
 
   if (maxLengthAndMatchesAllValidation) {
-    return maxLengthAndMatchesAllValidation.constraints[1];
+    return calculateMaxLength(Class, propertyName, maxLengthAndMatchesAllValidation.constraints[1]);
   }
 
   throw new Error("Cannot figure out string property's maximum length");

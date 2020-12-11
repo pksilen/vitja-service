@@ -1,6 +1,5 @@
-import mysql, { Pool } from 'mysql2/promise';
-import AbstractSqlDbManager from './AbstractSqlDbManager';
-import { pg } from "yesql";
+import mysql, { Pool } from "mysql2/promise";
+import AbstractSqlDbManager from "./AbstractSqlDbManager";
 
 export default class MySqlDbManager extends AbstractSqlDbManager {
   private static readonly MAX_CHAR_TYPE_LENGTH = 16383;
@@ -87,7 +86,8 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
   }
 
   getInsertId(result: any): number {
-    return result.insertId;
+    return result[0].insertId;
+
   }
 
   executeSql(connection: any, sqlStatement: string, values?: any[]): Promise<any> {

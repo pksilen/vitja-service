@@ -78,12 +78,12 @@ export default async function getEntityWhere<T>(
       [finalFieldValue]
     );
 
-    if (result.rows.length === 0) {
+    if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorMessageAndStatusCode(
         `Item with ${fieldName}: ${fieldValue} not found`,
         HttpStatusCodes.NOT_FOUND
       );
-    } else if (result.rows.length > 1) {
+    } else if (dbManager.getResultRows(result).length > 1) {
       return createErrorResponseFromErrorMessageAndStatusCode(
         `Field ${fieldName} values must be unique`,
         HttpStatusCodes.INTERNAL_SERVER_ERROR

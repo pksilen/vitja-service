@@ -50,7 +50,7 @@ export default async function getEntityById<T>(
       [numericId]
     );
 
-    if (result.rows.length === 0) {
+    if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorMessageAndStatusCode(
         `Item with _id: ${_id} not found`,
         HttpStatusCodes.NOT_FOUND

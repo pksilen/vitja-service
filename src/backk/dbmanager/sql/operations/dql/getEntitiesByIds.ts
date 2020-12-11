@@ -42,7 +42,7 @@ export default async function getEntitiesByIds<T>(
       numericIds
     );
 
-    if (result.rows.length === 0) {
+    if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorMessageAndStatusCode(`Item with _ids: ${_ids} not found`, HttpStatusCodes.NOT_FOUND);
     }
 
