@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO
+- SubEntity Foreign key + id is PRIMARY key
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.

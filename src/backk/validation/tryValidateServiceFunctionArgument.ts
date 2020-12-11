@@ -1,10 +1,10 @@
-import { getFromContainer, MetadataStorage, validateOrReject, ValidationError } from "class-validator";
-import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
-import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
-import getValidationErrors from './getValidationErrors';
+import { validateOrReject, ValidationError } from "class-validator";
+import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
+import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
+import getValidationErrors from "./getValidationErrors";
 import { HttpStatusCodes } from "../constants/constants";
-import _Id from "../types/id/_Id";
 import isCreateFunction from "../crudresource/utils/isCreateFunction";
+import AbstractDbManager from "../dbmanager/AbstractDbManager";
 
 function filterOutManyToManyIdErrors(validationErrors: ValidationError[]) {
   validationErrors.forEach((validationError) => {
@@ -35,14 +35,15 @@ function getValidationErrorConstraintsCount(validationErrors: ValidationError[])
   }, 0);
 }
 
-export default async function tryValidateServiceMethodArgument(
-  serviceClass: Function,
-  methodName: string,
+export default async function tryValidateServiceFunctionArgument(
+  ServiceClass: Function,
+  functionName: string,
+  dbManager: AbstractDbManager | undefined,
   obj: object
 ): Promise<void> {
   try {
     await validateOrReject(obj, {
-      groups: ['__backk_firstRound__']
+      groups: ['__backk_firstRound__', ...(dbManager ? [dbManager.getDbManagerType()] : [])]
     });
 
     await validateOrReject(obj, {
@@ -50,8 +51,9 @@ export default async function tryValidateServiceMethodArgument(
       forbidNonWhitelisted: true,
       groups: [
         '__backk_argument__',
-        ...(isCreateFunction(serviceClass, methodName) ? ['__backk_create__'] : []),
-        ...(isCreateFunction(serviceClass, methodName)? [] : ['__backk_update__'])
+        ...(dbManager ? [dbManager.getDbManagerType()] : []),
+        ...(isCreateFunction(ServiceClass, functionName) ? ['__backk_create__'] : []),
+        ...(isCreateFunction(ServiceClass, functionName)? [] : ['__backk_update__'])
       ]
     });
   } catch (validationErrors) {

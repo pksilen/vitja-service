@@ -1,10 +1,12 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import AbstractDbManager from '../dbmanager/AbstractDbManager';
 
 const classNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 
 export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   Class: new () => T,
+  dbManager?: AbstractDbManager,
   isGeneration = false,
   isResponseValueType: boolean | undefined = undefined
 ): { [key: string]: string } {
@@ -35,6 +37,13 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   });
 
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
+    const hasDifferentdbManagerGroup = validationMetadata.groups?.find(
+      (group) => group.startsWith('DbManager: ') && group !== 'DbManager: ' + dbManager?.getDbManagerType()
+    );
+    if (hasDifferentdbManagerGroup) {
+      return;
+    }
+
     if (isResponseValueType && validationMetadata.propertyName === 'errorMessage') {
       throw new Error(Class.name + ' may not contain property errorMessage');
     }

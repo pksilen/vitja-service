@@ -10,8 +10,9 @@ import getTypePropertyModifiers from './getTypePropertyModifiers';
 import CrudResourceService from "../crudresource/CrudResourceService";
 import assertFunctionNamesAreValidForCrudResourceService
   from "../crudresource/assertFunctionNamesAreValidForCrudResourceService";
+import AbstractDbManager from "../dbmanager/AbstractDbManager";
 
-export default function generateServicesMetadata<T>(controller: T): ServiceMetadata[] {
+export default function generateServicesMetadata<T>(controller: T, dbManager: AbstractDbManager): ServiceMetadata[] {
   return Object.entries(controller)
     .filter(([, service]: [string, any]) => service instanceof BaseService)
     .map(([serviceName, service]: [string, any]) => {
@@ -29,7 +30,7 @@ export default function generateServicesMetadata<T>(controller: T): ServiceMetad
           const isResponseValueType = Object.values(
             (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
           ).includes(typeName);
-          const typeObject = getClassPropertyNameToPropertyTypeNameMap(Class, true, isResponseValueType);
+          const typeObject = getClassPropertyNameToPropertyTypeNameMap(Class, dbManager, true, isResponseValueType);
           return { ...accumulatedTypes, [typeName]: typeObject };
         },
         {}

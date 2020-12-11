@@ -22,11 +22,13 @@ import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigServic
 import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
 import initializeController from "../backk/controller/initializeController";
 import TagsService from "../services/tags/TagsService";
+import AbstractDbManager from "../backk/dbmanager/AbstractDbManager";
 
 // noinspection JSUnusedLocalSymbols
 @Controller()
 export class AppController {
   constructor(
+    dbManager: AbstractDbManager,
     private readonly captchaVerifyService: CaptchaVerifyService,
     private readonly readinessCheckService: ReadinessCheckService,
     private readonly responseCacheConfigService: ResponseCacheConfigService,
@@ -38,7 +40,7 @@ export class AppController {
     private readonly shoppingCartService: ShoppingCartService,
     private readonly ordersService: OrdersService
   ) {
-    initializeController(this);
+    initializeController(this, dbManager);
   }
 
   @Get(':serviceFunctionName')

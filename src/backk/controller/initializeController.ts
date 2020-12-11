@@ -9,14 +9,18 @@ import writeTestsPostmanCollectionExportFile from '../postman/writeTestsPostmanC
 import writeApiPostmanCollectionExportFile from '../postman/writeApiPostmanCollectionExportFile';
 import generateTypesForServices from '../metadata/generateTypesForService';
 import getNestedClasses from '../metadata/getNestedClasses';
-import { getFromContainer, MetadataStorage } from 'class-validator';
+import AbstractDbManager from '../dbmanager/AbstractDbManager';
 
 export interface ControllerInitOptions {
   generatePostmanTestFile?: boolean;
   generatePostmanApiFile?: boolean;
 }
 
-export default function initializeController(controller: any, controllerInitOptions?: ControllerInitOptions) {
+export default function initializeController(
+  controller: any,
+  dbManager: AbstractDbManager,
+  controllerInitOptions?: ControllerInitOptions
+) {
   const serviceNameToServiceEntries = Object.entries(controller).filter(
     ([, service]: [string, any]) => service instanceof BaseService
   );
@@ -67,7 +71,7 @@ export default function initializeController(controller: any, controllerInitOpti
       }, {});
     });
 
-  const servicesMetadata = generateServicesMetadata(controller);
+  const servicesMetadata = generateServicesMetadata(controller, dbManager);
   controller.servicesMetadata = servicesMetadata;
   controller.publicServicesMetadata = servicesMetadata.map((serviceMetadata) => {
     const {

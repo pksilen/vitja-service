@@ -10,7 +10,7 @@ import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
 import UsersBaseService from '../users/UsersBaseService';
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
-import tryValidateServiceMethodArgument from '../validation/tryValidateServiceMethodArgument';
+import tryValidateServiceFunctionArgument from '../validation/tryValidateServiceFunctionArgument';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
 import tryValidateServiceMethodResponse from '../validation/tryValidateServiceMethodResponse';
 import isErrorResponse from '../errors/isErrorResponse';
@@ -207,6 +207,8 @@ export default async function tryExecuteServiceMethod(
       usersService as UsersBaseService | undefined
     );
 
+    const dbManager = (controller[serviceName] as BaseService).getDbManager();
+
     let instantiatedServiceFunctionArgument: any;
     if (serviceFunctionArgumentTypeName) {
       instantiatedServiceFunctionArgument = plainToClass(
@@ -254,9 +256,10 @@ export default async function tryExecuteServiceMethod(
         );
       }
 
-      await tryValidateServiceMethodArgument(
-        controller[serviceName],
+      await tryValidateServiceFunctionArgument(
+        controller[serviceName].constructor,
         functionName,
+        dbManager,
         instantiatedServiceFunctionArgument
       );
     }
@@ -296,7 +299,6 @@ export default async function tryExecuteServiceMethod(
     let ttl;
 
     if (!response) {
-      const dbManager = (controller[serviceName] as BaseService).getDbManager();
       const clsNamespace = createNamespace('serviceFunctionExecution');
       response = await clsNamespace.runAndReturn(async () => {
         clsNamespace.set('authHeader', headers.Authorization);

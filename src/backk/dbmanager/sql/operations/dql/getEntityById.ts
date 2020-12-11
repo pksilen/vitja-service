@@ -57,8 +57,6 @@ export default async function getEntityById<T>(
       );
     }
 
-    console.log(dbManager.getResultRows(result));
-
     return transformRowsToObjects(
       dbManager.getResultRows(result),
       EntityClass,
