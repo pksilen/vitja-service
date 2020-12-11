@@ -253,7 +253,7 @@ export default async function updateEntity<T extends Entity>(
         dbManager.tryExecuteSql(
           `UPDATE ${dbManager.schema.toLowerCase()}.${
             EntityClass.name.toLowerCase()
-          } SET ${setStatements} WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(columns.length)}`,
+          } SET ${setStatements} WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(columns.length + 1)}`,
           [...values, numericId]
         )
       );
