@@ -12,7 +12,7 @@ export default function transformRowsToObjects<T>(
   Types: object
 ) {
   const resultMaps = createResultMaps(EntityClass, Types, { includeResponseFields, excludeResponseFields });
-  console.log()
+
   let mappedRows = joinjs.map(
     rows,
     resultMaps,

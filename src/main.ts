@@ -10,7 +10,7 @@ initializeDefaultJaegerTracing();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-  initializeBackk(app, mySqlDbManager);
+  initializeBackk(app, postgreSqlDbManager);
 }
 
 bootstrap();
