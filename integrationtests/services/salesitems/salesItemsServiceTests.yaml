@@ -2,7 +2,6 @@
     serviceName: salesItemsService
     functionName: createSalesItem
     functionArgument:
-      price: '{{price}}'
       userId: '{{userId}}'
       title: '{{title}}'
       description: '{{description}}'
@@ -10,6 +9,8 @@
       productDepartment: '{{category}}'
       productCategory: '{{category}}'
       productSubCategory: '{{category}}'
+      price: '{{price}}'
+      shippingCost: 0
       primaryImageDataUri: abc
       secondaryImageDataUris:
         - abc

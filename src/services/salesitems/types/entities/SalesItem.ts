@@ -8,7 +8,6 @@ import { Category } from "../enums/Category";
 import { SalesItemState } from "../enums/SalesItemState";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
 import Tag from "../../../tags/entities/Tag";
-import CompositeIndex from "../../../../backk/decorators/entity/CompositeIndex";
 import Index from "../../../../backk/decorators/typeproperty";
 
 @Entity()
@@ -39,6 +38,11 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   @Min(-1)
   @Max(1000000000)
   public readonly previousPrice!: number;
+
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(1000000000)
+  public shippingCost!: number;
 
   @MaxLength(2097152)
   public primaryImageDataUri!: string;
