@@ -1,6 +1,7 @@
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
+import { MAX_INT_VALUE } from '../constants/constants';
 
 const classNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 
@@ -229,17 +230,30 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
             otherValidationMetadata.type === 'max'
         );
 
-        if (minValidationMetadata === undefined || maxValidationMetadata === undefined) {
+        const minMaxValidationMetadata = validationMetadatas.find(
+          (otherValidationMetadata: ValidationMetadata) =>
+            otherValidationMetadata.propertyName === validationMetadata.propertyName &&
+            otherValidationMetadata.type === 'customValidation' &&
+            otherValidationMetadata.constraints[0] === 'minMax'
+        );
+
+        if (
+          !minMaxValidationMetadata &&
+          (minValidationMetadata === undefined || maxValidationMetadata === undefined)
+        ) {
           throw new Error(
             'Property ' +
               Class.name +
               '.' +
               validationMetadata.propertyName +
-              ' has numeric type and must have @Min and @Max annotations'
+              ' has numeric type and must have @Min and @Max annotations or @MinMax annotation'
           );
         }
 
-        if (minValidationMetadata.constraints[0] > maxValidationMetadata.constraints[0]) {
+        if (
+          minValidationMetadata?.constraints[0] > maxValidationMetadata?.constraints[0] ||
+          minMaxValidationMetadata?.constraints[1] > minMaxValidationMetadata?.constraints[2]
+        ) {
           throw new Error(
             'Property ' +
               Class.name +
@@ -249,7 +263,11 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
           );
         }
 
-        if (validationMetadata.type === 'isInt' && minValidationMetadata.constraints[0] < -2147483648) {
+        if (
+          validationMetadata.type === 'isInt' &&
+          (minValidationMetadata?.constraints[0] < -2147483648 ||
+            minMaxValidationMetadata?.constraints[1] < -2147483648)
+        ) {
           throw new Error(
             'Property ' +
               Class.name +
@@ -259,7 +277,11 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
           );
         }
 
-        if (validationMetadata.type === 'isInt' && maxValidationMetadata.constraints[0] > 2147483647) {
+        if (
+          validationMetadata.type === 'isInt' &&
+          (maxValidationMetadata?.constraints[0] > MAX_INT_VALUE ||
+            minMaxValidationMetadata?.constraints[2] > MAX_INT_VALUE)
+        ) {
           throw new Error(
             'Property ' +
               Class.name +
@@ -272,7 +294,8 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         if (
           validationMetadata.type === 'customValidation' &&
           validationMetadata.constraints[0] === 'isBigInt' &&
-          minValidationMetadata.constraints[0] < Number.MIN_SAFE_INTEGER
+          (minValidationMetadata?.constraints[0] < Number.MIN_SAFE_INTEGER ||
+            minMaxValidationMetadata?.constraints[1] < Number.MIN_SAFE_INTEGER)
         ) {
           throw new Error(
             'Property ' +
@@ -287,7 +310,8 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         if (
           validationMetadata.type === 'customValidation' &&
           validationMetadata.constraints[0] === 'isBigInt' &&
-          maxValidationMetadata.constraints[0] > Number.MAX_SAFE_INTEGER
+          (maxValidationMetadata?.constraints[0] > Number.MAX_SAFE_INTEGER ||
+            minMaxValidationMetadata?.constraints[2] > Number.MAX_SAFE_INTEGER)
         ) {
           throw new Error(
             'Property ' +
@@ -299,7 +323,11 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
           );
         }
 
-        if (validationMetadata.type === 'isNumber' && minValidationMetadata.constraints[0] < -(10 ** 308)) {
+        if (
+          validationMetadata.type === 'isNumber' &&
+          (minValidationMetadata?.constraints[0] < -(10 ** 308) ||
+            minMaxValidationMetadata?.constraints[1] < -(10 ** 308))
+        ) {
           throw new Error(
             'Property ' +
               Class.name +
@@ -309,7 +337,11 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
           );
         }
 
-        if (validationMetadata.type === 'isNumber' && maxValidationMetadata.constraints[0] > 10 ** 308) {
+        if (
+          validationMetadata.type === 'isNumber' &&
+          (maxValidationMetadata?.constraints[0] > 10 ** 308 ||
+            minMaxValidationMetadata?.constraints[2] > 10 ** 308)
+        ) {
           throw new Error(
             'Property ' +
               Class.name +

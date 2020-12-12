@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO
-- add shippingcosts for salesitem
+- Add MinMax decorator
 - rename loyaltydiscountlevel to comissionDiscountPercentage
 -scheduled/jobs service url can be given in ENV
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany

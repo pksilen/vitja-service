@@ -9,6 +9,7 @@ import { SalesItemState } from "../enums/SalesItemState";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
 import Tag from "../../../tags/entities/Tag";
 import Index from "../../../../backk/decorators/typeproperty";
+import MinMax from "../../../../backk/decorators/typeproperty/MinMax";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
@@ -30,18 +31,15 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   public productSubCategory!: Category;
 
   @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  @Max(1000000000)
+  @MinMax(0, 1000000000)
   public price!: number;
 
   @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(-1)
-  @Max(1000000000)
+  @MinMax(-1, 1000000000)
   public readonly previousPrice!: number;
 
   @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  @Max(1000000000)
+  @MinMax(0, 1000000000)
   public shippingCost!: number;
 
   @MaxLength(2097152)

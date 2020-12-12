@@ -4,6 +4,7 @@ import getValidationConstraint from '../../validation/getValidationConstraint';
 import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 import isEnumTypeName from '../../utils/type/isEnumTypeName';
 import parseEnumValuesFromSrcFile from '../../typescript/parser/parseEnumValuesFromSrcFile';
+import getCustomValidationConstraint from '../../validation/getCustomValidationConstraint';
 
 export default function getRemoteResponseTestValue<T>(
   ResponseClass: new () => T,
@@ -21,7 +22,9 @@ export default function getRemoteResponseTestValue<T>(
       }
 
       const testValue = testValueContainer.getTestValue(ResponseClass, propertyName);
-      const minValue = getValidationConstraint(ResponseClass, propertyName, 'min');
+      const minValue =
+        getValidationConstraint(ResponseClass, propertyName, 'min') ??
+        getCustomValidationConstraint(ResponseClass, propertyName, 'minMax', 1);
 
       if (testValue !== undefined) {
         sampleArg[propertyName] = testValue;
