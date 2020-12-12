@@ -7,7 +7,8 @@ export default function setSubEntityInfo(
   entityName: string,
   EntityClass: Function,
   fieldName: string,
-  subEntityName: string
+  subEntityName: string,
+  isArrayType: boolean
 ) {
   if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
     const manyToManyRelationTableSpec: ManyToManyRelationTableSpec = {
@@ -29,6 +30,8 @@ export default function setSubEntityInfo(
         subEntityForeignIdFieldName
       ];
     }
+
+    entityAnnotationContainer.entityNameToIsArrayMap[subEntityName] = isArrayType;
 
     const entityJoinSpec: EntityJoinSpec = {
       subEntityTableName: subEntityName,

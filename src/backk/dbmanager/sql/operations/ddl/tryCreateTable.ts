@@ -46,7 +46,7 @@ export default async function tryCreateTable(
       }
 
       if (!sqlColumnType && isEntityTypeName(baseTypeName)) {
-        setSubEntityInfo(entityName, EntityClass, fieldName, baseTypeName);
+        setSubEntityInfo(entityName, EntityClass, fieldName, baseTypeName, isArrayType);
       } else if (isArrayType) {
         await createArrayValuesTable(
           schema,

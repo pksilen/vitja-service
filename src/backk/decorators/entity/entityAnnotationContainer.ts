@@ -20,6 +20,7 @@ class EntityAnnotationContainer {
   readonly indexNameToAdditionalSqlCreateIndexStatementOptionsMap: { [key: string]: string | undefined } = {};
   readonly manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
   readonly entityNameToJoinsMap: { [key: string]: EntityJoinSpec[] } = {};
+  readonly entityNameToIsArrayMap: { [key: string]: boolean } = {};
 
   getForeignIdFieldName(entityName: string): string {
     return this.entityNameToForeignIdFieldNamesMap[entityName][0];

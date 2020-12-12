@@ -21,7 +21,15 @@ export default async function createArrayValuesTable(
     let createAdditionalTableStatement = `CREATE TABLE ${schema?.toLowerCase()}.${arrayValuesTableName.toLowerCase()} (`;
 
     createAdditionalTableStatement +=
-      'id BIGINT, ' + foreignIdFieldName.toLowerCase() + ' BIGINT, ' + arrayValueFieldName.toLowerCase() + ' ' + sqlColumnType + ')';
+      'id BIGINT, ' +
+      foreignIdFieldName.toLowerCase() +
+      ' BIGINT, ' +
+      arrayValueFieldName.toLowerCase() +
+      ' ' +
+      sqlColumnType +
+      ', PRIMARY KEY(' +
+      foreignIdFieldName.toLowerCase() +
+      ', id))';
 
     await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
   }

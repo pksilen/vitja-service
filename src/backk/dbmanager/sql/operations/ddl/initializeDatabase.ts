@@ -49,9 +49,11 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
         await forEachAsyncParallel(foreignIdFieldNames, async (foreignIdFieldName: any) => {
           if (!fields.find((field) => field.name.toLowerCase() === foreignIdFieldName.toLowerCase())) {
             const alterTableStatementPrefix = `ALTER TABLE ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} ADD `;
-            const addForeignIdColumnStatement = alterTableStatementPrefix + foreignIdFieldName.toLowerCase() + ' BIGINT';
+            const addForeignIdColumnStatement =
+              alterTableStatementPrefix + foreignIdFieldName.toLowerCase() + ' BIGINT';
             await dbManager.tryExecuteSqlWithoutCls(addForeignIdColumnStatement);
-            const addPrimaryKeyStatement = alterTableStatementPrefix + 'PRIMARY KEY (' +  foreignIdFieldName.toLowerCase() + ', id)'
+            const addPrimaryKeyStatement =
+              alterTableStatementPrefix + 'PRIMARY KEY (' + foreignIdFieldName.toLowerCase() + (entityAnnotationContainer.entityNameToIsArrayMap[entityName] ? ', id)' : ')');
             await dbManager.tryExecuteSqlWithoutCls(addPrimaryKeyStatement);
           }
         });
@@ -68,7 +70,7 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
             false
           );
         } catch (error) {
-          const createTableStatement = `CREATE TABLE ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()} BIGINT PRIMARY KEY, ${subEntityForeignIdFieldName.toLowerCase()} BIGINT)`;
+          const createTableStatement = `CREATE TABLE ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()} BIGINT, ${subEntityForeignIdFieldName.toLowerCase()} BIGINT, PRIMARY KEY(${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}))`;
           await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
         }
       }

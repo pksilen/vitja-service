@@ -1,17 +1,31 @@
 # Vitja service
 
 TODO
-- SubEntity Foreign key + id is PRIMARY key
+-Primary key
+'- Add implementation for FOREIGN KEY REFERENCES in CREATE TABLE
+- index for salesitemstate
+- add shippingcosts for salesitem
+- rename loyaltydiscountlevel to comissionDiscountPercentage
+-scheduled/jobs service url can be given in ENV
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
   - Update default prometheus metrics
+- add paymentinfo to Order
+- send email on createOrder
+- send email on order state change  
+- Sales item cron job: send email if sales item is going to be removed at 18:00
+  - Remove old sales items cron job at 02:00
+- deleteOrderitem calls refund service
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
+  - Add FollowerService
+    - create new user (followe)
+    - follow(userId, userdId + 1)
 - Unit testaa: shouldIncludeField eri keissit 
 - Organize adding validation groups in separate method in correct order
-  - Organize checking missing validations in seprate method
+  - Organize checking missing validations in separate method
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:
    http-kubernetes-mysql,
@@ -26,7 +40,6 @@ TODO NEXT RELEASE:
 - mysql2 distributed tracing
 - remote service calls can have rollback action and commit action
   - Deletes can move stuff to shadow table and in commit clear from shadow table and do delete
-- Add implementation for FOREIGN KEY REFERENCES in CREATE TABLE
 - Default loginService, signUpService, passwordReset service
     - Login route, check Referer header exists and domain ending is correct, eg. https://<something>.domain.com
     - User, add role field, joka voi olla createUserissa vain "user"
