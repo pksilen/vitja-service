@@ -1,30 +1,34 @@
-import { ArrayMaxSize, ArrayUnique, Max, MaxLength, Min } from "class-validator";
+import { ArrayMaxSize, ArrayUnique, IsInt, Max, MaxLength, Min } from "class-validator";
 import SortBy from "../../../../backk/types/postqueryoperations/SortBy";
 import DefaultPostQueryOperations
   from "../../../../backk/types/postqueryoperations/DefaultPostQueryOperations";
+import MinMax from "../../../../backk/decorators/typeproperty/MinMax";
+import { Category } from "../enums/Category";
+import { Department } from "../enums/Department";
+import { Area } from "../enums/Area";
 
 export default class GetSalesItemsArg extends DefaultPostQueryOperations {
   @MaxLength(512)
   textFilter?: string;
 
   @ArrayMaxSize(10)
-  areas?: ('Area1' | 'Area2' | 'Area3')[];
+  areas?: Area[];
 
   @ArrayMaxSize(10)
-  productDepartments?: ('Vehicles' | 'Clothes')[];
+  productDepartments?: Department[];
 
   @ArrayMaxSize(10)
-  productCategories?: ('Vehicles' | 'Clothes')[];
+  productCategories?: Category[];
 
   @ArrayMaxSize(10)
-  productSubCategories?: ('Vehicles' | 'Clothes')[];
+  productSubCategories?: Category[];
 
-  @Min(0)
-  @Max(1000000000)
+  @IsInt()
+  @MinMax(0, 1000000000)
   minPrice?: number;
 
-  @Min(0)
-  @Max(1000000000)
+  @IsInt()
+  @MinMax(0, 1000000000)
   maxPrice?: number;
 
   @MaxLength(512, { each: true })
