@@ -65,7 +65,9 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
               'FOREIGN KEY (' +
               foreignIdFieldName.toLowerCase() +
               ') REFERENCES ' +
-              dbManager.schema.toLowerCase() + '.' + foreignIdFieldName.toLowerCase().slice(0, -2) +
+              dbManager.schema.toLowerCase() +
+              '.' +
+              foreignIdFieldName.toLowerCase().slice(0, -2) +
               '(_id)';
             await dbManager.tryExecuteSqlWithoutCls(addForeignKeyStatement);
           }
@@ -83,7 +85,20 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
             false
           );
         } catch (error) {
-          const createTableStatement = `CREATE TABLE ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()} BIGINT, ${subEntityForeignIdFieldName.toLowerCase()} BIGINT, PRIMARY KEY(${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}))`;
+          const createTableStatement = `
+          CREATE TABLE ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()}
+           (${entityForeignIdFieldName.toLowerCase()} BIGINT,
+            ${subEntityForeignIdFieldName.toLowerCase()} BIGINT,
+             PRIMARY KEY(${entityForeignIdFieldName.toLowerCase()},
+              ${subEntityForeignIdFieldName.toLowerCase()}),
+               FOREIGN KEY(${entityForeignIdFieldName.toLowerCase()}) 
+               REFERENCES ${dbManager.schema.toLowerCase()}.${entityForeignIdFieldName
+            .toLowerCase()
+            .slice(0, -2)}(_id),
+            FOREIGN KEY(${subEntityForeignIdFieldName.toLowerCase()}) 
+               REFERENCES ${dbManager.schema.toLowerCase()}.${subEntityForeignIdFieldName
+            .toLowerCase()
+            .slice(0, -2)}(_id))`;
           await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
         }
       }

@@ -29,7 +29,13 @@ export default async function createArrayValuesTable(
       sqlColumnType +
       ', PRIMARY KEY(' +
       foreignIdFieldName.toLowerCase() +
-      ', id))';
+      ', id), FOREIGN KEY(' +
+      foreignIdFieldName.toLowerCase() +
+      ') REFERENCES ' +
+      schema?.toLowerCase() +
+      '.' +
+      foreignIdFieldName.toLowerCase().slice(0, -2) +
+      '(_id)';
 
     await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
   }
