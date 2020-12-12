@@ -14,8 +14,8 @@ class EntityAnnotationContainer {
   readonly entityNameToClassMap: { [key: string]: Function } = {};
   readonly entityNameToAdditionalSqlCreateTableStatementOptionsMap: { [key: string]: string } = {};
   readonly entityNameToForeignIdFieldNamesMap: { [key: string]: string[] } = {};
-  readonly entityNameToIndexFieldsMap: { [key: string]: string[] } = {};
-  readonly entityNameToUniqueIndexFieldsMap: { [key: string]: string[] } = {};
+  readonly indexNameToIndexFieldsMap: { [key: string]: string[] } = {};
+  readonly indexNameToUniqueIndexFieldsMap: { [key: string]: string[] } = {};
   readonly indexNameToUsingOptionMap: { [key: string]: string | undefined } = {};
   readonly indexNameToAdditionalSqlCreateIndexStatementOptionsMap: { [key: string]: string | undefined } = {};
   readonly manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
@@ -46,12 +46,12 @@ class EntityAnnotationContainer {
     ] = additionalSqlCreateTableStatementOptions;
   }
 
-  addEntityIndex(entityName: string, indexFields: string[]) {
-    this.entityNameToIndexFieldsMap[entityName] = indexFields;
+  addEntityIndex(indexName: string, indexFields: string[]) {
+    this.indexNameToIndexFieldsMap[indexName] = indexFields;
   }
 
-  addEntityUniqueIndex(entityName: string, indexFields: string[]) {
-    this.entityNameToUniqueIndexFieldsMap[entityName] = indexFields;
+  addEntityUniqueIndex(indexName: string, indexFields: string[]) {
+    this.indexNameToUniqueIndexFieldsMap[indexName] = indexFields;
   }
 
   addUsingOptionForIndex(indexName: string, usingOption?: string) {

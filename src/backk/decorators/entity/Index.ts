@@ -6,10 +6,10 @@ export default function Index(
   additionalSqlCreateIndexStatementOptions?: string
 ) {
   return function(entityClass: Function) {
-    entityContainer.addEntityIndex(entityClass.name, indexFields);
-    entityContainer.addUsingOptionForIndex(entityClass.name + indexFields.join(''), usingOption);
+    entityContainer.addEntityIndex(entityClass.name + ':' + indexFields.join('_'), indexFields);
+    entityContainer.addUsingOptionForIndex(entityClass.name + ':' + indexFields.join('_'), usingOption);
     entityContainer.addAdditionalSqlCreateIndexStatementOptionsForIndex(
-      entityClass.name + indexFields.join(''),
+      entityClass.name + ':' + indexFields.join('_'),
       additionalSqlCreateIndexStatementOptions
     );
   };

@@ -3,12 +3,11 @@ import entityAnnotationContainer from '../../../../decorators/entity/entityAnnot
 
 export default async function tryCreateIndex(
   dbManager: AbstractDbManager,
-  entityName: string,
+  indexName: string,
   schema: string | undefined,
   indexFields: string[],
   isUnique = false
 ) {
-  const indexName = entityName + indexFields.join('');
   const indexUsingOption = entityAnnotationContainer.indexNameToUsingOptionMap[indexName];
   const additionalSqlCreateIndexStatementOptions =
     entityAnnotationContainer.indexNameToAdditionalSqlCreateIndexStatementOptionsMap[indexName];
@@ -17,7 +16,7 @@ export default async function tryCreateIndex(
   try {
     const createIndexStatement = `CREATE ${
       isUnique ? 'UNIQUE' : ''
-    } INDEX ${entityName.toLowerCase()}_${lowerCaseIndexFields.join('_')} ON ${schema?.toLowerCase()}.${entityName.toLowerCase()} ${
+    } INDEX ${indexName.replace(':', '_').toLowerCase()} ON ${schema?.toLowerCase()}.${indexName.split(':')[0].toLowerCase()} ${
       indexUsingOption ? 'USING ' + indexUsingOption : ''
     }(${lowerCaseIndexFields.join(', ')}) ${additionalSqlCreateIndexStatementOptions ?? ''}`;
 

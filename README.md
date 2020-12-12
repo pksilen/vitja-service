@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- index for salesitemstate
 - add shippingcosts for salesitem
 - rename loyaltydiscountlevel to comissionDiscountPercentage
 -scheduled/jobs service url can be given in ENV

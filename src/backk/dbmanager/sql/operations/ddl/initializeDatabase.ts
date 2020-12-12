@@ -26,15 +26,15 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
     );
 
     await forEachAsyncParallel(
-      Object.entries(entityAnnotationContainer.entityNameToIndexFieldsMap),
-      async ([entityName, indexFields]: [any, any]) =>
-        await tryCreateIndex(dbManager, entityName, dbManager.schema, indexFields)
+      Object.entries(entityAnnotationContainer.indexNameToIndexFieldsMap),
+      async ([indexName, indexFields]: [any, any]) =>
+        await tryCreateIndex(dbManager, indexName, dbManager.schema, indexFields)
     );
 
     await forEachAsyncParallel(
-      Object.entries(entityAnnotationContainer.entityNameToUniqueIndexFieldsMap),
-      async ([entityName, indexFields]: [any, any]) =>
-        await tryCreateUniqueIndex(dbManager, entityName, dbManager.schema, indexFields)
+      Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
+      async ([indexName, indexFields]: [any, any]) =>
+        await tryCreateUniqueIndex(dbManager, indexName, dbManager.schema, indexFields)
     );
 
     await forEachAsyncSequential(
