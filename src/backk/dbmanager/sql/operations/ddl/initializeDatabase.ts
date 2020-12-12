@@ -52,9 +52,22 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
             const addForeignIdColumnStatement =
               alterTableStatementPrefix + foreignIdFieldName.toLowerCase() + ' BIGINT';
             await dbManager.tryExecuteSqlWithoutCls(addForeignIdColumnStatement);
+
             const addPrimaryKeyStatement =
-              alterTableStatementPrefix + 'PRIMARY KEY (' + foreignIdFieldName.toLowerCase() + (entityAnnotationContainer.entityNameToIsArrayMap[entityName] ? ', id)' : ')');
+              alterTableStatementPrefix +
+              'PRIMARY KEY (' +
+              foreignIdFieldName.toLowerCase() +
+              (entityAnnotationContainer.entityNameToIsArrayMap[entityName] ? ', id)' : ')');
             await dbManager.tryExecuteSqlWithoutCls(addPrimaryKeyStatement);
+
+            const addForeignKeyStatement =
+              alterTableStatementPrefix +
+              'FOREIGN KEY (' +
+              foreignIdFieldName.toLowerCase() +
+              ') REFERENCES ' +
+              dbManager.schema.toLowerCase() + '.' + foreignIdFieldName.toLowerCase().slice(0, -2) +
+              '(_id)';
+            await dbManager.tryExecuteSqlWithoutCls(addForeignKeyStatement);
           }
         });
       }

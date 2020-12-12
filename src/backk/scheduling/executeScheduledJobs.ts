@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import AbstractDbManager from '../dbmanager/AbstractDbManager';
-import { CronJob, job } from "cron";
-import { createNamespace } from 'cls-hooked';
-import call from '../remote/http/call';
-import getServiceName from '../utils/getServiceName';
-import getServiceNamespace from '../utils/getServiceNamespace';
-import isErrorResponse from '../errors/isErrorResponse';
-import findAsyncSequential from '../utils/findAsyncSequential';
-import delay from '../utils/delay';
-import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
-import { ErrorResponse } from '../types/ErrorResponse';
+import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import { CronJob } from "cron";
+import { createNamespace } from "cls-hooked";
+import call from "../remote/http/call";
+import getServiceName from "../utils/getServiceName";
+import getServiceNamespace from "../utils/getServiceNamespace";
+import isErrorResponse from "../errors/isErrorResponse";
+import findAsyncSequential from "../utils/findAsyncSequential";
+import delay from "../utils/delay";
+import __Backk__JobScheduling from "./entities/__Backk__JobScheduling";
+import { ErrorResponse } from "../types/ErrorResponse";
 
 const cronJobs: { [key: string]: CronJob } = {};
 
@@ -59,7 +59,7 @@ export default async function executeScheduledJobs(dbManager: AbstractDbManager)
 
           if (isErrorResponse(possibleErrorResponse)) {
             const retryIntervalsInSecsArray = retryIntervalsInSecs.split(',');
-            findAsyncSequential(retryIntervalsInSecsArray, async (retryIntervalInSecs) => {
+            await findAsyncSequential(retryIntervalsInSecsArray, async (retryIntervalInSecs) => {
               await delay(parseInt(retryIntervalInSecs, 10) * 1000);
               const possibleErrorResponse = await call(
                 'http://' +
@@ -75,6 +75,7 @@ export default async function executeScheduledJobs(dbManager: AbstractDbManager)
           }
         }
       });
+
       cronJobs[serviceFunctionName] = job;
       job.start();
     }

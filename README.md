@@ -1,8 +1,7 @@
 # Vitja service
 
 TODO
--Primary key
-'- Add implementation for FOREIGN KEY REFERENCES in CREATE TABLE
+- Add implementation for FOREIGN KEY REFERENCES in CREATE TABLE
 - index for salesitemstate
 - add shippingcosts for salesitem
 - rename loyaltydiscountlevel to comissionDiscountPercentage
