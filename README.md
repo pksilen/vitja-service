@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- First create table (await) and then create array values table
 - separate npm task for generateCuDo (remove NODE ENV check)
 - index for salesitemstate
 - add shippingcosts for salesitem

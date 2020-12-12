@@ -7,7 +7,6 @@ import log, { Severity } from "../observability/logging/log";
 import AbstractDbManager from "../dbmanager/AbstractDbManager";
 
 export default async function initializeBackk(app: any, dbManager: AbstractDbManager) {
-  generateServicesDocumentation();
   defaultSystemAndNodeJsMetrics.startCollectingMetrics();
   await initializeDatabase(dbManager);
   executeScheduledCronJobs(dbManager);

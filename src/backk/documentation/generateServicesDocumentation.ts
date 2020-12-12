@@ -1,10 +1,6 @@
 import { Application, Comment, TSConfigReader, TypeDocReader } from 'typedoc-pksilen';
 
 export default function generateServicesDocumentation() {
-  if (process.env.NODE_ENV === 'production') {
-    return;
-  }
-
   const app = new Application();
   app.options.addReader(new TSConfigReader());
   app.options.addReader(new TypeDocReader());

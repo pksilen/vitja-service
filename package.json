@@ -7,6 +7,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "generateTypes": "ts-node src/backk/typescript/generator/generateTypescriptFilesFromTypeDefinitionFiles.ts",
+    "generateDoc": "ts-node src/backk/documentation/generateServicesDocumentation.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
