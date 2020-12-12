@@ -1,6 +1,5 @@
 import { ArrayMaxSize, IsEmail, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
-import UniqueIndex from "../../../../backk/decorators/entity/UniqueIndex";
 import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
 import { IsExprTrue } from "../../../../backk/decorators/typeproperty/IsExprTrue";
 import { TestValue } from "../../../../backk/decorators/typeproperty/testing/TestValue";
@@ -11,7 +10,6 @@ import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
 
 @Entity()
-@UniqueIndex(['userName'])
 export default class User extends _IdAndCaptcha {
   @Unique()
   @MaxLength(512)

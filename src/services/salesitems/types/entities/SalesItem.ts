@@ -8,10 +8,10 @@ import { Category } from "../enums/Category";
 import { SalesItemState } from "../enums/SalesItemState";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
 import Tag from "../../../tags/entities/Tag";
-import Index from "../../../../backk/decorators/entity";
+import CompositeIndex from "../../../../backk/decorators/entity/CompositeIndex";
+import Index from "../../../../backk/decorators/typeproperty";
 
 @Entity()
-@Index(['state'])
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
   public userId!: string;
 
@@ -47,5 +47,6 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   @ArrayMaxSize(10)
   public secondaryImageDataUris!: string[];
 
+  @Index()
   public readonly state!: SalesItemState;
 }
