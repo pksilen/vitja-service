@@ -8,8 +8,10 @@ import { Category } from "../enums/Category";
 import { SalesItemState } from "../enums/SalesItemState";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
 import Tag from "../../../tags/entities/Tag";
+import Index from "../../../../backk/decorators/entity";
 
 @Entity()
+@Index(['state'])
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
   public userId!: string;
 

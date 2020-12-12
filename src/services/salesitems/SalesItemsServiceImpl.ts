@@ -80,7 +80,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
 
     if (this.dbManager instanceof MongoDbManager) {
       filters = {
-        state: 'forSale' as 'forSale',
+        state: 'forSale' as SalesItemState,
         ...(textFilter
           ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
           : {}),

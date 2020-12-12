@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- separate npm task for generateCuDo (remove NODE ENV check)
 - index for salesitemstate
 - add shippingcosts for salesitem
 - rename loyaltydiscountlevel to comissionDiscountPercentage
