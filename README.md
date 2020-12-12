@@ -1,7 +1,8 @@
 # Vitja service
 
 TODO
-- Add implementation for FOREIGN KEY REFERENCES in CREATE TABLE
+- First create table (await) and then create array values table
+- separate npm task for generateCuDo (remove NODE ENV check)
 - index for salesitemstate
 - add shippingcosts for salesitem
 - rename loyaltydiscountlevel to comissionDiscountPercentage

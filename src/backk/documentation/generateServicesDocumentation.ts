@@ -15,9 +15,9 @@ export default function generateServicesDocumentation() {
   const project = app.convert(app.expandInputFiles(['src/services']));
 
   if (project) {
-    project.children?.forEach((possibleModule) => {
-      if (possibleModule.kind === 1) {
-        possibleModule.children?.forEach((possibleClass) => {
+    project.children?.forEach((module) => {
+      if (module.kind === 1) {
+        module.children?.forEach((possibleClass) => {
           if (possibleClass.kind === 128) {
             possibleClass.children?.forEach((possibleProperty) => {
               if (possibleProperty.kind === 1024) {

@@ -35,7 +35,7 @@ export default async function createArrayValuesTable(
       schema?.toLowerCase() +
       '.' +
       foreignIdFieldName.toLowerCase().slice(0, -2) +
-      '(_id)';
+      '(_id))';
 
     await dbManager.tryExecuteSqlWithoutCls(createAdditionalTableStatement);
   }
