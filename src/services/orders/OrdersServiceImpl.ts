@@ -28,6 +28,7 @@ import ShoppingCartService from '../shoppingcart/ShoppingCartService';
 import { SalesItemState } from '../salesitems/types/enums/SalesItemState';
 import { OrderState } from './types/enum/OrderState';
 import { Update } from '../../backk/decorators/service/function/Update';
+import sendTo from '../../backk/remote/messagequeue/sendTo';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -53,13 +54,13 @@ export default class OrdersServiceImpl extends OrdersService {
     salesItemIds,
     paymentInfo
   }: CreateOrderArg): Promise<Order | ErrorResponse> {
-    return await this.dbManager.createEntity(
+    const createdOrderOrErrorResponse = await this.dbManager.createEntity(
       {
         userId,
         orderItems: salesItemIds.map((salesItemId, index) => ({
           id: index.toString(),
           salesItemId,
-          state: 'toBeDelivered',
+          state: 'toBeDelivered' as OrderState,
           trackingUrl: null,
           deliveryTimestamp: null
         })),
@@ -72,6 +73,19 @@ export default class OrdersServiceImpl extends OrdersService {
           (await this.shoppingCartService.deleteShoppingCartById({ _id: shoppingCartId, userId }))
       }
     );
+
+    let possibleErrorResponse: void | ErrorResponse;
+    if (!('errorMessage' in createdOrderOrErrorResponse)) {
+      possibleErrorResponse = await sendTo(
+        `kafka://${process.env.KAFKA_BROKER}/notification-service/orderNotificationsService.sendOrderNotifications`,
+        {
+          userId,
+          salesItemIds
+        }
+      );
+    }
+
+    return possibleErrorResponse || createdOrderOrErrorResponse;
   }
 
   @AllowForSelf()

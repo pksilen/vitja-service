@@ -8,7 +8,7 @@ import { TestValue } from "../../../../backk/decorators/typeproperty/testing/Tes
 export default class PaymentInfo {
   @TestValue('1')
   public gatewayId!: string;
-  
+
   @TestValue('1')
   public brokerId!: string;
 

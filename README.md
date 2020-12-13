@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- add paymentinfo to Order
 - send email on createOrder
 - send email on order state change
 - Sales item cron job: send email if sales item is going to be removed at 18:00
@@ -11,6 +10,8 @@ TODO
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
   - Update default prometheus metrics
+- Kafka sendTo integration tests
+- Redis sendTo integeration tests
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
