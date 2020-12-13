@@ -2,13 +2,17 @@ import MaxLengthAndMatches from "../../../../backk/decorators/typeproperty/MaxLe
 import { IsNumber } from "class-validator";
 import MinMax from "../../../../backk/decorators/typeproperty/MinMax";
 import Entity from "../../../../backk/decorators/entity/Entity";
+import { TestValue } from "../../../../backk/decorators/typeproperty/testing/TestValue";
 
 @Entity()
 export default class PaymentInfo {
+  @TestValue('1')
   public gatewayId!: string;
+  
+  @TestValue('1')
   public brokerId!: string;
 
-  @MaxLengthAndMatches(64, /\d+/)
+  @MaxLengthAndMatches(64, /[a-zA-Z\d]+/)
   public transactionUuid!: string;
 
   public transactionTimestamp!: Date;
