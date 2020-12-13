@@ -1,4 +1,5 @@
 import { ArrayMaxSize, ArrayUnique } from "class-validator";
+import PaymentInfo from "../entities/PaymentInfo";
 
 export default class CreateOrderArg {
   userId!: string;
@@ -7,4 +8,6 @@ export default class CreateOrderArg {
   @ArrayMaxSize(50)
   @ArrayUnique()
   salesItemIds!: string[];
+
+  paymentInfo!: PaymentInfo;
 }

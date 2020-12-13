@@ -1,34 +1,25 @@
-/* eslint-disable no-constant-condition */
 import { getFromContainer, MetadataStorage, ValidationTypes } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import { ValidationMetadataArgs } from 'class-validator/metadata/ValidationMetadataArgs';
 import { Type } from 'class-transformer';
+import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 
-export default function setNestedTypeValidationDecorators(
-  Class: Function,
-  targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean }
-) {
+export default function setNestedTypeValidationDecorators(Class: Function) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
 
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
     if (validationMetadata.type === 'isDate') {
-      if (true
-        /*!targetAndPropNameToHasNestedValidationMap[
-        (validationMetadata.target as Function).name + validationMetadata.propertyName
-          ]*/
-      ) {
-        Type(() => Date)(
-          new (validationMetadata.target as new () => any)(),
-          validationMetadata.propertyName
-        );
-
-        targetAndPropNameToHasNestedValidationMap[
-        (validationMetadata.target as Function).name + validationMetadata.propertyName
-          ] = true;
-      }
+      Type(() => Date)(new (validationMetadata.target as new () => any)(), validationMetadata.propertyName);
     }
 
     if (validationMetadata.type === 'isInstance') {
+      if (
+        entityAnnotationContainer.entityNameToClassMap[Class.name] &&
+        !entityAnnotationContainer.entityNameToClassMap[validationMetadata.constraints[0].name]
+      ) {
+        throw new Error(validationMetadata.constraints[0].name + ' is missing @Entity() annotation')
+      }
+
       const nestedValidationMetadataArgs: ValidationMetadataArgs = {
         type: ValidationTypes.NESTED_VALIDATION,
         target: validationMetadata.target,
@@ -36,24 +27,14 @@ export default function setNestedTypeValidationDecorators(
         validationOptions: { each: validationMetadata.each }
       };
 
-      if (true
-        /*!targetAndPropNameToHasNestedValidationMap[
-          (validationMetadata.target as Function).name + validationMetadata.propertyName
-        ]*/
-      ) {
-        Type(() => validationMetadata.constraints[0])(
-          new (validationMetadata.target as new () => any)(),
-          validationMetadata.propertyName
-        );
+      Type(() => validationMetadata.constraints[0])(
+        new (validationMetadata.target as new () => any)(),
+        validationMetadata.propertyName
+      );
 
-        getFromContainer(MetadataStorage).addValidationMetadata(
-          new ValidationMetadata(nestedValidationMetadataArgs)
-        );
-
-        targetAndPropNameToHasNestedValidationMap[
-          (validationMetadata.target as Function).name + validationMetadata.propertyName
-        ] = true;
-      }
+      getFromContainer(MetadataStorage).addValidationMetadata(
+        new ValidationMetadata(nestedValidationMetadataArgs)
+      );
     }
   });
 }

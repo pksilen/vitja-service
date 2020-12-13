@@ -63,11 +63,10 @@ export default function initializeController(
   Object.entries(controller)
     .filter(([, value]: [string, any]) => typeof value === 'object' && value.constructor !== Object)
     .forEach(([serviceName]: [string, any]) => {
-      const targetAndPropNameToHasNestedValidationMap: { [key: string]: boolean } = {};
       getNestedClasses(Object.keys(controller[serviceName].Types ?? {}), controller[serviceName].Types);
       Object.entries(controller[serviceName].Types ?? {}).forEach(([, typeClass]: [string, any]) => {
         setClassPropertyValidationDecorators(typeClass, serviceName, controller[serviceName].Types);
-        setNestedTypeValidationDecorators(typeClass, targetAndPropNameToHasNestedValidationMap);
+        setNestedTypeValidationDecorators(typeClass);
       }, {});
     });
 

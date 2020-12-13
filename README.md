@@ -1,17 +1,16 @@
 # Vitja service
 
 TODO
--scheduled/jobs service url can be given in ENV
+- add paymentinfo to Order
+- send email on createOrder
+- send email on order state change
+- Sales item cron job: send email if sales item is going to be removed at 18:00
+    - Remove old sales items cron job at 02:00
+- deleteOrderitem calls refund service
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
   - Update default prometheus metrics
-- add paymentinfo to Order
-- send email on createOrder
-- send email on order state change  
-- Sales item cron job: send email if sales item is going to be removed at 18:00
-  - Remove old sales items cron job at 02:00
-- deleteOrderitem calls refund service
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers

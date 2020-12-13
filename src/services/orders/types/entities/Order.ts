@@ -2,6 +2,7 @@ import { ArrayMaxSize } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import OrderItem from "./OrderItem";
 import _IdAndCreatedAtTimestamp from "../../../../backk/types/id/_IdAndCreatedAtTimestamp";
+import PaymentInfo from "./PaymentInfo";
 
 @Entity()
 export default class Order extends _IdAndCreatedAtTimestamp {
@@ -9,4 +10,6 @@ export default class Order extends _IdAndCreatedAtTimestamp {
 
   @ArrayMaxSize(50)
   public orderItems!: OrderItem[];
+
+  public paymentInfo!: PaymentInfo;
 }
