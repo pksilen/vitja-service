@@ -37,14 +37,11 @@ export default function executeScheduledCronJobs(dbManager: AbstractDbManager) {
         });
 
         if (!possibleErrorResponse) {
-          const possibleErrorResponse = await call(
-            'http://' +
-              getServiceName() +
-              '.' +
-              getServiceNamespace() +
-              '.svc.cluster.local:80/' +
-              serviceFunctionName
-          );
+          const serviceUrl =
+            process.env.SERVICE_URL ??
+            'http://' + getServiceName() + '.' + getServiceNamespace() + '.svc.cluster.local:80/';
+
+          const possibleErrorResponse = await call(serviceUrl + serviceFunctionName);
 
           if (isErrorResponse(possibleErrorResponse)) {
             const retryIntervalsInSecs = serviceFunctionAnnotationContainer.getServiceFunctionNameToRetryIntervalsInSecsMap()[
