@@ -11,5 +11,13 @@ export default function parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl:
     throw new Error('Only schemes kafka and redis are supported')
   }
 
+  if (!broker || broker === 'undefined') {
+    throw new Error ('Remote server not defined in remote service url: ' + remoteServiceUrl)
+  } else if(!topic || topic === 'undefined') {
+    throw new Error ('Service name not defined in remote service url: ' + remoteServiceUrl);
+  } else if (!serviceFunction || serviceFunction === 'undefined') {
+    throw new Error('Service function not defined in remote service url: ' +remoteServiceUrl);
+  }
+
   return { scheme, broker, topic, serviceFunction };
 }

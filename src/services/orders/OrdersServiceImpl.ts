@@ -77,7 +77,7 @@ export default class OrdersServiceImpl extends OrdersService {
     let possibleErrorResponse: void | ErrorResponse;
     if (!('errorMessage' in createdOrderOrErrorResponse)) {
       possibleErrorResponse = await sendTo(
-        `kafka://${process.env.KAFKA_BROKER}/notification-service/orderNotificationsService.sendOrderNotifications`,
+        `kafka://${process.env.KAFKA_SERVER}/notification-service/orderNotificationsService.sendOrderNotifications`,
         {
           userId,
           salesItemIds

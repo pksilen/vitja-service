@@ -18,7 +18,7 @@ const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
 export enum SendAcknowledgementType {
   NONE,
   LEADER_ONLY,
-  ALL_REPLICAS
+  ALL_REPLICAS = -1
 }
 
 export default async function sendOneOrMoreToKafka(
