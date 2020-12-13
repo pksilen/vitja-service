@@ -41,7 +41,7 @@ export default class User extends _IdAndCaptcha {
   @MaxLength(256)
   public city!: string;
 
-  public readonly loyaltyDiscountLevel!: 0 | 25 | 50;
+  public readonly commissionDiscountPercentage!: 0 | 25 | 50;
 
   public defaultPaymentMethod!: DefaultPaymentMethod | null;
 

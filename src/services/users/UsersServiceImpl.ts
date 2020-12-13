@@ -34,7 +34,10 @@ export default class UsersServiceImpl extends UsersService {
   @FunctionDocumentation('createUser function doc goes here...')
   @AllowForEveryUser()
   async createUser(arg: User): Promise<UserResponse | ErrorResponse> {
-    const userOrErrorResponse = await this.dbManager.createEntity({ ...arg, loyaltyDiscountLevel: 0 }, User);
+    const userOrErrorResponse = await this.dbManager.createEntity(
+      { ...arg, commissionDiscountPercentage: 0 },
+      User
+    );
     return 'errorMessage' in userOrErrorResponse
       ? userOrErrorResponse
       : UsersServiceImpl.getUserResponse(userOrErrorResponse);

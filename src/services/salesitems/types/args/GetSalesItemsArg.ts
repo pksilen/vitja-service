@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayUnique, IsInt, Max, MaxLength, Min } from "class-validator";
+import { ArrayMaxSize, ArrayUnique, IsInt, MaxLength } from "class-validator";
 import SortBy from "../../../../backk/types/postqueryoperations/SortBy";
 import DefaultPostQueryOperations
   from "../../../../backk/types/postqueryoperations/DefaultPostQueryOperations";
