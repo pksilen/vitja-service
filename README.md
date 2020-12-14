@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- send email on order state change
 - Sales item cron job: send email if sales item is going to be removed at 18:00
     - Remove old sales items cron job at 02:00
 - deleteOrderitem calls refund service

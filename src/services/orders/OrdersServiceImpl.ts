@@ -150,8 +150,7 @@ export default class OrdersServiceImpl extends OrdersService {
       );
 
       return possibleErrorResponse
-        ? possibleErrorResponse
-        : sendTo(
+        || sendTo(
             `kafka://${process.env.KAFKA_SERVER}/notification-service/orderNotificationsService.sendOrderItemDeliveryNotification`,
             {
               orderId,
@@ -169,25 +168,39 @@ export default class OrdersServiceImpl extends OrdersService {
     orderItemId,
     newState
   }: UpdateOrderItemStateArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity(
-      { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
-      Order,
-      [],
-      {
-        currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
-        hookFunc: async ([{ salesItemId, state }]) =>
-          (newState === 'returned'
-            ? await this.salesItemsService.updateSalesItemState(
+    return this.dbManager.executeInsideTransaction( async () => {
+      let possibleErrorResponse = await this.dbManager.updateEntity(
+        { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
+        Order,
+        [],
+        {
+          currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
+          hookFunc: async ([{ salesItemId, state }]) =>
+            (newState === 'returned'
+              ? await this.salesItemsService.updateSalesItemState(
                 {
                   _id: salesItemId,
                   newState: 'forSale'
                 },
                 'sold'
               )
-            : false) || state === OrdersServiceImpl.getPreviousOrderStateFor(newState),
-        error: INVALID_ORDER_ITEM_STATE
+              : false) || state === OrdersServiceImpl.getPreviousOrderStateFor(newState),
+          error: INVALID_ORDER_ITEM_STATE
+        }
+      );
+
+      if (newState === 'returned') {
+        possibleErrorResponse = await sendTo(
+          `kafka://${process.env.KAFKA_SERVER}/refund-service/refundService.refundReturnedOrderItem`,
+          {
+            orderId,
+            orderItemId
+          }
+        );
       }
-    );
+
+      return possibleErrorResponse;
+    })
   }
 
   @AllowForSelf()
