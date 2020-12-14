@@ -31,7 +31,7 @@ export default async function getEntitiesWhere<T>(
     let projection;
     try {
       projection = tryGetProjection(
-        dbManager.schema,
+        dbManager,
         { includeResponseFields: [fieldName] },
         EntityClass,
         Types,

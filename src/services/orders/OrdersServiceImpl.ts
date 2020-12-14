@@ -54,38 +54,40 @@ export default class OrdersServiceImpl extends OrdersService {
     salesItemIds,
     paymentInfo
   }: CreateOrderArg): Promise<Order | ErrorResponse> {
-    const createdOrderOrErrorResponse = await this.dbManager.createEntity(
-      {
-        userId,
-        orderItems: salesItemIds.map((salesItemId, index) => ({
-          id: index.toString(),
-          salesItemId,
-          state: 'toBeDelivered' as OrderState,
-          trackingUrl: null,
-          deliveryTimestamp: null
-        })),
-        paymentInfo
-      },
-      Order,
-      {
-        hookFunc: async () =>
-          (await this.updateSalesItemStates(salesItemIds, 'sold', 'forSale')) ||
-          (await this.shoppingCartService.deleteShoppingCartById({ _id: shoppingCartId, userId }))
-      }
-    );
-
-    let possibleErrorResponse: void | ErrorResponse;
-    if (!('errorMessage' in createdOrderOrErrorResponse)) {
-      possibleErrorResponse = await sendTo(
-        `kafka://${process.env.KAFKA_SERVER}/notification-service/orderNotificationsService.sendOrderNotifications`,
+    return this.dbManager.executeInsideTransaction(async () => {
+      const createdOrderOrErrorResponse = await this.dbManager.createEntity(
         {
           userId,
-          salesItemIds
+          orderItems: salesItemIds.map((salesItemId, index) => ({
+            id: index.toString(),
+            salesItemId,
+            state: 'toBeDelivered' as OrderState,
+            trackingUrl: null,
+            deliveryTimestamp: null
+          })),
+          paymentInfo
+        },
+        Order,
+        {
+          hookFunc: async () =>
+            (await this.updateSalesItemStates(salesItemIds, 'sold', 'forSale')) ||
+            (await this.shoppingCartService.deleteShoppingCartById({ _id: shoppingCartId, userId }))
         }
       );
-    }
 
-    return possibleErrorResponse || createdOrderOrErrorResponse;
+      let possibleErrorResponse: void | ErrorResponse;
+      if (!('errorMessage' in createdOrderOrErrorResponse)) {
+        possibleErrorResponse = await sendTo(
+          `kafka://${process.env.KAFKA_SERVER}/notification-service/orderNotificationsService.sendOrderNotifications`,
+          {
+            userId,
+            salesItemIds
+          }
+        );
+      }
+
+      return possibleErrorResponse || createdOrderOrErrorResponse;
+    });
   }
 
   @AllowForSelf()
@@ -127,24 +129,37 @@ export default class OrdersServiceImpl extends OrdersService {
   @Update()
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
-  deliverOrderItem({
+  async deliverOrderItem({
     orderId,
     orderItemId,
     ...restOfArg
   }: DeliverOrderItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity(
-      {
-        _id: orderId,
-        orderItems: [{ state: 'delivering' as 'delivering', id: orderItemId, ...restOfArg }]
-      },
-      Order,
-      [],
-      {
-        currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-        hookFunc: ([state]) => state === 'toBeDelivered',
-        error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
-      }
-    );
+    return this.dbManager.executeInsideTransaction(async () => {
+      const possibleErrorResponse = await this.dbManager.updateEntity(
+        {
+          _id: orderId,
+          orderItems: [{ state: 'delivering' as 'delivering', id: orderItemId, ...restOfArg }]
+        },
+        Order,
+        [],
+        {
+          currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
+          hookFunc: ([state]) => state === 'toBeDelivered',
+          error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+        }
+      );
+
+      return possibleErrorResponse
+        ? possibleErrorResponse
+        : sendTo(
+            `kafka://${process.env.KAFKA_SERVER}/notification-service/orderNotificationsService.sendOrderItemDeliveryNotification`,
+            {
+              orderId,
+              orderItemId,
+              ...restOfArg
+            }
+          );
+    });
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])

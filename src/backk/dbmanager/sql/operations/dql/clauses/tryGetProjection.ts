@@ -2,9 +2,10 @@ import getFieldsFromGraphQlOrJson from "../../../../../graphql/getFieldsFromGrap
 import { Projection } from "../../../../../types/postqueryoperations/Projection";
 import getFieldsForEntity from "../utils/columns/getFieldsForEntity";
 import createErrorMessageWithStatusCode from "../../../../../errors/createErrorMessageWithStatusCode";
+import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
 
 export default function tryGetProjection(
-  schema: string,
+  dbManager: AbstractSqlDbManager,
   projection: Projection,
   entityClass: Function,
   Types: object,
@@ -25,7 +26,7 @@ export default function tryGetProjection(
 
     projection.includeResponseFields.forEach((includeResponseField) => {
       getFieldsForEntity(
-        schema,
+        dbManager,
         fields,
         entityClass as any,
         Types,
@@ -50,7 +51,7 @@ export default function tryGetProjection(
 
     projection.excludeResponseFields.forEach((excludeResponseField) => {
       getFieldsForEntity(
-        schema,
+        dbManager,
         fields,
         entityClass as any,
         Types,
@@ -70,6 +71,6 @@ export default function tryGetProjection(
     });
   }
 
-  getFieldsForEntity(schema, fields, entityClass as any, Types, projection, '', isInternalCall);
+  getFieldsForEntity(dbManager, fields, entityClass as any, Types, projection, '', isInternalCall);
   return fields.join(', ');
 }

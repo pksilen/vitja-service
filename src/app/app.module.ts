@@ -28,7 +28,7 @@ import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: mySqlDbManager },
+    { provide: AbstractDbManager, useValue: postgreSqlDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },

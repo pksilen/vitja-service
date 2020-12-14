@@ -18,9 +18,9 @@ export default function getSqlSelectStatementParts<T>(
   isInternalCall = false
 ) {
   const Types = dbManager.getTypes();
-  const projectionColumns = tryGetProjection(dbManager.schema, projection, entityClass, Types, isInternalCall);
+  const projectionColumns = tryGetProjection(dbManager, projection, entityClass, Types, isInternalCall);
   const windowClauses = tryGetWindowClausesForSubPaginations(
-    dbManager.schema,
+    dbManager,
     subPaginations,
     sortBys,
     entityClass,
@@ -32,11 +32,11 @@ export default function getSqlSelectStatementParts<T>(
   let whereClause = '';
   let filterValues = {};
   if (filters) {
-    whereClause = tryGetWhereClause(dbManager.schema, filters, subPaginations, entityClass, Types);
+    whereClause = tryGetWhereClause(dbManager, filters, subPaginations, entityClass, Types);
     filterValues = getFilterValues(filters);
   }
 
-  const sortClause = tryGetSortClause(dbManager.schema, sortBys, subPaginations, entityClass, Types);
+  const sortClause = tryGetSortClause(dbManager, sortBys, subPaginations, entityClass, Types);
   const pagingClause = getPaginationClause(pageNumber, pageSize);
   return { columns, joinClause, whereClause, filterValues, sortClause, pagingClause };
 }

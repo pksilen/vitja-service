@@ -1,9 +1,10 @@
 import SubPagination from '../../../../../types/postqueryoperations/SubPagination';
 import SortBy from '../../../../../types/postqueryoperations/SortBy';
 import tryGetSqlColumnForFieldName from '../utils/columns/getSqlColumnForFieldName';
+import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
 
 export default function tryGetWindowClausesForSubPaginations(
-  schema: string,
+  dbManager: AbstractSqlDbManager,
   subPaginations: SubPagination[] | undefined,
   sortBys: SortBy[],
   entityClass: Function,
@@ -13,7 +14,7 @@ export default function tryGetWindowClausesForSubPaginations(
 
   subPaginations?.forEach(({ fieldName }) => {
     const idFieldName = fieldName + '.id';
-    const partitionSqlColumn = tryGetSqlColumnForFieldName(idFieldName, schema, entityClass, Types);
+    const partitionSqlColumn = tryGetSqlColumnForFieldName(idFieldName, dbManager, entityClass, Types);
 
     const sortBy = sortBys.find(
       (sortBy) => sortBy.fieldName.slice(0, sortBy.fieldName.lastIndexOf('.')) === fieldName
@@ -21,7 +22,7 @@ export default function tryGetWindowClausesForSubPaginations(
 
     const sortBySqlColumn = tryGetSqlColumnForFieldName(
       sortBy?.fieldName ?? idFieldName,
-      schema,
+      dbManager,
       entityClass,
       Types
     );

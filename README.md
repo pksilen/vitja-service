@@ -11,8 +11,6 @@ TODO
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
   - Update default prometheus metrics
-- Kafka sendTo integration tests
-- Redis sendTo integeration tests
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
@@ -33,6 +31,8 @@ TODO
 
 
 TODO NEXT RELEASE:
+- Kafka sendTo integration tests, create topic name with uuid postfix, use that and delete topic at end of testing
+- Redis sendTo integeration tests, create db/topic name with uuid postfix, use that and delete topic at end of testing
 - mysql2 distributed tracing
 - remote service calls can have rollback action and commit action
   - Deletes can move stuff to shadow table and in commit clear from shadow table and do delete

@@ -5,9 +5,10 @@ import createErrorMessageWithStatusCode from '../../../../../errors/createErrorM
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
 import toSqlString from '../../../expressions/toSqlString';
 import SubPagination from '../../../../../types/postqueryoperations/SubPagination';
+import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
 
 export default function tryGetWhereClause<T>(
-  schema: string,
+  dbManager: AbstractSqlDbManager,
   filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
   subPaginations: SubPagination[] | undefined,
   entityClass: Function,
@@ -42,7 +43,7 @@ export default function tryGetWhereClause<T>(
 
     let projection;
     try {
-      projection = tryGetProjection(schema, { includeResponseFields: [fieldName] }, entityClass, Types);
+      projection = tryGetProjection(dbManager, { includeResponseFields: [fieldName] }, entityClass, Types);
     } catch (error) {
       throw new Error(createErrorMessageWithStatusCode('Invalid filter field: ' + fieldName, 400));
     }

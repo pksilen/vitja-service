@@ -2,16 +2,17 @@ import tryGetProjection from '../../clauses/tryGetProjection';
 import createErrorMessageWithStatusCode from '../../../../../../errors/createErrorMessageWithStatusCode';
 import { HttpStatusCodes } from '../../../../../../constants/constants';
 import getSqlColumnFromProjection from './getSqlColumnFromProjection';
+import AbstractSqlDbManager from "../../../../../AbstractSqlDbManager";
 
 export default function tryGetSqlColumnForFieldName(
   fieldName: string,
-  schema: string,
+  dbManager: AbstractSqlDbManager,
   entityClass: Function,
   Types: object
 ): string {
   let projection;
   try {
-    projection = tryGetProjection(schema, { includeResponseFields: [fieldName] }, entityClass, Types);
+    projection = tryGetProjection(dbManager, { includeResponseFields: [fieldName] }, entityClass, Types);
   } catch (error) {
     throw new Error(
       createErrorMessageWithStatusCode(

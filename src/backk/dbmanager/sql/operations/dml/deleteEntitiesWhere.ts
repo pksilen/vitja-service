@@ -32,7 +32,7 @@ export default async function deleteEntitiesWhere<T extends object>(
     let projection;
     try {
       projection = tryGetProjection(
-        dbManager.schema,
+        dbManager,
         { includeResponseFields: [fieldName] },
         EntityClass,
         Types,

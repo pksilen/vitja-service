@@ -58,6 +58,8 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   abstract getInsertId(result: any): number;
 
+  abstract getIdColumnCastType(): string;
+
   abstract executeSql(connection: any, sqlStatement: string, values?: any[]): Promise<any>;
 
   abstract executeSqlWithNamedPlaceholders(

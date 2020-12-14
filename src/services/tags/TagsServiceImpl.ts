@@ -8,7 +8,8 @@ import TagName from './args/TagName';
 import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
 import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
-import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
+import { SalesItem } from '../salesitems/types/entities/SalesItem';
 
 @Injectable()
 export default class TagsServiceImpl extends TagsService {
@@ -18,7 +19,11 @@ export default class TagsServiceImpl extends TagsService {
 
   @AllowForTests()
   deleteAllTags(): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteAllEntities(Tag);
+    return this.dbManager.executeInsideTransaction(async () => {
+      return (
+        (await this.dbManager.deleteAllEntities(SalesItem)) || (await this.dbManager.deleteAllEntities(Tag))
+      );
+    });
   }
 
   @AllowForEveryUser()

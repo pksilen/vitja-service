@@ -82,6 +82,10 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
     return result?.rows[0]?._id;
   }
 
+  getIdColumnCastType(): string {
+    return 'VARCHAR';
+  }
+
   executeSql(connection: any, sqlStatement: string, values?: any[]): Promise<any> {
     return connection.query(sqlStatement, values);
   }
