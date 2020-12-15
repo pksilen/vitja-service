@@ -1,10 +1,9 @@
 # Vitja service
 
 TODO
-- Sales item cron job: send email if sales item is going to be removed at 18:00
     - Remove old sales items cron job at 02:00
-- deleteOrderitem calls refund service
 - Watch and re-read log level from config map
+- Allow one scheduleCronJob per function
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
@@ -25,7 +24,9 @@ TODO
    http-kubernetes-mongodb
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
-  
+- Split services to different microservices
+  - Create notification-service
+    - Sales item cron job: send email at 16:00 if sales item is going to be removed
 
 
 TODO NEXT RELEASE:

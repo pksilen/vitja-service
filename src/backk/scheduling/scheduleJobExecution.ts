@@ -5,6 +5,7 @@ import findAsyncSequential from '../utils/findAsyncSequential';
 import delay from '../utils/delay';
 import { createNamespace } from 'cls-hooked';
 import BaseService from '../service/BaseService';
+// eslint-disable-next-line @typescript-eslint/camelcase
 import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
 import { ErrorResponse } from '../types/ErrorResponse';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
@@ -89,6 +90,7 @@ export default function scheduleJobExecution(
         await removeScheduledJob(
           dbManager,
           executionSchedulingId,
+          // eslint-disable-next-line @typescript-eslint/camelcase
           (entityOrErrorResponse as __Backk__JobScheduling)._id
         )
       ) {

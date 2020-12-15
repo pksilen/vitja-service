@@ -10,6 +10,7 @@ import writeApiPostmanCollectionExportFile from '../postman/writeApiPostmanColle
 import generateTypesForServices from '../metadata/generateTypesForService';
 import getNestedClasses from '../metadata/getNestedClasses';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
+import log, { Severity } from '../observability/logging/log';
 
 export interface ControllerInitOptions {
   generatePostmanTestFile?: boolean;
@@ -61,7 +62,7 @@ export default function initializeController(
   generateTypesForServices(controller);
 
   Object.entries(controller)
-    .filter(([, value]: [string, any]) => typeof value === 'object' && value.constructor !== Object)
+    .filter(([, service]: [string, any]) => service instanceof BaseService)
     .forEach(([serviceName]: [string, any]) => {
       getNestedClasses(Object.keys(controller[serviceName].Types ?? {}), controller[serviceName].Types);
       Object.entries(controller[serviceName].Types ?? {}).forEach(([, typeClass]: [string, any]) => {
@@ -101,4 +102,11 @@ export default function initializeController(
   if (process.env.NODE_ENV === 'development' && (controllerInitOptions?.generatePostmanApiFile ?? true)) {
     writeApiPostmanCollectionExportFile(controller, servicesMetadata);
   }
+
+  const serviceNames = Object.entries(controller)
+    .filter(([, service]: [string, any]) => service instanceof BaseService)
+    .map(([serviceName]) => serviceName)
+    .join(', ');
+
+  log(Severity.INFO, 'Services initialized', serviceNames);
 }

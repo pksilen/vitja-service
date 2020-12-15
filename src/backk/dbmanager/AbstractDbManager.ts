@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { getNamespace, Namespace } from 'cls-hooked';
 import { FilterQuery, MongoClient } from 'mongodb';
 import { Pool } from 'pg';
@@ -13,6 +14,8 @@ import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
 import BaseService from '../service/BaseService';
 import { SubEntity } from '../types/entities/SubEntity';
+import __Backk__CronJobScheduling from "../scheduling/entities/__Backk__CronJobScheduling";
+import __Backk__JobScheduling from "../scheduling/entities/__Backk__JobScheduling";
 
 export interface Field {
   name: string;
@@ -30,7 +33,9 @@ export default abstract class AbstractDbManager {
   }
 
   getTypes(): Readonly<object> {
-    return this.services.reduce((types, service) => ({ ...types, ...service.Types }), {});
+    return this.services.reduce((types, service) => ({ ...types, ...service.Types }), {
+      __Backk__CronJobScheduling, __Backk__JobScheduling
+    });
   }
 
   getType(Type: new () => any): new () => any {
@@ -244,6 +249,11 @@ export default abstract class AbstractDbManager {
   abstract deleteEntitiesWhere<T extends object>(
     fieldName: string,
     fieldValue: T[keyof T],
+    entityClass: new () => T
+  ): Promise<void | ErrorResponse>;
+
+  abstract deleteEntitiesByFilters<T extends object>(
+    filters: FilterQuery<T> | Partial<T> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T
   ): Promise<void | ErrorResponse>;
 

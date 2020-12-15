@@ -4,7 +4,7 @@ import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServic
 import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
 import { FunctionDocumentation } from '../../backk/decorators/service/function/FunctionDocumentation';
-import { AllowForServiceInternalUseOnly } from '../../backk/decorators/service/function/AllowForServiceInternalUseOnly';
+import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
 import ServiceDocumentation from '../../backk/decorators/service/ServiceDocumentation';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import UserName from './types/args/UserName';
@@ -51,7 +51,7 @@ export default class UsersServiceImpl extends UsersService {
       : UsersServiceImpl.getUserResponse(userOrErrorResponse);
   }
 
-  @AllowForServiceInternalUseOnly()
+  @AllowForServiceInternalUse()
   async getUserById({ _id }: _Id): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.getEntityById(_id, User);
     return 'errorMessage' in userOrErrorResponse

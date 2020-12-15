@@ -358,7 +358,14 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entityClass: new () => T
   ): Promise<void | ErrorResponse> {
-    throw new Error();
+    throw new Error('Not implemented');
+  }
+
+  deleteEntitiesByFilters<T extends object>(
+    filters: FilterQuery<T> | Partial<T> | SqlExpression[] | UserDefinedFilter[],
+    entityClass: new() => T
+  ): Promise<void | ErrorResponse> {
+    throw new Error('Not implemented')
   }
 
   removeSubEntities<T extends Entity>(

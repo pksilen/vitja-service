@@ -72,7 +72,7 @@ class ServiceFunctionAnnotationContainer {
   }
 
   addCronScheduleForServiceFunction(serviceClass: Function, functionName: string, cronSchedule: string) {
-    this.serviceFunctionNameToCronScheduleMap[`${serviceClass.name}${functionName}`] = cronSchedule;
+    this.serviceFunctionNameToCronScheduleMap[`${serviceClass.name}.${functionName}`] = cronSchedule;
   }
 
   addRetryIntervalsInSecsForServiceFunction(
@@ -81,7 +81,7 @@ class ServiceFunctionAnnotationContainer {
     retryIntervalsInSecs: number[]
   ) {
     this.serviceFunctionNameToRetryIntervalsInSecsMap[
-      `${serviceClass.name}${functionName}`
+      `${serviceClass.name}.${functionName}`
     ] = retryIntervalsInSecs;
   }
 

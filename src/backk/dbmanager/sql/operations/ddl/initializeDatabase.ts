@@ -104,7 +104,7 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
       }
     );
 
-    initializeCronJobSchedulingTable(dbManager);
+    await initializeCronJobSchedulingTable(dbManager);
   } catch (error) {
     logError(error);
     return false;

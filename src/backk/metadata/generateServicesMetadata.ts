@@ -7,12 +7,14 @@ import { FunctionMetadata } from './types/FunctionMetadata';
 import getValidationMetadata from './getValidationMetadata';
 import getTypeDocumentation from './getTypeDocumentation';
 import getTypePropertyModifiers from './getTypePropertyModifiers';
-import CrudResourceService from "../crudresource/CrudResourceService";
-import assertFunctionNamesAreValidForCrudResourceService
-  from "../crudresource/assertFunctionNamesAreValidForCrudResourceService";
-import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import CrudResourceService from '../crudresource/CrudResourceService';
+import assertFunctionNamesAreValidForCrudResourceService from '../crudresource/assertFunctionNamesAreValidForCrudResourceService';
+import AbstractDbManager from '../dbmanager/AbstractDbManager';
 
-export default function generateServicesMetadata<T>(controller: T, dbManager: AbstractDbManager): ServiceMetadata[] {
+export default function generateServicesMetadata<T>(
+  controller: T,
+  dbManager: AbstractDbManager
+): ServiceMetadata[] {
   return Object.entries(controller)
     .filter(([, service]: [string, any]) => service instanceof BaseService)
     .map(([serviceName, service]: [string, any]) => {
@@ -30,7 +32,12 @@ export default function generateServicesMetadata<T>(controller: T, dbManager: Ab
           const isResponseValueType = Object.values(
             (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
           ).includes(typeName);
-          const typeObject = getClassPropertyNameToPropertyTypeNameMap(Class, dbManager, true, isResponseValueType);
+          const typeObject = getClassPropertyNameToPropertyTypeNameMap(
+            Class,
+            dbManager,
+            true,
+            isResponseValueType
+          );
           return { ...accumulatedTypes, [typeName]: typeObject };
         },
         {}
@@ -49,6 +56,10 @@ export default function generateServicesMetadata<T>(controller: T, dbManager: Ab
           (functionName) =>
             !serviceFunctionAnnotationContainer.isServiceFunctionPrivate(
               (controller as any)[serviceName].constructor,
+              functionName
+            ) &&
+            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(
+              ServiceClass,
               functionName
             )
         )

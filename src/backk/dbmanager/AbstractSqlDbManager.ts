@@ -33,6 +33,8 @@ import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
 import updateEntityWhere from './sql/operations/dml/updateEntityWhere';
 import getAllEntities from './sql/operations/dql/getAllEntities';
 import { SubEntity } from '../types/entities/SubEntity';
+import { FilterQuery } from 'mongodb';
+import deleteEntitiesByFilters from './sql/operations/dml/deleteEntitiesByFilters';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -74,7 +76,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   async isDbReady(): Promise<boolean> {
     try {
-      await this.tryExecuteSqlWithoutCls(`SELECT * FROM ${this.schema.toLowerCase()}.__backk__`, undefined, false);
+      await this.tryExecuteSqlWithoutCls(
+        `SELECT * FROM ${this.schema.toLowerCase()}.__backk__`,
+        undefined,
+        false
+      );
       return true;
     } catch (error) {
       try {
@@ -589,6 +595,16 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesWhere');
     const response = deleteEntitiesWhere(this, fieldName, fieldValue, entityClass);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  deleteEntitiesByFilters<T extends object>(
+    filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
+    entityClass: new () => T
+  ): Promise<void | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
+    const response = deleteEntitiesByFilters(this, filters, entityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
