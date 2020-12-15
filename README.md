@@ -4,7 +4,6 @@ TODO
 - Sales item cron job: send email if sales item is going to be removed at 18:00
     - Remove old sales items cron job at 02:00
 - deleteOrderitem calls refund service
-- refund returned order item
 - Watch and re-read log level from config map
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.

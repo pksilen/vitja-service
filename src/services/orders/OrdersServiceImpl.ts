@@ -93,11 +93,18 @@ export default class OrdersServiceImpl extends OrdersService {
   @AllowForSelf()
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.removeSubEntityById(orderId, 'orderItems', orderItemId, Order, {
-      currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-      hookFunc: ([state]) => state === 'toBeDelivered',
-      error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
-    });
+    return this.dbManager.executeInsideTransaction(
+      async () =>
+        (await this.dbManager.removeSubEntityById(orderId, 'orderItems', orderItemId, Order, {
+          currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
+          hookFunc: ([state]) => state === 'toBeDelivered',
+          error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+        })) ||
+        (await sendTo(`kafka://${process.env.KAFKA_SERVER}/refund-service/refundService.refundOrderItem`, {
+          orderId,
+          orderItemId
+        }))
+    );
   }
 
   @AllowForTests()
@@ -134,31 +141,30 @@ export default class OrdersServiceImpl extends OrdersService {
     orderItemId,
     ...restOfArg
   }: DeliverOrderItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      const possibleErrorResponse = await this.dbManager.updateEntity(
-        {
-          _id: orderId,
-          orderItems: [{ state: 'delivering' as 'delivering', id: orderItemId, ...restOfArg }]
-        },
-        Order,
-        [],
-        {
-          currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-          hookFunc: ([state]) => state === 'toBeDelivered',
-          error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
-        }
-      );
-
-      return possibleErrorResponse
-        || sendTo(
-            `kafka://${process.env.KAFKA_SERVER}/notification-service/orderNotificationsService.sendOrderItemDeliveryNotification`,
-            {
-              orderId,
-              orderItemId,
-              ...restOfArg
-            }
-          );
-    });
+    return this.dbManager.executeInsideTransaction(
+      async () =>
+        (await this.dbManager.updateEntity(
+          {
+            _id: orderId,
+            orderItems: [{ state: 'delivering', id: orderItemId, ...restOfArg }]
+          },
+          Order,
+          [],
+          {
+            currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
+            hookFunc: ([state]) => state === 'toBeDelivered',
+            error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+          }
+        )) ||
+        (await sendTo(
+          `kafka://${process.env.KAFKA_SERVER}/notification-service/orderNotificationsService.sendOrderItemDeliveryNotification`,
+          {
+            orderId,
+            orderItemId,
+            ...restOfArg
+          }
+        ))
+    );
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
@@ -168,7 +174,7 @@ export default class OrdersServiceImpl extends OrdersService {
     orderItemId,
     newState
   }: UpdateOrderItemStateArg): Promise<void | ErrorResponse> {
-    return this.dbManager.executeInsideTransaction( async () => {
+    return this.dbManager.executeInsideTransaction(async () => {
       let possibleErrorResponse = await this.dbManager.updateEntity(
         { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
         Order,
@@ -178,12 +184,12 @@ export default class OrdersServiceImpl extends OrdersService {
           hookFunc: async ([{ salesItemId, state }]) =>
             (newState === 'returned'
               ? await this.salesItemsService.updateSalesItemState(
-                {
-                  _id: salesItemId,
-                  newState: 'forSale'
-                },
-                'sold'
-              )
+                  {
+                    _id: salesItemId,
+                    newState: 'forSale'
+                  },
+                  'sold'
+                )
               : false) || state === OrdersServiceImpl.getPreviousOrderStateFor(newState),
           error: INVALID_ORDER_ITEM_STATE
         }
@@ -191,7 +197,7 @@ export default class OrdersServiceImpl extends OrdersService {
 
       if (newState === 'returned') {
         possibleErrorResponse = await sendTo(
-          `kafka://${process.env.KAFKA_SERVER}/refund-service/refundService.refundReturnedOrderItem`,
+          `kafka://${process.env.KAFKA_SERVER}/refund-service/refundService.refundOrderItem`,
           {
             orderId,
             orderItemId
@@ -200,7 +206,7 @@ export default class OrdersServiceImpl extends OrdersService {
       }
 
       return possibleErrorResponse;
-    })
+    });
   }
 
   @AllowForSelf()
