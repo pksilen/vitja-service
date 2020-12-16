@@ -23,7 +23,7 @@ import getNamespacedServiceName from '../utils/getServiceNamespace';
 import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
 import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
 import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
-import scheduleJobExecution from '../scheduling/scheduleJobExecution';
+import tryScheduleJobExecution from '../scheduling/tryScheduleJobExecution';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -99,7 +99,7 @@ export default async function tryExecuteServiceMethod(
         options
       );
     } else if (serviceFunction === 'scheduleJobExecution') {
-      return scheduleJobExecution(controller, serviceFunctionArgument, headers, resp);
+      return tryScheduleJobExecution(controller, serviceFunctionArgument, headers, resp);
     }
   }
 

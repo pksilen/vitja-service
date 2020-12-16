@@ -12,6 +12,7 @@ import getNestedClasses from '../metadata/getNestedClasses';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import log, { Severity } from '../observability/logging/log';
 import executeCronJobs from "../scheduling/executeCronJobs";
+import executeScheduledJobs from "../scheduling/executeScheduledJobs";
 
 export interface ControllerInitOptions {
   generatePostmanTestFile?: boolean;
@@ -110,6 +111,7 @@ export default function initializeController(
     .join(', ');
 
   executeCronJobs(controller, dbManager);
+  executeScheduledJobs(controller, dbManager);
 
   log(Severity.INFO, 'Services initialized', serviceNames);
 }

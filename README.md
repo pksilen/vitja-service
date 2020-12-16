@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO
-    - Remove old sales items cron job at 02:00
 - Test scheduleJob + execution
+- Authorize before scheduling a job
 - Test execute multiple
 - Test execute multiple with passing response value to argument of next function
 - Watch and re-read log level from config map

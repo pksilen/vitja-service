@@ -14,12 +14,6 @@ export default class __Backk__JobScheduling extends _Id {
 
   scheduledExecutionTimestamp!: Date;
 
-  @MaxLength(64)
-  executionSchedulingId!: string;
-
   @MaxLength(512)
   retryIntervalsInSecs!: string;
-
-  @MaxLength(512)
-  schedulingServiceInstanceId!: string;
 }
