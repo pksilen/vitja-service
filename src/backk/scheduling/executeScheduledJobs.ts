@@ -29,7 +29,7 @@ export default async function executeScheduledJobs(controller: any, dbManager: A
     return;
   }
 
- await forEachAsyncParallel(
+  await forEachAsyncParallel(
     scheduledJobsOrErrorResponse,
     async ({
       _id,
@@ -45,7 +45,7 @@ export default async function executeScheduledJobs(controller: any, dbManager: A
         _id,
         controller,
         serviceFunctionName,
-        JSON.parse(serviceFunctionArgument)
+        serviceFunctionArgument ? JSON.parse(serviceFunctionArgument) : undefined
       );
     }
   );

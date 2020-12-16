@@ -41,7 +41,7 @@ export async function scheduleCronJob(
               (await tryExecuteServiceMethod(
                 controller,
                 serviceFunctionName,
-                serviceFunctionArgument,
+                serviceFunctionArgument ?? {},
                 {  },
                 undefined,
                 undefined,
@@ -88,7 +88,7 @@ export default async function tryScheduleJobExecution(
   } = scheduledExecutionArgument;
 
   const retryIntervalsInSecsStr = retryIntervalsInSecs.join(',');
-  const serviceFunctionArgumentStr = JSON.stringify(serviceFunctionArgument);
+  const serviceFunctionArgumentStr = serviceFunctionArgument ? JSON.stringify(serviceFunctionArgument): '';
   const scheduledExecutionTimestampAsDate = new Date(Date.parse(scheduledExecutionTimestamp));
   // TODO check that seconds are zero, because 1 min granularity only allowed
   const [serviceName] = serviceFunctionName.split('.');
