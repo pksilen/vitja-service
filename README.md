@@ -2,6 +2,9 @@
 
 TODO
     - Remove old sales items cron job at 02:00
+- Test scheduleJob + execution
+- Test execute multiple
+- Test execute multiple with passing response value to argument of next function
 - Watch and re-read log level from config map
 - Allow one scheduleCronJob per function
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
@@ -24,10 +27,12 @@ TODO
    http-kubernetes-mongodb
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
+- Use DATETIME instead of TIMESTAMP for mySql
 - Split services to different microservices
   - Create notification-service
     - Sales item cron job: send email at 16:00 if sales item is going to be removed
-- call remote service testing, find argument type from git submodule
+- call remote service testing, find service function argument/return type from git submodule dir or monorepo dir
+  - Validate call argument against parsed Class. Generate return value sample arg.
 
 TODO NEXT RELEASE:
 - Kafka sendTo integration tests, create topic name with uuid postfix, use that and delete topic at end of testing
