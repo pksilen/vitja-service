@@ -72,7 +72,9 @@ class ServiceFunctionAnnotationContainer {
   }
 
   addCronScheduleForServiceFunction(serviceClass: Function, functionName: string, cronSchedule: string) {
-    this.serviceFunctionNameToCronScheduleMap[`${serviceClass.name}.${functionName}`] = cronSchedule;
+    this.serviceFunctionNameToCronScheduleMap[
+      `${serviceClass.name.charAt(0).toLowerCase() + serviceClass.name.slice(1)}.${functionName}`
+    ] = cronSchedule;
   }
 
   addRetryIntervalsInSecsForServiceFunction(
@@ -81,7 +83,7 @@ class ServiceFunctionAnnotationContainer {
     retryIntervalsInSecs: number[]
   ) {
     this.serviceFunctionNameToRetryIntervalsInSecsMap[
-      `${serviceClass.name}.${functionName}`
+      `${serviceClass.name.charAt(0).toLowerCase() + serviceClass.name.slice(1)}.${functionName}`
     ] = retryIntervalsInSecs;
   }
 
@@ -268,9 +270,8 @@ class ServiceFunctionAnnotationContainer {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToIsUpdateFunctionMap[
-          `${proto.constructor.name}${functionName}`
-          ] !== undefined
+        this.serviceFunctionNameToIsUpdateFunctionMap[`${proto.constructor.name}${functionName}`] !==
+        undefined
       ) {
         return true;
       }

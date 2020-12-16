@@ -6,8 +6,6 @@ export type Range = {
 };
 
 export type CronSchedule = {
-  seconds?: number | number[] | Range;
-  secondInterval?: number;
   minutes?: number | number[] | Range;
   minuteInterval?: number;
   hours?: number | number[] | Range;
@@ -54,7 +52,7 @@ export function CronJob(cronSchedule: CronSchedule, retryIntervalsInSecs: number
     .map((defaultCronParameter, index) => {
       // noinspection IfStatementWithTooManyBranchesJS
       if (index === 0) {
-        return getCronValuesStr(cronSchedule.seconds) + getCronIntervalStr(cronSchedule.secondInterval);
+        return '0';
       } else if (index === 1) {
         return getCronValuesStr(cronSchedule.minutes) + getCronIntervalStr(cronSchedule.minuteInterval);
       } else if (index === 2) {
@@ -74,7 +72,7 @@ export function CronJob(cronSchedule: CronSchedule, retryIntervalsInSecs: number
   // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, functionName: string) {
     const superClassPrototype = Object.getPrototypeOf(object);
-    console.log(superClassPrototype.constructor.name);
+
     serviceFunctionAnnotationContainer.addCronScheduleForServiceFunction(
       superClassPrototype.constructor,
       functionName,

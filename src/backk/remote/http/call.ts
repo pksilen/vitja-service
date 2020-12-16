@@ -48,7 +48,7 @@ export default async function call<T>(
       }
     });
 
-    const responseBody = await response.json();
+    const responseBody = response.size > 0 ? await response.json() : undefined;
 
     if (response.status >= HttpStatusCodes.ERRORS_START) {
       const errorMessage = isErrorResponse(responseBody)

@@ -27,7 +27,7 @@ TODO
 - Split services to different microservices
   - Create notification-service
     - Sales item cron job: send email at 16:00 if sales item is going to be removed
-
+- call remote service testing, find argument type from git submodule
 
 TODO NEXT RELEASE:
 - Kafka sendTo integration tests, create topic name with uuid postfix, use that and delete topic at end of testing

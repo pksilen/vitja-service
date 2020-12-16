@@ -1,6 +1,6 @@
 import { HttpException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
-import { createNamespace } from 'cls-hooked';
+import { createNamespace, getNamespace } from 'cls-hooked';
 import _ from 'lodash';
 import Redis from 'ioredis';
 import tryAuthorize from '../authorization/tryAuthorize';
@@ -41,7 +41,8 @@ export default async function tryExecuteServiceMethod(
   serviceFunctionArgument: any,
   headers: { [key: string]: string },
   resp?: any,
-  options?: ExecuteServiceFunctionOptions
+  options?: ExecuteServiceFunctionOptions,
+  shouldCreateClsNamespace = true
 ): Promise<void | object> {
   if (options?.isMultipleServiceFunctionExecutionsAllowed ?? false) {
     if (options?.maxServiceFunctionCountInMultipleServiceFunctionExecution) {
@@ -299,7 +300,10 @@ export default async function tryExecuteServiceMethod(
     let ttl;
 
     if (!response) {
-      const clsNamespace = createNamespace('serviceFunctionExecution');
+      const clsNamespace = shouldCreateClsNamespace
+        ? createNamespace('serviceFunctionExecution')
+        : getNamespace('serviceFunctionExecution')!;
+
       response = await clsNamespace.runAndReturn(async () => {
         clsNamespace.set('authHeader', headers.Authorization);
         clsNamespace.set('dbLocalTransactionCount', 0);
@@ -433,9 +437,9 @@ export default async function tryExecuteServiceMethod(
             response = undefined;
             resp?.status(HttpStatusCodes.NOT_MODIFIED);
           }
-          if (typeof resp.header === 'function') {
+          if (typeof resp?.header === 'function') {
             resp?.header('ETag', response.version);
-          } else if (typeof resp.set === 'function') {
+          } else if (typeof resp?.set === 'function') {
             resp?.set('ETag', response.version);
           }
         }
@@ -449,17 +453,17 @@ export default async function tryExecuteServiceMethod(
     );
 
     if (ttl) {
-      if (typeof resp.header === 'function') {
+      if (typeof resp?.header === 'function') {
         resp?.header('Cache-Control', 'max-age=' + ttl);
-      } else if (typeof resp.set === 'function') {
+      } else if (typeof resp?.set === 'function') {
         resp?.set('Cache-Control', 'max-age=' + ttl);
       }
     }
 
-    if (typeof resp.header === 'function') {
+    if (typeof resp?.header === 'function') {
       resp?.header('X-content-type-options', 'nosniff');
       resp?.header('Strict-Transport-Security', 'max-age=' + MAX_INT_VALUE + '; includeSubDomains');
-    } else if (typeof resp.set === 'function') {
+    } else if (typeof resp?.set === 'function') {
       resp?.set('X-content-type-options', 'nosniff');
       resp?.set('Strict-Transport-Security', 'max-age=' + MAX_INT_VALUE + '; includeSubDomains');
     }

@@ -1,4 +1,3 @@
-import generateServicesDocumentation from "../documentation/generateServicesDocumentation";
 import defaultSystemAndNodeJsMetrics from "../observability/metrics/defaultSystemAndNodeJsMetrics";
 import initializeDatabase from "../dbmanager/sql/operations/ddl/initializeDatabase";
 import executeCronJobs from "../scheduling/executeCronJobs";
@@ -11,7 +10,6 @@ export default async function initializeBackk(app: any, dbManager: AbstractDbMan
   logEnvironment();
   defaultSystemAndNodeJsMetrics.startCollectingMetrics();
   await initializeDatabase(dbManager);
-  executeCronJobs(dbManager);
   executeScheduledJobs(dbManager);
   await app.listen(3000);
   log(Severity.INFO, 'Service started', '');
