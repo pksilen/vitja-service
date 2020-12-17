@@ -7,6 +7,10 @@ TODO
 - Test execute multiple with passing response value to argument of next function
 - Watch and re-read log level from config map
 - Allow one scheduleCronJob per function
+- Use DATETIME instead of TIMESTAMP for mySql
+- in transformRowsToObject, split processing to 1000 row chunks
+- call remote service testing, find service function argument/return type from git submodule dir or monorepo dir
+- Validate call argument against parsed Class. Generate return value sample arg.
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
@@ -19,7 +23,7 @@ TODO
     - follow(userId, userdId + 1)
 - Unit testaa: shouldIncludeField eri keissit 
 - Organize adding validation groups in separate method in correct order
-  - Organize checking missing validations in separate method
+- Organize checking missing validations in separate method
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:
    http-kubernetes-mysql,
@@ -27,12 +31,10 @@ TODO
    http-kubernetes-mongodb
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
-- Use DATETIME instead of TIMESTAMP for mySql
 - Split services to different microservices
   - Create notification-service
     - Sales item cron job: send email at 16:00 if sales item is going to be removed
-- call remote service testing, find service function argument/return type from git submodule dir or monorepo dir
-  - Validate call argument against parsed Class. Generate return value sample arg.
+
 
 TODO NEXT RELEASE:
 - Kafka sendTo integration tests, create topic name with uuid postfix, use that and delete topic at end of testing

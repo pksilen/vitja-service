@@ -44,6 +44,7 @@ export default async function tryExecuteServiceMethod(
   options?: ExecuteServiceFunctionOptions,
   shouldCreateClsNamespace = true
 ): Promise<void | object> {
+
   if (options?.isMultipleServiceFunctionExecutionsAllowed ?? false) {
     if (options?.maxServiceFunctionCountInMultipleServiceFunctionExecution) {
       if (
@@ -98,9 +99,11 @@ export default async function tryExecuteServiceMethod(
         resp,
         options
       );
-    } else if (serviceFunction === 'scheduleJobExecution') {
-      return tryScheduleJobExecution(controller, serviceFunctionArgument, headers, resp);
     }
+  }
+
+  if (serviceFunction === 'scheduleJobExecution') {
+    return tryScheduleJobExecution(controller, serviceFunctionArgument, headers, resp);
   }
 
   const [serviceName, functionName] = serviceFunction.split('.');
