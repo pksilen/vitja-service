@@ -1,4 +1,5 @@
 import { ArrayMaxSize, IsArray, IsDate, IsInt, IsString, MaxLength } from 'class-validator';
+import { Type } from "class-transformer";
 
 export default class JobScheduling {
   @IsString()
@@ -6,6 +7,7 @@ export default class JobScheduling {
   serviceFunctionName!: string;
 
   @IsDate()
+  @Type(() => Date)
   scheduledExecutionTimestamp!: Date;
 
   @IsInt({ each: true })

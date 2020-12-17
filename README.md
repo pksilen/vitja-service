@@ -1,13 +1,10 @@
 # Vitja service
 
 TODO
-- Test scheduleJob + execution
-- Authorize before scheduling a job
 - Test execute multiple
 - Test execute multiple with passing response value to argument of next function
 - Watch and re-read log level from config map
 - Allow one scheduleCronJob per function
-- Use DATETIME instead of TIMESTAMP for mySql
 - in transformRowsToObject, split processing to 1000 row chunks
 - call remote service testing, find service function argument/return type from git submodule dir or monorepo dir
 - Validate call argument against parsed Class. Generate return value sample arg.

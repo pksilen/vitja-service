@@ -102,10 +102,6 @@ export default async function tryExecuteServiceMethod(
     }
   }
 
-  if (serviceFunction === 'scheduleJobExecution') {
-    return tryScheduleJobExecution(controller, serviceFunctionArgument, headers, resp);
-  }
-
   const [serviceName, functionName] = serviceFunction.split('.');
   let response;
   let storedError;
@@ -117,6 +113,10 @@ export default async function tryExecuteServiceMethod(
     defaultServiceMetrics.incrementServiceFunctionCallsByOne(serviceFunction);
 
     const serviceFunctionCallStartTimeInMillis = Date.now();
+
+    if (serviceFunction === 'scheduleJobExecution') {
+      return await tryScheduleJobExecution(controller, serviceFunctionArgument, headers, resp);
+    }
 
     if (options?.httpMethod === 'GET') {
       if (

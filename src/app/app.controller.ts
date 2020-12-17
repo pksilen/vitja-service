@@ -56,7 +56,7 @@ export class AppController {
     @Res() response: any
   ) {
     // noinspection JSIgnoredPromiseFromCall
-    tryExecuteServiceMethod(
+    return tryExecuteServiceMethod(
       this,
       params.serviceFunctionName,
       serviceFunctionArgument,
@@ -84,7 +84,7 @@ export class AppController {
     @Res() response: any
   ) {
     // noinspection JSIgnoredPromiseFromCall
-    tryExecuteServiceMethod(
+    return tryExecuteServiceMethod(
       this,
       params.serviceFunctionName,
       serviceFunctionArgument,

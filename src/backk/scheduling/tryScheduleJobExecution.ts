@@ -1,14 +1,22 @@
-import { CronJob } from 'cron';
-import tryExecuteServiceMethod from '../execution/tryExecuteServiceMethod';
-import findAsyncSequential from '../utils/findAsyncSequential';
-import delay from '../utils/delay';
-import { createNamespace } from 'cls-hooked';
-import BaseService from '../service/BaseService';
+import { CronJob } from "cron";
+import tryExecuteServiceMethod from "../execution/tryExecuteServiceMethod";
+import findAsyncSequential from "../utils/findAsyncSequential";
+import delay from "../utils/delay";
+import { createNamespace } from "cls-hooked";
+import BaseService from "../service/BaseService";
 // eslint-disable-next-line @typescript-eslint/camelcase
-import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
-import { ErrorResponse } from '../types/ErrorResponse';
-import { logError } from '../observability/logging/log';
+import __Backk__JobScheduling from "./entities/__Backk__JobScheduling";
+import { ErrorResponse } from "../types/ErrorResponse";
+import { logError } from "../observability/logging/log";
 import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import { validateOrReject } from "class-validator";
+import getValidationErrors from "../validation/getValidationErrors";
+import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
+import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
+import { HttpStatusCodes } from "../constants/constants";
+import { plainToClass } from "class-transformer";
+import JobScheduling from "./entities/JobScheduling";
+import { HttpException } from "@nestjs/common";
 
 const scheduledJobs: { [key: string]: CronJob } = {};
 
@@ -19,7 +27,7 @@ export async function scheduleCronJob(
   jobId: string,
   controller: any,
   serviceFunctionName: string,
-  serviceFunctionArgument: any,
+  serviceFunctionArgument: any
 ) {
   const job = new CronJob(scheduledExecutionTimestampAsDate, async () => {
     await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
@@ -29,20 +37,16 @@ export async function scheduleCronJob(
         try {
           await dbManager.tryReserveDbConnectionFromPool();
           const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
-            const possibleErrorResponse = await dbManager.deleteEntityById(
-              jobId,
-              __Backk__JobScheduling,
-              {
-                hookFunc: (jobScheduling: any) => jobScheduling.length !== 0
-              }
-            );
+            const possibleErrorResponse = await dbManager.deleteEntityById(jobId, __Backk__JobScheduling, {
+              hookFunc: (jobScheduling: any) => jobScheduling.length !== 0
+            });
             return (
               possibleErrorResponse ||
               (await tryExecuteServiceMethod(
                 controller,
                 serviceFunctionName,
                 serviceFunctionArgument ?? {},
-                {  },
+                {},
                 undefined,
                 undefined,
                 false
@@ -75,6 +79,21 @@ export default async function tryScheduleJobExecution(
   headers: { [key: string]: string },
   resp?: any
 ) {
+  const instantiatedScheduledExecutionArgument = plainToClass(JobScheduling, scheduledExecutionArgument);
+
+  try {
+    await validateOrReject(instantiatedScheduledExecutionArgument, {
+      whitelist: true,
+      forbidNonWhitelisted: true
+    });
+  } catch (validationErrors) {
+    const errorMessage =
+      'Error code invalidArgument: Invalid argument: ' + getValidationErrors(validationErrors);
+    createErrorFromErrorMessageAndThrowError(
+      createErrorMessageWithStatusCode(errorMessage, HttpStatusCodes.BAD_REQUEST)
+    );
+  }
+
   const {
     serviceFunctionName,
     scheduledExecutionTimestamp,
@@ -87,11 +106,30 @@ export default async function tryScheduleJobExecution(
     retryIntervalsInSecs: number[];
   } = scheduledExecutionArgument;
 
+  const [serviceName, functionName] = serviceFunctionName.split('.');
+
+  if (!controller[serviceName]) {
+    createErrorFromErrorMessageAndThrowError(
+      createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, HttpStatusCodes.BAD_REQUEST)
+    );
+  }
+
+  const serviceFunctionResponseValueTypeName =
+    controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName];
+
+  if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
+    createErrorFromErrorMessageAndThrowError(
+      createErrorMessageWithStatusCode(
+        `Unknown function: ${serviceName}.${functionName}`,
+        HttpStatusCodes.BAD_REQUEST
+      )
+    );
+  }
+
   const retryIntervalsInSecsStr = retryIntervalsInSecs.join(',');
-  const serviceFunctionArgumentStr = serviceFunctionArgument ? JSON.stringify(serviceFunctionArgument): '';
+  const serviceFunctionArgumentStr = serviceFunctionArgument ? JSON.stringify(serviceFunctionArgument) : '';
   const scheduledExecutionTimestampAsDate = new Date(Date.parse(scheduledExecutionTimestamp));
   // TODO check that seconds are zero, because 1 min granularity only allowed
-  const [serviceName] = serviceFunctionName.split('.');
   const dbManager = (controller[serviceName] as BaseService).getDbManager();
   // eslint-disable-next-line @typescript-eslint/camelcase
   let entityOrErrorResponse: __Backk__JobScheduling | ErrorResponse | undefined;
