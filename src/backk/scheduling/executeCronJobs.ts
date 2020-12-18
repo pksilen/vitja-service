@@ -1,16 +1,15 @@
-import { CronJob } from "cron";
-import parser from "cron-parser";
-import AbstractDbManager from "../dbmanager/AbstractDbManager";
-import serviceFunctionAnnotationContainer
-  from "../decorators/service/function/serviceFunctionAnnotationContainer";
+import { CronJob } from 'cron';
+import parser from 'cron-parser';
+import AbstractDbManager from '../dbmanager/AbstractDbManager';
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
 // eslint-disable-next-line @typescript-eslint/camelcase
-import __Backk__CronJobScheduling from "./entities/__Backk__CronJobScheduling";
-import findAsyncSequential from "../utils/findAsyncSequential";
-import delay from "../utils/delay";
-import { createNamespace } from "cls-hooked";
-import { logError } from "../observability/logging/log";
-import isErrorResponse from "../errors/isErrorResponse";
-import tryExecuteServiceMethod from "../execution/tryExecuteServiceMethod";
+import __Backk__CronJobScheduling from './entities/__Backk__CronJobScheduling';
+import findAsyncSequential from '../utils/findAsyncSequential';
+import delay from '../utils/delay';
+import { createNamespace } from 'cls-hooked';
+import { logError } from '../observability/logging/log';
+import isErrorResponse from '../errors/isErrorResponse';
+import tryExecuteServiceMethod from '../execution/tryExecuteServiceMethod';
 
 const cronJobs: { [key: string]: CronJob } = {};
 
@@ -24,43 +23,50 @@ export default function executeCronJobs(controller: any, dbManager: AbstractDbMa
         const interval = parser.parseExpression(cronSchedule);
         await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
           await delay(retryIntervalInSecs * 1000);
-          const clsNamespace = createNamespace('serviceFunctionExecution');
+          const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
+          const clsNamespace2 = createNamespace('serviceFunctionExecution');
           return await clsNamespace.runAndReturn(async () => {
-            try {
-              await dbManager.tryReserveDbConnectionFromPool();
-              const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
-                const possibleErrorResponse = await dbManager.updateEntityWhere(
-                  'serviceFunctionName',
-                  serviceFunctionName,
-                  { lastScheduledTimestamp: new Date(), nextScheduledTimestamp: interval.next().toDate() },
-                  __Backk__CronJobScheduling,
-                  {
-                    hookFunc: ([{ nextScheduledTimestamp }]) =>
-                      Math.abs(Date.now() - nextScheduledTimestamp.valueOf()) < 500
-                  }
-                );
-
-                return (
-                  possibleErrorResponse ||
-                  (await tryExecuteServiceMethod(
-                    controller,
+            return await clsNamespace2.runAndReturn(async () => {
+              try {
+                await dbManager.tryReserveDbConnectionFromPool();
+                clsNamespace.set('connection', true);
+                const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
+                  clsNamespace.set('globalTransaction', true);
+                  const possibleErrorResponse = await dbManager.updateEntityWhere(
+                    'serviceFunctionName',
                     serviceFunctionName,
-                    {},
-                    {},
-                    undefined,
-                    undefined,
-                    false
-                  ))
-                );
-              });
+                    { lastScheduledTimestamp: new Date(), nextScheduledTimestamp: interval.next().toDate() },
+                    __Backk__CronJobScheduling,
+                    {
+                      hookFunc: ([{ nextScheduledTimestamp }]) =>
+                        Math.abs(Date.now() - nextScheduledTimestamp.valueOf()) < 500
+                    }
+                  );
 
-              return !isErrorResponse(possibleErrorResponse);
-            } catch (error) {
-              logError(error);
-              return false;
-            } finally {
-              dbManager.tryReleaseDbConnectionBackToPool();
-            }
+                  return (
+                    possibleErrorResponse ||
+                    (await tryExecuteServiceMethod(
+                      controller,
+                      serviceFunctionName,
+                      {},
+                      {},
+                      undefined,
+                      undefined,
+                      false
+                    ))
+                  );
+                });
+                clsNamespace.set('globalTransaction', true);
+
+                return !isErrorResponse(possibleErrorResponse);
+              } catch (error) {
+                logError(error);
+                return false;
+              } finally {
+                dbManager.tryReleaseDbConnectionBackToPool();
+                clsNamespace.set('connection', false);
+              }
+            });
           });
         });
       });
