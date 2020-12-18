@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO
-- Test execute multiple
-- Test execute multiple with passing response value to argument of next function
 - Test cronJob and scheduleJob
 - Watch and re-read log level from config map
 - Allow one scheduleCronJob per function

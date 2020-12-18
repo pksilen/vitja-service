@@ -7,6 +7,10 @@ import PartialResponse from './PartialResponse';
 import forEachAsyncSequential from '../utils/forEachAsyncSequential';
 import { createNamespace } from 'cls-hooked';
 import BaseService from '../service/BaseService';
+import isValidServiceFunctionName from './isValidServiceFunctionName';
+import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
+import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
+import { HttpStatusCodes } from "../constants/constants";
 
 async function executeMultiple<T>(
   isConcurrent: boolean,
@@ -60,11 +64,31 @@ export default async function executeMultipleServiceFunctions(
   isConcurrent: boolean,
   shouldExecuteInsideTransaction: boolean,
   controller: any,
-  serviceFunctionArgument: object,
+  serviceFunctionCalls: object,
   headers: { [key: string]: string },
   resp?: any,
   options?: ExecuteServiceFunctionOptions
 ): Promise<void | object> {
+  const areServiceFunctionCallsValid = Object.values(serviceFunctionCalls).reduce(
+    (areCallsValid, serviceFunctionCall) =>
+      areCallsValid &&
+      typeof serviceFunctionCall.serviceFunctionName === 'string' &&
+      isValidServiceFunctionName(serviceFunctionCall.serviceFunctionName, controller) &&
+      (serviceFunctionCall.serviceFunctionArgument === undefined ||
+        typeof serviceFunctionCall.serviceFunctionArgument === 'object') &&
+      !Array.isArray(serviceFunctionCall.serviceFunctionArgument),
+    true
+  );
+
+  if (!areServiceFunctionCallsValid) {
+    createErrorFromErrorMessageAndThrowError(
+      createErrorMessageWithStatusCode(
+        'One or more invalid service function calls',
+        HttpStatusCodes.BAD_REQUEST
+      )
+    );
+  }
+
   const serviceFunctionCallIdToResponseMap: { [key: string]: ServiceFunctionCallResponse } = {};
   const statusCodes: number[] = [];
   const services = Object.values(controller).filter((service) => service instanceof BaseService);
@@ -82,7 +106,7 @@ export default async function executeMultipleServiceFunctions(
           clsNamespace.set('globalTransaction', true);
           await executeMultiple(
             isConcurrent,
-            serviceFunctionArgument,
+            serviceFunctionCalls,
             controller,
             headers,
             options,
@@ -95,7 +119,7 @@ export default async function executeMultipleServiceFunctions(
         clsNamespace.set('globalTransaction', true);
         await executeMultiple(
           isConcurrent,
-          serviceFunctionArgument,
+          serviceFunctionCalls,
           controller,
           headers,
           options,
