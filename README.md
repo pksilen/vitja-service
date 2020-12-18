@@ -3,6 +3,7 @@
 TODO
 - Test execute multiple
 - Test execute multiple with passing response value to argument of next function
+- Test cronJob and scheduleJob
 - Watch and re-read log level from config map
 - Allow one scheduleCronJob per function
 - in transformRowsToObject, split processing to 1000 row chunks

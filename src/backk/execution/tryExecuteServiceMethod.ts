@@ -24,28 +24,28 @@ import AuditLoggingService from '../observability/logging/audit/AuditLoggingServ
 import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
 import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
 import tryScheduleJobExecution from '../scheduling/tryScheduleJobExecution';
+import isExecuteMultipleRequest from './isExecuteMultipleRequest';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
   allowedServiceFunctionsRegExpForHttpGetMethod?: RegExp;
   deniedServiceFunctionsForForHttpGetMethod?: string[];
   isMetadataServiceEnabled?: boolean;
-  isMultipleServiceFunctionExecutionsAllowed?: boolean;
+  areMultipleServiceFunctionExecutionsAllowed?: boolean;
   maxServiceFunctionCountInMultipleServiceFunctionExecution?: number;
   shouldAllowTemplatesInMultipleServiceFunctionExecution?: boolean;
 }
 
 export default async function tryExecuteServiceMethod(
   controller: any,
-  serviceFunction: string,
+  serviceFunctionName: string,
   serviceFunctionArgument: any,
   headers: { [key: string]: string },
   resp?: any,
   options?: ExecuteServiceFunctionOptions,
   shouldCreateClsNamespace = true
 ): Promise<void | object> {
-
-  if (options?.isMultipleServiceFunctionExecutionsAllowed ?? false) {
+  if (options?.areMultipleServiceFunctionExecutionsAllowed && isExecuteMultipleRequest(serviceFunctionName)) {
     if (options?.maxServiceFunctionCountInMultipleServiceFunctionExecution) {
       if (
         Object.keys(serviceFunctionArgument).length >
@@ -59,7 +59,7 @@ export default async function tryExecuteServiceMethod(
       throw new Error('Missing maxServiceFunctionCountInMultipleServiceFunctionExecution option');
     }
 
-    if (serviceFunction === 'executeMultipleInParallelWithoutTransaction') {
+    if (serviceFunctionName === 'executeMultipleInParallelWithoutTransaction') {
       return await executeMultipleServiceFunctions(
         true,
         false,
@@ -69,7 +69,7 @@ export default async function tryExecuteServiceMethod(
         resp,
         options
       );
-    } else if (serviceFunction === 'executeMultipleInSequenceWithoutTransaction') {
+    } else if (serviceFunctionName === 'executeMultipleInSequenceWithoutTransaction') {
       return await executeMultipleServiceFunctions(
         false,
         false,
@@ -79,7 +79,7 @@ export default async function tryExecuteServiceMethod(
         resp,
         options
       );
-    } else if (serviceFunction === 'executeMultipleInParallelInsideTransaction') {
+    } else if (serviceFunctionName === 'executeMultipleInParallelInsideTransaction') {
       return await executeMultipleServiceFunctions(
         true,
         true,
@@ -89,7 +89,7 @@ export default async function tryExecuteServiceMethod(
         resp,
         options
       );
-    } else if (serviceFunction === 'executeMultipleInSequenceInsideTransaction') {
+    } else if (serviceFunctionName === 'executeMultipleInSequenceInsideTransaction') {
       return executeMultipleServiceFunctions(
         false,
         true,
@@ -102,26 +102,26 @@ export default async function tryExecuteServiceMethod(
     }
   }
 
-  const [serviceName, functionName] = serviceFunction.split('.');
+  const [serviceName, functionName] = serviceFunctionName.split('.');
   let response;
   let storedError;
   let userName;
 
   // noinspection ExceptionCaughtLocallyJS
   try {
-    log(Severity.DEBUG, 'Service function call', serviceFunction);
-    defaultServiceMetrics.incrementServiceFunctionCallsByOne(serviceFunction);
+    log(Severity.DEBUG, 'Service function call', serviceFunctionName);
+    defaultServiceMetrics.incrementServiceFunctionCallsByOne(serviceFunctionName);
 
     const serviceFunctionCallStartTimeInMillis = Date.now();
 
-    if (serviceFunction === 'scheduleJobExecution') {
+    if (serviceFunctionName === 'scheduleJobExecution') {
       return await tryScheduleJobExecution(controller, serviceFunctionArgument, headers, resp);
     }
 
     if (options?.httpMethod === 'GET') {
       if (
-        !serviceFunction.match(options?.allowedServiceFunctionsRegExpForHttpGetMethod ?? /^\w+\.get/) ||
-        options?.deniedServiceFunctionsForForHttpGetMethod?.includes(serviceFunction)
+        !serviceFunctionName.match(options?.allowedServiceFunctionsRegExpForHttpGetMethod ?? /^\w+\.get/) ||
+        options?.deniedServiceFunctionsForForHttpGetMethod?.includes(serviceFunctionName)
       ) {
         createErrorFromErrorMessageAndThrowError(
           createErrorMessageWithStatusCode(
@@ -146,17 +146,17 @@ export default async function tryExecuteServiceMethod(
       }
     }
 
-    if (serviceFunction === 'metadataService.getServicesMetadata') {
+    if (serviceFunctionName === 'metadataService.getServicesMetadata') {
       if (!options || options.isMetadataServiceEnabled === undefined || options.isMetadataServiceEnabled) {
         resp?.send(controller.publicServicesMetadata);
       }
       createErrorFromErrorMessageAndThrowError(
         createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, HttpStatusCodes.BAD_REQUEST)
       );
-    } else if (serviceFunction === 'livenessCheckService.isAlive') {
+    } else if (serviceFunctionName === 'livenessCheckService.isAlive') {
       resp?.send();
     } else if (
-      serviceFunction === 'readinessCheckService.isReady' &&
+      serviceFunctionName === 'readinessCheckService.isReady' &&
       (!controller[serviceName] || !controller[serviceName][functionName])
     ) {
       resp?.send();
@@ -271,11 +271,11 @@ export default async function tryExecuteServiceMethod(
     if (
       options?.httpMethod === 'GET' &&
       controller?.responseCacheConfigService.shouldCacheServiceFunctionCallResponse(
-        serviceFunction,
+        serviceFunctionName,
         serviceFunctionArgument
       )
     ) {
-      const key = getNamespacedServiceName() + ':' + serviceFunction;
+      const key = getNamespacedServiceName() + ':' + serviceFunctionName;
       const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
       let cachedResponseJson;
       try {
@@ -290,7 +290,7 @@ export default async function tryExecuteServiceMethod(
           redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
           key
         });
-        defaultServiceMetrics.incrementServiceFunctionCallCacheHitCounterByOne(serviceFunction);
+        defaultServiceMetrics.incrementServiceFunctionCallCacheHitCounterByOne(serviceFunctionName);
 
         try {
           response = JSON.parse(cachedResponseJson);
@@ -336,7 +336,7 @@ export default async function tryExecuteServiceMethod(
           ) {
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
-              serviceFunction +
+              serviceFunctionName +
                 ": multiple database manager operations must be executed inside a transaction (use database manager's executeInsideTransaction method) or service function must be annotated with @NoTransaction"
             );
           } else if (
@@ -349,7 +349,7 @@ export default async function tryExecuteServiceMethod(
           ) {
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
-              serviceFunction +
+              serviceFunctionName +
                 ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction if no transaction is needed'
             );
           } else if (
@@ -361,13 +361,13 @@ export default async function tryExecuteServiceMethod(
           ) {
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
-              serviceFunction +
+              serviceFunctionName +
                 ": multiple remote service calls cannot be executed because distributed transactions are not supported. To allow multiple remote service calls that don't require a transaction, annotate service function with @NoDistributedTransaction"
             );
           } else if (clsNamespace.get('dbManagerOperationAfterRemoteServiceCall')) {
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
-              serviceFunction +
+              serviceFunctionName +
                 ': database manager operation(s) that can fail cannot be called after a remote service call that cannot be rolled back. Alternatively, service function must be annotated with @NoDistributedTransaction if no distributed transaction is needed'
             );
           }
@@ -382,7 +382,7 @@ export default async function tryExecuteServiceMethod(
         if (response.statusCode >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {
           defaultServiceMetrics.incrementHttp5xxErrorsByOne();
         } else if (response.statusCode >= HttpStatusCodes.CLIENT_ERRORS_START) {
-          defaultServiceMetrics.incrementHttpClientErrorCounter(serviceFunction);
+          defaultServiceMetrics.incrementHttpClientErrorCounter(serviceFunctionName);
         }
         // noinspection ExceptionCaughtLocallyJS
         throw new HttpException(response, response.statusCode);
@@ -404,13 +404,13 @@ export default async function tryExecuteServiceMethod(
         if (
           options?.httpMethod === 'GET' &&
           controller?.responseCacheConfigService.shouldCacheServiceFunctionCallResponse(
-            serviceFunction,
+            serviceFunctionName,
             serviceFunctionArgument
           )
         ) {
           const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
           response = JSON.stringify(response);
-          const key = getNamespacedServiceName() + ':' + serviceFunction;
+          const key = getNamespacedServiceName() + ':' + serviceFunctionName;
 
           try {
             await redis.hset(key, JSON.stringify(serviceFunctionArgument), response);
@@ -424,9 +424,9 @@ export default async function tryExecuteServiceMethod(
             } else {
               await redis.expire(
                 key,
-                controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunction)
+                controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunctionName)
               );
-              ttl = controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunction);
+              ttl = controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunctionName);
             }
           } catch (error) {
             log(Severity.ERROR, 'Failed to access Redis cache', error.message, {
@@ -451,7 +451,7 @@ export default async function tryExecuteServiceMethod(
 
     const serviceFunctionProcessingTimeInMillis = Date.now() - serviceFunctionCallStartTimeInMillis;
     defaultServiceMetrics.incrementServiceFunctionProcessingTimeInSecsBucketCounterByOne(
-      serviceFunction,
+      serviceFunctionName,
       serviceFunctionProcessingTimeInMillis / 1000
     );
 
@@ -471,6 +471,7 @@ export default async function tryExecuteServiceMethod(
       resp?.set('Strict-Transport-Security', 'max-age=' + MAX_INT_VALUE + '; includeSubDomains');
     }
 
+    resp?.status(200);
     resp?.send(response);
   } catch (error) {
     storedError = error;
@@ -486,7 +487,7 @@ export default async function tryExecuteServiceMethod(
         userName ?? serviceFunctionArgument?.userName ?? '',
         headers['X-Forwarded-For'] ?? '',
         headers.Authorization,
-        controller[serviceName] instanceof UsersBaseService ? functionName : serviceFunction,
+        controller[serviceName] instanceof UsersBaseService ? functionName : serviceFunctionName,
         storedError ? 'failure' : 'success',
         storedError?.getStatus(),
         storedError?.getResponse().errorMessage,

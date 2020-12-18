@@ -15,7 +15,6 @@ async function executeMultiple<T>(
   headers: { [p: string]: string },
   options: ExecuteServiceFunctionOptions | undefined,
   serviceFunctionCallIdToResponseMap: { [p: string]: ServiceFunctionCallResponse },
-  resp: any,
   statusCodes: number[]
 ) {
   const forEachFunc = isConcurrent ? forEachAsyncParallel : forEachAsyncSequential;
@@ -29,11 +28,12 @@ async function executeMultiple<T>(
       const partialResponse = new PartialResponse();
 
       let renderedServiceFunctionArgument = serviceFunctionArgument;
-      if (options?.shouldAllowTemplatesInMultipleServiceFunctionExecution ?? false) {
+      if ((options?.shouldAllowTemplatesInMultipleServiceFunctionExecution && !isConcurrent) ?? false) {
         renderedServiceFunctionArgument = Mustache.render(
           JSON.stringify(serviceFunctionArgument),
           serviceFunctionCallIdToResponseMap
         );
+        renderedServiceFunctionArgument = JSON.parse(renderedServiceFunctionArgument);
       }
 
       await tryExecuteServiceMethod(
@@ -42,14 +42,16 @@ async function executeMultiple<T>(
         renderedServiceFunctionArgument,
         headers,
         partialResponse,
-        options
+        options,
+        false
       );
 
       serviceFunctionCallIdToResponseMap[serviceFunctionCallId] = {
-        statusCode: resp.getStatusCode(),
+        statusCode: partialResponse.getStatusCode(),
         response: partialResponse.getResponse()
       };
-      statusCodes.push(resp.getStatusCode());
+
+      statusCodes.push(partialResponse.getStatusCode());
     }
   );
 }
@@ -69,12 +71,27 @@ export default async function executeMultipleServiceFunctions(
   const dbManager = (services as BaseService[])[0].getDbManager();
 
   const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
+  const clsNamespace2 = createNamespace('serviceFunctionExecution');
   await clsNamespace.runAndReturn(async () => {
-    clsNamespace.set('connection', true);
-    await dbManager.tryReserveDbConnectionFromPool();
+    await clsNamespace2.runAndReturn(async () => {
+      await dbManager.tryReserveDbConnectionFromPool();
+      clsNamespace.set('connection', true);
 
-    if (shouldExecuteInsideTransaction) {
-      await dbManager.executeInsideTransaction(async () => {
+      if (shouldExecuteInsideTransaction) {
+        await dbManager.executeInsideTransaction(async () => {
+          clsNamespace.set('globalTransaction', true);
+          await executeMultiple(
+            isConcurrent,
+            serviceFunctionArgument,
+            controller,
+            headers,
+            options,
+            serviceFunctionCallIdToResponseMap,
+            statusCodes
+          );
+          clsNamespace.set('globalTransaction', false);
+        });
+      } else {
         clsNamespace.set('globalTransaction', true);
         await executeMultiple(
           isConcurrent,
@@ -83,27 +100,15 @@ export default async function executeMultipleServiceFunctions(
           headers,
           options,
           serviceFunctionCallIdToResponseMap,
-          resp,
           statusCodes
         );
         clsNamespace.set('globalTransaction', false);
-      });
-    } else {
-      await executeMultiple(
-        isConcurrent,
-        serviceFunctionArgument,
-        controller,
-        headers,
-        options,
-        serviceFunctionCallIdToResponseMap,
-        resp,
-        statusCodes
-      );
-    }
-  });
+      }
 
-  dbManager.tryReleaseDbConnectionBackToPool();
-  clsNamespace.set('connection', false);
+      dbManager.tryReleaseDbConnectionBackToPool();
+      clsNamespace.set('connection', false);
+    });
+  });
 
   resp.status(Math.max(...statusCodes));
   resp.send(serviceFunctionCallIdToResponseMap);

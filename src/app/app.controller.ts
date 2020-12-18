@@ -9,21 +9,21 @@ import {
   Post,
   Query,
   Res
-} from "@nestjs/common";
-import AuthorizationService from "../backk/authorization/AuthorizationService";
-import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
-import tryExecuteServiceMethod from "../backk/execution/tryExecuteServiceMethod";
-import ReadinessCheckService from "../backk/readinesscheck/ReadinessCheckService";
-import OrdersService from "../services/orders/OrdersService";
-import SalesItemsService from "../services/salesitems/SalesItemsService";
-import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
-import UsersService from "../services/users/UsersService";
-import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigService";
-import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
-import initializeController from "../backk/controller/initializeController";
-import TagsService from "../services/tags/TagsService";
-import AbstractDbManager from "../backk/dbmanager/AbstractDbManager";
-import DbCleanupService from "../services/dbcleanup/DbCleanupService";
+} from '@nestjs/common';
+import AuthorizationService from '../backk/authorization/AuthorizationService';
+import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
+import tryExecuteServiceMethod from '../backk/execution/tryExecuteServiceMethod';
+import ReadinessCheckService from '../backk/readinesscheck/ReadinessCheckService';
+import OrdersService from '../services/orders/OrdersService';
+import SalesItemsService from '../services/salesitems/SalesItemsService';
+import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
+import UsersService from '../services/users/UsersService';
+import ResponseCacheConfigService from '../backk/cache/ResponseCacheConfigService';
+import AuditLoggingService from '../backk/observability/logging/audit/AuditLoggingService';
+import initializeController from '../backk/controller/initializeController';
+import TagsService from '../services/tags/TagsService';
+import AbstractDbManager from '../backk/dbmanager/AbstractDbManager';
+import DbCleanupService from '../services/dbcleanup/DbCleanupService';
 
 // noinspection JSUnusedLocalSymbols
 @Controller()
@@ -93,7 +93,12 @@ export class AppController {
         'X-Forwarded-For': xForwardedForHeader,
         'If-None-Match': ifNoneMatchHeader
       },
-      response
+      response,
+      {
+        maxServiceFunctionCountInMultipleServiceFunctionExecution: 5,
+        areMultipleServiceFunctionExecutionsAllowed: true,
+        shouldAllowTemplatesInMultipleServiceFunctionExecution: true
+      }
     );
   }
 }
