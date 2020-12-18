@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO
-- Test cronJob and scheduleJob
+- Test scheduleJob
 - Watch and re-read log level from config map
 - Allow one scheduleCronJob per function
 - in transformRowsToObject, split processing to 1000 row chunks

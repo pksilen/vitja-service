@@ -99,6 +99,15 @@ export function CronJob(cronSchedule: CronSchedule, retryIntervalsInSecs: number
   return function(object: Object, functionName: string) {
     const superClassPrototype = Object.getPrototypeOf(object);
 
+    const cronSchedule = serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()[
+      `${superClassPrototype.constructor.name.charAt(0).toLowerCase() +
+        superClassPrototype.constructor.name.slice(1)}.${functionName}`
+    ];
+
+    if (cronSchedule) {
+      throw new Error('Only one cron job allowed per service function')
+    }
+
     serviceFunctionAnnotationContainer.addCronScheduleForServiceFunction(
       superClassPrototype.constructor,
       functionName,
