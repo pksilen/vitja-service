@@ -16,7 +16,6 @@ import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithSt
 import { HttpStatusCodes } from "../constants/constants";
 import { plainToClass } from "class-transformer";
 import JobScheduling from "./entities/JobScheduling";
-import { HttpException } from "@nestjs/common";
 
 const scheduledJobs: { [key: string]: CronJob } = {};
 
@@ -32,39 +31,47 @@ export async function scheduleCronJob(
   const job = new CronJob(scheduledExecutionTimestampAsDate, async () => {
     await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
       await delay(retryIntervalInSecs * 1000);
-      const clsNamespace = createNamespace('serviceFunctionExecution');
+      const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
+      const clsNamespace2 = createNamespace('serviceFunctionExecution');
       return await clsNamespace.runAndReturn(async () => {
-        try {
-          await dbManager.tryReserveDbConnectionFromPool();
-          const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
-            const possibleErrorResponse = await dbManager.deleteEntityById(jobId, __Backk__JobScheduling, {
-              hookFunc: (jobScheduling: any) => jobScheduling.length !== 0
+        return await clsNamespace2.runAndReturn(async () => {
+          try {
+            await dbManager.tryReserveDbConnectionFromPool();
+            clsNamespace.set('connection', true);
+            const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
+              clsNamespace.set('globalTransaction', true);
+              const possibleErrorResponse = await dbManager.deleteEntityById(jobId, __Backk__JobScheduling, {
+                hookFunc: (jobScheduling: any) => jobScheduling.length !== 0
+              });
+              return (
+                possibleErrorResponse ||
+                (await tryExecuteServiceMethod(
+                  controller,
+                  serviceFunctionName,
+                  serviceFunctionArgument ?? {},
+                  {},
+                  undefined,
+                  undefined,
+                  false
+                ))
+              );
             });
-            return (
-              possibleErrorResponse ||
-              (await tryExecuteServiceMethod(
-                controller,
-                serviceFunctionName,
-                serviceFunctionArgument ?? {},
-                {},
-                undefined,
-                undefined,
-                false
-              ))
-            );
-          });
-          if (possibleErrorResponse) {
+            clsNamespace.set('globalTransaction', true);
+
+            if (possibleErrorResponse) {
+              return false;
+            } else {
+              delete scheduledJobs[jobId];
+              return true;
+            }
+          } catch (error) {
+            logError(error);
             return false;
-          } else {
-            delete scheduledJobs[jobId];
-            return true;
+          } finally {
+            dbManager.tryReleaseDbConnectionBackToPool();
+            clsNamespace.set('connection', false);
           }
-        } catch (error) {
-          logError(error);
-          return false;
-        } finally {
-          dbManager.tryReleaseDbConnectionBackToPool();
-        }
+        });
       });
     });
   });

@@ -13,7 +13,7 @@ export default class DbCleanupServiceImpl extends DbCleanupService {
     super(dbManager);
   }
 
-  @CronJob({minutes: 0, hours: 2}, [1, 2, 5, 10, 30, 60, 120, 500])
+  @CronJob({ minutes: 0, hours: 2 }, [1, 2, 5, 10, 30, 60, 120, 500])
   deleteOldUnsoldSalesItems(): Promise<void | ErrorResponse> {
     console.log('exec: ' + new Date());
     return this.dbManager.deleteEntitiesByFilters(
