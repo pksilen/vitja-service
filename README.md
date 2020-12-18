@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Test scheduleJob
 - Watch and re-read log level from config map
 - in transformRowsToObject, split processing to 1000 row chunks
 - call remote service testing, find service function argument/return type from git submodule dir or monorepo dir
