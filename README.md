@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- in transformRowsToObject, split processing to 1000 row chunks
 - call remote service testing, find service function argument/return type from git submodule dir or monorepo dir
 - Validate call argument against parsed Class. Generate return value sample arg.
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany

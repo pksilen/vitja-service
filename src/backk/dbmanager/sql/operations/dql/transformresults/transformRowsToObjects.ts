@@ -5,7 +5,7 @@ import createResultMaps from './createResultMaps';
 import removeSingleSubEntitiesWithNullProperties from './removeSingleSubEntitiesWithNullProperties';
 import { PostQueryOperations } from '../../../../../types/postqueryoperations/PostQueryOperations';
 
-const ROW_BATCH_SIZE = 500;
+const ROW_PROCESSING_BATCH_SIZE = process.env.ROW_PROCESSING_BATCH_SIZE ?? 500;
 
 function getMappedRows(
   rows: any[],
@@ -36,8 +36,8 @@ export default function transformRowsToObjects<T>(
 ) {
   const resultMaps = createResultMaps(EntityClass, Types, { includeResponseFields, excludeResponseFields });
   let mappedRows: any[] = [];
-  if (rows.length > ROW_BATCH_SIZE) {
-    Array(Math.round(rows.length / ROW_BATCH_SIZE))
+  if (rows.length > ROW_PROCESSING_BATCH_SIZE) {
+    Array(Math.round(rows.length / ROW_PROCESSING_BATCH_SIZE))
       .fill(1)
       .forEach((rowBatch, index) => {
         setImmediate(() => {
@@ -47,8 +47,8 @@ export default function transformRowsToObjects<T>(
               resultMaps,
               EntityClass,
               Types,
-              index * ROW_BATCH_SIZE,
-              (index + 1) * ROW_BATCH_SIZE
+              index * ROW_PROCESSING_BATCH_SIZE,
+              (index + 1) * ROW_PROCESSING_BATCH_SIZE
             )
           );
         });
