@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { CompressionTypes } from 'kafkajs';
 import { ErrorResponse } from '../../types/ErrorResponse';
 import { getNamespace } from 'cls-hooked';
@@ -5,15 +6,83 @@ import { Send } from './sendInsideTransaction';
 import sendOneOrMoreToKafka, { SendAcknowledgementType } from './kafka/sendOneOrMoreToKafka';
 import sendOneOrMoreToRedis from './redis/sendOneOrMoreToRedis';
 import parseRemoteServiceFunctionCallUrlParts from '../utils/parseRemoteServiceFunctionCallUrlParts';
+import getSrcFilePathNameForTypeName from '../../utils/file/getSrcFilePathNameForTypeName';
+import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
+import initializeController from '../../controller/initializeController';
+import NoOpDbManager from '../../dbmanager/NoOpDbManager';
+import tryValidateServiceFunctionArgument from '../../validation/tryValidateServiceFunctionArgument';
+import { plainToClass } from 'class-transformer';
+import generateClassFromSrcFile from '../../typescript/generator/generateClassFromSrcFile';
 
 export interface SendToOptions {
   compressionType?: CompressionTypes;
   sendAcknowledgementType?: SendAcknowledgementType;
 }
 
+const remoteServiceNameToControllerMap: { [key: string]: any } = {};
+const noOpDbManager = new NoOpDbManager('');
+
+async function validateServiceFunctionArguments(sends: Send[]) {
+  await forEachAsyncSequential(sends, async ({ serviceFunctionCallUrl, serviceFunctionArgument }) => {
+    const { topic, serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl);
+
+    const [serviceName, functionName] = serviceFunctionName.split('.');
+    let controller;
+
+    if (remoteServiceNameToControllerMap[serviceName]) {
+      controller = remoteServiceNameToControllerMap[serviceName];
+    } else {
+      let remoteServiceRootDir;
+
+      if (fs.existsSync('../' + topic)) {
+        remoteServiceRootDir = '../' + topic;
+      } else if (fs.existsSync('./' + topic)) {
+        remoteServiceRootDir = './' + topic;
+      } else {
+        return;
+      }
+
+      const ServiceClass = generateClassFromSrcFile(
+        serviceName.charAt(0).toUpperCase() + serviceName.slice(1) + 'Impl',
+        remoteServiceRootDir
+      );
+
+      controller = {
+        [serviceName]: new ServiceClass(noOpDbManager)
+      };
+
+      initializeController(controller, noOpDbManager, undefined, remoteServiceRootDir);
+      remoteServiceNameToControllerMap[serviceName] = controller;
+    }
+
+    const serviceFunctionArgumentClassName =
+      controller[`${serviceName}Types`].functionNameToParamTypeNameMap[functionName];
+
+    const ServiceFunctionArgumentClass = controller[serviceName].Types[serviceFunctionArgumentClassName];
+    const instantiatedServiceFunctionArgument = plainToClass(
+      ServiceFunctionArgumentClass,
+      serviceFunctionArgument
+    );
+
+    try {
+      tryValidateServiceFunctionArgument(
+        functionName,
+        noOpDbManager,
+        instantiatedServiceFunctionArgument as object
+      );
+    } catch (error) {
+      throw new Error('Invalid remote service function call argument: ' + error.errorMessage);
+    }
+  });
+}
+
 export async function sendOneOrMore(sends: Send[], isTransactional: boolean): Promise<void | ErrorResponse> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
+
+  if (process.env.NODE_ENV === 'development') {
+    validateServiceFunctionArguments(sends);
+  }
 
   const { scheme } = parseRemoteServiceFunctionCallUrlParts(sends[0].serviceFunctionCallUrl);
 

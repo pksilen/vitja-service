@@ -261,7 +261,6 @@ export default async function tryExecuteServiceMethod(
       }
 
       await tryValidateServiceFunctionArgument(
-        controller[serviceName].constructor,
         functionName,
         dbManager,
         instantiatedServiceFunctionArgument

@@ -64,10 +64,10 @@ export default async function sendOneOrMoreToKafka(
     await forEachAsyncSequential(
       sends,
       async ({ responseUrl, serviceFunctionCallUrl, options, serviceFunctionArgument }: Send) => {
-        const { serviceFunction } = parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl);
+        const { serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl);
         log(Severity.DEBUG, 'Send to remote service for execution', '', {
           serviceFunctionCallUrl: serviceFunctionCallUrl,
-          serviceFunction
+          serviceFunction: serviceFunctionName
         });
 
         const span = tracerProvider
@@ -78,7 +78,7 @@ export default async function sendOneOrMoreToKafka(
         span.setAttribute('span.kind', 'CLIENT');
         span.setAttribute('peer.address', broker);
         span.setAttribute('kafka.topic', topic);
-        span.setAttribute('kafka.producer.message.key', serviceFunction);
+        span.setAttribute('kafka.producer.message.key', serviceFunctionName);
 
         try {
           defaultServiceMetrics.incrementRemoteServiceCallCountByOne(serviceFunctionCallUrl);
@@ -91,7 +91,7 @@ export default async function sendOneOrMoreToKafka(
               : options?.sendAcknowledgementType ?? SendAcknowledgementType.ALL_REPLICAS,
             messages: [
               {
-                key: serviceFunction,
+                key: serviceFunctionName,
                 value: JSON.stringify(serviceFunctionArgument),
                 headers: { Authorization: authHeader, responseUrl: responseUrl ?? '' }
               }
@@ -104,7 +104,7 @@ export default async function sendOneOrMoreToKafka(
         } catch (error) {
           log(Severity.ERROR, error.message, error.stack, {
             serviceFunctionCallUrl: serviceFunctionCallUrl,
-            serviceFunction
+            serviceFunction: serviceFunctionName
           });
           defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(serviceFunctionCallUrl);
           span.setStatus({

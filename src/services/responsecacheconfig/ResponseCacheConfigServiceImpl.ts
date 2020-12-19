@@ -11,7 +11,7 @@ export default class ResponseCacheConfigServiceImpl implements ResponseCacheConf
 
   shouldCacheServiceFunctionCallResponse(serviceFunction: string, serviceFunctionArgument: any): boolean {
     /*if (
-      serviceFunction === 'salesItemsService.getSalesItems' &&
+      serviceFunctionName === 'salesItemsService.getSalesItems' &&
       serviceFunctionArgument.pageNumber <= 3 &&
       serviceFunctionArgument.pageSize === 50
     ) {

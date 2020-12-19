@@ -15,8 +15,8 @@ export default async function sendInsideTransaction(sends: Send[]) {
     ({ serviceFunctionCallUrl }) => parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl).broker
   );
 
-  if (uniqueSendTosByBroker.length > 1) {
-    throw new Error('All sendTos must be to same broker');
+  if (uniqueSendTosByBroker.length !== 1) {
+    throw new Error('All sendTos must be to same Kafka broker');
   }
 
   return await sendOneOrMore(sends, true);

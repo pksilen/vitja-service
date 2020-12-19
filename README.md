@@ -1,13 +1,13 @@
 # Vitja service
 
 TODO
-- executeMultipleInSequence, stop at first failure
 - call remote service testing, find service function argument/return type from git submodule dir or monorepo dir
 - Validate call argument against parsed Class. Generate return value sample arg.
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
   - Update default prometheus metrics
+- Test call()
 - Test redis sendTo
 - Test redis consumer
 - Test kafka consumer

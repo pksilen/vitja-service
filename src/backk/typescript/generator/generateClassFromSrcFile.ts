@@ -4,13 +4,13 @@ import path from 'path';
 import getSrcFilePathNameForTypeName from '../../utils/file/getSrcFilePathNameForTypeName';
 import types from '../../types/types';
 
-export default function generateClassFromSrcFile(typeName: string) {
+export default function generateClassFromSrcFile(typeName: string, remoteServiceRootDir = '') {
   if ((types as any)[typeName]) {
     // TODO check that typeName cannot be found in src folder, because it is overlapping with built-in backk type
     return (types as any)[typeName];
   }
 
-  const srcFilePathName = getSrcFilePathNameForTypeName(typeName);
+  const srcFilePathName = getSrcFilePathNameForTypeName(typeName, remoteServiceRootDir);
   const fileContentsStr = readFileSync(srcFilePathName, { encoding: 'UTF-8' });
   const srcDirectory = path.dirname(srcFilePathName).split(/src/)[1];
   const result = ts.transpileModule(fileContentsStr, {
@@ -26,11 +26,26 @@ export default function generateClassFromSrcFile(typeName: string) {
 
   const outputRows = result.outputText.split('\n');
   let newOutputText = outputRows.slice(0, -2).join('\n') + '\n' + '(' + typeName + ')';
+
   newOutputText = newOutputText.replace(
     /require\("\.{2}\//g,
-    'require("../../../../dist' + srcDirectory + '/../'
+    'require("../../../..' +
+      (remoteServiceRootDir ? '/' + remoteServiceRootDir : '') +
+      '/dist' +
+      srcDirectory +
+      '/../'
   );
-  newOutputText = newOutputText.replace(/require\("\.\//g, 'require("../../../../dist' + srcDirectory + '/');
+
+  newOutputText = newOutputText.replace(
+    /require\("\.\//g,
+    'require("../../../..' +
+      (remoteServiceRootDir ? '/' + remoteServiceRootDir : '') +
+      '/dist' +
+      srcDirectory +
+      '/'
+  );
+
+  console.log(newOutputText);
 
   const generatedClass = eval(newOutputText);
   return generatedClass;

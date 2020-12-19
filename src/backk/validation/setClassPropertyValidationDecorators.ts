@@ -58,7 +58,8 @@ export function doesClassPropertyContainCustomValidation(
 export default function setClassPropertyValidationDecorators(
   Class: Function,
   serviceName: string,
-  Types: { [key: string]: new () => any }
+  Types: { [key: string]: new () => any },
+  remoteServiceRootDir = ''
 ) {
   const className = Class.name;
 
@@ -66,7 +67,10 @@ export default function setClassPropertyValidationDecorators(
     return;
   }
 
-  const fileContentsStr = readFileSync(getSrcFilePathNameForTypeName(className), { encoding: 'UTF-8' });
+  const fileContentsStr = readFileSync(getSrcFilePathNameForTypeName(className, remoteServiceRootDir), {
+    encoding: 'UTF-8'
+  });
+
   const fileRows = fileContentsStr.split('\n');
 
   const ast = parseSync(fileContentsStr, {

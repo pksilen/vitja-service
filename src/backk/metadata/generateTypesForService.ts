@@ -2,7 +2,7 @@ import BaseService from '../service/BaseService';
 import generateClassFromSrcFile from '../typescript/generator/generateClassFromSrcFile';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
-export default function generateTypesForServices<T>(controller: T) {
+export default function generateTypesForServices<T>(controller: T, remoteServiceRootDir = '') {
   return Object.entries(controller)
     .filter(([, service]: [string, any]) => service instanceof BaseService)
     .map(([serviceName]: [string, any]) => {
@@ -18,7 +18,10 @@ export default function generateTypesForServices<T>(controller: T) {
           functionArgumentTypeName !== undefined &&
           !(controller as any)[serviceName].Types[functionArgumentTypeName]
         ) {
-          const FunctionArgumentClass = generateClassFromSrcFile(functionArgumentTypeName);
+          const FunctionArgumentClass = generateClassFromSrcFile(
+            functionArgumentTypeName,
+            remoteServiceRootDir
+          );
           (controller as any)[serviceName].Types[functionArgumentTypeName] = FunctionArgumentClass;
           (controller as any)[serviceName].PublicTypes[functionArgumentTypeName] = FunctionArgumentClass;
         }
@@ -52,7 +55,7 @@ export default function generateTypesForServices<T>(controller: T) {
         }
 
         if (baseTypeName !== 'void' && !(controller as any)[serviceName].Types[baseTypeName]) {
-          const FunctionReturnValueClass = generateClassFromSrcFile(baseTypeName);
+          const FunctionReturnValueClass = generateClassFromSrcFile(baseTypeName, remoteServiceRootDir);
           (controller as any)[serviceName].Types[baseTypeName] = FunctionReturnValueClass;
           (controller as any)[serviceName].PublicTypes[baseTypeName] = FunctionReturnValueClass;
         }

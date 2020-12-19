@@ -1,10 +1,10 @@
-import { validateOrReject, ValidationError } from "class-validator";
-import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
-import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
-import getValidationErrors from "./getValidationErrors";
-import { HttpStatusCodes } from "../constants/constants";
-import isCreateFunction from "../crudresource/utils/isCreateFunction";
-import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import { validateOrReject, ValidationError } from 'class-validator';
+import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import getValidationErrors from './getValidationErrors';
+import { HttpStatusCodes } from '../constants/constants';
+import isCreateFunction from '../crudresource/utils/isCreateFunction';
+import AbstractDbManager from '../dbmanager/AbstractDbManager';
 
 function filterOutManyToManyIdErrors(validationErrors: ValidationError[]) {
   validationErrors.forEach((validationError) => {
@@ -36,24 +36,23 @@ function getValidationErrorConstraintsCount(validationErrors: ValidationError[])
 }
 
 export default async function tryValidateServiceFunctionArgument(
-  ServiceClass: Function,
   functionName: string,
   dbManager: AbstractDbManager | undefined,
-  obj: object
+  serviceFunctionArgument: object
 ): Promise<void> {
   try {
-    await validateOrReject(obj, {
+    await validateOrReject(serviceFunctionArgument, {
       groups: ['__backk_firstRound__', ...(dbManager ? [dbManager.getDbManagerType()] : [])]
     });
 
-    await validateOrReject(obj, {
+    await validateOrReject(serviceFunctionArgument, {
       whitelist: true,
       forbidNonWhitelisted: true,
       groups: [
         '__backk_argument__',
         ...(dbManager ? [dbManager.getDbManagerType()] : []),
-        ...(isCreateFunction(ServiceClass, functionName) ? ['__backk_create__'] : []),
-        ...(isCreateFunction(ServiceClass, functionName)? [] : ['__backk_update__'])
+        ...(isCreateFunction(functionName) ? ['__backk_create__'] : []),
+        ...(isCreateFunction(functionName) ? [] : ['__backk_update__'])
       ]
     });
   } catch (validationErrors) {

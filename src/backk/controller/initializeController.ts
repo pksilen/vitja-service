@@ -11,8 +11,8 @@ import generateTypesForServices from '../metadata/generateTypesForService';
 import getNestedClasses from '../metadata/getNestedClasses';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import log, { Severity } from '../observability/logging/log';
-import executeCronJobs from "../scheduling/executeCronJobs";
-import executeScheduledJobs from "../scheduling/executeScheduledJobs";
+import executeCronJobs from '../scheduling/executeCronJobs';
+import executeScheduledJobs from '../scheduling/executeScheduledJobs';
 
 export interface ControllerInitOptions {
   generatePostmanTestFile?: boolean;
@@ -22,10 +22,11 @@ export interface ControllerInitOptions {
 export default function initializeController(
   controller: any,
   dbManager: AbstractDbManager,
-  controllerInitOptions?: ControllerInitOptions
+  controllerInitOptions?: ControllerInitOptions,
+  remoteServiceRootDir = ''
 ) {
   const serviceNameToServiceEntries = Object.entries(controller).filter(
-    ([, service]: [string, any]) => service instanceof BaseService
+    ([, service]: [string, any]) => service instanceof BaseService || remoteServiceRootDir
   );
 
   if (serviceNameToServiceEntries.length === 0) {
@@ -52,7 +53,10 @@ export default function initializeController(
       functionNameToReturnTypeNameMap
     ] = parseServiceFunctionNameToArgAndReturnTypeNameMaps(
       serviceName,
-      getSrcFilePathNameForTypeName(serviceName.charAt(0).toUpperCase() + serviceName.slice(1))
+      getSrcFilePathNameForTypeName(
+        serviceName.charAt(0).toUpperCase() + serviceName.slice(1),
+        remoteServiceRootDir
+      )
     );
 
     controller[`${serviceName}Types`] = {
@@ -61,57 +65,63 @@ export default function initializeController(
     };
   });
 
-  generateTypesForServices(controller);
+  generateTypesForServices(controller, remoteServiceRootDir);
 
   Object.entries(controller)
-    .filter(([, service]: [string, any]) => service instanceof BaseService)
+    .filter(([, service]: [string, any]) => service instanceof BaseService || remoteServiceRootDir)
     .forEach(([serviceName]: [string, any]) => {
-      getNestedClasses(Object.keys(controller[serviceName].Types ?? {}), controller[serviceName].Types);
+      getNestedClasses(
+        Object.keys(controller[serviceName].Types ?? {}),
+        controller[serviceName].Types,
+        remoteServiceRootDir
+      );
       Object.entries(controller[serviceName].Types ?? {}).forEach(([, typeClass]: [string, any]) => {
-        setClassPropertyValidationDecorators(typeClass, serviceName, controller[serviceName].Types);
+        setClassPropertyValidationDecorators(typeClass, serviceName, controller[serviceName].Types, remoteServiceRootDir);
         setNestedTypeValidationDecorators(typeClass);
       }, {});
     });
 
-  const servicesMetadata = generateServicesMetadata(controller, dbManager);
-  controller.servicesMetadata = servicesMetadata;
-  controller.publicServicesMetadata = servicesMetadata.map((serviceMetadata) => {
-    const {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      types, // NOSONAR
-      publicTypes,
-      serviceName,
-      functions,
-      validations,
-      propertyModifiers,
-      serviceDocumentation,
-      typesDocumentation
-    } = serviceMetadata;
-    return {
-      serviceName,
-      serviceDocumentation,
-      functions,
-      types: publicTypes,
-      propertyModifiers,
-      typesDocumentation,
-      validations
-    };
-  });
+  if (!remoteServiceRootDir) {
+    const servicesMetadata = generateServicesMetadata(controller, dbManager);
+    controller.servicesMetadata = servicesMetadata;
+    controller.publicServicesMetadata = servicesMetadata.map((serviceMetadata) => {
+      const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        types, // NOSONAR
+        publicTypes,
+        serviceName,
+        functions,
+        validations,
+        propertyModifiers,
+        serviceDocumentation,
+        typesDocumentation
+      } = serviceMetadata;
+      return {
+        serviceName,
+        serviceDocumentation,
+        functions,
+        types: publicTypes,
+        propertyModifiers,
+        typesDocumentation,
+        validations
+      };
+    });
 
-  if (process.env.NODE_ENV === 'development' && (controllerInitOptions?.generatePostmanTestFile ?? true)) {
-    writeTestsPostmanCollectionExportFile(controller, servicesMetadata);
+    if (process.env.NODE_ENV === 'development' && (controllerInitOptions?.generatePostmanTestFile ?? true)) {
+      writeTestsPostmanCollectionExportFile(controller, servicesMetadata);
+    }
+    if (process.env.NODE_ENV === 'development' && (controllerInitOptions?.generatePostmanApiFile ?? true)) {
+      writeApiPostmanCollectionExportFile(controller, servicesMetadata);
+    }
+
+    executeCronJobs(controller, dbManager);
+    executeScheduledJobs(controller, dbManager);
+
+    const serviceNames = Object.entries(controller)
+      .filter(([, service]: [string, any]) => service instanceof BaseService)
+      .map(([serviceName]) => serviceName)
+      .join(', ');
+
+    log(Severity.INFO, 'Services initialized', serviceNames);
   }
-  if (process.env.NODE_ENV === 'development' && (controllerInitOptions?.generatePostmanApiFile ?? true)) {
-    writeApiPostmanCollectionExportFile(controller, servicesMetadata);
-  }
-
-  const serviceNames = Object.entries(controller)
-    .filter(([, service]: [string, any]) => service instanceof BaseService)
-    .map(([serviceName]) => serviceName)
-    .join(', ');
-
-  executeCronJobs(controller, dbManager);
-  executeScheduledJobs(controller, dbManager);
-
-  log(Severity.INFO, 'Services initialized', serviceNames);
 }

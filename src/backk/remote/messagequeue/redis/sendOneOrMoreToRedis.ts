@@ -25,17 +25,17 @@ export default async function sendOneOrMoreToRedis(
     await forEachAsyncSequential(
       sends,
       async ({ responseUrl, serviceFunctionCallUrl, serviceFunctionArgument }: Send) => {
-        const { serviceFunction } = parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl);
+        const { serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl);
         log(Severity.DEBUG, 'Send to remote service for execution', '', {
           serviceFunctionCallUrl: serviceFunctionCallUrl,
-          serviceFunction
+          serviceFunction: serviceFunctionName
         });
 
         defaultServiceMetrics.incrementRemoteServiceCallCountByOne(serviceFunctionCallUrl);
         await redis.rpush(
           topic,
           JSON.stringify({
-            serviceFunction,
+            serviceFunction: serviceFunctionName,
             serviceFunctionArgument,
             headers: {
               Authorization: authHeader,
