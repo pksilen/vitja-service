@@ -1,12 +1,18 @@
 # Vitja service
 
 TODO
+- executeMultipleInSequence, stop at first failure
 - call remote service testing, find service function argument/return type from git submodule dir or monorepo dir
 - Validate call argument against parsed Class. Generate return value sample arg.
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
   - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
     - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
   - Update default prometheus metrics
+- Test redis sendTo
+- Test redis consumer
+- Test kafka consumer
+- Test redis cache
+- @ResponseHeaders annotation (fixed value, or from function)
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
@@ -29,6 +35,7 @@ TODO
 
 
 TODO NEXT RELEASE:
+- executeMultipleWithoutTransaction, allow remote service calls
 - Kafka sendTo integration tests, create topic name with uuid postfix, use that and delete topic at end of testing
 - Redis sendTo integeration tests, create db/topic name with uuid postfix, use that and delete topic at end of testing
 - mysql2 distributed tracing

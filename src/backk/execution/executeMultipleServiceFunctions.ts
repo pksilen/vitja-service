@@ -11,6 +11,8 @@ import isValidServiceFunctionName from './isValidServiceFunctionName';
 import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
 import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
 import { HttpStatusCodes } from "../constants/constants";
+import { ErrorResponse } from "../types/ErrorResponse";
+import isErrorResponse from "../errors/isErrorResponse";
 
 async function executeMultiple<T>(
   isConcurrent: boolean,
@@ -22,6 +24,7 @@ async function executeMultiple<T>(
   statusCodes: number[]
 ) {
   const forEachFunc = isConcurrent ? forEachAsyncParallel : forEachAsyncSequential;
+  let possibleErrorResponse: ErrorResponse | undefined;
 
   await forEachFunc(
     Object.entries(serviceFunctionArgument),
@@ -29,6 +32,10 @@ async function executeMultiple<T>(
       string,
       ServiceFunctionCall
     ]) => {
+      if (possibleErrorResponse) {
+        return;
+      }
+
       const partialResponse = new PartialResponse();
 
       let renderedServiceFunctionArgument = serviceFunctionArgument;
@@ -54,6 +61,10 @@ async function executeMultiple<T>(
         statusCode: partialResponse.getStatusCode(),
         response: partialResponse.getResponse()
       };
+
+      if (isErrorResponse(partialResponse.getResponse())) {
+        possibleErrorResponse = partialResponse.getResponse() as ErrorResponse
+      }
 
       statusCodes.push(partialResponse.getStatusCode());
     }
@@ -104,7 +115,7 @@ export default async function executeMultipleServiceFunctions(
       if (shouldExecuteInsideTransaction) {
         await dbManager.executeInsideTransaction(async () => {
           clsNamespace.set('globalTransaction', true);
-          await executeMultiple(
+          const response = await executeMultiple(
             isConcurrent,
             serviceFunctionCalls,
             controller,
@@ -114,6 +125,7 @@ export default async function executeMultipleServiceFunctions(
             statusCodes
           );
           clsNamespace.set('globalTransaction', false);
+          return response;
         });
       } else {
         clsNamespace.set('globalTransaction', true);
