@@ -4,7 +4,10 @@ import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 export default function generateTypesForServices<T>(controller: T, remoteServiceRootDir = '') {
   return Object.entries(controller)
-    .filter(([, service]: [string, any]) => service instanceof BaseService)
+    .filter(
+      ([serviceName, service]: [string, any]) =>
+        service instanceof BaseService || (remoteServiceRootDir && !serviceName.endsWith('Types'))
+    )
     .map(([serviceName]: [string, any]) => {
       const functionNames = Object.keys(
         (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap

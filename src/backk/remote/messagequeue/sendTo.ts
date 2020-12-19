@@ -13,6 +13,7 @@ import NoOpDbManager from '../../dbmanager/NoOpDbManager';
 import tryValidateServiceFunctionArgument from '../../validation/tryValidateServiceFunctionArgument';
 import { plainToClass } from 'class-transformer';
 import generateClassFromSrcFile from '../../typescript/generator/generateClassFromSrcFile';
+import { getFromContainer, MetadataStorage } from 'class-validator';
 
 export interface SendToOptions {
   compressionType?: CompressionTypes;
@@ -47,8 +48,10 @@ async function validateServiceFunctionArguments(sends: Send[]) {
         remoteServiceRootDir
       );
 
+      const serviceInstance = new ServiceClass(noOpDbManager);
+
       controller = {
-        [serviceName]: new ServiceClass(noOpDbManager)
+        [serviceName]: serviceInstance
       };
 
       initializeController(controller, noOpDbManager, undefined, remoteServiceRootDir);
@@ -59,19 +62,24 @@ async function validateServiceFunctionArguments(sends: Send[]) {
       controller[`${serviceName}Types`].functionNameToParamTypeNameMap[functionName];
 
     const ServiceFunctionArgumentClass = controller[serviceName].Types[serviceFunctionArgumentClassName];
+
     const instantiatedServiceFunctionArgument = plainToClass(
       ServiceFunctionArgumentClass,
       serviceFunctionArgument
     );
 
     try {
-      tryValidateServiceFunctionArgument(
+      await tryValidateServiceFunctionArgument(
         functionName,
         noOpDbManager,
         instantiatedServiceFunctionArgument as object
       );
     } catch (error) {
-      throw new Error('Invalid remote service function call argument: ' + error.errorMessage);
+      throw new Error(
+        serviceFunctionCallUrl +
+          ': Invalid remote service function call argument: ' +
+          JSON.stringify(error.message)
+      );
     }
   });
 }
@@ -81,7 +89,7 @@ export async function sendOneOrMore(sends: Send[], isTransactional: boolean): Pr
   clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
 
   if (process.env.NODE_ENV === 'development') {
-    validateServiceFunctionArguments(sends);
+    await validateServiceFunctionArguments(sends);
   }
 
   const { scheme } = parseRemoteServiceFunctionCallUrlParts(sends[0].serviceFunctionCallUrl);

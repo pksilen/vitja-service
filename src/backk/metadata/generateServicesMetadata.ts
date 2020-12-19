@@ -13,10 +13,14 @@ import AbstractDbManager from '../dbmanager/AbstractDbManager';
 
 export default function generateServicesMetadata<T>(
   controller: T,
-  dbManager: AbstractDbManager
+  dbManager: AbstractDbManager,
+  remoteServiceRootDir = ''
 ): ServiceMetadata[] {
   return Object.entries(controller)
-    .filter(([, service]: [string, any]) => service instanceof BaseService)
+    .filter(
+      ([serviceName, service]: [string, any]) =>
+        service instanceof BaseService || (remoteServiceRootDir && !serviceName.endsWith('Types'))
+    )
     .map(([serviceName, service]: [string, any]) => {
       const ServiceClass = service.constructor;
       const functionNames = Object.keys(
@@ -64,7 +68,7 @@ export default function generateServicesMetadata<T>(
             )
         )
         .map((functionName: string) => {
-          if (
+          if (!remoteServiceRootDir &&
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForSelf(ServiceClass, functionName) &&
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(
               ServiceClass,

@@ -12,13 +12,13 @@ export function getFileNamesRecursively(directory: string): string[] {
   return Array.prototype.concat(...files);
 }
 
-export function hasSrcFilenameForTypeName(typeName: string) {
+export function hasSrcFilenameForTypeName(typeName: string, serviceRootDir: string = '') {
   if (typeName.includes(':')) {
     // noinspection AssignmentToFunctionParameterJS
     typeName = typeName.split(':')[1];
   }
 
-  const srcFilePathNames = getFileNamesRecursively(process.cwd() + '/src');
+  const srcFilePathNames = getFileNamesRecursively(process.cwd() + (serviceRootDir ? '/' + serviceRootDir : '') + '/src');
   let backkSrcFilePathNames: string[] = [];
   if (existsSync(process.cwd() + '/node_modules/backk/src')) {
     backkSrcFilePathNames = getFileNamesRecursively(process.cwd() + '/node_modules/backk/src');

@@ -13,6 +13,7 @@ import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import log, { Severity } from '../observability/logging/log';
 import executeCronJobs from '../scheduling/executeCronJobs';
 import executeScheduledJobs from '../scheduling/executeScheduledJobs';
+import { root } from "rxjs/internal-compatibility";
 
 export interface ControllerInitOptions {
   generatePostmanTestFile?: boolean;
@@ -33,12 +34,14 @@ export default function initializeController(
     throw new Error(controller.constructor + ': No services defined. Services must extend from BaseService.');
   }
 
-  const servicesUniqueByDbManager = _.uniqBy(serviceNameToServiceEntries, ([, service]: [string, any]) =>
-    service.getDbManager()
-  );
+  if (!remoteServiceRootDir) {
+    const servicesUniqueByDbManager = _.uniqBy(serviceNameToServiceEntries, ([, service]: [string, any]) =>
+      service.getDbManager()
+    );
 
-  if (servicesUniqueByDbManager.length > 1) {
-    throw new Error('Services can use only one same database manager');
+    if (servicesUniqueByDbManager.length > 1) {
+      throw new Error('Services can use only one same database manager');
+    }
   }
 
   serviceNameToServiceEntries.forEach(([serviceName]: [string, any]) => {
@@ -56,7 +59,8 @@ export default function initializeController(
       getSrcFilePathNameForTypeName(
         serviceName.charAt(0).toUpperCase() + serviceName.slice(1),
         remoteServiceRootDir
-      )
+      ),
+      remoteServiceRootDir
     );
 
     controller[`${serviceName}Types`] = {
@@ -68,21 +72,32 @@ export default function initializeController(
   generateTypesForServices(controller, remoteServiceRootDir);
 
   Object.entries(controller)
-    .filter(([, service]: [string, any]) => service instanceof BaseService || remoteServiceRootDir)
+    .filter(
+      ([serviceName, service]: [string, any]) =>
+        service instanceof BaseService || (remoteServiceRootDir && !serviceName.endsWith('Types'))
+    )
     .forEach(([serviceName]: [string, any]) => {
       getNestedClasses(
         Object.keys(controller[serviceName].Types ?? {}),
         controller[serviceName].Types,
         remoteServiceRootDir
       );
+
       Object.entries(controller[serviceName].Types ?? {}).forEach(([, typeClass]: [string, any]) => {
-        setClassPropertyValidationDecorators(typeClass, serviceName, controller[serviceName].Types, remoteServiceRootDir);
+        setClassPropertyValidationDecorators(
+          typeClass,
+          serviceName,
+          controller[serviceName].Types,
+          remoteServiceRootDir
+        );
+
         setNestedTypeValidationDecorators(typeClass);
       }, {});
     });
 
+  const servicesMetadata = generateServicesMetadata(controller, dbManager, remoteServiceRootDir);
+
   if (!remoteServiceRootDir) {
-    const servicesMetadata = generateServicesMetadata(controller, dbManager);
     controller.servicesMetadata = servicesMetadata;
     controller.publicServicesMetadata = servicesMetadata.map((serviceMetadata) => {
       const {

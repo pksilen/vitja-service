@@ -81,7 +81,7 @@ export default class OrdersServiceImpl extends OrdersService {
           `kafka://${process.env.KAFKA_SERVER}/notification-service/orderNotificationsService.sendOrderCreateNotifications`,
           {
             userId,
-            salesItemIds
+            salesItemIds,
           }
         );
       }

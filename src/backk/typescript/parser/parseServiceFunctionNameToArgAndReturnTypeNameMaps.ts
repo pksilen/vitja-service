@@ -4,7 +4,8 @@ import isValidFunctionArgumentTypeName from '../../utils/type/isValidFunctionArg
 
 export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
   serviceName: string,
-  serviceFileName: string
+  serviceFileName: string,
+  remoteServiceRootDir = ''
 ): [{ [key: string]: string }, { [key: string]: string }] {
   const fileContentsStr = readFileSync(serviceFileName, { encoding: 'UTF-8' });
   const fileRows = fileContentsStr.split('\n');
@@ -42,7 +43,7 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
               functionArgumentTypeNameEnd.column
             );
 
-            if (!isValidFunctionArgumentTypeName(functionArgumentTypeName)) {
+            if (!isValidFunctionArgumentTypeName(functionArgumentTypeName, remoteServiceRootDir)) {
               throw new Error(
                 serviceName + '.' + functionName + ': input argument type must be a user-defined class type'
               );

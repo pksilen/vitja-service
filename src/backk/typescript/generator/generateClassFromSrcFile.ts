@@ -45,8 +45,6 @@ export default function generateClassFromSrcFile(typeName: string, remoteService
       '/'
   );
 
-  console.log(newOutputText);
-
   const generatedClass = eval(newOutputText);
   return generatedClass;
 }

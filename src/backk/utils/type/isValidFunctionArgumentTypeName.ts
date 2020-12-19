@@ -1,6 +1,6 @@
 import { hasSrcFilenameForTypeName } from "../file/getSrcFilePathNameForTypeName";
 
-export default function isValidFunctionArgumentTypeName(typeName: string): boolean {
+export default function isValidFunctionArgumentTypeName(typeName: string, remoteServiceRootDir: string): boolean {
   if (
     typeName === '_Id' ||
     typeName === 'Id' ||
@@ -12,5 +12,5 @@ export default function isValidFunctionArgumentTypeName(typeName: string): boole
   ) {
     return true;
   }
-  return hasSrcFilenameForTypeName(typeName);
+  return hasSrcFilenameForTypeName(typeName, remoteServiceRootDir);
 }
