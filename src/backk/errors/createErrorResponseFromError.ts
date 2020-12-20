@@ -20,6 +20,8 @@ export default function createErrorResponseFromError(error: Error): ErrorRespons
 
   if (process.env.NODE_ENV === 'development' && statusCode >= 500) {
     log(Severity.ERROR, errorMessage, error.stack ?? '', { errorCode, statusCode });
+  } else {
+    log(Severity.DEBUG, errorMessage, error.stack ?? '', { errorCode, statusCode });
   }
 
   return {

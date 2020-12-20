@@ -1,43 +1,57 @@
 /* eslint-disable no-constant-condition */
 import Redis from 'ioredis';
-import getServiceName from '../../../utils/getServiceName';
 import tryExecuteServiceMethod from '../../../execution/tryExecuteServiceMethod';
-import isErrorResponse from '../../../errors/isErrorResponse';
-import { ErrorResponse } from '../../../types/ErrorResponse';
 import { HttpStatusCodes } from '../../../constants/constants';
 import sendToRemoteService from '../sendToRemoteService';
 import log, { Severity } from '../../../observability/logging/log';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
 import getNamespacedServiceName from '../../../utils/getServiceNamespace';
+import Response from '../../../execution/Response';
+import delay from '../../../utils/delay';
 
 export default async function consumeFromRedis(
   controller: any,
-  broker: string,
+  server: string | undefined,
   topic = getNamespacedServiceName()
 ) {
-  const redis = new Redis(broker);
+  if (!server) {
+    throw new Error('Redis server not defined');
+  }
+
+  const redis = new Redis(`redis://${server}`);
   let lastQueueLengthUpdateTimestamp = 0;
 
   // noinspection InfiniteLoopJS
   while (true) {
     try {
-      const valueJson = await redis.lpop(topic);
-      log(Severity.DEBUG, 'Redis: consume message from queue', '', { broker, topic });
-      const { serviceFunction, serviceFunctionArgument, headers } = JSON.parse(valueJson);
+      const request = await redis.lpop(topic);
+      if (!request) {
+        await delay(100);
+        // noinspection ContinueStatementJS
+        continue;
+      }
 
-      const response = await tryExecuteServiceMethod(
+      log(Severity.DEBUG, 'Redis: consume request from queue', '', { broker: server, topic });
+      const { serviceFunctionName, serviceFunctionArgument, headers } = JSON.parse(request);
+
+      const response = new Response();
+      await tryExecuteServiceMethod(
         controller,
-        serviceFunction,
+        serviceFunctionName,
         serviceFunctionArgument,
-        headers.Auhtorization
+        headers ?? {},
+        response
       );
 
-      if (
-        isErrorResponse(response) &&
-        (response as ErrorResponse).statusCode >= HttpStatusCodes.INTERNAL_ERRORS_START
-      ) {
-        await sendToRemoteService('redis://' + broker + '/' + topic + '/' + serviceFunction, serviceFunctionArgument);
-      } else if (headers?.responseUrl && response) {
+      if (response.getStatusCode() >= HttpStatusCodes.INTERNAL_ERRORS_START) {
+        await delay(10000);
+        await sendToRemoteService(
+          'redis://' + server + '/' + topic + '/' + serviceFunctionName,
+          serviceFunctionArgument
+        );
+      } else if (response.getStatusCode() >= HttpStatusCodes.CLIENT_ERRORS_START) {
+        throw new Error(JSON.stringify(response.getResponse()));
+      } else if (headers?.responseUrl && response.getResponse()) {
         await sendToRemoteService(headers.responseUrl as string, response);
       }
 
@@ -48,7 +62,11 @@ export default async function consumeFromRedis(
         lastQueueLengthUpdateTimestamp = now;
       }
     } catch (error) {
-      log(Severity.ERROR, 'Redis: ' + error.message, error.stack, { broker, topic });
+      log(Severity.ERROR, 'Redis consumer error: ' + error.message, error.stack, {
+        consumerType: 'redis',
+        server,
+        topic
+      });
       defaultServiceMetrics.incrementRedisConsumerErrorCounteByOne();
     }
   }

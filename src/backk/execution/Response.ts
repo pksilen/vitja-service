@@ -1,6 +1,6 @@
 import { HttpStatusCodes } from '../constants/constants';
 
-export default class PartialResponse {
+export default class Response {
   private statusCode: number = HttpStatusCodes.INTERNAL_SERVER_ERROR;
   private response = {};
 

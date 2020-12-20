@@ -25,19 +25,19 @@ export default async function sendOneOrMoreToKafka(
   sends: CallOrSendTo[],
   isTransactional: boolean
 ): Promise<void | ErrorResponse> {
-  const { broker, topic } = parseRemoteServiceFunctionCallUrlParts(sends[0].remoteServiceFunctionUrl);
+  const { server, topic } = parseRemoteServiceFunctionCallUrlParts(sends[0].remoteServiceFunctionUrl);
 
-  if (!kafkaBrokerToKafkaClientMap[broker]) {
-    kafkaBrokerToKafkaClientMap[broker] = new Kafka({
+  if (!kafkaBrokerToKafkaClientMap[server]) {
+    kafkaBrokerToKafkaClientMap[server] = new Kafka({
       clientId: getServiceName(),
       logLevel: minimumLoggingSeverityToKafkaLoggingLevelMap[process.env.LOG_LEVEL ?? 'INFO'],
-      brokers: [broker],
+      brokers: [server],
       logCreator
     });
   }
 
   const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
-  const kafkaClient = kafkaBrokerToKafkaClientMap[broker];
+  const kafkaClient = kafkaBrokerToKafkaClientMap[server];
   const producer = kafkaClient.producer(isTransactional ? { maxInFlightRequests: 1, idempotent: true } : {});
   let transaction;
   const producerConnectSpan = tracerProvider.getTracer('default').startSpan('kafkajs.producer.connect');
@@ -46,7 +46,7 @@ export default async function sendOneOrMoreToKafka(
   try {
     producerConnectSpan.setAttribute('component', 'kafkajs');
     producerConnectSpan.setAttribute('span.kind', 'CLIENT');
-    producerConnectSpan.setAttribute('peer.address', broker);
+    producerConnectSpan.setAttribute('peer.address', server);
     await producer.connect();
 
     let producerOrTransaction: Producer | Transaction;
@@ -56,7 +56,7 @@ export default async function sendOneOrMoreToKafka(
       transactionSpan = tracerProvider.getTracer('default').startSpan('kafkajs.producer.transaction');
       transactionSpan.setAttribute('component', 'kafkajs');
       transactionSpan.setAttribute('span.kind', 'CLIENT');
-      transactionSpan.setAttribute('peer.address', broker);
+      transactionSpan.setAttribute('peer.address', server);
     } else {
       producerOrTransaction = producer;
     }
@@ -76,7 +76,7 @@ export default async function sendOneOrMoreToKafka(
 
         span.setAttribute('component', 'kafkajs');
         span.setAttribute('span.kind', 'CLIENT');
-        span.setAttribute('peer.address', broker);
+        span.setAttribute('peer.address', server);
         span.setAttribute('kafka.topic', topic);
         span.setAttribute('kafka.producer.message.key', serviceFunctionName);
 

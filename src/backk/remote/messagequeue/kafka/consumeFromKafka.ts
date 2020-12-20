@@ -42,7 +42,7 @@ export default async function consumeFromKafka(
   let hasFetchError = false;
 
   consumer.on(consumer.events.CONNECT, (event) => {
-    log(Severity.INFO, 'Kafka: consumer connected to broker', '', event);
+    log(Severity.INFO, 'Kafka: consumer connected to server', '', event);
   });
 
   consumer.on(consumer.events.GROUP_JOIN, (event) => {
@@ -54,7 +54,7 @@ export default async function consumeFromKafka(
   });
 
   consumer.on(consumer.events.DISCONNECT, (event) => {
-    log(Severity.INFO, 'Kafka: consumer disconnected from broker', '', event);
+    log(Severity.INFO, 'Kafka: consumer disconnected from server', '', event);
   });
 
   consumer.on(consumer.events.CRASH, ({ error, ...restOfEvent }) => {
@@ -68,12 +68,12 @@ export default async function consumeFromKafka(
   });
 
   consumer.on(consumer.events.REQUEST_TIMEOUT, (event) => {
-    log(Severity.ERROR, 'Kafka: consumer request to broker has timed out', '', event);
+    log(Severity.ERROR, 'Kafka: consumer request to server has timed out', '', event);
     defaultServiceMetrics.incrementKafkaConsumerRequestTimeoutsByOne();
     hasFetchError = true;
     fetchSpan?.setStatus({
       code: CanonicalCode.UNKNOWN,
-      message: 'Consumer request to broker has timed out'
+      message: 'Consumer request to server has timed out'
     });
   });
 
@@ -82,7 +82,7 @@ export default async function consumeFromKafka(
   });
 
   consumer.on(consumer.events.FETCH_START, () => {
-    log(Severity.DEBUG, 'Kafka: started fetch messages from broker', '');
+    log(Severity.DEBUG, 'Kafka: started fetch messages from server', '');
     fetchSpan = tracerProvider.getTracer('default').startSpan('kafkajs.consumer.FETCH_START');
     hasFetchError = false;
     fetchSpan.setAttribute('component', 'kafkajs');
@@ -91,7 +91,7 @@ export default async function consumeFromKafka(
   });
 
   consumer.on(consumer.events.FETCH, (event) => {
-    log(Severity.DEBUG, 'Kafka: finished fetching messages from broker', '', event);
+    log(Severity.DEBUG, 'Kafka: finished fetching messages from server', '', event);
     fetchSpan?.setAttribute('kafka.consumer.fetch.numberOfBatches', event.numberOfBatches);
     if (!hasFetchError) {
       fetchSpan?.setStatus({
@@ -119,11 +119,11 @@ export default async function consumeFromKafka(
   const topic = defaultTopic ?? getNamespacedServiceName();
 
   admin.on(admin.events.CONNECT, (event) => {
-    log(Severity.DEBUG, 'Kafka: admin client connected to broker', '', event);
+    log(Severity.DEBUG, 'Kafka: admin client connected to server', '', event);
   });
 
   admin.on(admin.events.DISCONNECT, (event) => {
-    log(Severity.DEBUG, 'Kafka: admin client disconnected from broker', '', event);
+    log(Severity.DEBUG, 'Kafka: admin client disconnected from server', '', event);
   });
 
   try {

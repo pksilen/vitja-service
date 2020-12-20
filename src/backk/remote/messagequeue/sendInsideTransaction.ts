@@ -12,11 +12,11 @@ export interface CallOrSendTo {
 export default async function sendInsideTransaction(sends: CallOrSendTo[]) {
   const uniqueSendTosByBroker = _.uniqBy(
     sends,
-    ({ remoteServiceFunctionUrl }) => parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionUrl).broker
+    ({ remoteServiceFunctionUrl }) => parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionUrl).server
   );
 
   if (uniqueSendTosByBroker.length !== 1) {
-    throw new Error('All sendTos must be to same Kafka broker');
+    throw new Error('All sendTos must be to same Kafka server');
   }
 
   return await sendOneOrMore(sends, true);

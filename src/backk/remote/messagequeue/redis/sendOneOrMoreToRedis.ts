@@ -13,8 +13,8 @@ export default async function sendOneOrMoreToRedis(
   isTransactional: boolean
 ): Promise<void | ErrorResponse> {
   const remoteServiceUrl = sends[0].remoteServiceFunctionUrl;
-  const { broker, topic } = parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl);
-  const redis = new Redis(broker);
+  const { server, topic } = parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl);
+  const redis = new Redis(server);
   const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
 
   try {

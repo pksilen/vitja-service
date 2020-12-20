@@ -24,6 +24,7 @@ import initializeController from '../backk/controller/initializeController';
 import TagsService from '../services/tags/TagsService';
 import AbstractDbManager from '../backk/dbmanager/AbstractDbManager';
 import DbCleanupService from '../services/dbcleanup/DbCleanupService';
+import consumeFromRedis from "../backk/remote/messagequeue/redis/consumeFromRedis";
 
 // noinspection JSUnusedLocalSymbols
 @Controller()
@@ -43,6 +44,7 @@ export class AppController {
     private readonly dbCleanupService: DbCleanupService
   ) {
     initializeController(this, dbManager);
+    // consumeFromRedis(this, process.env.REDIS_SERVER, 'notification-service.vitja');
   }
 
   @Get(':serviceFunctionName')
