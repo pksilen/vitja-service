@@ -1,5 +1,4 @@
 import { Kafka } from 'kafkajs';
-import getServiceName from '../../../utils/getServiceName';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
 import logCreator from './logCreator';
 import tryExecuteServiceMethod from '../../../execution/tryExecuteServiceMethod';
@@ -13,11 +12,13 @@ import { ErrorResponse } from '../../../types/ErrorResponse';
 import { HttpStatusCodes } from '../../../constants/constants';
 import sendToRemoteService from '../sendToRemoteService';
 import getNamespacedServiceName from '../../../utils/getServiceNamespace';
+import Response from '../../../execution/Response';
+import delay from "../../../utils/delay";
 
 export default async function consumeFromKafka(
   controller: any,
-  broker: string,
-  defaultTopic?: string,
+  server: string,
+  defaultTopic: string = getNamespacedServiceName(),
   defaultTopicConfig = {
     numPartitions: parseInt(process.env.KAFKA_DEFAULT_TOPIC_NUM_PARTITIONS ?? '3'),
     replicationFactor: parseInt(process.env.KAFKA_DEFAULT_TOPIC_REPLICATION_FACTOR ?? '3'),
@@ -31,13 +32,13 @@ export default async function consumeFromKafka(
   additionalTopics?: string[]
 ) {
   const kafkaClient = new Kafka({
-    clientId: getServiceName(),
+    clientId: getNamespacedServiceName(),
     logLevel: minimumLoggingSeverityToKafkaLoggingLevelMap[process.env.LOG_LEVEL ?? 'INFO'],
-    brokers: [broker],
+    brokers: [server],
     logCreator
   });
 
-  const consumer = kafkaClient.consumer({ groupId: getServiceName() });
+  const consumer = kafkaClient.consumer({ groupId: getNamespacedServiceName() });
   let fetchSpan: Span | undefined;
   let hasFetchError = false;
 
@@ -87,7 +88,7 @@ export default async function consumeFromKafka(
     hasFetchError = false;
     fetchSpan.setAttribute('component', 'kafkajs');
     fetchSpan.setAttribute('span.kind', 'CLIENT');
-    fetchSpan.setAttribute('peer.address', broker);
+    fetchSpan.setAttribute('peer.address', server);
   });
 
   consumer.on(consumer.events.FETCH, (event) => {
@@ -116,7 +117,6 @@ export default async function consumeFromKafka(
   });
 
   const admin = kafkaClient.admin();
-  const topic = defaultTopic ?? getNamespacedServiceName();
 
   admin.on(admin.events.CONNECT, (event) => {
     log(Severity.DEBUG, 'Kafka: admin client connected to server', '', event);
@@ -128,39 +128,48 @@ export default async function consumeFromKafka(
 
   try {
     await admin.connect();
-    const didCreateTopic = await admin.createTopics({
+
+    const didCreateDefaultTopic = await admin.createTopics({
       topics: [
         {
-          topic,
+          topic: defaultTopic,
           ...defaultTopicConfig
         }
       ]
     });
-    if (didCreateTopic) {
-      log(Severity.INFO, 'Kafka: admin client created topic', '', { topic, ...defaultTopicConfig });
+
+    if (didCreateDefaultTopic) {
+      log(Severity.INFO, 'Kafka: admin client created default topic', '', {
+        defaultTopic,
+        ...defaultTopicConfig
+      });
     }
+
     await admin.disconnect();
 
     await consumer.connect();
-    await consumer.subscribe({ topic });
+    await consumer.subscribe({ topic: defaultTopic });
     await forEachAsyncParallel(additionalTopics ?? [], async (topic) => await consumer.subscribe({ topic }));
     await consumer.run({
       eachMessage: async ({ message: { key, value, headers } }) => {
-        const serviceFunction = key.toString();
-        const serviceFunctionArgument = JSON.parse(value?.toString() ?? '');
-        const response = await tryExecuteServiceMethod(
+        const serviceFunctionName = key.toString();
+        const valueStr = value?.toString();
+        const serviceFunctionArgument = valueStr ? JSON.parse(valueStr) : undefined;
+
+        const response = new Response();
+        await tryExecuteServiceMethod(
           controller,
-          serviceFunction,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          serviceFunctionName,
           serviceFunctionArgument,
-          headers as any
+          (headers as any) ?? {}
         );
 
-        if (
-          isErrorResponse(response) &&
-          (response as ErrorResponse).statusCode >= HttpStatusCodes.INTERNAL_ERRORS_START
-        ) {
-          await sendToRemoteService('kafka://' + broker + '/' + topic + '/' + serviceFunction, serviceFunctionArgument);
+        if (response.getStatusCode() >= HttpStatusCodes.INTERNAL_ERRORS_START) {
+          await delay(10000);
+          await sendToRemoteService(
+            'kafka://' + server + '/' + defaultTopic + '/' + serviceFunctionName,
+            serviceFunctionArgument
+          );
         } else if (headers?.responseUrl && response) {
           await sendToRemoteService(headers.responseUrl as string, response);
         }

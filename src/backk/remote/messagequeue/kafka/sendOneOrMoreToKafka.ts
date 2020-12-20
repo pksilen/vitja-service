@@ -12,8 +12,9 @@ import { ErrorResponse } from '../../../types/ErrorResponse';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
 import logCreator from './logCreator';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
+import getNamespacedServiceName from "../../../utils/getServiceNamespace";
 
-const kafkaBrokerToKafkaClientMap: { [key: string]: Kafka } = {};
+const kafkaServerToKafkaClientMap: { [key: string]: Kafka } = {};
 
 export enum SendAcknowledgementType {
   NONE,
@@ -27,9 +28,9 @@ export default async function sendOneOrMoreToKafka(
 ): Promise<void | ErrorResponse> {
   const { server, topic } = parseRemoteServiceFunctionCallUrlParts(sends[0].remoteServiceFunctionUrl);
 
-  if (!kafkaBrokerToKafkaClientMap[server]) {
-    kafkaBrokerToKafkaClientMap[server] = new Kafka({
-      clientId: getServiceName(),
+  if (!kafkaServerToKafkaClientMap[server]) {
+    kafkaServerToKafkaClientMap[server] = new Kafka({
+      clientId: getNamespacedServiceName(),
       logLevel: minimumLoggingSeverityToKafkaLoggingLevelMap[process.env.LOG_LEVEL ?? 'INFO'],
       brokers: [server],
       logCreator
@@ -37,7 +38,7 @@ export default async function sendOneOrMoreToKafka(
   }
 
   const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
-  const kafkaClient = kafkaBrokerToKafkaClientMap[server];
+  const kafkaClient = kafkaServerToKafkaClientMap[server];
   const producer = kafkaClient.producer(isTransactional ? { maxInFlightRequests: 1, idempotent: true } : {});
   let transaction;
   const producerConnectSpan = tracerProvider.getTracer('default').startSpan('kafkajs.producer.connect');
@@ -65,9 +66,9 @@ export default async function sendOneOrMoreToKafka(
       sends,
       async ({ responseUrl, remoteServiceFunctionUrl, options, serviceFunctionArgument }: CallOrSendTo) => {
         const { serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionUrl);
-        log(Severity.DEBUG, 'CallOrSendTo to remote service for execution', '', {
-          serviceFunctionCallUrl: remoteServiceFunctionUrl,
-          serviceFunction: serviceFunctionName
+        log(Severity.DEBUG, 'Kafka: produce message', '', {
+          remoteServiceFunctionUrl,
+          serviceFunctionName
         });
 
         const span = tracerProvider
