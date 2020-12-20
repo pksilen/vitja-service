@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Test redis consumer
 - Test kafka consumer
 - Test redis cache, calculate cache SHA256 key from serviceFunctionName + Argument
 - @ResponseHeaders annotation (fixed value, or from function)
