@@ -1,10 +1,9 @@
-import call, { HttpRequestOptions } from './call';
+import callRemoteService, { HttpRequestOptions } from './callRemoteService';
 
 export default async function makeHttpRequest<T>(
   requestUrl: string,
   requestBodyObject: object,
-  options?: HttpRequestOptions,
-  ResponseClass?: new () => T
+  options?: HttpRequestOptions
 ) {
-  return await call(requestUrl, requestBodyObject, options, ResponseClass);
+  return await callRemoteService(requestUrl, requestBodyObject, options);
 }

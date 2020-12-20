@@ -72,7 +72,7 @@ class DefaultServiceMetrics {
     this.serviceFunctionCallCachedResponsesCounter = meter.createCounter(
       'cached_service_function_call_responses',
       {
-        description: 'Number of cached service function call responses'
+        description: 'Number of cached service function callRemoteService responses'
       }
     );
 
@@ -131,20 +131,20 @@ class DefaultServiceMetrics {
     });
 
     this.remoteServiceCallErrorCounter = meter.createCounter('remote_service_call_errors', {
-      description: 'Number of remote service call errors'
+      description: 'Number of remote service callRemoteService errors'
     });
 
     this.syncRemoteServiceHttp5xxErrorResponseCounter = meter.createCounter(
       'sync_remote_service_call_http_5xx_error_responses',
       {
-        description: 'Number of synchronous remote service call HTTP 5xx error responses'
+        description: 'Number of synchronous remote service callRemoteService HTTP 5xx error responses'
       }
     );
 
     this.syncRemoteServiceCallAuthFailureCounter = meter.createCounter(
       'sync_remote_service_call_auth_failures',
       {
-        description: 'Number of synchronous (HTTP) remote service call authorization failures'
+        description: 'Number of synchronous (HTTP) remote service callRemoteService authorization failures'
       }
     );
 

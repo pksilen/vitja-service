@@ -3,7 +3,7 @@ import getServiceName from '../../../utils/getServiceName';
 import { getNamespace } from 'cls-hooked';
 import tracerProvider from '../../../observability/distributedtracinig/tracerProvider';
 import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
-import { Send } from '../sendInsideTransaction';
+import { CallOrSendTo } from '../sendInsideTransaction';
 import log, { Severity } from '../../../observability/logging/log';
 import { CanonicalCode } from '@opentelemetry/api';
 import createErrorResponseFromError from '../../../errors/createErrorResponseFromError';
@@ -22,10 +22,10 @@ export enum SendAcknowledgementType {
 }
 
 export default async function sendOneOrMoreToKafka(
-  sends: Send[],
+  sends: CallOrSendTo[],
   isTransactional: boolean
 ): Promise<void | ErrorResponse> {
-  const { broker, topic } = parseRemoteServiceFunctionCallUrlParts(sends[0].serviceFunctionCallUrl);
+  const { broker, topic } = parseRemoteServiceFunctionCallUrlParts(sends[0].remoteServiceFunctionUrl);
 
   if (!kafkaBrokerToKafkaClientMap[broker]) {
     kafkaBrokerToKafkaClientMap[broker] = new Kafka({
@@ -63,10 +63,10 @@ export default async function sendOneOrMoreToKafka(
 
     await forEachAsyncSequential(
       sends,
-      async ({ responseUrl, serviceFunctionCallUrl, options, serviceFunctionArgument }: Send) => {
-        const { serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl);
-        log(Severity.DEBUG, 'Send to remote service for execution', '', {
-          serviceFunctionCallUrl: serviceFunctionCallUrl,
+      async ({ responseUrl, remoteServiceFunctionUrl, options, serviceFunctionArgument }: CallOrSendTo) => {
+        const { serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionUrl);
+        log(Severity.DEBUG, 'CallOrSendTo to remote service for execution', '', {
+          serviceFunctionCallUrl: remoteServiceFunctionUrl,
           serviceFunction: serviceFunctionName
         });
 
@@ -81,7 +81,7 @@ export default async function sendOneOrMoreToKafka(
         span.setAttribute('kafka.producer.message.key', serviceFunctionName);
 
         try {
-          defaultServiceMetrics.incrementRemoteServiceCallCountByOne(serviceFunctionCallUrl);
+          defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceFunctionUrl);
 
           await producerOrTransaction.send({
             topic,
@@ -103,10 +103,10 @@ export default async function sendOneOrMoreToKafka(
           });
         } catch (error) {
           log(Severity.ERROR, error.message, error.stack, {
-            serviceFunctionCallUrl: serviceFunctionCallUrl,
+            serviceFunctionCallUrl: remoteServiceFunctionUrl,
             serviceFunction: serviceFunctionName
           });
-          defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(serviceFunctionCallUrl);
+          defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(remoteServiceFunctionUrl);
           span.setStatus({
             code: CanonicalCode.UNKNOWN,
             message: error.message

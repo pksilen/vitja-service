@@ -3,7 +3,7 @@ import { AuditLogEntry } from "../../backk/observability/logging/audit/AuditLogE
 
 export default class AuditLoggingServiceImpl implements AuditLoggingService {
   log(auditLogEntry: AuditLogEntry): Promise<void> {
-    // send audit log entry here to a remote audit log server using e.g. call or sendTo
+    // send audit log entry here to a remote audit log server using e.g. callRemoteService or sendToRemoteService
     return Promise.resolve();
   }
 }

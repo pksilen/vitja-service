@@ -88,6 +88,6 @@ export default async function tryAuthorize(
 
   defaultServiceMetrics.incrementAuthorizationFailuresByOne();
   createErrorFromErrorMessageAndThrowError(
-    createErrorMessageWithStatusCode('Attempted service function call not authorized', 403)
+    createErrorMessageWithStatusCode('Attempted service function callRemoteService not authorized', 403)
   );
 }

@@ -7,39 +7,41 @@ import getRemoteResponseTestValue from './getRemoteResponseTestValue';
 import { getNamespace } from 'cls-hooked';
 import defaultServiceMetrics from '../../observability/metrics/defaultServiceMetrics';
 import { HttpStatusCodes } from '../../constants/constants';
+import {
+  remoteServiceNameToControllerMap,
+  validateServiceFunctionArguments
+} from "../utils/validateServiceFunctionArguments";
+import parseRemoteServiceFunctionCallUrlParts from "../utils/parseRemoteServiceFunctionCallUrlParts";
 
 export interface HttpRequestOptions {
   httpMethod?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 }
 
-export default async function call<T>(
-  remoteServiceFunctionCallUrl: string,
+export default async function callRemoteService<T>(
+  serviceFunctionCallUrl: string,
   serviceFunctionArgument?: object,
-  options?: HttpRequestOptions,
-  ResponseClass?: new () => T
+  options?: HttpRequestOptions
 ): Promise<T | ErrorResponse> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
 
-  log(Severity.DEBUG, 'Call sync remote service', '', { remoteServiceFunctionCallUrl });
-  defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceFunctionCallUrl);
+  log(Severity.DEBUG, 'Call sync remote service', '', { serviceFunctionCallUrl });
+  defaultServiceMetrics.incrementRemoteServiceCallCountByOne(serviceFunctionCallUrl);
 
-  if (
-    process.env.NODE_ENV === 'development' &&
-    process.env.SHOULD_USE_FAKE_REMOTE_SERVICES_IN_TEST === 'true'
-  ) {
-    if (!ResponseClass) {
-      throw new Error(
-        'ResponseClass must be provided when environment variable SHOULD_USE_FAKE_REMOTE_SERVICES_IN_TEST is set to true'
-      );
-    }
+  if (process.env.NODE_ENV === 'development') {
+    await validateServiceFunctionArguments([{ remoteServiceFunctionUrl: serviceFunctionCallUrl, serviceFunctionArgument }]);
+    const { serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl);
+    const [serviceName, functionName] = serviceFunctionName.split('.');
+    const controller = remoteServiceNameToControllerMap[serviceName];
+    const responseClassName = controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName];
+    const ResponseClass = controller[serviceName].Types[responseClassName];
     return getRemoteResponseTestValue(ResponseClass) as T;
   }
 
   const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
 
   try {
-    const response = await fetch(remoteServiceFunctionCallUrl, {
+    const response = await fetch(serviceFunctionCallUrl, {
       method: options?.httpMethod?.toLowerCase() ?? 'post',
       body: serviceFunctionArgument ? JSON.stringify(serviceFunctionArgument) : undefined,
       headers: {
@@ -61,22 +63,18 @@ export default async function call<T>(
         log(Severity.ERROR, errorMessage, stackTrace, {
           errorCode,
           statusCode: response.status,
-          remoteServiceFunctionCallUrl
+          remoteServiceFunctionCallUrl: serviceFunctionCallUrl
         });
-        defaultServiceMetrics.incrementSyncRemoteServiceHttp5xxErrorResponseCounter(
-          remoteServiceFunctionCallUrl
-        );
+        defaultServiceMetrics.incrementSyncRemoteServiceHttp5xxErrorResponseCounter(serviceFunctionCallUrl);
       } else {
         log(Severity.DEBUG, errorMessage, stackTrace, {
           errorCode,
           statusCode: response.status,
-          remoteServiceFunctionCallUrl
+          remoteServiceFunctionCallUrl: serviceFunctionCallUrl
         });
 
         if (response.status === HttpStatusCodes.FORBIDDEN) {
-          defaultServiceMetrics.incrementSyncRemoteServiceCallAuthFailureCounter(
-            remoteServiceFunctionCallUrl
-          );
+          defaultServiceMetrics.incrementSyncRemoteServiceCallAuthFailureCounter(serviceFunctionCallUrl);
         }
       }
 
@@ -93,8 +91,8 @@ export default async function call<T>(
 
     return responseBody;
   } catch (error) {
-    log(Severity.ERROR, error.message, error.stack, { remoteServiceFunctionCallUrl });
-    defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(remoteServiceFunctionCallUrl);
+    log(Severity.ERROR, error.message, error.stack, { remoteServiceFunctionCallUrl: serviceFunctionCallUrl });
+    defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(serviceFunctionCallUrl);
     return createErrorResponseFromError(error);
   }
 }

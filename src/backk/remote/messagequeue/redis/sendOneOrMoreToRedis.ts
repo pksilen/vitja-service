@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { Send } from '../sendInsideTransaction';
+import { CallOrSendTo } from '../sendInsideTransaction';
 import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseRemoteServiceFunctionCallUrlParts';
 import { getNamespace } from 'cls-hooked';
 import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
@@ -9,10 +9,10 @@ import { ErrorResponse } from '../../../types/ErrorResponse';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
 
 export default async function sendOneOrMoreToRedis(
-  sends: Send[],
+  sends: CallOrSendTo[],
   isTransactional: boolean
 ): Promise<void | ErrorResponse> {
-  const remoteServiceUrl = sends[0].serviceFunctionCallUrl;
+  const remoteServiceUrl = sends[0].remoteServiceFunctionUrl;
   const { broker, topic } = parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl);
   const redis = new Redis(broker);
   const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
@@ -24,14 +24,14 @@ export default async function sendOneOrMoreToRedis(
 
     await forEachAsyncSequential(
       sends,
-      async ({ responseUrl, serviceFunctionCallUrl, serviceFunctionArgument }: Send) => {
-        const { serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl);
-        log(Severity.DEBUG, 'Send to remote service for execution', '', {
-          serviceFunctionCallUrl: serviceFunctionCallUrl,
+      async ({ responseUrl, remoteServiceFunctionUrl, serviceFunctionArgument }: CallOrSendTo) => {
+        const { serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionUrl);
+        log(Severity.DEBUG, 'CallOrSendTo to remote service for execution', '', {
+          serviceFunctionCallUrl: remoteServiceFunctionUrl,
           serviceFunction: serviceFunctionName
         });
 
-        defaultServiceMetrics.incrementRemoteServiceCallCountByOne(serviceFunctionCallUrl);
+        defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceFunctionUrl);
         await redis.rpush(
           topic,
           JSON.stringify({

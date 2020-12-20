@@ -7,9 +7,9 @@ import {
   HttpStatus,
   Param,
   Post,
-  Query,
+  Query, Req,
   Res
-} from '@nestjs/common';
+} from "@nestjs/common";
 import AuthorizationService from '../backk/authorization/AuthorizationService';
 import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
 import tryExecuteServiceMethod from '../backk/execution/tryExecuteServiceMethod';

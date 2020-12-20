@@ -1,18 +1,18 @@
 import _ from 'lodash';
-import { sendOneOrMore, SendToOptions } from './sendTo';
+import { sendOneOrMore, SendToOptions } from './sendToRemoteService';
 import parseRemoteServiceFunctionCallUrlParts from '../utils/parseRemoteServiceFunctionCallUrlParts';
 
-export interface Send {
-  serviceFunctionCallUrl: string;
-  serviceFunctionArgument: object;
+export interface CallOrSendTo {
+  remoteServiceFunctionUrl: string;
+  serviceFunctionArgument?: object;
   responseUrl?: string;
   options?: SendToOptions;
 }
 
-export default async function sendInsideTransaction(sends: Send[]) {
+export default async function sendInsideTransaction(sends: CallOrSendTo[]) {
   const uniqueSendTosByBroker = _.uniqBy(
     sends,
-    ({ serviceFunctionCallUrl }) => parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl).broker
+    ({ remoteServiceFunctionUrl }) => parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionUrl).broker
   );
 
   if (uniqueSendTosByBroker.length !== 1) {

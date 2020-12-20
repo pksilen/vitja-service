@@ -11,7 +11,7 @@ import forEachAsyncParallel from '../../../utils/forEachAsyncParallel';
 import isErrorResponse from '../../../errors/isErrorResponse';
 import { ErrorResponse } from '../../../types/ErrorResponse';
 import { HttpStatusCodes } from '../../../constants/constants';
-import sendTo from '../sendTo';
+import sendToRemoteService from '../sendToRemoteService';
 import getNamespacedServiceName from '../../../utils/getServiceNamespace';
 
 export default async function consumeFromKafka(
@@ -160,9 +160,9 @@ export default async function consumeFromKafka(
           isErrorResponse(response) &&
           (response as ErrorResponse).statusCode >= HttpStatusCodes.INTERNAL_ERRORS_START
         ) {
-          await sendTo('kafka://' + broker + '/' + topic + '/' + serviceFunction, serviceFunctionArgument);
+          await sendToRemoteService('kafka://' + broker + '/' + topic + '/' + serviceFunction, serviceFunctionArgument);
         } else if (headers?.responseUrl && response) {
-          await sendTo(headers.responseUrl as string, response);
+          await sendToRemoteService(headers.responseUrl as string, response);
         }
       }
     });

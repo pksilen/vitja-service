@@ -28,7 +28,7 @@ import ShoppingCartService from '../shoppingcart/ShoppingCartService';
 import { SalesItemState } from '../salesitems/types/enums/SalesItemState';
 import { OrderState } from './types/enum/OrderState';
 import { Update } from '../../backk/decorators/service/function/Update';
-import sendTo from '../../backk/remote/messagequeue/sendTo';
+import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -77,11 +77,11 @@ export default class OrdersServiceImpl extends OrdersService {
 
       let possibleErrorResponse: void | ErrorResponse;
       if (!('errorMessage' in createdOrderOrErrorResponse)) {
-        possibleErrorResponse = await sendTo(
-          `kafka://${process.env.KAFKA_SERVER}/notification-service/orderNotificationsService.sendOrderCreateNotifications`,
+        possibleErrorResponse = await sendToRemoteService(
+          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
           {
             userId,
-            salesItemIds,
+            salesItemIds
           }
         );
       }
@@ -100,10 +100,13 @@ export default class OrdersServiceImpl extends OrdersService {
           hookFunc: ([state]) => state === 'toBeDelivered',
           error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
         })) ||
-        (await sendTo(`kafka://${process.env.KAFKA_SERVER}/refund-service/refundService.refundOrderItem`, {
-          orderId,
-          orderItemId
-        }))
+        (await sendToRemoteService(
+          `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
+          {
+            orderId,
+            orderItemId
+          }
+        ))
     );
   }
 
@@ -156,8 +159,8 @@ export default class OrdersServiceImpl extends OrdersService {
             error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
           }
         )) ||
-        (await sendTo(
-          `kafka://${process.env.KAFKA_SERVER}/notification-service/orderNotificationsService.sendOrderItemDeliveryNotification`,
+        (await sendToRemoteService(
+          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderItemDeliveryNotification`,
           {
             orderId,
             orderItemId,
@@ -196,8 +199,8 @@ export default class OrdersServiceImpl extends OrdersService {
       );
 
       if (newState === 'returned') {
-        possibleErrorResponse = await sendTo(
-          `kafka://${process.env.KAFKA_SERVER}/refund-service/refundService.refundOrderItem`,
+        possibleErrorResponse = await sendToRemoteService(
+          `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
           {
             orderId,
             orderItemId

@@ -1,8 +1,10 @@
 # Vitja service
 
 TODO
-- call remote service testing, find service function argument/return type from git submodule dir or monorepo dir
-- Validate call argument against parsed Class. Generate return value sample arg.
+- call remote service testing
+  -argument testing
+  -sample response value generation
+- rename 'Types' to '__BackkTypes__'
 - Test call()
 - Test redis sendTo
 - Test redis consumer

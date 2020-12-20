@@ -109,7 +109,7 @@ export default async function tryExecuteServiceMethod(
 
   // noinspection ExceptionCaughtLocallyJS
   try {
-    log(Severity.DEBUG, 'Service function call', serviceFunctionName);
+    log(Severity.DEBUG, 'Service function callRemoteService', serviceFunctionName);
     defaultServiceMetrics.incrementServiceFunctionCallsByOne(serviceFunctionName);
 
     const serviceFunctionCallStartTimeInMillis = Date.now();
@@ -285,7 +285,7 @@ export default async function tryExecuteServiceMethod(
         });
       }
       if (cachedResponseJson) {
-        log(Severity.DEBUG, 'Fetched service function call response from Redis cache', '', {
+        log(Severity.DEBUG, 'Fetched service function callRemoteService response from Redis cache', '', {
           redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
           key
         });
@@ -349,7 +349,7 @@ export default async function tryExecuteServiceMethod(
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
               serviceFunctionName +
-                ': database manager operation and remote service call must be executed inside a transaction or service function must be annotated with @NoTransaction if no transaction is needed'
+                ': database manager operation and remote service callRemoteService must be executed inside a transaction or service function must be annotated with @NoTransaction if no transaction is needed'
             );
           } else if (
             clsNamespace.get('remoteServiceCallCount') > 1 &&
@@ -367,7 +367,7 @@ export default async function tryExecuteServiceMethod(
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
               serviceFunctionName +
-                ': database manager operation(s) that can fail cannot be called after a remote service call that cannot be rolled back. Alternatively, service function must be annotated with @NoDistributedTransaction if no distributed transaction is needed'
+                ': database manager operation(s) that can fail cannot be called after a remote service callRemoteService that cannot be rolled back. Alternatively, service function must be annotated with @NoDistributedTransaction if no distributed transaction is needed'
             );
           }
         } catch (error) {
@@ -413,7 +413,7 @@ export default async function tryExecuteServiceMethod(
 
           try {
             await redis.hset(key, JSON.stringify(serviceFunctionArgument), response);
-            log(Severity.DEBUG, 'Stored service function call response to Redis cache', '', {
+            log(Severity.DEBUG, 'Stored service function callRemoteService response to Redis cache', '', {
               redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
               key
             });

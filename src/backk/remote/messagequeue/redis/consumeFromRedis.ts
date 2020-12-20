@@ -5,7 +5,7 @@ import tryExecuteServiceMethod from '../../../execution/tryExecuteServiceMethod'
 import isErrorResponse from '../../../errors/isErrorResponse';
 import { ErrorResponse } from '../../../types/ErrorResponse';
 import { HttpStatusCodes } from '../../../constants/constants';
-import sendTo from '../sendTo';
+import sendToRemoteService from '../sendToRemoteService';
 import log, { Severity } from '../../../observability/logging/log';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
 import getNamespacedServiceName from '../../../utils/getServiceNamespace';
@@ -36,9 +36,9 @@ export default async function consumeFromRedis(
         isErrorResponse(response) &&
         (response as ErrorResponse).statusCode >= HttpStatusCodes.INTERNAL_ERRORS_START
       ) {
-        await sendTo('redis://' + broker + '/' + topic + '/' + serviceFunction, serviceFunctionArgument);
+        await sendToRemoteService('redis://' + broker + '/' + topic + '/' + serviceFunction, serviceFunctionArgument);
       } else if (headers?.responseUrl && response) {
-        await sendTo(headers.responseUrl as string, response);
+        await sendToRemoteService(headers.responseUrl as string, response);
       }
 
       const now = Date.now();
