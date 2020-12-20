@@ -18,8 +18,8 @@ export async function validateServiceFunctionArguments(sends: CallOrSendTo[]) {
     const [serviceName, functionName] = serviceFunctionName.split('.');
     let controller;
 
-    if (remoteServiceNameToControllerMap[serviceName]) {
-      controller = remoteServiceNameToControllerMap[serviceName];
+    if (remoteServiceNameToControllerMap[`${topic}$/${serviceName}`]) {
+      controller = remoteServiceNameToControllerMap[`${topic}$/${serviceName}`];
     } else {
       let remoteServiceRootDir;
 
@@ -43,7 +43,7 @@ export async function validateServiceFunctionArguments(sends: CallOrSendTo[]) {
       };
 
       initializeController(controller, noOpDbManager, undefined, remoteServiceRootDir);
-      remoteServiceNameToControllerMap[serviceName] = controller;
+      remoteServiceNameToControllerMap[`${topic}$/${serviceName}`] = controller;
     }
 
     const serviceFunctionArgumentClassName =

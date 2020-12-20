@@ -18,21 +18,21 @@ export interface HttpRequestOptions {
 }
 
 export default async function callRemoteService<T>(
-  serviceFunctionCallUrl: string,
+  remoteServiceFunctionUrl: string,
   serviceFunctionArgument?: object,
   options?: HttpRequestOptions
 ): Promise<T | ErrorResponse> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
 
-  log(Severity.DEBUG, 'Call sync remote service', '', { serviceFunctionCallUrl });
-  defaultServiceMetrics.incrementRemoteServiceCallCountByOne(serviceFunctionCallUrl);
+  log(Severity.DEBUG, 'Call sync remote service', '', { remoteServiceFunctionUrl });
+  defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceFunctionUrl);
 
   if (process.env.NODE_ENV === 'development') {
-    await validateServiceFunctionArguments([{ remoteServiceFunctionUrl: serviceFunctionCallUrl, serviceFunctionArgument }]);
-    const { serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(serviceFunctionCallUrl);
+    await validateServiceFunctionArguments([{ remoteServiceFunctionUrl, serviceFunctionArgument }]);
+    const { topic, serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionUrl);
     const [serviceName, functionName] = serviceFunctionName.split('.');
-    const controller = remoteServiceNameToControllerMap[serviceName];
+    const controller = remoteServiceNameToControllerMap[`${topic}$/${serviceName}`];
     const responseClassName = controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName];
     const ResponseClass = controller[serviceName].Types[responseClassName];
     return getRemoteResponseTestValue(ResponseClass) as T;
@@ -41,7 +41,7 @@ export default async function callRemoteService<T>(
   const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
 
   try {
-    const response = await fetch(serviceFunctionCallUrl, {
+    const response = await fetch(remoteServiceFunctionUrl, {
       method: options?.httpMethod?.toLowerCase() ?? 'post',
       body: serviceFunctionArgument ? JSON.stringify(serviceFunctionArgument) : undefined,
       headers: {
@@ -63,18 +63,18 @@ export default async function callRemoteService<T>(
         log(Severity.ERROR, errorMessage, stackTrace, {
           errorCode,
           statusCode: response.status,
-          remoteServiceFunctionCallUrl: serviceFunctionCallUrl
+          remoteServiceFunctionCallUrl: remoteServiceFunctionUrl
         });
-        defaultServiceMetrics.incrementSyncRemoteServiceHttp5xxErrorResponseCounter(serviceFunctionCallUrl);
+        defaultServiceMetrics.incrementSyncRemoteServiceHttp5xxErrorResponseCounter(remoteServiceFunctionUrl);
       } else {
         log(Severity.DEBUG, errorMessage, stackTrace, {
           errorCode,
           statusCode: response.status,
-          remoteServiceFunctionCallUrl: serviceFunctionCallUrl
+          remoteServiceFunctionCallUrl: remoteServiceFunctionUrl
         });
 
         if (response.status === HttpStatusCodes.FORBIDDEN) {
-          defaultServiceMetrics.incrementSyncRemoteServiceCallAuthFailureCounter(serviceFunctionCallUrl);
+          defaultServiceMetrics.incrementSyncRemoteServiceCallAuthFailureCounter(remoteServiceFunctionUrl);
         }
       }
 
@@ -91,8 +91,8 @@ export default async function callRemoteService<T>(
 
     return responseBody;
   } catch (error) {
-    log(Severity.ERROR, error.message, error.stack, { remoteServiceFunctionCallUrl: serviceFunctionCallUrl });
-    defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(serviceFunctionCallUrl);
+    log(Severity.ERROR, error.message, error.stack, { remoteServiceFunctionCallUrl: remoteServiceFunctionUrl });
+    defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(remoteServiceFunctionUrl);
     return createErrorResponseFromError(error);
   }
 }

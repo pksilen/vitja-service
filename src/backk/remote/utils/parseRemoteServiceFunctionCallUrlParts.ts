@@ -1,6 +1,6 @@
 export default function parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl: string) {
-  const scheme = remoteServiceUrl.slice(0, 5);
-  let broker, topic, db, serviceFunctionName;
+  const scheme = remoteServiceUrl.split('://')[0];
+  let broker = '', topic, db, serviceFunctionName;
 
   if (scheme === 'kafka') {
     [broker, topic, serviceFunctionName] = remoteServiceUrl.slice(8).split('/');
@@ -13,7 +13,7 @@ export default function parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl:
     throw new Error('Only schemes http://, kafka:// and redis:// are supported');
   }
 
-  if (!broker || broker === 'undefined') {
+  if ((scheme === 'kafka' || scheme === 'redis') && (!broker || broker === 'undefined')) {
     throw new Error('Remote server not defined in remote service url: ' + remoteServiceUrl);
   } else if (!topic || topic === 'undefined') {
     throw new Error('Service name not defined in remote service url: ' + remoteServiceUrl);
