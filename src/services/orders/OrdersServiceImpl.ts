@@ -78,7 +78,7 @@ export default class OrdersServiceImpl extends OrdersService {
       let possibleErrorResponse: void | ErrorResponse;
       if (!('errorMessage' in createdOrderOrErrorResponse)) {
         possibleErrorResponse = await sendToRemoteService(
-          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
+          `redis://${process.env.REDIS_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
           {
             userId,
             salesItemIds

@@ -1,12 +1,11 @@
 export default function parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl: string) {
   const scheme = remoteServiceUrl.split('://')[0];
-  let broker = '', topic, db, serviceFunctionName;
+  let broker = '', topic, serviceFunctionName;
 
   if (scheme === 'kafka') {
     [broker, topic, serviceFunctionName] = remoteServiceUrl.slice(8).split('/');
   } else if (scheme === 'redis') {
-    [broker, db, topic, serviceFunctionName] = remoteServiceUrl.slice(8).split('/');
-    broker = broker + '/' + db;
+    [broker, topic, serviceFunctionName] = remoteServiceUrl.slice(8).split('/');
   } else if (scheme === 'http') {
     [topic, serviceFunctionName] = remoteServiceUrl.slice(7).split('/');
   } else {

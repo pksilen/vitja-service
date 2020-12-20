@@ -1,12 +1,10 @@
 # Vitja service
 
 TODO
-- rename 'Types' to '__BackkTypes__'
-- Test call()
 - Test redis sendTo
 - Test redis consumer
 - Test kafka consumer
-- Test redis cache
+- Test redis cache, calculate cache SHA256 key from serviceFunctionName + Argument
 - @ResponseHeaders annotation (fixed value, or from function)
 - executeMultipleWithoutTransaction, allow remote service calls (call-method only)
   - give option where regexp for remote calls must be defined
@@ -35,6 +33,7 @@ TODO
 - Split services to different microservices
   - Create notification-service
     - Sales item cron job: send email at 16:00 if sales item is going to be removed
+  - Test call()
 
 
 TODO NEXT RELEASE:
