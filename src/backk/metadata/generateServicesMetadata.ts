@@ -19,12 +19,12 @@ export default function generateServicesMetadata<T>(
   return Object.entries(controller)
     .filter(
       ([serviceName, service]: [string, any]) =>
-        service instanceof BaseService || (remoteServiceRootDir && !serviceName.endsWith('Types'))
+        service instanceof BaseService || (remoteServiceRootDir && !serviceName.endsWith('__BackkTypes__'))
     )
     .map(([serviceName, service]: [string, any]) => {
       const ServiceClass = service.constructor;
       const functionNames = Object.keys(
-        (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
+        (controller as any)[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap
       );
 
       if (service instanceof CrudResourceService) {
@@ -34,7 +34,7 @@ export default function generateServicesMetadata<T>(
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypes, [typeName, Class]: [string, any]) => {
           const isResponseValueType = Object.values(
-            (controller as any)[`${serviceName}Types`].functionNameToReturnTypeNameMap
+            (controller as any)[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap
           ).includes(typeName);
           const typeObject = getClassPropertyNameToPropertyTypeNameMap(
             Class,
@@ -85,7 +85,7 @@ export default function generateServicesMetadata<T>(
             throw new Error(serviceName + '.' + functionName + ': is missing authorization annotation');
           }
 
-          const functionArgumentTypeName = (controller as any)[`${serviceName}Types`]
+          const functionArgumentTypeName = (controller as any)[`${serviceName}__BackkTypes__`]
             .functionNameToParamTypeNameMap[functionName];
 
           if (
@@ -105,7 +105,7 @@ export default function generateServicesMetadata<T>(
             );
           }
 
-          const returnValueTypeName: string = (controller as any)[`${serviceName}Types`]
+          const returnValueTypeName: string = (controller as any)[`${serviceName}__BackkTypes__`]
             .functionNameToReturnTypeNameMap[functionName];
 
           return {

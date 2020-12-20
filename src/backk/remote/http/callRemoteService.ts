@@ -10,8 +10,9 @@ import { HttpStatusCodes } from '../../constants/constants';
 import {
   remoteServiceNameToControllerMap,
   validateServiceFunctionArguments
-} from "../utils/validateServiceFunctionArguments";
-import parseRemoteServiceFunctionCallUrlParts from "../utils/parseRemoteServiceFunctionCallUrlParts";
+} from '../utils/validateServiceFunctionArguments';
+import parseRemoteServiceFunctionCallUrlParts from '../utils/parseRemoteServiceFunctionCallUrlParts';
+import fs from 'fs';
 
 export interface HttpRequestOptions {
   httpMethod?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -31,11 +32,15 @@ export default async function callRemoteService<T>(
   if (process.env.NODE_ENV === 'development') {
     await validateServiceFunctionArguments([{ remoteServiceFunctionUrl, serviceFunctionArgument }]);
     const { topic, serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionUrl);
-    const [serviceName, functionName] = serviceFunctionName.split('.');
-    const controller = remoteServiceNameToControllerMap[`${topic}$/${serviceName}`];
-    const responseClassName = controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName];
-    const ResponseClass = controller[serviceName].Types[responseClassName];
-    return getRemoteResponseTestValue(ResponseClass) as T;
+
+    if (fs.existsSync('../' + topic) || fs.existsSync('./' + topic)) {
+      const [serviceName, functionName] = serviceFunctionName.split('.');
+      const controller = remoteServiceNameToControllerMap[`${topic}$/${serviceName}`];
+      const responseClassName =
+        controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName];
+      const ResponseClass = controller[serviceName].Types[responseClassName];
+      return getRemoteResponseTestValue(ResponseClass) as T;
+    }
   }
 
   const authHeader = getNamespace('serviceFunctionExecution')?.get('authHeader');
@@ -91,7 +96,9 @@ export default async function callRemoteService<T>(
 
     return responseBody;
   } catch (error) {
-    log(Severity.ERROR, error.message, error.stack, { remoteServiceFunctionCallUrl: remoteServiceFunctionUrl });
+    log(Severity.ERROR, error.message, error.stack, {
+      remoteServiceFunctionCallUrl: remoteServiceFunctionUrl
+    });
     defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(remoteServiceFunctionUrl);
     return createErrorResponseFromError(error);
   }

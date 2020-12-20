@@ -122,7 +122,7 @@ export default async function tryScheduleJobExecution(
   }
 
   const serviceFunctionResponseValueTypeName =
-    controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName];
+    controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName];
 
   if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
     createErrorFromErrorMessageAndThrowError(

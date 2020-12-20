@@ -63,7 +63,7 @@ export default function initializeController(
       remoteServiceRootDir
     );
 
-    controller[`${serviceName}Types`] = {
+    controller[`${serviceName}__BackkTypes__`] = {
       functionNameToParamTypeNameMap,
       functionNameToReturnTypeNameMap
     };
@@ -74,7 +74,7 @@ export default function initializeController(
   Object.entries(controller)
     .filter(
       ([serviceName, service]: [string, any]) =>
-        service instanceof BaseService || (remoteServiceRootDir && !serviceName.endsWith('Types'))
+        service instanceof BaseService || (remoteServiceRootDir && !serviceName.endsWith('__BackkTypes__'))
     )
     .forEach(([serviceName]: [string, any]) => {
       getNestedClasses(

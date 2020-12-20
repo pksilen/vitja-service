@@ -169,7 +169,7 @@ export default async function tryExecuteServiceMethod(
     }
 
     const serviceFunctionResponseValueTypeName =
-      controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName];
+      controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName];
 
     if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
       createErrorFromErrorMessageAndThrowError(
@@ -181,7 +181,7 @@ export default async function tryExecuteServiceMethod(
     }
 
     const serviceFunctionArgumentTypeName =
-      controller[`${serviceName}Types`].functionNameToParamTypeNameMap[functionName];
+      controller[`${serviceName}__BackkTypes__`].functionNameToParamTypeNameMap[functionName];
 
     if (
       typeof serviceFunctionArgument !== 'object' ||
@@ -389,7 +389,7 @@ export default async function tryExecuteServiceMethod(
 
       if (response !== undefined) {
         const serviceFunctionBaseReturnTypeName = getTypeInfoForTypeName(
-          controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName]
+          controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName]
         ).baseTypeName;
 
         const ServiceFunctionReturnType = controller[serviceName]['Types'][serviceFunctionBaseReturnTypeName];

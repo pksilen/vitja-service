@@ -47,7 +47,7 @@ export async function validateServiceFunctionArguments(sends: CallOrSendTo[]) {
     }
 
     const serviceFunctionArgumentClassName =
-      controller[`${serviceName}Types`].functionNameToParamTypeNameMap[functionName];
+      controller[`${serviceName}__BackkTypes__`].functionNameToParamTypeNameMap[functionName];
 
     const ServiceFunctionArgumentClass = controller[serviceName].Types[serviceFunctionArgumentClassName];
 

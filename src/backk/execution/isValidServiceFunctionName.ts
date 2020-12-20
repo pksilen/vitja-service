@@ -6,7 +6,7 @@ export default function isValidServiceFunctionName(serviceFunctionName: string, 
   }
 
   const serviceFunctionResponseValueTypeName =
-    controller[`${serviceName}Types`].functionNameToReturnTypeNameMap[functionName];
+    controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName];
 
   if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
     return false;

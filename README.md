@@ -1,9 +1,6 @@
 # Vitja service
 
 TODO
-- call remote service testing
-  -argument testing
-  -sample response value generation
 - rename 'Types' to '__BackkTypes__'
 - Test call()
 - Test redis sendTo
