@@ -165,7 +165,6 @@ export default async function consumeFromKafka(
 
       await consumer.run({
         eachMessage: async ({ message: { key, value, headers } }) => {
-          console.log(key, value, headers);
           const serviceFunctionName = key.toString();
           const valueStr = value?.toString();
           const serviceFunctionArgument = valueStr ? JSON.parse(valueStr) : null;

@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Test kafka consumer
 - Test redis cache, calculate cache SHA256 key from serviceFunctionName + Argument
 - @ResponseHeaders annotation (fixed value, or from function)
 - executeMultipleWithoutTransaction, allow remote service calls (call-method only)
@@ -28,13 +27,20 @@ TODO
    http-kubernetes-mongodb
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
-- Split services to different microservices
-  - Create notification-service
-    - Sales item cron job: send email at 16:00 if sales item is going to be removed
-  - Test call()
 
 
 TODO NEXT RELEASE:
+Split services to different microservices
+- Create notification-service
+    - Sales item cron job: send email at 16:00 if sales item is going to be removed
+- Test call()
+  
+- Remote Http service integration tests:
+  - COnfigure @Before tasks: eg. Order service tests should first do following:
+    -initialize Sales item service with integration_uuid, creates a new temp database for test usage
+    -create a sample sales item
+    -execute Order service tests
+    -@After task: remote Sales item temp database is destroyed
 - Kafka sendTo integration tests, create topic name with uuid postfix, use that and delete topic at end of testing
 - Redis sendTo integeration tests, create db/topic name with uuid postfix, use that and delete topic at end of testing
 - mysql2 distributed tracing

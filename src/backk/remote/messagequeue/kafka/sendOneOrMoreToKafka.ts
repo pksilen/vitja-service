@@ -1,5 +1,4 @@
 import { CompressionTypes, Kafka, Producer, Transaction } from 'kafkajs';
-import getServiceName from '../../../utils/getServiceName';
 import { getNamespace } from 'cls-hooked';
 import tracerProvider from '../../../observability/distributedtracinig/tracerProvider';
 import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
@@ -12,7 +11,7 @@ import { ErrorResponse } from '../../../types/ErrorResponse';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
 import logCreator from './logCreator';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
-import getNamespacedServiceName from "../../../utils/getServiceNamespace";
+import getNamespacedServiceName from '../../../utils/getServiceNamespace';
 
 const kafkaServerToKafkaClientMap: { [key: string]: Kafka } = {};
 
@@ -66,7 +65,7 @@ export default async function sendOneOrMoreToKafka(
       sends,
       async ({ responseUrl, remoteServiceFunctionUrl, options, serviceFunctionArgument }: CallOrSendTo) => {
         const { serviceFunctionName } = parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionUrl);
-        log(Severity.DEBUG, 'Kafka: produce message', '', {
+        log(Severity.DEBUG, 'Kafka producer debug: produce message', '', {
           remoteServiceFunctionUrl,
           serviceFunctionName
         });
@@ -81,9 +80,9 @@ export default async function sendOneOrMoreToKafka(
         span.setAttribute('kafka.topic', topic);
         span.setAttribute('kafka.producer.message.key', serviceFunctionName);
 
-        try {
-          defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceFunctionUrl);
+        defaultServiceMetrics.incrementRemoteServiceCallCountByOne(remoteServiceFunctionUrl);
 
+        try {
           await producerOrTransaction.send({
             topic,
             compression: options?.compressionType ?? CompressionTypes.None,
@@ -103,15 +102,17 @@ export default async function sendOneOrMoreToKafka(
             code: CanonicalCode.OK
           });
         } catch (error) {
-          log(Severity.ERROR, error.message, error.stack, {
+          log(Severity.ERROR, 'Kafka producer error: ' + error.message, error.stack, {
             serviceFunctionCallUrl: remoteServiceFunctionUrl,
             serviceFunction: serviceFunctionName
           });
+
           defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(remoteServiceFunctionUrl);
           span.setStatus({
             code: CanonicalCode.UNKNOWN,
             message: error.message
           });
+
           throw error;
         } finally {
           span.end();
