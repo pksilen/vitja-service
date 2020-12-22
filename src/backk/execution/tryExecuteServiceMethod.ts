@@ -45,7 +45,6 @@ export default async function tryExecuteServiceMethod(
   options?: ExecuteServiceFunctionOptions,
   shouldCreateClsNamespace = true
 ): Promise<void | object> {
-
   if (options?.areMultipleServiceFunctionExecutionsAllowed && isExecuteMultipleRequest(serviceFunctionName)) {
     if (options?.maxServiceFunctionCountInMultipleServiceFunctionExecution) {
       if (
@@ -261,11 +260,7 @@ export default async function tryExecuteServiceMethod(
         );
       }
 
-      await tryValidateServiceFunctionArgument(
-        functionName,
-        dbManager,
-        instantiatedServiceFunctionArgument
-      );
+      await tryValidateServiceFunctionArgument(functionName, dbManager, instantiatedServiceFunctionArgument);
     }
 
     if (
@@ -275,27 +270,30 @@ export default async function tryExecuteServiceMethod(
         serviceFunctionArgument
       )
     ) {
-      const key = getNamespacedServiceName() + ':' + serviceFunctionName;
-      const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
+      const key = getNamespacedServiceName() + serviceFunctionName;
+      const redis = new Redis(`redis://${process.env.REDIS_SERVER}`);
       let cachedResponseJson;
+
       try {
         cachedResponseJson = await redis.hget(key, JSON.stringify(serviceFunctionArgument));
       } catch (error) {
-        log(Severity.ERROR, 'Failed to access Redis cache', error.message, {
-          redisUrl: controller?.responseCacheConfigService.getRedisUrl()
+        log(Severity.ERROR, 'Redis cache error: ' + error.message, error.stack, {
+          redisServer: process.env.REDIS_SERVER
         });
       }
+
       if (cachedResponseJson) {
-        log(Severity.DEBUG, 'Fetched service function callRemoteService response from Redis cache', '', {
-          redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
+        log(Severity.DEBUG, 'Redis cache debug: fetched service function call response from cache', '', {
+          redisServer: process.env.REDIS_SERVER,
           key
         });
+
         defaultServiceMetrics.incrementServiceFunctionCallCacheHitCounterByOne(serviceFunctionName);
 
         try {
           response = JSON.parse(cachedResponseJson);
         } catch {
-          // NOOP
+          // No operation
         }
       }
     }
@@ -408,29 +406,33 @@ export default async function tryExecuteServiceMethod(
             serviceFunctionArgument
           )
         ) {
-          const redis = new Redis(controller?.responseCacheConfigService.getRedisUrl());
-          response = JSON.stringify(response);
+          const redis = new Redis(`redis://${process.env.REDIS_SERVER}`);
+          const responseJson = JSON.stringify(response);
           const key = getNamespacedServiceName() + ':' + serviceFunctionName;
 
           try {
-            await redis.hset(key, JSON.stringify(serviceFunctionArgument), response);
-            log(Severity.DEBUG, 'Stored service function callRemoteService response to Redis cache', '', {
-              redisUrl: controller?.responseCacheConfigService.getRedisUrl(),
+            await redis.hset(key, JSON.stringify(serviceFunctionArgument), responseJson);
+
+            log(Severity.DEBUG, 'Redis cache debug: stored service function call response to cache', '', {
+              redisUrl: process.env.REDIS_SERVER,
               key
             });
+
             defaultServiceMetrics.incrementServiceFunctionCallCachedResponsesCounterByOne(serviceName);
+
             if (await redis.exists(key)) {
               ttl = await redis.ttl(key);
             } else {
-              await redis.expire(
-                key,
-                controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunctionName)
+              ttl = controller?.responseCacheConfigService.getCachingDurationInSecs(
+                serviceFunctionName,
+                serviceFunctionArgument
               );
-              ttl = controller?.responseCacheConfigService.getCachingDurationInSecs(serviceFunctionName);
+
+              await redis.expire(key, ttl);
             }
           } catch (error) {
-            log(Severity.ERROR, 'Failed to access Redis cache', error.message, {
-              redisUrl: controller?.responseCacheConfigService.getRedisUrl()
+            log(Severity.ERROR, 'Redis cache error: ' + error.message, error.stack, {
+              redisUrl: process.env.REDIS_SERVER,
             });
           }
         }
@@ -440,6 +442,7 @@ export default async function tryExecuteServiceMethod(
             response = undefined;
             resp?.status(HttpStatusCodes.NOT_MODIFIED);
           }
+
           if (typeof resp?.header === 'function') {
             resp?.header('ETag', response.version);
           } else if (typeof resp?.set === 'function') {
