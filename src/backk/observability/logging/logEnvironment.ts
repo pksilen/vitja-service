@@ -12,6 +12,7 @@ export default function logEnvironment() {
         !upperCaseEnvVariableName.includes('CODE') &&
         !upperCaseEnvVariableName.includes('PASSWORD') &&
         !upperCaseEnvVariableName.includes('PASSWD') &&
+        !upperCaseEnvVariableName.includes('PWD') &&
         !upperCaseEnvVariableName.includes('PASSPHRASE')
       ) {
         return { ...accumulatedEnvironment, [envVariableName]: envVariableValue };

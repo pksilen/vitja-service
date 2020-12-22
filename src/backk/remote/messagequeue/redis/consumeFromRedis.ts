@@ -67,7 +67,7 @@ export default async function consumeFromRedis(
         server,
         topic
       });
-      defaultServiceMetrics.incrementRedisConsumerErrorCounteByOne();
+      defaultServiceMetrics.incrementRedisConsumerErrorCountByOne();
     }
   }
 }

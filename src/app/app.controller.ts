@@ -7,24 +7,25 @@ import {
   HttpStatus,
   Param,
   Post,
-  Query, Req,
+  Query,
   Res
 } from "@nestjs/common";
-import AuthorizationService from '../backk/authorization/AuthorizationService';
-import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
-import tryExecuteServiceMethod from '../backk/execution/tryExecuteServiceMethod';
-import ReadinessCheckService from '../backk/readinesscheck/ReadinessCheckService';
-import OrdersService from '../services/orders/OrdersService';
-import SalesItemsService from '../services/salesitems/SalesItemsService';
-import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
-import UsersService from '../services/users/UsersService';
-import ResponseCacheConfigService from '../backk/cache/ResponseCacheConfigService';
-import AuditLoggingService from '../backk/observability/logging/audit/AuditLoggingService';
-import initializeController from '../backk/controller/initializeController';
-import TagsService from '../services/tags/TagsService';
-import AbstractDbManager from '../backk/dbmanager/AbstractDbManager';
-import DbCleanupService from '../services/dbcleanup/DbCleanupService';
-import consumeFromRedis from "../backk/remote/messagequeue/redis/consumeFromRedis";
+import AuthorizationService from "../backk/authorization/AuthorizationService";
+import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
+import tryExecuteServiceMethod from "../backk/execution/tryExecuteServiceMethod";
+import ReadinessCheckService from "../backk/readinesscheck/ReadinessCheckService";
+import OrdersService from "../services/orders/OrdersService";
+import SalesItemsService from "../services/salesitems/SalesItemsService";
+import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
+import UsersService from "../services/users/UsersService";
+import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigService";
+import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
+import initializeController from "../backk/controller/initializeController";
+import TagsService from "../services/tags/TagsService";
+import AbstractDbManager from "../backk/dbmanager/AbstractDbManager";
+import DbCleanupService from "../services/dbcleanup/DbCleanupService";
+
+export let appController: any;
 
 // noinspection JSUnusedLocalSymbols
 @Controller()
@@ -44,7 +45,7 @@ export class AppController {
     private readonly dbCleanupService: DbCleanupService
   ) {
     initializeController(this, dbManager);
-    // consumeFromRedis(this, process.env.REDIS_SERVER, 'notification-service.vitja');
+    appController = this;
   }
 
   @Get(':serviceFunctionName')

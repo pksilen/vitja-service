@@ -254,7 +254,7 @@ class DefaultServiceMetrics {
     this.httpClientErrorCounter.bind({ ...this.defaultLabels, serviceFunction }).add(1);
   }
 
-  incrementRedisConsumerErrorCounteByOne() {
+  incrementRedisConsumerErrorCountByOne() {
     this.redisConsumerErrorCounter.add(1);
   }
 

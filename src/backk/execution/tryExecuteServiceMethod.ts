@@ -45,6 +45,7 @@ export default async function tryExecuteServiceMethod(
   options?: ExecuteServiceFunctionOptions,
   shouldCreateClsNamespace = true
 ): Promise<void | object> {
+
   if (options?.areMultipleServiceFunctionExecutionsAllowed && isExecuteMultipleRequest(serviceFunctionName)) {
     if (options?.maxServiceFunctionCountInMultipleServiceFunctionExecution) {
       if (

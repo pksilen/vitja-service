@@ -2,15 +2,17 @@ import { initializeDefaultJaegerTracing } from "./backk/observability/distribute
 import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify";
 import { AppModule } from "./app/app.module";
-import initializeBackk from "./backk/initialization/initializeBackk";
 import { mySqlDbManager } from "./database/mySqlDatabaseManager";
-import { postgreSqlDbManager } from "./database/postgreSqlDbManager";
+import initializeHttpServerBackk from "./backk/initialization/initializeHttpServerBackk";
+import initializeKafkaConsumerBackk from "./backk/initialization/initializeKafkaConsumerBackk";
+import { appController } from "./app/app.controller";
 
 initializeDefaultJaegerTracing();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-  await initializeBackk(app, mySqlDbManager, true);
+  // await initializeHttpServerBackk(app, mySqlDbManager);
+  await initializeKafkaConsumerBackk(appController, mySqlDbManager)
 }
 
 bootstrap();
