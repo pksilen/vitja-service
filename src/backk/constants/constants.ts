@@ -1,6 +1,7 @@
 export const MAX_INT_VALUE = 2147483647;
 
 export class HttpStatusCodes {
+  static readonly SUCCESS = 200;
   static readonly ERRORS_START = 300;
   static readonly NOT_MODIFIED = 304;
   static readonly CLIENT_ERRORS_START = 400;

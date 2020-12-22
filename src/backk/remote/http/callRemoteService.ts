@@ -18,11 +18,11 @@ export interface HttpRequestOptions {
   httpMethod?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 }
 
-export default async function callRemoteService<T>(
+export default async function callRemoteService(
   remoteServiceFunctionUrl: string,
   serviceFunctionArgument?: object,
   options?: HttpRequestOptions
-): Promise<T | ErrorResponse> {
+): Promise<object | ErrorResponse> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
 
@@ -39,7 +39,7 @@ export default async function callRemoteService<T>(
       const responseClassName =
         controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName];
       const ResponseClass = controller[serviceName].Types[responseClassName];
-      return getRemoteResponseTestValue(ResponseClass) as T;
+      return getRemoteResponseTestValue(ResponseClass);
     }
   }
 

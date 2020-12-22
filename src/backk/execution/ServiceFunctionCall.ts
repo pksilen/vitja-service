@@ -1,4 +1,4 @@
 export interface ServiceFunctionCall {
-  serviceFunctionName: string;
+  localOrRemoteServiceFunctionName: string;
   serviceFunctionArgument: any;
 }

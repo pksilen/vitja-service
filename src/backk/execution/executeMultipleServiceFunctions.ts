@@ -8,11 +8,13 @@ import forEachAsyncSequential from '../utils/forEachAsyncSequential';
 import { createNamespace } from 'cls-hooked';
 import BaseService from '../service/BaseService';
 import isValidServiceFunctionName from './isValidServiceFunctionName';
-import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
-import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
-import { HttpStatusCodes } from "../constants/constants";
-import { ErrorResponse } from "../types/ErrorResponse";
-import isErrorResponse from "../errors/isErrorResponse";
+import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import { HttpStatusCodes } from '../constants/constants';
+import { ErrorResponse } from '../types/ErrorResponse';
+import isErrorResponse from '../errors/isErrorResponse';
+import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import callRemoteService from '../remote/http/callRemoteService';
 
 async function executeMultiple<T>(
   isConcurrent: boolean,
@@ -21,14 +23,15 @@ async function executeMultiple<T>(
   headers: { [p: string]: string },
   options: ExecuteServiceFunctionOptions | undefined,
   serviceFunctionCallIdToResponseMap: { [p: string]: ServiceFunctionCallResponse },
-  statusCodes: number[]
+  statusCodes: number[],
+  isTransactional = false
 ) {
   const forEachFunc = isConcurrent ? forEachAsyncParallel : forEachAsyncSequential;
   let possibleErrorResponse: ErrorResponse | undefined;
 
   await forEachFunc(
     Object.entries(serviceFunctionArgument),
-    async ([serviceFunctionCallId, { serviceFunctionName, serviceFunctionArgument }]: [
+    async ([serviceFunctionCallId, { localOrRemoteServiceFunctionName, serviceFunctionArgument }]: [
       string,
       ServiceFunctionCall
     ]) => {
@@ -36,7 +39,7 @@ async function executeMultiple<T>(
         return;
       }
 
-      const partialResponse = new Response();
+      const response = new Response();
 
       let renderedServiceFunctionArgument = serviceFunctionArgument;
       if ((options?.shouldAllowTemplatesInMultipleServiceFunctionExecution && !isConcurrent) ?? false) {
@@ -47,26 +50,50 @@ async function executeMultiple<T>(
         renderedServiceFunctionArgument = JSON.parse(renderedServiceFunctionArgument);
       }
 
-      await tryExecuteServiceMethod(
-        controller,
-        serviceFunctionName,
-        renderedServiceFunctionArgument,
-        headers,
-        partialResponse,
-        options,
-        false
-      );
+      if (localOrRemoteServiceFunctionName.includes('/')) {
+        if (isTransactional) {
+          response.send(
+            createErrorResponseFromErrorMessageAndStatusCode(
+              'Remote service function calls are not allowed inside transaction',
+              HttpStatusCodes.BAD_REQUEST
+            )
+          );
+          response.status(HttpStatusCodes.BAD_REQUEST);
+        }
 
-      serviceFunctionCallIdToResponseMap[serviceFunctionCallId] = {
-        statusCode: partialResponse.getStatusCode(),
-        response: partialResponse.getResponse()
-      };
+        const [serviceHost, serviceFunctionName] = localOrRemoteServiceFunctionName.split('/');
+        const remoteServiceCallResponse = await callRemoteService(
+          `http://${serviceHost}.svc.cluster.local/${serviceFunctionName}`
+        );
 
-      if (isErrorResponse(partialResponse.getResponse())) {
-        possibleErrorResponse = partialResponse.getResponse() as ErrorResponse
+        response.send(remoteServiceCallResponse);
+        response.status(
+          'errorMessage' in remoteServiceCallResponse
+            ? remoteServiceCallResponse.statusCode
+            : HttpStatusCodes.SUCCESS
+        );
+      } else {
+        await tryExecuteServiceMethod(
+          controller,
+          localOrRemoteServiceFunctionName,
+          renderedServiceFunctionArgument,
+          headers,
+          response,
+          options,
+          false
+        );
       }
 
-      statusCodes.push(partialResponse.getStatusCode());
+      serviceFunctionCallIdToResponseMap[serviceFunctionCallId] = {
+        statusCode: response.getStatusCode(),
+        response: response.getResponse()
+      };
+
+      if (isErrorResponse(response.getResponse())) {
+        possibleErrorResponse = response.getResponse() as ErrorResponse;
+      }
+
+      statusCodes.push(response.getStatusCode());
     }
   );
 }
@@ -122,7 +149,8 @@ export default async function executeMultipleServiceFunctions(
             headers,
             options,
             serviceFunctionCallIdToResponseMap,
-            statusCodes
+            statusCodes,
+            true
           );
           clsNamespace.set('globalTransaction', false);
           return response;
