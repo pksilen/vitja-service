@@ -1,4 +1,4 @@
-import { ArrayMaxSize, IsNumber, Max, MaxLength, Min } from "class-validator";
+import { ArrayMaxSize, IsNumber, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp
   from "../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp";

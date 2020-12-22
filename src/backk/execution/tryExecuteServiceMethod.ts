@@ -25,6 +25,7 @@ import createAuditLogEntry from '../observability/logging/audit/createAuditLogEn
 import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
 import tryScheduleJobExecution from '../scheduling/tryScheduleJobExecution';
 import isExecuteMultipleRequest from './isExecuteMultipleRequest';
+import { createHash } from 'crypto';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -270,12 +271,20 @@ export default async function tryExecuteServiceMethod(
         serviceFunctionArgument
       )
     ) {
-      const key = getNamespacedServiceName() + serviceFunctionName;
+      const key =
+        'BackkResponseCache' +
+        ':' +
+        getNamespacedServiceName() +
+        ':' +
+        serviceFunctionName +
+        ':' +
+        JSON.stringify(serviceFunctionArgument);
+
       const redis = new Redis(`redis://${process.env.REDIS_SERVER}`);
       let cachedResponseJson;
 
       try {
-        cachedResponseJson = await redis.hget(key, JSON.stringify(serviceFunctionArgument));
+        cachedResponseJson = await redis.get(key);
       } catch (error) {
         log(Severity.ERROR, 'Redis cache error: ' + error.message, error.stack, {
           redisServer: process.env.REDIS_SERVER
@@ -408,10 +417,18 @@ export default async function tryExecuteServiceMethod(
         ) {
           const redis = new Redis(`redis://${process.env.REDIS_SERVER}`);
           const responseJson = JSON.stringify(response);
-          const key = getNamespacedServiceName() + ':' + serviceFunctionName;
+          const key =
+            'BackkResponseCache' +
+            ':' +
+            getNamespacedServiceName() +
+            ':' +
+            serviceFunctionName +
+            ':' +
+            JSON.stringify(serviceFunctionArgument);
 
           try {
-            await redis.hset(key, JSON.stringify(serviceFunctionArgument), responseJson);
+            ttl = await redis.ttl(key);
+            await redis.set(key, responseJson);
 
             log(Severity.DEBUG, 'Redis cache debug: stored service function call response to cache', '', {
               redisUrl: process.env.REDIS_SERVER,
@@ -420,9 +437,7 @@ export default async function tryExecuteServiceMethod(
 
             defaultServiceMetrics.incrementServiceFunctionCallCachedResponsesCounterByOne(serviceName);
 
-            if (await redis.exists(key)) {
-              ttl = await redis.ttl(key);
-            } else {
+            if (ttl < 0) {
               ttl = controller?.responseCacheConfigService.getCachingDurationInSecs(
                 serviceFunctionName,
                 serviceFunctionArgument
@@ -432,7 +447,7 @@ export default async function tryExecuteServiceMethod(
             }
           } catch (error) {
             log(Severity.ERROR, 'Redis cache error: ' + error.message, error.stack, {
-              redisUrl: process.env.REDIS_SERVER,
+              redisUrl: process.env.REDIS_SERVER
             });
           }
         }
