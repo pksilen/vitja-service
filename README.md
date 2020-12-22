@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- executeMultipleWithoutTransaction, allow remote service calls (call-method only)
   - give option where regexp for remote calls must be defined
     - another-service.platform/anotherService.executeFunc
 - Transform boolean <=> int in request and response for MySqlDbManager

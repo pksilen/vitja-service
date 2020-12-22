@@ -59,19 +59,37 @@ async function executeMultiple<T>(
             )
           );
           response.status(HttpStatusCodes.BAD_REQUEST);
+        } else if (!options?.allowedServiceFunctionsRegExpForRemoteServiceCalls) {
+          response.send(
+            createErrorResponseFromErrorMessageAndStatusCode(
+              'Allowed remote service function call regexp pattern not defined',
+              HttpStatusCodes.BAD_REQUEST
+            )
+          );
+          response.status(HttpStatusCodes.BAD_REQUEST);
+        } else if (
+          !localOrRemoteServiceFunctionName.match(options.allowedServiceFunctionsRegExpForRemoteServiceCalls)
+        ) {
+          response.send(
+            createErrorResponseFromErrorMessageAndStatusCode(
+              'Remote service function call not allowed',
+              HttpStatusCodes.BAD_REQUEST
+            )
+          );
+          response.status(HttpStatusCodes.BAD_REQUEST);
+        } else {
+          const [serviceHost, serviceFunctionName] = localOrRemoteServiceFunctionName.split('/');
+          const remoteServiceCallResponse = await callRemoteService(
+            `http://${serviceHost}.svc.cluster.local/${serviceFunctionName}`
+          );
+
+          response.send(remoteServiceCallResponse);
+          response.status(
+            'errorMessage' in remoteServiceCallResponse
+              ? remoteServiceCallResponse.statusCode
+              : HttpStatusCodes.SUCCESS
+          );
         }
-
-        const [serviceHost, serviceFunctionName] = localOrRemoteServiceFunctionName.split('/');
-        const remoteServiceCallResponse = await callRemoteService(
-          `http://${serviceHost}.svc.cluster.local/${serviceFunctionName}`
-        );
-
-        response.send(remoteServiceCallResponse);
-        response.status(
-          'errorMessage' in remoteServiceCallResponse
-            ? remoteServiceCallResponse.statusCode
-            : HttpStatusCodes.SUCCESS
-        );
       } else {
         await tryExecuteServiceMethod(
           controller,
