@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Test redis cache, calculate cache SHA256 key from serviceFunctionName + Argument
 - @ResponseHeaders annotation (fixed value, or from function)
 - executeMultipleWithoutTransaction, allow remote service calls (call-method only)
   - give option where regexp for remote calls must be defined

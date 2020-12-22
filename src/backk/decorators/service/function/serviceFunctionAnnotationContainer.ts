@@ -1,4 +1,5 @@
 import { ErrorCodeAndMessage } from '../../../dbmanager/hooks/PreHook';
+import { HttpHeaders } from './ResponseHeaders';
 
 class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
@@ -16,6 +17,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToCronScheduleMap: { [key: string]: string } = {};
   private readonly serviceFunctionNameToRetryIntervalsInSecsMap: { [key: string]: number[] } = {};
   private readonly serviceFunctionNameToIsUpdateFunctionMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToResponseHeadersMap: { [key: string]: HttpHeaders } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -89,6 +91,10 @@ class ServiceFunctionAnnotationContainer {
 
   addUpdateAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToIsUpdateFunctionMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
+  addResponseHeadersForServiceFunction(serviceClass: Function, functionName: string, headers: HttpHeaders) {
+    this.serviceFunctionNameToResponseHeadersMap[`${serviceClass.name}${functionName}`] = headers;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -287,6 +293,23 @@ class ServiceFunctionAnnotationContainer {
 
   getServiceFunctionNameToRetryIntervalsInSecsMap() {
     return this.serviceFunctionNameToRetryIntervalsInSecsMap;
+  }
+
+  getResponseHeadersForServiceFunction(
+    serviceClass: Function,
+    functionName: string
+  ): HttpHeaders | undefined {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToResponseHeadersMap[`${proto.constructor.name}${functionName}`] !== undefined
+      ) {
+        return this.serviceFunctionNameToResponseHeadersMap[`${proto.constructor.name}${functionName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return undefined;
   }
 }
 

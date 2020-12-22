@@ -104,7 +104,7 @@ export default async function tryExecuteServiceMethod(
   }
 
   const [serviceName, functionName] = serviceFunctionName.split('.');
-  let response;
+  let response: any;
   let storedError;
   let userName;
 
@@ -488,6 +488,30 @@ export default async function tryExecuteServiceMethod(
       resp?.set('X-content-type-options', 'nosniff');
       resp?.set('Strict-Transport-Security', 'max-age=' + MAX_INT_VALUE + '; includeSubDomains');
     }
+
+    Object.entries(
+      serviceFunctionAnnotationContainer.getResponseHeadersForServiceFunction(
+        controller[serviceName].constructor,
+        functionName
+      ) || {}
+    ).forEach(([headerName, headerValueOrGenerator]) => {
+      if (typeof headerValueOrGenerator === 'string') {
+        if (typeof resp?.header === 'function') {
+          resp.header(headerName, headerValueOrGenerator);
+        } else if (typeof resp?.set === 'function') {
+          resp.set(headerName, headerValueOrGenerator);
+        }
+      } else if (typeof headerValueOrGenerator === 'function') {
+        const headerValue = headerValueOrGenerator(serviceFunctionArgument, response);
+        if (headerValue !== undefined) {
+          if (typeof resp?.header === 'function') {
+            resp.header(headerName, headerValue);
+          } else if (typeof resp?.set === 'function') {
+            resp.set(headerName, headerValue);
+          }
+        }
+      }
+    });
 
     resp?.status(200);
     resp?.send(response);
