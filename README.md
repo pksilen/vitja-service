@@ -1,10 +1,6 @@
 # Vitja service
 
 TODO
-  - give option where regexp for remote calls must be defined
-    - another-service.platform/anotherService.executeFunc
-- Transform boolean <=> int in request and response for MySqlDbManager
-- Check that request content type is application/json
 - Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
     - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
         - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.

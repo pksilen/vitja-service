@@ -44,8 +44,8 @@ export class AppController {
     private readonly ordersService: OrdersService,
     private readonly dbCleanupService: DbCleanupService
   ) {
-    initializeController(this, dbManager);
     appController = this;
+    initializeController(appController, dbManager);
   }
 
   @Get(':serviceFunctionName')

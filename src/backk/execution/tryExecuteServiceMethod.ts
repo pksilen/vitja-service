@@ -111,7 +111,7 @@ export default async function tryExecuteServiceMethod(
 
   // noinspection ExceptionCaughtLocallyJS
   try {
-    log(Severity.DEBUG, 'Service function callRemoteService', serviceFunctionName);
+    log(Severity.DEBUG, 'Service function call', serviceFunctionName);
     defaultServiceMetrics.incrementServiceFunctionCallsByOne(serviceFunctionName);
 
     const serviceFunctionCallStartTimeInMillis = Date.now();

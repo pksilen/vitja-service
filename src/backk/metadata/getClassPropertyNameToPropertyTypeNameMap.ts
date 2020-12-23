@@ -128,10 +128,6 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     }
 
     switch (validationMetadata.type) {
-      case 'isBoolean':
-        propNameToPropTypeNameMap[validationMetadata.propertyName] =
-          'boolean' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
-        break;
       case 'isNumber':
         propNameToPropTypeNameMap[validationMetadata.propertyName] =
           'number' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
@@ -152,6 +148,9 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         if (validationMetadata.constraints[0] === 'isBigInt') {
           propNameToPropTypeNameMap[validationMetadata.propertyName] =
             'bigint' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
+        } else if (validationMetadata.constraints[0] === 'isBooleanOrTinyInt') {
+          propNameToPropTypeNameMap[validationMetadata.propertyName] =
+            'boolean' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
         }
         break;
       case 'isIn':

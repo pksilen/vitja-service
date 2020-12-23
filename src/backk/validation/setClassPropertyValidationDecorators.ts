@@ -194,52 +194,16 @@ export default function setClassPropertyValidationDecorators(
           // noinspection IfStatementWithTooManyBranchesJS
           if (baseTypeName === 'boolean') {
             const validationMetadataArgs: ValidationMetadataArgs = {
-              type: ValidationTypes.IS_BOOLEAN,
+              type: ValidationTypes.CUSTOM_VALIDATION,
               target: Class,
               propertyName,
-              constraints,
+              constraints: ['isBooleanOrTinyInt'],
               validationOptions: { each: isArrayType }
             };
 
-            const validationMetadata = new ValidationMetadata(validationMetadataArgs);
-            validationMetadata.groups = ['DbManager: PostgreSQL'];
-            getFromContainer(MetadataStorage).addValidationMetadata(validationMetadata);
-
-            const validationMetadataArgs2: ValidationMetadataArgs = {
-              type: ValidationTypes.IS_INT,
-              target: Class,
-              propertyName,
-              constraints,
-              validationOptions: { each: isArrayType }
-            };
-
-            const validationMetadata2 = new ValidationMetadata(validationMetadataArgs2);
-            validationMetadata2.groups = ['DbManager: MySQL'];
-            getFromContainer(MetadataStorage).addValidationMetadata(validationMetadata2);
-
-            const validationMetadataArgs3: ValidationMetadataArgs = {
-              type: ValidationTypes.MIN,
-              target: Class,
-              propertyName,
-              constraints: [0],
-              validationOptions: { each: isArrayType }
-            };
-
-            const validationMetadata3 = new ValidationMetadata(validationMetadataArgs3);
-            validationMetadata3.groups = ['DbManager: MySQL'];
-            getFromContainer(MetadataStorage).addValidationMetadata(validationMetadata3);
-
-            const validationMetadataArgs4: ValidationMetadataArgs = {
-              type: ValidationTypes.MAX,
-              target: Class,
-              propertyName,
-              constraints: [1],
-              validationOptions: { each: isArrayType }
-            };
-
-            const validationMetadata4 = new ValidationMetadata(validationMetadataArgs4);
-            validationMetadata4.groups = ['DbManager: MySQL'];
-            getFromContainer(MetadataStorage).addValidationMetadata(validationMetadata4);
+            getFromContainer(MetadataStorage).addValidationMetadata(
+              new ValidationMetadata(validationMetadataArgs)
+            );
           } else if (baseTypeName === 'number') {
             if (
               !doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_INT) &&

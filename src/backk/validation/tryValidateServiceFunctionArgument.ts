@@ -50,7 +50,6 @@ export default async function tryValidateServiceFunctionArgument(
       forbidNonWhitelisted: true,
       groups: [
         '__backk_argument__',
-        ...(dbManager ? [dbManager.getDbManagerType()] : []),
         ...(isCreateFunction(functionName) ? ['__backk_create__'] : []),
         ...(isCreateFunction(functionName) ? [] : ['__backk_update__'])
       ]
