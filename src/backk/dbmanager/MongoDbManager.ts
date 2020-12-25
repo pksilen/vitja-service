@@ -445,10 +445,14 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByFilters<T>(
-    filters: FilterQuery<T> | Partial<T> | UserDefinedFilter[],
+    filters: FilterQuery<T> | Partial<T> | UserDefinedFilter[] | SqlExpression[],
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
+    if (Array.isArray(filters) && filters?.[0] instanceof SqlExpression) {
+      throw new Error('SqlExpression is not supported for MongoDB');
+    }
+
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -482,11 +486,29 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntitiesCount<T>(
-    filters: Partial<T> | SqlExpression[],
-    entityClass: new () => T
+    filters: FilterQuery<T> | Partial<T> | UserDefinedFilter[] | SqlExpression[],
+    EntityClass: new () => T
   ): Promise<number | ErrorResponse> {
-    // TODO implement
-    throw new Error('Not implemented');
+    if (Array.isArray(filters) && filters?.[0] instanceof SqlExpression) {
+      throw new Error('SqlExpression is not supported for MongoDB');
+    }
+    
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+
+    try {
+      return await this.tryExecute(false, async (client) => {
+        return await client
+          .db(this.dbName)
+          .collection<SalesItem>(EntityClass.name.toLowerCase())
+          .countDocuments(filters);
+      });
+    } catch (error) {
+      return createErrorResponseFromError(error);
+    } finally {
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
   }
 
   async getEntityById<T>(
