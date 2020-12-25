@@ -37,7 +37,10 @@ import deleteEntitiesByFilters from "./sql/operations/dml/deleteEntitiesByFilter
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
-  private firstDbOperationFailureTimeInMillis = 0;
+
+  getClient(): any {
+    return undefined;
+  }
 
   abstract getDbHost(): string;
 
@@ -68,10 +71,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     sqlStatement: string,
     values: object
   ): Promise<any>;
-
-  async tryExecute<T>(dbOperationFunction: (pool: any) => Promise<T>): Promise<T> {
-    throw new Error('Not implemented');
-  }
 
   async isDbReady(): Promise<boolean> {
     try {

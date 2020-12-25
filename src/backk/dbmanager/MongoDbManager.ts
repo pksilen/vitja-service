@@ -1,19 +1,30 @@
-import { Injectable } from "@nestjs/common";
-import { FilterQuery, MongoClient, ObjectId } from "mongodb";
-import { SalesItem } from "../../services/salesitems/types/entities/SalesItem";
-import SqlExpression from "./sql/expressions/SqlExpression";
-import AbstractDbManager, { Field } from "./AbstractDbManager";
-import getMongoDbProjection from "./mongodb/getMongoDbProjection";
-import { ErrorResponse } from "../types/ErrorResponse";
-import { RecursivePartial } from "../types/RecursivePartial";
-import { PreHook } from "./hooks/PreHook";
-import { Entity } from "../types/entities/Entity";
-import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
-import createErrorResponseFromError from "../errors/createErrorResponseFromError";
-import createErrorResponseFromErrorMessageAndStatusCode
-  from "../errors/createErrorResponseFromErrorMessageAndStatusCode";
-import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
-import { SubEntity } from "../types/entities/SubEntity";
+import { Injectable } from '@nestjs/common';
+import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
+import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
+import SqlExpression from './sql/expressions/SqlExpression';
+import AbstractDbManager, { Field } from './AbstractDbManager';
+import getMongoDbProjection from './mongodb/getMongoDbProjection';
+import { ErrorResponse } from '../types/ErrorResponse';
+import { RecursivePartial } from '../types/RecursivePartial';
+import { PreHook } from './hooks/PreHook';
+import { Entity } from '../types/entities/Entity';
+import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
+import createErrorResponseFromError from '../errors/createErrorResponseFromError';
+import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
+import { SubEntity } from '../types/entities/SubEntity';
+import tryStartLocalTransactionIfNeeded from './sql/operations/transaction/tryStartLocalTransactionIfNeeded';
+import tryExecutePreHooks from './hooks/tryExecutePreHooks';
+import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
+import cleanupLocalTransactionIfNeeded from './sql/operations/transaction/cleanupLocalTransactionIfNeeded';
+import { getNamespace } from 'cls-hooked';
+import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
+import isErrorResponse from '../errors/isErrorResponse';
+import createInternalServerError from '../errors/createInternalServerError';
+import getClassPropertyNameToPropertyTypeNameMap from '../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
+import isEntityTypeName from "../utils/type/isEntityTypeName";
+import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -24,40 +35,56 @@ export default class MongoDbManager extends AbstractDbManager {
     this.mongoClient = new MongoClient(uri, { useNewUrlParser: true });
   }
 
+  getClient() {
+    return this.mongoClient;
+  }
+
   getIdColumnType(): string {
-    throw new Error('Not implemented')
+    throw new Error('Not implemented');
   }
 
   getTimestampType(): string {
-    throw new Error('Not implemented')
+    throw new Error('Not implemented');
   }
 
-  getVarCharType(maxLength: number): string {
-    throw new Error('Not implemented')
+  getVarCharType(): string {
+    throw new Error('Not implemented');
   }
 
-  async tryExecute<T>(dbOperationFunction: (client: MongoClient) => Promise<T>): Promise<T> {
+  async tryExecute(
+    shouldUseTransaction: boolean,
+    executeDbOperations: (client: MongoClient) => Promise<any>
+  ): Promise<any> {
     if (!this.mongoClient.isConnected()) {
       await this.mongoClient.connect();
     }
 
-    return await dbOperationFunction(this.mongoClient);
+    if (shouldUseTransaction) {
+      const session = this.getClsNamespace()?.get('session');
+      if (!session) {
+        throw new Error('Session not set');
+      }
+
+      let result;
+      await session.withTransaction(async () => {
+        result = await executeDbOperations(this.mongoClient);
+      });
+      return result;
+    } else {
+      return await executeDbOperations(this.mongoClient);
+    }
   }
 
   tryExecuteSql<T>(): Promise<Field[]> {
-    throw new Error('Method not allowed.');
+    throw new Error('Not implemented');
   }
 
   tryExecuteSqlWithoutCls<T>(): Promise<Field[]> {
-    throw new Error('Method not allowed.');
-  }
-
-  executeInsideTransaction<T>(): Promise<T | ErrorResponse> {
-    throw new Error('Method not allowed.');
+    throw new Error('Not implemented');
   }
 
   getDbManagerType(): string {
-    return "MongoDB";
+    return 'MongoDB';
   }
 
   getDbHost(): string {
@@ -66,7 +93,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async isDbReady(): Promise<boolean> {
     try {
-      await this.tryExecute((client) =>
+      await this.tryExecute(false, (client) =>
         client
           .db(this.dbName)
           .collection('__backk__')
@@ -78,24 +105,108 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
+  tryBeginTransaction(): Promise<void> {
+    this.getClsNamespace()?.set('session', this.getClient().startSession());
+    return Promise.resolve();
+  }
+
+  cleanupTransaction() {
+    this.getClsNamespace()
+      ?.get('session')
+      ?.endSession();
+  }
+
+  async executeInsideTransaction<T>(
+    executable: () => Promise<T | ErrorResponse>
+  ): Promise<T | ErrorResponse> {
+    if (getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction')) {
+      return await executable();
+    }
+
+    this.getClsNamespace()?.set('globalTransaction', true);
+
+    let result: T | ErrorResponse = createInternalServerError('Transaction execution error');
+    try {
+      await this.tryBeginTransaction();
+      const session = this.getClsNamespace()?.get('session');
+
+      await session.withTransaction(async () => {
+        result = await executable();
+      });
+
+      if (this.firstDbOperationFailureTimeInMillis) {
+        this.firstDbOperationFailureTimeInMillis = 0;
+        defaultServiceMetrics.recordDbFailureDurationInSecs(this.getDbManagerType(), this.getDbHost(), 0);
+      }
+    } catch (error) {
+      if (this.firstDbOperationFailureTimeInMillis) {
+        const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
+        defaultServiceMetrics.recordDbFailureDurationInSecs(
+          this.getDbManagerType(),
+          this.getDbHost(),
+          failureDurationInSecs
+        );
+      }
+      result = createErrorResponseFromError(error);
+    } finally {
+      this.cleanupTransaction();
+    }
+
+    this.getClsNamespace()?.set('globalTransaction', false);
+
+    return result;
+  }
+
   async createEntity<T>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    postQueryOperations?: PostQueryOperations
+    postQueryOperations?: PostQueryOperations,
+    isRecursiveCall = false
   ): Promise<T | ErrorResponse> {
-    // auto-update version/lastmodifiedtimestamp
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+
     try {
-      const writeOperationResult = await this.tryExecute((client) =>
-        client
-          .db(this.dbName)
-          .collection(entityClass.name.toLowerCase())
-          .insertOne(entity)
+      if (!isRecursiveCall) {
+        await hashAndEncryptItem(entity, EntityClass, this.getTypes);
+      }
+
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+      const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
+
+      Object.entries(entityMetadata).forEach(
+        ([fieldName, fieldTypeName]: [any, any]) => {
+          if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
+            delete (entity as any)[fieldName];
+          }
+
+          const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
+
+          if (!isArrayType && !isEntityTypeName(baseTypeName) && fieldName !== '_id') {
+            if (fieldName === 'version') {
+              (entity as any).version = 1;
+            } else if (fieldName === 'lastModifiedTimestamp' || fieldName === 'createdAtTimestamp') {
+              (entity as any)[fieldName] = new Date();
+            }
+          }
+        }
       );
 
-      return this.getEntityById(writeOperationResult.insertedId.toHexString(), entityClass);
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
+        await tryExecutePreHooks(preHooks);
+        const createEntityResult = await client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .insertOne(entity);
+
+        return this.getEntityById(createEntityResult.insertedId.toHexString(), EntityClass);
+      });
     } catch (error) {
       return createErrorResponseFromError(error);
+    } finally {
+      await cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
     }
   }
 
@@ -301,7 +412,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async updateEntity<T extends Entity>(
     { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    allowAdditionAndRemovalForSubEntityClasses: (new() => any)[] | 'all',
+    allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     // TODO add precondition check
@@ -327,7 +438,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     throw new Error('Not implemented');
   }
@@ -363,9 +474,9 @@ export default class MongoDbManager extends AbstractDbManager {
 
   deleteEntitiesByFilters<T extends object>(
     filters: FilterQuery<T> | Partial<T> | SqlExpression[] | UserDefinedFilter[],
-    entityClass: new() => T
+    entityClass: new () => T
   ): Promise<void | ErrorResponse> {
-    throw new Error('Not implemented')
+    throw new Error('Not implemented');
   }
 
   removeSubEntities<T extends Entity>(

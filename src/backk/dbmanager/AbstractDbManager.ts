@@ -1,19 +1,18 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { getNamespace, Namespace } from 'cls-hooked';
-import { FilterQuery, MongoClient } from 'mongodb';
-import { Pool } from 'pg';
-import SqlExpression from './sql/expressions/SqlExpression';
-import { RecursivePartial } from '../types/RecursivePartial';
-import { ErrorResponse } from '../types/ErrorResponse';
-import { PreHook } from './hooks/PreHook';
-import { Entity } from '../types/entities/Entity';
-import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
-import { Injectable } from '@nestjs/common';
-import isErrorResponse from '../errors/isErrorResponse';
-import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
-import BaseService from '../service/BaseService';
-import { SubEntity } from '../types/entities/SubEntity';
+import { getNamespace, Namespace } from "cls-hooked";
+import { FilterQuery } from "mongodb";
+import SqlExpression from "./sql/expressions/SqlExpression";
+import { RecursivePartial } from "../types/RecursivePartial";
+import { ErrorResponse } from "../types/ErrorResponse";
+import { PreHook } from "./hooks/PreHook";
+import { Entity } from "../types/entities/Entity";
+import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
+import { Injectable } from "@nestjs/common";
+import isErrorResponse from "../errors/isErrorResponse";
+import forEachAsyncParallel from "../utils/forEachAsyncParallel";
+import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
+import BaseService from "../service/BaseService";
+import { SubEntity } from "../types/entities/SubEntity";
 import __Backk__CronJobScheduling from "../scheduling/entities/__Backk__CronJobScheduling";
 import __Backk__JobScheduling from "../scheduling/entities/__Backk__JobScheduling";
 
@@ -25,6 +24,7 @@ export interface Field {
 export default abstract class AbstractDbManager {
   private services: BaseService[] = [];
   readonly dbName?: string;
+  protected firstDbOperationFailureTimeInMillis = 0;
 
   constructor(public readonly schema: string) {}
 
@@ -46,12 +46,12 @@ export default abstract class AbstractDbManager {
     return getNamespace('serviceFunctionExecution');
   }
 
+  abstract getClient(): any;
   abstract getIdColumnType(): string;
   abstract getTimestampType(): string;
   abstract getVarCharType(maxLength: number): string;
   abstract getDbManagerType(): string;
   abstract getDbHost(): string;
-  abstract tryExecute<T>(dbOperationFunction: (pool: Pool | MongoClient) => Promise<T>): Promise<T>;
   abstract tryExecuteSql<T>(sqlStatement: string): Promise<Field[]>;
   abstract tryExecuteSqlWithoutCls<T>(
     sqlStatement: string,
@@ -61,6 +61,8 @@ export default abstract class AbstractDbManager {
   abstract isDbReady(): Promise<boolean>;
   abstract tryReserveDbConnectionFromPool(): Promise<void>;
   abstract tryReleaseDbConnectionBackToPool(): void;
+  abstract tryBeginTransaction(): Promise<void>
+  abstract cleanupTransaction(): void
   abstract executeInsideTransaction<T>(
     executable: () => Promise<T | ErrorResponse>
   ): Promise<T | ErrorResponse>;

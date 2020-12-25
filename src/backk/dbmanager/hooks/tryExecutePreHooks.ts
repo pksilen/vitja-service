@@ -6,7 +6,7 @@ import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWit
 import isErrorResponse from "../../errors/isErrorResponse";
 
 export default async function tryExecutePreHooks<T extends object>(
-  preHooks: PreHook | PreHook[],
+  preHooks?: PreHook | PreHook[],
   itemOrErrorResponse?: T | ErrorResponse
 ) {
   if (
@@ -15,6 +15,10 @@ export default async function tryExecutePreHooks<T extends object>(
     isErrorResponse(itemOrErrorResponse)
   ) {
     throw itemOrErrorResponse;
+  }
+
+  if (!preHooks) {
+    return;
   }
 
   await forEachAsyncSequential(Array.isArray(preHooks) ? preHooks : [preHooks], async (preHook: PreHook) => {
@@ -28,8 +32,7 @@ export default async function tryExecutePreHooks<T extends object>(
     if (hookCallResult !== undefined) {
       if (
         typeof hookCallResult !== 'boolean' &&
-        'errorMessage' in hookCallResult &&
-        isErrorResponse(hookCallResult)
+        'errorMessage' in hookCallResult
       ) {
         throw hookCallResult;
       } else if (hookCallResult === false) {

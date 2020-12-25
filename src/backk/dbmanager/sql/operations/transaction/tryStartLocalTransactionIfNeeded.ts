@@ -1,7 +1,9 @@
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { getNamespace } from "cls-hooked";
+import AbstractDbManager from "../../../AbstractDbManager";
 
-export default async function tryStartLocalTransactionIfNeeded(dbManager: AbstractSqlDbManager): Promise<boolean> {
+export default async function tryStartLocalTransactionIfNeeded(
+  dbManager: AbstractDbManager
+): Promise<boolean> {
   if (
     !getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') &&
     !dbManager.getClsNamespace()?.get('globalTransaction') &&
@@ -9,6 +11,7 @@ export default async function tryStartLocalTransactionIfNeeded(dbManager: Abstra
   ) {
     await dbManager.tryBeginTransaction();
     dbManager.getClsNamespace()?.set('localTransaction', true);
+    dbManager.getClsNamespace()?.set('session', dbManager.getClient()?.startSession());
     dbManager
       .getClsNamespace()
       ?.set('dbLocalTransactionCount', dbManager.getClsNamespace()?.get('dbLocalTransactionCount') + 1);

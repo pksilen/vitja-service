@@ -1,7 +1,8 @@
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import AbstractDbManager from "../../../AbstractDbManager";
 
-export default function cleanupLocalTransactionIfNeeded(isInsideTransaction: boolean, dbManager: AbstractSqlDbManager) {
+export default async function cleanupLocalTransactionIfNeeded(isInsideTransaction: boolean, dbManager: AbstractDbManager) {
   if (isInsideTransaction) {
     dbManager.getClsNamespace()?.set('localTransaction', false);
+    await dbManager.cleanupTransaction();
   }
 }
