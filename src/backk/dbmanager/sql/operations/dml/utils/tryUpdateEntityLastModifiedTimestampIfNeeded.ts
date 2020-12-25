@@ -1,11 +1,10 @@
-import { ErrorResponse } from '../../../../../types/ErrorResponse';
-import updateEntity from '../updateEntity';
-import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
-import { Entity } from '../../../../../types/entities/Entity';
-import isErrorResponse from '../../../../../errors/isErrorResponse';
+import { ErrorResponse } from "../../../../../types/ErrorResponse";
+import { Entity } from "../../../../../types/entities/Entity";
+import isErrorResponse from "../../../../../errors/isErrorResponse";
+import AbstractDbManager from "../../../../AbstractDbManager";
 
 export default async function tryUpdateEntityLastModifiedTimestampIfNeeded<T extends Entity>(
-  dbManager: AbstractSqlDbManager,
+  dbManager: AbstractDbManager,
   currentEntityOrErrorResponse: T | ErrorResponse,
   EntityClass: new () => T
 ) {
@@ -18,8 +17,7 @@ export default async function tryUpdateEntityLastModifiedTimestampIfNeeded<T ext
     currentEntityOrErrorResponse.lastModifiedTimestamp instanceof Date
   ) {
     const lastModifiedTimestamp = new Date();
-    const possibleErrorResponse = await updateEntity(
-      dbManager,
+    const possibleErrorResponse = await dbManager.updateEntity(
       { lastModifiedTimestamp, _id: currentEntityOrErrorResponse._id } as any,
       EntityClass, []
     );

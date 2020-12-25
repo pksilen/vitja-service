@@ -1,11 +1,10 @@
-import { ErrorResponse } from '../../../../../types/ErrorResponse';
-import updateEntity from '../updateEntity';
-import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
-import { Entity } from '../../../../../types/entities/Entity';
-import isErrorResponse from '../../../../../errors/isErrorResponse';
+import { ErrorResponse } from "../../../../../types/ErrorResponse";
+import AbstractDbManager from "../../../../AbstractDbManager";
+import { Entity } from "../../../../../types/entities/Entity";
+import isErrorResponse from "../../../../../errors/isErrorResponse";
 
 export default async function tryUpdateEntityVersionIfNeeded<T extends Entity>(
-  dbManager: AbstractSqlDbManager,
+  dbManager: AbstractDbManager,
   currentEntityOrErrorResponse: T | ErrorResponse,
   EntityClass: new () => T
 ) {
@@ -19,8 +18,7 @@ export default async function tryUpdateEntityVersionIfNeeded<T extends Entity>(
     currentEntityOrErrorResponse.version.match(/^\d+$/)
   ) {
     const version = (parseInt(currentEntityOrErrorResponse.version, 10) + 1).toString();
-    const possibleErrorResponse = await updateEntity(
-      dbManager,
+    const possibleErrorResponse = await dbManager.updateEntity(
       { version, _id: currentEntityOrErrorResponse._id } as any,
       EntityClass, []
     );

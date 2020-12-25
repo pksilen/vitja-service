@@ -26,6 +26,17 @@ import isEntityTypeName from '../utils/type/isEntityTypeName';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import forEachAsyncSequential from '../utils/forEachAsyncSequential';
+import startDbOperation from './utils/startDbOperation';
+import recordDbOperationDuration from './utils/recordDbOperationDuration';
+import tryUpdateEntityVersionIfNeeded from './sql/operations/dml/utils/tryUpdateEntityVersionIfNeeded';
+import tryUpdateEntityLastModifiedTimestampIfNeeded from './sql/operations/dml/utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
+import { JSONPath } from 'jsonpath-plus';
+import findParentEntityAndPropertyNameForSubEntity from '../metadata/findParentEntityAndPropertyNameForSubEntity';
+import { getFromContainer, MetadataStorage } from 'class-validator';
+import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import { HttpStatusCodes } from '../constants/constants';
+import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
+import isErrorResponse from '../errors/isErrorResponse';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -165,6 +176,7 @@ export default class MongoDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations,
     isRecursiveCall = false
   ): Promise<T | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'createEntity');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     const Types = this.getTypes;
@@ -246,6 +258,7 @@ export default class MongoDbManager extends AbstractDbManager {
       return createErrorResponseFromError(error);
     } finally {
       await cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
 
@@ -258,21 +271,129 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    throw new Error();
-    // auto-update version/lastmodifiedtimestamp
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
+
+    const response = this.addSubEntities(
+      _id,
+      subEntitiesPath,
+      [newSubEntity],
+      entityClass,
+      subEntityClass,
+      preHooks,
+      postQueryOperations
+    );
+
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
   }
 
-  addSubEntities<T extends Entity, U extends SubEntity>(
+  async addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
     subEntitiesPath: string,
     newSubEntities: Array<Omit<U, 'id'>>,
-    entityClass: new () => T,
-    subEntityClass: new () => U,
+    EntityClass: new () => T,
+    SubEntityClass: new () => U,
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    throw new Error();
-    // auto-update version/lastmodifiedtimestamp
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    // noinspection AssignmentToFunctionParameterJS
+    SubEntityClass = this.getType(SubEntityClass);
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
+        const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, postQueryOperations);
+        await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
+        await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
+        await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
+
+        const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath }).reduce(
+          (maxSubItemId: number, subItem: any) => {
+            const subItemId = parseInt(subItem.id);
+            return subItemId > maxSubItemId ? subItemId : maxSubItemId;
+          },
+          -1
+        );
+
+        const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
+          EntityClass,
+          SubEntityClass,
+          this.getTypes()
+        );
+
+        if (parentEntityClassAndPropertyNameForSubEntity) {
+          const metadataForValidations = getFromContainer(MetadataStorage).getTargetValidationMetadatas(
+            parentEntityClassAndPropertyNameForSubEntity[0],
+            ''
+          );
+
+          const foundArrayMaxSizeValidation = metadataForValidations.find(
+            (validationMetadata: ValidationMetadata) =>
+              validationMetadata.propertyName === parentEntityClassAndPropertyNameForSubEntity[1] &&
+              validationMetadata.type === 'arrayMaxSize'
+          );
+
+          if (
+            foundArrayMaxSizeValidation &&
+            maxSubItemId + newSubEntities.length >= foundArrayMaxSizeValidation.constraints[0]
+          ) {
+            // noinspection ExceptionCaughtLocallyJS
+            throw createErrorResponseFromErrorMessageAndStatusCode(
+              parentEntityClassAndPropertyNameForSubEntity[0].name +
+                '.' +
+                parentEntityClassAndPropertyNameForSubEntity[1] +
+                ': Cannot add new entity. Maximum allowed entities limit reached',
+              HttpStatusCodes.BAD_REQUEST
+            );
+          }
+        }
+
+        await forEachAsyncParallel(newSubEntities, async (newSubEntity, index) => {
+          if (
+            parentEntityClassAndPropertyNameForSubEntity &&
+            typePropertyAnnotationContainer.isTypePropertyManyToMany(
+              parentEntityClassAndPropertyNameForSubEntity[0],
+              parentEntityClassAndPropertyNameForSubEntity[1]
+            )
+          ) {
+            let subEntityOrErrorResponse = await this.getEntityById(newSubEntity._id ?? '', SubEntityClass);
+            if ('errorMessage' in subEntityOrErrorResponse) {
+              subEntityOrErrorResponse = await this.createEntity(
+                newSubEntity as any,
+                SubEntityClass,
+                undefined,
+                undefined,
+                false
+              );
+              if ('errorMessage' in subEntityOrErrorResponse) {
+                // noinspection ExceptionCaughtLocallyJS
+                throw subEntityOrErrorResponse;
+              }
+            }
+
+            (currentEntityOrErrorResponse as any)[parentEntityClassAndPropertyNameForSubEntity[1]].push(
+              subEntityOrErrorResponse._id
+            );
+          } else if (parentEntityClassAndPropertyNameForSubEntity) {
+            (currentEntityOrErrorResponse as any)[parentEntityClassAndPropertyNameForSubEntity[1]].push(
+              newSubEntity
+            );
+          }
+        });
+
+        return await this.getEntityById(_id, EntityClass, postQueryOperations);
+      });
+    } catch (error) {
+      return createErrorResponseFromError(error);
+    } finally {
+      await cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
   }
 
   getAllEntities<T>(
