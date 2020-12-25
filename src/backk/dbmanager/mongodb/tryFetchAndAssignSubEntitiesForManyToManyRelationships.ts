@@ -9,8 +9,8 @@ export default function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T
   dbManager: AbstractDbManager,
   rows: T[],
   EntityClass: new () => T,
-  postQueryOperations: PostQueryOperations,
-  Types: object
+  Types: object,
+  postQueryOperations?: PostQueryOperations
 ) {
   const entityPropertyNameToPropertyTypeMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
 

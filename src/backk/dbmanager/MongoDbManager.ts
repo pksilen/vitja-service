@@ -420,7 +420,7 @@ export default class MongoDbManager extends AbstractDbManager {
       return await this.tryExecute(false, async (client) => {
         const cursor = client
           .db(this.dbName)
-          .collection<SalesItem>(EntityClass.name.toLowerCase())
+          .collection<T>(EntityClass.name.toLowerCase())
           .find<T>();
 
         performPostQueryOperations(cursor, finalPostQueryOperations);
@@ -431,8 +431,8 @@ export default class MongoDbManager extends AbstractDbManager {
           this,
           rows,
           EntityClass,
-          finalPostQueryOperations,
-          this.getTypes()
+          this.getTypes(),
+          finalPostQueryOperations
         );
 
         return rows;
@@ -461,8 +461,8 @@ export default class MongoDbManager extends AbstractDbManager {
       return await this.tryExecute(false, async (client) => {
         const cursor = client
           .db(this.dbName)
-          .collection<SalesItem>(EntityClass.name.toLowerCase())
-          .find<T>(filters);
+          .collection<T>(EntityClass.name.toLowerCase())
+          .find<T>(filters as any);
 
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
@@ -472,8 +472,8 @@ export default class MongoDbManager extends AbstractDbManager {
           this,
           rows,
           EntityClass,
-          postQueryOperations,
-          this.getTypes()
+          this.getTypes(),
+          postQueryOperations
         );
 
         return rows;
@@ -492,7 +492,7 @@ export default class MongoDbManager extends AbstractDbManager {
     if (Array.isArray(filters) && filters?.[0] instanceof SqlExpression) {
       throw new Error('SqlExpression is not supported for MongoDB');
     }
-    
+
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -501,8 +501,8 @@ export default class MongoDbManager extends AbstractDbManager {
       return await this.tryExecute(false, async (client) => {
         return await client
           .db(this.dbName)
-          .collection<SalesItem>(EntityClass.name.toLowerCase())
-          .countDocuments(filters);
+          .collection<T>(EntityClass.name.toLowerCase())
+          .countDocuments(filters as FilterQuery<T>);
       });
     } catch (error) {
       return createErrorResponseFromError(error);
@@ -513,24 +513,47 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getEntityById<T>(
     _id: string,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+
     try {
-      const foundItem = await this.tryExecute((client) =>
-        client
+      const entityOrErrorResponse = await this.tryExecute(false, async (client) => {
+        const cursor = client
           .db(this.dbName)
-          .collection(entityClass.name.toLowerCase())
-          .findOne<T>({ _id: new ObjectId(_id) })
-      );
+          .collection(EntityClass.name.toLowerCase())
+          .find<T>({ _id: new ObjectId(_id) });
 
-      if (foundItem) {
-        return foundItem;
-      }
+        performPostQueryOperations(cursor, postQueryOperations);
+        const rows = await cursor.toArray();
+        decryptItems(rows, EntityClass, this.getTypes());
 
-      return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
+        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+          this,
+          rows,
+          EntityClass,
+          this.getTypes(),
+          postQueryOperations
+        );
+
+        if (rows.length === 0) {
+          return createErrorResponseFromErrorMessageAndStatusCode(
+            `Item with _id: ${_id} not found`,
+            HttpStatusCodes.NOT_FOUND
+          );
+        }
+
+        return rows[0];
+      });
+
+      return entityOrErrorResponse
     } catch (error) {
       return createErrorResponseFromError(error);
+    } finally {
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
 
