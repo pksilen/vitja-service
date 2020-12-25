@@ -19,12 +19,13 @@ import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
 import cleanupLocalTransactionIfNeeded from './sql/operations/transaction/cleanupLocalTransactionIfNeeded';
 import { getNamespace } from 'cls-hooked';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
-import isErrorResponse from '../errors/isErrorResponse';
 import createInternalServerError from '../errors/createInternalServerError';
 import getClassPropertyNameToPropertyTypeNameMap from '../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
-import isEntityTypeName from "../utils/type/isEntityTypeName";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from '../utils/type/isEntityTypeName';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import forEachAsyncParallel from '../utils/forEachAsyncParallel';
+import forEachAsyncSequential from '../utils/forEachAsyncSequential';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -166,18 +167,20 @@ export default class MongoDbManager extends AbstractDbManager {
   ): Promise<T | ErrorResponse> {
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
+    const Types = this.getTypes;
     let shouldUseTransaction = false;
 
     try {
       if (!isRecursiveCall) {
-        await hashAndEncryptItem(entity, EntityClass, this.getTypes);
+        await hashAndEncryptItem(entity, EntityClass, Types);
       }
 
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
-      const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
 
-      Object.entries(entityMetadata).forEach(
-        ([fieldName, fieldTypeName]: [any, any]) => {
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
+        const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
+
+        await forEachAsyncSequential(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]) => {
           if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
             delete (entity as any)[fieldName];
           }
@@ -190,18 +193,54 @@ export default class MongoDbManager extends AbstractDbManager {
             } else if (fieldName === 'lastModifiedTimestamp' || fieldName === 'createdAtTimestamp') {
               (entity as any)[fieldName] = new Date();
             }
-          }
-        }
-      );
+          } else if (isArrayType && isEntityTypeName(baseTypeName)) {
+            if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
+              const subEntities = (entity as any)[fieldName];
+              const subEntityIds: string[] = [];
 
-      return await this.tryExecute(shouldUseTransaction, async (client) => {
+              await forEachAsyncParallel(subEntities, async (subEntity: any) => {
+                if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
+                  const SubEntityClass = (Types as any)[baseTypeName];
+
+                  let subEntityOrErrorResponse: any | ErrorResponse = await this.getEntityById(
+                    subEntity._id ?? '',
+                    SubEntityClass
+                  );
+
+                  if ('errorMessage' in subEntityOrErrorResponse) {
+                    subEntityOrErrorResponse = await this.createEntity(
+                      subEntity,
+                      SubEntityClass,
+                      undefined,
+                      undefined,
+                      true
+                    );
+
+                    if ('errorMessage' in subEntityOrErrorResponse) {
+                      // noinspection ExceptionCaughtLocallyJS
+                      throw subEntityOrErrorResponse;
+                    }
+                  }
+
+                  subEntityIds.push(subEntityOrErrorResponse._id);
+                }
+              });
+
+              (entity as any)[fieldName] = subEntityIds;
+            }
+          }
+        });
+
         await tryExecutePreHooks(preHooks);
         const createEntityResult = await client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .insertOne(entity);
 
-        return this.getEntityById(createEntityResult.insertedId.toHexString(), EntityClass);
+        const _id = createEntityResult.insertedId.toHexString();
+        return isRecursiveCall
+          ? ({ _id } as any)
+          : await this.getEntityById(_id, EntityClass, postQueryOperations);
       });
     } catch (error) {
       return createErrorResponseFromError(error);

@@ -117,6 +117,7 @@ export default async function createEntity<T>(
                 subEntity._id ?? '',
                 SubEntityClass
               );
+
               if ('errorMessage' in subEntityOrErrorResponse) {
                 subEntityOrErrorResponse = await createEntity(
                   dbManager,
@@ -127,6 +128,7 @@ export default async function createEntity<T>(
                   true,
                   false
                 );
+
                 if ('errorMessage' in subEntityOrErrorResponse) {
                   // noinspection ExceptionCaughtLocallyJS
                   throw subEntityOrErrorResponse;
