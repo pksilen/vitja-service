@@ -3,7 +3,7 @@ import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
 import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
 import SqlExpression from './sql/expressions/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
-import getMongoDbProjection from './mongodb/getMongoDbProjection';
+import getProjection from './mongodb/getProjection';
 import { ErrorResponse } from '../types/ErrorResponse';
 import { RecursivePartial } from '../types/RecursivePartial';
 import { PreHook } from './hooks/PreHook';
@@ -37,6 +37,7 @@ import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata'
 import { HttpStatusCodes } from '../constants/constants';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 import isErrorResponse from '../errors/isErrorResponse';
+import performPostQueryOperations from "./mongodb/performPostQueryOperations";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -386,6 +387,13 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
+        delete (currentEntityOrErrorResponse as any)._id;
+
+        await client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .updateOne({ _id: new ObjectId(_id) }, { $set: currentEntityOrErrorResponse })
+
         return await this.getEntityById(_id, EntityClass, postQueryOperations);
       });
     } catch (error) {
@@ -396,11 +404,29 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  getAllEntities<T>(
-    entityClass: new () => T,
+  async getAllEntities<T>(
+    EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    throw new Error('Not implemented');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getAllEntities');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+
+    try {
+      return await this.tryExecute(false, (client) => {
+        const cursor = client
+          .db(this.dbName)
+          .collection<SalesItem>(EntityClass.name.toLowerCase())
+          .find<T>();
+
+        performPostQueryOperations(cursor, postQueryOperations);
+        return cursor.toArray();
+      });
+    } catch (error) {
+      return createErrorResponseFromError(error);
+    } finally {
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
   }
 
   async getEntitiesByFilters<T>(
@@ -414,7 +440,7 @@ export default class MongoDbManager extends AbstractDbManager {
           .db(this.dbName)
           .collection<SalesItem>(entityClass.name.toLowerCase())
           .find<T>(filters)
-          .project(getMongoDbProjection(projection));
+          .project(getProjection(projection));
 
         if (sortBys) {
           const sortObj = sortBys.reduce(
