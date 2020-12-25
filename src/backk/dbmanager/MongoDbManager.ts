@@ -38,6 +38,10 @@ import { HttpStatusCodes } from '../constants/constants';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 import isErrorResponse from '../errors/isErrorResponse';
 import performPostQueryOperations from "./mongodb/performPostQueryOperations";
+import DefaultPostQueryOperations from "../types/postqueryoperations/DefaultPostQueryOperations";
+import tryFetchAndAssignSubEntitiesForManyToManyRelationships
+  from "./mongodb/tryFetchAndAssignSubEntitiesForManyToManyRelationships";
+import decryptItems from "../crypt/decryptItems";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -413,14 +417,17 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass = this.getType(EntityClass);
 
     try {
-      return await this.tryExecute(false, (client) => {
+      return await this.tryExecute(false, async (client) => {
         const cursor = client
           .db(this.dbName)
           .collection<SalesItem>(EntityClass.name.toLowerCase())
           .find<T>();
 
-        performPostQueryOperations(cursor, postQueryOperations);
-        return cursor.toArray();
+        performPostQueryOperations(cursor, postQueryOperations ?? new DefaultPostQueryOperations());
+        const rows = await cursor.toArray();
+        decryptItems(rows, EntityClass, this.getTypes());
+        tryFetchAndAssignSubEntitiesForManyToManyRelationships(this, rows, EntityClass, this.getTypes());
+        return rows;
       });
     } catch (error) {
       return createErrorResponseFromError(error);
