@@ -1,9 +1,9 @@
-import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
-import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
-import AbstractDbManager from '../AbstractDbManager';
-import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
-import createErrorResponseFromError from "../../errors/createErrorResponseFromError";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
+import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
+import AbstractDbManager from "../AbstractDbManager";
+import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
 
 export default function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
   dbManager: AbstractDbManager,

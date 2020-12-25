@@ -37,11 +37,10 @@ import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata'
 import { HttpStatusCodes } from '../constants/constants';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 import isErrorResponse from '../errors/isErrorResponse';
-import performPostQueryOperations from "./mongodb/performPostQueryOperations";
-import DefaultPostQueryOperations from "../types/postqueryoperations/DefaultPostQueryOperations";
-import tryFetchAndAssignSubEntitiesForManyToManyRelationships
-  from "./mongodb/tryFetchAndAssignSubEntitiesForManyToManyRelationships";
-import decryptItems from "../crypt/decryptItems";
+import performPostQueryOperations from './mongodb/performPostQueryOperations';
+import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
+import tryFetchAndAssignSubEntitiesForManyToManyRelationships from './mongodb/tryFetchAndAssignSubEntitiesForManyToManyRelationships';
+import decryptItems from '../crypt/decryptItems';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -396,7 +395,7 @@ export default class MongoDbManager extends AbstractDbManager {
         await client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
-          .updateOne({ _id: new ObjectId(_id) }, { $set: currentEntityOrErrorResponse })
+          .updateOne({ _id: new ObjectId(_id) }, { $set: currentEntityOrErrorResponse });
 
         return await this.getEntityById(_id, EntityClass, postQueryOperations);
       });
@@ -415,6 +414,7 @@ export default class MongoDbManager extends AbstractDbManager {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getAllEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
+    const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
     try {
       return await this.tryExecute(false, async (client) => {
@@ -423,10 +423,18 @@ export default class MongoDbManager extends AbstractDbManager {
           .collection<SalesItem>(EntityClass.name.toLowerCase())
           .find<T>();
 
-        performPostQueryOperations(cursor, postQueryOperations ?? new DefaultPostQueryOperations());
+        performPostQueryOperations(cursor, finalPostQueryOperations);
         const rows = await cursor.toArray();
         decryptItems(rows, EntityClass, this.getTypes());
-        tryFetchAndAssignSubEntitiesForManyToManyRelationships(this, rows, EntityClass, this.getTypes());
+
+        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+          this,
+          rows,
+          EntityClass,
+          finalPostQueryOperations,
+          this.getTypes()
+        );
+
         return rows;
       });
     } catch (error) {
@@ -438,37 +446,38 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getEntitiesByFilters<T>(
     filters: FilterQuery<T> | Partial<T> | UserDefinedFilter[],
-    entityClass: new () => T,
-    { pageNumber, pageSize, sortBys, ...projection }: PostQueryOperations
+    EntityClass: new () => T,
+    postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+
     try {
-      return await this.tryExecute((client) => {
-        let cursor = client
+      return await this.tryExecute(false, async (client) => {
+        const cursor = client
           .db(this.dbName)
-          .collection<SalesItem>(entityClass.name.toLowerCase())
-          .find<T>(filters)
-          .project(getProjection(projection));
+          .collection<SalesItem>(EntityClass.name.toLowerCase())
+          .find<T>(filters);
 
-        if (sortBys) {
-          const sortObj = sortBys.reduce(
-            (accumulatedSortObj, { fieldName, sortDirection }) => ({
-              ...accumulatedSortObj,
-              sortField: sortDirection === 'ASC' ? 1 : -1
-            }),
-            {}
-          );
+        performPostQueryOperations(cursor, postQueryOperations);
+        const rows = await cursor.toArray();
+        decryptItems(rows, EntityClass, this.getTypes());
 
-          cursor = cursor.sort(sortObj);
-        }
+        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+          this,
+          rows,
+          EntityClass,
+          postQueryOperations,
+          this.getTypes()
+        );
 
-        if (pageNumber && pageSize) {
-          cursor = cursor.skip((pageNumber - 1) * pageSize).limit(pageSize);
-        }
-
-        return cursor.toArray();
+        return rows;
       });
     } catch (error) {
       return createErrorResponseFromError(error);
+    } finally {
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
 
