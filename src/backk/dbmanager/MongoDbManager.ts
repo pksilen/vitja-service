@@ -563,7 +563,10 @@ export default class MongoDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<U | ErrorResponse> {
-    throw new Error('Not implemented');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntity');
+    const response = this.getSubEntities(this, _id, subEntityPath, entityClass, postQueryOperations, 'first');
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
   }
 
   getSubEntities<T extends object, U extends object>(
@@ -572,7 +575,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<U[] | ErrorResponse> {
-    throw new Error('Not implemented');
+    
   }
 
   async getEntitiesByIds<T>(
