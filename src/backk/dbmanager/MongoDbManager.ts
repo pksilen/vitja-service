@@ -43,6 +43,9 @@ import tryFetchAndAssignSubEntitiesForManyToManyRelationships from './mongodb/tr
 import decryptItems from '../crypt/decryptItems';
 import updateDbLocalTransactionCount from './sql/operations/dql/utils/updateDbLocalTransactionCount';
 import getEntityById from './sql/operations/dql/getEntityById';
+import shouldUseRandomInitializationVector from '../crypt/shouldUseRandomInitializationVector';
+import shouldEncryptValue from '../crypt/shouldEncryptValue';
+import encrypt from '../crypt/encrypt';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -642,26 +645,44 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getEntityWhere<T>(
     fieldName: string,
-    fieldValue: T[keyof T],
-    entityClass: new () => T,
+    fieldValue: T[keyof T] | string,
+    EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
+    const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
+    let finalFieldValue = fieldValue;
+    if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
+      finalFieldValue = encrypt(fieldValue as any, false);
+    }
+
     try {
-      const foundItem = await this.tryExecute((client) =>
-        client
+      const entities = await this.tryExecute(false, async (client) => {
+        const cursor = client
           .db(this.dbName)
-          .collection(entityClass.name.toLowerCase())
-          .findOne<T>({ [fieldName]: fieldValue })
-      );
+          .collection(EntityClass.name.toLowerCase())
+          .find<T>({ [fieldName]: finalFieldValue });
 
-      if (foundItem) {
-        return foundItem;
-      }
+        performPostQueryOperations(cursor, postQueryOperations);
+        const rows = await cursor.toArray();
+        decryptItems(rows, EntityClass, this.getTypes());
 
-      return createErrorResponseFromErrorMessageAndStatusCode(
-        `Item with ${fieldName}: ${fieldValue} not found`,
-        404
-      );
+        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+          this,
+          rows,
+          EntityClass,
+          this.getTypes(),
+          postQueryOperations
+        );
+
+        return rows;
+      });
+
+      return entities.length === 0
+        ? createErrorResponseFromErrorMessageAndStatusCode(
+            `Item with ${fieldName}: ${fieldValue} not found`,
+            404
+          )
+        : entities;
     } catch (error) {
       return createErrorResponseFromError(error);
     }

@@ -47,13 +47,9 @@ export default async function getEntityWhere<T>(
         true
       );
     } catch (error) {
-      console.log(error);
-      // noinspection ExceptionCaughtLocallyJS
-      throw new Error(
-        createErrorMessageWithStatusCode(
-          'Invalid query filter field name: ' + fieldName,
-          HttpStatusCodes.BAD_REQUEST
-        )
+      return createErrorResponseFromErrorMessageAndStatusCode(
+        'Invalid query filter field name: ' + fieldName,
+        HttpStatusCodes.BAD_REQUEST
       );
     }
 
@@ -72,9 +68,9 @@ export default async function getEntityWhere<T>(
     );
 
     const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${
-        EntityClass.name.toLowerCase()
-      } ${joinClause} WHERE ${finalFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(1)}`,
+      `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${finalFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+        1
+      )}`,
       [finalFieldValue]
     );
 
