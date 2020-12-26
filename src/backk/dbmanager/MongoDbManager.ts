@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
-import { SalesItem } from '../../services/salesitems/types/entities/SalesItem';
 import SqlExpression from './sql/expressions/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
-import getProjection from './mongodb/getProjection';
 import { ErrorResponse } from '../types/ErrorResponse';
 import { RecursivePartial } from '../types/RecursivePartial';
 import { PreHook } from './hooks/PreHook';
@@ -35,14 +33,11 @@ import findParentEntityAndPropertyNameForSubEntity from '../metadata/findParentE
 import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import { HttpStatusCodes } from '../constants/constants';
-import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
-import isErrorResponse from '../errors/isErrorResponse';
 import performPostQueryOperations from './mongodb/performPostQueryOperations';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 import tryFetchAndAssignSubEntitiesForManyToManyRelationships from './mongodb/tryFetchAndAssignSubEntitiesForManyToManyRelationships';
 import decryptItems from '../crypt/decryptItems';
 import updateDbLocalTransactionCount from './sql/operations/dql/utils/updateDbLocalTransactionCount';
-import getEntityById from './sql/operations/dql/getEntityById';
 import shouldUseRandomInitializationVector from '../crypt/shouldUseRandomInitializationVector';
 import shouldEncryptValue from '../crypt/shouldEncryptValue';
 import encrypt from '../crypt/encrypt';
@@ -216,38 +211,7 @@ export default class MongoDbManager extends AbstractDbManager {
             }
           } else if (isArrayType && isEntityTypeName(baseTypeName)) {
             if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-              const subEntities = (entity as any)[fieldName];
-              const subEntityIds: string[] = [];
-
-              await forEachAsyncParallel(subEntities, async (subEntity: any) => {
-                if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-                  const SubEntityClass = (Types as any)[baseTypeName];
-
-                  let subEntityOrErrorResponse: any | ErrorResponse = await this.getEntityById(
-                    subEntity._id ?? '',
-                    SubEntityClass
-                  );
-
-                  if ('errorMessage' in subEntityOrErrorResponse) {
-                    subEntityOrErrorResponse = await this.createEntity(
-                      subEntity,
-                      SubEntityClass,
-                      undefined,
-                      undefined,
-                      true
-                    );
-
-                    if ('errorMessage' in subEntityOrErrorResponse) {
-                      // noinspection ExceptionCaughtLocallyJS
-                      throw subEntityOrErrorResponse;
-                    }
-                  }
-
-                  subEntityIds.push(subEntityOrErrorResponse._id);
-                }
-              });
-
-              (entity as any)[fieldName] = subEntityIds;
+              (entity as any)[fieldName] = (entity as any)[fieldName].map((subEntity: any) => subEntity._id);
             }
           }
         });
@@ -699,7 +663,7 @@ export default class MongoDbManager extends AbstractDbManager {
       return entities.length === 0
         ? createErrorResponseFromErrorMessageAndStatusCode(
             `Item with ${fieldName}: ${fieldValue} not found`,
-          HttpStatusCodes.NOT_FOUND
+            HttpStatusCodes.NOT_FOUND
           )
         : entities;
     } catch (error) {
@@ -747,9 +711,9 @@ export default class MongoDbManager extends AbstractDbManager {
 
       return entities.length === 0
         ? createErrorResponseFromErrorMessageAndStatusCode(
-          `Item with ${fieldName}: ${fieldValue} not found`,
-          HttpStatusCodes.NOT_FOUND
-        )
+            `Item with ${fieldName}: ${fieldValue} not found`,
+            HttpStatusCodes.NOT_FOUND
+          )
         : entities;
     } catch (error) {
       return createErrorResponseFromError(error);
@@ -759,26 +723,103 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async updateEntity<T extends Entity>(
-    { _id, ...restOfItem }: RecursivePartial<T> & { _id: string },
-    entityClass: new () => T,
+    { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
+    EntityClass: new () => T,
     allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
-    preHooks?: PreHook | PreHook[]
+    preHooks?: PreHook | PreHook[],
+    isRecursiveCall = false
   ): Promise<void | ErrorResponse> {
-    // TODO add precondition check
-    // auto-update version/lastmodifiedtimestamp
-    try {
-      const updateOperationResult = await this.tryExecute((client) =>
-        client
-          .db(this.dbName)
-          .collection(entityClass.name.toLowerCase())
-          .updateOne({ _id: new ObjectId(_id) }, { $set: restOfItem })
-      );
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'UpdateEntity');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    const finalAllowAdditionAndRemovalForSubEntities = Array.isArray(
+      allowAdditionAndRemovalForSubEntityClasses
+    )
+      ? allowAdditionAndRemovalForSubEntityClasses.map((SubEntityClass) => this.getType(SubEntityClass))
+      : allowAdditionAndRemovalForSubEntityClasses;
+    const Types = this.getTypes();
+    let shouldUseTransaction;
 
-      if (updateOperationResult.matchedCount !== 1) {
-        return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      if (!isRecursiveCall) {
+        await hashAndEncryptItem(restOfEntity, EntityClass as any, Types);
       }
+
+      await this.tryExecute(shouldUseTransaction, async (client) => {
+        let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
+        if (!isRecursiveCall || allowAdditionAndRemovalForSubEntityClasses) {
+          currentEntityOrErrorResponse = await this.getEntityById(_id ?? id, EntityClass, undefined);
+        }
+
+        if (!isRecursiveCall) {
+          await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
+        }
+
+        const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
+
+        await forEachAsyncSequential(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]) => {
+          if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
+            delete (restOfEntity as any)[fieldName];
+          }
+
+          const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
+          const SubEntityClass = (Types as any)[baseTypeName];
+
+          if (isArrayType && isEntityTypeName(baseTypeName)) {
+            const newSubEntities = (restOfEntity as any)[fieldName];
+
+            if (
+              finalAllowAdditionAndRemovalForSubEntities === 'all' ||
+              finalAllowAdditionAndRemovalForSubEntities?.includes(SubEntityClass)
+            ) {
+              if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
+                (restOfEntity as any)[fieldName] = newSubEntities.map((subEntity: any) => subEntity._id);
+              }
+            } else {
+              const currentSubEntities = (currentEntityOrErrorResponse as any)[fieldName];
+
+              if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
+                (restOfEntity as any)[fieldName] = currentSubEntities.map(
+                  (currentSubEntity: any) => currentSubEntity._id
+                );
+              } else {
+                (restOfEntity as any)[fieldName] = currentSubEntities.map((currentSubEntity: any) => {
+                  const foundUpdatedSubEntity = newSubEntities.find(
+                    (newSubEntity: any) => newSubEntity._id === currentSubEntity._id
+                  );
+                  return foundUpdatedSubEntity ? foundUpdatedSubEntity : currentSubEntity;
+                });
+              }
+            }
+          } else if (fieldName !== '_id' && fieldName !== 'id') {
+            if (fieldName === 'version') {
+              (restOfEntity as any)[fieldName] = (
+                parseInt((currentEntityOrErrorResponse as any).version, 10) + 1
+              ).toString();
+            } else if (fieldName === 'lastModifiedTimestamp') {
+              (restOfEntity as any)[fieldName] = new Date();
+            }
+          }
+        });
+
+        const updateOperationResult = await client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .updateOne({ _id: new ObjectId(_id) }, { $set: restOfEntity });
+
+        if (updateOperationResult.matchedCount !== 1) {
+          return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
+        }
+
+        return undefined;
+      });
     } catch (error) {
       return createErrorResponseFromError(error);
+    } finally {
+      await cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
 
