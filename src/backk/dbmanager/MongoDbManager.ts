@@ -41,6 +41,8 @@ import performPostQueryOperations from './mongodb/performPostQueryOperations';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 import tryFetchAndAssignSubEntitiesForManyToManyRelationships from './mongodb/tryFetchAndAssignSubEntitiesForManyToManyRelationships';
 import decryptItems from '../crypt/decryptItems';
+import updateDbLocalTransactionCount from './sql/operations/dql/utils/updateDbLocalTransactionCount';
+import getEntityById from './sql/operations/dql/getEntityById';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -549,7 +551,7 @@ export default class MongoDbManager extends AbstractDbManager {
         return rows[0];
       });
 
-      return entityOrErrorResponse
+      return entityOrErrorResponse;
     } catch (error) {
       return createErrorResponseFromError(error);
     } finally {
@@ -560,46 +562,81 @@ export default class MongoDbManager extends AbstractDbManager {
   getSubEntity<T extends object, U extends object>(
     _id: string,
     subEntityPath: string,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<U | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntity');
-    const response = this.getSubEntities(this, _id, subEntityPath, entityClass, postQueryOperations, 'first');
+    const response = this.getSubEntities(_id, subEntityPath, EntityClass, postQueryOperations, 'first');
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
-  getSubEntities<T extends object, U extends object>(
+  async getSubEntities<T extends object, U extends object>(
     _id: string,
     subEntityPath: string,
-    entityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
-  ): Promise<U[] | ErrorResponse> {
-    
+    EntityClass: new () => T,
+    postQueryOperations?: PostQueryOperations,
+    responseMode: 'first' | 'all' = 'all'
+  ): Promise<any | ErrorResponse> {
+    updateDbLocalTransactionCount(this);
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+
+    try {
+      const itemOrErrorResponse = await this.getEntityById(_id, EntityClass, postQueryOperations);
+      if ('errorMessage' in itemOrErrorResponse) {
+        return itemOrErrorResponse;
+      }
+
+      const subItems = JSONPath({ json: itemOrErrorResponse, path: subEntityPath });
+
+      if (subItems.length > 0) {
+        return responseMode === 'first' ? subItems[0] : subItems;
+      } else {
+        return createErrorResponseFromErrorMessageAndStatusCode(
+          'Item with _id: ' + _id + ', sub item from path ' + subEntityPath + ' not found',
+          HttpStatusCodes.NOT_FOUND
+        );
+      }
+    } catch (error) {
+      return createErrorResponseFromError(error);
+    }
   }
 
   async getEntitiesByIds<T>(
     _ids: string[],
-    entityClass: new () => T,
+    EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    // TODO implemennt postqueryOps
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByIds');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+
     try {
-      const foundItems = await this.tryExecute((client) =>
-        client
+      return await this.tryExecute(false, async (client) => {
+        const cursor = client
           .db(this.dbName)
-          .collection(entityClass.name.toLowerCase())
-          .find<T>({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } })
-          .toArray()
-      );
+          .collection(EntityClass.name.toLowerCase())
+          .find<T>({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } });
 
-      if (foundItems) {
-        return foundItems;
-      }
+        performPostQueryOperations(cursor, postQueryOperations);
+        const rows = await cursor.toArray();
+        decryptItems(rows, EntityClass, this.getTypes());
 
-      return createErrorResponseFromErrorMessageAndStatusCode(`Item with _ids: ${_ids} not found`, 404);
+        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+          this,
+          rows,
+          EntityClass,
+          this.getTypes(),
+          postQueryOperations
+        );
+
+        return rows;
+      });
     } catch (error) {
       return createErrorResponseFromError(error);
+    } finally {
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
 
