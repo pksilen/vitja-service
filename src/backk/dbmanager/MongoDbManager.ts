@@ -581,6 +581,7 @@ export default class MongoDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations,
     responseMode: 'first' | 'all' = 'all'
   ): Promise<any | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntities');
     updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -603,6 +604,8 @@ export default class MongoDbManager extends AbstractDbManager {
       }
     } catch (error) {
       return createErrorResponseFromError(error);
+    } finally {
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
 
@@ -649,6 +652,71 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
+    if (
+      !fieldName.includes('.') &&
+      !typePropertyAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName)
+    ) {
+      throw new Error(`Field ${EntityClass}.${fieldName} values must be annotated with @Unique annotation`);
+    }
+
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
+
+    const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
+    let finalFieldValue = fieldValue;
+    if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
+      finalFieldValue = encrypt(fieldValue as any, false);
+    }
+
+    try {
+      const entities = await this.tryExecute(false, async (client) => {
+        const cursor = client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .find<T>({ [fieldName]: finalFieldValue });
+
+        performPostQueryOperations(cursor, postQueryOperations);
+        const rows = await cursor.toArray();
+        decryptItems(rows, EntityClass, this.getTypes());
+
+        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+          this,
+          rows,
+          EntityClass,
+          this.getTypes(),
+          postQueryOperations
+        );
+
+        return rows;
+      });
+
+      if (entities.length > 1) {
+        return createErrorResponseFromErrorMessageAndStatusCode(
+          `Field ${fieldName} values must be unique`,
+          HttpStatusCodes.INTERNAL_SERVER_ERROR
+        );
+      }
+
+      return entities.length === 0
+        ? createErrorResponseFromErrorMessageAndStatusCode(
+            `Item with ${fieldName}: ${fieldValue} not found`,
+          HttpStatusCodes.NOT_FOUND
+          )
+        : entities;
+    } catch (error) {
+      return createErrorResponseFromError(error);
+    } finally {
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
+  }
+
+  async getEntitiesWhere<T>(
+    fieldName: string,
+    fieldValue: T[keyof T] | string,
+    EntityClass: new () => T,
+    postQueryOperations: PostQueryOperations
+  ): Promise<T[] | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesWhere');
+
     const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
     let finalFieldValue = fieldValue;
     if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
@@ -679,41 +747,14 @@ export default class MongoDbManager extends AbstractDbManager {
 
       return entities.length === 0
         ? createErrorResponseFromErrorMessageAndStatusCode(
-            `Item with ${fieldName}: ${fieldValue} not found`,
-            404
-          )
+          `Item with ${fieldName}: ${fieldValue} not found`,
+          HttpStatusCodes.NOT_FOUND
+        )
         : entities;
     } catch (error) {
       return createErrorResponseFromError(error);
-    }
-  }
-
-  async getEntitiesWhere<T>(
-    fieldName: string,
-    fieldValue: T[keyof T],
-    entityClass: new () => T,
-    postQueryOperations: PostQueryOperations
-  ): Promise<T[] | ErrorResponse> {
-    // TODO implement postQueryOps
-    try {
-      const foundItem = await this.tryExecute((client) =>
-        client
-          .db(this.dbName)
-          .collection(entityClass.name.toLowerCase())
-          .find<T>({ [fieldName]: fieldValue })
-          .toArray()
-      );
-
-      if (foundItem) {
-        return foundItem;
-      }
-
-      return createErrorResponseFromErrorMessageAndStatusCode(
-        `Item with ${fieldName}: ${fieldValue} not found`,
-        404
-      );
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    } finally {
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
 
