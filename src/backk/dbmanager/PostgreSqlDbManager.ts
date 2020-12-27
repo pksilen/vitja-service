@@ -3,6 +3,9 @@ import { Pool, types } from 'pg';
 import { pg } from 'yesql';
 
 export default class PostgreSqlDbManager extends AbstractSqlDbManager {
+  cleanupTransaction(): void {
+      throw new Error("Method not implemented.");
+  }
   private pool: Pool;
 
   constructor(

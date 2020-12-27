@@ -39,7 +39,10 @@ import deleteEntitiesByFilters from "./sql/operations/dml/deleteEntitiesByFilter
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   getClient(): any {
-    return undefined;
+    throw new Error('Not implemented')
+  }
+
+  cleanupTransaction() {
   }
 
   abstract getDbHost(): string;

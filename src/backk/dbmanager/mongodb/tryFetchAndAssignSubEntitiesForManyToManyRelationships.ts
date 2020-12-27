@@ -4,6 +4,7 @@ import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
 import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
 import AbstractDbManager from "../AbstractDbManager";
 import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
+import DefaultPostQueryOperations from "../../types/postqueryoperations/DefaultPostQueryOperations";
 
 export default function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
   dbManager: AbstractDbManager,
@@ -24,7 +25,7 @@ export default function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T
           const subEntitiesOrErrorResponse = dbManager.getEntitiesByFilters(
             { _id: { $in: subEntityIds } },
             (Types as any)[propertyTypeName],
-            postQueryOperations
+            postQueryOperations ?? new DefaultPostQueryOperations()
           );
 
           if ('errorMessage' in subEntitiesOrErrorResponse) {
