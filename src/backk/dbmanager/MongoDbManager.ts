@@ -41,6 +41,12 @@ import updateDbLocalTransactionCount from './sql/operations/dql/utils/updateDbLo
 import shouldUseRandomInitializationVector from '../crypt/shouldUseRandomInitializationVector';
 import shouldEncryptValue from '../crypt/shouldEncryptValue';
 import encrypt from '../crypt/encrypt';
+import getEntityWhere from "./sql/operations/dql/getEntityWhere";
+import tryCommitLocalTransactionIfNeeded
+  from "./sql/operations/transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded
+  from "./sql/operations/transaction/tryRollbackLocalTransactionIfNeeded";
+import isErrorResponse from "../errors/isErrorResponse";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -227,8 +233,10 @@ export default class MongoDbManager extends AbstractDbManager {
           ? ({ _id } as any)
           : await this.getEntityById(_id, EntityClass, postQueryOperations);
       });
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
     } finally {
       await cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -368,8 +376,10 @@ export default class MongoDbManager extends AbstractDbManager {
 
         return await this.getEntityById(_id, EntityClass, postQueryOperations);
       });
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
     } finally {
       await cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -406,8 +416,10 @@ export default class MongoDbManager extends AbstractDbManager {
 
         return rows;
       });
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -447,8 +459,10 @@ export default class MongoDbManager extends AbstractDbManager {
 
         return rows;
       });
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -490,7 +504,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass = this.getType(EntityClass);
 
     try {
-      const entityOrErrorResponse = await this.tryExecute(false, async (client) => {
+      return  await this.tryExecute(false, async (client) => {
         const cursor = client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
@@ -517,10 +531,10 @@ export default class MongoDbManager extends AbstractDbManager {
 
         return rows[0];
       });
-
-      return entityOrErrorResponse;
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -603,8 +617,10 @@ export default class MongoDbManager extends AbstractDbManager {
 
         return rows;
       });
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -666,8 +682,10 @@ export default class MongoDbManager extends AbstractDbManager {
             HttpStatusCodes.NOT_FOUND
           )
         : entities;
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -715,8 +733,10 @@ export default class MongoDbManager extends AbstractDbManager {
             HttpStatusCodes.NOT_FOUND
           )
         : entities;
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -729,7 +749,7 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     isRecursiveCall = false
   ): Promise<void | ErrorResponse> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'UpdateEntity');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     const finalAllowAdditionAndRemovalForSubEntities = Array.isArray(
@@ -738,7 +758,7 @@ export default class MongoDbManager extends AbstractDbManager {
       ? allowAdditionAndRemovalForSubEntityClasses.map((SubEntityClass) => this.getType(SubEntityClass))
       : allowAdditionAndRemovalForSubEntityClasses;
     const Types = this.getTypes();
-    let shouldUseTransaction;
+    let shouldUseTransaction = false;
 
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
@@ -815,22 +835,47 @@ export default class MongoDbManager extends AbstractDbManager {
 
         return undefined;
       });
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
     } finally {
       await cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
 
-  updateEntityWhere<T extends Entity>(
+  async updateEntityWhere<T extends Entity>(
     fieldName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
-    throw new Error('Not implemented');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      return await this.tryExecute(shouldUseTransaction, async () => {
+        const currentEntityOrErrorResponse = await this.getEntityWhere(fieldName, fieldValue, EntityClass);
+        await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
+        return  await this.updateEntity(
+          { _id: (currentEntityOrErrorResponse as T)._id, ...entity },
+          EntityClass, []
+        );
+      });
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
   }
 
   async deleteEntityById<T>(
