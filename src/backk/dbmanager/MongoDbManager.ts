@@ -956,11 +956,33 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  deleteEntitiesByFilters<T extends object>(
-    filters: FilterQuery<T> | Partial<T> | SqlExpression[] | UserDefinedFilter[],
-    entityClass: new () => T
+  async deleteEntitiesByFilters<T extends object>(
+    filters: FilterQuery<T> | Partial<T> | UserDefinedFilter[],
+    EntityClass: new () => T
   ): Promise<void | ErrorResponse> {
-    throw new Error('Not implemented');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      await this.tryExecute(shouldUseTransaction, async (client) => {
+        await client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .deleteMany(filters);
+
+      });
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
   }
 
   removeSubEntities<T extends Entity>(
