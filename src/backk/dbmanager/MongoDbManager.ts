@@ -46,6 +46,9 @@ import tryCommitLocalTransactionIfNeeded from './sql/operations/transaction/tryC
 import tryRollbackLocalTransactionIfNeeded from './sql/operations/transaction/tryRollbackLocalTransactionIfNeeded';
 import isErrorResponse from '../errors/isErrorResponse';
 import getEntityById from './sql/operations/dql/getEntityById';
+import { plainToClass } from 'class-transformer';
+import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
+import deleteEntityById from './sql/operations/dml/deleteEntityById';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -944,7 +947,6 @@ export default class MongoDbManager extends AbstractDbManager {
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .deleteOne({ [fieldName]: fieldValue });
-
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -973,7 +975,6 @@ export default class MongoDbManager extends AbstractDbManager {
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .deleteMany(filters);
-
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -985,14 +986,69 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  removeSubEntities<T extends Entity>(
+  async removeSubEntities<T extends Entity>(
     _id: string,
     subEntitiesPath: string,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
-    // auto-update version/lastmodifiedtimestamp
-    return Promise.resolve();
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      await this.tryExecute(shouldUseTransaction, async (client) => {
+        const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass);
+        await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
+        await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
+        await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
+
+        const currentEntityInstance = plainToClass(EntityClass, currentEntityOrErrorResponse);
+        const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesPath });
+
+        if (subEntities.length === 0) {
+          return;
+        }
+
+        const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
+          EntityClass,
+          subEntities[0].constructor,
+          this.getTypes()
+        );
+        if (
+          parentEntityClassAndPropertyNameForSubEntity &&
+          typePropertyAnnotationContainer.isTypePropertyManyToMany(
+            parentEntityClassAndPropertyNameForSubEntity[0],
+            parentEntityClassAndPropertyNameForSubEntity[1]
+          )
+        ) {
+          (currentEntityOrErrorResponse as any)[
+            parentEntityClassAndPropertyNameForSubEntity[1]
+          ] = (currentEntityOrErrorResponse as any)
+            .filter(
+              (currentEntity: any) =>
+                !subEntities.find((subEntity: any) => subEntity._id === currentEntity._id)
+            )
+            .map((entity: any) => entity._id);
+        } else {
+          (currentEntityOrErrorResponse as any)[
+            parentEntityClassAndPropertyNameForSubEntity[1]
+          ] = (currentEntityOrErrorResponse as any).filter(
+            (currentEntity: any) => !subEntities.find((subEntity: any) => subEntity._id === currentEntity._id)
+          );
+        }
+      });
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
   }
 
   removeSubEntityById<T extends Entity>(
