@@ -1066,25 +1066,35 @@ export default class MongoDbManager extends AbstractDbManager {
     return response;
   }
 
-  async deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
+  async deleteAllEntities<T>(EntityClass: new () => T): Promise<void | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteAllEntities');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+
     try {
-      await this.tryExecute((client) =>
-        client
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      await this.tryExecute(shouldUseTransaction, async (client) => {
+        await client
           .db(this.dbName)
-          .collection(entityClass.name.toLowerCase())
-          .deleteMany({})
-      );
-    } catch (error) {
-      return createErrorResponseFromError(error);
+          .collection(EntityClass.name.toLowerCase())
+          .deleteMany({});
+      });
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
 
   tryReleaseDbConnectionBackToPool() {
-    // TODO inmplement
   }
 
   tryReserveDbConnectionFromPool(): Promise<void> {
-    // TODO inmplement
     return Promise.resolve(undefined);
   }
 }
