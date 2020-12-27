@@ -1,12 +1,6 @@
 # Vitja service
 
 TODO
-- Mongodb transactions, update/delete preconditions, encyprt/decrypt, filters, null value, manytoMany
-    - createEntity
-    - UpdateItem pitää hakea itemi ja käydä koko itemi puu läpi ja poistaa subitem lisäysyrityksett.
-        - Tämän jälkeen kun lisäysyrittykset on poistettu, voidaan databasesta haettuun itemiin mergetä update itemi.
-    - Update default prometheus metrics
-    - Update logging
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers

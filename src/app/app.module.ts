@@ -30,7 +30,7 @@ import DbCleanupServiceImpl from '../services/dbcleanup/DbCleanupServiceImpl';
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: postgreSqlDbManager },
+    { provide: AbstractDbManager, useValue: mySqlDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },

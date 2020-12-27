@@ -146,10 +146,11 @@ export default class NoOpDbManager extends AbstractDbManager {
   }
 
   cleanupTransaction(): void {
+    // No operation
   }
 
   getClient(): any {
-    throw new Error('Not implemented')
+    return undefined;
   }
 
   tryBeginTransaction(): Promise<void> {
