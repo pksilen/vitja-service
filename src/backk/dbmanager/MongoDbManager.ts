@@ -41,12 +41,11 @@ import updateDbLocalTransactionCount from './sql/operations/dql/utils/updateDbLo
 import shouldUseRandomInitializationVector from '../crypt/shouldUseRandomInitializationVector';
 import shouldEncryptValue from '../crypt/shouldEncryptValue';
 import encrypt from '../crypt/encrypt';
-import getEntityWhere from "./sql/operations/dql/getEntityWhere";
-import tryCommitLocalTransactionIfNeeded
-  from "./sql/operations/transaction/tryCommitLocalTransactionIfNeeded";
-import tryRollbackLocalTransactionIfNeeded
-  from "./sql/operations/transaction/tryRollbackLocalTransactionIfNeeded";
-import isErrorResponse from "../errors/isErrorResponse";
+import getEntityWhere from './sql/operations/dql/getEntityWhere';
+import tryCommitLocalTransactionIfNeeded from './sql/operations/transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from './sql/operations/transaction/tryRollbackLocalTransactionIfNeeded';
+import isErrorResponse from '../errors/isErrorResponse';
+import getEntityById from './sql/operations/dql/getEntityById';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -504,7 +503,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass = this.getType(EntityClass);
 
     try {
-      return  await this.tryExecute(false, async (client) => {
+      return await this.tryExecute(false, async (client) => {
         const cursor = client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
@@ -863,9 +862,10 @@ export default class MongoDbManager extends AbstractDbManager {
       return await this.tryExecute(shouldUseTransaction, async () => {
         const currentEntityOrErrorResponse = await this.getEntityWhere(fieldName, fieldValue, EntityClass);
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
-        return  await this.updateEntity(
+        return await this.updateEntity(
           { _id: (currentEntityOrErrorResponse as T)._id, ...entity },
-          EntityClass, []
+          EntityClass,
+          []
         );
       });
     } catch (errorOrErrorResponse) {
@@ -878,33 +878,82 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async deleteEntityById<T>(
+  async deleteEntityById<T extends object>(
     _id: string,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
-    try {
-      const deleteOperationResult = await this.tryExecute((client) =>
-        client
-          .db(this.dbName)
-          .collection(entityClass.name.toLowerCase())
-          .deleteOne({ _id: new ObjectId(_id) })
-      );
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
 
-      if (deleteOperationResult.deletedCount !== 1) {
-        return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
-      }
-    } catch (error) {
-      return createErrorResponseFromError(error);
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
+        if (preHooks) {
+          const entityOrErrorResponse = await this.getEntityById(_id, EntityClass);
+          await tryExecutePreHooks(preHooks, entityOrErrorResponse);
+        }
+
+        const deleteOperationResult = await client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .deleteOne({ _id: new ObjectId(_id) });
+
+        if (deleteOperationResult.deletedCount !== 1) {
+          return createErrorResponseFromErrorMessageAndStatusCode(
+            `Item with _id: ${_id} not found`,
+            HttpStatusCodes.NOT_FOUND
+          );
+        }
+
+        return undefined;
+      });
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
 
-  deleteEntitiesWhere<T extends object>(
+  async deleteEntitiesWhere<T extends object>(
     fieldName: string,
-    fieldValue: T[keyof T],
-    entityClass: new () => T
+    fieldValue: T[keyof T] | string,
+    EntityClass: new () => T
   ): Promise<void | ErrorResponse> {
-    throw new Error('Not implemented');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesWhere');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
+      if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
+        // noinspection AssignmentToFunctionParameterJS
+        fieldValue = encrypt(fieldValue as any, false);
+      }
+
+      await this.tryExecute(shouldUseTransaction, async (client) => {
+        await client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .deleteOne({ [fieldName]: fieldValue });
+
+      });
+    } catch (errorOrErrorResponse) {
+      return isErrorResponse(errorOrErrorResponse)
+        ? errorOrErrorResponse
+        : createErrorResponseFromError(errorOrErrorResponse);
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
   }
 
   deleteEntitiesByFilters<T extends object>(
