@@ -1018,6 +1018,7 @@ export default class MongoDbManager extends AbstractDbManager {
           subEntities[0].constructor,
           this.getTypes()
         );
+
         if (
           parentEntityClassAndPropertyNameForSubEntity &&
           typePropertyAnnotationContainer.isTypePropertyManyToMany(
@@ -1033,7 +1034,7 @@ export default class MongoDbManager extends AbstractDbManager {
                 !subEntities.find((subEntity: any) => subEntity._id === currentEntity._id)
             )
             .map((entity: any) => entity._id);
-        } else {
+        } else if (parentEntityClassAndPropertyNameForSubEntity) {
           (currentEntityOrErrorResponse as any)[
             parentEntityClassAndPropertyNameForSubEntity[1]
           ] = (currentEntityOrErrorResponse as any).filter(
@@ -1055,11 +1056,14 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     subEntitiesPath: string,
     subEntityId: string,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
-    // auto-update version/lastmodifiedtimestamp
-    return Promise.resolve();
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
+    const subEntityPath = `${subEntitiesPath}[?(@.id == '${subEntityId}')]`;
+    const response = this.removeSubEntities(_id, subEntityPath, EntityClass, preHooks);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
   }
 
   async deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse> {
