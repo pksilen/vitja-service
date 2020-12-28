@@ -2,17 +2,18 @@ import { initializeDefaultJaegerTracing } from "./backk/observability/distribute
 import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify";
 import { AppModule } from "./app/app.module";
-import { mySqlDbManager } from "./database/mySqlDatabaseManager";
-import initializeHttpServerBackk from "./backk/initialization/initializeHttpServerBackk";
-import { postgreSqlDbManager } from "./database/postgreSqlDbManager";
+import { mongoDbManager } from "./database/mongoDbManager";
+import initializeBackk from "./backk/initialization/initializeBackk";
+import startHttpServer from "./backk/initialization/startHttpServer";
 
 initializeDefaultJaegerTracing();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-  await initializeHttpServerBackk(app, mySqlDbManager);
-  // await initializeKafkaConsumerBackk(appController, mySqlDbManager)
-  // await initializeRedisConsumerBackk(appController, mySqlDbManager)
+  await initializeBackk(app, mongoDbManager);
+  await startHttpServer(app)
+  // await startKafkaConsumer(appController)
+  // await startRedisConsumer(appController)
 }
 
 bootstrap();

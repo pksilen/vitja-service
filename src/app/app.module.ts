@@ -25,12 +25,13 @@ import { mySqlDbManager } from '../database/mySqlDatabaseManager';
 import { postgreSqlDbManager } from '../database/postgreSqlDbManager';
 import DbCleanupService from '../services/dbcleanup/DbCleanupService';
 import DbCleanupServiceImpl from '../services/dbcleanup/DbCleanupServiceImpl';
+import { mongoDbManager } from "../database/mongoDbManager";
 
 @Module({
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: mySqlDbManager },
+    { provide: AbstractDbManager, useValue: mongoDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },

@@ -11,6 +11,7 @@ export default async function initializeCronJobSchedulingTable(dbManager: Abstra
   await forEachAsyncParallel(
     Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()),
     async ([serviceFunctionName, cronSchedule]) => {
+      await dbManager.connectMongoDb();
       const clsNamespace = createNamespace('serviceFunctionExecution');
       await clsNamespace.runAndReturn(async () => {
         try {
@@ -52,6 +53,7 @@ export default async function initializeCronJobSchedulingTable(dbManager: Abstra
           logError(error);
         }
       });
+      await dbManager.disconnectMongoDb();
     }
   );
 }

@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO
+- Implement mongodb indexing
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers

@@ -156,4 +156,12 @@ export default class NoOpDbManager extends AbstractDbManager {
   tryBeginTransaction(): Promise<void> {
     return Promise.resolve(undefined);
   }
+
+  connectMongoDb(): Promise<void> {
+    return Promise.resolve(undefined);
+  }
+
+  disconnectMongoDb(): Promise<void> {
+    return Promise.resolve(undefined);
+  }
 }

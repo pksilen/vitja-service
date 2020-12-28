@@ -7,6 +7,7 @@ import tryCreateIndex from './tryCreateIndex';
 import tryCreateUniqueIndex from './tryCreateUniqueIndex';
 import log, { logError, Severity } from '../../../../observability/logging/log';
 import initializeCronJobSchedulingTable from '../../../../scheduling/initializeCronJobSchedulingTable';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 
 const dbManagerToIsInitializedMap: { [key: string]: boolean } = {};
 
@@ -19,73 +20,74 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
   }
 
   try {
-    await forEachAsyncParallel(
-      Object.entries(entityAnnotationContainer.entityNameToClassMap),
-      async ([entityName, entityClass]: [any, any]) =>
-        await tryAlterOrCreateTable(dbManager, entityName, entityClass, dbManager.schema)
-    );
+    if (dbManager instanceof AbstractSqlDbManager) {
+      await forEachAsyncParallel(
+        Object.entries(entityAnnotationContainer.entityNameToClassMap),
+        async ([entityName, entityClass]: [any, any]) =>
+          await tryAlterOrCreateTable(dbManager, entityName, entityClass, dbManager.schema)
+      );
 
-    await forEachAsyncParallel(
-      Object.entries(entityAnnotationContainer.indexNameToIndexFieldsMap),
-      async ([indexName, indexFields]: [any, any]) =>
-        await tryCreateIndex(dbManager, indexName, dbManager.schema, indexFields)
-    );
+      await forEachAsyncParallel(
+        Object.entries(entityAnnotationContainer.indexNameToIndexFieldsMap),
+        async ([indexName, indexFields]: [any, any]) =>
+          await tryCreateIndex(dbManager, indexName, dbManager.schema, indexFields)
+      );
 
-    await forEachAsyncParallel(
-      Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
-      async ([indexName, indexFields]: [any, any]) =>
-        await tryCreateUniqueIndex(dbManager, indexName, dbManager.schema, indexFields)
-    );
+      await forEachAsyncParallel(
+        Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
+        async ([indexName, indexFields]: [any, any]) =>
+          await tryCreateUniqueIndex(dbManager, indexName, dbManager.schema, indexFields)
+      );
 
-    await forEachAsyncSequential(
-      Object.entries(entityAnnotationContainer.entityNameToForeignIdFieldNamesMap),
-      async ([entityName, foreignIdFieldNames]: [any, any]) => {
-        const fields = await dbManager.tryExecuteSqlWithoutCls(
-          `SELECT * FROM ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} LIMIT 1`,
-          undefined,
-          false
-        );
-
-        await forEachAsyncParallel(foreignIdFieldNames, async (foreignIdFieldName: any) => {
-          if (!fields.find((field) => field.name.toLowerCase() === foreignIdFieldName.toLowerCase())) {
-            const alterTableStatementPrefix = `ALTER TABLE ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} ADD `;
-            const addForeignIdColumnStatement =
-              alterTableStatementPrefix + foreignIdFieldName.toLowerCase() + ' BIGINT';
-            await dbManager.tryExecuteSqlWithoutCls(addForeignIdColumnStatement);
-
-            const addPrimaryKeyStatement =
-              alterTableStatementPrefix +
-              'PRIMARY KEY (' +
-              foreignIdFieldName.toLowerCase() +
-              (entityAnnotationContainer.entityNameToIsArrayMap[entityName] ? ', id)' : ')');
-            await dbManager.tryExecuteSqlWithoutCls(addPrimaryKeyStatement);
-
-            const addForeignKeyStatement =
-              alterTableStatementPrefix +
-              'FOREIGN KEY (' +
-              foreignIdFieldName.toLowerCase() +
-              ') REFERENCES ' +
-              dbManager.schema.toLowerCase() +
-              '.' +
-              foreignIdFieldName.toLowerCase().slice(0, -2) +
-              '(_id)';
-            await dbManager.tryExecuteSqlWithoutCls(addForeignKeyStatement);
-          }
-        });
-      }
-    );
-
-    await forEachAsyncSequential(
-      entityAnnotationContainer.manyToManyRelationTableSpecs,
-      async ({ associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
-        try {
-          await dbManager.tryExecuteSqlWithoutCls(
-            `SELECT * FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} LIMIT 1`,
+      await forEachAsyncSequential(
+        Object.entries(entityAnnotationContainer.entityNameToForeignIdFieldNamesMap),
+        async ([entityName, foreignIdFieldNames]: [any, any]) => {
+          const fields = await dbManager.tryExecuteSqlWithoutCls(
+            `SELECT * FROM ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} LIMIT 1`,
             undefined,
             false
           );
-        } catch (error) {
-          const createTableStatement = `
+
+          await forEachAsyncParallel(foreignIdFieldNames, async (foreignIdFieldName: any) => {
+            if (!fields.find((field) => field.name.toLowerCase() === foreignIdFieldName.toLowerCase())) {
+              const alterTableStatementPrefix = `ALTER TABLE ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} ADD `;
+              const addForeignIdColumnStatement =
+                alterTableStatementPrefix + foreignIdFieldName.toLowerCase() + ' BIGINT';
+              await dbManager.tryExecuteSqlWithoutCls(addForeignIdColumnStatement);
+
+              const addPrimaryKeyStatement =
+                alterTableStatementPrefix +
+                'PRIMARY KEY (' +
+                foreignIdFieldName.toLowerCase() +
+                (entityAnnotationContainer.entityNameToIsArrayMap[entityName] ? ', id)' : ')');
+              await dbManager.tryExecuteSqlWithoutCls(addPrimaryKeyStatement);
+
+              const addForeignKeyStatement =
+                alterTableStatementPrefix +
+                'FOREIGN KEY (' +
+                foreignIdFieldName.toLowerCase() +
+                ') REFERENCES ' +
+                dbManager.schema.toLowerCase() +
+                '.' +
+                foreignIdFieldName.toLowerCase().slice(0, -2) +
+                '(_id)';
+              await dbManager.tryExecuteSqlWithoutCls(addForeignKeyStatement);
+            }
+          });
+        }
+      );
+
+      await forEachAsyncSequential(
+        entityAnnotationContainer.manyToManyRelationTableSpecs,
+        async ({ associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
+          try {
+            await dbManager.tryExecuteSqlWithoutCls(
+              `SELECT * FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} LIMIT 1`,
+              undefined,
+              false
+            );
+          } catch (error) {
+            const createTableStatement = `
           CREATE TABLE ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()}
            (${entityForeignIdFieldName.toLowerCase()} BIGINT,
             ${subEntityForeignIdFieldName.toLowerCase()} BIGINT,
@@ -93,16 +95,17 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
               ${subEntityForeignIdFieldName.toLowerCase()}),
                FOREIGN KEY(${entityForeignIdFieldName.toLowerCase()}) 
                REFERENCES ${dbManager.schema.toLowerCase()}.${entityForeignIdFieldName
-            .toLowerCase()
-            .slice(0, -2)}(_id),
+              .toLowerCase()
+              .slice(0, -2)}(_id),
             FOREIGN KEY(${subEntityForeignIdFieldName.toLowerCase()}) 
                REFERENCES ${dbManager.schema.toLowerCase()}.${subEntityForeignIdFieldName
-            .toLowerCase()
-            .slice(0, -2)}(_id))`;
-          await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
+              .toLowerCase()
+              .slice(0, -2)}(_id))`;
+            await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
+          }
         }
-      }
-    );
+      );
+    }
 
     await initializeCronJobSchedulingTable(dbManager);
   } catch (error) {
