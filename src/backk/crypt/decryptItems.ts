@@ -27,10 +27,10 @@ function decryptItemValues(entity: { [key: string]: any }, EntityClass: new () =
           );
         }
         propertyValue.forEach((_, index) => {
-          propertyValue[index] = encrypt(propertyValue[index]);
+          propertyValue[index] = decrypt(propertyValue[index]);
         });
       }
-    } else if (typeof propertyValue === 'object' && propertyValue !== null) {
+    } else if (propertyName !== '_id' && typeof propertyValue === 'object' && propertyValue !== null) {
       const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
       decryptItemValues(
         propertyValue,

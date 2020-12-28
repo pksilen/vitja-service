@@ -67,7 +67,6 @@ export default abstract class AbstractDbManager {
     executable: () => Promise<T | ErrorResponse>
   ): Promise<T | ErrorResponse>;
   abstract connectMongoDb(): Promise<void>;
-  abstract disconnectMongoDb(): Promise<void>;
 
   abstract createEntity<T>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,

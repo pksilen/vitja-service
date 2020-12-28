@@ -54,7 +54,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   constructor(private readonly uri: string, public readonly dbName: string) {
     super('');
-    this.mongoClient = new MongoClient(uri, { useNewUrlParser: true });
+    this.mongoClient = new MongoClient(uri, { useNewUrlParser: true,  useUnifiedTopology: true });
   }
 
   getClient() {
@@ -110,11 +110,9 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async connectMongoDb(): Promise<void> {
-    await this.mongoClient.connect();
-  }
-
-  async disconnectMongoDb(): Promise<void> {
-    await this.mongoClient.close();
+    if(!this.mongoClient.isConnected()) {
+      await this.mongoClient.connect();
+    }
   }
 
   async isDbReady(): Promise<boolean> {
@@ -404,7 +402,7 @@ export default class MongoDbManager extends AbstractDbManager {
         const cursor = client
           .db(this.dbName)
           .collection<T>(EntityClass.name.toLowerCase())
-          .find<T>();
+          .find<T>({});
 
         performPostQueryOperations(cursor, finalPostQueryOperations);
         const rows = await cursor.toArray();

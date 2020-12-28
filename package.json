@@ -57,7 +57,7 @@
     "jsonwebtoken": "^8.5.1",
     "kafkajs": "^1.15.0",
     "lodash": "^4.17.19",
-    "mongodb": "^3.5.4",
+    "mongodb": "^3.6.3",
     "mustache": "^4.0.1",
     "mysql2": "^2.2.5",
     "node-fetch": "^2.6.1",

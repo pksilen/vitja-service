@@ -1,19 +1,19 @@
-import _ from 'lodash';
-import BaseService from '../service/BaseService';
-import generateServicesMetadata from '../metadata/generateServicesMetadata';
-import parseServiceFunctionNameToArgAndReturnTypeNameMaps from '../typescript/parser/parseServiceFunctionNameToArgAndReturnTypeNameMaps';
-import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
-import setClassPropertyValidationDecorators from '../validation/setClassPropertyValidationDecorators';
-import setNestedTypeValidationDecorators from '../validation/setNestedTypeValidationDecorators';
-import writeTestsPostmanCollectionExportFile from '../postman/writeTestsPostmanCollectionExportFile';
-import writeApiPostmanCollectionExportFile from '../postman/writeApiPostmanCollectionExportFile';
-import generateTypesForServices from '../metadata/generateTypesForService';
-import getNestedClasses from '../metadata/getNestedClasses';
-import AbstractDbManager from '../dbmanager/AbstractDbManager';
-import log, { Severity } from '../observability/logging/log';
-import executeCronJobs from '../scheduling/executeCronJobs';
-import executeScheduledJobs from '../scheduling/executeScheduledJobs';
-import { root } from "rxjs/internal-compatibility";
+import _ from "lodash";
+import BaseService from "../service/BaseService";
+import generateServicesMetadata from "../metadata/generateServicesMetadata";
+import parseServiceFunctionNameToArgAndReturnTypeNameMaps
+  from "../typescript/parser/parseServiceFunctionNameToArgAndReturnTypeNameMaps";
+import getSrcFilePathNameForTypeName from "../utils/file/getSrcFilePathNameForTypeName";
+import setClassPropertyValidationDecorators from "../validation/setClassPropertyValidationDecorators";
+import setNestedTypeValidationDecorators from "../validation/setNestedTypeValidationDecorators";
+import writeTestsPostmanCollectionExportFile from "../postman/writeTestsPostmanCollectionExportFile";
+import writeApiPostmanCollectionExportFile from "../postman/writeApiPostmanCollectionExportFile";
+import generateTypesForServices from "../metadata/generateTypesForService";
+import getNestedClasses from "../metadata/getNestedClasses";
+import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import log, { Severity } from "../observability/logging/log";
+import executeCronJobs from "../scheduling/executeCronJobs";
+import executeScheduledJobs from "../scheduling/executeScheduledJobs";
 
 export interface ControllerInitOptions {
   generatePostmanTestFile?: boolean;
@@ -128,9 +128,6 @@ export default function initializeController(
     if (process.env.NODE_ENV === 'development' && (controllerInitOptions?.generatePostmanApiFile ?? true)) {
       writeApiPostmanCollectionExportFile(controller, servicesMetadata);
     }
-
-    executeCronJobs(controller, dbManager);
-    executeScheduledJobs(controller, dbManager);
 
     const serviceNames = Object.entries(controller)
       .filter(([, service]: [string, any]) => service instanceof BaseService)

@@ -5,12 +5,13 @@ import { AppModule } from "./app/app.module";
 import { mongoDbManager } from "./database/mongoDbManager";
 import initializeBackk from "./backk/initialization/initializeBackk";
 import startHttpServer from "./backk/initialization/startHttpServer";
+import { appController } from "./app/app.controller";
 
 initializeDefaultJaegerTracing();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-  await initializeBackk(app, mongoDbManager);
+  await initializeBackk(appController, mongoDbManager);
   await startHttpServer(app)
   // await startKafkaConsumer(appController)
   // await startRedisConsumer(appController)

@@ -8,6 +8,7 @@ TODO
   - Add FollowerService
     - create new user (follow)
     - follow(userId, userdId + 1)
+- test UserDefinedFilters
 - Unit testaa: shouldIncludeField eri keissit 
 - Organize adding validation groups in separate method in correct order
 - Organize checking missing validations in separate method

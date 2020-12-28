@@ -53,7 +53,6 @@ export default async function initializeCronJobSchedulingTable(dbManager: Abstra
           logError(error);
         }
       });
-      await dbManager.disconnectMongoDb();
     }
   );
 }

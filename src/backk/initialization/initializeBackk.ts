@@ -4,11 +4,15 @@ import defaultSystemAndNodeJsMetrics from "../observability/metrics/defaultSyste
 import initializeDatabase from "../dbmanager/sql/operations/ddl/initializeDatabase";
 import reloadLoggingConfigOnChange from "../configuration/reloadLoggingConfigOnChange";
 import log, { Severity } from "../observability/logging/log";
+import executeCronJobs from "../scheduling/executeCronJobs";
+import executeScheduledJobs from "../scheduling/executeScheduledJobs";
 
-export default async function initializeBackk(app: any, dbManager: AbstractDbManager) {
+export default async function initializeBackk(controller: any, dbManager: AbstractDbManager) {
   logEnvironment();
   defaultSystemAndNodeJsMetrics.startCollectingMetrics();
   await initializeDatabase(dbManager);
+  executeCronJobs(controller, dbManager);
+  await executeScheduledJobs(controller, dbManager);
   reloadLoggingConfigOnChange();
   log(Severity.INFO, 'Service started', '');
 }

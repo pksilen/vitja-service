@@ -66,7 +66,6 @@ export async function scheduleCronJob(
         });
       });
 
-      await dbManager.disconnectMongoDb();
       return response;
     });
   });

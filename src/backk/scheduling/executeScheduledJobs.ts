@@ -6,8 +6,8 @@ import delay from '../utils/delay';
 import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
 import { ErrorResponse } from '../types/ErrorResponse';
 import { logError } from '../observability/logging/log';
-import { scheduleCronJob } from './tryScheduleJobExecution';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
+import { scheduleCronJob } from "./scheduleCronJob";
 
 export default async function executeScheduledJobs(controller: any, dbManager: AbstractDbManager) {
   let scheduledJobsOrErrorResponse: __Backk__JobScheduling[] | ErrorResponse | undefined;
@@ -21,7 +21,6 @@ export default async function executeScheduledJobs(controller: any, dbManager: A
       scheduledJobsOrErrorResponse = await dbManager.getAllEntities(__Backk__JobScheduling);
       dbManager.tryReleaseDbConnectionBackToPool();
     });
-    await dbManager.disconnectMongoDb();
 
     return !(!scheduledJobsOrErrorResponse || 'errorMessage' in scheduledJobsOrErrorResponse);
   });
