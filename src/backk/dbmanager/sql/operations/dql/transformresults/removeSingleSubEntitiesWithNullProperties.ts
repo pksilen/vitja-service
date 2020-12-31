@@ -27,6 +27,7 @@ function removeUndefinedIds(object: any) {
     if (key === 'id' && value === undefined) {
       delete object[key];
     }
+
     if (typeof value === 'object' && value !== null) {
       if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
         value.forEach((subValue) => removeUndefinedIds(subValue));

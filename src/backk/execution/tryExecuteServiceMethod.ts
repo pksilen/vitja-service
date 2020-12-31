@@ -12,7 +12,7 @@ import UsersBaseService from "../users/UsersBaseService";
 import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
 import tryValidateServiceFunctionArgument from "../validation/tryValidateServiceFunctionArgument";
 import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
-import tryValidateServiceMethodResponse from "../validation/tryValidateServiceMethodResponse";
+import tryValidateServiceFunctionResponse from "../validation/tryValidateServiceFunctionResponse";
 import isErrorResponse from "../errors/isErrorResponse";
 import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
 import createErrorResponseFromError from "../errors/createErrorResponseFromError";
@@ -404,9 +404,9 @@ export default async function tryExecuteServiceMethod(
         const ServiceFunctionReturnType = controller[serviceName]['Types'][serviceFunctionBaseReturnTypeName];
 
         if (Array.isArray(response) && response.length > 0 && typeof response[0] === 'object') {
-          await tryValidateServiceMethodResponse(response[0], ServiceFunctionReturnType);
+          await tryValidateServiceFunctionResponse(response[0], ServiceFunctionReturnType);
         } else if (typeof response === 'object') {
-          await tryValidateServiceMethodResponse(response, ServiceFunctionReturnType);
+          await tryValidateServiceFunctionResponse(response, ServiceFunctionReturnType);
         }
 
         if (

@@ -68,9 +68,9 @@ async function hashOrEncryptEntityValues(
 }
 
 export default async function hashAndEncryptItem<T extends { [key: string]: any }>(
-  item: T,
-  entityClass: new () => T,
+  entity: T,
+  EntityClass: new () => T,
   Types: object
 ) {
-  await hashOrEncryptEntityValues(item, entityClass, Types);
+  await hashOrEncryptEntityValues(entity, EntityClass, Types);
 }

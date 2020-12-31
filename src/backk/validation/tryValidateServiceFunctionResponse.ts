@@ -4,7 +4,7 @@ import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithSt
 import { plainToClass } from "class-transformer";
 import getValidationErrors from "./getValidationErrors";
 
-export default async function tryValidateServiceMethodResponse(response: object, ReturnType: new() => any) {
+export default async function tryValidateServiceFunctionResponse(response: object, ReturnType: new() => any) {
   const instantiatedResponse = plainToClass(ReturnType, response);
 
   try {

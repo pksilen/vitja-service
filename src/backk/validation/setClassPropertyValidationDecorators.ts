@@ -213,7 +213,28 @@ export default function setClassPropertyValidationDecorators(
               constraints = [{}];
             }
           } else if (baseTypeName === 'string') {
-            validationType = ValidationTypes.IS_STRING;
+            if (
+              propertyName === '_id' ||
+              propertyName === 'id' ||
+              propertyName.endsWith('Id') ||
+              propertyName.endsWith('Ids')
+            ) {
+              if (!doesClassPropertyContainCustomValidation(Class, propertyName, 'isStringOrObjectId')) {
+                const validationMetadataArgs: ValidationMetadataArgs = {
+                  type: ValidationTypes.CUSTOM_VALIDATION,
+                  target: Class,
+                  propertyName,
+                  constraints: ['isStringOrObjectId'],
+                  validationOptions: { each: isArrayType }
+                };
+
+                getFromContainer(MetadataStorage).addValidationMetadata(
+                  new ValidationMetadata(validationMetadataArgs)
+                );
+              }
+            } else {
+              validationType = ValidationTypes.IS_STRING;
+            }
           } else if (baseTypeName === 'Date') {
             validationType = ValidationTypes.IS_DATE;
           } else if (baseTypeName.charAt(0).match(/^[_$A-Z]$/)) {

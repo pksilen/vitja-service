@@ -1,8 +1,8 @@
-import { IsString } from "class-validator";
 import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
+import IsStringOrObjectId from "../../decorators/typeproperty/IsStringOrObjectId";
 
 export default class Id {
-  @IsString()
+  @IsStringOrObjectId()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
   id!: string;
 }

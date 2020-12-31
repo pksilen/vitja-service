@@ -151,6 +151,9 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         } else if (validationMetadata.constraints[0] === 'isBooleanOrTinyInt') {
           propNameToPropTypeNameMap[validationMetadata.propertyName] =
             'boolean' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
+        } else if (validationMetadata.constraints[0] === 'isStringOrObjectId') {
+          propNameToPropTypeNameMap[validationMetadata.propertyName] =
+            'string' + (propNameToPropTypeNameMap[validationMetadata.propertyName] ?? '');
         }
         break;
       case 'isIn':
