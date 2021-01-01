@@ -1,15 +1,16 @@
-import { Injectable } from "@nestjs/common";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import TagsService from "./TagsService";
-import Tag from "./entities/Tag";
-import TagName from "./args/TagName";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
-import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
-import { SalesItem } from "../salesitems/types/entities/SalesItem";
+import { Injectable } from '@nestjs/common';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import TagsService from './TagsService';
+import Tag from './entities/Tag';
+import TagName from './args/TagName';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
+import { SalesItem } from '../salesitems/types/entities/SalesItem';
+import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
 
 @Injectable()
 export default class TagsServiceImpl extends TagsService {
@@ -20,7 +21,7 @@ export default class TagsServiceImpl extends TagsService {
   @AllowForTests()
   deleteAllTags(): Promise<void | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
-       return (
+      return (
         (await this.dbManager.deleteAllEntities(SalesItem)) || (await this.dbManager.deleteAllEntities(Tag))
       );
     });
@@ -34,10 +35,11 @@ export default class TagsServiceImpl extends TagsService {
 
   @AllowForEveryUser()
   getTagsWhoseNameContains({ name }: TagName): Promise<Tag[] | ErrorResponse> {
-    return this.dbManager.getEntitiesByFilters(
-      [new SqlExpression('name LIKE :name', { name: `%${name}%` })],
-      Tag,
-      new DefaultPostQueryOperations()
-    );
+    const filters =
+      this.dbManager instanceof MongoDbManager
+        ? { name: new RegExp(name) }
+        : [new SqlExpression('name LIKE :name', { name: `%${name}%` })];
+    
+    return this.dbManager.getEntitiesByFilters(filters, Tag, new DefaultPostQueryOperations());
   }
 }
