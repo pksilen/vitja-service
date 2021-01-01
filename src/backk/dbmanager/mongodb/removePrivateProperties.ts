@@ -1,29 +1,32 @@
-import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import getTypeInfoForTypeName from "../../utils/type/getTypeInfoForTypeName";
+import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
+import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 
-function removeEntityPrivateProperties<T>(entity: any, EntityClass: new() => any, Types: object) {
-  Object.entries(entity).forEach(([key, value]) => {
-    if (typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, key)) {
-      delete entity[key];
+function removeEntityPrivateProperties<T>(entity: any, EntityClass: new () => any, Types: object) {
+  const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
+
+  Object.entries(entity).forEach(([propertyName, propertyValue]: [string, any]) => {
+    if (typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, propertyName)) {
+      delete entity[propertyName];
     }
 
-    if (typeof value === 'object' && value !== null) {
-      const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
-      const SubEntityClass = (Types as any)[getTypeInfoForTypeName(entityMetadata[key]).baseTypeName]
-      if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
-        value.forEach((subValue) => removeEntityPrivateProperties(subValue, SubEntityClass, Types));
+    const propertyTypeInfo = getTypeInfoForTypeName(entityMetadata[propertyName]);
+    const SubEntityClass = (Types as any)[propertyTypeInfo.baseTypeName];
+
+    if (SubEntityClass && propertyValue !== null) {
+      if (propertyTypeInfo.isArrayType) {
+        propertyValue.forEach((subValue: any) =>
+          removeEntityPrivateProperties(subValue, SubEntityClass, Types)
+        );
       } else {
-        removeEntityPrivateProperties(value, SubEntityClass, Types);
+        removeEntityPrivateProperties(propertyValue, SubEntityClass, Types);
       }
     }
   });
 }
 
-export default function removePrivateProperties(entities: any[], EntityClass: new() => any, Types: object) {
-  entities.forEach(entity => {
+export default function removePrivateProperties(entities: any[], EntityClass: new () => any, Types: object) {
+  entities.forEach((entity) => {
     removeEntityPrivateProperties(entity, EntityClass, Types);
   });
 }
-

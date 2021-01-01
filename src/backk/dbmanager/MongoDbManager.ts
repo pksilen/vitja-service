@@ -527,7 +527,6 @@ export default class MongoDbManager extends AbstractDbManager {
 
         removePrivateProperties(rows, EntityClass, this.getTypes());
         decryptItems(rows, EntityClass, this.getTypes());
-
         return rows[0];
       });
     } catch (errorOrErrorResponse) {
