@@ -432,6 +432,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
 
     replaceIdStringsWithObjectIds(filters);
+    console.log(filters);
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS

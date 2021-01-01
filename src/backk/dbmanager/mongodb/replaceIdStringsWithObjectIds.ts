@@ -1,29 +1,21 @@
 import { ObjectId } from 'mongodb';
 
-export default function replaceIdStringsWithObjectIds(filters: any) {
-  Object.entries(filters).forEach(([filterName, filterValueOrValues]: [string, any]) => {
-    if (filterName === '_id') {
-      if (typeof filterValueOrValues === 'string') {
-        filters[filterName] = new ObjectId(filterValueOrValues);
-      } else if (
-        Array.isArray(filterValueOrValues) &&
-        filterValueOrValues.length > 0 &&
-        typeof filterValueOrValues[0] === 'string'
-      ) {
-        filters[filterName] = filterValueOrValues.map((filterValue) => new ObjectId(filterValue));
-      }
+export default function replaceIdStringsWithObjectIds(filters: any, prevFieldName = '') {
+  Object.entries(filters).forEach(([filterName, filterValue]: [string, any]) => {
+    if (filterName === '_id' && typeof filterValue === 'string') {
+      filters[filterName] = new ObjectId(filterValue);
+    } else if (
+      prevFieldName === '_id' &&
+      filterName === '$in' &&
+      Array.isArray(filterValue) &&
+      filterValue.length > 0 &&
+      typeof filterValue[0] === 'string'
+    ) {
+      filters[filterName] = filterValue.map((filterValue) => new ObjectId(filterValue));
     }
 
-    if (typeof filterValueOrValues === 'object' && filterValueOrValues !== null) {
-      if (
-        Array.isArray(filterValueOrValues) &&
-        filterValueOrValues.length > 0 &&
-        typeof filterValueOrValues[0] === 'object'
-      ) {
-        filterValueOrValues.forEach((subFilterValue) => replaceIdStringsWithObjectIds(subFilterValue));
-      } else {
-        replaceIdStringsWithObjectIds(filterValueOrValues);
-      }
+    if (typeof filterValue === 'object' && filterValue !== null && !Array.isArray(filterValue)) {
+      replaceIdStringsWithObjectIds(filterValue, filterName.startsWith('$') ? prevFieldName : filterName);
     }
   });
 }

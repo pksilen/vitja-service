@@ -131,7 +131,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }: _IdsAndDefaultPostQueryOperations): Promise<SalesItem[] | ErrorResponse> {
     const filters =
       this.dbManager instanceof MongoDbManager
-        ? { state: 'forSale' as SalesItemState, $in: { _id: _ids } }
+        ? { state: 'forSale' as SalesItemState, _id: { $in: _ids } }
         : [new SqlEquals({ state: 'forSale' }), new SqlInExpression('_id', _ids)];
 
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOperations);
