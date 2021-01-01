@@ -400,7 +400,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         performPostQueryOperations(cursor, finalPostQueryOperations);
         const rows = await cursor.toArray();
-        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+        await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
           this,
           rows,
           EntityClass,
@@ -444,7 +444,7 @@ export default class MongoDbManager extends AbstractDbManager {
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
 
-        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+        await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
           this,
           rows,
           EntityClass,
@@ -518,7 +518,7 @@ export default class MongoDbManager extends AbstractDbManager {
           );
         }
 
-        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+        await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
           this,
           rows,
           EntityClass,
@@ -605,7 +605,7 @@ export default class MongoDbManager extends AbstractDbManager {
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
 
-        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+        await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
           this,
           rows,
           EntityClass,
@@ -657,7 +657,7 @@ export default class MongoDbManager extends AbstractDbManager {
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
 
-        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+       await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
           this,
           rows,
           EntityClass,
@@ -716,7 +716,7 @@ export default class MongoDbManager extends AbstractDbManager {
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
 
-        tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+        await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
           this,
           rows,
           EntityClass,
