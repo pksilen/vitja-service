@@ -44,6 +44,7 @@ import encrypt from '../crypt/encrypt';
 import isErrorResponse from '../errors/isErrorResponse';
 import { plainToClass } from 'class-transformer';
 import removePrivateProperties from "./mongodb/removePrivateProperties";
+import replaceIdStringsWithObjectIds from "./mongodb/replaceIdStringsWithObjectIds";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -429,6 +430,8 @@ export default class MongoDbManager extends AbstractDbManager {
     if (Array.isArray(filters) && filters?.[0] instanceof SqlExpression) {
       throw new Error('SqlExpression is not supported for MongoDB');
     }
+
+    replaceIdStringsWithObjectIds(filters);
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS
@@ -968,6 +971,7 @@ export default class MongoDbManager extends AbstractDbManager {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
+    replaceIdStringsWithObjectIds(filters);
     let shouldUseTransaction = false;
 
     try {

@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO
+- Filters query, change string _ids to ObjectId
 - Implement mongodb indexing
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities

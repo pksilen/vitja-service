@@ -26,6 +26,7 @@ import {
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 import { SalesItemState } from './types/enums/SalesItemState';
+import { ObjectId } from "mongodb";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -128,11 +129,12 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     _ids,
     ...postQueryOperations
   }: _IdsAndDefaultPostQueryOperations): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getEntitiesByFilters(
-      [new SqlEquals({ state: 'forSale' }), new SqlInExpression('_id', _ids)],
-      SalesItem,
-      postQueryOperations
-    );
+    const filters =
+      this.dbManager instanceof MongoDbManager
+        ? { state: 'forSale' as SalesItemState, $in: { _id: _ids } }
+        : [new SqlEquals({ state: 'forSale' }), new SqlInExpression('_id', _ids)];
+
+    return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOperations);
   }
 
   @AllowForEveryUser()
@@ -163,7 +165,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       [],
       requiredCurrentState
         ? {
-            hookFunc: ([{state}]) => state === requiredCurrentState,
+            hookFunc: ([{ state }]) => state === requiredCurrentState,
             error: INVALID_SALES_ITEM_STATE
           }
         : undefined
