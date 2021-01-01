@@ -791,9 +791,9 @@ export default class MongoDbManager extends AbstractDbManager {
 
           const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
           const SubEntityClass = (Types as any)[baseTypeName];
+          const newSubEntities = (restOfEntity as any)[fieldName];
 
-          if (isArrayType && isEntityTypeName(baseTypeName)) {
-            const newSubEntities = (restOfEntity as any)[fieldName];
+          if (isArrayType && isEntityTypeName(baseTypeName) && newSubEntities) {
 
             if (
               finalAllowAdditionAndRemovalForSubEntities === 'all' ||
