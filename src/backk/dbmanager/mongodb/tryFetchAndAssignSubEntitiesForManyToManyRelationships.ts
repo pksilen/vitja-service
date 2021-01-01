@@ -21,20 +21,22 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
     async ([propertyName, propertyTypeName]) => {
       if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
         await forEachAsyncParallel(rows, async (row: any) => {
-          const subEntityIds: string[] = row[propertyName];
-          // TODO give modified postQueryOperations
-          const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
-          const subEntitiesOrErrorResponse = await dbManager.getEntitiesByFilters(
-            { _id: { $in: subEntityIds.map((subEntityId) => new ObjectId(subEntityId)) } },
-            (Types as any)[baseTypeName],
-            postQueryOperations ?? new DefaultPostQueryOperations()
-          );
+          const subEntityIds: string[] | undefined = row[propertyName];
+          if (subEntityIds) {
+            // TODO give modified postQueryOperations
+            const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
+            const subEntitiesOrErrorResponse = await dbManager.getEntitiesByFilters(
+              { _id: { $in: subEntityIds.map((subEntityId) => new ObjectId(subEntityId)) } },
+              (Types as any)[baseTypeName],
+              postQueryOperations ?? new DefaultPostQueryOperations()
+            );
 
-          if ('errorMessage' in subEntitiesOrErrorResponse) {
-            throw subEntitiesOrErrorResponse;
+            if ('errorMessage' in subEntitiesOrErrorResponse) {
+              throw subEntitiesOrErrorResponse;
+            }
+
+            row[propertyName] = subEntitiesOrErrorResponse;
           }
-
-          row[propertyName] = subEntitiesOrErrorResponse;
         });
       }
     }
