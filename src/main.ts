@@ -6,6 +6,7 @@ import { mongoDbManager } from "./database/mongoDbManager";
 import initializeBackk from "./backk/initialization/initializeBackk";
 import startHttpServer from "./backk/initialization/startHttpServer";
 import { appController } from "./app/app.controller";
+import { mySqlDbManager } from "./database/mySqlDatabaseManager";
 
 initializeDefaultJaegerTracing();
 

@@ -284,7 +284,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, postQueryOperations);
+        const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, postQueryOperations, true);
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
@@ -494,7 +494,8 @@ export default class MongoDbManager extends AbstractDbManager {
   async getEntityById<T>(
     _id: string,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    postQueryOperations?: PostQueryOperations,
+    isInternalCall = false
   ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
     // noinspection AssignmentToFunctionParameterJS
@@ -525,7 +526,7 @@ export default class MongoDbManager extends AbstractDbManager {
           postQueryOperations
         );
 
-        removePrivateProperties(rows, EntityClass, this.getTypes());
+        removePrivateProperties(rows, EntityClass, this.getTypes(), isInternalCall);
         decryptItems(rows, EntityClass, this.getTypes());
         return rows[0];
       });
@@ -751,13 +752,16 @@ export default class MongoDbManager extends AbstractDbManager {
     isRecursiveCall = false
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
+
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
+
     const finalAllowAdditionAndRemovalForSubEntities = Array.isArray(
       allowAdditionAndRemovalForSubEntityClasses
     )
       ? allowAdditionAndRemovalForSubEntityClasses.map((SubEntityClass) => this.getType(SubEntityClass))
       : allowAdditionAndRemovalForSubEntityClasses;
+
     const Types = this.getTypes();
     let shouldUseTransaction = false;
 
@@ -771,7 +775,7 @@ export default class MongoDbManager extends AbstractDbManager {
       await this.tryExecute(shouldUseTransaction, async (client) => {
         let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
         if (!isRecursiveCall || allowAdditionAndRemovalForSubEntityClasses) {
-          currentEntityOrErrorResponse = await this.getEntityById(_id ?? id, EntityClass, undefined);
+          currentEntityOrErrorResponse = await this.getEntityById(_id ?? id, EntityClass, undefined, true);
         }
 
         if (!isRecursiveCall) {
@@ -894,7 +898,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
       return await this.tryExecute(shouldUseTransaction, async (client) => {
         if (preHooks) {
-          const entityOrErrorResponse = await this.getEntityById(_id, EntityClass);
+          const entityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined,true);
           await tryExecutePreHooks(preHooks, entityOrErrorResponse);
         }
 
@@ -1000,7 +1004,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
-        const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass);
+        const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);

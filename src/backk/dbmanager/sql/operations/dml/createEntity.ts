@@ -113,26 +113,14 @@ export default async function createEntity<T>(
           await forEachAsyncParallel(subEntityOrEntities, async (subEntity: any, index) => {
             const SubEntityClass = (Types as any)[baseTypeName];
             if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-              let subEntityOrErrorResponse: any | ErrorResponse = await dbManager.getEntityById(
+              const subEntityOrErrorResponse: any | ErrorResponse = await dbManager.getEntityById(
                 subEntity._id ?? '',
                 SubEntityClass
               );
 
               if ('errorMessage' in subEntityOrErrorResponse) {
-                subEntityOrErrorResponse = await createEntity(
-                  dbManager,
-                  subEntity,
-                  SubEntityClass,
-                  undefined,
-                  undefined,
-                  true,
-                  false
-                );
-
-                if ('errorMessage' in subEntityOrErrorResponse) {
-                  // noinspection ExceptionCaughtLocallyJS
-                  throw subEntityOrErrorResponse;
-                }
+                // noinspection ExceptionCaughtLocallyJS
+                throw subEntityOrErrorResponse;
               }
 
               const associationTableName = `${EntityClass.name}_${SubEntityClass.name}`;

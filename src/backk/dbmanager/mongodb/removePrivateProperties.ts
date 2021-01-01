@@ -2,11 +2,16 @@ import typePropertyAnnotationContainer from '../../decorators/typeproperty/typeP
 import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 
-function removeEntityPrivateProperties<T>(entity: any, EntityClass: new () => any, Types: object) {
+function removeEntityPrivateProperties<T>(
+  entity: any,
+  EntityClass: new () => any,
+  Types: object,
+  isInternalCall: boolean
+) {
   const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
 
   Object.entries(entity).forEach(([propertyName, propertyValue]: [string, any]) => {
-    if (typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, propertyName)) {
+    if (!isInternalCall && typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, propertyName)) {
       delete entity[propertyName];
     }
 
@@ -16,17 +21,22 @@ function removeEntityPrivateProperties<T>(entity: any, EntityClass: new () => an
     if (SubEntityClass && propertyValue !== null) {
       if (propertyTypeInfo.isArrayType) {
         propertyValue.forEach((subValue: any) =>
-          removeEntityPrivateProperties(subValue, SubEntityClass, Types)
+          removeEntityPrivateProperties(subValue, SubEntityClass, Types, isInternalCall)
         );
       } else {
-        removeEntityPrivateProperties(propertyValue, SubEntityClass, Types);
+        removeEntityPrivateProperties(propertyValue, SubEntityClass, Types, isInternalCall);
       }
     }
   });
 }
 
-export default function removePrivateProperties(entities: any[], EntityClass: new () => any, Types: object) {
+export default function removePrivateProperties(
+  entities: any[],
+  EntityClass: new () => any,
+  Types: object,
+  isInternalCall = false
+) {
   entities.forEach((entity) => {
-    removeEntityPrivateProperties(entity, EntityClass, Types);
+    removeEntityPrivateProperties(entity, EntityClass, Types, isInternalCall);
   });
 }

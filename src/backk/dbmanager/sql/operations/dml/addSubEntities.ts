@@ -22,6 +22,7 @@ import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeed
 import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import { SubEntity } from '../../../../types/entities/SubEntity';
+import getEntityById from "../dql/getEntityById";
 
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -41,7 +42,7 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    const currentEntityOrErrorResponse = await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
+    const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, postQueryOperations, true);
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
     await tryUpdateEntityLastModifiedTimestampIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);

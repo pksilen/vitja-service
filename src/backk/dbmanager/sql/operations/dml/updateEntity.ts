@@ -35,9 +35,11 @@ export default async function updateEntity<T extends Entity>(
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
+
   const finalAllowAdditionAndRemovalForSubEntities = Array.isArray(allowAdditionAndRemovalForSubEntityClasses)
     ? allowAdditionAndRemovalForSubEntityClasses.map((SubEntityClass) => dbManager.getType(SubEntityClass))
     : allowAdditionAndRemovalForSubEntityClasses;
+
   let didStartTransaction = false;
 
   try {
@@ -52,6 +54,7 @@ export default async function updateEntity<T extends Entity>(
     if (!isRecursiveCall || allowAdditionAndRemovalForSubEntityClasses) {
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
     }
+
     if (!isRecursiveCall) {
       await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     }
