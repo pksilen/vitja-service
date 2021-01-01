@@ -681,7 +681,7 @@ export default class MongoDbManager extends AbstractDbManager {
             `Item with ${fieldName}: ${fieldValue} not found`,
             HttpStatusCodes.NOT_FOUND
           )
-        : entities;
+        : entities[0];
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
