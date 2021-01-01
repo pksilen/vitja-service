@@ -207,7 +207,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
           if (!isArrayType && !isEntityTypeName(baseTypeName) && fieldName !== '_id') {
             if (fieldName === 'version') {
-              (entity as any).version = 1;
+              (entity as any).version = '1';
             } else if (fieldName === 'lastModifiedTimestamp' || fieldName === 'createdAtTimestamp') {
               (entity as any)[fieldName] = new Date();
             }

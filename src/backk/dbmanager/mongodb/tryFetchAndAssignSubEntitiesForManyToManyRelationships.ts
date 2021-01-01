@@ -1,10 +1,11 @@
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
-import AbstractDbManager from "../AbstractDbManager";
-import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
-import DefaultPostQueryOperations from "../../types/postqueryoperations/DefaultPostQueryOperations";
-import forEachAsyncParallel from "../../utils/forEachAsyncParallel";
+import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
+import AbstractDbManager from '../AbstractDbManager';
+import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
+import DefaultPostQueryOperations from '../../types/postqueryoperations/DefaultPostQueryOperations';
+import forEachAsyncParallel from '../../utils/forEachAsyncParallel';
+import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
+import { ObjectId } from 'mongodb';
 
 export default async function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
   dbManager: AbstractDbManager,
@@ -20,11 +21,12 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
     async ([propertyName, propertyTypeName]) => {
       if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
         await forEachAsyncParallel(rows, async (row: any) => {
-          const subEntityIds = row[propertyName];
+          const subEntityIds: string[] = row[propertyName];
           // TODO give modified postQueryOperations
+          const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
           const subEntitiesOrErrorResponse = await dbManager.getEntitiesByFilters(
-            { _id: { $in: subEntityIds } },
-            (Types as any)[propertyTypeName],
+            { _id: { $in: subEntityIds.map((subEntityId) => new ObjectId(subEntityId)) } },
+            (Types as any)[baseTypeName],
             postQueryOperations ?? new DefaultPostQueryOperations()
           );
 
