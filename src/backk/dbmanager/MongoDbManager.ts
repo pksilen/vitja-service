@@ -1017,15 +1017,16 @@ export default class MongoDbManager extends AbstractDbManager {
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
-
-        const currentEntityInstance = plainToClass(EntityClass, currentEntityOrErrorResponse);
-        const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesPath });
+        const subEntities = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath });
 
         if (subEntities.length === 0) {
           return;
         }
 
+        console.log(currentEntityOrErrorResponse);
+        console.log(subEntities);
         removeSubEntities(currentEntityOrErrorResponse, subEntities);
+        console.log(currentEntityOrErrorResponse);
         this.updateEntity(currentEntityOrErrorResponse as any, EntityClass, 'all');
       });
     } catch (errorOrErrorResponse) {
