@@ -295,7 +295,7 @@ export default class MongoDbManager extends AbstractDbManager {
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
-        const parentEntity = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath + '^' });
+        const [parentEntity] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath + '^' });
 
         const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath }).reduce(
           (maxSubItemId: number, subItem: any) => {
@@ -346,9 +346,9 @@ export default class MongoDbManager extends AbstractDbManager {
               parentEntityClassAndPropertyNameForSubEntity[1]
             )
           ) {
-            parentEntity.push(newSubEntity._id);
+            parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push(newSubEntity._id);
           } else if (parentEntityClassAndPropertyNameForSubEntity) {
-            parentEntity.push(newSubEntity);
+            parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push(newSubEntity);
           }
         });
 
