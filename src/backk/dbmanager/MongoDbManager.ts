@@ -275,7 +275,7 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     // noinspection AssignmentToFunctionParameterJS
@@ -295,6 +295,7 @@ export default class MongoDbManager extends AbstractDbManager {
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
+        const parentEntity = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath + '^' });
 
         const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath }).reduce(
           (maxSubItemId: number, subItem: any) => {
@@ -345,28 +346,9 @@ export default class MongoDbManager extends AbstractDbManager {
               parentEntityClassAndPropertyNameForSubEntity[1]
             )
           ) {
-            let subEntityOrErrorResponse = await this.getEntityById(newSubEntity._id ?? '', SubEntityClass);
-            if ('errorMessage' in subEntityOrErrorResponse) {
-              subEntityOrErrorResponse = await this.createEntity(
-                newSubEntity as any,
-                SubEntityClass,
-                undefined,
-                undefined,
-                false
-              );
-              if ('errorMessage' in subEntityOrErrorResponse) {
-                // noinspection ExceptionCaughtLocallyJS
-                throw subEntityOrErrorResponse;
-              }
-            }
-
-            (currentEntityOrErrorResponse as any)[parentEntityClassAndPropertyNameForSubEntity[1]].push(
-              subEntityOrErrorResponse._id
-            );
+            parentEntity.push(newSubEntity._id);
           } else if (parentEntityClassAndPropertyNameForSubEntity) {
-            (currentEntityOrErrorResponse as any)[parentEntityClassAndPropertyNameForSubEntity[1]].push(
-              newSubEntity
-            );
+            parentEntity.push(newSubEntity);
           }
         });
 
@@ -1023,10 +1005,7 @@ export default class MongoDbManager extends AbstractDbManager {
           return;
         }
 
-        console.log(currentEntityOrErrorResponse);
-        console.log(subEntities);
         removeSubEntities(currentEntityOrErrorResponse, subEntities);
-        console.log(currentEntityOrErrorResponse);
         this.updateEntity(currentEntityOrErrorResponse as any, EntityClass, 'all');
       });
     } catch (errorOrErrorResponse) {
