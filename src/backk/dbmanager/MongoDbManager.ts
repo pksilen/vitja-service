@@ -43,8 +43,9 @@ import shouldEncryptValue from '../crypt/shouldEncryptValue';
 import encrypt from '../crypt/encrypt';
 import isErrorResponse from '../errors/isErrorResponse';
 import { plainToClass } from 'class-transformer';
-import removePrivateProperties from "./mongodb/removePrivateProperties";
-import replaceIdStringsWithObjectIds from "./mongodb/replaceIdStringsWithObjectIds";
+import removePrivateProperties from './mongodb/removePrivateProperties';
+import replaceIdStringsWithObjectIds from './mongodb/replaceIdStringsWithObjectIds';
+import removeSubEntities from './mongodb/removeSubEntities';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -285,7 +286,12 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, postQueryOperations, true);
+        const currentEntityOrErrorResponse = await this.getEntityById(
+          _id,
+          EntityClass,
+          postQueryOperations,
+          true
+        );
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
@@ -660,7 +666,7 @@ export default class MongoDbManager extends AbstractDbManager {
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
 
-       await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+        await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
           this,
           rows,
           EntityClass,
@@ -797,7 +803,6 @@ export default class MongoDbManager extends AbstractDbManager {
           const newSubEntities = (restOfEntity as any)[fieldName];
 
           if (isArrayType && isEntityTypeName(baseTypeName) && newSubEntities) {
-
             if (
               finalAllowAdditionAndRemovalForSubEntities === 'all' ||
               finalAllowAdditionAndRemovalForSubEntities?.includes(SubEntityClass)
@@ -901,7 +906,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
       return await this.tryExecute(shouldUseTransaction, async (client) => {
         if (preHooks) {
-          const entityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined,true);
+          const entityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
           await tryExecutePreHooks(preHooks, entityOrErrorResponse);
         }
 
@@ -1007,7 +1012,7 @@ export default class MongoDbManager extends AbstractDbManager {
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
-      await this.tryExecute(shouldUseTransaction, async (client) => {
+      await this.tryExecute(shouldUseTransaction, async () => {
         const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
@@ -1020,34 +1025,8 @@ export default class MongoDbManager extends AbstractDbManager {
           return;
         }
 
-        const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
-          EntityClass,
-          subEntities[0].constructor,
-          this.getTypes()
-        );
-
-        if (
-          parentEntityClassAndPropertyNameForSubEntity &&
-          typePropertyAnnotationContainer.isTypePropertyManyToMany(
-            parentEntityClassAndPropertyNameForSubEntity[0],
-            parentEntityClassAndPropertyNameForSubEntity[1]
-          )
-        ) {
-          (currentEntityOrErrorResponse as any)[
-            parentEntityClassAndPropertyNameForSubEntity[1]
-          ] = (currentEntityOrErrorResponse as any)
-            .filter(
-              (currentEntity: any) =>
-                !subEntities.find((subEntity: any) => subEntity._id === currentEntity._id)
-            )
-            .map((entity: any) => entity._id);
-        } else if (parentEntityClassAndPropertyNameForSubEntity) {
-          (currentEntityOrErrorResponse as any)[
-            parentEntityClassAndPropertyNameForSubEntity[1]
-          ] = (currentEntityOrErrorResponse as any).filter(
-            (currentEntity: any) => !subEntities.find((subEntity: any) => subEntity._id === currentEntity._id)
-          );
-        }
+        removeSubEntities(currentEntityOrErrorResponse, subEntities);
+        this.updateEntity(currentEntityOrErrorResponse as any, EntityClass, 'all');
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
