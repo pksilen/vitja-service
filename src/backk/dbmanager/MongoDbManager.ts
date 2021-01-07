@@ -108,12 +108,6 @@ export default class MongoDbManager extends AbstractDbManager {
     return this.uri;
   }
 
-  async connectMongoDb(): Promise<void> {
-    if (!this.mongoClient.isConnected()) {
-      await this.mongoClient.connect();
-    }
-  }
-
   async isDbReady(): Promise<boolean> {
     try {
       await this.tryExecute(false, (client) =>
@@ -1064,7 +1058,9 @@ export default class MongoDbManager extends AbstractDbManager {
     // No operation
   }
 
-  tryReserveDbConnectionFromPool(): Promise<void> {
-    return Promise.resolve(undefined);
+  async tryReserveDbConnectionFromPool(): Promise<void> {
+    if (!this.mongoClient.isConnected()) {
+      await this.mongoClient.connect();
+    }
   }
 }

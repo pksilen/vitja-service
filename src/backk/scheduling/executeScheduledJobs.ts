@@ -15,7 +15,6 @@ export default async function executeScheduledJobs(controller: any, dbManager: A
   await findAsyncSequential([0, 1, 2, 5, 10, 30, 60, 120, 300, 600], async (retryDelayInSecs) => {
     await delay(retryDelayInSecs * 1000);
     const clsNamespace = createNamespace('serviceFunctionExecution');
-    await dbManager.connectMongoDb();
     await clsNamespace.runAndReturn(async () => {
       await dbManager.tryReserveDbConnectionFromPool();
       scheduledJobsOrErrorResponse = await dbManager.getAllEntities(__Backk__JobScheduling);

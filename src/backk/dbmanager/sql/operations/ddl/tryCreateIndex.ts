@@ -13,6 +13,7 @@ export default async function tryCreateIndex(
     entityAnnotationContainer.indexNameToAdditionalSqlCreateIndexStatementOptionsMap[indexName];
 
   const lowerCaseIndexFields = indexFields.map(indexField => indexField.toLowerCase());
+
   try {
     const createIndexStatement = `CREATE ${
       isUnique ? 'UNIQUE' : ''

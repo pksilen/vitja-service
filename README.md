@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Give error if updating not allowed subentities
 - Implement mongodb indexing
 - check if _id and id is consistently correctly used
 - User has SalesItems and Orders subentities

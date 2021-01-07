@@ -22,7 +22,6 @@ export async function scheduleCronJob(
   const job = new CronJob(scheduledExecutionTimestampAsDate, async () => {
     await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
       await delay(retryIntervalInSecs * 1000);
-      await dbManager.connectMongoDb();
       const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
       const clsNamespace2 = createNamespace('serviceFunctionExecution');
       const response = await clsNamespace.runAndReturn(async () => {

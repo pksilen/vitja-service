@@ -8,6 +8,8 @@ import tryCreateUniqueIndex from './tryCreateUniqueIndex';
 import log, { logError, Severity } from '../../../../observability/logging/log';
 import initializeCronJobSchedulingTable from '../../../../scheduling/initializeCronJobSchedulingTable';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import MongoDbManager from "../../../MongoDbManager";
+import tryCreateMongoDbIndex from "../../../mongodb/tryCreateMongoDbIndex";
 
 const dbManagerToIsInitializedMap: { [key: string]: boolean } = {};
 
@@ -104,6 +106,18 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
             await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
           }
         }
+      );
+    } else if (dbManager instanceof MongoDbManager) {
+      await forEachAsyncParallel(
+        Object.entries(entityAnnotationContainer.indexNameToIndexFieldsMap),
+        async ([indexName, indexFields]: [any, any]) =>
+          await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields)
+      );
+
+      await forEachAsyncParallel(
+        Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
+        async ([indexName, indexFields]: [any, any]) =>
+          await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields, true)
       );
     }
 

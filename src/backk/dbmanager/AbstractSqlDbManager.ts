@@ -76,14 +76,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     values: object
   ): Promise<any>;
 
-  connectMongoDb(): Promise<void> {
-    return Promise.resolve(undefined);
-  }
-
-  disconnectMongoDb(): Promise<void> {
-    return Promise.resolve(undefined);
-  }
-
   async isDbReady(): Promise<boolean> {
     try {
       await this.tryExecuteSqlWithoutCls(
