@@ -292,14 +292,16 @@ export default class MongoDbManager extends AbstractDbManager {
           postQueryOperations,
           true
         );
+
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         const [parentEntity] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath + '^' });
+        const [subEntities] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath });
 
-        const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath }).reduce(
-          (maxSubItemId: number, subItem: any) => {
-            const subItemId = parseInt(subItem.id);
+        const maxSubItemId = subEntities.reduce(
+          (maxSubItemId: number, subEntity: any) => {
+            const subItemId = parseInt(subEntity.id, 10);
             return subItemId > maxSubItemId ? subItemId : maxSubItemId;
           },
           -1
@@ -349,8 +351,8 @@ export default class MongoDbManager extends AbstractDbManager {
             parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push(newSubEntity._id);
           } else if (parentEntityClassAndPropertyNameForSubEntity) {
             parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push({
+              ...newSubEntity,
               id: (maxSubItemId + 1 + index).toString(),
-              newSubEntity
             });
           }
         });
