@@ -298,14 +298,10 @@ export default class MongoDbManager extends AbstractDbManager {
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         const [parentEntity] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath + '^' });
         const [subEntities] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath });
-
-        const maxSubItemId = subEntities.reduce(
-          (maxSubItemId: number, subEntity: any) => {
-            const subItemId = parseInt(subEntity.id, 10);
-            return subItemId > maxSubItemId ? subItemId : maxSubItemId;
-          },
-          -1
-        );
+        const maxSubItemId = subEntities.reduce((maxSubItemId: number, subEntity: any) => {
+          const subItemId = parseInt(subEntity.id, 10);
+          return subItemId > maxSubItemId ? subItemId : maxSubItemId;
+        }, -1);
 
         const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
           EntityClass,
@@ -352,7 +348,7 @@ export default class MongoDbManager extends AbstractDbManager {
           } else if (parentEntityClassAndPropertyNameForSubEntity) {
             parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push({
               ...newSubEntity,
-              id: (maxSubItemId + 1 + index).toString(),
+              id: (maxSubItemId + 1 + index).toString()
             });
           }
         });
@@ -805,12 +801,21 @@ export default class MongoDbManager extends AbstractDbManager {
                   (currentSubEntity: any) => currentSubEntity._id
                 );
               } else {
-                (restOfEntity as any)[fieldName] = currentSubEntities.map((currentSubEntity: any) => {
-                  const foundUpdatedSubEntity = newSubEntities.find(
-                    (newSubEntity: any) => newSubEntity._id === currentSubEntity._id
-                  );
-                  return foundUpdatedSubEntity ? foundUpdatedSubEntity : currentSubEntity;
-                });
+                (restOfEntity as any)[fieldName] = await Promise.all(
+                  currentSubEntities.map(async (currentSubEntity: any) => {
+                    const foundUpdatedSubEntity = newSubEntities.find(
+                      (newSubEntity: any) => newSubEntity._id === currentSubEntity._id
+                    );
+
+                    if (foundUpdatedSubEntity) {
+                      await hashAndEncryptItem(currentSubEntity, SubEntityClass, Types);
+                    }
+
+                    return foundUpdatedSubEntity
+                      ? { ...currentSubEntity, ...foundUpdatedSubEntity }
+                      : undefined;
+                  })
+                );
               }
             }
           } else if (fieldName !== '_id' && fieldName !== 'id') {
@@ -901,13 +906,6 @@ export default class MongoDbManager extends AbstractDbManager {
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .deleteOne({ _id: new ObjectId(_id) });
-
-        if (deleteOperationResult.deletedCount !== 1) {
-          return createErrorResponseFromErrorMessageAndStatusCode(
-            `Item with _id: ${_id} not found`,
-            HttpStatusCodes.NOT_FOUND
-          );
-        }
 
         return undefined;
       });
