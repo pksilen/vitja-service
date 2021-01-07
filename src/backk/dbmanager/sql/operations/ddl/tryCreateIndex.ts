@@ -13,13 +13,14 @@ export default async function tryCreateIndex(
     entityAnnotationContainer.indexNameToAdditionalSqlCreateIndexStatementOptionsMap[indexName];
 
   const lowerCaseIndexFields = indexFields.map(indexField => indexField.toLowerCase());
+  const sortOrderStr = indexFields.length === 1 ? entityAnnotationContainer.indexNameToSortOrderMap[indexName] : '';
 
   try {
     const createIndexStatement = `CREATE ${
       isUnique ? 'UNIQUE' : ''
     } INDEX ${indexName.replace(':', '_').toLowerCase()} ON ${schema?.toLowerCase()}.${indexName.split(':')[0].toLowerCase()} ${
       indexUsingOption ? 'USING ' + indexUsingOption : ''
-    }(${lowerCaseIndexFields.join(', ')}) ${additionalSqlCreateIndexStatementOptions ?? ''}`;
+    }(${lowerCaseIndexFields.join(', ')} ${sortOrderStr}) ${additionalSqlCreateIndexStatementOptions ?? ''}`;
 
     await dbManager.tryExecuteSqlWithoutCls(createIndexStatement, undefined, false);
   } catch(error) {

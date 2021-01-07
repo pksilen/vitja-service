@@ -1,3 +1,5 @@
+import { SortOrder } from "../typeproperty";
+
 export interface ManyToManyRelationTableSpec {
   associationTableName: string;
   entityForeignIdFieldName: string;
@@ -16,6 +18,7 @@ class EntityAnnotationContainer {
   readonly entityNameToForeignIdFieldNamesMap: { [key: string]: string[] } = {};
   readonly indexNameToIndexFieldsMap: { [key: string]: string[] } = {};
   readonly indexNameToUniqueIndexFieldsMap: { [key: string]: string[] } = {};
+  readonly indexNameToSortOrderMap: { [key: string]: SortOrder } = {};
   readonly indexNameToUsingOptionMap: { [key: string]: string | undefined } = {};
   readonly indexNameToAdditionalSqlCreateIndexStatementOptionsMap: { [key: string]: string | undefined } = {};
   readonly manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
@@ -52,6 +55,10 @@ class EntityAnnotationContainer {
 
   addEntityUniqueIndex(indexName: string, indexFields: string[]) {
     this.indexNameToUniqueIndexFieldsMap[indexName] = indexFields;
+  }
+
+  addIndexSortOrder(indexName: string, sortOrder: SortOrder) {
+    this.indexNameToSortOrderMap[indexName] = sortOrder;
   }
 
   addUsingOptionForIndex(indexName: string, usingOption?: string) {

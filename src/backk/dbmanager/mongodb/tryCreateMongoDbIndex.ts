@@ -1,4 +1,5 @@
 import MongoDbManager from '../MongoDbManager';
+import entityAnnotationContainer from '../../decorators/entity/entityAnnotationContainer';
 
 export default async function tryCreateMongoDbIndex(
   dbManager: MongoDbManager,
@@ -8,13 +9,28 @@ export default async function tryCreateMongoDbIndex(
   isUnique = false
 ) {
   const collectionName = indexName.split(':')[0].toLowerCase();
+  const sortOrder = entityAnnotationContainer.indexNameToSortOrderMap[indexName];
+  const sortOrders = indexFields.map((indexField) => {
+    if (indexField.toUpperCase().includes(' ASC')) {
+      return 1;
+    } else if (indexField.toUpperCase().includes(' DESC')) {
+      return -1;
+    }
+    return 1;
+  });
   await dbManager.tryReserveDbConnectionFromPool();
   await dbManager.tryExecute(false, async (client) => {
     client
       .db(dbManager.dbName)
       .collection(collectionName)
       .createIndex(
-        indexFields.reduce((indexFieldsSpec, indexField) => ({ ...indexFieldsSpec, [indexField]: 1 }), {}),
+        indexFields.reduce(
+          (indexFieldsSpec, indexField, index) => ({
+            ...indexFieldsSpec,
+            [indexField]: indexFields.length === 1 ? (sortOrder === 'ASC' ? 1 : -1) : sortOrders[index]
+          }),
+          {}
+        ),
         {
           unique: isUnique
         }
