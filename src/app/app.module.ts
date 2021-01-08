@@ -21,15 +21,15 @@ import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggi
 import AuditLoggingServiceImpl from "../services/auditlogging/AuditLoggingServiceImpl";
 import TagsService from "../services/tags/TagsService";
 import TagsServiceImpl from "../services/tags/TagsServiceImpl";
-import { mySqlDbManager } from "../database/mySqlDatabaseManager";
 import DbCleanupService from "../services/dbcleanup/DbCleanupService";
 import DbCleanupServiceImpl from "../services/dbcleanup/DbCleanupServiceImpl";
+import { mongoDbManager } from "../database/mongoDbManager";
 
 @Module({
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: mySqlDbManager },
+    { provide: AbstractDbManager, useValue: mongoDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },

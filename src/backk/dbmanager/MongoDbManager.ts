@@ -345,7 +345,7 @@ export default class MongoDbManager extends AbstractDbManager {
           } else if (parentEntityClassAndPropertyNameForSubEntity) {
             parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push({
               ...newSubEntity,
-              _id: (maxSubItemId + 1 + index).toString()
+              id: (maxSubItemId + 1 + index).toString()
             });
           }
         });
