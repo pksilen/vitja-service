@@ -3,6 +3,7 @@
 TODO
 - ArrayMaxSize is not required for readonly fields
 - Don't perform deletes on readonly subenttities
+- id fields should be _id fields
 - User has SalesItems and Orders subentities
 - MongoDb lookup
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers

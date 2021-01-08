@@ -53,6 +53,5 @@ export default class User extends _IdAndCaptcha {
   @ArrayMaxSize(100)
   public favoriteSalesItemIds!: string[];
 
-  @ArrayMaxSize(100)
   public readonly salesItems!: SalesItem[];
 }

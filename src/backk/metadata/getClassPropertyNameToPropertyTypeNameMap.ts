@@ -203,7 +203,14 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
           otherValidationMetadata.type === 'arrayMaxSize'
       );
 
-      if (!arrayMaxSizeValidationMetadata) {
+      const undefinedValidation = validationMetadatas.find(
+        ({ propertyName, type, constraints }: ValidationMetadata) =>
+          propertyName === validationMetadata.propertyName &&
+          type === 'customValidation' &&
+          constraints?.[0] === 'isUndefined'
+      );
+
+      if (!undefinedValidation && !arrayMaxSizeValidationMetadata) {
         throw new Error(
           'Property ' +
             Class.name +
