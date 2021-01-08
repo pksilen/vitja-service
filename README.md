@@ -1,17 +1,14 @@
 # Vitja service
 
 TODO
-- Implement mongodb indexing
-- check if _id and id is consistently correctly used
+- ArrayMaxSize is not required for readonly fields
+- Don't perform deletes on readonly subenttities
 - User has SalesItems and Orders subentities
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
   - Add FollowerService
     - create new user (follow)
     - follow(userId, userdId + 1)
 - test UserDefinedFilters
-- Unit testaa: shouldIncludeField eri keissit 
-- Organize adding validation groups in separate method in correct order
-- Organize checking missing validations in separate method
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:
    http-kubernetes-mysql,

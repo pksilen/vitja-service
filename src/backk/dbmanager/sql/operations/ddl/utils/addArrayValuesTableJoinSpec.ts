@@ -10,7 +10,8 @@ export default function addArrayValuesTableJoinSpec(
   const entityJoinSpec: EntityJoinSpec = {
     subEntityTableName: entityName + '_' + fieldName.slice(0, -1),
     entityIdFieldName: '_id',
-    subEntityForeignIdFieldName
+    subEntityForeignIdFieldName,
+    isReadonly: false
   };
 
   if (entityAnnotationContainer.entityNameToJoinsMap[entityName]) {

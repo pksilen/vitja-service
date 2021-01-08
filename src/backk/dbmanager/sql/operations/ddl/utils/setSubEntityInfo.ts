@@ -2,6 +2,7 @@ import entityAnnotationContainer, {
   EntityJoinSpec, ManyToManyRelationTableSpec
 } from "../../../../../decorators/entity/entityAnnotationContainer";
 import typePropertyAnnotationContainer from '../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import { doesClassPropertyContainCustomValidation } from "../../../../../validation/setClassPropertyValidationDecorators";
 
 export default function setSubEntityInfo(
   entityName: string,
@@ -33,10 +34,13 @@ export default function setSubEntityInfo(
 
     entityAnnotationContainer.entityNameToIsArrayMap[subEntityName] = isArrayType;
 
+    const isReadonly = doesClassPropertyContainCustomValidation(EntityClass, fieldName, 'isUndefined');
+
     const entityJoinSpec: EntityJoinSpec = {
       subEntityTableName: subEntityName,
       entityIdFieldName: '_id',
-      subEntityForeignIdFieldName
+      subEntityForeignIdFieldName,
+      isReadonly
     };
 
     if (entityAnnotationContainer.entityNameToJoinsMap[entityName]) {

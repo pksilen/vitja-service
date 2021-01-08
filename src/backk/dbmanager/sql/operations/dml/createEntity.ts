@@ -110,7 +110,7 @@ export default async function createEntity<T>(
         const subEntityOrEntities = (entity as any)[fieldName];
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
-          await forEachAsyncParallel(subEntityOrEntities, async (subEntity: any, index) => {
+          await forEachAsyncParallel(subEntityOrEntities ?? [], async (subEntity: any, index) => {
             const SubEntityClass = (Types as any)[baseTypeName];
             if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
               const subEntityOrErrorResponse: any | ErrorResponse = await dbManager.getEntityById(

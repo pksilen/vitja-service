@@ -8,6 +8,7 @@ import PaymentMethod from "./PaymentMethod";
 import LengthAndMatchesAll from "../../../../backk/decorators/typeproperty/LengthOrMatchesAll";
 import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
+import { SalesItem } from "../../../salesitems/types/entities/SalesItem";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -51,4 +52,7 @@ export default class User extends _IdAndCaptcha {
   @TestValue('123')
   @ArrayMaxSize(100)
   public favoriteSalesItemIds!: string[];
+
+  @ArrayMaxSize(100)
+  public readonly salesItems!: SalesItem[];
 }
