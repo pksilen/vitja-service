@@ -47,12 +47,14 @@ export default async function deleteEntityById<T extends object>(
       forEachAsyncParallel(
         Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: EntityJoinSpec) => {
-          await dbManager.tryExecuteSql(
-            `DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()} WHERE ${
-              joinSpec.subEntityForeignIdFieldName.toLowerCase()
-            } = ${dbManager.getValuePlaceholder(1)}`,
-            [numericId]
-          );
+          if (!joinSpec.isReadonly) {
+            await dbManager.tryExecuteSql(
+              `DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()} WHERE ${
+                joinSpec.subEntityForeignIdFieldName.toLowerCase()
+              } = ${dbManager.getValuePlaceholder(1)}`,
+              [numericId]
+            );
+          }
         }
       ),
       forEachAsyncParallel(

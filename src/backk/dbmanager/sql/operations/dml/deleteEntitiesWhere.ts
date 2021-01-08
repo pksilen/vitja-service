@@ -61,12 +61,14 @@ export default async function deleteEntitiesWhere<T extends object>(
       forEachAsyncParallel(
         Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: EntityJoinSpec) => {
-          await dbManager.tryExecuteSql(
-            `DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()} WHERE ${joinSpec.subEntityForeignIdFieldName.toLowerCase()} IN (SELECT _id FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${fieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
-              1
-            )})`,
-            [fieldValue]
-          );
+          if (!joinSpec.isReadonly) {
+            await dbManager.tryExecuteSql(
+              `DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()} WHERE ${joinSpec.subEntityForeignIdFieldName.toLowerCase()} IN (SELECT _id FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${fieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+                1
+              )})`,
+              [fieldValue]
+            );
+          }
         }
       ),
       forEachAsyncParallel(
