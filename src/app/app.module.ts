@@ -23,13 +23,13 @@ import TagsService from "../services/tags/TagsService";
 import TagsServiceImpl from "../services/tags/TagsServiceImpl";
 import DbCleanupService from "../services/dbcleanup/DbCleanupService";
 import DbCleanupServiceImpl from "../services/dbcleanup/DbCleanupServiceImpl";
-import { mongoDbManager } from "../database/mongoDbManager";
+import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
 
 @Module({
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: mongoDbManager },
+    { provide: AbstractDbManager, useValue: postgreSqlDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },
