@@ -8,7 +8,7 @@ function transformNonEntityArray(result: any, entityClass: Function, Types: obje
   Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [any, any]) => {
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
 
-    if (isArrayType && isEntityTypeName(baseTypeName)) {
+    if (isArrayType && isEntityTypeName(baseTypeName) && result[fieldName]) {
       result[fieldName].forEach((subResult: any) =>
         transformNonEntityArray(subResult, (Types as any)[baseTypeName], Types)
       );
