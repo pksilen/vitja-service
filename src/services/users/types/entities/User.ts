@@ -9,6 +9,7 @@ import LengthAndMatchesAll from "../../../../backk/decorators/typeproperty/Lengt
 import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
 import { SalesItem } from "../../../salesitems/types/entities/SalesItem";
+import Order from "../../../orders/types/entities/Order";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -54,4 +55,6 @@ export default class User extends _IdAndCaptcha {
   public favoriteSalesItemIds!: string[];
 
   public readonly salesItems!: SalesItem[];
+
+  public readonly orders!: Order[];
 }
