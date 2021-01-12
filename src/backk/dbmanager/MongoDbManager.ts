@@ -1,55 +1,51 @@
-import { Injectable } from "@nestjs/common";
-import { FilterQuery, MongoClient, ObjectId } from "mongodb";
-import SqlExpression from "./sql/expressions/SqlExpression";
-import AbstractDbManager, { Field } from "./AbstractDbManager";
-import { ErrorResponse } from "../types/ErrorResponse";
-import { RecursivePartial } from "../types/RecursivePartial";
-import { PreHook } from "./hooks/PreHook";
-import { Entity } from "../types/entities/Entity";
-import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
-import createErrorResponseFromError from "../errors/createErrorResponseFromError";
-import createErrorResponseFromErrorMessageAndStatusCode
-  from "../errors/createErrorResponseFromErrorMessageAndStatusCode";
-import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
-import { SubEntity } from "../types/entities/SubEntity";
-import tryStartLocalTransactionIfNeeded from "./sql/operations/transaction/tryStartLocalTransactionIfNeeded";
-import tryExecutePreHooks from "./hooks/tryExecutePreHooks";
-import hashAndEncryptItem from "../crypt/hashAndEncryptItem";
-import cleanupLocalTransactionIfNeeded from "./sql/operations/transaction/cleanupLocalTransactionIfNeeded";
-import { getNamespace } from "cls-hooked";
-import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
-import createInternalServerError from "../errors/createInternalServerError";
-import getClassPropertyNameToPropertyTypeNameMap from "../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import typePropertyAnnotationContainer from "../decorators/typeproperty/typePropertyAnnotationContainer";
-import isEntityTypeName from "../utils/type/isEntityTypeName";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
-import forEachAsyncParallel from "../utils/forEachAsyncParallel";
-import forEachAsyncSequential from "../utils/forEachAsyncSequential";
-import startDbOperation from "./utils/startDbOperation";
-import recordDbOperationDuration from "./utils/recordDbOperationDuration";
-import tryUpdateEntityVersionIfNeeded from "./sql/operations/dml/utils/tryUpdateEntityVersionIfNeeded";
-import tryUpdateEntityLastModifiedTimestampIfNeeded
-  from "./sql/operations/dml/utils/tryUpdateEntityLastModifiedTimestampIfNeeded";
-import { JSONPath } from "jsonpath-plus";
-import findParentEntityAndPropertyNameForSubEntity
-  from "../metadata/findParentEntityAndPropertyNameForSubEntity";
-import { getFromContainer, MetadataStorage } from "class-validator";
-import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
-import { HttpStatusCodes } from "../constants/constants";
-import performPostQueryOperations from "./mongodb/performPostQueryOperations";
-import DefaultPostQueryOperations from "../types/postqueryoperations/DefaultPostQueryOperations";
-import tryFetchAndAssignSubEntitiesForManyToManyRelationships
-  from "./mongodb/tryFetchAndAssignSubEntitiesForManyToManyRelationships";
-import decryptItems from "../crypt/decryptItems";
-import updateDbLocalTransactionCount from "./sql/operations/dql/utils/updateDbLocalTransactionCount";
-import shouldUseRandomInitializationVector from "../crypt/shouldUseRandomInitializationVector";
-import shouldEncryptValue from "../crypt/shouldEncryptValue";
-import encrypt from "../crypt/encrypt";
-import isErrorResponse from "../errors/isErrorResponse";
-import removePrivateProperties from "./mongodb/removePrivateProperties";
-import replaceIdStringsWithObjectIds from "./mongodb/replaceIdStringsWithObjectIds";
-import removeSubEntities from "./mongodb/removeSubEntities";
-import getJoinPipelines from "./mongodb/getJoinPipelines";
+import { Injectable } from '@nestjs/common';
+import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
+import SqlExpression from './sql/expressions/SqlExpression';
+import AbstractDbManager, { Field } from './AbstractDbManager';
+import { ErrorResponse } from '../types/ErrorResponse';
+import { RecursivePartial } from '../types/RecursivePartial';
+import { PreHook } from './hooks/PreHook';
+import { Entity } from '../types/entities/Entity';
+import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
+import createErrorResponseFromError from '../errors/createErrorResponseFromError';
+import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
+import { SubEntity } from '../types/entities/SubEntity';
+import tryStartLocalTransactionIfNeeded from './sql/operations/transaction/tryStartLocalTransactionIfNeeded';
+import tryExecutePreHooks from './hooks/tryExecutePreHooks';
+import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
+import cleanupLocalTransactionIfNeeded from './sql/operations/transaction/cleanupLocalTransactionIfNeeded';
+import { getNamespace } from 'cls-hooked';
+import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
+import createInternalServerError from '../errors/createInternalServerError';
+import getClassPropertyNameToPropertyTypeNameMap from '../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
+import isEntityTypeName from '../utils/type/isEntityTypeName';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import forEachAsyncParallel from '../utils/forEachAsyncParallel';
+import forEachAsyncSequential from '../utils/forEachAsyncSequential';
+import startDbOperation from './utils/startDbOperation';
+import recordDbOperationDuration from './utils/recordDbOperationDuration';
+import tryUpdateEntityVersionIfNeeded from './sql/operations/dml/utils/tryUpdateEntityVersionIfNeeded';
+import tryUpdateEntityLastModifiedTimestampIfNeeded from './sql/operations/dml/utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
+import { JSONPath } from 'jsonpath-plus';
+import findParentEntityAndPropertyNameForSubEntity from '../metadata/findParentEntityAndPropertyNameForSubEntity';
+import { getFromContainer, MetadataStorage } from 'class-validator';
+import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import { HttpStatusCodes } from '../constants/constants';
+import performPostQueryOperations from './mongodb/performPostQueryOperations';
+import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
+import tryFetchAndAssignSubEntitiesForManyToManyRelationships from './mongodb/tryFetchAndAssignSubEntitiesForManyToManyRelationships';
+import decryptItems from '../crypt/decryptItems';
+import updateDbLocalTransactionCount from './sql/operations/dql/utils/updateDbLocalTransactionCount';
+import shouldUseRandomInitializationVector from '../crypt/shouldUseRandomInitializationVector';
+import shouldEncryptValue from '../crypt/shouldEncryptValue';
+import encrypt from '../crypt/encrypt';
+import isErrorResponse from '../errors/isErrorResponse';
+import removePrivateProperties from './mongodb/removePrivateProperties';
+import replaceIdStringsWithObjectIds from './mongodb/replaceIdStringsWithObjectIds';
+import removeSubEntities from './mongodb/removeSubEntities';
+import getJoinPipelines from './mongodb/getJoinPipelines';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -385,8 +381,9 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const cursor = client
           .db(this.dbName)
-          .collection<T>(EntityClass.name.toLowerCase()).aggregate(joinPipelines).match
-          ({});
+          .collection<T>(EntityClass.name.toLowerCase())
+          .aggregate(joinPipelines)
+          .match({});
 
         performPostQueryOperations(cursor, finalPostQueryOperations);
         const rows = await cursor.toArray();
@@ -428,10 +425,12 @@ export default class MongoDbManager extends AbstractDbManager {
 
     try {
       return await this.tryExecute(false, async (client) => {
+        const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
         const cursor = client
           .db(this.dbName)
           .collection<T>(EntityClass.name.toLowerCase())
-          .find<T>(filters as any);
+          .aggregate(joinPipelines)
+          .match(filters as any);
 
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
@@ -495,10 +494,13 @@ export default class MongoDbManager extends AbstractDbManager {
 
     try {
       return await this.tryExecute(false, async (client) => {
+        const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
+
         const cursor = client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
-          .find<T>({ _id: new ObjectId(_id) });
+          .aggregate(joinPipelines)
+          .match({ _id: new ObjectId(_id) });
 
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
@@ -589,10 +591,13 @@ export default class MongoDbManager extends AbstractDbManager {
 
     try {
       return await this.tryExecute(false, async (client) => {
+        const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
+
         const cursor = client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
-          .find<T>({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } });
+          .aggregate(joinPipelines)
+          .match({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } });
 
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
@@ -641,10 +646,13 @@ export default class MongoDbManager extends AbstractDbManager {
 
     try {
       const entities = await this.tryExecute(false, async (client) => {
+        const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
+
         const cursor = client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
-          .find<T>({ [fieldName]: finalFieldValue });
+          .aggregate(joinPipelines)
+          .match({ [fieldName]: finalFieldValue });
 
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
@@ -700,10 +708,13 @@ export default class MongoDbManager extends AbstractDbManager {
 
     try {
       const entities = await this.tryExecute(false, async (client) => {
+        const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
+
         const cursor = client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
-          .find<T>({ [fieldName]: finalFieldValue });
+          .aggregate(joinPipelines)
+          .match({ [fieldName]: finalFieldValue });
 
         performPostQueryOperations(cursor, postQueryOperations);
         const rows = await cursor.toArray();
