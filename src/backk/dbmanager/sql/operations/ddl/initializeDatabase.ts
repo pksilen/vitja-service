@@ -10,6 +10,7 @@ import initializeCronJobSchedulingTable from '../../../../scheduling/initializeC
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import MongoDbManager from "../../../MongoDbManager";
 import tryCreateMongoDbIndex from "../../../mongodb/tryCreateMongoDbIndex";
+import setJoinSpecs from "../../../mongodb/setJoinSpecs";
 
 const dbManagerToIsInitializedMap: { [key: string]: boolean } = {};
 
@@ -118,6 +119,12 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
         Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
         async ([indexName, indexFields]: [any, any]) =>
           await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields, true)
+      );
+
+
+        Object.entries(entityAnnotationContainer.entityNameToClassMap).
+        forEach(([entityName, entityClass]) =>
+          setJoinSpecs(dbManager, entityName, entityClass)
       );
     }
 

@@ -1,12 +1,17 @@
-import { Cursor } from 'mongodb';
+import { AggregationCursor, Cursor } from 'mongodb';
 import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
 import getProjection from './getProjection';
 
 export default function performPostQueryOperations<T>(
-  cursor: Cursor<T>,
+  cursor: Cursor<T> | AggregationCursor<T>,
   postQueryOperations?: PostQueryOperations
 ) {
-  cursor.project(getProjection(postQueryOperations ?? {}));
+  if (postQueryOperations) {
+    const projection = getProjection(postQueryOperations);
+    if (Object.keys(projection).length > 0) {
+      cursor.project(projection);
+    }
+  }
 
   if (postQueryOperations?.sortBys) {
     const sorting = postQueryOperations.sortBys.reduce(

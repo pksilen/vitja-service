@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- User has Orders subentities
 - MongoDb lookup
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
   - Add FollowerService

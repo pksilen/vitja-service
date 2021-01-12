@@ -49,6 +49,7 @@ import isErrorResponse from "../errors/isErrorResponse";
 import removePrivateProperties from "./mongodb/removePrivateProperties";
 import replaceIdStringsWithObjectIds from "./mongodb/replaceIdStringsWithObjectIds";
 import removeSubEntities from "./mongodb/removeSubEntities";
+import getJoinPipelines from "./mongodb/getJoinPipelines";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -380,10 +381,12 @@ export default class MongoDbManager extends AbstractDbManager {
 
     try {
       return await this.tryExecute(false, async (client) => {
+        const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
+
         const cursor = client
           .db(this.dbName)
-          .collection<T>(EntityClass.name.toLowerCase())
-          .find<T>({});
+          .collection<T>(EntityClass.name.toLowerCase()).aggregate(joinPipelines).match
+          ({});
 
         performPostQueryOperations(cursor, finalPostQueryOperations);
         const rows = await cursor.toArray();
