@@ -5,7 +5,8 @@ TODO
   - Add FollowerService
     - create new user (follow)
     - follow(userId, userdId + 1)
-- test UserDefinedFilters
+- test UserDefinedFilters 
+  -test subpaginations
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:
    http-kubernetes-mysql,

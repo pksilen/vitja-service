@@ -1,6 +1,7 @@
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
+import * as util from 'util';
 
 function removeEntityPrivateProperties<T>(
   entity: any,
@@ -11,18 +12,22 @@ function removeEntityPrivateProperties<T>(
   const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
 
   Object.entries(entity).forEach(([propertyName, propertyValue]: [string, any]) => {
-    if (!isInternalCall && typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, propertyName)) {
+    if (
+      (!isInternalCall && typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, propertyName)) ||
+      propertyName === 'entityIdFieldNameAsString'
+    ) {
       delete entity[propertyName];
+      return;
     }
 
-    const propertyTypeInfo = getTypeInfoForTypeName(entityMetadata[propertyName]);
-    const SubEntityClass = (Types as any)[propertyTypeInfo.baseTypeName];
+    const { baseTypeName, isArrayType } = getTypeInfoForTypeName(entityMetadata[propertyName]);
+    const SubEntityClass = (Types as any)[baseTypeName];
 
     if (SubEntityClass && propertyValue !== null) {
-      if (propertyTypeInfo.isArrayType) {
-        propertyValue.forEach((subValue: any) =>
-          removeEntityPrivateProperties(subValue, SubEntityClass, Types, isInternalCall)
-        );
+      if (isArrayType) {
+        propertyValue.forEach((subValue: any) => {
+          removeEntityPrivateProperties(subValue, SubEntityClass, Types, isInternalCall);
+        });
       } else {
         removeEntityPrivateProperties(propertyValue, SubEntityClass, Types, isInternalCall);
       }

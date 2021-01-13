@@ -46,6 +46,7 @@ import removePrivateProperties from './mongodb/removePrivateProperties';
 import replaceIdStringsWithObjectIds from './mongodb/replaceIdStringsWithObjectIds';
 import removeSubEntities from './mongodb/removeSubEntities';
 import getJoinPipelines from './mongodb/getJoinPipelines';
+import * as util from "util";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {

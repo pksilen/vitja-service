@@ -6,13 +6,17 @@ import DefaultPostQueryOperations from '../../types/postqueryoperations/DefaultP
 import forEachAsyncParallel from '../../utils/forEachAsyncParallel';
 import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 import { ObjectId } from 'mongodb';
+import isEntityTypeName from '../../utils/type/isEntityTypeName';
+import { JSONPath } from 'jsonpath-plus';
+import util from "util";
 
 export default async function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
   dbManager: AbstractDbManager,
   rows: T[],
   EntityClass: new () => T,
   Types: object,
-  postQueryOperations?: PostQueryOperations
+  postQueryOperations?: PostQueryOperations,
+  propertyJsonPath = '$.'
 ): Promise<void> {
   const entityPropertyNameToPropertyTypeMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
 
@@ -21,12 +25,16 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
     async ([propertyName, propertyTypeName]) => {
       if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
         await forEachAsyncParallel(rows, async (row: any) => {
-          const subEntityIds: string[] | undefined = row[propertyName];
+          const [subEntityIds] = JSONPath({
+            json: row,
+            path: propertyJsonPath + propertyName
+          });
+
           if (subEntityIds) {
             // TODO give modified postQueryOperations
             const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
             const subEntitiesOrErrorResponse = await dbManager.getEntitiesByFilters(
-              { _id: { $in: subEntityIds.map((subEntityId) => new ObjectId(subEntityId)) } },
+              { _id: { $in: subEntityIds.map((subEntityId: any) => new ObjectId(subEntityId)) } },
               (Types as any)[baseTypeName],
               postQueryOperations ?? new DefaultPostQueryOperations()
             );
@@ -35,9 +43,24 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
               throw subEntitiesOrErrorResponse;
             }
 
-            row[propertyName] = subEntitiesOrErrorResponse;
+            const [subEntitiesParent] = JSONPath({ json: row, path: propertyJsonPath + propertyName + '^' });
+            subEntitiesParent[propertyName] = subEntitiesOrErrorResponse;
           }
         });
+      }
+
+      const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
+      const SubEntityClass = (Types as any)[baseTypeName];
+
+      if (isEntityTypeName(baseTypeName)) {
+        await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
+          dbManager,
+          rows,
+          SubEntityClass,
+          Types,
+          postQueryOperations,
+          propertyJsonPath + propertyName + '[*].'
+        );
       }
     }
   );
