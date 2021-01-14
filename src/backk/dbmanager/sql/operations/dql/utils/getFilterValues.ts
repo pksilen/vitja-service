@@ -1,19 +1,31 @@
 import SqlExpression from '../../../expressions/SqlExpression';
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
 import SqlInExpression from '../../../expressions/SqlInExpression';
-import SqlNotInExpression from "../../../expressions/SqlNotInExpression";
+import SqlNotInExpression from '../../../expressions/SqlNotInExpression';
 
-function getUserDefinedFilterValues(filters: UserDefinedFilter[]): object {
-  return filters.reduce((accumulatedFilterValues, { fieldName, operator, value, filters }, index) => {
-    if (operator === 'OR') {
-      return getUserDefinedFilterValues(filters ?? []);
+function getUserDefinedFilterValues(filters: UserDefinedFilter[], parentIndex?: number): object {
+  return filters.reduce((accumulatedFilterValues, userDefinedFilter, index) => {
+    if (userDefinedFilter.operator === 'OR') {
+      return getUserDefinedFilterValues(userDefinedFilter.orFilters ?? [], index);
     }
 
-    let filterValues = { [fieldName + index]: value };
-    if (operator === 'IN') {
-      filterValues = new SqlInExpression(fieldName, value).getValues();
-    } else if (operator === 'NOT IN') {
-      filterValues = new SqlNotInExpression(fieldName, value).getValues();
+    if (!userDefinedFilter.fieldName) {
+      throw new Error('fieldName not defined for user defined filter');
+    }
+
+    let finalIndexStr = index.toString();
+    if (parentIndex !== undefined) {
+      finalIndexStr = parentIndex + '_' + index;
+    }
+
+    let filterValues = {
+      [userDefinedFilter.fieldName + finalIndexStr]: userDefinedFilter.value
+    };
+
+    if (userDefinedFilter.operator === 'IN') {
+      filterValues = new SqlInExpression(userDefinedFilter.fieldName, userDefinedFilter.value).getValues();
+    } else if (userDefinedFilter.operator === 'NOT IN') {
+      filterValues = new SqlNotInExpression(userDefinedFilter.fieldName, userDefinedFilter.value).getValues();
     }
 
     return {

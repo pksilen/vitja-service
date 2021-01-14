@@ -3,7 +3,7 @@ import tryGetProjection from './tryGetProjection';
 import getSqlColumnFromProjection from '../utils/columns/getSqlColumnFromProjection';
 import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
-import toSqlString from '../../../expressions/toSqlString';
+import convertUserDefinedFilterToSqlString from '../utils/convertUserDefinedFilterToSqlString';
 import SubPagination from '../../../../../types/postqueryoperations/SubPagination';
 import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
 
@@ -24,7 +24,7 @@ export default function tryGetWhereClause<T>(
         .join(' AND ');
     } else {
       filtersSql = (filters as UserDefinedFilter[])
-        .map((userDefinedFilter, index) => toSqlString(userDefinedFilter, index))
+        .map((userDefinedFilter, index) => convertUserDefinedFilterToSqlString(userDefinedFilter, index))
         .join(' AND ');
     }
   } else {

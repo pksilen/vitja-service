@@ -9,12 +9,14 @@ import {
   ValidateNested
 } from "class-validator";
 import MaxLengthAndMatches from '../../decorators/typeproperty/MaxLengthAndMatches';
-import Nested1UserDefinedFilter from "./Nested1UserDefinedFilter";
+import NestedUserDefinedFilter from "./NestedUserDefinedFilter";
+import { Type } from "class-transformer";
 
 export default class UserDefinedFilter {
+  @IsOptional()
   @IsString()
   @MaxLengthAndMatches(2048, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
-  fieldName!: string;
+  fieldName?: string;
 
   @IsOptional()
   @IsIn([
@@ -80,9 +82,9 @@ export default class UserDefinedFilter {
   value: any;
 
   @IsOptional()
-  @IsInstance(Nested1UserDefinedFilter, { each: true })
+  @IsInstance(NestedUserDefinedFilter, { each: true })
   @ValidateNested({ each: true })
   @IsArray()
   @ArrayMaxSize(10)
-  filters?: Nested1UserDefinedFilter[];
+  orFilters?: NestedUserDefinedFilter[];
 }

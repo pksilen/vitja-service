@@ -1,9 +1,9 @@
-import UserDefinedFilter from '../../../types/userdefinedfilters/UserDefinedFilter';
-import SqlInExpression from './SqlInExpression';
-import SqlNotInExpression from "./SqlNotInExpression";
+import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
+import SqlInExpression from '../../../expressions/SqlInExpression';
+import SqlNotInExpression from "../../../expressions/SqlNotInExpression";
 
-export default function toSqlString(
-  { fieldName, fieldFunction, operator, value, filters }: UserDefinedFilter,
+export default function convertUserDefinedFilterToSqlString(
+  { fieldName, fieldFunction, operator, value, orFilters }: UserDefinedFilter,
   index: number | string
 ): string {
   let fieldExpression = fieldName;
@@ -25,17 +25,17 @@ export default function toSqlString(
     }
   }
 
-  if (operator === 'IN') {
+  if (operator === 'IN' && fieldName) {
     return new SqlInExpression(fieldName, value, fieldExpression).toSqlString();
-  } else if(operator === 'NOT IN') {
+  } else if(operator === 'NOT IN' && fieldName) {
     return new SqlNotInExpression(fieldName, value, fieldExpression).toSqlString();
   } else if (operator === 'IS NULL' || operator === 'IS NOT NULL') {
     return `${fieldExpression} ${operator}`;
   } else if (!operator) {
     return `${fieldExpression} = :${fieldName}${index}`;
-  } else if (operator === 'OR' && filters) {
-    return ' (' + filters
-      .map((userDefinedFilter, orFilterIndex) => toSqlString(userDefinedFilter, `${index}_${orFilterIndex}`))
+  } else if (operator === 'OR' && orFilters) {
+    return ' (' + orFilters
+      .map((userDefinedFilter, orFilterIndex) => convertUserDefinedFilterToSqlString(userDefinedFilter, `${index}_${orFilterIndex}`))
       .join(' OR ') + ') ';
   }
 
