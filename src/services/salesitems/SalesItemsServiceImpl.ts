@@ -26,7 +26,8 @@ import {
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 import { SalesItemState } from './types/enums/SalesItemState';
-import { ObjectId } from "mongodb";
+import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
+import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -114,6 +115,13 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     }
 
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOps);
+  }
+
+  @AllowForEveryUser()
+  getSalesItemsByUserDefinedFilters({
+    filters
+  }: GetSalesItemsByUserDefinedFiltersArg): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getEntitiesByFilters(filters, SalesItem, new DefaultPostQueryOperations());
   }
 
   @AllowForSelf()

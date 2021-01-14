@@ -1,12 +1,14 @@
 # Vitja service
 
 TODO
+- Test UserDefinedFilters
+- Implement mongodb userDefinedFilters
+- Test subpaginations
+- Implement mongodb subpaginations
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
-  - Add FollowerService
+- Add FollowerService
     - create new user (follow)
     - follow(userId, userdId + 1)
-- test UserDefinedFilters 
-  -test subpaginations
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:
    http-kubernetes-mysql,

@@ -1,17 +1,24 @@
 import SqlExpression from '../../../expressions/SqlExpression';
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
 import SqlInExpression from '../../../expressions/SqlInExpression';
+import SqlNotInExpression from "../../../expressions/SqlNotInExpression";
 
 function getUserDefinedFilterValues(filters: UserDefinedFilter[]): object {
   return filters.reduce((accumulatedFilterValues, { fieldName, operator, value, filters }, index) => {
     if (operator === 'OR') {
       return getUserDefinedFilterValues(filters ?? []);
     }
+
+    let filterValues = { [fieldName + index]: value };
+    if (operator === 'IN') {
+      filterValues = new SqlInExpression(fieldName, value).getValues();
+    } else if (operator === 'NOT IN') {
+      filterValues = new SqlNotInExpression(fieldName, value).getValues();
+    }
+
     return {
       ...accumulatedFilterValues,
-      ...(operator === 'IN' || operator === 'NOT IN'
-        ? new SqlInExpression(fieldName, value)
-        : { [fieldName + index]: value })
+      ...filterValues
     };
   }, {});
 }

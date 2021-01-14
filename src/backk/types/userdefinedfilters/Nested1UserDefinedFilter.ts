@@ -1,19 +1,9 @@
-import {
-  Allow,
-  ArrayMaxSize,
-  IsArray,
-  IsIn,
-  IsInstance,
-  IsOptional,
-  IsString,
-  ValidateNested
-} from "class-validator";
-import MaxLengthAndMatches from '../../decorators/typeproperty/MaxLengthAndMatches';
-import Nested1UserDefinedFilter from "./Nested1UserDefinedFilter";
+import { Allow, IsIn, IsOptional, IsString } from "class-validator";
+import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
 
-export default class UserDefinedFilter {
+export default class Nested1UserDefinedFilter {
   @IsString()
-  @MaxLengthAndMatches(2048, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
+  @MaxLengthAndMatches(512, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
   fieldName!: string;
 
   @IsOptional()
@@ -78,11 +68,4 @@ export default class UserDefinedFilter {
 
   @Allow()
   value: any;
-
-  @IsOptional()
-  @IsInstance(Nested1UserDefinedFilter, { each: true })
-  @ValidateNested({ each: true })
-  @IsArray()
-  @ArrayMaxSize(10)
-  filters?: Nested1UserDefinedFilter[];
 }

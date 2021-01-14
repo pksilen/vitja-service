@@ -1,5 +1,6 @@
 import UserDefinedFilter from '../../../types/userdefinedfilters/UserDefinedFilter';
 import SqlInExpression from './SqlInExpression';
+import SqlNotInExpression from "./SqlNotInExpression";
 
 export default function toSqlString(
   { fieldName, fieldFunction, operator, value, filters }: UserDefinedFilter,
@@ -24,8 +25,10 @@ export default function toSqlString(
     }
   }
 
-  if (operator === 'IN' || operator === 'NOT IN') {
+  if (operator === 'IN') {
     return new SqlInExpression(fieldName, value, fieldExpression).toSqlString();
+  } else if(operator === 'NOT IN') {
+    return new SqlNotInExpression(fieldName, value, fieldExpression).toSqlString();
   } else if (operator === 'IS NULL' || operator === 'IS NOT NULL') {
     return `${fieldExpression} ${operator}`;
   } else if (!operator) {
