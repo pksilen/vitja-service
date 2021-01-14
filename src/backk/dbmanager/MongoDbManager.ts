@@ -47,6 +47,7 @@ import replaceIdStringsWithObjectIds from './mongodb/replaceIdStringsWithObjectI
 import removeSubEntities from './mongodb/removeSubEntities';
 import getJoinPipelines from './mongodb/getJoinPipelines';
 import * as util from "util";
+import convertUserDefinedFiltersToMatchExpression from "./mongodb/convertUserDefinedFiltersToMatchExpression";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -416,6 +417,8 @@ export default class MongoDbManager extends AbstractDbManager {
   ): Promise<T[] | ErrorResponse> {
     if (Array.isArray(filters) && filters?.[0] instanceof SqlExpression) {
       throw new Error('SqlExpression is not supported for MongoDB');
+    } else if (Array.isArray(filters) && filters?.[0] instanceof UserDefinedFilter) {
+      filters = convertUserDefinedFiltersToMatchExpression(filters as UserDefinedFilter[]);
     }
 
     replaceIdStringsWithObjectIds(filters);

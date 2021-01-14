@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Test UserDefinedFilters
 - Implement mongodb userDefinedFilters
 - Test subpaginations
 - Implement mongodb subpaginations
