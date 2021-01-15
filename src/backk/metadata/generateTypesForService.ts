@@ -25,6 +25,7 @@ export default function generateTypesForServices<T>(controller: T, remoteService
             functionArgumentTypeName,
             remoteServiceRootDir
           );
+
           (controller as any)[serviceName].Types[functionArgumentTypeName] = FunctionArgumentClass;
           (controller as any)[serviceName].PublicTypes[functionArgumentTypeName] = FunctionArgumentClass;
         }

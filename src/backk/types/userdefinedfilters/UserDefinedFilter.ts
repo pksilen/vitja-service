@@ -8,9 +8,8 @@ import {
   IsString,
   ValidateNested
 } from "class-validator";
-import MaxLengthAndMatches from '../../decorators/typeproperty/MaxLengthAndMatches';
+import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
 import OrFilter from "./OrFilter";
-import { Type } from "class-transformer";
 
 export default class UserDefinedFilter {
   @IsOptional()

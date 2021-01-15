@@ -1,7 +1,8 @@
-import { PostQueryOperations } from "./PostQueryOperations";
-import SortBy from "./SortBy";
+import { PostQueryOperations } from './PostQueryOperations';
+import SortBy from './SortBy';
 import {
-  ArrayMaxSize, ArrayUnique,
+  ArrayMaxSize,
+  ArrayUnique,
   IsArray,
   IsInstance,
   IsInt,
@@ -11,8 +12,8 @@ import {
   MaxLength,
   Min,
   ValidateNested
-} from "class-validator";
-import SubPagination from "./SubPagination";
+} from 'class-validator';
+import SubPagination from './SubPagination';
 
 export default class DefaultPostQueryOperations implements PostQueryOperations {
   @IsOptional()
@@ -33,7 +34,7 @@ export default class DefaultPostQueryOperations implements PostQueryOperations {
 
   @IsOptional()
   @IsInstance(SortBy, { each: true })
-  @ValidateNested()
+  @ValidateNested({ each: true })
   @IsArray()
   @ArrayMaxSize(25)
   sortBys: SortBy[] = [new SortBy('_id', 'ASC')];
@@ -52,7 +53,7 @@ export default class DefaultPostQueryOperations implements PostQueryOperations {
 
   @IsOptional()
   @IsInstance(SubPagination, { each: true })
-  @ValidateNested()
+  @ValidateNested({ each: true })
   @IsArray()
   @ArrayMaxSize(25)
   subPaginations: SubPagination[] = [];

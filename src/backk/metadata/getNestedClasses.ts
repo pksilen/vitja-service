@@ -8,12 +8,19 @@ import isEnumTypeName from '../utils/type/isEnumTypeName';
 export default function getNestedClasses(
   classNames: string[],
   Types: { [key: string]: new () => any },
+  PublicTypes: { [key: string]: new () => any },
   remoteServiceRootDir = ''
 ) {
   classNames.forEach((className) => {
+    if (className.includes(':')) {
+      // noinspection AssignmentToFunctionParameterJS
+      className = className.split(':')[1];
+    }
+
     const fileContentsStr = readFileSync(getSrcFilePathNameForTypeName(className, remoteServiceRootDir), {
       encoding: 'UTF-8'
     });
+
     const fileRows = fileContentsStr.split('\n');
 
     const ast = parseSync(fileContentsStr, {
@@ -50,13 +57,14 @@ export default function getNestedClasses(
             ) {
               if (!Types[baseTypeName]) {
                 Types[baseTypeName] = generateClassFromSrcFile(baseTypeName, remoteServiceRootDir);
-                getNestedClasses([baseTypeName], Types);
+                PublicTypes[baseTypeName] = Types[baseTypeName];
+                getNestedClasses([baseTypeName], Types, PublicTypes);
 
                 let proto = Object.getPrototypeOf(new (Types[baseTypeName] as new () => any)());
                 while (proto !== Object.prototype) {
                   if (!Types[proto.constructor.name]) {
                     Types[proto.constructor.name] = proto.constructor;
-                    getNestedClasses([baseTypeName], Types);
+                    getNestedClasses([baseTypeName], Types, PublicTypes);
                   }
                   proto = Object.getPrototypeOf(proto);
                 }
