@@ -4,10 +4,10 @@ import { TestValue } from "../../../../backk/decorators/typeproperty/testing/Tes
 
 export default class GetSalesItemsByUserDefinedFiltersArg {
   @ArrayMaxSize(10)
-  @TestValue({
+  @TestValue([{
     fieldName: 'title',
     operator: '=',
     value: 'abc'
-  })
+  }])
   filters!: UserDefinedFilter[];
 }

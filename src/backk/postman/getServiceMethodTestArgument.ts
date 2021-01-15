@@ -165,7 +165,11 @@ export default function getServiceMethodTestArgument(
         sampleArg[propertyName] = [`{{${propertyName.slice(0, -3)}Id}}`];
       } else {
         sampleArg[propertyName] =
-          defaultValueStr === undefined ? [sampleArg[propertyName]] : JSON.parse(defaultValueStr);
+          defaultValueStr === undefined
+            ? Array.isArray(sampleArg[propertyName])
+              ? sampleArg[propertyName]
+              : [sampleArg[propertyName]]
+            : JSON.parse(defaultValueStr);
       }
     }
   });
