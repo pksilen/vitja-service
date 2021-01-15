@@ -1,13 +1,14 @@
 # Vitja service
 
 TODO
-- Implement mongodb userDefinedFilters
 - Test subpaginations
 - Implement mongodb subpaginations
+- Test mongodb cronjob and scheduled job
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
 - Add FollowerService
     - create new user (follow)
     - follow(userId, userdId + 1)
+- Convert sql LIKE expr to mongodb RegExp
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:
    http-kubernetes-mysql,

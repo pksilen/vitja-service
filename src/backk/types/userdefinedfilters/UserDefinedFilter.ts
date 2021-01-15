@@ -9,7 +9,7 @@ import {
   ValidateNested
 } from "class-validator";
 import MaxLengthAndMatches from '../../decorators/typeproperty/MaxLengthAndMatches';
-import NestedUserDefinedFilter from "./NestedUserDefinedFilter";
+import OrFilter from "./OrFilter";
 import { Type } from "class-transformer";
 
 export default class UserDefinedFilter {
@@ -82,9 +82,9 @@ export default class UserDefinedFilter {
   value: any;
 
   @IsOptional()
-  @IsInstance(NestedUserDefinedFilter, { each: true })
+  @IsInstance(OrFilter, { each: true })
   @ValidateNested({ each: true })
   @IsArray()
   @ArrayMaxSize(10)
-  orFilters?: NestedUserDefinedFilter[];
+  orFilters?: OrFilter[];
 }

@@ -1,174 +1,156 @@
-import dayjs from 'dayjs';
-import weekOfYear from 'dayjs/plugin/weekOfYear';
 import UserDefinedFilter from '../../types/userdefinedfilters/UserDefinedFilter';
 
-dayjs.extend(weekOfYear);
-
 function getWhereExpression(userDefinedFilter: UserDefinedFilter) {
-  let fieldFunction: Function;
+  let exprLeftHandSide: string;
+
+  if (!userDefinedFilter.fieldName) {
+    return {};
+  }
+
   switch (userDefinedFilter.fieldFunction) {
     case 'ABS':
-      fieldFunction = Math.abs;
+      exprLeftHandSide = `Math.abs(this.${userDefinedFilter.fieldName})`;
       break;
     case 'CEILING':
-      fieldFunction = Math.ceil;
+      exprLeftHandSide = `Math.ceil(this.${userDefinedFilter.fieldName})`;
       break;
     case 'FLOOR':
-      fieldFunction = Math.floor;
+      exprLeftHandSide = `Math.floor(this.${userDefinedFilter.fieldName})`;
       break;
     case 'ROUND':
-      fieldFunction = Math.round;
+      exprLeftHandSide = `Math.round(this.${userDefinedFilter.fieldName})`;
       break;
     case 'LENGTH':
-      fieldFunction = (value: string) => value.length;
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.length`;
       break;
     case 'LOWER':
-      fieldFunction = (value: string) => value.toLowerCase();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.toLowerCase()`;
       break;
     case 'LTRIM':
-      fieldFunction = (value: string) => value.trimStart();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.trimStart()`;
       break;
     case 'RTRIM':
-      fieldFunction = (value: string) => value.trimEnd();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.trimEnd()`;
       break;
     case 'TRIM':
-      fieldFunction = (value: string) => value.trim();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.trim()`;
       break;
     case 'UPPER':
-      fieldFunction = (value: string) => value.toUpperCase();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.toUpperCase()`;
       break;
     case 'DAY':
-      fieldFunction = (value: Date) => value.getDay();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.getDay()`;
       break;
     case 'HOUR':
-      fieldFunction = (value: Date) => value.getHours();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.getHours()`;
       break;
     case 'MINUTE':
-      fieldFunction = (value: Date) => value.getMinutes();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.getMinutes()`;
       break;
     case 'MONTH':
-      fieldFunction = (value: Date) => value.getMonth();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.getMonth()`;
       break;
     case 'QUARTER':
-      fieldFunction = (value: Date) => {
-        if (value.getMonth() >= 0 && value.getMonth() <= 2) {
-          return 1;
-        } else if (value.getMonth() >= 3 && value.getMonth() <= 5) {
-          return 2;
-        } else if (value.getMonth() >= 6 && value.getMonth() <= 8) {
-          return 3;
-        } else if (value.getMonth() >= 9 && value.getMonth() <= 11) {
-          return 4;
-        }
-        return NaN;
-      };
+      exprLeftHandSide = `Math.ceil((this.${userDefinedFilter.fieldName}.getMonth() + 1) / 3)`;
       break;
     case 'SECOND':
-      fieldFunction = (value: Date) => value.getSeconds();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.getSeconds()`;
       break;
     case 'WEEK':
-      fieldFunction = (value: Date) => dayjs(value).week();
-      break;
+      throw new Error('Field function WEEK not supported in user defined filters');
     case 'WEEKDAY':
-      fieldFunction = (value: Date) => dayjs(value).day();
-      break;
+      throw new Error('Field function WEEKDAY not supported in user defined filters');
     case 'YEAR':
-      fieldFunction = (value: Date) => value.getFullYear();
+      exprLeftHandSide = `this.${userDefinedFilter.fieldName}.getFullYear()`;
       break;
+    default:
+      exprLeftHandSide = '';
   }
 
   switch (userDefinedFilter.operator) {
     case '=':
       return {
-        $where: function() {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return fieldFunction((this as any)[userDefinedFilter.fieldName!]) === userDefinedFilter.value;
-        }
+        $where: `function() {
+          return ${exprLeftHandSide} === ${userDefinedFilter.value};
+        }`
       };
     case '!=':
       return {
-        $where: function() {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return fieldFunction((this as any)[userDefinedFilter.fieldName!]) !== userDefinedFilter.value;
-        }
+        $where: `function() {
+          return ${exprLeftHandSide} !== ${userDefinedFilter.value};
+        }`
       };
     case '>':
       return {
-        $where: function() {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return fieldFunction((this as any)[userDefinedFilter.fieldName!]) > userDefinedFilter.value;
-        }
+        $where: `function() {
+          return ${exprLeftHandSide} > ${userDefinedFilter.value};
+        }`
       };
     case '<':
       return {
-        $where: function() {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return fieldFunction((this as any)[userDefinedFilter.fieldName!]) < userDefinedFilter.value;
-        }
+        $where: `function() {
+          return ${exprLeftHandSide} < ${userDefinedFilter.value};
+        }`
       };
     case '>=':
       return {
-        $where: function() {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return fieldFunction((this as any)[userDefinedFilter.fieldName!]) >= userDefinedFilter.value;
-        }
+        $where: `function() {
+          return ${exprLeftHandSide} >= ${userDefinedFilter.value};
+        }`
       };
     case '<=':
       return {
-        $where: function() {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return fieldFunction((this as any)[userDefinedFilter.fieldName!]) <= userDefinedFilter.value;
-        }
+        $where: `function() {
+          return ${exprLeftHandSide} <= ${userDefinedFilter.value};
+        }`
       };
     case 'IN':
       return {
-        $where: function() {
-          return userDefinedFilter.value.some(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            (v: any) => fieldFunction((this as any)[userDefinedFilter.fieldName!]) == v
-          );
+        [userDefinedFilter.fieldName]: {
+          $in: userDefinedFilter.value.map((v: any) => {
+            return {
+              $where: `function() {
+                  return ${exprLeftHandSide} == ${v};
+                }`
+            };
+          })
         }
       };
     case 'NOT IN':
       return {
-        $where: function() {
-          return !userDefinedFilter.value.some(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            (v: any) => fieldFunction((this as any)[userDefinedFilter.fieldName!]) == v
-          );
+        [userDefinedFilter.fieldName]: {
+          $nin: userDefinedFilter.value.map((v: any) => {
+            return {
+              $where: `function() {
+                  return ${exprLeftHandSide} == ${v};
+                }`
+            };
+          })
         }
       };
     case 'LIKE':
       return {
-        $where: function() {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return fieldFunction((this as any)[userDefinedFilter.fieldName!]).match(
-            new RegExp(userDefinedFilter.value)
-          );
-        }
+        $where: `function() {
+            return ${exprLeftHandSide}.match(${userDefinedFilter.value});
+          }`
       };
     case 'NOT LIKE':
       return {
-        $where: function() {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return !fieldFunction((this as any)[userDefinedFilter.fieldName!]).match(
-            new RegExp(userDefinedFilter.value)
-          );
-        }
+        $where: `function() {
+          return !${exprLeftHandSide}.match(${userDefinedFilter.value});
+        }`
       };
     case 'IS NULL':
       return {
-        $where: function() {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return fieldFunction((this as any)[userDefinedFilter.fieldName!]) === null;
-        }
+        $where: `function() {
+          return ${exprLeftHandSide} === null;
+        }`
       };
     case 'IS NOT NULL':
       return {
-        $where: function() {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return fieldFunction((this as any)[userDefinedFilter.fieldName!]) !== null;
-        }
+        $where: `function() {
+          return ${exprLeftHandSide} !== null;
+        }`
       };
   }
 }
@@ -177,44 +159,46 @@ export default function convertUserDefinedFiltersToMatchExpression(
   userDefinedFilters: UserDefinedFilter[]
 ): object {
   return userDefinedFilters.reduce((matchExpressions, userDefinedFilter) => {
-    let matchExpression;
+    if (userDefinedFilter.operator === 'OR' && userDefinedFilter.orFilters) {
+      return {
+        $or: userDefinedFilter.orFilters.map((orFilter) =>
+          convertUserDefinedFiltersToMatchExpression([orFilter])
+        )
+      };
+    }
 
     if (!userDefinedFilter.fieldName) {
       throw new Error('fieldName is not defined for user defined filter');
     }
+
+    let matchExpression;
 
     if (userDefinedFilter.fieldFunction) {
       matchExpression = getWhereExpression(userDefinedFilter);
     } else if (userDefinedFilter.operator === '=') {
       matchExpression = { [userDefinedFilter.fieldName]: userDefinedFilter.value };
     } else if (userDefinedFilter.operator === '!=') {
-      matchExpression = { $ne: { [userDefinedFilter.fieldName]: userDefinedFilter.value } };
+      matchExpression = { [userDefinedFilter.fieldName]: { $ne: userDefinedFilter.value } };
     } else if (userDefinedFilter.operator === '>') {
-      matchExpression = { $gt: { [userDefinedFilter.fieldName]: userDefinedFilter.value } };
+      matchExpression = { [userDefinedFilter.fieldName]: { $gt: userDefinedFilter.value } };
     } else if (userDefinedFilter.operator === '<') {
-      matchExpression = { $lt: { [userDefinedFilter.fieldName]: userDefinedFilter.value } };
+      matchExpression = { [userDefinedFilter.fieldName]: { $lt: userDefinedFilter.value } };
     } else if (userDefinedFilter.operator === '>=') {
-      matchExpression = { $gte: { [userDefinedFilter.fieldName]: userDefinedFilter.value } };
+      matchExpression = { [userDefinedFilter.fieldName]: { $gte: userDefinedFilter.value } };
     } else if (userDefinedFilter.operator === '<=') {
-      matchExpression = { $lte: { [userDefinedFilter.fieldName]: userDefinedFilter.value } };
+      matchExpression = { [userDefinedFilter.fieldName]: { $lte: userDefinedFilter.value } };
     } else if (userDefinedFilter.operator === 'IN') {
-      matchExpression = { $in: { [userDefinedFilter.fieldName]: userDefinedFilter.value } };
+      matchExpression = { [userDefinedFilter.fieldName]: { $in: userDefinedFilter.value } };
     } else if (userDefinedFilter.operator === 'NOT IN') {
-      matchExpression = { $nin: { [userDefinedFilter.fieldName]: userDefinedFilter.value } };
+      matchExpression = { [userDefinedFilter.fieldName]: { $nin: userDefinedFilter.value } };
     } else if (userDefinedFilter.operator === 'LIKE') {
       matchExpression = { [userDefinedFilter.fieldName]: new RegExp(userDefinedFilter.value) };
     } else if (userDefinedFilter.operator === 'NOT LIKE') {
-      matchExpression = { [userDefinedFilter.fieldName]: { $not: userDefinedFilter.value } };
+      matchExpression = { [userDefinedFilter.fieldName]: { $not: new RegExp(userDefinedFilter.value) } };
     } else if (userDefinedFilter.operator === 'IS NULL') {
       matchExpression = { [userDefinedFilter.fieldName]: null };
     } else if (userDefinedFilter.operator === 'IS NOT NULL') {
-      matchExpression = { $ne: { [userDefinedFilter.fieldName]: null } };
-    } else if (userDefinedFilter.operator === 'OR' && userDefinedFilter.orFilters) {
-      matchExpression = {
-        $or: userDefinedFilter.orFilters.map((orFilter) =>
-          convertUserDefinedFiltersToMatchExpression([orFilter])
-        )
-      };
+      matchExpression = { [userDefinedFilter.fieldName]: { $ne: null } };
     }
 
     return {

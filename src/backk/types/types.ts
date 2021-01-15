@@ -27,7 +27,7 @@ import _IdAndCaptchaAndVersionAndLastModifiedTimestamp
   from "./id/_IdAndCaptchaAndVersionAndLastModifiedTimestamp";
 import _IdAndCaptchaAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp
   from "./id/_IdAndCaptchaAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp";
-import NestedUserDefinedFilter from "./userdefinedfilters/NestedUserDefinedFilter";
+import OrFilter from "./userdefinedfilters/OrFilter";
 
 const types = {
   _Id,
@@ -53,7 +53,7 @@ const types = {
   SortBy,
   SubPagination,
   UserDefinedFilter,
-  NestedUserDefinedFilter,
+  OrFilter,
   Captcha
 }
 
