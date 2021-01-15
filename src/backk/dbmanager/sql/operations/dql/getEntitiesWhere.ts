@@ -13,6 +13,7 @@ import tryGetProjection from './clauses/tryGetProjection';
 import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import getSqlColumnFromProjection from './utils/columns/getSqlColumnFromProjection';
 import { HttpStatusCodes } from '../../../../constants/constants';
+import createSubPaginationSelectStatement from './clauses/createSubPaginationSelectStatement';
 
 export default async function getEntitiesWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -40,7 +41,10 @@ export default async function getEntitiesWhere<T>(
     } catch (error) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(
-        createErrorMessageWithStatusCode('Invalid query filter field name: ' + fieldName, HttpStatusCodes.BAD_REQUEST)
+        createErrorMessageWithStatusCode(
+          'Invalid query filter field name: ' + fieldName,
+          HttpStatusCodes.BAD_REQUEST
+        )
       );
     }
 
@@ -58,10 +62,16 @@ export default async function getEntitiesWhere<T>(
       EntityClass
     );
 
-    const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${finalFieldName} = ${dbManager.getValuePlaceholder(1)} ${sortClause} ${pagingClause}`,
-      [finalFieldValue]
+    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${finalFieldName} = ${dbManager.getValuePlaceholder(
+      1
+    )} ${sortClause} ${pagingClause}`;
+
+    const finalSelectStatement = createSubPaginationSelectStatement(
+      selectStatement,
+      postQueryOperations.subPaginations
     );
+
+    const result = await dbManager.tryExecuteQuery(finalSelectStatement, [finalFieldValue]);
 
     if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorMessageAndStatusCode(

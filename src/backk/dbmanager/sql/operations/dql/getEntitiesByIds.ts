@@ -8,6 +8,7 @@ import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import { HttpStatusCodes } from '../../../../constants/constants';
+import createSubPaginationSelectStatement from './clauses/createSubPaginationSelectStatement';
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
@@ -36,14 +37,20 @@ export default async function getEntitiesByIds<T>(
     });
 
     const idPlaceholders = _ids.map((_, index) => dbManager.getValuePlaceholder(index + 1)).join(', ');
+    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${entityClass.name.toLowerCase()} ${joinClause} WHERE _id IN (${idPlaceholders}) ${sortClause} ${pagingClause}`;
 
-    const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${entityClass.name.toLowerCase()} ${joinClause} WHERE _id IN (${idPlaceholders}) ${sortClause} ${pagingClause}`,
-      numericIds
+    const finalSelectStatement = createSubPaginationSelectStatement(
+      selectStatement,
+      postQueryOperations.subPaginations
     );
 
+    const result = await dbManager.tryExecuteQuery(finalSelectStatement, numericIds);
+
     if (dbManager.getResultRows(result).length === 0) {
-      return createErrorResponseFromErrorMessageAndStatusCode(`Item with _ids: ${_ids} not found`, HttpStatusCodes.NOT_FOUND);
+      return createErrorResponseFromErrorMessageAndStatusCode(
+        `Item with _ids: ${_ids} not found`,
+        HttpStatusCodes.NOT_FOUND
+      );
     }
 
     return transformRowsToObjects(dbManager.getResultRows(result), entityClass, postQueryOperations, Types);

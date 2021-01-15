@@ -11,10 +11,10 @@ import DefaultPostQueryOperations from '../../../../types/postqueryoperations/De
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import tryGetProjection from './clauses/tryGetProjection';
-import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import getSqlColumnFromProjection from './utils/columns/getSqlColumnFromProjection';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import { HttpStatusCodes } from '../../../../constants/constants';
+import createSubPaginationSelectStatement from './clauses/createSubPaginationSelectStatement';
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -67,12 +67,16 @@ export default async function getEntityWhere<T>(
       EntityClass
     );
 
-    const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${finalFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
-        1
-      )}`,
-      [finalFieldValue]
+    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${finalFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+      1
+    )}`;
+
+    const finalSelectStatement = createSubPaginationSelectStatement(
+      selectStatement,
+      finalPostQueryOperations.subPaginations
     );
+    
+    const result = await dbManager.tryExecuteQuery(finalSelectStatement, [finalFieldValue]);
 
     if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorMessageAndStatusCode(

@@ -5,7 +5,8 @@ import createErrorMessageWithStatusCode from '../../../../../errors/createErrorM
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
 import convertUserDefinedFilterToSqlString from '../utils/convertUserDefinedFilterToSqlString';
 import SubPagination from '../../../../../types/postqueryoperations/SubPagination';
-import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
+import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
+import { HttpStatusCodes } from '../../../../../constants/constants';
 
 export default function tryGetWhereClause<T>(
   dbManager: AbstractSqlDbManager,
@@ -45,23 +46,14 @@ export default function tryGetWhereClause<T>(
     try {
       projection = tryGetProjection(dbManager, { includeResponseFields: [fieldName] }, entityClass, Types);
     } catch (error) {
-      throw new Error(createErrorMessageWithStatusCode('Invalid filter field: ' + fieldName, 400));
+      throw new Error(
+        createErrorMessageWithStatusCode('Invalid filter field: ' + fieldName, HttpStatusCodes.BAD_REQUEST)
+      );
     }
 
     const sqlColumn = getSqlColumnFromProjection(projection);
     filtersSql = filtersSql.replace(new RegExp(fieldNameTemplate, 'g'), sqlColumn);
   });
-
-  if (subPaginations && subPaginations.length > 0) {
-    const rankFilters = subPaginations.map(({ fieldName, pageNumber, pageSize }) => {
-      const minRank = (pageNumber - 1) * pageSize;
-      const maxRank = minRank + pageSize;
-      const rankFieldName = fieldName.replace('.', '_') + '_rank';
-      return `${rankFieldName} >= ${minRank} AND ${rankFieldName} < ${maxRank}`;
-    });
-
-    filtersSql = filtersSql ? ' AND ' + rankFilters.join(' AND ') : rankFilters.join(' AND ');
-  }
 
   return filtersSql ? `WHERE ${filtersSql}` : '';
 }

@@ -10,6 +10,7 @@ import DefaultPostQueryOperations from '../../../../types/postqueryoperations/De
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import { HttpStatusCodes } from '../../../../constants/constants';
+import createSubPaginationSelectStatement from './clauses/createSubPaginationSelectStatement';
 
 export default async function getEntityById<T>(
   dbManager: AbstractSqlDbManager,
@@ -43,12 +44,16 @@ export default async function getEntityById<T>(
       );
     }
 
-    const result = await dbManager.tryExecuteQuery(
-      `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${
-        dbManager.schema.toLowerCase()
-      }.${EntityClass.name.toLowerCase()}.${idFieldName} = ${dbManager.getValuePlaceholder(1)}`,
-      [numericId]
+    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()}.${idFieldName} = ${dbManager.getValuePlaceholder(
+      1
+    )}`;
+
+    const finalSelectStatement = createSubPaginationSelectStatement(
+      selectStatement,
+      postQueryOperations?.subPaginations
     );
+
+    const result = await dbManager.tryExecuteQuery(finalSelectStatement, [numericId]);
 
     if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorMessageAndStatusCode(
