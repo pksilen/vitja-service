@@ -75,7 +75,7 @@ export default async function getEntityWhere<T>(
       selectStatement,
       finalPostQueryOperations.subPaginations
     );
-    
+
     const result = await dbManager.tryExecuteQuery(finalSelectStatement, [finalFieldValue]);
 
     if (dbManager.getResultRows(result).length === 0) {

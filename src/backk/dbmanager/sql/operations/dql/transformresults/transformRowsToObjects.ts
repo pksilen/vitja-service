@@ -4,6 +4,7 @@ import decryptItems from "../../../../../crypt/decryptItems";
 import createResultMaps from "./createResultMaps";
 import removeSingleSubEntitiesWithNullProperties from "./removeSingleSubEntitiesWithNullProperties";
 import { PostQueryOperations } from "../../../../../types/postqueryoperations/PostQueryOperations";
+import * as util from "util";
 
 const parsedRowProcessingBatchSize = parseInt(process.env.ROW_PROCESSING_BATCH_SIZE ?? '500', 10)
 const ROW_PROCESSING_BATCH_SIZE = isNaN(parsedRowProcessingBatchSize) ? 500 : parsedRowProcessingBatchSize;
@@ -22,7 +23,7 @@ function getMappedRows(
     EntityClass.name + 'Map',
     EntityClass.name.toLowerCase() + '_'
   );
-
+  
   transformNonEntityArrays(mappedRows, EntityClass, Types);
   decryptItems(mappedRows, EntityClass, Types);
   removeSingleSubEntitiesWithNullProperties(mappedRows);

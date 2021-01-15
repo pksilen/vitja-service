@@ -11,7 +11,7 @@ function updateResultMaps(
   projection: Projection,
   fieldPath: string,
   suppliedEntityMetadata: { [key: string]: string } = {},
-  parentEntityClass?: Function
+  ParentEntityClass?: Function
 ) {
   const entityMetadata =
     typeof entityClassOrName === 'function'
@@ -19,7 +19,10 @@ function updateResultMaps(
       : suppliedEntityMetadata;
 
   const entityName = typeof entityClassOrName === 'function' ? entityClassOrName.name : entityClassOrName;
-  const idFieldName = parentEntityClass ? 'id' : '_id';
+  let idFieldName = 'id';
+  if (entityMetadata._id) {
+    idFieldName = '_id';
+  }
 
   const resultMap = {
     mapId: entityName + 'Map',
@@ -96,7 +99,7 @@ function updateResultMaps(
         );
       }
     } else {
-      if ((!parentEntityClass && fieldName !== '_id') || (parentEntityClass && fieldName !== 'id')) {
+      if ((!ParentEntityClass && fieldName !== '_id') || (ParentEntityClass && fieldName !== 'id')) {
         if (shouldIncludeField(fieldName, fieldPath, projection)) {
           resultMap.properties.push({ name: fieldName, column: fieldName.toLowerCase() });
         }
