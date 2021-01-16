@@ -23,7 +23,10 @@ export default async function getEntityById<T>(
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   const Types = dbManager.getTypes();
-  const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
+  const finalPostQueryOperations = postQueryOperations ?? {
+    ...new DefaultPostQueryOperations(),
+    pageSize: 1
+  };
 
   try {
     const { columns, joinClause } = getSqlSelectStatementParts(

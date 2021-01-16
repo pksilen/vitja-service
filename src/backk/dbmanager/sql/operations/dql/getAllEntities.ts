@@ -14,8 +14,10 @@ export default async function getAllEntities<T>(
   postQueryOperations?: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
+
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
+
   const finalPostQueryOperations = postQueryOperations ?? {
     ...new DefaultPostQueryOperations(),
     pageSize: Number.MAX_SAFE_INTEGER

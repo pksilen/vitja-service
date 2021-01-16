@@ -15,6 +15,7 @@ import getSqlColumnFromProjection from './utils/columns/getSqlColumnFromProjecti
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import { HttpStatusCodes } from '../../../../constants/constants';
 import createSubPaginationSelectStatement from './clauses/createSubPaginationSelectStatement';
+import isUniqueField from './utils/isUniqueField';
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -23,18 +24,18 @@ export default async function getEntityWhere<T>(
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
-  if (
-    !fieldName.includes('.') &&
-    !typePropertyAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName)
-  ) {
-    throw new Error(`Field ${EntityClass}.${fieldName} values must be annotated with @Unique annotation`);
+  if (isUniqueField(fieldName, EntityClass, dbManager.getTypes())) {
+    throw new Error(`Field ${fieldName} is not unique. Annotate entity field with @Unique annotation`);
   }
 
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   const Types = dbManager.getTypes();
-  const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
+  const finalPostQueryOperations = postQueryOperations ?? {
+    ...new DefaultPostQueryOperations(),
+    pageSize: 1
+  };
 
   try {
     let projection;
@@ -82,11 +83,6 @@ export default async function getEntityWhere<T>(
       return createErrorResponseFromErrorMessageAndStatusCode(
         `Item with ${fieldName}: ${fieldValue} not found`,
         HttpStatusCodes.NOT_FOUND
-      );
-    } else if (dbManager.getResultRows(result).length > 1) {
-      return createErrorResponseFromErrorMessageAndStatusCode(
-        `Field ${fieldName} values must be unique`,
-        HttpStatusCodes.INTERNAL_SERVER_ERROR
       );
     }
 
