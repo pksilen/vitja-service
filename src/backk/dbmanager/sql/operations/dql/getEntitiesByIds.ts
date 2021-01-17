@@ -13,17 +13,20 @@ import createSubPaginationSelectStatement from './clauses/createSubPaginationSel
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
   _ids: string[],
-  entityClass: new () => T,
+  EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
   try {
     updateDbLocalTransactionCount(dbManager);
 
     const Types = dbManager.getTypes();
-    const { columns, joinClause, sortClause, pagingClause } = getSqlSelectStatementParts(
+    const { rootSortClause, columns, joinClauses, rootSortClause, rootPaginationClause } = getSqlSelectStatementParts(
       dbManager,
       postQueryOperations,
-      entityClass
+      EntityClass,
+      undefined,
+      false,
+      true
     );
 
     const numericIds = _ids.map((id) => {
@@ -37,7 +40,7 @@ export default async function getEntitiesByIds<T>(
     });
 
     const idPlaceholders = _ids.map((_, index) => dbManager.getValuePlaceholder(index + 1)).join(', ');
-    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${entityClass.name.toLowerCase()} ${joinClause} WHERE _id IN (${idPlaceholders}) ${sortClause} ${pagingClause}`;
+    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as root WHERE _id IN (${idPlaceholders}) ${rootSortClause} ${rootPaginationClause}) ${joinClauses} ${rootSortClause}`;
 
     const finalSelectStatement = createSubPaginationSelectStatement(
       selectStatement,
@@ -53,7 +56,7 @@ export default async function getEntitiesByIds<T>(
       );
     }
 
-    return transformRowsToObjects(dbManager.getResultRows(result), entityClass, postQueryOperations, Types);
+    return transformRowsToObjects(dbManager.getResultRows(result), EntityClass, postQueryOperations, Types);
   } catch (error) {
     return createErrorResponseFromError(error);
   }

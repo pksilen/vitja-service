@@ -56,15 +56,26 @@ export default async function getEntitiesWhere<T>(
       finalFieldValue = encrypt(fieldValue as any, false);
     }
 
-    const { columns, joinClause, sortClause, pagingClause } = getSqlSelectStatementParts(
+    const { rootSortClause, columns, joinClauses, rootSortClause, rootPaginationClause } = getSqlSelectStatementParts(
       dbManager,
       postQueryOperations,
-      EntityClass
+      EntityClass,
+      undefined,
+      false,
+      true
     );
 
-    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${finalFieldName} = ${dbManager.getValuePlaceholder(
-      1
-    )} ${sortClause} ${pagingClause}`;
+    let selectStatement;
+    if (fieldName.includes('.')) {
+      selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as root WHERE ${finalFieldName} = ${dbManager.getValuePlaceholder(
+        1
+      )} ${rootSortClause}) ${rootPaginationClause}) ${joinClauses}  ${rootSortClause}`;
+    } else
+    {
+      selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as root ${rootSortClause} ${rootPaginationClause}) ${joinClauses} WHERE ${finalFieldName} = ${dbManager.getValuePlaceholder(
+        1
+      )} ${rootSortClause}`;
+    }
 
     const finalSelectStatement = createSubPaginationSelectStatement(
       selectStatement,

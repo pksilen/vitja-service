@@ -4,15 +4,15 @@ import getSqlColumnFromProjection from '../utils/columns/getSqlColumnFromProject
 import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
 import convertUserDefinedFilterToSqlString from '../utils/convertUserDefinedFilterToSqlString';
-import SubPagination from '../../../../../types/postqueryoperations/SubPagination';
+import SubEntityPagination from '../../../../../types/postqueryoperations/SubEntityPagination';
 import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
 import { HttpStatusCodes } from '../../../../../constants/constants';
 
 export default function tryGetWhereClause<T>(
   dbManager: AbstractSqlDbManager,
   filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
-  subPaginations: SubPagination[] | undefined,
-  entityClass: Function,
+  subPaginations: SubEntityPagination[] | undefined,
+  EntityClass: Function,
   Types: object
 ) {
   let filtersSql: string;
@@ -44,7 +44,7 @@ export default function tryGetWhereClause<T>(
 
     let projection;
     try {
-      projection = tryGetProjection(dbManager, { includeResponseFields: [fieldName] }, entityClass, Types);
+      projection = tryGetProjection(dbManager, { includeResponseFields: [fieldName] }, EntityClass, Types);
     } catch (error) {
       throw new Error(
         createErrorMessageWithStatusCode('Invalid filter field: ' + fieldName, HttpStatusCodes.BAD_REQUEST)

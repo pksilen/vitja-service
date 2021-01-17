@@ -1,12 +1,11 @@
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import transformRowsToObjects from './transformresults/transformRowsToObjects';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
-import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
-import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
-import createSubPaginationSelectStatement from './clauses/createSubPaginationSelectStatement';
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import transformRowsToObjects from "./transformresults/transformRowsToObjects";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
 
 export default async function getAllEntities<T>(
   dbManager: AbstractSqlDbManager,
@@ -24,20 +23,14 @@ export default async function getAllEntities<T>(
   };
 
   try {
-    const { columns, joinClause, sortClause, pagingClause } = getSqlSelectStatementParts(
+    const { columns, joinClauses, rootSortClause } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,
       EntityClass
     );
 
-    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} ${sortClause} ${pagingClause}`;
-
-    const finalSelectStatement = createSubPaginationSelectStatement(
-      selectStatement,
-      finalPostQueryOperations.subPaginations
-    );
-
-    const result = await dbManager.tryExecuteQuery(finalSelectStatement);
+    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClauses} ${rootSortClause}`;
+    const result = await dbManager.tryExecuteQuery(selectStatement);
 
     return transformRowsToObjects(
       dbManager.getResultRows(result),

@@ -5,13 +5,13 @@ import assertIsSortDirection from '../../../../../assertions/assertIsSortDirecti
 import SortBy from '../../../../../types/postqueryoperations/SortBy';
 import getFieldsForEntity from '../utils/columns/getFieldsForEntity';
 import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
-import SubPagination from '../../../../../types/postqueryoperations/SubPagination';
+import SubEntityPagination from '../../../../../types/postqueryoperations/SubEntityPagination';
 import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
 
 export default function tryGetOrderByClause<T>(
   dbManager: AbstractSqlDbManager,
   sortBys: SortBy[] | undefined,
-  subPaginations: SubPagination[] | undefined,
+  subPaginations: SubEntityPagination[] | undefined,
   entityClass: new () => T,
   Types: object
 ) {

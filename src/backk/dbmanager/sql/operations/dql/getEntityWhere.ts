@@ -62,13 +62,13 @@ export default async function getEntityWhere<T>(
       finalFieldValue = encrypt(fieldValue as any, false);
     }
 
-    const { columns, joinClause } = getSqlSelectStatementParts(
+    const { columns, joinClauses } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,
       EntityClass
     );
 
-    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${finalFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClauses} WHERE ${finalFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
       1
     )}`;
 

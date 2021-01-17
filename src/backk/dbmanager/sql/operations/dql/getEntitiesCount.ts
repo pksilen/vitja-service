@@ -1,11 +1,10 @@
-import SqlExpression from '../../expressions/SqlExpression';
-import { pg } from 'yesql';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
-import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
-import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import SqlExpression from "../../expressions/SqlExpression";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
+import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
@@ -17,14 +16,14 @@ export default async function getEntitiesCount<T>(
   EntityClass = dbManager.getType(EntityClass);
 
   try {
-    const { joinClause, whereClause, filterValues } = getSqlSelectStatementParts(
+    const { joinClauses, rootWhereClause, filterValues } = getSqlSelectStatementParts(
       dbManager,
       new DefaultPostQueryOperations(),
       EntityClass
     );
 
     const result = await dbManager.tryExecuteQueryWithNamedParameters(
-      `SELECT COUNT(*) FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} ${whereClause}`,
+      `SELECT COUNT(*) FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClauses} ${rootWhereClause}`,
       filterValues
     );
 

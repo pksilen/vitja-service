@@ -13,7 +13,7 @@ import Id from "./id/Id";
 import _IdsAndDefaultPostQueryOperations from "./postqueryoperations/_IdsAndDefaultPostQueryOperations";
 import DefaultPostQueryOperations from "./postqueryoperations/DefaultPostQueryOperations";
 import SortBy from "./postqueryoperations/SortBy";
-import SubPagination from "./postqueryoperations/SubPagination";
+import SubEntityPagination from "./postqueryoperations/SubEntityPagination";
 import Captcha from "./Captcha";
 import UserDefinedFilter from "./userdefinedfilters/UserDefinedFilter";
 import _IdAndCaptcha from "./id/_IdAndCaptcha";
@@ -51,7 +51,7 @@ const types = {
   _IdsAndDefaultPostQueryOperations,
   DefaultPostQueryOperations,
   SortBy,
-  SubPagination,
+  SubEntityPagination,
   UserDefinedFilter,
   OrFilter,
   Captcha

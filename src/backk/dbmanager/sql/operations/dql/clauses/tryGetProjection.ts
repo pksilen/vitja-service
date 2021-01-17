@@ -7,9 +7,10 @@ import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
 export default function tryGetProjection(
   dbManager: AbstractSqlDbManager,
   projection: Projection,
-  entityClass: Function,
+  EntityClass: Function,
   Types: object,
-  isInternalCall = false
+  isInternalCall = false,
+  useRootEntity = false
 ): string {
   const fields: string[] = [];
 
@@ -28,11 +29,12 @@ export default function tryGetProjection(
       getFieldsForEntity(
         dbManager,
         fields,
-        entityClass as any,
+        EntityClass as any,
         Types,
         { includeResponseFields: [includeResponseField] },
         '',
-        isInternalCall
+        isInternalCall,
+        useRootEntity
       );
 
       if (fields.length === 0) {
@@ -53,11 +55,12 @@ export default function tryGetProjection(
       getFieldsForEntity(
         dbManager,
         fields,
-        entityClass as any,
+        EntityClass as any,
         Types,
         { includeResponseFields: [excludeResponseField] },
         '',
-        isInternalCall
+        isInternalCall,
+        useRootEntity
       );
 
       if (fields.length === 0) {
@@ -71,6 +74,6 @@ export default function tryGetProjection(
     });
   }
 
-  getFieldsForEntity(dbManager, fields, entityClass as any, Types, projection, '', isInternalCall);
+  getFieldsForEntity(dbManager, fields, EntityClass as any, Types, projection, '', isInternalCall, useRootEntity);
   return fields.join(', ');
 }

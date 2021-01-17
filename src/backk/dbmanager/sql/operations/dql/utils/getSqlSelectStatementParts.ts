@@ -1,42 +1,35 @@
-import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
-import { PostQueryOperations } from '../../../../../types/postqueryoperations/PostQueryOperations';
-import SqlExpression from '../../../expressions/SqlExpression';
-import tryGetProjection from '../clauses/tryGetProjection';
-import getJoinClause from '../clauses/getJoinClause';
-import tryGetWhereClause from '../clauses/tryGetWhereClause';
-import getFilterValues from './getFilterValues';
-import tryGetSortClause from '../clauses/tryGetOrderByClause';
-import getPaginationClause from '../clauses/getPaginationClause';
-import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
-import tryGetWindowClausesForSubPaginations from '../clauses/tryGetWindowClausesForSubPaginations';
+import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
+import { PostQueryOperations } from "../../../../../types/postqueryoperations/PostQueryOperations";
+import SqlExpression from "../../../expressions/SqlExpression";
+import tryGetProjection from "../clauses/tryGetProjection";
+import getJoinClause from "../clauses/getJoinClause";
+import tryGetWhereClause from "../clauses/tryGetWhereClause";
+import getFilterValues from "./getFilterValues";
+import tryGetSortClause from "../clauses/tryGetOrderByClause";
+import getPaginationClause from "../clauses/getPaginationClause";
+import UserDefinedFilter from "../../../../../types/userdefinedfilters/UserDefinedFilter";
 
 export default function getSqlSelectStatementParts<T>(
   dbManager: AbstractSqlDbManager,
   { pageNumber, pageSize, sortBys, subPaginations, ...projection }: PostQueryOperations,
-  entityClass: new () => T,
+  EntityClass: new () => T,
   filters?: Partial<T> | SqlExpression[] | UserDefinedFilter[],
-  isInternalCall = false
+  isInternalCall = false,
+  useRootEntity = false
 ) {
   const Types = dbManager.getTypes();
-  const projectionColumns = tryGetProjection(dbManager, projection, entityClass, Types, isInternalCall);
-  const windowClauses = tryGetWindowClausesForSubPaginations(
-    dbManager,
-    subPaginations,
-    sortBys,
-    entityClass,
-    Types
-  );
-  const columns = projectionColumns + (windowClauses.length > 0 ? ', ' + windowClauses.join(', ') : '');
-  const joinClause = getJoinClause(dbManager.schema, projection, entityClass, Types);
+  const columns = tryGetProjection(dbManager, projection, EntityClass, Types, isInternalCall, useRootEntity);
+  const joinClauses = getJoinClause(dbManager.schema, projection, EntityClass, Types);
 
-  let whereClause = '';
+  let rootWhereClause = '';
   let filterValues = {};
+
   if (filters) {
-    whereClause = tryGetWhereClause(dbManager, filters, subPaginations, entityClass, Types);
+    rootWhereClause = tryGetWhereClause(dbManager, filters, subPaginations, EntityClass, Types);
     filterValues = getFilterValues(filters);
   }
 
-  const sortClause = tryGetSortClause(dbManager, sortBys, subPaginations, entityClass, Types);
-  const pagingClause = getPaginationClause(pageNumber, pageSize);
-  return { columns, joinClause, whereClause, filterValues, sortClause, pagingClause };
+  const rootSortClause = tryGetSortClause(dbManager, sortBys, subPaginations, EntityClass, Types);
+  const rootPaginationClause = getPaginationClause(pageNumber, pageSize);
+  return { columns, joinClauses, rootWhereClause, filterValues, rootSortClause, rootPaginationClause };
 }

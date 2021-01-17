@@ -29,7 +29,7 @@ export default async function getEntityById<T>(
   };
 
   try {
-    const { columns, joinClause } = getSqlSelectStatementParts(
+    const { columns, joinClauses } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,
       EntityClass,
@@ -47,7 +47,7 @@ export default async function getEntityById<T>(
       );
     }
 
-    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClause} WHERE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()}.${idFieldName} = ${dbManager.getValuePlaceholder(
+    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClauses} WHERE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()}.${idFieldName} = ${dbManager.getValuePlaceholder(
       1
     )}`;
 
