@@ -34,6 +34,8 @@ import updateEntityWhere from "./sql/operations/dml/updateEntityWhere";
 import getAllEntities from "./sql/operations/dql/getAllEntities";
 import { SubEntity } from "../types/entities/SubEntity";
 import deleteEntitiesByFilters from "./sql/operations/dml/deleteEntitiesByFilters";
+import { FilterQuery } from "mongodb";
+import User from "../../services/users/types/entities/User";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -458,7 +460,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByFilters<T>(
-    filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
+    filters: FilterQuery<T> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
@@ -469,7 +471,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesCount<T>(
-    filters: Partial<T> | SqlExpression[] | undefined,
+    filters: FilterQuery<T> | SqlExpression[] | UserDefinedFilter[] | undefined,
     entityClass: new () => T
   ): Promise<number | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
@@ -525,25 +527,27 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntityWhere<T>(
+    subEntityPath: string,
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
-    const response = getEntityWhere(this, fieldName, fieldValue, entityClass, postQueryOperations);
+    const response = getEntityWhere(this, subEntityPath, fieldName, fieldValue, entityClass, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
   async getEntitiesWhere<T>(
+    subEntityPath: string,
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesWhere');
-    const response = getEntitiesWhere(this, fieldName, fieldValue, entityClass, postQueryOperations);
+    const response = getEntitiesWhere(this, subEntityPath, fieldName, fieldValue, entityClass, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -567,6 +571,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   updateEntityWhere<T extends Entity>(
+    subEntityPath: string,
     fieldName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
@@ -574,7 +579,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntitiesBy');
-    const response = updateEntityWhere(this, fieldName, fieldValue, entity, entityClass, preHooks);
+    const response = updateEntityWhere(this, subEntityPath, fieldName, fieldValue, entity, entityClass, preHooks);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

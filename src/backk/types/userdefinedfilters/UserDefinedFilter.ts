@@ -15,6 +15,12 @@ export default class UserDefinedFilter {
   @IsOptional()
   @IsString()
   @MaxLengthAndMatches(2048, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
+  subEntityPath: string = '';
+
+
+  @IsOptional()
+  @IsString()
+  @MaxLengthAndMatches(512, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
   fieldName?: string;
 
   @IsOptional()

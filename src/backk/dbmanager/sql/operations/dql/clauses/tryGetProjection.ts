@@ -1,16 +1,15 @@
-import getFieldsFromGraphQlOrJson from "../../../../../graphql/getFieldsFromGraphQlOrJson";
-import { Projection } from "../../../../../types/postqueryoperations/Projection";
-import getFieldsForEntity from "../utils/columns/getFieldsForEntity";
-import createErrorMessageWithStatusCode from "../../../../../errors/createErrorMessageWithStatusCode";
-import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
+import getFieldsFromGraphQlOrJson from '../../../../../graphql/getFieldsFromGraphQlOrJson';
+import { Projection } from '../../../../../types/postqueryoperations/Projection';
+import getFieldsForEntity from '../utils/columns/getFieldsForEntity';
+import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
+import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
 
 export default function tryGetProjection(
   dbManager: AbstractSqlDbManager,
   projection: Projection,
   EntityClass: Function,
   Types: object,
-  isInternalCall = false,
-  useRootEntity = false
+  isInternalCall = false
 ): string {
   const fields: string[] = [];
 
@@ -33,8 +32,7 @@ export default function tryGetProjection(
         Types,
         { includeResponseFields: [includeResponseField] },
         '',
-        isInternalCall,
-        useRootEntity
+        isInternalCall
       );
 
       if (fields.length === 0) {
@@ -59,8 +57,7 @@ export default function tryGetProjection(
         Types,
         { includeResponseFields: [excludeResponseField] },
         '',
-        isInternalCall,
-        useRootEntity
+        isInternalCall
       );
 
       if (fields.length === 0) {
@@ -74,6 +71,6 @@ export default function tryGetProjection(
     });
   }
 
-  getFieldsForEntity(dbManager, fields, EntityClass as any, Types, projection, '', isInternalCall, useRootEntity);
+  getFieldsForEntity(dbManager, fields, EntityClass as any, Types, projection, '', isInternalCall);
   return fields.join(', ');
 }

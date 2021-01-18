@@ -1,8 +1,8 @@
 import SqlExpression from './SqlExpression';
 
 export default class SqlEquals<T> extends SqlExpression {
-  constructor(private readonly filters: Partial<T>) {
-    super('', {});
+  constructor(subEntityPath: string, private readonly filters: Partial<T>) {
+    super(subEntityPath,'', {});
   }
 
   getValues(): Partial<T> {

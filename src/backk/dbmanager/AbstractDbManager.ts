@@ -129,13 +129,13 @@ export default abstract class AbstractDbManager {
   ): Promise<T[] | ErrorResponse>;
 
   abstract getEntitiesByFilters<T>(
-    filters: FilterQuery<T> | Partial<T> | SqlExpression[] | UserDefinedFilter[],
+    filters: FilterQuery<T> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
   abstract getEntitiesCount<T>(
-    filters: Partial<T> | SqlExpression[],
+    filters: FilterQuery<T>| SqlExpression[],
     entityClass: new () => T
   ): Promise<number | ErrorResponse>;
 
@@ -166,15 +166,17 @@ export default abstract class AbstractDbManager {
   ): Promise<T[] | ErrorResponse>;
 
   abstract getEntityWhere<T>(
+    subEntityPath: string,
     fieldName: string,
-    fieldValue: T[keyof T],
+    fieldValue: any,
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
   abstract getEntitiesWhere<T>(
+    subEntityPath: string,
     fieldName: string,
-    fieldValue: T[keyof T],
+    fieldValue: any,
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
@@ -214,8 +216,9 @@ export default abstract class AbstractDbManager {
   }
 
   abstract updateEntityWhere<T extends Entity>(
+    subEntityPath: string,
     fieldName: string,
-    fieldValue: T[keyof T],
+    fieldValue: any,
     entity: RecursivePartial<T>,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]

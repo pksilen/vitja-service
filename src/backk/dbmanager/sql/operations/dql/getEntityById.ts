@@ -10,7 +10,6 @@ import DefaultPostQueryOperations from '../../../../types/postqueryoperations/De
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import { HttpStatusCodes } from '../../../../constants/constants';
-import createSubPaginationSelectStatement from './clauses/createSubPaginationSelectStatement';
 
 export default async function getEntityById<T>(
   dbManager: AbstractSqlDbManager,
@@ -20,13 +19,12 @@ export default async function getEntityById<T>(
   isInternalCall = false
 ): Promise<T | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
+
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
+
   const Types = dbManager.getTypes();
-  const finalPostQueryOperations = postQueryOperations ?? {
-    ...new DefaultPostQueryOperations(),
-    pageSize: 1
-  };
+  const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
   try {
     const { columns, joinClauses } = getSqlSelectStatementParts(
@@ -40,6 +38,7 @@ export default async function getEntityById<T>(
     const typeMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
     const numericId = parseInt(_id, 10);
+
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(
@@ -47,16 +46,11 @@ export default async function getEntityById<T>(
       );
     }
 
-    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClauses} WHERE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()}.${idFieldName} = ${dbManager.getValuePlaceholder(
+    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as ${EntityClass.name.toLowerCase()} ${joinClauses} WHERE ${EntityClass.name.toLowerCase()}.${idFieldName} = ${dbManager.getValuePlaceholder(
       1
     )}`;
 
-    const finalSelectStatement = createSubPaginationSelectStatement(
-      selectStatement,
-      postQueryOperations?.subPaginations
-    );
-
-    const result = await dbManager.tryExecuteQuery(finalSelectStatement, [numericId]);
+    const result = await dbManager.tryExecuteQuery(selectStatement, [numericId]);
 
     if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorMessageAndStatusCode(

@@ -90,7 +90,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   getShoppingCartByUserId({ userId }: UserId): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.getEntityWhere('userId', userId, ShoppingCart);
+    return this.dbManager.getEntityWhere('', 'userId', userId, ShoppingCart);
   }
 
   @AllowForSelf()

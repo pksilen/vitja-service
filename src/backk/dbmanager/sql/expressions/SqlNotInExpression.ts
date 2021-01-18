@@ -1,13 +1,13 @@
-import SqlExpression from './SqlExpression';
 import SqlInExpression from "./SqlInExpression";
 
 export default class SqlNotInExpression extends SqlInExpression {
   constructor(
+    subEntityPath: string,
     readonly fieldName: string,
     readonly notInExpressionValues?: any[],
     readonly fieldExpression?: string
   ) {
-    super(fieldName, notInExpressionValues, fieldExpression);
+    super(subEntityPath, fieldName, notInExpressionValues, fieldExpression);
   }
 
   toSqlString(): string {

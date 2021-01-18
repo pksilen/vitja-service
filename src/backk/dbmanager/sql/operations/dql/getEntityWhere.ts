@@ -1,26 +1,25 @@
-import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
-import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
-import encrypt from '../../../../crypt/encrypt';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import transformRowsToObjects from './transformresults/transformRowsToObjects';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
-import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
-import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
-import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
-import tryGetProjection from './clauses/tryGetProjection';
-import getSqlColumnFromProjection from './utils/columns/getSqlColumnFromProjection';
-import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import { HttpStatusCodes } from '../../../../constants/constants';
-import createSubPaginationSelectStatement from './clauses/createSubPaginationSelectStatement';
-import isUniqueField from './utils/isUniqueField';
+import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
+import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
+import encrypt from "../../../../crypt/encrypt";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import transformRowsToObjects from "./transformresults/transformRowsToObjects";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import createErrorResponseFromErrorMessageAndStatusCode
+  from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
+import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
+import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import { HttpStatusCodes } from "../../../../constants/constants";
+import isUniqueField from "./utils/isUniqueField";
+import SqlEquals from "../../expressions/SqlEquals";
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
+  subEntityPath: string,
   fieldName: string,
-  fieldValue: T[keyof T] | string,
+  fieldValue: any,
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
@@ -32,52 +31,26 @@ export default async function getEntityWhere<T>(
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   const Types = dbManager.getTypes();
-  const finalPostQueryOperations = postQueryOperations ?? {
-    ...new DefaultPostQueryOperations(),
-    pageSize: 1
-  };
+  const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
   try {
-    let projection;
-    try {
-      projection = tryGetProjection(
-        dbManager,
-        { includeResponseFields: [fieldName] },
-        EntityClass,
-        Types,
-        true
-      );
-    } catch (error) {
-      return createErrorResponseFromErrorMessageAndStatusCode(
-        'Invalid query filter field name: ' + fieldName,
-        HttpStatusCodes.BAD_REQUEST
-      );
+    const filters = [new SqlEquals(subEntityPath, { [fieldName]: fieldValue })];
+    if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
+      // noinspection AssignmentToFunctionParameterJS
+      fieldValue = encrypt(fieldValue, false);
     }
 
-    const finalFieldName = getSqlColumnFromProjection(projection);
+    const {
+      rootWhereClause,
+      rootSortClause,
+      rootPaginationClause,
+      columns,
+      joinClauses,
+      filterValues
+    } = getSqlSelectStatementParts(dbManager, finalPostQueryOperations, EntityClass, filters);
 
-    const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
-    let finalFieldValue = fieldValue;
-    if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
-      finalFieldValue = encrypt(fieldValue as any, false);
-    }
-
-    const { columns, joinClauses } = getSqlSelectStatementParts(
-      dbManager,
-      finalPostQueryOperations,
-      EntityClass
-    );
-
-    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClauses} WHERE ${finalFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
-      1
-    )}`;
-
-    const finalSelectStatement = createSubPaginationSelectStatement(
-      selectStatement,
-      finalPostQueryOperations.subPaginations
-    );
-
-    const result = await dbManager.tryExecuteQuery(finalSelectStatement, [finalFieldValue]);
+    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as ${EntityClass.name.toLowerCase()} ${rootWhereClause} ${rootSortClause}) ${rootPaginationClause}) ${joinClauses}`;
+    const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorMessageAndStatusCode(

@@ -96,7 +96,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     return '';
   }
 
-  getVarCharType(maxLength: number): string {
+  getVarCharType(): string {
     return '';
   }
 

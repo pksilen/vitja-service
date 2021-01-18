@@ -33,6 +33,7 @@ export default function executeCronJobs(controller: any, dbManager: AbstractDbMa
                 const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
                   clsNamespace.set('globalTransaction', true);
                   const possibleErrorResponse = await dbManager.updateEntityWhere(
+                    '',
                     'serviceFunctionName',
                     serviceFunctionName,
                     { lastScheduledTimestamp: new Date(), nextScheduledTimestamp: interval.next().toDate() },

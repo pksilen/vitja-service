@@ -13,8 +13,7 @@ export default function getFieldsForEntity(
   Types: object,
   projection: Projection,
   fieldPath: string,
-  isInternalCall = false,
-  useRootEntity = false
+  isInternalCall = false
 ) {
   const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(
     EntityClass as any
@@ -40,8 +39,7 @@ export default function getFieldsForEntity(
           Types,
           projection,
           fieldPath + entityPropertyName + '.',
-          isInternalCall,
-          useRootEntity
+          isInternalCall
         );
       } else if (isArrayType) {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
@@ -64,22 +62,17 @@ export default function getFieldsForEntity(
         }
       } else {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
-          let tableName = dbManager.schema.toLowerCase() + '.' + EntityClass.name.toLowerCase();
-          if (useRootEntity && fieldPath === '') {
-            tableName = 'root';
-          }
-
           if (
             entityPropertyName === '_id' ||
             entityPropertyName === 'id' ||
             entityPropertyName.endsWith('Id')
           ) {
             fields.push(
-              `CAST(${tableName}.${entityPropertyName.toLowerCase()} AS ${dbManager.getIdColumnCastType()}) AS ${EntityClass.name.toLowerCase()}_${entityPropertyName.toLowerCase()}`
+              `CAST(${EntityClass.name.toLowerCase()}.${entityPropertyName.toLowerCase()} AS ${dbManager.getIdColumnCastType()}) AS ${EntityClass.name.toLowerCase()}_${entityPropertyName.toLowerCase()}`
             );
           } else {
             fields.push(
-              `${tableName}.${entityPropertyName.toLowerCase()} AS ${EntityClass.name.toLowerCase()}_${entityPropertyName.toLowerCase()}`
+              `${EntityClass.name.toLowerCase()}.${entityPropertyName.toLowerCase()} AS ${EntityClass.name.toLowerCase()}_${entityPropertyName.toLowerCase()}`
             );
           }
         }

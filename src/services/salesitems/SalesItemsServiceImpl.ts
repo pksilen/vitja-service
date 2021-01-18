@@ -101,16 +101,16 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       };
     } else {
       filters = [
-        new SqlEquals({ state: 'forSale' }),
-        new SqlExpression('{{title}} LIKE :textFilter OR {{description}} LIKE :textFilter', {
+        new SqlEquals('', { state: 'forSale' }),
+        new SqlExpression('', 'title LIKE :textFilter OR description LIKE :textFilter', {
           textFilter
         }),
-        new SqlInExpression('area', areas),
-        new SqlInExpression('productDepartment', productDepartments),
-        new SqlInExpression('productCategory', productCategories),
-        new SqlInExpression('productSubCategory', productSubCategories),
-        new SqlExpression('price >= :minPrice', { minPrice }),
-        new SqlExpression('price <= :maxPrice', { maxPrice })
+        new SqlInExpression('', 'area', areas),
+        new SqlInExpression('', 'productDepartment', productDepartments),
+        new SqlInExpression('', 'productCategory', productCategories),
+        new SqlInExpression('', 'productSubCategory', productSubCategories),
+        new SqlExpression('', 'price >= :minPrice', { minPrice }),
+        new SqlExpression('', 'price <= :maxPrice', { maxPrice })
       ];
     }
 
@@ -129,7 +129,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     userId,
     ...postQueryOperations
   }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getEntitiesWhere('userId', userId, SalesItem, postQueryOperations);
+    return this.dbManager.getEntitiesWhere('', 'userId', userId, SalesItem, postQueryOperations);
   }
 
   @AllowForEveryUser()
@@ -140,7 +140,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     const filters =
       this.dbManager instanceof MongoDbManager
         ? { state: 'forSale' as SalesItemState, _id: { $in: _ids } }
-        : [new SqlEquals({ state: 'forSale' }), new SqlInExpression('_id', _ids)];
+        : [new SqlEquals('', { state: 'forSale' }), new SqlInExpression('', '_id', _ids)];
 
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOperations);
   }

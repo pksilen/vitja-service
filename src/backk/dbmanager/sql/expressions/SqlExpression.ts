@@ -1,6 +1,6 @@
 
 export default class SqlExpression {
-  constructor(readonly expression: string, readonly values?: object) {}
+  constructor(readonly subEntityPath: string, readonly expression: string, readonly values?: object) {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   toSqlString(): string {

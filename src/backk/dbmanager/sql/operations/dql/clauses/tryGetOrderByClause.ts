@@ -1,50 +1,50 @@
-import _ from 'lodash';
 import tryGetProjection from './tryGetProjection';
 import getSqlColumnFromProjection from '../utils/columns/getSqlColumnFromProjection';
 import assertIsSortDirection from '../../../../../assertions/assertIsSortDirection';
 import SortBy from '../../../../../types/postqueryoperations/SortBy';
-import getFieldsForEntity from '../utils/columns/getFieldsForEntity';
 import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
-import SubEntityPagination from '../../../../../types/postqueryoperations/SubEntityPagination';
 import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
+import { HttpStatusCodes } from '../../../../../constants/constants';
 
 export default function tryGetOrderByClause<T>(
   dbManager: AbstractSqlDbManager,
-  sortBys: SortBy[] | undefined,
-  subPaginations: SubEntityPagination[] | undefined,
-  entityClass: new () => T,
+  subEntityPath: string,
+  sortBys: SortBy[],
+  EntityClass: new () => T,
   Types: object
 ) {
-  const fields: string[] = [];
-  getFieldsForEntity(dbManager, fields, entityClass, Types, {}, '', true);
+  const sortBysForSubEntityPath = sortBys.filter((sortBy) => sortBy.subEntityPath === subEntityPath);
+  const sortBysForAllSubEntityPaths = sortBys.filter((sortBy) => sortBy.subEntityPath === '*');
 
-  const idFields = fields.filter(
-    (field) =>
-      (field.endsWith('.id') || field.endsWith('._id')) &&
-      !sortBys?.find(({ fieldName }) => field !== fieldName) &&
-      !subPaginations?.find(({ fieldName }) => field.slice(0, -3) === fieldName)
-  );
+  const sortBysStr = [...sortBysForSubEntityPath, ...sortBysForAllSubEntityPaths]
+    .map(({ subEntityPath, fieldName, sortDirection }) => {
+      assertIsSortDirection(sortDirection);
 
-  const sortedIdFields = _.sortBy(idFields, (field) => field.length);
-  const idFieldsSortBysStr = sortedIdFields.map((sortedIdField) => sortedIdField + ' ASC').join(', ');
+      let projection;
+      try {
+        projection = tryGetProjection(
+          dbManager,
+          { includeResponseFields: [subEntityPath + '.' + fieldName] },
+          EntityClass,
+          Types
+        );
+      } catch (error) {
+        if (subEntityPath !== '*') {
+          throw new Error(
+            createErrorMessageWithStatusCode('Invalid sort field: ' + fieldName, HttpStatusCodes.BAD_REQUEST)
+          );
+        }
+      }
 
-  const rankSortFields = subPaginations?.map(({ fieldName }) => fieldName.replace('.', '_') + '_rank ASC');
-  const rankSortBysStr = rankSortFields?.join(', ');
+      if (projection) {
+        const sortColumn = getSqlColumnFromProjection(projection);
+        return sortColumn + ' ' + sortDirection;
+      }
 
-  const sortBysStr = sortBys?.map(({ fieldName, sortDirection }) => {
-    assertIsSortDirection(sortDirection);
+      return undefined;
+    })
+    .filter((sortByStr) => sortByStr)
+    .join(', ');
 
-    let projection;
-    try {
-      projection = tryGetProjection(dbManager, { includeResponseFields: [fieldName] }, entityClass, Types);
-    } catch (error) {
-      throw new Error(createErrorMessageWithStatusCode('Invalid sort field: ' + fieldName, 400));
-    }
-
-    const sortColumn = getSqlColumnFromProjection(projection);
-    return sortColumn + ' ' + sortDirection;
-  }).join(', ');
-
-  const allSortBysStr = [sortBysStr, rankSortBysStr, idFieldsSortBysStr].filter(str => str).join(', ');
-  return allSortBysStr ? `ORDER BY ${allSortBysStr}` : '';
+  return sortBysStr ? `ORDER BY ${sortBysStr}` : '';
 }

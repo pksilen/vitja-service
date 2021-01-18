@@ -6,30 +6,22 @@ import getJoinClause from "../clauses/getJoinClause";
 import tryGetWhereClause from "../clauses/tryGetWhereClause";
 import getFilterValues from "./getFilterValues";
 import tryGetSortClause from "../clauses/tryGetOrderByClause";
-import getPaginationClause from "../clauses/getPaginationClause";
+import getRootPaginationClause from "../clauses/getRootPaginationClause";
 import UserDefinedFilter from "../../../../../types/userdefinedfilters/UserDefinedFilter";
 
 export default function getSqlSelectStatementParts<T>(
   dbManager: AbstractSqlDbManager,
-  { pageNumber, pageSize, sortBys, subPaginations, ...projection }: PostQueryOperations,
+  { sortBys, paginations, ...projection }: PostQueryOperations,
   EntityClass: new () => T,
-  filters?: Partial<T> | SqlExpression[] | UserDefinedFilter[],
-  isInternalCall = false,
-  useRootEntity = false
+  filters?: SqlExpression[] | UserDefinedFilter[],
+  isInternalCall = false
 ) {
   const Types = dbManager.getTypes();
-  const columns = tryGetProjection(dbManager, projection, EntityClass, Types, isInternalCall, useRootEntity);
-  const joinClauses = getJoinClause(dbManager.schema, projection, EntityClass, Types);
-
-  let rootWhereClause = '';
-  let filterValues = {};
-
-  if (filters) {
-    rootWhereClause = tryGetWhereClause(dbManager, filters, subPaginations, EntityClass, Types);
-    filterValues = getFilterValues(filters);
-  }
-
-  const rootSortClause = tryGetSortClause(dbManager, sortBys, subPaginations, EntityClass, Types);
-  const rootPaginationClause = getPaginationClause(pageNumber, pageSize);
+  const columns = tryGetProjection(dbManager, projection, EntityClass, Types, isInternalCall);
+  const joinClauses = getJoinClause(dbManager.schema, projection, filters, EntityClass, Types);
+  const filterValues = getFilterValues(filters);
+  const rootWhereClause = tryGetWhereClause(dbManager, '', filters, EntityClass, Types);
+  const rootSortClause = tryGetSortClause(dbManager, '', sortBys, EntityClass, Types);
+  const rootPaginationClause = getRootPaginationClause(paginations);
   return { columns, joinClauses, rootWhereClause, filterValues, rootSortClause, rootPaginationClause };
 }

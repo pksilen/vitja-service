@@ -1,11 +1,11 @@
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
-import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import transformRowsToObjects from './transformresults/transformRowsToObjects';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
 
 export default async function getAllEntities<T>(
   dbManager: AbstractSqlDbManager,
@@ -17,9 +17,9 @@ export default async function getAllEntities<T>(
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
 
-  const finalPostQueryOperations = postQueryOperations ?? {
+  const finalPostQueryOperations: PostQueryOperations = postQueryOperations ?? {
     ...new DefaultPostQueryOperations(),
-    pageSize: Number.MAX_SAFE_INTEGER
+    paginations: []
   };
 
   try {
@@ -29,13 +29,13 @@ export default async function getAllEntities<T>(
       EntityClass
     );
 
-    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} ${joinClauses} ${rootSortClause}`;
+    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as ${EntityClass.name.toLowerCase()} ${joinClauses} ${rootSortClause}`;
     const result = await dbManager.tryExecuteQuery(selectStatement);
 
     return transformRowsToObjects(
       dbManager.getResultRows(result),
       EntityClass,
-      postQueryOperations ?? { ...new DefaultPostQueryOperations(), pageSize: Number.MAX_SAFE_INTEGER },
+      finalPostQueryOperations,
       dbManager.getTypes()
     );
   } catch (error) {

@@ -13,7 +13,7 @@ import {
   Min,
   ValidateNested
 } from 'class-validator';
-import SubEntityPagination from './SubEntityPagination';
+import Pagination from './Pagination';
 
 export default class DefaultPostQueryOperations implements PostQueryOperations {
   @IsOptional()
@@ -37,7 +37,7 @@ export default class DefaultPostQueryOperations implements PostQueryOperations {
   @ValidateNested({ each: true })
   @IsArray()
   @ArrayMaxSize(25)
-  sortBys: SortBy[] = [new SortBy('', '_id', 'ASC')];
+  sortBys: SortBy[] = [new SortBy('*', '_id', 'ASC'), new SortBy('*', 'id', 'ASC')];
 
   @IsOptional()
   @IsInt()
@@ -52,9 +52,9 @@ export default class DefaultPostQueryOperations implements PostQueryOperations {
   pageSize: number = 50;
 
   @IsOptional()
-  @IsInstance(SubEntityPagination, { each: true })
+  @IsInstance(Pagination, { each: true })
   @ValidateNested({ each: true })
   @IsArray()
   @ArrayMaxSize(25)
-  subPaginations: SubEntityPagination[] = [new SubEntityPagination('*', 1, 50)];
+  paginations: Pagination[] = [new Pagination('*', 1, 50)];
 }

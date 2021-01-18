@@ -11,7 +11,7 @@ export default class SortBy {
   @IsOptional()
   @MaxLengthAndMatches(2048, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
   @IsString()
-  subEntityPath: string = '';
+  subEntityPath?: string = '';
 
   @MaxLengthAndMatches(512, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
   @IsString()

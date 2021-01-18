@@ -38,7 +38,7 @@ export default class TagsServiceImpl extends TagsService {
     const filters =
       this.dbManager instanceof MongoDbManager
         ? { name: new RegExp(name) }
-        : [new SqlExpression('name LIKE :name', { name: `%${name}%` })];
+        : [new SqlExpression('','name LIKE :name', { name: `%${name}%` })];
 
     return this.dbManager.getEntitiesByFilters(filters, Tag, new DefaultPostQueryOperations());
   }

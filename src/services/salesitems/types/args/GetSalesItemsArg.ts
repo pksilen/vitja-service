@@ -37,5 +37,5 @@ export default class GetSalesItemsArg extends DefaultPostQueryOperations {
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];
 
   sortBys: SortBy[] = [{ fieldName: '_id', sortDirection: 'DESC' }];
-  // or alternatively [new SortBys('_id', 'DESC')];
+  // or alternatively [new SortBys('', '_id', 'DESC')];
 }
