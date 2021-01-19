@@ -42,7 +42,6 @@
     functionArgument:
       '{{argumentPropertyName1}}': '{{argumentPropertyValue1}}'
       '{{argumentPropertyName2}}': '{{argumentPropertyValue2}}'
-      '{{argumentPropertyName3}}': '{{argumentPropertyValue3}}'
       includeResponseFields: [ ]
     response:
       statusCode: 200
@@ -124,12 +123,12 @@
 
     - testName: paging
       testProperties:
-        argumentPropertyName1: pageNumber
-        argumentPropertyValue1: 2
-        argumentPropertyName2: pageSize
-        argumentPropertyValue2: 1
-        argumentPropertyName3: sortBys
-        argumentPropertyValue3:
+        argumentPropertyName1: paginations
+        argumentPropertyValue1:
+          - pageNumber: 2
+            pageSize: 1
+        argumentPropertyName2: sortBys
+        argumentPropertyValue2:
           - fieldName: price
             sortDirection: DESC
         responsePropertyName: price

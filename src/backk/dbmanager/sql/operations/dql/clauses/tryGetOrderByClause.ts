@@ -40,8 +40,7 @@ export default function tryGetOrderByClause<T>(
       }
 
       if (projection) {
-        const sortColumn = getSqlColumnFromProjection(projection);
-        return sortColumn + ' ' + sortDirection;
+        return fieldName + ' ' + sortDirection;
       }
 
       return undefined;
