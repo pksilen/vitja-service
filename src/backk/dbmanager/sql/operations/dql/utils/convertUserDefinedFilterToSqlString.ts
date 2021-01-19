@@ -1,6 +1,6 @@
-import UserDefinedFilter from "../../../../../types/userdefinedfilters/UserDefinedFilter";
-import SqlInExpression from "../../../expressions/SqlInExpression";
-import SqlNotInExpression from "../../../expressions/SqlNotInExpression";
+import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
+import SqlInExpression from '../../../expressions/SqlInExpression';
+import SqlNotInExpression from '../../../expressions/SqlNotInExpression';
 
 export default function convertUserDefinedFilterToSqlString(
   { subEntityPath, fieldName, fieldFunction, operator, value, orFilters }: UserDefinedFilter,
@@ -33,7 +33,7 @@ export default function convertUserDefinedFilterToSqlString(
   } else if (operator === 'IS NULL' || operator === 'IS NOT NULL') {
     return `${fieldExpression} ${operator}`;
   } else if (!operator) {
-    return `${fieldExpression} = :${fieldName}${index}`;
+    return `${fieldExpression} = :${(subEntityPath ?? '').replace('.', 'xx')}xx${fieldName}${index}`;
   } else if (operator === 'OR' && orFilters) {
     return (
       ' (' +
@@ -46,5 +46,5 @@ export default function convertUserDefinedFilterToSqlString(
     );
   }
 
-  return `${fieldExpression} ${operator} :${fieldName}${index}`;
+  return `${fieldExpression} ${operator} :${(subEntityPath ?? '').replace('.', 'xx')}xx${fieldName}${index}`;
 }
