@@ -97,8 +97,8 @@ export default function getJoinClauses(
           dbManager.schema +
           '.' +
           associationTableName +
-          '.';
-        entityForeignIdFieldName.toLowerCase() +
+          '.' +
+          entityForeignIdFieldName.toLowerCase() +
           ' LEFT JOIN (SELECT * FROM ' +
           dbManager.schema +
           '.' +
