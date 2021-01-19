@@ -40,18 +40,6 @@ export default class DefaultPostQueryOperations implements PostQueryOperations {
   sortBys: SortBy[] = [new SortBy('*', '_id', 'ASC'), new SortBy('*', 'id', 'ASC')];
 
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  pageNumber: number = 1;
-
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  pageSize: number = 50;
-
-  @IsOptional()
   @IsInstance(Pagination, { each: true })
   @ValidateNested({ each: true })
   @IsArray()
