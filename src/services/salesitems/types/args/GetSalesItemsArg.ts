@@ -1,11 +1,10 @@
-import { ArrayMaxSize, ArrayUnique, IsInt, MaxLength } from "class-validator";
-import SortBy from "../../../../backk/types/postqueryoperations/SortBy";
-import DefaultPostQueryOperations
-  from "../../../../backk/types/postqueryoperations/DefaultPostQueryOperations";
-import MinMax from "../../../../backk/decorators/typeproperty/MinMax";
-import { Category } from "../enums/Category";
-import { Department } from "../enums/Department";
-import { Area } from "../enums/Area";
+import { ArrayMaxSize, ArrayUnique, IsInt, MaxLength } from 'class-validator';
+import SortBy from '../../../../backk/types/postqueryoperations/SortBy';
+import DefaultPostQueryOperations from '../../../../backk/types/postqueryoperations/DefaultPostQueryOperations';
+import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
+import { Category } from '../enums/Category';
+import { Department } from '../enums/Department';
+import { Area } from '../enums/Area';
 
 export default class GetSalesItemsArg extends DefaultPostQueryOperations {
   @MaxLength(512)
@@ -36,6 +35,9 @@ export default class GetSalesItemsArg extends DefaultPostQueryOperations {
   @ArrayUnique()
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];
 
-  sortBys: SortBy[] = [{ fieldName: '_id', sortDirection: 'DESC' }];
-  // or alternatively [new SortBys('', '_id', 'DESC')];
+  sortBys: SortBy[] = [
+    { fieldName: '_id', sortDirection: 'DESC' },
+    { subEntityPath: '*', fieldName: '_id', sortDirection: 'ASC' },
+    { subEntityPath: '*', fieldName: 'id', sortDirection: 'ASC' }
+  ];
 }
