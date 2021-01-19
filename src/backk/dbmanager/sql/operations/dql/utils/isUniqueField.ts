@@ -13,7 +13,7 @@ export default function isUniqueField(
 
   return Object.entries(entityPropertyNameToPropertyTypeNameMap).reduce(
     (isUniqueFieldResult: boolean, [propertyName, propertyTypeName]) => {
-      if (
+      if (fieldName === '_id' || fieldName === 'id' || fieldName.endsWith('Id') ||
         fieldPath + propertyName === fieldName &&
         typePropertyAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName)
       ) {
