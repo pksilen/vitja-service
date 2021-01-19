@@ -4,7 +4,10 @@ import Pagination from '../../../../../types/postqueryoperations/Pagination';
 export default function getPaginationClause(subEntityPath: string, paginations: Pagination[]) {
   let limitAndOffsetStatement = '';
 
-  let rootPagination = paginations.find((pagination) => pagination.subEntityPath === subEntityPath);
+  let rootPagination = paginations.find(
+    (pagination) => pagination.subEntityPath === subEntityPath || (subEntityPath === '' && !pagination.subEntityPath)
+  );
+
   if (!rootPagination) {
     rootPagination = paginations.find((pagination) => pagination.subEntityPath === '*');
   }

@@ -15,7 +15,9 @@ export default function tryGetWhereClause<T>(
       filtersSql = (filters as SqlExpression[])
         .filter(
           (sqlExpression) =>
-            sqlExpression.subEntityPath === subEntityPath || sqlExpression.subEntityPath === '*'
+            sqlExpression.subEntityPath === subEntityPath ||
+            (subEntityPath === '' && !sqlExpression.subEntityPath) ||
+            sqlExpression.subEntityPath === '*'
         )
         .filter((sqlExpression) => sqlExpression.hasValues())
         .map((sqlExpression) => sqlExpression.toSqlString())
@@ -24,7 +26,9 @@ export default function tryGetWhereClause<T>(
       filtersSql = (filters as UserDefinedFilter[])
         .filter(
           (sqlExpression) =>
-            sqlExpression.subEntityPath === subEntityPath || sqlExpression.subEntityPath === '*'
+            sqlExpression.subEntityPath === subEntityPath ||
+            (subEntityPath === '' && !sqlExpression.subEntityPath) ||
+            sqlExpression.subEntityPath === '*'
         )
         .map((userDefinedFilter, index) => convertUserDefinedFilterToSqlString(userDefinedFilter, index))
         .join(' AND ');

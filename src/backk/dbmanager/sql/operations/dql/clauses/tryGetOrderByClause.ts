@@ -13,7 +13,10 @@ export default function tryGetOrderByClause<T>(
   EntityClass: new () => T,
   Types: object
 ) {
-  const sortBysForSubEntityPath = sortBys.filter((sortBy) => sortBy.subEntityPath === subEntityPath);
+  const sortBysForSubEntityPath = sortBys.filter(
+    (sortBy) => sortBy.subEntityPath === subEntityPath || (subEntityPath === '' && !sortBy.subEntityPath)
+  );
+
   const sortBysForAllSubEntityPaths = sortBys.filter((sortBy) => sortBy.subEntityPath === '*');
 
   const sortBysStr = [...sortBysForSubEntityPath, ...sortBysForAllSubEntityPaths]
@@ -24,7 +27,7 @@ export default function tryGetOrderByClause<T>(
       try {
         projection = tryGetProjection(
           dbManager,
-          { includeResponseFields: [subEntityPath + '.' + fieldName] },
+          { includeResponseFields: [subEntityPath ? subEntityPath + '.' + fieldName : fieldName] },
           EntityClass,
           Types
         );
