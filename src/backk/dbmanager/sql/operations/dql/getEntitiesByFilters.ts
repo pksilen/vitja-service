@@ -7,7 +7,8 @@ import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQ
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
-import { FilterQuery } from "mongodb";
+import { FilterQuery } from 'mongodb';
+import SqlEquals from '../../expressions/SqlEquals';
 
 export default async function getEntitiesByFilters<T>(
   dbManager: AbstractSqlDbManager,
@@ -15,9 +16,16 @@ export default async function getEntitiesByFilters<T>(
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
-  if (!Array.isArray(filters)) {
-    throw new Error('filters must be SqlExpression array or UserDefinedFilter array');
+  if (typeof filters === 'object' && !Array.isArray(filters)) {
+    // noinspection AssignmentToFunctionParameterJS
+    filters = Object.entries(filters).map(([fieldPathName, fieldValue]) => {
+      const lastDotPosition = fieldPathName.lastIndexOf('.');
+      const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
+      const subEntityPath = lastDotPosition === -1 ? '' : fieldPathName.slice(0, lastDotPosition);
+      return new SqlEquals(subEntityPath, { [fieldName]: fieldValue });
+    });
   }
+
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
@@ -33,11 +41,16 @@ export default async function getEntitiesByFilters<T>(
     } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters);
 
     const tableName = EntityClass.name.toLowerCase();
-    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
+    const tableAlias = dbManager.schema + '_' + tableName;
     const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootWhereClause} ${rootSortClause} ${rootPaginationClause}) AS ${tableAlias} ${joinClauses}`;
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
-    return transformRowsToObjects(dbManager.getResultRows(result), EntityClass, postQueryOperations, dbManager.getTypes());
+    return transformRowsToObjects(
+      dbManager.getResultRows(result),
+      EntityClass,
+      postQueryOperations,
+      dbManager.getTypes()
+    );
   } catch (error) {
     return createErrorResponseFromError(error);
   }

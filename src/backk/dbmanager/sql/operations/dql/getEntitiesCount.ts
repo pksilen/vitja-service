@@ -7,14 +7,21 @@ import DefaultPostQueryOperations from '../../../../types/postqueryoperations/De
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
 import { FilterQuery } from 'mongodb';
+import SqlEquals from "../../expressions/SqlEquals";
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
   filters: FilterQuery<T> | SqlExpression[] | UserDefinedFilter[] | undefined,
   EntityClass: new () => T
 ): Promise<number | ErrorResponse> {
-  if (filters !== undefined && !Array.isArray(filters)) {
-    throw new Error('filters must be SqlExpression array or UserDefinedFilter array');
+  if (typeof filters === 'object' && !Array.isArray(filters)) {
+    // noinspection AssignmentToFunctionParameterJS
+    filters = Object.entries(filters).map(([fieldPathName, fieldValue]) => {
+      const lastDotPosition = fieldPathName.lastIndexOf('.');
+      const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
+      const subEntityPath = lastDotPosition === -1 ? '' : fieldPathName.slice(0, lastDotPosition);
+      return new SqlEquals(subEntityPath, { [fieldName]: fieldValue });
+    });
   }
 
   updateDbLocalTransactionCount(dbManager);

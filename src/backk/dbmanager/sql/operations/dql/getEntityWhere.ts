@@ -32,12 +32,12 @@ export default async function getEntityWhere<T>(
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
   try {
-    const filters = [new SqlEquals(subEntityPath, { [fieldName]: fieldValue })];
-
+    let finalFieldValue = fieldValue;
     if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
-      // noinspection AssignmentToFunctionParameterJS
-      fieldValue = encrypt(fieldValue, false);
+      finalFieldValue = encrypt(fieldValue, false);
     }
+
+    const filters = [new SqlEquals(subEntityPath, { [fieldName]: finalFieldValue })];
 
     const {
       rootWhereClause,
@@ -47,7 +47,7 @@ export default async function getEntityWhere<T>(
     } = getSqlSelectStatementParts(dbManager, finalPostQueryOperations, EntityClass, filters);
 
     const tableName = EntityClass.name.toLowerCase();
-    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
+    const tableAlias = dbManager.schema + '_' + tableName;
     const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootWhereClause} LIMIT 1) AS ${tableAlias} ${joinClauses}`;
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 

@@ -30,7 +30,7 @@ export default async function getAllEntities<T>(
     );
 
     const tableName = EntityClass.name.toLowerCase();
-    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
+    const tableAlias = dbManager.schema + '_' + tableName;
     const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootSortClause}) AS ${tableAlias} ${joinClauses}`;
     const result = await dbManager.tryExecuteQuery(selectStatement);
 

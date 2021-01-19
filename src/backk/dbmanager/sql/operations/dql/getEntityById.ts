@@ -44,7 +44,7 @@ export default async function getEntityById<T>(
     }
 
     const tableName = EntityClass.name.toLowerCase();
-    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
+    const tableAlias = dbManager.schema + '_' + tableName;
 
     const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${
       dbManager.schema
