@@ -1,5 +1,5 @@
 import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
-import { IsInt, IsString, Max, Min } from "class-validator";
+import { IsInt, IsOptional, IsString, Max, Min } from "class-validator";
 
 export default class Pagination {
   constructor(subEntityPath: string, pageNumber: number, pageSize: number) {
@@ -8,9 +8,10 @@ export default class Pagination {
     this.pageSize = pageSize;
   }
 
+  @IsOptional()
   @MaxLengthAndMatches(2048, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
   @IsString()
-  subEntityPath: string = '';
+  subEntityPath?: string = '';
 
   @IsInt()
   @Min(1)

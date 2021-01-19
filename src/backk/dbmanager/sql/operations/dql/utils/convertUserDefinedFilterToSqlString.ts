@@ -1,12 +1,13 @@
-import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
-import SqlInExpression from '../../../expressions/SqlInExpression';
+import UserDefinedFilter from "../../../../../types/userdefinedfilters/UserDefinedFilter";
+import SqlInExpression from "../../../expressions/SqlInExpression";
 import SqlNotInExpression from "../../../expressions/SqlNotInExpression";
 
 export default function convertUserDefinedFilterToSqlString(
-  { fieldName, fieldFunction, operator, value, orFilters }: UserDefinedFilter,
+  { subEntityPath, fieldName, fieldFunction, operator, value, orFilters }: UserDefinedFilter,
   index: number | string
 ): string {
   let fieldExpression = fieldName;
+
   if (fieldFunction) {
     if (
       fieldFunction !== 'YEAR' &&
@@ -19,24 +20,30 @@ export default function convertUserDefinedFilterToSqlString(
       fieldFunction !== 'MINUTE' &&
       fieldFunction !== 'SECOND'
     ) {
-      fieldExpression = fieldFunction + '({{' + fieldName + '}})';
+      fieldExpression = fieldFunction + '(' + fieldName + ')';
     } else {
-      fieldExpression = 'EXTRACT(' + fieldFunction + ' FROM {{' + fieldName + '}})';
+      fieldExpression = 'EXTRACT(' + fieldFunction + ' FROM ' + fieldName + ')';
     }
   }
 
   if (operator === 'IN' && fieldName) {
-    return new SqlInExpression(fieldName, value, fieldExpression).toSqlString();
-  } else if(operator === 'NOT IN' && fieldName) {
-    return new SqlNotInExpression(fieldName, value, fieldExpression).toSqlString();
+    return new SqlInExpression(subEntityPath ?? '', fieldName, value, fieldExpression).toSqlString();
+  } else if (operator === 'NOT IN' && fieldName) {
+    return new SqlNotInExpression(subEntityPath ?? '', fieldName, value, fieldExpression).toSqlString();
   } else if (operator === 'IS NULL' || operator === 'IS NOT NULL') {
     return `${fieldExpression} ${operator}`;
   } else if (!operator) {
     return `${fieldExpression} = :${fieldName}${index}`;
   } else if (operator === 'OR' && orFilters) {
-    return ' (' + orFilters
-      .map((userDefinedFilter, orFilterIndex) => convertUserDefinedFilterToSqlString(userDefinedFilter, `${index}_${orFilterIndex}`))
-      .join(' OR ') + ') ';
+    return (
+      ' (' +
+      orFilters
+        .map((orFilter, orFilterIndex: number) =>
+          convertUserDefinedFilterToSqlString({ ...orFilter, subEntityPath }, `${index}xx${orFilterIndex}`)
+        )
+        .join(' OR ') +
+      ') '
+    );
   }
 
   return `${fieldExpression} ${operator} :${fieldName}${index}`;

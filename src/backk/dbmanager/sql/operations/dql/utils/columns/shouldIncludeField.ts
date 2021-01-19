@@ -4,7 +4,7 @@ export default function shouldIncludeField(
   fieldName: string,
   fieldPath: string,
   { includeResponseFields, excludeResponseFields }: Projection
-) {
+): boolean {
   let shouldIncludeField = true;
   const fullFieldPath = fieldPath + fieldName;
 

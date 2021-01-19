@@ -1,13 +1,13 @@
-import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
-import { PostQueryOperations } from "../../../../../types/postqueryoperations/PostQueryOperations";
-import SqlExpression from "../../../expressions/SqlExpression";
-import tryGetProjection from "../clauses/tryGetProjection";
-import getJoinClause from "../clauses/getJoinClause";
-import tryGetWhereClause from "../clauses/tryGetWhereClause";
-import getFilterValues from "./getFilterValues";
-import tryGetSortClause from "../clauses/tryGetOrderByClause";
-import getRootPaginationClause from "../clauses/getRootPaginationClause";
-import UserDefinedFilter from "../../../../../types/userdefinedfilters/UserDefinedFilter";
+import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
+import { PostQueryOperations } from '../../../../../types/postqueryoperations/PostQueryOperations';
+import SqlExpression from '../../../expressions/SqlExpression';
+import tryGetProjection from '../clauses/tryGetProjection';
+import getJoinClauses from '../clauses/getJoinClauses';
+import tryGetWhereClause from '../clauses/tryGetWhereClause';
+import getFilterValues from './getFilterValues';
+import tryGetSortClause from '../clauses/tryGetOrderByClause';
+import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
+import getPaginationClause from '../clauses/gePaginationClause';
 
 export default function getSqlSelectStatementParts<T>(
   dbManager: AbstractSqlDbManager,
@@ -18,10 +18,10 @@ export default function getSqlSelectStatementParts<T>(
 ) {
   const Types = dbManager.getTypes();
   const columns = tryGetProjection(dbManager, projection, EntityClass, Types, isInternalCall);
-  const joinClauses = getJoinClause(dbManager.schema, projection, filters, EntityClass, Types);
+  const joinClauses = getJoinClauses(dbManager, '', projection, filters, sortBys, paginations, EntityClass, Types);
   const filterValues = getFilterValues(filters);
-  const rootWhereClause = tryGetWhereClause(dbManager, '', filters, EntityClass, Types);
+  const rootWhereClause = tryGetWhereClause(dbManager, '', filters);
   const rootSortClause = tryGetSortClause(dbManager, '', sortBys, EntityClass, Types);
-  const rootPaginationClause = getRootPaginationClause(paginations);
+  const rootPaginationClause = getPaginationClause('', paginations);
   return { columns, joinClauses, rootWhereClause, filterValues, rootSortClause, rootPaginationClause };
 }

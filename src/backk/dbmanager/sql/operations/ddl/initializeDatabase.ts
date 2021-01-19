@@ -8,9 +8,9 @@ import tryCreateUniqueIndex from './tryCreateUniqueIndex';
 import log, { logError, Severity } from '../../../../observability/logging/log';
 import initializeCronJobSchedulingTable from '../../../../scheduling/initializeCronJobSchedulingTable';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import MongoDbManager from "../../../MongoDbManager";
-import tryCreateMongoDbIndex from "../../../mongodb/tryCreateMongoDbIndex";
-import setJoinSpecs from "../../../mongodb/setJoinSpecs";
+import MongoDbManager from '../../../MongoDbManager';
+import tryCreateMongoDbIndex from '../../../mongodb/tryCreateMongoDbIndex';
+import setJoinSpecs from '../../../mongodb/setJoinSpecs';
 
 const dbManagerToIsInitializedMap: { [key: string]: boolean } = {};
 
@@ -121,10 +121,8 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
           await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields, true)
       );
 
-
-        Object.entries(entityAnnotationContainer.entityNameToClassMap).
-        forEach(([entityName, entityClass]) =>
-          setJoinSpecs(dbManager, entityName, entityClass)
+      Object.entries(entityAnnotationContainer.entityNameToClassMap).forEach(([entityName, entityClass]) =>
+        setJoinSpecs(dbManager, entityName, entityClass)
       );
     }
 

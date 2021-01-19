@@ -6,15 +6,18 @@ import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
-import { FilterQuery } from "mongodb";
+import { FilterQuery } from 'mongodb';
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
   filters: FilterQuery<T> | SqlExpression[] | UserDefinedFilter[] | undefined,
   EntityClass: new () => T
 ): Promise<number | ErrorResponse> {
-  updateDbLocalTransactionCount(dbManager);
+  if (filters !== undefined && !Array.isArray(filters)) {
+    throw new Error('filters must be SqlExpression array or UserDefinedFilter array');
+  }
 
+  updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
 
@@ -26,8 +29,9 @@ export default async function getEntitiesCount<T>(
       filters
     );
 
+    const tableName = EntityClass.name.toLowerCase();
     const result = await dbManager.tryExecuteQueryWithNamedParameters(
-      `SELECT COUNT(*) FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as ${EntityClass.name.toLowerCase()} ${rootWhereClause}`,
+      `SELECT COUNT(*) FROM ${dbManager.schema}.${tableName} ${rootWhereClause}`,
       filterValues
     );
 

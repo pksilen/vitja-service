@@ -1,19 +1,18 @@
-import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
-import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
-import encrypt from "../../../../crypt/encrypt";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import createErrorResponseFromErrorMessageAndStatusCode
-  from "../../../../errors/createErrorResponseFromErrorMessageAndStatusCode";
-import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
-import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
-import { HttpStatusCodes } from "../../../../constants/constants";
-import isUniqueField from "./utils/isUniqueField";
-import SqlEquals from "../../expressions/SqlEquals";
+import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
+import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
+import encrypt from '../../../../crypt/encrypt';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import transformRowsToObjects from './transformresults/transformRowsToObjects';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
+import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import { HttpStatusCodes } from '../../../../constants/constants';
+import isUniqueField from './utils/isUniqueField';
+import SqlEquals from '../../expressions/SqlEquals';
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -23,18 +22,18 @@ export default async function getEntityWhere<T>(
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
-  if (isUniqueField(fieldName, EntityClass, dbManager.getTypes())) {
+  if (!isUniqueField(fieldName, EntityClass, dbManager.getTypes())) {
     throw new Error(`Field ${fieldName} is not unique. Annotate entity field with @Unique annotation`);
   }
 
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
-  const Types = dbManager.getTypes();
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
   try {
     const filters = [new SqlEquals(subEntityPath, { [fieldName]: fieldValue })];
+
     if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
       // noinspection AssignmentToFunctionParameterJS
       fieldValue = encrypt(fieldValue, false);
@@ -42,14 +41,13 @@ export default async function getEntityWhere<T>(
 
     const {
       rootWhereClause,
-      rootSortClause,
-      rootPaginationClause,
       columns,
       joinClauses,
       filterValues
     } = getSqlSelectStatementParts(dbManager, finalPostQueryOperations, EntityClass, filters);
 
-    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as ${EntityClass.name.toLowerCase()} ${rootWhereClause} ${rootSortClause}) ${rootPaginationClause}) ${joinClauses}`;
+    const tableName = EntityClass.name.toLowerCase();
+    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootWhereClause} LIMIT 1) AS ${tableName} ${joinClauses}`;
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     if (dbManager.getResultRows(result).length === 0) {
@@ -63,7 +61,7 @@ export default async function getEntityWhere<T>(
       dbManager.getResultRows(result),
       EntityClass,
       finalPostQueryOperations,
-      Types
+      dbManager.getTypes()
     )[0];
   } catch (error) {
     return createErrorResponseFromError(error);

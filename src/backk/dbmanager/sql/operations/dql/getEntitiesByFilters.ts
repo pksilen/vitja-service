@@ -19,11 +19,8 @@ export default async function getEntitiesByFilters<T>(
     throw new Error('filters must be SqlExpression array or UserDefinedFilter array');
   }
   updateDbLocalTransactionCount(dbManager);
-
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
-
-  const Types = dbManager.getTypes();
 
   try {
     const {
@@ -35,10 +32,11 @@ export default async function getEntitiesByFilters<T>(
       filterValues
     } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters);
 
-    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as ${EntityClass.name.toLowerCase()} ${rootWhereClause} ${rootSortClause} ${rootPaginationClause}) ${joinClauses}`;
+    const tableName = EntityClass.name.toLowerCase();
+    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootWhereClause} ${rootSortClause} ${rootPaginationClause}) AS ${tableName} ${joinClauses}`;
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
-    return transformRowsToObjects(dbManager.getResultRows(result), EntityClass, postQueryOperations, Types);
+    return transformRowsToObjects(dbManager.getResultRows(result), EntityClass, postQueryOperations, dbManager.getTypes());
   } catch (error) {
     return createErrorResponseFromError(error);
   }

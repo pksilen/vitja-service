@@ -8,6 +8,7 @@ export default function addArrayValuesTableJoinSpec(
   subEntityForeignIdFieldName: string
 ) {
   const entityJoinSpec: EntityJoinSpec = {
+    entityFieldName: fieldName,
     subEntityTableName: entityName + '_' + fieldName.slice(0, -1),
     entityIdFieldName: '_id',
     subEntityForeignIdFieldName,

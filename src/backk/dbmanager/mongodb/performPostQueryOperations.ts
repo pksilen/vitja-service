@@ -24,10 +24,15 @@ export default function performPostQueryOperations<T>(
 
     cursor.sort(sorting);
 
-    if (postQueryOperations?.pageNumber && postQueryOperations?.pageSize) {
+    let rootPagination = postQueryOperations?.paginations.find(pagination => pagination.subEntityPath === '');
+    if (!rootPagination) {
+      rootPagination = postQueryOperations?.paginations.find(pagination => pagination.subEntityPath === '*');
+    }
+
+    if (rootPagination) {
       cursor
-        .skip((postQueryOperations.pageNumber - 1) * postQueryOperations.pageSize)
-        .limit(postQueryOperations.pageSize);
+        .skip((rootPagination.pageNumber - 1) * rootPagination.pageSize)
+        .limit(rootPagination.pageSize);
     }
   }
 }

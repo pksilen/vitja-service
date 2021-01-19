@@ -32,7 +32,7 @@ function getMappedRows(
 export default function transformRowsToObjects<T>(
   rows: any[],
   EntityClass: { new (): T },
-  { pageSize, includeResponseFields, excludeResponseFields }: PostQueryOperations,
+  { paginations, includeResponseFields, excludeResponseFields }: PostQueryOperations,
   Types: object
 ) {
   const resultMaps = createResultMaps(EntityClass, Types, { includeResponseFields, excludeResponseFields });
@@ -59,8 +59,13 @@ export default function transformRowsToObjects<T>(
     mappedRows = getMappedRows(rows, resultMaps, EntityClass, Types);
   }
 
-  if (mappedRows.length > pageSize) {
-    mappedRows = mappedRows.slice(0, pageSize);
+  let rootPagination = paginations.find(pagination => pagination.subEntityPath === '');
+  if (!rootPagination) {
+    rootPagination = paginations.find(pagination => pagination.subEntityPath === '*');
+  }
+
+  if (rootPagination && mappedRows.length > rootPagination.pageSize) {
+    mappedRows = mappedRows.slice(0, rootPagination.pageSize);
   }
 
   return mappedRows;

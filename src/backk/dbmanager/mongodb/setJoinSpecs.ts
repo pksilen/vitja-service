@@ -13,6 +13,7 @@ function setJoinSpec(entityName: string, EntityClass: Function, fieldName: strin
     const subEntityForeignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
 
     const entityJoinSpec: EntityJoinSpec = {
+      entityFieldName: fieldName,
       subEntityTableName: subEntityName.toLowerCase(),
       entityIdFieldName: '_id',
       subEntityForeignIdFieldName,

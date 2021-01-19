@@ -12,20 +12,29 @@ import SqlExpression from '../../expressions/SqlExpression';
 import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
 import tryGetWhereClause from '../dql/clauses/tryGetWhereClause';
 import getFilterValues from '../dql/utils/getFilterValues';
+import { FilterQuery } from "mongodb";
 
 export default async function deleteEntitiesByFilters<T extends object>(
   dbManager: AbstractSqlDbManager,
-  filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
+  filters: FilterQuery<T> | SqlExpression[] | UserDefinedFilter[],
   EntityClass: new () => T
 ): Promise<void | ErrorResponse> {
+  if (!Array.isArray(filters)) {
+    throw new Error('filters must be SqlExpression array or UserDefinedFilter array');
+  }
+
+  const nonRootFilters = (filters as any).find((filter: SqlExpression | UserDefinedFilter) => filter.subEntityPath !== '')
+  if (nonRootFilters) {
+    throw new Error('All filters must be have subEntityPath empty, ie. they must be root filters');
+  }
+
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
-  const Types = dbManager.getTypes();
   let didStartTransaction = false;
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    const whereClause = tryGetWhereClause(dbManager, filters, undefined, EntityClass, Types);
+    const whereClause = tryGetWhereClause(dbManager, '', filters);
     const filterValues = getFilterValues(filters);
 
     await Promise.all([

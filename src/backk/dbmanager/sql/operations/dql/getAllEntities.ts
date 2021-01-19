@@ -29,7 +29,8 @@ export default async function getAllEntities<T>(
       EntityClass
     );
 
-    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as ${EntityClass.name.toLowerCase()} ${joinClauses} ${rootSortClause}`;
+    const tableName = EntityClass.name.toLowerCase();
+    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootSortClause}) AS ${tableName} ${joinClauses}`;
     const result = await dbManager.tryExecuteQuery(selectStatement);
 
     return transformRowsToObjects(

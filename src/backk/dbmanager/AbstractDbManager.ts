@@ -22,11 +22,14 @@ export interface Field {
 
 @Injectable()
 export default abstract class AbstractDbManager {
+  readonly schema: string;
   private services: BaseService[] = [];
   readonly dbName?: string;
   protected firstDbOperationFailureTimeInMillis = 0;
 
-  constructor(public readonly schema: string) {}
+  constructor(schema: string) {
+    this.schema = schema.toLowerCase();
+  }
 
   addService(service: BaseService) {
     this.services.push(service);

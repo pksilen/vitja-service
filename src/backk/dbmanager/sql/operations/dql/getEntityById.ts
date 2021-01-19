@@ -19,11 +19,8 @@ export default async function getEntityById<T>(
   isInternalCall = false
 ): Promise<T | ErrorResponse> {
   updateDbLocalTransactionCount(dbManager);
-
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
-
-  const Types = dbManager.getTypes();
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
   try {
@@ -46,9 +43,12 @@ export default async function getEntityById<T>(
       );
     }
 
-    const selectStatement = `SELECT ${columns} FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} as ${EntityClass.name.toLowerCase()} ${joinClauses} WHERE ${EntityClass.name.toLowerCase()}.${idFieldName} = ${dbManager.getValuePlaceholder(
+    const tableName = EntityClass.name.toLowerCase();
+    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${
+      dbManager.schema
+    }.${tableName} WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(
       1
-    )}`;
+    )} LIMIT 1) AS ${tableName} ${joinClauses}`;
 
     const result = await dbManager.tryExecuteQuery(selectStatement, [numericId]);
 
@@ -63,7 +63,7 @@ export default async function getEntityById<T>(
       dbManager.getResultRows(result),
       EntityClass,
       finalPostQueryOperations,
-      Types
+      dbManager.getTypes()
     )[0];
   } catch (error) {
     return createErrorResponseFromError(error);

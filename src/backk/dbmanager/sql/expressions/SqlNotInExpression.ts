@@ -1,11 +1,11 @@
-import SqlInExpression from "./SqlInExpression";
+import SqlInExpression from './SqlInExpression';
 
 export default class SqlNotInExpression extends SqlInExpression {
   constructor(
     subEntityPath: string,
     readonly fieldName: string,
     readonly notInExpressionValues?: any[],
-    readonly fieldExpression?: string
+    fieldExpression?: string
   ) {
     super(subEntityPath, fieldName, notInExpressionValues, fieldExpression);
   }
@@ -16,11 +16,16 @@ export default class SqlNotInExpression extends SqlInExpression {
     }
 
     const values = this.inExpressionValues
-      .map((_, index) => ':' + this.fieldName.replace('_', 'xx') + (index + 1).toString())
+      .map(
+        (_, index) =>
+          ':' +
+          this.subEntityPath.replace('_', 'xx') +
+          'xx' +
+          this.fieldName.replace('_', 'xx') +
+          (index + 1).toString()
+      )
       .join(', ');
 
-    return (
-      '{{' + (this.fieldExpression ? this.fieldExpression : this.fieldName) + '}} ' + ' NOT IN (' + values + ')'
-    );
+    return (this.fieldExpression ?? this.fieldName) + ' NOT IN (' + values + ')';
   }
 }

@@ -6,7 +6,15 @@ import SqlNotInExpression from '../../../expressions/SqlNotInExpression';
 function getUserDefinedFilterValues(filters: UserDefinedFilter[], parentIndex?: number): object {
   return filters.reduce((accumulatedFilterValues, userDefinedFilter, index) => {
     if (userDefinedFilter.operator === 'OR') {
-      return getUserDefinedFilterValues(userDefinedFilter.orFilters ?? [], index);
+      return getUserDefinedFilterValues(
+        userDefinedFilter.orFilters
+          ? userDefinedFilter.orFilters.map((orFilter) => ({
+              ...orFilter,
+              subEntityPath: userDefinedFilter.subEntityPath
+            }))
+          : [],
+        index
+      );
     }
 
     if (!userDefinedFilter.fieldName) {
@@ -15,11 +23,14 @@ function getUserDefinedFilterValues(filters: UserDefinedFilter[], parentIndex?: 
 
     let finalIndexStr = index.toString();
     if (parentIndex !== undefined) {
-      finalIndexStr = parentIndex + '_' + index;
+      finalIndexStr = parentIndex + 'xx' + index;
     }
 
     let filterValues = {
-      [userDefinedFilter.fieldName + finalIndexStr]: userDefinedFilter.value
+      [(userDefinedFilter.subEntityPath?.replace('.', 'xx') ?? '') +
+      'xx' +
+      userDefinedFilter.fieldName +
+      finalIndexStr]: userDefinedFilter.value
     };
 
     if (userDefinedFilter.operator === 'IN') {
@@ -35,9 +46,7 @@ function getUserDefinedFilterValues(filters: UserDefinedFilter[], parentIndex?: 
   }, {});
 }
 
-export default function getFilterValues<T>(
-  filters: Partial<T> | SqlExpression[] | UserDefinedFilter[]
-): object {
+export default function getFilterValues<T>(filters?: SqlExpression[] | UserDefinedFilter[]): object {
   if (Array.isArray(filters)) {
     if (filters.length === 0) {
       return {};
@@ -54,5 +63,5 @@ export default function getFilterValues<T>(
     }
   }
 
-  return filters;
+  return {};
 }

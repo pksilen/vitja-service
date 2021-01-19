@@ -6,7 +6,7 @@ import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
 export default function tryGetWhereClause<T>(
   dbManager: AbstractSqlDbManager,
   subEntityPath: string,
-  filters: SqlExpression[] | UserDefinedFilter[]
+  filters?: SqlExpression[] | UserDefinedFilter[]
 ) {
   let filtersSql: string = '';
 

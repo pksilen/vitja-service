@@ -1,10 +1,10 @@
 import assertIsNumber from '../../../../../assertions/assertIsNumber';
 import Pagination from '../../../../../types/postqueryoperations/Pagination';
 
-export default function getRootPaginationClause(paginations: Pagination[]) {
+export default function getPaginationClause(subEntityPath: string, paginations: Pagination[]) {
   let limitAndOffsetStatement = '';
 
-  let rootPagination = paginations.find((pagination) => pagination.subEntityPath === '');
+  let rootPagination = paginations.find((pagination) => pagination.subEntityPath === subEntityPath);
   if (!rootPagination) {
     rootPagination = paginations.find((pagination) => pagination.subEntityPath === '*');
   }
