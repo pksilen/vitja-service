@@ -33,7 +33,8 @@ export default async function getEntitiesByFilters<T>(
     } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters);
 
     const tableName = EntityClass.name.toLowerCase();
-    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootWhereClause} ${rootSortClause} ${rootPaginationClause}) AS ${tableName} ${joinClauses}`;
+    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
+    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootWhereClause} ${rootSortClause} ${rootPaginationClause}) AS ${tableAlias} ${joinClauses}`;
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     return transformRowsToObjects(dbManager.getResultRows(result), EntityClass, postQueryOperations, dbManager.getTypes());

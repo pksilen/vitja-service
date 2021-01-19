@@ -14,7 +14,7 @@ function setJoinSpec(entityName: string, EntityClass: Function, fieldName: strin
 
     const entityJoinSpec: EntityJoinSpec = {
       entityFieldName: fieldName,
-      subEntityTableName: subEntityName.toLowerCase(),
+      subEntityTableName: subEntityName,
       entityIdFieldName: '_id',
       subEntityForeignIdFieldName,
       isReadonly,

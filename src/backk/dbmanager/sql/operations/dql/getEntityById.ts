@@ -44,11 +44,13 @@ export default async function getEntityById<T>(
     }
 
     const tableName = EntityClass.name.toLowerCase();
+    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
+
     const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${
       dbManager.schema
     }.${tableName} WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(
       1
-    )} LIMIT 1) AS ${tableName} ${joinClauses}`;
+    )} LIMIT 1) AS ${tableAlias} ${joinClauses}`;
 
     const result = await dbManager.tryExecuteQuery(selectStatement, [numericId]);
 

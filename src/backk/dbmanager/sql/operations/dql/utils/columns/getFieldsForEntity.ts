@@ -43,36 +43,45 @@ export default function getFieldsForEntity(
         );
       } else if (isArrayType) {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
-          const relationEntityName = EntityClass.name + '_' + entityPropertyName.slice(0, -1);
-          const idFieldName = EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
+          const relationEntityName = (EntityClass.name + '_' + entityPropertyName.slice(0, -1)).toLowerCase();
+
+          const idFieldName = (
+            EntityClass.name.charAt(0).toLowerCase() +
+            EntityClass.name.slice(1) +
+            'Id'
+          ).toLowerCase();
 
           fields.push(
-            `${dbManager.schema.toLowerCase()}.${relationEntityName.toLowerCase()}.${idFieldName.toLowerCase()} AS ${relationEntityName.toLowerCase()}_${idFieldName.toLowerCase()}`
+            `${dbManager.schema}_${relationEntityName}.${idFieldName} AS ${relationEntityName}_${idFieldName}`
           );
 
-          const singularFieldName = entityPropertyName.slice(0, -1);
-
-          fields.push(
-            `${dbManager.schema.toLowerCase()}.${relationEntityName.toLowerCase()}.${singularFieldName.toLowerCase()} AS ${relationEntityName.toLowerCase()}_${singularFieldName.toLowerCase()}`
-          );
+          const singularFieldName = entityPropertyName.slice(0, -1).toLowerCase();
 
           fields.push(
-            `${dbManager.schema.toLowerCase()}.${relationEntityName.toLowerCase()}.id AS ${relationEntityName.toLowerCase()}_id`
+            `${dbManager.schema}_${relationEntityName}.${singularFieldName} AS ${relationEntityName}_${singularFieldName}`
           );
+
+          fields.push(`${dbManager.schema}_${relationEntityName}.id AS ${relationEntityName}_id`);
         }
       } else {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
+          const tableName = EntityClass.name.toLowerCase();
+
           if (
             entityPropertyName === '_id' ||
             entityPropertyName === 'id' ||
             entityPropertyName.endsWith('Id')
           ) {
             fields.push(
-              `CAST(${EntityClass.name.toLowerCase()}.${entityPropertyName.toLowerCase()} AS ${dbManager.getIdColumnCastType()}) AS ${EntityClass.name.toLowerCase()}_${entityPropertyName.toLowerCase()}`
+              `CAST(${
+                dbManager.schema
+              }_${tableName}.${entityPropertyName.toLowerCase()} AS ${dbManager.getIdColumnCastType()}) AS ${tableName}_${entityPropertyName.toLowerCase()}`
             );
           } else {
             fields.push(
-              `${EntityClass.name.toLowerCase()}.${entityPropertyName.toLowerCase()} AS ${EntityClass.name.toLowerCase()}_${entityPropertyName.toLowerCase()}`
+              `${
+                dbManager.schema
+              }_${tableName}.${entityPropertyName.toLowerCase()} AS ${tableName}_${entityPropertyName.toLowerCase()}`
             );
           }
         }

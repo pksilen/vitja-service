@@ -41,22 +41,28 @@ export default function getJoinClauses(
       const paginationClause = getPaginationClause(joinEntityPath, paginations);
 
       let joinClausePart = 'LEFT JOIN (SELECT * FROM ';
-      joinClausePart += dbManager.schema + '.' + joinSpec.subEntityTableName;
-      joinClausePart += ' ON ';
+      joinClausePart += dbManager.schema + '.' + joinSpec.subEntityTableName.toLowerCase();
       joinClausePart +=
-        EntityClass.name +
-        '.' +
-        joinSpec.entityIdFieldName +
-        ' = ' +
-        joinSpec.subEntityTableName +
-        '.' +
-        joinSpec.subEntityForeignIdFieldName +
         (whereClause ? ' ' + whereClause : '') +
         (sortClause ? ' ' + sortClause : '') +
         (paginationClause ? ' ' + paginationClause : '') +
-        ')' +
-        ' AS ' +
+        ') AS ' +
+        dbManager.schema +
+        '_' +
         joinSpec.subEntityTableName;
+      joinClausePart += ' ON ';
+      joinClausePart +=
+        dbManager.schema +
+        '_' +
+        EntityClass.name.toLowerCase() +
+        '.' +
+        joinSpec.entityIdFieldName.toLowerCase() +
+        ' = ' +
+        dbManager.schema +
+        '_' +
+        joinSpec.subEntityTableName.toLowerCase() +
+        '.' +
+        joinSpec.subEntityForeignIdFieldName.toLowerCase();
 
       return joinClausePart;
     });
@@ -69,7 +75,6 @@ export default function getJoinClauses(
     .map(
       ({ entityFieldName, associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
         const joinEntityPath = subEntityPath ? subEntityPath + '.' + entityFieldName : entityFieldName;
-
         const subEntityTableName = associationTableName.split('_')[1];
 
         if (!shouldIncludeField('_id', subEntityPath + '.' + subEntityTableName, projection)) {
@@ -84,35 +89,46 @@ export default function getJoinClauses(
         joinClausePart += dbManager.schema + '.' + associationTableName;
         joinClausePart += ' ON ';
         joinClausePart +=
-          EntityClass.name +
+          dbManager.schema +
+          '_' +
+          EntityClass.name.toLowerCase() +
           '._id' +
           ' = ' +
-          associationTableName +
+          dbManager.schema +
           '.' +
-          entityForeignIdFieldName +
+          associationTableName +
+          '.';
+        entityForeignIdFieldName.toLowerCase() +
           ' LEFT JOIN (SELECT * FROM ' +
           dbManager.schema +
           '.' +
-          subEntityTableName +
-          ' ON ' +
-          associationTableName +
-          '.' +
-          subEntityForeignIdFieldName +
-          ' = ' +
-          subEntityTableName +
-          '._id' +
+          subEntityTableName.toLowerCase() +
           (whereClause ? ' ' + whereClause : '') +
           (sortClause ? ' ' + sortClause : '') +
           (paginationClause ? ' ' + paginationClause : '') +
-          ')' +
-          ' AS ' +
-          subEntityTableName;
+          ')  AS ' +
+          dbManager.schema +
+          '_' +
+          subEntityTableName.toLowerCase() +
+          ' ON ' +
+          dbManager.schema +
+          '.' +
+          associationTableName.toLowerCase() +
+          '.' +
+          subEntityForeignIdFieldName.toLowerCase() +
+          ' = ' +
+          dbManager.schema +
+          '_' +
+          subEntityTableName.toLowerCase() +
+          '._id';
 
         return joinClausePart;
       }
     );
 
-  joinClauses = joinClauses + ' ' + joinClauseParts.join(' ');
+  if (joinClauseParts.length > 0) {
+    joinClauses = joinClauses + ' ' + joinClauseParts.join(' ');
+  }
 
   const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
 
@@ -121,7 +137,7 @@ export default function getJoinClauses(
 
     if (isEntityTypeName(baseTypeName)) {
       const newSubEntityPath = subEntityPath ? subEntityPath + '.' + fieldName : fieldName;
-      joinClauses += getJoinClauses(
+      const subJoinClauses = getJoinClauses(
         dbManager,
         newSubEntityPath,
         projection,
@@ -131,6 +147,10 @@ export default function getJoinClauses(
         (Types as any)[baseTypeName],
         Types
       );
+
+      if (subJoinClauses) {
+        joinClauses += ' ' + subJoinClauses;
+      }
     }
   });
 

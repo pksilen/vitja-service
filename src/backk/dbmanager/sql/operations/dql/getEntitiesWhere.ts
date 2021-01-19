@@ -48,7 +48,8 @@ export default async function getEntitiesWhere<T>(
     } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters);
 
     const tableName = EntityClass.name.toLowerCase();
-    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootWhereClause} ${rootSortClause}) ${rootPaginationClause}) AS ${tableName} ${joinClauses}`;
+    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
+    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootWhereClause} ${rootSortClause}) ${rootPaginationClause}) AS ${tableAlias} ${joinClauses}`;
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     if (dbManager.getResultRows(result).length === 0) {
