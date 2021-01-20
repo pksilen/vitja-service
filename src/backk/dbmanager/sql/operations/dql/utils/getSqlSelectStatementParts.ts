@@ -32,7 +32,7 @@ export default function getSqlSelectStatementParts<T>(
     outerSortBys
   );
 
-  const outerSortClause = outerSortBys.length > 0 ? `ORDER BY ${outerSortBys}`: '';
+  const outerSortClause = outerSortBys.length > 0 ? `ORDER BY ${outerSortBys.join(', ')}`: '';
   const filterValues = getFilterValues(filters);
   const rootWhereClause = tryGetWhereClause(dbManager, '', filters);
   const rootSortClause = tryGetSortClause(dbManager, '', sortBys, EntityClass, Types);
