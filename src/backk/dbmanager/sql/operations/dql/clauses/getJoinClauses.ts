@@ -23,7 +23,7 @@ export default function getJoinClauses(
   paginations: Pagination[],
   EntityClass: new () => any,
   Types: object,
-  outerSortBys: string[]
+  resultOuterSortBys: string[]
 ) {
   let joinClauses = '';
 
@@ -40,15 +40,18 @@ export default function getJoinClauses(
       const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
       const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
       const joinTableAlias = dbManager.schema + '_' + joinSpec.subEntityTableName;
-
-      outerSortBys.push(tryGetSortClause(
+      const outerSortBys = tryGetSortClause(
         dbManager,
         joinEntityPath,
         sortBys,
         EntityClass,
         Types,
         joinTableAlias
-      ));
+      );
+
+      if (outerSortBys) {
+        resultOuterSortBys.push(outerSortBys);
+      }
 
       const paginationClause = getPaginationClause(joinEntityPath, paginations);
 
@@ -95,15 +98,18 @@ export default function getJoinClauses(
 
         const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
         const joinTableAlias = dbManager.schema + '_' + subEntityTableName.toLowerCase();
-
-        outerSortBys.push(tryGetSortClause(
+        const outerSortBys = tryGetSortClause(
           dbManager,
           joinEntityPath,
           sortBys,
           EntityClass,
           Types,
           joinTableAlias
-        ));
+        );
+
+        if (outerSortBys) {
+          resultOuterSortBys.push(outerSortBys);
+        }
 
         const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
         const paginationClause = getPaginationClause(joinEntityPath, paginations);
@@ -169,7 +175,7 @@ export default function getJoinClauses(
         paginations,
         (Types as any)[baseTypeName],
         Types,
-        outerSortBys
+        resultOuterSortBys
       );
 
       if (subJoinClauses) {

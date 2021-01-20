@@ -20,30 +20,35 @@ export default function tryGetOrderByClause<T>(
   const sortBysForAllSubEntityPaths = sortBys.filter((sortBy) => sortBy.subEntityPath === '*');
 
   const sortBysStr = [...sortBysForSubEntityPath, ...sortBysForAllSubEntityPaths]
-    .map(({ subEntityPath, fieldName, sortDirection }) => {
-      assertIsSortDirection(sortDirection);
+    .map((sortBy) => {
+      assertIsSortDirection(sortBy.sortDirection);
 
       let projection;
       try {
         projection = tryGetProjection(
           dbManager,
-          { includeResponseFields: [subEntityPath ? subEntityPath + '.' + fieldName : fieldName] },
+          {
+            includeResponseFields: [subEntityPath ? subEntityPath + '.' + sortBy.fieldName : sortBy.fieldName]
+          },
           EntityClass,
           Types
         );
       } catch (error) {
-        if (subEntityPath !== '*') {
+        if (sortBy.subEntityPath !== '*') {
           throw new Error(
-            createErrorMessageWithStatusCode('Invalid sort field: ' + fieldName, HttpStatusCodes.BAD_REQUEST)
+            createErrorMessageWithStatusCode(
+              'Invalid sort field: ' + sortBy.fieldName,
+              HttpStatusCodes.BAD_REQUEST
+            )
           );
         }
       }
 
       if (projection) {
         if (tableAlias) {
-          return tableAlias + '.' + fieldName + ' ' + sortDirection;
+          return tableAlias + '.' + sortBy.fieldName + ' ' + sortBy.sortDirection;
         } else {
-          return fieldName + ' ' + sortDirection;
+          return sortBy.fieldName + ' ' + sortBy.sortDirection;
         }
       }
 

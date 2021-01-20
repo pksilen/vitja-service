@@ -32,10 +32,20 @@ export default function getSqlSelectStatementParts<T>(
     outerSortBys
   );
 
-  const outerSortClause = outerSortBys.length > 0 ? `ORDER BY ${outerSortBys.join(', ')}`: '';
+  const outerSortClause =
+    outerSortBys.length > 0 ? `ORDER BY ${outerSortBys.filter((outerSortBy) => outerSortBy).join(', ')}` : '';
+
   const filterValues = getFilterValues(filters);
   const rootWhereClause = tryGetWhereClause(dbManager, '', filters);
   const rootSortClause = tryGetSortClause(dbManager, '', sortBys, EntityClass, Types);
   const rootPaginationClause = getPaginationClause('', paginations);
-  return { columns, joinClauses, rootWhereClause, filterValues, rootSortClause, rootPaginationClause, outerSortClause };
+  return {
+    columns,
+    joinClauses,
+    rootWhereClause,
+    filterValues,
+    rootSortClause,
+    rootPaginationClause,
+    outerSortClause
+  };
 }
