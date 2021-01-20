@@ -24,7 +24,7 @@ export default async function getEntityById<T>(
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
   try {
-    const { columns, joinClauses } = getSqlSelectStatementParts(
+    const { columns, joinClauses, outerSortClause } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,
       EntityClass,
@@ -49,7 +49,8 @@ export default async function getEntityById<T>(
     const selectStatement = [
       `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName}`,
       `WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(1)} LIMIT 1) AS ${tableAlias}`,
-      joinClauses
+      joinClauses,
+      outerSortClause
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

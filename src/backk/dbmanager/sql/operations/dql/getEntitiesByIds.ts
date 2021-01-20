@@ -18,7 +18,7 @@ export default async function getEntitiesByIds<T>(
   try {
     updateDbLocalTransactionCount(dbManager);
 
-    const { rootSortClause, rootPaginationClause, columns, joinClauses } = getSqlSelectStatementParts(
+    const { rootSortClause, rootPaginationClause, columns, joinClauses, outerSortClause } = getSqlSelectStatementParts(
       dbManager,
       postQueryOperations,
       EntityClass
@@ -45,7 +45,8 @@ export default async function getEntitiesByIds<T>(
       rootSortClause,
       rootPaginationClause,
       `) AS ${tableAlias}`,
-      joinClauses
+      joinClauses,
+      outerSortClause
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

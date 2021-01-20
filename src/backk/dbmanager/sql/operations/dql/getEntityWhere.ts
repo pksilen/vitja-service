@@ -39,7 +39,7 @@ export default async function getEntityWhere<T>(
 
     const filters = [new SqlEquals(subEntityPath, { [fieldName]: finalFieldValue })];
 
-    const { rootWhereClause, columns, joinClauses, filterValues } = getSqlSelectStatementParts(
+    const { rootWhereClause, columns, joinClauses, filterValues, outerSortClause } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,
       EntityClass,
@@ -53,7 +53,8 @@ export default async function getEntityWhere<T>(
       `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName}`,
       rootWhereClause,
       `LIMIT 1) AS ${tableAlias}`,
-      joinClauses
+      joinClauses,
+      outerSortClause
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

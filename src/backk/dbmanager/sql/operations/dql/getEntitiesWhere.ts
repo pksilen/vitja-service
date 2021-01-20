@@ -44,7 +44,8 @@ export default async function getEntitiesWhere<T>(
       rootPaginationClause,
       columns,
       joinClauses,
-      filterValues
+      filterValues,
+      outerSortClause
     } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters);
 
     const tableName = EntityClass.name.toLowerCase();
@@ -56,7 +57,8 @@ export default async function getEntitiesWhere<T>(
       rootSortClause,
       rootPaginationClause,
       `) AS ${tableAlias}`,
-      joinClauses
+      joinClauses,
+      outerSortClause
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

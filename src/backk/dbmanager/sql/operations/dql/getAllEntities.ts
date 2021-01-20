@@ -24,7 +24,7 @@ export default async function getAllEntities<T>(
   };
 
   try {
-    const { columns, joinClauses, rootSortClause } = getSqlSelectStatementParts(
+    const { columns, joinClauses, rootSortClause, outerSortClause } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,
       EntityClass
@@ -37,7 +37,8 @@ export default async function getAllEntities<T>(
       `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName}`,
       rootSortClause,
       `) AS ${tableAlias}`,
-      joinClauses
+      joinClauses,
+      outerSortClause
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');
