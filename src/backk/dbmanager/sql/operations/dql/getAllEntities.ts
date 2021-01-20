@@ -6,6 +6,7 @@ import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQ
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
+import Pagination from '../../../../types/postqueryoperations/Pagination';
 
 export default async function getAllEntities<T>(
   dbManager: AbstractSqlDbManager,
@@ -19,7 +20,7 @@ export default async function getAllEntities<T>(
 
   const finalPostQueryOperations: PostQueryOperations = postQueryOperations ?? {
     ...new DefaultPostQueryOperations(),
-    paginations: []
+    paginations: [new Pagination('', 1, Number.MAX_SAFE_INTEGER)]
   };
 
   try {
@@ -31,7 +32,16 @@ export default async function getAllEntities<T>(
 
     const tableName = EntityClass.name.toLowerCase();
     const tableAlias = dbManager.schema + '_' + tableName;
-    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootSortClause}) AS ${tableAlias} ${joinClauses}`;
+
+    const selectStatement = [
+      `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName}`,
+      rootSortClause,
+      `) AS ${tableAlias}`,
+      joinClauses
+    ]
+      .filter((sqlPart) => sqlPart)
+      .join(' ');
+
     const result = await dbManager.tryExecuteQuery(selectStatement);
 
     return transformRowsToObjects(

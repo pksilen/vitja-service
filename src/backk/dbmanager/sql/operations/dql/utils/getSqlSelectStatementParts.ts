@@ -7,7 +7,7 @@ import tryGetWhereClause from '../clauses/tryGetWhereClause';
 import getFilterValues from './getFilterValues';
 import tryGetSortClause from '../clauses/tryGetOrderByClause';
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
-import getPaginationClause from '../clauses/gePaginationClause';
+import getPaginationClause from '../clauses/getPaginationClause';
 
 export default function getSqlSelectStatementParts<T>(
   dbManager: AbstractSqlDbManager,
@@ -18,10 +18,24 @@ export default function getSqlSelectStatementParts<T>(
 ) {
   const Types = dbManager.getTypes();
   const columns = tryGetProjection(dbManager, projection, EntityClass, Types, isInternalCall);
-  const joinClauses = getJoinClauses(dbManager, '', projection, filters, sortBys, paginations, EntityClass, Types);
+
+  const outerSortBys: string[] = [];
+  const joinClauses = getJoinClauses(
+    dbManager,
+    '',
+    projection,
+    filters,
+    sortBys,
+    paginations,
+    EntityClass,
+    Types,
+    outerSortBys
+  );
+
+  const outerSortClause = outerSortBys.length > 0 ? `ORDER BY ${outerSortBys}`: '';
   const filterValues = getFilterValues(filters);
   const rootWhereClause = tryGetWhereClause(dbManager, '', filters);
   const rootSortClause = tryGetSortClause(dbManager, '', sortBys, EntityClass, Types);
   const rootPaginationClause = getPaginationClause('', paginations);
-  return { columns, joinClauses, rootWhereClause, filterValues, rootSortClause, rootPaginationClause };
+  return { columns, joinClauses, rootWhereClause, filterValues, rootSortClause, rootPaginationClause, outerSortClause };
 }

@@ -1,5 +1,4 @@
 import tryGetProjection from './tryGetProjection';
-import getSqlColumnFromProjection from '../utils/columns/getSqlColumnFromProjection';
 import assertIsSortDirection from '../../../../../assertions/assertIsSortDirection';
 import SortBy from '../../../../../types/postqueryoperations/SortBy';
 import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
@@ -11,7 +10,8 @@ export default function tryGetOrderByClause<T>(
   subEntityPath: string,
   sortBys: SortBy[],
   EntityClass: new () => T,
-  Types: object
+  Types: object,
+  tableAlias?: string
 ) {
   const sortBysForSubEntityPath = sortBys.filter(
     (sortBy) => sortBy.subEntityPath === subEntityPath || (subEntityPath === '' && !sortBy.subEntityPath)
@@ -40,7 +40,11 @@ export default function tryGetOrderByClause<T>(
       }
 
       if (projection) {
-        return fieldName + ' ' + sortDirection;
+        if (tableAlias) {
+          return tableAlias + '.' + fieldName + ' ' + sortDirection;
+        } else {
+          return fieldName + ' ' + sortDirection;
+        }
       }
 
       return undefined;
@@ -48,5 +52,9 @@ export default function tryGetOrderByClause<T>(
     .filter((sortByStr) => sortByStr)
     .join(', ');
 
-  return sortBysStr ? `ORDER BY ${sortBysStr}` : '';
+  if (tableAlias) {
+    return sortBysStr;
+  } else {
+    return sortBysStr ? `ORDER BY ${sortBysStr}` : '';
+  }
 }

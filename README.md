@@ -1,8 +1,9 @@
 # Vitja service
 
 TODO
-- Test subpaginations
-- Implement mongodb subpaginations
+- Test subpaginations 
+- Implement mongodb filters on many-to-many
+- Implement mongodb paginations
 - Test mongodb cronjob and scheduled job
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
 - Add FollowerService

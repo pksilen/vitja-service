@@ -3,16 +3,16 @@ import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
 import encrypt from '../../../../crypt/encrypt';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import transformRowsToObjects from './transformresults/transformRowsToObjects';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
 import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
-import { HttpStatusCodes } from '../../../../constants/constants';
 import isUniqueField from './utils/isUniqueField';
 import SqlEquals from '../../expressions/SqlEquals';
+import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import { HttpStatusCodes } from '../../../../constants/constants';
+import transformRowsToObjects from './transformresults/transformRowsToObjects';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -39,16 +39,25 @@ export default async function getEntityWhere<T>(
 
     const filters = [new SqlEquals(subEntityPath, { [fieldName]: finalFieldValue })];
 
-    const {
-      rootWhereClause,
-      columns,
-      joinClauses,
-      filterValues
-    } = getSqlSelectStatementParts(dbManager, finalPostQueryOperations, EntityClass, filters);
+    const { rootWhereClause, columns, joinClauses, filterValues } = getSqlSelectStatementParts(
+      dbManager,
+      finalPostQueryOperations,
+      EntityClass,
+      filters
+    );
 
     const tableName = EntityClass.name.toLowerCase();
     const tableAlias = dbManager.schema + '_' + tableName;
-    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootWhereClause} LIMIT 1) AS ${tableAlias} ${joinClauses}`;
+
+    const selectStatement = [
+      `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName}`,
+      rootWhereClause,
+      `LIMIT 1) AS ${tableAlias}`,
+      joinClauses
+    ]
+      .filter((sqlPart) => sqlPart)
+      .join(' ');
+
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     if (dbManager.getResultRows(result).length === 0) {

@@ -42,7 +42,18 @@ export default async function getEntitiesByFilters<T>(
 
     const tableName = EntityClass.name.toLowerCase();
     const tableAlias = dbManager.schema + '_' + tableName;
-    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} ${rootWhereClause} ${rootSortClause} ${rootPaginationClause}) AS ${tableAlias} ${joinClauses}`;
+
+    const selectStatement = [
+      `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName}`,
+      rootWhereClause,
+      rootSortClause,
+      rootPaginationClause,
+      `) AS ${tableAlias}`,
+      joinClauses
+    ]
+      .filter((sqlPart) => sqlPart)
+      .join(' ');
+
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     return transformRowsToObjects(

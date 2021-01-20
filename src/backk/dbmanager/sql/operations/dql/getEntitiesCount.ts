@@ -7,7 +7,7 @@ import DefaultPostQueryOperations from '../../../../types/postqueryoperations/De
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
 import { FilterQuery } from 'mongodb';
-import SqlEquals from "../../expressions/SqlEquals";
+import SqlEquals from '../../expressions/SqlEquals';
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
@@ -37,10 +37,12 @@ export default async function getEntitiesCount<T>(
     );
 
     const tableName = EntityClass.name.toLowerCase();
-    const result = await dbManager.tryExecuteQueryWithNamedParameters(
-      `SELECT COUNT(*) FROM ${dbManager.schema}.${tableName} ${rootWhereClause}`,
-      filterValues
-    );
+
+    const sqlStatement = [`SELECT COUNT(*) FROM ${dbManager.schema}.${tableName}`, rootWhereClause]
+      .filter((sqlPart) => sqlPart)
+      .join(' ');
+
+    const result = await dbManager.tryExecuteQueryWithNamedParameters(sqlStatement, filterValues);
 
     return dbManager.getResultRows(result)[0].count;
   } catch (error) {

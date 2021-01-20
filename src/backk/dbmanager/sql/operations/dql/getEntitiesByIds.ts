@@ -39,7 +39,17 @@ export default async function getEntitiesByIds<T>(
     const idPlaceholders = _ids.map((_, index) => dbManager.getValuePlaceholder(index + 1)).join(', ');
     const tableName = EntityClass.name.toLowerCase();
     const tableAlias = dbManager.schema + '_' + tableName;
-    const selectStatement = `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName}  WHERE _id IN (${idPlaceholders}) ${rootSortClause} ${rootPaginationClause}) AS ${tableAlias} ${joinClauses}`;
+
+    const selectStatement = [
+      `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} WHERE _id IN (${idPlaceholders})`,
+      rootSortClause,
+      rootPaginationClause,
+      `) AS ${tableAlias}`,
+      joinClauses
+    ]
+      .filter((sqlPart) => sqlPart)
+      .join(' ');
+
     const result = await dbManager.tryExecuteQuery(selectStatement, numericIds);
 
     if (dbManager.getResultRows(result).length === 0) {
