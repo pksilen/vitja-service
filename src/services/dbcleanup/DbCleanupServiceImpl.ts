@@ -18,8 +18,8 @@ export default class DbCleanupServiceImpl extends DbCleanupService {
     console.log('exec: ' + new Date());
     return this.dbManager.deleteEntitiesByFilters(
       [
-        new SqlEquals('', { state: 'forSale' }),
-        new SqlExpression('', 'createdattimestamp < current_timestamp() - INTERVAL 4 month')
+        new SqlEquals({ state: 'forSale' }),
+        new SqlExpression('createdattimestamp < current_timestamp() - INTERVAL 4 month')
       ],
       SalesItem
     );

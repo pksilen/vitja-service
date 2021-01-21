@@ -1,29 +1,22 @@
-import SqlExpression from '../../expressions/SqlExpression';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import transformRowsToObjects from './transformresults/transformRowsToObjects';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
-import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
-import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
-import { FilterQuery } from 'mongodb';
-import SqlEquals from '../../expressions/SqlEquals';
+import SqlExpression from "../../expressions/SqlExpression";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import transformRowsToObjects from "./transformresults/transformRowsToObjects";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
+import MongoDbQuery from "../../../mongodb/MongoDbQuery";
 
 export default async function getEntitiesByFilters<T>(
   dbManager: AbstractSqlDbManager,
-  filters: FilterQuery<T> | SqlExpression[] | UserDefinedFilter[],
+  filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[],
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
-  if (typeof filters === 'object' && !Array.isArray(filters)) {
-    // noinspection AssignmentToFunctionParameterJS
-    filters = Object.entries(filters).map(([fieldPathName, fieldValue]) => {
-      const lastDotPosition = fieldPathName.lastIndexOf('.');
-      const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
-      const subEntityPath = lastDotPosition === -1 ? '' : fieldPathName.slice(0, lastDotPosition);
-      return new SqlEquals(subEntityPath, { [fieldName]: fieldValue });
-    });
+  if (filters?.[0] instanceof MongoDbQuery) {
+    throw new Error('filters must be SqlExpression array or UserDefinedFilter array');
   }
 
   updateDbLocalTransactionCount(dbManager);
@@ -39,7 +32,7 @@ export default async function getEntitiesByFilters<T>(
       joinClauses,
       filterValues,
       outerSortClause
-    } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters);
+    } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters as any);
 
     const tableName = EntityClass.name.toLowerCase();
     const tableAlias = dbManager.schema + '_' + tableName;

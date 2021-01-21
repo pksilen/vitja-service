@@ -10,6 +10,8 @@ TODO
     - create new user (follow)
     - follow(userId, userdId + 1)
 - Convert sql LIKE expr to mongodb RegExp
+- Split to multiple microservices
+  - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:
    http-kubernetes-mysql,

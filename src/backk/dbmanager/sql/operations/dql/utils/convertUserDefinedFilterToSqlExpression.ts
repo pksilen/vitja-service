@@ -27,9 +27,9 @@ export default function convertUserDefinedFilterToSqlExpression(
   }
 
   if (operator === 'IN' && fieldName) {
-    return new SqlInExpression(subEntityPath ?? '', fieldName, value, fieldExpression).toSqlString();
+    return new SqlInExpression(fieldName, value, subEntityPath ?? '', fieldExpression).toSqlString();
   } else if (operator === 'NOT IN' && fieldName) {
-    return new SqlNotInExpression(subEntityPath ?? '', fieldName, value, fieldExpression).toSqlString();
+    return new SqlNotInExpression(fieldName, value, subEntityPath ?? '', fieldExpression).toSqlString();
   } else if (operator === 'IS NULL' || operator === 'IS NOT NULL') {
     return `${fieldExpression} ${operator}`;
   } else if (!operator) {

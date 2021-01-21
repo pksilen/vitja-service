@@ -15,6 +15,7 @@ import BaseService from "../service/BaseService";
 import { SubEntity } from "../types/entities/SubEntity";
 import __Backk__CronJobScheduling from "../scheduling/entities/__Backk__CronJobScheduling";
 import __Backk__JobScheduling from "../scheduling/entities/__Backk__JobScheduling";
+import MongoDbQuery from "./mongodb/MongoDbQuery";
 
 export interface Field {
   name: string;
@@ -132,13 +133,13 @@ export default abstract class AbstractDbManager {
   ): Promise<T[] | ErrorResponse>;
 
   abstract getEntitiesByFilters<T>(
-    filters: FilterQuery<T> | SqlExpression[] | UserDefinedFilter[],
+    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
   abstract getEntitiesCount<T>(
-    filters: FilterQuery<T>| SqlExpression[],
+    filters: Array<MongoDbQuery<T>> | SqlExpression[],
     entityClass: new () => T
   ): Promise<number | ErrorResponse>;
 
@@ -261,7 +262,7 @@ export default abstract class AbstractDbManager {
   ): Promise<void | ErrorResponse>;
 
   abstract deleteEntitiesByFilters<T extends object>(
-    filters: FilterQuery<T> | Partial<T> | SqlExpression[] | UserDefinedFilter[],
+    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T
   ): Promise<void | ErrorResponse>;
 

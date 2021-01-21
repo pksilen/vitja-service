@@ -34,8 +34,7 @@ import updateEntityWhere from "./sql/operations/dml/updateEntityWhere";
 import getAllEntities from "./sql/operations/dql/getAllEntities";
 import { SubEntity } from "../types/entities/SubEntity";
 import deleteEntitiesByFilters from "./sql/operations/dml/deleteEntitiesByFilters";
-import { FilterQuery } from "mongodb";
-import User from "../../services/users/types/entities/User";
+import MongoDbQuery from "./mongodb/MongoDbQuery";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -460,7 +459,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByFilters<T>(
-    filters: FilterQuery<T> | SqlExpression[] | UserDefinedFilter[],
+    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
@@ -471,7 +470,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesCount<T>(
-    filters: FilterQuery<T> | SqlExpression[] | UserDefinedFilter[] | undefined,
+    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[] | undefined,
     entityClass: new () => T
   ): Promise<number | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
@@ -607,7 +606,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   deleteEntitiesByFilters<T extends object>(
-    filters: Partial<T> | SqlExpression[] | UserDefinedFilter[],
+    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[],
     entityClass: new () => T
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');

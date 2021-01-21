@@ -37,7 +37,7 @@ export default async function getEntityWhere<T>(
       finalFieldValue = encrypt(fieldValue, false);
     }
 
-    const filters = [new SqlEquals(subEntityPath, { [fieldName]: finalFieldValue })];
+    const filters = [new SqlEquals({ [fieldName]: finalFieldValue }, subEntityPath)];
 
     const { rootWhereClause, columns, joinClauses, filterValues, outerSortClause } = getSqlSelectStatementParts(
       dbManager,

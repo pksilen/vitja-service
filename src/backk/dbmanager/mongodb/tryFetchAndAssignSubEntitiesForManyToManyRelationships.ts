@@ -8,7 +8,7 @@ import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 import { ObjectId } from 'mongodb';
 import isEntityTypeName from '../../utils/type/isEntityTypeName';
 import { JSONPath } from 'jsonpath-plus';
-import util from "util";
+import MongoDbQuery from './MongoDbQuery';
 
 export default async function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
   dbManager: AbstractDbManager,
@@ -34,7 +34,11 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
             // TODO give modified postQueryOperations
             const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
             const subEntitiesOrErrorResponse = await dbManager.getEntitiesByFilters(
-              { _id: { $in: subEntityIds.map((subEntityId: any) => new ObjectId(subEntityId)) } },
+              [
+                new MongoDbQuery({
+                  _id: { $in: subEntityIds.map((subEntityId: any) => new ObjectId(subEntityId)) }
+                })
+              ],
               (Types as any)[baseTypeName],
               postQueryOperations ?? new DefaultPostQueryOperations()
             );

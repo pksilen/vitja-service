@@ -2,12 +2,12 @@ import SqlExpression from './SqlExpression';
 
 export default class SqlInExpression extends SqlExpression {
   constructor(
-    subEntityPath: string,
     readonly fieldName: string,
     readonly inExpressionValues?: any[],
+    subEntityPath = '',
     readonly fieldExpression?: string
   ) {
-    super(subEntityPath, '', {});
+    super('', {}, subEntityPath);
   }
 
   getValues(): object {

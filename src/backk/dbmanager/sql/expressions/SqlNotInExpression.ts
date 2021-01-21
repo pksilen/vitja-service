@@ -2,12 +2,12 @@ import SqlInExpression from './SqlInExpression';
 
 export default class SqlNotInExpression extends SqlInExpression {
   constructor(
-    subEntityPath: string,
     readonly fieldName: string,
     readonly notInExpressionValues?: any[],
+    subEntityPath = '',
     fieldExpression?: string
   ) {
-    super(subEntityPath, fieldName, notInExpressionValues, fieldExpression);
+    super(fieldName, notInExpressionValues, subEntityPath, fieldExpression);
   }
 
   toSqlString(): string {

@@ -11,6 +11,7 @@ import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/De
 import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
 import { SalesItem } from '../salesitems/types/entities/SalesItem';
 import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
+import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
 
 @Injectable()
 export default class TagsServiceImpl extends TagsService {
@@ -37,8 +38,8 @@ export default class TagsServiceImpl extends TagsService {
   getTagsWhoseNameContains({ name }: TagName): Promise<Tag[] | ErrorResponse> {
     const filters =
       this.dbManager instanceof MongoDbManager
-        ? { name: new RegExp(name) }
-        : [new SqlExpression('','name LIKE :name', { name: `%${name}%` })];
+        ? [new MongoDbQuery<Tag>({ name: new RegExp(name) })]
+        : [new SqlExpression('name LIKE :name', { name: `%${name}%` })];
 
     return this.dbManager.getEntitiesByFilters(filters, Tag, new DefaultPostQueryOperations());
   }
