@@ -2,7 +2,7 @@ import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefin
 import SqlInExpression from '../../../expressions/SqlInExpression';
 import SqlNotInExpression from '../../../expressions/SqlNotInExpression';
 
-export default function convertUserDefinedFilterToSqlString(
+export default function convertUserDefinedFilterToSqlExpression(
   { subEntityPath, fieldName, fieldFunction, operator, value, orFilters }: UserDefinedFilter,
   index: number | string
 ): string {
@@ -39,7 +39,7 @@ export default function convertUserDefinedFilterToSqlString(
       ' (' +
       orFilters
         .map((orFilter, orFilterIndex: number) =>
-          convertUserDefinedFilterToSqlString({ ...orFilter, subEntityPath }, `${index}xx${orFilterIndex}`)
+          convertUserDefinedFilterToSqlExpression({ ...orFilter, subEntityPath }, `${index}xx${orFilterIndex}`)
         )
         .join(' OR ') +
       ') '

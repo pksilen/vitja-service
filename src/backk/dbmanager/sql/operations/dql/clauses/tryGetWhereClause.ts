@@ -1,6 +1,6 @@
 import SqlExpression from '../../../expressions/SqlExpression';
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
-import convertUserDefinedFilterToSqlString from '../utils/convertUserDefinedFilterToSqlString';
+import convertUserDefinedFilterToSqlExpression from '../utils/convertUserDefinedFilterToSqlExpression';
 import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
 
 export default function tryGetWhereClause<T>(
@@ -24,13 +24,17 @@ export default function tryGetWhereClause<T>(
         .join(' AND ');
     } else {
       filtersSql = (filters as UserDefinedFilter[])
-        .filter(
-          (sqlExpression) =>
-            sqlExpression.subEntityPath === subEntityPath ||
-            (subEntityPath === '' && !sqlExpression.subEntityPath) ||
-            sqlExpression.subEntityPath === '*'
-        )
-        .map((userDefinedFilter, index) => convertUserDefinedFilterToSqlString(userDefinedFilter, index))
+        .map((userDefinedFilter, index) => {
+          if (
+            userDefinedFilter.subEntityPath === subEntityPath ||
+            (subEntityPath === '' && !userDefinedFilter.subEntityPath) ||
+            userDefinedFilter.subEntityPath === '*'
+          ) {
+            return convertUserDefinedFilterToSqlExpression(userDefinedFilter, index);
+          }
+
+          return undefined;
+        }).filter(sqlExpression => sqlExpression)
         .join(' AND ');
     }
   }
