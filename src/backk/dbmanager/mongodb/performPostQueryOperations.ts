@@ -1,15 +1,19 @@
 import { AggregationCursor, Cursor } from 'mongodb';
 import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
 import getProjection from './getProjection';
+import getRootProjection from "./getRootProjection";
 
 export default function performPostQueryOperations<T>(
   cursor: Cursor<T> | AggregationCursor<T>,
-  postQueryOperations?: PostQueryOperations
+  postQueryOperations: PostQueryOperations | undefined,
+  EntityClass: new() => T,
+  Types: any
 ) {
   if (postQueryOperations) {
     const projection = getProjection(postQueryOperations);
-    if (Object.keys(projection).length > 0) {
-      cursor.project(projection);
+    const rootProjection = getRootProjection(projection, EntityClass, Types)
+    if (Object.keys(rootProjection).length > 0) {
+      cursor.project(rootProjection);
     }
   }
 
