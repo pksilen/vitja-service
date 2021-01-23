@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { FilterQuery, MongoClient, ObjectId } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import SqlExpression from "./sql/expressions/SqlExpression";
 import AbstractDbManager, { Field } from "./AbstractDbManager";
 import { ErrorResponse } from "../types/ErrorResponse";
@@ -690,15 +690,15 @@ export default class MongoDbManager extends AbstractDbManager {
   ): Promise<T | ErrorResponse> {
     const fieldPathName = subEntityPath ? subEntityPath + '.' + fieldName : fieldName;
 
-    if (isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
-      throw new Error(`Field ${fieldName} is not unique. Annotate entity field with @Unique annotation`);
+    if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
+      throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
     }
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
 
     let finalFieldValue = fieldValue;
     if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
-      finalFieldValue = encrypt(fieldValue as any, false);
+      finalFieldValue = encrypt(fieldValue, false);
     }
 
     const filters = [new MongoDbQuery({ [fieldName]: finalFieldValue }, subEntityPath)];
@@ -763,7 +763,7 @@ export default class MongoDbManager extends AbstractDbManager {
   ): Promise<T[] | ErrorResponse> {
     const fieldPathName = subEntityPath ? subEntityPath + '.' + fieldName : fieldName;
 
-    if (isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
+    if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldName} is not unique. Annotate entity field with @Unique annotation`);
     }
 

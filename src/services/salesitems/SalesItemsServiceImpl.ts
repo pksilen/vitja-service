@@ -28,7 +28,7 @@ import { AllowForTests } from '../../backk/decorators/service/function/AllowForT
 import { SalesItemState } from './types/enums/SalesItemState';
 import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
 import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
-import MongoDbQuery from "../../backk/dbmanager/mongodb/MongoDbQuery";
+import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -56,7 +56,9 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       {
         hookFunc: async () => {
           const usersActiveSalesItemCountOrErrorResponse = await this.dbManager.getEntitiesCount(
-            [new SqlEquals({ userId: arg.userId, state: 'forSale' })],
+            this.dbManager instanceof MongoDbManager
+              ? [new MongoDbQuery({ userId: arg.userId, state: 'forSale' })]
+              : [new SqlEquals({ userId: arg.userId, state: 'forSale' })],
             SalesItem
           );
           return typeof usersActiveSalesItemCountOrErrorResponse === 'number'
@@ -82,35 +84,37 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     let filters;
 
     if (this.dbManager instanceof MongoDbManager) {
-      filters = [new MongoDbQuery<SalesItem>({
-        state: 'forSale' as SalesItemState,
-        ...(textFilter
-          ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
-          : {}),
-        ...(areas ? { area: { $in: areas } } : {}),
-        ...(productDepartments ? { productDepartment: { $in: productDepartments } } : {}),
-        ...(productCategories ? { productCategory: { $in: productCategories } } : {}),
-        ...(productSubCategories ? { productSubCategory: { $in: productSubCategories } } : {}),
-        ...(minPrice !== undefined || maxPrice
-          ? {
-              $and: [
-                { price: { $gte: minPrice || 0 } },
-                { price: { $lte: maxPrice || Number.MAX_SAFE_INTEGER } }
-              ]
-            }
-          : {})
-      })];
+      filters = [
+        new MongoDbQuery<SalesItem>({
+          state: 'forSale' as SalesItemState,
+          ...(textFilter
+            ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
+            : {}),
+          ...(areas ? { area: { $in: areas } } : {}),
+          ...(productDepartments ? { productDepartment: { $in: productDepartments } } : {}),
+          ...(productCategories ? { productCategory: { $in: productCategories } } : {}),
+          ...(productSubCategories ? { productSubCategory: { $in: productSubCategories } } : {}),
+          ...(minPrice !== undefined || maxPrice
+            ? {
+                $and: [
+                  { price: { $gte: minPrice || 0 } },
+                  { price: { $lte: maxPrice || Number.MAX_SAFE_INTEGER } }
+                ]
+              }
+            : {})
+        })
+      ];
     } else {
       filters = [
         new SqlEquals({ state: 'forSale' }),
-        new SqlExpression( 'title LIKE :textFilter OR description LIKE :textFilter', {
+        new SqlExpression('title LIKE :textFilter OR description LIKE :textFilter', {
           textFilter
         }),
         new SqlInExpression('area', areas),
         new SqlInExpression('productDepartment', productDepartments),
         new SqlInExpression('productCategory', productCategories),
         new SqlInExpression('productSubCategory', productSubCategories),
-        new SqlExpression( 'price >= :minPrice', { minPrice }),
+        new SqlExpression('price >= :minPrice', { minPrice }),
         new SqlExpression('price <= :maxPrice', { maxPrice })
       ];
     }
@@ -141,7 +145,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     const filters =
       this.dbManager instanceof MongoDbManager
         ? [new MongoDbQuery<SalesItem>({ state: 'forSale' as SalesItemState, _id: { $in: _ids } })]
-        : [new SqlEquals( { state: 'forSale' }), new SqlInExpression('_id', _ids)];
+        : [new SqlEquals({ state: 'forSale' }), new SqlInExpression('_id', _ids)];
 
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOperations);
   }

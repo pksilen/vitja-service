@@ -6,5 +6,5 @@ export default function convertMongoDbQueriesToMatchExpression(filters: Array<Mo
       ...matchExpression,
       ...mongoDbQuery.filterQuery
     }
-  });
+  }, {});
 }

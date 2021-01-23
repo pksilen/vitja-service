@@ -4,7 +4,7 @@ import isEntityTypeName from '../../../../../utils/type/isEntityTypeName';
 import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
 
 export default function isUniqueField(
-  fieldName: string,
+  fieldPathName: string,
   EntityClass: new () => any,
   Types: any,
   fieldPath = ''
@@ -13,9 +13,12 @@ export default function isUniqueField(
 
   return Object.entries(entityPropertyNameToPropertyTypeNameMap).reduce(
     (isUniqueFieldResult: boolean, [propertyName, propertyTypeName]) => {
-      if (fieldName === '_id' || fieldName === 'id' || fieldName.endsWith('Id') ||
-        fieldPath + propertyName === fieldName &&
-        typePropertyAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName)
+      if (
+        propertyName === '_id' ||
+        propertyName === 'id' ||
+        propertyName.endsWith('Id') ||
+        (fieldPath + propertyName === fieldPathName &&
+          typePropertyAnnotationContainer.isTypePropertyUnique(EntityClass, propertyName))
       ) {
         return true;
       }
@@ -23,7 +26,8 @@ export default function isUniqueField(
       if (isEntityTypeName(propertyTypeName)) {
         const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
         return (
-          isUniqueFieldResult || isUniqueField(fieldName, Types[baseTypeName], Types, propertyName + '.')
+          isUniqueFieldResult ||
+          isUniqueField(fieldPathName, Types[baseTypeName], Types, fieldPath + propertyName + '.')
         );
       }
 
