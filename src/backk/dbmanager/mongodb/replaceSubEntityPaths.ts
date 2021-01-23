@@ -8,13 +8,19 @@ export default function replaceSubEntityPaths<T extends { subEntityPath?: string
         return operation.subEntityPath === wantedSubEntityPath || operation.subEntityPath === '*';
       })
       .map((operation) => {
-        let [, subEntityPathPostFix] = (operation.subEntityPath ?? '').split(wantedSubEntityPath);
-        if (subEntityPathPostFix[0] === '.') {
-          subEntityPathPostFix = subEntityPathPostFix.slice(1);
+        let newSubEntityPath = operation.subEntityPath;
+
+        if (operation.subEntityPath !== '*') {
+          [, newSubEntityPath] = (operation.subEntityPath ?? '').split(wantedSubEntityPath);
+
+          if (newSubEntityPath?.[0] === '.') {
+            newSubEntityPath = newSubEntityPath.slice(1);
+          }
         }
+
         return {
           ...operation,
-          subEntityPath: subEntityPathPostFix
+          subEntityPath: newSubEntityPath
         };
       }) ?? []
   );
