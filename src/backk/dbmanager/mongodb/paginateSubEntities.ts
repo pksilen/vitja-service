@@ -8,10 +8,18 @@ function paginateRows<T>(rows: T[], pagination: Pagination, subEntityJsonPath: s
   rows.forEach((row: any) => {
     const [subEntitiesParent] = JSONPath({ json: row, path: subEntityJsonPath + propertyName + '^' });
 
-    subEntitiesParent[propertyName] = subEntitiesParent[propertyName].slice(
-      (pagination.pageNumber - 1) * pagination.pageSize,
-      pagination.pageNumber * pagination.pageSize
-    );
+    if (
+      subEntitiesParent &&
+      Array.isArray(subEntitiesParent[propertyName]) &&
+      (pagination.pageNumber !== 1 ||
+        (pagination.pageNumber === 1 &&
+          subEntitiesParent.length > pagination.pageNumber * pagination.pageSize))
+    ) {
+      subEntitiesParent[propertyName] = subEntitiesParent[propertyName].slice(
+        (pagination.pageNumber - 1) * pagination.pageSize,
+        pagination.pageNumber * pagination.pageSize
+      );
+    }
   });
 }
 
