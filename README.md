@@ -1,12 +1,9 @@
 # Vitja service
 
 TODO
-- MongoDb support '*' subentitypath
-- Implement mongodb filters on many-to-many
-- Test mongodb sortBys
-- Implement mongodb paginations
 - Test mongodb cronjob and scheduled job
 - Add where clause to join select statements (similar as ON)
+- Sql filters: (SqlExpression | UserDefinedFilter)[]
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
   - User has FollowingUser subentity, which is same as User, but remove following related fields
   - FollowingUser is logical entity and physical entity is User

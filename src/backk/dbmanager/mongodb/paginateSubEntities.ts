@@ -3,10 +3,12 @@ import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPr
 import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../utils/type/isEntityTypeName';
 import { JSONPath } from 'jsonpath-plus';
+import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 
 function paginateRows<T>(rows: T[], pagination: Pagination, subEntityJsonPath: string, propertyName: string) {
   rows.forEach((row: any) => {
     const [subEntitiesParent] = JSONPath({ json: row, path: subEntityJsonPath + propertyName + '^' });
+    console.log(subEntitiesParent);
 
     if (
       subEntitiesParent &&
@@ -36,7 +38,11 @@ export default function paginateSubEntities<T>(
   Object.entries(entityClassPropertyNameToPropertyTypeNameMap).forEach(([propertyName, propertyTypeName]) => {
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(propertyTypeName);
 
-    if (isEntityTypeName(baseTypeName) && isArrayType) {
+    if (
+      isEntityTypeName(baseTypeName) &&
+      isArrayType &&
+      !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)
+    ) {
       let pagination = paginations?.find((pagination) => {
         const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
         return pagination.subEntityPath === wantedSubEntityPath;
