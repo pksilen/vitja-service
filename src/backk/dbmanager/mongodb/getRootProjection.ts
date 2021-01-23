@@ -16,29 +16,28 @@ export default function getRootProjection(
     (otherRootProjection, [propertyName, propertyTypeName]) => {
       const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
 
+      let subEntityProjection = {};
       if (isEntityTypeName(baseTypeName) && !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
-        const subSubEntityProjection = getRootProjection(
+        subEntityProjection = getRootProjection(
           projection,
           Types[baseTypeName],
           Types,
           propertyName + '.'
         );
-
-        const subEntityProjection = Object.entries(projection).reduce(
-          (subEntityProjection, [fieldPathName, shouldIncludeField]) => {
-            const wantedFieldPathName = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
-            if (fieldPathName === wantedFieldPathName) {
-              return { ...subEntityProjection, [fieldPathName]: shouldIncludeField };
-            }
-            return subEntityProjection;
-          },
-          {}
-        );
-
-        return { ...otherRootProjection, ...subEntityProjection, ...subSubEntityProjection };
       }
 
-      return otherRootProjection;
+      const entityProjection = Object.entries(projection).reduce(
+        (entityProjection, [fieldPathName, shouldIncludeField]) => {
+          const wantedFieldPathName = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
+          if (fieldPathName === wantedFieldPathName) {
+            return { ...entityProjection, [fieldPathName]: shouldIncludeField };
+          }
+          return entityProjection;
+        },
+        {}
+      );
+
+      return { ...otherRootProjection, ...entityProjection, ...subEntityProjection };
     },
     {}
   );

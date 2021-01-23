@@ -1,9 +1,8 @@
-import { AggregationCursor, Cursor } from 'mongodb';
-import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
-import getProjection from './getProjection';
-import getRootProjection from './getRootProjection';
-import getRootOperations from './getRootOperations';
-import SortBy from '../../types/postqueryoperations/SortBy';
+import { AggregationCursor, Cursor } from "mongodb";
+import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
+import getProjection from "./getProjection";
+import getRootProjection from "./getRootProjection";
+import getRootOperations from "./getRootOperations";
 
 export default function performPostQueryOperations<T>(
   cursor: Cursor<T> | AggregationCursor<T>,
