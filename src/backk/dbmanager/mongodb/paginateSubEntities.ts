@@ -6,7 +6,7 @@ import { JSONPath } from 'jsonpath-plus';
 
 export default function paginateSubEntities<T>(
   rows: T[],
-  paginations: Pagination[],
+  paginations: Pagination[] | undefined,
   EntityClass: new () => any,
   Types: any,
   subEntityPath = '',
@@ -18,7 +18,7 @@ export default function paginateSubEntities<T>(
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(propertyTypeName);
 
     if (isEntityTypeName(baseTypeName) && isArrayType) {
-      const pagination = paginations.find((pagination) => {
+      const pagination = paginations?.find((pagination) => {
         const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
         return pagination.subEntityPath === wantedSubEntityPath;
       });

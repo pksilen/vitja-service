@@ -395,15 +395,19 @@ export default class MongoDbManager extends AbstractDbManager {
           .aggregate(joinPipelines)
           .match({});
 
-        performPostQueryOperations(cursor, finalPostQueryOperations);
+        performPostQueryOperations(cursor, finalPostQueryOperations, EntityClass, this.getTypes());
         const rows = await cursor.toArray();
+
         await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
           this,
           rows,
           EntityClass,
           this.getTypes(),
+          undefined,
           finalPostQueryOperations
         );
+
+        paginateSubEntities(rows, finalPostQueryOperations.paginations, EntityClass, this.getTypes());
 
         removePrivateProperties(rows, EntityClass, this.getTypes());
         decryptItems(rows, EntityClass, this.getTypes());
@@ -473,7 +477,7 @@ export default class MongoDbManager extends AbstractDbManager {
           postQueryOperations
         );
 
-        paginateSubEntities(rows, postQueryOperations.paginations);
+        paginateSubEntities(rows, postQueryOperations.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes());
         decryptItems(rows, EntityClass, this.getTypes());
         return rows;
@@ -491,8 +495,26 @@ export default class MongoDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T>> | UserDefinedFilter[] | SqlExpression[],
     EntityClass: new () => T
   ): Promise<number | ErrorResponse> {
+    let matchExpression: object;
+
     if (Array.isArray(filters) && filters?.[0] instanceof SqlExpression) {
       throw new Error('SqlExpression is not supported for MongoDB');
+    } else if (Array.isArray(filters) && filters?.[0] instanceof UserDefinedFilter) {
+      const rootFilters = getRootOperations(
+        filters as UserDefinedFilter[],
+        EntityClass,
+        this.getTypes()
+      );
+
+      matchExpression = convertUserDefinedFiltersToMatchExpression(rootFilters);
+    } else {
+      const rootFilters = getRootOperations(
+        filters as Array<MongoDbQuery<T>>,
+        EntityClass,
+        this.getTypes()
+      );
+
+      matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
     }
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
@@ -504,7 +526,7 @@ export default class MongoDbManager extends AbstractDbManager {
         return await client
           .db(this.dbName)
           .collection<T>(EntityClass.name.toLowerCase())
-          .countDocuments(filters as FilterQuery<T>);
+          .countDocuments(matchExpression);
       });
     } catch (error) {
       return createErrorResponseFromError(error);
@@ -533,7 +555,7 @@ export default class MongoDbManager extends AbstractDbManager {
           .aggregate(joinPipelines)
           .match({ _id: new ObjectId(_id) });
 
-        performPostQueryOperations(cursor, postQueryOperations);
+        performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
         const rows = await cursor.toArray();
 
         if (rows.length === 0) {
@@ -548,9 +570,11 @@ export default class MongoDbManager extends AbstractDbManager {
           rows,
           EntityClass,
           this.getTypes(),
+          undefined,
           postQueryOperations
         );
 
+        paginateSubEntities(rows, postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes(), isInternalCall);
         decryptItems(rows, EntityClass, this.getTypes());
         return rows[0];
@@ -630,7 +654,7 @@ export default class MongoDbManager extends AbstractDbManager {
           .aggregate(joinPipelines)
           .match({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } });
 
-        performPostQueryOperations(cursor, postQueryOperations);
+        performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
         const rows = await cursor.toArray();
 
         await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
@@ -638,8 +662,11 @@ export default class MongoDbManager extends AbstractDbManager {
           rows,
           EntityClass,
           this.getTypes(),
+          undefined,
           postQueryOperations
         );
+
+        paginateSubEntities(rows, postQueryOperations.paginations, EntityClass, this.getTypes());
 
         removePrivateProperties(rows, EntityClass, this.getTypes());
         decryptItems(rows, EntityClass, this.getTypes());
@@ -661,20 +688,28 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    // noinspection AssignmentToFunctionParameterJS
-    fieldName = subEntityPath ? subEntityPath + '.' + fieldName : fieldName;
+    const fieldPathName = subEntityPath ? subEntityPath + '.' + fieldName : fieldName;
 
-    if (isUniqueField(fieldName, EntityClass, this.getTypes())) {
+    if (isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldName} is not unique. Annotate entity field with @Unique annotation`);
     }
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
 
-    const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
     let finalFieldValue = fieldValue;
-    if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
+    if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
       finalFieldValue = encrypt(fieldValue as any, false);
     }
+
+    const filters = [new MongoDbQuery({ [fieldName]: finalFieldValue }, subEntityPath)];
+
+    const rootFilters = getRootOperations(
+      filters as Array<MongoDbQuery<T>>,
+      EntityClass,
+      this.getTypes()
+    );
+
+    const matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
 
     try {
       const entities = await this.tryExecute(false, async (client) => {
@@ -684,9 +719,9 @@ export default class MongoDbManager extends AbstractDbManager {
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .aggregate(joinPipelines)
-          .match({ [fieldName]: finalFieldValue });
+          .match(matchExpression);
 
-        performPostQueryOperations(cursor, postQueryOperations);
+        performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
         const rows = await cursor.toArray();
 
         await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
@@ -694,20 +729,15 @@ export default class MongoDbManager extends AbstractDbManager {
           rows,
           EntityClass,
           this.getTypes(),
+          filters as Array<MongoDbQuery<T>>,
           postQueryOperations
         );
 
+        paginateSubEntities(rows, postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes());
         decryptItems(rows, EntityClass, this.getTypes());
         return rows;
       });
-
-      if (entities.length > 1) {
-        return createErrorResponseFromErrorMessageAndStatusCode(
-          `Field ${fieldName} values must be unique`,
-          HttpStatusCodes.INTERNAL_SERVER_ERROR
-        );
-      }
 
       return entities.length === 0
         ? createErrorResponseFromErrorMessageAndStatusCode(
@@ -731,20 +761,28 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    // noinspection AssignmentToFunctionParameterJS
-    fieldName = subEntityPath ? subEntityPath + '.' + fieldName : fieldName;
+    const fieldPathName = subEntityPath ? subEntityPath + '.' + fieldName : fieldName;
 
-    if (isUniqueField(fieldName, EntityClass, this.getTypes())) {
+    if (isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldName} is not unique. Annotate entity field with @Unique annotation`);
     }
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesWhere');
 
-    const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
     let finalFieldValue = fieldValue;
-    if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
+    if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
       finalFieldValue = encrypt(fieldValue as any, false);
     }
+
+    const filters = [new MongoDbQuery({ [fieldName]: finalFieldValue }, subEntityPath)];
+
+    const rootFilters = getRootOperations(
+      filters as Array<MongoDbQuery<T>>,
+      EntityClass,
+      this.getTypes()
+    );
+
+    const matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
 
     try {
       const entities = await this.tryExecute(false, async (client) => {
@@ -754,9 +792,9 @@ export default class MongoDbManager extends AbstractDbManager {
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .aggregate(joinPipelines)
-          .match({ [fieldName]: finalFieldValue });
+          .match(matchExpression);
 
-        performPostQueryOperations(cursor, postQueryOperations);
+        performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
         const rows = await cursor.toArray();
 
         await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
@@ -764,9 +802,11 @@ export default class MongoDbManager extends AbstractDbManager {
           rows,
           EntityClass,
           this.getTypes(),
+          filters as Array<MongoDbQuery<T>>,
           postQueryOperations
         );
 
+        paginateSubEntities(rows, postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes());
         decryptItems(rows, EntityClass, this.getTypes());
         return rows;
