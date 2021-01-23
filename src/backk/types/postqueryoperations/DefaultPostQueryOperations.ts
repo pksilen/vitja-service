@@ -1,19 +1,16 @@
-import { PostQueryOperations } from './PostQueryOperations';
-import SortBy from './SortBy';
+import { PostQueryOperations } from "./PostQueryOperations";
+import SortBy from "./SortBy";
 import {
   ArrayMaxSize,
   ArrayUnique,
   IsArray,
   IsInstance,
-  IsInt,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
-  Min,
   ValidateNested
-} from 'class-validator';
-import Pagination from './Pagination';
+} from "class-validator";
+import Pagination from "./Pagination";
 
 export default class DefaultPostQueryOperations implements PostQueryOperations {
   @IsOptional()

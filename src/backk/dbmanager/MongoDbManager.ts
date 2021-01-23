@@ -55,6 +55,7 @@ import isUniqueField from "./sql/operations/dql/utils/isUniqueField";
 import MongoDbQuery from "./mongodb/MongoDbQuery";
 import getRootOperations from "./mongodb/getRootOperations";
 import convertMongoDbQueriesToMatchExpression from "./mongodb/convertMongoDbQueriesToMatchExpression";
+import paginateSubEntities from "./mongodb/paginateSubEntities";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -468,9 +469,11 @@ export default class MongoDbManager extends AbstractDbManager {
           rows,
           EntityClass,
           this.getTypes(),
+          filters as Array<MongoDbQuery<T>>,
           postQueryOperations
         );
 
+        paginateSubEntities(rows, postQueryOperations.paginations);
         removePrivateProperties(rows, EntityClass, this.getTypes());
         decryptItems(rows, EntityClass, this.getTypes());
         return rows;

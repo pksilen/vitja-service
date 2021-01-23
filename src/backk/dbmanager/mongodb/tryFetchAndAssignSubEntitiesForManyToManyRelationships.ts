@@ -9,14 +9,18 @@ import { ObjectId } from 'mongodb';
 import isEntityTypeName from '../../utils/type/isEntityTypeName';
 import { JSONPath } from 'jsonpath-plus';
 import MongoDbQuery from './MongoDbQuery';
+import replaceSubEntityPaths from './replaceSubEntityPaths';
+import replaceFieldPathNames from './replaceFieldPathNames';
 
 export default async function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
   dbManager: AbstractDbManager,
   rows: T[],
   EntityClass: new () => T,
   Types: object,
+  filters?: Array<MongoDbQuery<T>>,
   postQueryOperations?: PostQueryOperations,
-  propertyJsonPath = '$.'
+  propertyJsonPath = '$.',
+  subEntityPath = ''
 ): Promise<void> {
   const entityPropertyNameToPropertyTypeMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
 
@@ -31,16 +35,45 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
           });
 
           if (subEntityIds) {
-            // TODO give modified postQueryOperations
             const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
+            const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
+            const subEntityFilters = replaceSubEntityPaths(filters, wantedSubEntityPath);
+            const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
+
+            const subEntitySortBys = replaceSubEntityPaths(
+              finalPostQueryOperations.sortBys,
+              wantedSubEntityPath
+            );
+
+            const subEntityPaginations = replaceSubEntityPaths(
+              finalPostQueryOperations.paginations,
+              wantedSubEntityPath
+            );
+
+            const subEntityIncludeResponseFields = replaceFieldPathNames(
+              finalPostQueryOperations.includeResponseFields,
+              wantedSubEntityPath
+            );
+
+            const subEntityExcludeResponseFields = replaceFieldPathNames(
+              finalPostQueryOperations.excludeResponseFields,
+              wantedSubEntityPath
+            );
+
             const subEntitiesOrErrorResponse = await dbManager.getEntitiesByFilters(
               [
                 new MongoDbQuery({
                   _id: { $in: subEntityIds.map((subEntityId: any) => new ObjectId(subEntityId)) }
-                })
+                }),
+                ...(subEntityFilters ?? [])
               ],
               (Types as any)[baseTypeName],
-              postQueryOperations ?? new DefaultPostQueryOperations()
+              {
+                includeResponseFields: subEntityIncludeResponseFields,
+                excludeResponseFields: subEntityExcludeResponseFields,
+                sortBys: subEntitySortBys,
+                paginations: subEntityPaginations
+              }
             );
 
             if ('errorMessage' in subEntitiesOrErrorResponse) {
@@ -62,8 +95,10 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
           rows,
           SubEntityClass,
           Types,
+          filters,
           postQueryOperations,
-          propertyJsonPath + propertyName + '[*].'
+          propertyJsonPath + propertyName + '[*].',
+          subEntityPath + propertyName + '.'
         );
       }
     }

@@ -1,14 +1,16 @@
 # Vitja service
 
 TODO
+- MongoDb support '*' subentitypath
 - Implement mongodb filters on many-to-many
 - Test mongodb sortBys
 - Implement mongodb paginations
+- Support graphql json for mongodb include/exclude responsefields
 - Test mongodb cronjob and scheduled job
+- Add where clause to join select statements (similar as ON)
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
-- Add FollowerService
-    - create new user (follow)
-    - follow(userId, userdId + 1)
+  - User has FollowingUser subentity, which is same as User, but remove following related fields
+  - FollowingUser is logical entity and physical entity is User
 - Convert sql LIKE expr to mongodb RegExp
 - Split to multiple microservices
   - Implement subentities as remote service queries
