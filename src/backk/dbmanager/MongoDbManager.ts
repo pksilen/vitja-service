@@ -432,9 +432,17 @@ export default class MongoDbManager extends AbstractDbManager {
       const rootUserDefinedFilters = rootFilters.filter((filter) => !(filter instanceof MongoDbQuery));
       const rootMongoDbQueries = rootFilters.filter((filter) => filter instanceof MongoDbQuery);
 
+      const userDefinedFiltersMatchExpression = convertUserDefinedFiltersToMatchExpression(
+        rootUserDefinedFilters as UserDefinedFilter[]
+      );
+
+      const mongoDbQueriesMatchExpression = convertMongoDbQueriesToMatchExpression(
+        rootMongoDbQueries as Array<MongoDbQuery<T>>
+      );
+
       matchExpression = {
-        ...convertUserDefinedFiltersToMatchExpression(rootUserDefinedFilters as UserDefinedFilter[]),
-        ...convertMongoDbQueriesToMatchExpression(rootMongoDbQueries as Array<MongoDbQuery<T>>)
+        ...userDefinedFiltersMatchExpression,
+        ...mongoDbQueriesMatchExpression
       };
     }
 
@@ -1055,7 +1063,7 @@ export default class MongoDbManager extends AbstractDbManager {
         await client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
-          .deleteMany(filters);
+          .deleteMany(matchExpression);
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
