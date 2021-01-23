@@ -5,13 +5,13 @@ TODO
 - Implement mongodb filters on many-to-many
 - Test mongodb sortBys
 - Implement mongodb paginations
-- Support graphql json for mongodb include/exclude responsefields
 - Test mongodb cronjob and scheduled job
 - Add where clause to join select statements (similar as ON)
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
   - User has FollowingUser subentity, which is same as User, but remove following related fields
   - FollowingUser is logical entity and physical entity is User
 - Convert sql LIKE expr to mongodb RegExp
+- Support graphql json for mongodb include/exclude responsefields
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

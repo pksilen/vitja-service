@@ -2,6 +2,7 @@ import getClassPropertyNameToPropertyTypeNameMap
   from "../../metadata/getClassPropertyNameToPropertyTypeNameMap";
 import getTypeInfoForTypeName from "../../utils/type/getTypeInfoForTypeName";
 import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
+import isEntityTypeName from "../../utils/type/isEntityTypeName";
 
 export default function getRootProjection(
   projection: object,
@@ -15,7 +16,7 @@ export default function getRootProjection(
     (otherRootProjection, [propertyName, propertyTypeName]) => {
       const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
 
-      if (!typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
+      if (isEntityTypeName(baseTypeName) && !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
         const subSubEntityProjection = getRootProjection(
           projection,
           Types[baseTypeName],

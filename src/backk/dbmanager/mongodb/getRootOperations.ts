@@ -13,7 +13,9 @@ export default function getRootOperations<T extends { subEntityPath?: string }>(
 
   let rootEntityOperations: T[] = [];
   if (subEntityPath === '') {
-    rootEntityOperations = operations.filter((operation) => !operation.subEntityPath);
+    rootEntityOperations = operations.filter(
+      (operation) => !operation.subEntityPath || operation.subEntityPath === '*'
+    );
   }
 
   const otherRootOperations = Object.entries(entityClassPropertyNameToPropertyTypeNameMap).reduce(
@@ -31,7 +33,7 @@ export default function getRootOperations<T extends { subEntityPath?: string }>(
 
           const subEntityOperations = operations.filter((operation) => {
             const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
-            return operation.subEntityPath === wantedSubEntityPath;
+            return operation.subEntityPath === wantedSubEntityPath || operation.subEntityPath === '*';
           });
 
           return [...otherRootOperations, ...subEntityOperations, ...subSubEntityOperations];

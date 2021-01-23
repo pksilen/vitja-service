@@ -4,6 +4,17 @@ import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../utils/type/isEntityTypeName';
 import { JSONPath } from 'jsonpath-plus';
 
+function paginateRows<T>(rows: T[], pagination: Pagination, subEntityJsonPath: string, propertyName: string) {
+  rows.forEach((row: any) => {
+    const [subEntitiesParent] = JSONPath({ json: row, path: subEntityJsonPath + propertyName + '^' });
+
+    subEntitiesParent[propertyName] = subEntitiesParent[propertyName].slice(
+      (pagination.pageNumber - 1) * pagination.pageSize,
+      pagination.pageNumber * pagination.pageSize
+    );
+  });
+}
+
 export default function paginateSubEntities<T>(
   rows: T[],
   paginations: Pagination[] | undefined,
@@ -18,29 +29,27 @@ export default function paginateSubEntities<T>(
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(propertyTypeName);
 
     if (isEntityTypeName(baseTypeName) && isArrayType) {
-      const pagination = paginations?.find((pagination) => {
+      let pagination = paginations?.find((pagination) => {
         const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
         return pagination.subEntityPath === wantedSubEntityPath;
       });
 
-      if (pagination) {
-        rows.forEach((row: any) => {
-          const [subEntitiesParent] = JSONPath({ json: row, path: subEntityJsonPath + propertyName + '^' });
-          subEntitiesParent[propertyName] = subEntitiesParent[propertyName].slice(
-            (pagination.pageNumber - 1) * pagination.pageSize,
-            pagination.pageNumber * pagination.pageSize
-          );
-        });
+      if (!pagination) {
+        pagination = paginations?.find((pagination) => pagination.subEntityPath === '*');
       }
-    }
 
-    paginateSubEntities(
-      rows,
-      paginations,
-      Types[baseTypeName],
-      Types,
-      subEntityPath + propertyName + '.',
-      subEntityJsonPath + propertyName + '[*].'
-    );
+      if (pagination) {
+        paginateRows(rows, pagination, subEntityJsonPath, propertyName);
+      }
+
+      paginateSubEntities(
+        rows,
+        paginations,
+        Types[baseTypeName],
+        Types,
+        subEntityPath + propertyName + '.',
+        subEntityJsonPath + propertyName + '[*].'
+      );
+    }
   });
 }

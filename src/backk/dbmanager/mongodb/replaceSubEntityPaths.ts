@@ -5,7 +5,7 @@ export default function replaceSubEntityPaths<T extends { subEntityPath?: string
   return (
     operations
       ?.filter((operation) => {
-        return operation.subEntityPath === wantedSubEntityPath;
+        return operation.subEntityPath === wantedSubEntityPath || operation.subEntityPath === '*';
       })
       .map((operation) => {
         let [, subEntityPathPostFix] = (operation.subEntityPath ?? '').split(wantedSubEntityPath);

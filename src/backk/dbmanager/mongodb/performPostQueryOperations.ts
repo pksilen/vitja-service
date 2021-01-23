@@ -1,9 +1,9 @@
-import { AggregationCursor, Cursor } from "mongodb";
-import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
-import getProjection from "./getProjection";
-import getRootProjection from "./getRootProjection";
-import getRootOperations from "./getRootOperations";
-import SortBy from "../../types/postqueryoperations/SortBy";
+import { AggregationCursor, Cursor } from 'mongodb';
+import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
+import getProjection from './getProjection';
+import getRootProjection from './getRootProjection';
+import getRootOperations from './getRootOperations';
+import SortBy from '../../types/postqueryoperations/SortBy';
 
 export default function performPostQueryOperations<T>(
   cursor: Cursor<T> | AggregationCursor<T>,
@@ -20,30 +20,28 @@ export default function performPostQueryOperations<T>(
   }
 
   if (postQueryOperations?.sortBys) {
-    const rootSortBys = getRootOperations(postQueryOperations.sortBys as SortBy[], EntityClass, Types);
+    const rootSortBys = getRootOperations(postQueryOperations.sortBys, EntityClass, Types);
 
-    const sorting = rootSortBys.reduce(
-      (accumulatedSortObj, { fieldName, sortDirection }) => ({
-        ...accumulatedSortObj,
-        [fieldName]: sortDirection === 'ASC' ? 1 : -1
-      }),
-      {}
-    );
-
-    cursor.sort(sorting);
-
-    let rootPagination = postQueryOperations?.paginations.find(
-      (pagination) => !pagination.subEntityPath
-    );
-
-    if (!rootPagination) {
-      rootPagination = postQueryOperations?.paginations.find(
-        (pagination) => pagination.subEntityPath === '*'
+    if (rootSortBys.length > 0) {
+      const sorting = rootSortBys.reduce(
+        (accumulatedSortObj, { fieldName, sortDirection }) => ({
+          ...accumulatedSortObj,
+          [fieldName]: sortDirection === 'ASC' ? 1 : -1
+        }),
+        {}
       );
-    }
 
-    if (rootPagination) {
-      cursor.skip((rootPagination.pageNumber - 1) * rootPagination.pageSize).limit(rootPagination.pageSize);
+      cursor.sort(sorting);
     }
+  }
+
+  let rootPagination = postQueryOperations?.paginations.find((pagination) => !pagination.subEntityPath);
+
+  if (!rootPagination) {
+    rootPagination = postQueryOperations?.paginations.find((pagination) => pagination.subEntityPath === '*');
+  }
+
+  if (rootPagination) {
+    cursor.skip((rootPagination.pageNumber - 1) * rootPagination.pageSize).limit(rootPagination.pageSize);
   }
 }
