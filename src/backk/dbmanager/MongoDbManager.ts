@@ -52,7 +52,7 @@ import MongoDbQuery from './mongodb/MongoDbQuery';
 import getRootOperations from './mongodb/getRootOperations';
 import convertMongoDbQueriesToMatchExpression from './mongodb/convertMongoDbQueriesToMatchExpression';
 import paginateSubEntities from './mongodb/paginateSubEntities';
-import convertFilterObjectToMongoDbQueries from "./mongodb/convertFilterObjectToMongoDbQueries";
+import convertFilterObjectToMongoDbQueries from './mongodb/convertFilterObjectToMongoDbQueries';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -697,14 +697,11 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntityWhere<T>(
-    subEntityPath: string,
-    fieldName: string,
+    fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
-    const fieldPathName = subEntityPath ? subEntityPath + '.' + fieldName : fieldName;
-
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
     }
@@ -712,11 +709,18 @@ export default class MongoDbManager extends AbstractDbManager {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
 
     let finalFieldValue = fieldValue;
+    const lastDotPosition = fieldPathName.lastIndexOf('.');
+    const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
     if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
       finalFieldValue = encrypt(fieldValue, false);
     }
 
-    const filters = [new MongoDbQuery({ [fieldName]: finalFieldValue }, subEntityPath)];
+    const filters = [
+      new MongoDbQuery(
+        { [fieldName]: finalFieldValue },
+        lastDotPosition === -1 ? '' : fieldPathName.slice(0, lastDotPosition)
+      )
+    ];
     const rootFilters = getRootOperations(filters as Array<MongoDbQuery<T>>, EntityClass, this.getTypes());
     const matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
 
@@ -764,26 +768,31 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntitiesWhere<T>(
-    subEntityPath: string,
-    fieldName: string,
+    fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
-    const fieldPathName = subEntityPath ? subEntityPath + '.' + fieldName : fieldName;
-
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
-      throw new Error(`Field ${fieldName} is not unique. Annotate entity field with @Unique annotation`);
+      throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
     }
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesWhere');
 
     let finalFieldValue = fieldValue;
+    const lastDotPosition = fieldPathName.lastIndexOf('.');
+    const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
     if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
       finalFieldValue = encrypt(fieldValue as any, false);
     }
 
-    const filters = [new MongoDbQuery({ [fieldName]: finalFieldValue }, subEntityPath)];
+    const filters = [
+      new MongoDbQuery(
+        { [fieldName]: finalFieldValue },
+        lastDotPosition === -1 ? '' : fieldPathName.slice(0, lastDotPosition)
+      )
+    ];
+
     const rootFilters = getRootOperations(filters as Array<MongoDbQuery<T>>, EntityClass, this.getTypes());
     const matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
 
@@ -945,8 +954,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async updateEntityWhere<T extends Entity>(
-    subEntityPath: string,
-    fieldName: string,
+    fieldPathName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
@@ -962,8 +970,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
       return await this.tryExecute(shouldUseTransaction, async () => {
         const currentEntityOrErrorResponse = await this.getEntityWhere(
-          subEntityPath,
-          fieldName,
+          fieldPathName,
           fieldValue,
           EntityClass
         );

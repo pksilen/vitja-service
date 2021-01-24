@@ -14,8 +14,7 @@ import getEntityWhere from "../dql/getEntityWhere";
 
 export default async function updateEntityWhere<T extends Entity>(
   dbManager: AbstractSqlDbManager,
-  subEntityPath: string,
-  fieldName: string,
+  fieldPathName: string,
   fieldValue: T[keyof T] | string,
   entity: RecursivePartial<T>,
   EntityClass: new () => T,
@@ -27,7 +26,7 @@ export default async function updateEntityWhere<T extends Entity>(
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    const currentEntityOrErrorResponse = await getEntityWhere(dbManager, subEntityPath,fieldName, fieldValue, EntityClass);
+    const currentEntityOrErrorResponse = await getEntityWhere(dbManager, fieldPathName, fieldValue, EntityClass);
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     const possibleErrorResponse = await dbManager.updateEntity(
       { _id: (currentEntityOrErrorResponse as T)._id, ...entity },

@@ -45,7 +45,7 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   async getUserByUserName({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
-    const userOrErrorResponse = await this.dbManager.getEntityWhere('', 'userName', userName, User);
+    const userOrErrorResponse = await this.dbManager.getEntityWhere('userName', userName, User);
     return 'errorMessage' in userOrErrorResponse
       ? userOrErrorResponse
       : UsersServiceImpl.getUserResponse(userOrErrorResponse);

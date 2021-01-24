@@ -170,16 +170,14 @@ export default abstract class AbstractDbManager {
   ): Promise<T[] | ErrorResponse>;
 
   abstract getEntityWhere<T>(
-    subEntityPath: string,
-    fieldName: string,
+    fieldPathName: string,
     fieldValue: any,
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
   abstract getEntitiesWhere<T>(
-    subEntityPath: string,
-    fieldName: string,
+    fieldPathName: string,
     fieldValue: any,
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
@@ -220,8 +218,7 @@ export default abstract class AbstractDbManager {
   }
 
   abstract updateEntityWhere<T extends Entity>(
-    subEntityPath: string,
-    fieldName: string,
+    fieldPathName: string,
     fieldValue: any,
     entity: RecursivePartial<T>,
     entityClass: new () => T,

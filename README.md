@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- object type filter
 - Convert sql LIKE expr to mongodb RegExp
 - Support graphql json for mongodb include/exclude responsefields
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers

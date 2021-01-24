@@ -15,14 +15,13 @@ import SqlEquals from '../../expressions/SqlEquals';
 
 export default async function getEntitiesWhere<T>(
   dbManager: AbstractSqlDbManager,
-  subEntityPath: string,
-  fieldName: string,
+  fieldPathName: string,
   fieldValue: any,
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
-  if (!isUniqueField(fieldName, EntityClass, dbManager.getTypes())) {
-    throw new Error(`Field ${fieldName} is not unique. Annotate entity field with @Unique annotation`);
+  if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {
+    throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
   }
 
   // noinspection AssignmentToFunctionParameterJS
@@ -32,11 +31,18 @@ export default async function getEntitiesWhere<T>(
     updateDbLocalTransactionCount(dbManager);
 
     let finalFieldValue = fieldValue;
+    const lastDotPosition = fieldPathName.lastIndexOf('.');
+    const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
     if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
       finalFieldValue = encrypt(fieldValue, false);
     }
 
-    const filters = [new SqlEquals({ [fieldName]: finalFieldValue }, subEntityPath)];
+    const filters = [
+      new SqlEquals(
+        { [fieldName]: finalFieldValue },
+        lastDotPosition === -1 ? '' : fieldPathName.slice(0, lastDotPosition)
+      )
+    ];
 
     const {
       rootWhereClause,

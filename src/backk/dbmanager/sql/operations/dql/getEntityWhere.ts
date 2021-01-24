@@ -16,14 +16,13 @@ import createErrorResponseFromError from '../../../../errors/createErrorResponse
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
-  subEntityPath: string,
-  fieldName: string,
+  fieldPathName: string,
   fieldValue: any,
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
-  if (!isUniqueField(fieldName, EntityClass, dbManager.getTypes())) {
-    throw new Error(`Field ${fieldName} is not unique. Annotate entity field with @Unique annotation`);
+  if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {
+    throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
   }
 
   updateDbLocalTransactionCount(dbManager);
@@ -33,18 +32,26 @@ export default async function getEntityWhere<T>(
 
   try {
     let finalFieldValue = fieldValue;
+    const lastDotPosition = fieldPathName.lastIndexOf('.');
+    const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
     if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
       finalFieldValue = encrypt(fieldValue, false);
     }
 
-    const filters = [new SqlEquals({ [fieldName]: finalFieldValue }, subEntityPath)];
+    const filters = [
+      new SqlEquals(
+        { [fieldName]: finalFieldValue },
+        lastDotPosition === -1 ? '' : fieldPathName.slice(0, lastDotPosition)
+      )
+    ];
 
-    const { rootWhereClause, columns, joinClauses, filterValues, outerSortClause } = getSqlSelectStatementParts(
-      dbManager,
-      finalPostQueryOperations,
-      EntityClass,
-      filters
-    );
+    const {
+      rootWhereClause,
+      columns,
+      joinClauses,
+      filterValues,
+      outerSortClause
+    } = getSqlSelectStatementParts(dbManager, finalPostQueryOperations, EntityClass, filters);
 
     const tableName = EntityClass.name.toLowerCase();
     const tableAlias = dbManager.schema + '_' + tableName;
