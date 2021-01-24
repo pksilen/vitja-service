@@ -20,7 +20,13 @@ export default async function tryCreateTable(
   schema: string | undefined
 ) {
   const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
-  let createTableStatement = `CREATE TABLE ${schema?.toLowerCase()}.${entityName.toLowerCase()} (`;
+  let tableName = entityName.toLowerCase();
+
+  if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
+    tableName = entityAnnotationContainer.entityNameToTableNameMap[entityName].toLowerCase();
+  }
+
+  let createTableStatement = `CREATE TABLE ${schema?.toLowerCase()}.${tableName} (`;
   let fieldCnt = 0;
   const idColumn = Object.keys(entityMetadata).find((fieldName) => fieldName === '_id' || fieldName === 'id');
 

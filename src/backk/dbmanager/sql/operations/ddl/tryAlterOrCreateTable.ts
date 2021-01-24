@@ -1,6 +1,7 @@
 import AbstractDbManager from '../../../AbstractDbManager';
 import tryAlterTable from './tryAlterTable';
 import tryCreateTable from './tryCreateTable';
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
 
 export default async function tryAlterOrCreateTable(
   dbManager: AbstractDbManager,
@@ -10,8 +11,14 @@ export default async function tryAlterOrCreateTable(
 ) {
   let fields;
   try {
+    let tableName = entityName.toLowerCase();
+
+    if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
+      tableName = entityAnnotationContainer.entityNameToTableNameMap[entityName].toLowerCase();
+    }
+
     fields = await dbManager.tryExecuteSqlWithoutCls(
-      `SELECT * FROM ${schema?.toLowerCase()}.${entityName.toLowerCase()} LIMIT 1`,
+      `SELECT * FROM ${schema?.toLowerCase()}.${tableName} LIMIT 1`,
       undefined,
       false
     );

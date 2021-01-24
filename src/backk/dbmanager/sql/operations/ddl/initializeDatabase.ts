@@ -45,15 +45,21 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
       await forEachAsyncSequential(
         Object.entries(entityAnnotationContainer.entityNameToForeignIdFieldNamesMap),
         async ([entityName, foreignIdFieldNames]: [any, any]) => {
+          let tableName = entityName.toLowerCase();
+
+          if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
+            tableName = entityAnnotationContainer.entityNameToTableNameMap[entityName].toLowerCase();
+          }
+
           const fields = await dbManager.tryExecuteSqlWithoutCls(
-            `SELECT * FROM ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} LIMIT 1`,
+            `SELECT * FROM ${dbManager.schema.toLowerCase()}.${tableName} LIMIT 1`,
             undefined,
             false
           );
 
           await forEachAsyncParallel(foreignIdFieldNames, async (foreignIdFieldName: any) => {
             if (!fields.find((field) => field.name.toLowerCase() === foreignIdFieldName.toLowerCase())) {
-              const alterTableStatementPrefix = `ALTER TABLE ${dbManager.schema.toLowerCase()}.${entityName.toLowerCase()} ADD `;
+              const alterTableStatementPrefix = `ALTER TABLE ${dbManager.schema.toLowerCase()}.${tableName} ADD `;
               const addForeignIdColumnStatement =
                 alterTableStatementPrefix + foreignIdFieldName.toLowerCase() + ' BIGINT';
               await dbManager.tryExecuteSqlWithoutCls(addForeignIdColumnStatement);

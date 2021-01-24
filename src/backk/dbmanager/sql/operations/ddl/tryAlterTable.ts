@@ -12,6 +12,7 @@ import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 import isEnumTypeName from "../../../../utils/type/isEnumTypeName";
 import typePropertyAnnotationContainer
   from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
 
 export default async function tryAlterTable(
   dbManager: AbstractDbManager,
@@ -33,7 +34,13 @@ export default async function tryAlterTable(
       );
 
       if (!doesFieldExistInDatabase) {
-        let alterTableStatement = `ALTER TABLE ${schema?.toLowerCase()}.${entityName.toLowerCase()} ADD `;
+        let tableName = entityName.toLowerCase();
+
+        if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
+          tableName = entityAnnotationContainer.entityNameToTableNameMap[entityName].toLowerCase();
+        }
+
+        let alterTableStatement = `ALTER TABLE ${schema?.toLowerCase()}.${tableName} ADD `;
         const { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
         let sqlColumnType = getSqlColumnType(dbManager, EntityClass, fieldName, baseTypeName);
 
