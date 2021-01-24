@@ -1,5 +1,28 @@
 import UserDefinedFilter from '../../types/userdefinedfilters/UserDefinedFilter';
 
+function convertSqlLikeExpressionToRegExp(likeExpression: string, isCaseSensitive = false) {
+  return new RegExp(
+    `^${likeExpression
+      .split(/(\[.+?])/g)
+      .map((s, i) =>
+        i % 2
+          ? s.replace(/\\/g, '\\\\')
+          : s.replace(/[-/\\^$*+?.()|[\]{}%_]/g, (m) => {
+              switch (m) {
+                case '%':
+                  return '.*';
+                case '_':
+                  return '.';
+                default:
+                  return `\\${m}`;
+              }
+            })
+      )
+      .join('')}$`,
+    isCaseSensitive ? '' : 'i'
+  );
+}
+
 function getWhereExpression(userDefinedFilter: UserDefinedFilter) {
   let exprLeftHandSide: string;
 
@@ -192,9 +215,11 @@ export default function convertUserDefinedFiltersToMatchExpression(
     } else if (userDefinedFilter.operator === 'NOT IN') {
       matchExpression = { [userDefinedFilter.fieldName]: { $nin: userDefinedFilter.value } };
     } else if (userDefinedFilter.operator === 'LIKE') {
-      matchExpression = { [userDefinedFilter.fieldName]: new RegExp(userDefinedFilter.value) };
+      const regExp = convertSqlLikeExpressionToRegExp(userDefinedFilter.value);
+      matchExpression = { [userDefinedFilter.fieldName]: regExp };
     } else if (userDefinedFilter.operator === 'NOT LIKE') {
-      matchExpression = { [userDefinedFilter.fieldName]: { $not: new RegExp(userDefinedFilter.value) } };
+      const regExp = convertSqlLikeExpressionToRegExp(userDefinedFilter.value);
+      matchExpression = { [userDefinedFilter.fieldName]: { $not: regExp } };
     } else if (userDefinedFilter.operator === 'IS NULL') {
       matchExpression = { [userDefinedFilter.fieldName]: null };
     } else if (userDefinedFilter.operator === 'IS NOT NULL') {

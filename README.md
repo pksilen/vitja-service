@@ -2,7 +2,6 @@
 
 TODO
 - Convert sql LIKE expr to mongodb RegExp
-- Support graphql json for mongodb include/exclude responsefields
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
   - User has FollowingUser subentity, which is same as User, but remove following related fields
   - FollowingUser is logical entity and physical entity is User
