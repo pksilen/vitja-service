@@ -165,7 +165,7 @@ function generateTypescriptFileFor(
       (node.declaration.decorators ?? []).forEach((decorator: any) => {
         classDecoratorNames.push(decorator.expression.callee.name);
         const argumentsStr = (decorator.expression.arguments ?? [])
-          .map((argument: any) => argument.raw)
+          .map((argument: any) => argument.extra.raw)
           .join(', ');
         classDecoratorArguments.push(argumentsStr);
       });

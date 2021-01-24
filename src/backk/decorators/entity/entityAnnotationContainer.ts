@@ -28,6 +28,7 @@ class EntityAnnotationContainer {
   readonly manyToManyRelationTableSpecs: ManyToManyRelationTableSpec[] = [];
   readonly entityNameToJoinsMap: { [key: string]: EntityJoinSpec[] } = {};
   readonly entityNameToIsArrayMap: { [key: string]: boolean } = {};
+  readonly entityNameToTableNameMap: { [key: string]: string } = {}
 
   getForeignIdFieldName(entityName: string): string {
     return this.entityNameToForeignIdFieldNamesMap[entityName][0];
@@ -88,6 +89,10 @@ class EntityAnnotationContainer {
 
   addManyToManyRelationTableSpec(manyToManyRelationTableSpec: ManyToManyRelationTableSpec) {
     this.manyToManyRelationTableSpecs.push(manyToManyRelationTableSpec);
+  }
+
+  addEntityTableName(entityName: string, tableName: string) {
+    this.entityNameToTableNameMap[entityName] = tableName;
   }
 
   isEntity(Class: Function) {

@@ -2,10 +2,11 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsEmail, IsString, MaxLength } from 'class-validator';
+import { IsEmail, MaxLength } from 'class-validator';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
 import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
-import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
@@ -15,7 +16,7 @@ export default class ChangeUserPasswordArg {
   @IsUndefined({
     groups: ['__backk_create__']
   })
-  @IsString({
+  @IsStringOrObjectId({
     groups: ['__backk_update__']
   })
   @MaxLengthAndMatches(24, /^[a-f\d]+$/, {

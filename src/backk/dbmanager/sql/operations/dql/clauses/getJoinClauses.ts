@@ -101,7 +101,11 @@ export default function getJoinClauses(
     .map(
       ({ entityFieldName, associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
         const joinEntityPath = subEntityPath ? subEntityPath + '.' + entityFieldName : entityFieldName;
-        const subEntityTableName = associationTableName.split('_')[1];
+        let subEntityTableName = associationTableName.split('_')[1];
+
+        if (entityAnnotationContainer.entityNameToTableNameMap[subEntityTableName]) {
+          subEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[subEntityTableName];
+        }
 
         if (!shouldIncludeField('_id', subEntityPath + '.' + subEntityTableName, projection)) {
           return '';
@@ -131,7 +135,7 @@ export default function getJoinClauses(
           '.' +
           associationTableName.toLowerCase() +
           '.' +
-          subEntityForeignIdFieldName.toLowerCase()
+          subEntityForeignIdFieldName.toLowerCase();
 
         let joinClausePart = 'LEFT JOIN ';
         joinClausePart += dbManager.schema + '.' + associationTableName;

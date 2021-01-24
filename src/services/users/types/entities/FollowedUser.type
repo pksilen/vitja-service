@@ -1,0 +1,6 @@
+import Entity from '../../../../backk/decorators/entity/Entity';
+
+@Entity('User')
+export default class FollowedUser {
+  ...Pick<User, '_id' | 'displayName' | 'salesItems'>;
+}
