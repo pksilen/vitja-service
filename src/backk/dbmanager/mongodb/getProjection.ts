@@ -1,10 +1,20 @@
+import getIncludeFieldsMap from './getIncludeFieldsMap';
+import getExcludeFieldsMap from './getExcludeFieldsMap';
+import { Projection } from '../../types/postqueryoperations/Projection';
+import getFieldsFromGraphQlOrJson from '../../graphql/getFieldsFromGraphQlOrJson';
 
-import getIncludeFieldsMap from "./getIncludeFieldsMap";
-import getExcludeFieldsMap from "./getExcludeFieldsMap";
-import { Projection } from "../../types/postqueryoperations/Projection";
+export default function getProjection(projection: Projection): object {
+  let includeResponseFields = projection.includeResponseFields;
+  if (projection.includeResponseFields?.[0]?.includes('{')) {
+    includeResponseFields = getFieldsFromGraphQlOrJson(projection.includeResponseFields[0]);
+  }
 
-export default function getProjection(args: Projection): object {
-  const includeFieldsMap = getIncludeFieldsMap(args.includeResponseFields);
-  const excludeFieldsMap = getExcludeFieldsMap(args.excludeResponseFields);
+  let excludeResponseFields = projection.excludeResponseFields;
+  if (projection.excludeResponseFields?.[0]?.includes('{')) {
+    excludeResponseFields = getFieldsFromGraphQlOrJson(projection.excludeResponseFields[0]);
+  }
+
+  const includeFieldsMap = getIncludeFieldsMap(includeResponseFields);
+  const excludeFieldsMap = getExcludeFieldsMap(excludeResponseFields);
   return { ...includeFieldsMap, ...excludeFieldsMap };
 }

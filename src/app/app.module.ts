@@ -31,7 +31,7 @@ import { mySqlDbManager } from "../database/mySqlDatabaseManager";
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: mySqlDbManager },
+    { provide: AbstractDbManager, useValue: mongoDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: ReadinessCheckService, useClass: ReadinessCheckServiceImpl },
