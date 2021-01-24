@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Add where clause to join select statements (similar as ON)
 - Sql filters: (SqlExpression | UserDefinedFilter)[]
 - object type filter
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers

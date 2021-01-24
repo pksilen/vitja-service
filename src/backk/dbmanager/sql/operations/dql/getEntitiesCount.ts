@@ -10,11 +10,11 @@ import MongoDbQuery from "../../../mongodb/MongoDbQuery";
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
-  filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[] | undefined,
+  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | undefined,
   EntityClass: new () => T
 ): Promise<number | ErrorResponse> {
-  if (Array.isArray(filters) && filters?.[0] instanceof MongoDbQuery) {
-    throw new Error('filters must be SqlExpression array or UserDefinedFilter array');
+  if (filters?.find((filter) => filter instanceof MongoDbQuery)) {
+    throw new Error('filters must be an array of SqlExpressions and/or UserDefinedFilters');
   }
 
   updateDbLocalTransactionCount(dbManager);

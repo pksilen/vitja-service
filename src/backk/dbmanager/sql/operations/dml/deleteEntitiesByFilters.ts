@@ -1,29 +1,29 @@
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import entityContainer, { EntityJoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
-import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
-import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
-import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import SqlExpression from "../../expressions/SqlExpression";
-import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
-import tryGetWhereClause from "../dql/clauses/tryGetWhereClause";
-import getFilterValues from "../dql/utils/getFilterValues";
-import MongoDbQuery from "../../../mongodb/MongoDbQuery";
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import entityContainer, { EntityJoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import isErrorResponse from '../../../../errors/isErrorResponse';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import SqlExpression from '../../expressions/SqlExpression';
+import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
+import tryGetWhereClause from '../dql/clauses/tryGetWhereClause';
+import getFilterValues from '../dql/utils/getFilterValues';
+import MongoDbQuery from '../../../mongodb/MongoDbQuery';
 
 export default async function deleteEntitiesByFilters<T extends object>(
   dbManager: AbstractSqlDbManager,
-  filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[],
+  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter>,
   EntityClass: new () => T
 ): Promise<void | ErrorResponse> {
-  if (Array.isArray(filters) && filters.length > 0 && filters[0] instanceof MongoDbQuery) {
-    throw new Error('filters must be SqlExpression array or UserDefinedFilter array');
+  if (filters.find((filter) => filter instanceof MongoDbQuery)) {
+    throw new Error('filters must be an array of SqlExpressions and/or UserDefinedFilters');
   }
 
-  const nonRootFilters = (filters as any).find((filter: SqlExpression | UserDefinedFilter) => filter.subEntityPath !== '')
+  const nonRootFilters = filters.find((filter) => filter.subEntityPath !== '');
   if (nonRootFilters) {
     throw new Error('All filters must be have subEntityPath empty, ie. they must be root filters');
   }
