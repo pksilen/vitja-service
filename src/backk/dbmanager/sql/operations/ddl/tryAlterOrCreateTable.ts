@@ -10,6 +10,7 @@ export default async function tryAlterOrCreateTable(
   schema: string | undefined
 ) {
   let fields;
+
   try {
     let tableName = entityName.toLowerCase();
 

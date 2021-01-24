@@ -96,6 +96,16 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
               false
             );
           } catch (error) {
+            let subEntityName = subEntityForeignIdFieldName.slice(0, -2);
+            subEntityName = subEntityName.charAt(0).toUpperCase() + subEntityName.slice(1);
+            let subEntityTableName = subEntityName.toLowerCase();
+
+            if (entityAnnotationContainer.entityNameToTableNameMap[subEntityName]) {
+              subEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[
+                subEntityName
+              ].toLowerCase();
+            }
+
             const createTableStatement = `
           CREATE TABLE ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()}
            (${entityForeignIdFieldName.toLowerCase()} BIGINT,
@@ -107,9 +117,8 @@ export default async function initializeDatabase(dbManager: AbstractDbManager): 
               .toLowerCase()
               .slice(0, -2)}(_id),
             FOREIGN KEY(${subEntityForeignIdFieldName.toLowerCase()}) 
-               REFERENCES ${dbManager.schema.toLowerCase()}.${subEntityForeignIdFieldName
-              .toLowerCase()
-              .slice(0, -2)}(_id))`;
+               REFERENCES ${dbManager.schema.toLowerCase()}.${subEntityTableName}(_id))`;
+
             await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
           }
         }

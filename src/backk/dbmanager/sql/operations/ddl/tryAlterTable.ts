@@ -41,7 +41,7 @@ export default async function tryAlterTable(
         }
 
         let alterTableStatement = `ALTER TABLE ${schema?.toLowerCase()}.${tableName} ADD `;
-        const { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
+        const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
         let sqlColumnType = getSqlColumnType(dbManager, EntityClass, fieldName, baseTypeName);
 
         if (!sqlColumnType && isEnumTypeName(baseTypeName)) {
