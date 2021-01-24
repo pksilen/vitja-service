@@ -7,13 +7,18 @@ import DefaultPostQueryOperations from "../../../../types/postqueryoperations/De
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
 import MongoDbQuery from "../../../mongodb/MongoDbQuery";
+import convertFilterObjectToSqlEquals from "./utils/convertFilterObjectToSqlEquals";
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
-  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | undefined,
+  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object | undefined,
   EntityClass: new () => T
 ): Promise<number | ErrorResponse> {
-  if (filters?.find((filter) => filter instanceof MongoDbQuery)) {
+  if (typeof filters === 'object' && !Array.isArray(filters)) {
+    // noinspection AssignmentToFunctionParameterJS
+    filters = convertFilterObjectToSqlEquals(filters);
+  }
+  else if (filters?.find((filter) => filter instanceof MongoDbQuery)) {
     throw new Error('filters must be an array of SqlExpressions and/or UserDefinedFilters');
   }
 

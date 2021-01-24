@@ -133,13 +133,13 @@ export default abstract class AbstractDbManager {
   ): Promise<T[] | ErrorResponse>;
 
   abstract getEntitiesByFilters<T>(
-    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[],
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
   abstract getEntitiesCount<T>(
-    filters: Array<MongoDbQuery<T>> | SqlExpression[],
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object | undefined,
     entityClass: new () => T
   ): Promise<number | ErrorResponse>;
 
@@ -262,7 +262,7 @@ export default abstract class AbstractDbManager {
   ): Promise<void | ErrorResponse>;
 
   abstract deleteEntitiesByFilters<T extends object>(
-    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[],
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
     entityClass: new () => T
   ): Promise<void | ErrorResponse>;
 

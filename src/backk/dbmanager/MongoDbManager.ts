@@ -52,6 +52,7 @@ import MongoDbQuery from './mongodb/MongoDbQuery';
 import getRootOperations from './mongodb/getRootOperations';
 import convertMongoDbQueriesToMatchExpression from './mongodb/convertMongoDbQueriesToMatchExpression';
 import paginateSubEntities from './mongodb/paginateSubEntities';
+import convertFilterObjectToMongoDbQueries from "./mongodb/convertFilterObjectToMongoDbQueries";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -419,16 +420,23 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByFilters<T>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>,
+    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | object,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
     let matchExpression: any;
+    let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
 
-    if (Array.isArray(filters) && filters?.find((filter) => filter instanceof SqlExpression)) {
+    if (typeof filters === 'object' && !Array.isArray(filters)) {
+      finalFilters = convertFilterObjectToMongoDbQueries(filters);
+    } else {
+      finalFilters = filters;
+    }
+
+    if (Array.isArray(finalFilters) && finalFilters?.find((filter) => filter instanceof SqlExpression)) {
       throw new Error('SqlExpression is not supported for MongoDB');
     } else {
-      const rootFilters = getRootOperations(filters, EntityClass, this.getTypes());
+      const rootFilters = getRootOperations(finalFilters, EntityClass, this.getTypes());
       const rootUserDefinedFilters = rootFilters.filter((filter) => !(filter instanceof MongoDbQuery));
       const rootMongoDbQueries = rootFilters.filter((filter) => filter instanceof MongoDbQuery);
 
@@ -446,7 +454,7 @@ export default class MongoDbManager extends AbstractDbManager {
       };
     }
 
-    replaceIdStringsWithObjectIds(filters);
+    replaceIdStringsWithObjectIds(matchExpression);
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS
@@ -470,7 +478,7 @@ export default class MongoDbManager extends AbstractDbManager {
           rows,
           EntityClass,
           this.getTypes(),
-          filters as Array<MongoDbQuery<T>>,
+          finalFilters as Array<MongoDbQuery<T>>,
           postQueryOperations
         );
 
@@ -489,23 +497,40 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntitiesCount<T>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>,
+    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | object,
     EntityClass: new () => T
   ): Promise<number | ErrorResponse> {
     let matchExpression: object;
+    let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
 
-    if (Array.isArray(filters) && filters?.find((filter) => filter instanceof SqlExpression)) {
+    if (typeof filters === 'object' && !Array.isArray(filters)) {
+      finalFilters = convertFilterObjectToMongoDbQueries(filters);
+    } else {
+      finalFilters = filters;
+    }
+
+    if (Array.isArray(finalFilters) && finalFilters?.find((filter) => filter instanceof SqlExpression)) {
       throw new Error('SqlExpression is not supported for MongoDB');
     } else {
-      const rootFilters = getRootOperations(filters, EntityClass, this.getTypes());
+      const rootFilters = getRootOperations(finalFilters, EntityClass, this.getTypes());
       const rootUserDefinedFilters = rootFilters.filter((filter) => !(filter instanceof MongoDbQuery));
       const rootMongoDbQueries = rootFilters.filter((filter) => filter instanceof MongoDbQuery);
 
+      const userDefinedFiltersMatchExpression = convertUserDefinedFiltersToMatchExpression(
+        rootUserDefinedFilters as UserDefinedFilter[]
+      );
+
+      const mongoDbQueriesMatchExpression = convertMongoDbQueriesToMatchExpression(
+        rootMongoDbQueries as Array<MongoDbQuery<T>>
+      );
+
       matchExpression = {
-        ...convertUserDefinedFiltersToMatchExpression(rootUserDefinedFilters as UserDefinedFilter[]),
-        ...convertMongoDbQueriesToMatchExpression(rootMongoDbQueries as Array<MongoDbQuery<T>>)
+        ...userDefinedFiltersMatchExpression,
+        ...mongoDbQueriesMatchExpression
       };
     }
+
+    replaceIdStringsWithObjectIds(matchExpression);
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
     // noinspection AssignmentToFunctionParameterJS
@@ -759,9 +784,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
 
     const filters = [new MongoDbQuery({ [fieldName]: finalFieldValue }, subEntityPath)];
-
     const rootFilters = getRootOperations(filters as Array<MongoDbQuery<T>>, EntityClass, this.getTypes());
-
     const matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
 
     try {
@@ -979,7 +1002,7 @@ export default class MongoDbManager extends AbstractDbManager {
           await tryExecutePreHooks(preHooks, entityOrErrorResponse);
         }
 
-        const deleteOperationResult = await client
+        await client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .deleteOne({ _id: new ObjectId(_id) });
@@ -1032,29 +1055,44 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async deleteEntitiesByFilters<T extends object>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>,
+    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | object,
     EntityClass: new () => T
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
-    replaceIdStringsWithObjectIds(filters);
     let shouldUseTransaction = false;
-
     let matchExpression: any;
+    let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
 
-    if (Array.isArray(filters) && filters?.find((filter) => filter instanceof SqlExpression)) {
+    if (typeof filters === 'object' && !Array.isArray(filters)) {
+      finalFilters = convertFilterObjectToMongoDbQueries(filters);
+    } else {
+      finalFilters = filters;
+    }
+
+    if (Array.isArray(finalFilters) && finalFilters?.find((filter) => filter instanceof SqlExpression)) {
       throw new Error('SqlExpression is not supported for MongoDB');
     } else {
-      const rootFilters = getRootOperations(filters, EntityClass, this.getTypes());
+      const rootFilters = getRootOperations(finalFilters, EntityClass, this.getTypes());
       const rootUserDefinedFilters = rootFilters.filter((filter) => !(filter instanceof MongoDbQuery));
       const rootMongoDbQueries = rootFilters.filter((filter) => filter instanceof MongoDbQuery);
 
+      const userDefinedFiltersMatchExpression = convertUserDefinedFiltersToMatchExpression(
+        rootUserDefinedFilters as UserDefinedFilter[]
+      );
+
+      const mongoDbQueriesMatchExpression = convertMongoDbQueriesToMatchExpression(
+        rootMongoDbQueries as Array<MongoDbQuery<T>>
+      );
+
       matchExpression = {
-        ...convertUserDefinedFiltersToMatchExpression(rootUserDefinedFilters as UserDefinedFilter[]),
-        ...convertMongoDbQueriesToMatchExpression(rootMongoDbQueries as Array<MongoDbQuery<T>>)
+        ...userDefinedFiltersMatchExpression,
+        ...mongoDbQueriesMatchExpression
       };
     }
+
+    replaceIdStringsWithObjectIds(matchExpression);
 
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);

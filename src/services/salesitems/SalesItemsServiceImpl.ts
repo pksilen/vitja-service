@@ -56,9 +56,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       {
         hookFunc: async () => {
           const usersActiveSalesItemCountOrErrorResponse = await this.dbManager.getEntitiesCount(
-            this.dbManager instanceof MongoDbManager
-              ? [new MongoDbQuery({ userId: arg.userId, state: 'forSale' })]
-              : [new SqlEquals({ userId: arg.userId, state: 'forSale' })],
+            { userId: arg.userId, state: 'forSale' },
             SalesItem
           );
           return typeof usersActiveSalesItemCountOrErrorResponse === 'number'

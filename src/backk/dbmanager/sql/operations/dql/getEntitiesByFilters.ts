@@ -8,14 +8,19 @@ import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
 import MongoDbQuery from "../../../mongodb/MongoDbQuery";
+import convertFilterObjectToSqlEquals from "./utils/convertFilterObjectToSqlEquals";
 
 export default async function getEntitiesByFilters<T>(
   dbManager: AbstractSqlDbManager,
-  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter>,
+  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
 ): Promise<T[] | ErrorResponse> {
-  if (filters.find((filter) => filter instanceof MongoDbQuery)) {
+  if (typeof filters === 'object' && !Array.isArray(filters)) {
+    // noinspection AssignmentToFunctionParameterJS
+    filters = convertFilterObjectToSqlEquals(filters);
+  }
+  else if (filters.find((filter) => filter instanceof MongoDbQuery)) {
     throw new Error('filters must be an array of SqlExpressions and/or UserDefinedFilters');
   }
 

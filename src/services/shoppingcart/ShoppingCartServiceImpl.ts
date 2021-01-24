@@ -1,25 +1,22 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import UserId from '../users/types/args/UserId';
-import ShoppingCartService from './ShoppingCartService';
-import ShoppingCart from './types/entities/ShoppingCart';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
-import getErrorResponseOrResultOf from '../../backk/utils/getErrorResponseOrResultOf';
-import ShoppingCartItem from './types/entities/ShoppingCartItem';
-import { SHOPPING_CART_ALREADY_EXISTS } from './errors/shoppingCartServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
-import AddShoppingCartItemArg from './types/args/AddShoppingCartItemArg';
-import RemoveShoppingCartItemByIdArg from './types/args/RemoveShoppingCartItemByIdArg';
-import { SALES_ITEM_STATE_MUST_BE_FOR_SALE } from '../salesitems/errors/salesItemsServiceErrors';
-import SalesItemsService from '../salesitems/SalesItemsService';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
-import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
-import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import UserId from "../users/types/args/UserId";
+import ShoppingCartService from "./ShoppingCartService";
+import ShoppingCart from "./types/entities/ShoppingCart";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
+import getErrorResponseOrResultOf from "../../backk/utils/getErrorResponseOrResultOf";
+import ShoppingCartItem from "./types/entities/ShoppingCartItem";
+import { SHOPPING_CART_ALREADY_EXISTS } from "./errors/shoppingCartServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
+import AddShoppingCartItemArg from "./types/args/AddShoppingCartItemArg";
+import RemoveShoppingCartItemByIdArg from "./types/args/RemoveShoppingCartItemByIdArg";
+import { SALES_ITEM_STATE_MUST_BE_FOR_SALE } from "../salesitems/errors/salesItemsServiceErrors";
+import SalesItemsService from "../salesitems/SalesItemsService";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -40,9 +37,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     return this.dbManager.createEntity(arg, ShoppingCart, {
       hookFunc: async () => {
         const shoppingCartCountOrErrorResponse = await this.dbManager.getEntitiesCount(
-          this.dbManager instanceof MongoDbManager
-            ? [new MongoDbQuery({ userId: arg.userId })]
-            : [new SqlEquals({ userId: arg.userId })],
+          { userId: arg.userId },
           ShoppingCart
         );
 

@@ -13,17 +13,23 @@ import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedF
 import tryGetWhereClause from '../dql/clauses/tryGetWhereClause';
 import getFilterValues from '../dql/utils/getFilterValues';
 import MongoDbQuery from '../../../mongodb/MongoDbQuery';
+import convertFilterObjectToSqlEquals from '../dql/utils/convertFilterObjectToSqlEquals';
 
 export default async function deleteEntitiesByFilters<T extends object>(
   dbManager: AbstractSqlDbManager,
-  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter>,
+  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
   EntityClass: new () => T
 ): Promise<void | ErrorResponse> {
-  if (filters.find((filter) => filter instanceof MongoDbQuery)) {
+  if (typeof filters === 'object' && !Array.isArray(filters)) {
+    // noinspection AssignmentToFunctionParameterJS
+    filters = convertFilterObjectToSqlEquals(filters);
+  } else if (filters.find((filter) => filter instanceof MongoDbQuery)) {
     throw new Error('filters must be an array of SqlExpressions and/or UserDefinedFilters');
   }
 
-  const nonRootFilters = filters.find((filter) => filter.subEntityPath !== '');
+  const nonRootFilters = (filters as Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter>).find(
+    (filter) => filter.subEntityPath !== ''
+  );
   if (nonRootFilters) {
     throw new Error('All filters must be have subEntityPath empty, ie. they must be root filters');
   }

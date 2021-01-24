@@ -1,13 +1,12 @@
 # Vitja service
 
 TODO
-- Sql filters: (SqlExpression | UserDefinedFilter)[]
 - object type filter
+- Convert sql LIKE expr to mongodb RegExp
+- Support graphql json for mongodb include/exclude responsefields
 - New entities: User has Followers (User-User manyToMany), show SalesItems from followers
   - User has FollowingUser subentity, which is same as User, but remove following related fields
   - FollowingUser is logical entity and physical entity is User
-- Convert sql LIKE expr to mongodb RegExp
-- Support graphql json for mongodb include/exclude responsefields
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

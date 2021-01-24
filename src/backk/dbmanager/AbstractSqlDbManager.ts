@@ -459,7 +459,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByFilters<T>(
-    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[],
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
@@ -470,7 +470,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesCount<T>(
-    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[] | undefined,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object | undefined,
     entityClass: new () => T
   ): Promise<number | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
