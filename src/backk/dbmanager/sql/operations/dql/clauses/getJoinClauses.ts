@@ -54,18 +54,29 @@ export default function getJoinClauses(
       }
 
       const paginationClause = getPaginationClause(joinEntityPath, paginations);
+      const whereClausePart =
+        joinSpec.subEntityForeignIdFieldName.toLowerCase() +
+        ' = ' +
+        dbManager.schema +
+        '_' +
+        EntityClass.name.toLowerCase() +
+        '.' +
+        joinSpec.entityIdFieldName.toLowerCase();
 
-      let joinClausePart = 'LEFT JOIN (SELECT * FROM ';
+      let joinClausePart = 'LEFT JOIN LATERAL (SELECT * FROM ';
       joinClausePart += dbManager.schema + '.' + joinSpec.subEntityTableName.toLowerCase();
+
       joinClausePart +=
-        (whereClause ? ' ' + whereClause : '') +
+        (whereClause ? ' ' + whereClause + ' AND ' + whereClausePart : ' WHERE ' + whereClausePart) +
         (sortClause ? ' ' + sortClause : '') +
         (paginationClause ? ' ' + paginationClause : '') +
         ') AS ' +
         dbManager.schema +
         '_' +
-        joinSpec.subEntityTableName;
+        joinSpec.subEntityTableName.toLowerCase();
+
       joinClausePart += ' ON ';
+
       joinClausePart +=
         dbManager.schema +
         '_' +
@@ -114,6 +125,14 @@ export default function getJoinClauses(
         const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
         const paginationClause = getPaginationClause(joinEntityPath, paginations);
 
+        const whereClausePart =
+          '_id = ' +
+          dbManager.schema +
+          '.' +
+          associationTableName.toLowerCase() +
+          '.' +
+          subEntityForeignIdFieldName.toLowerCase()
+
         let joinClausePart = 'LEFT JOIN ';
         joinClausePart += dbManager.schema + '.' + associationTableName;
         joinClausePart += ' ON ';
@@ -125,14 +144,14 @@ export default function getJoinClauses(
           ' = ' +
           dbManager.schema +
           '.' +
-          associationTableName +
+          associationTableName.toLowerCase() +
           '.' +
           entityForeignIdFieldName.toLowerCase() +
-          ' LEFT JOIN (SELECT * FROM ' +
+          ' LEFT JOIN LATERAL (SELECT * FROM ' +
           dbManager.schema +
           '.' +
           subEntityTableName.toLowerCase() +
-          (whereClause ? ' ' + whereClause : '') +
+          (whereClause ? ' ' + whereClause + ' AND ' + whereClausePart : ' WHERE ' + whereClausePart) +
           (sortClause ? ' ' + sortClause : '') +
           (paginationClause ? ' ' + paginationClause : '') +
           ')  AS ' +

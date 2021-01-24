@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Test mongodb cronjob and scheduled job
 - Add where clause to join select statements (similar as ON)
 - Sql filters: (SqlExpression | UserDefinedFilter)[]
 - object type filter

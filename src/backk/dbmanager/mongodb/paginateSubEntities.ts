@@ -8,7 +8,6 @@ import typePropertyAnnotationContainer from '../../decorators/typeproperty/typeP
 function paginateRows<T>(rows: T[], pagination: Pagination, subEntityJsonPath: string, propertyName: string) {
   rows.forEach((row: any) => {
     const [subEntitiesParent] = JSONPath({ json: row, path: subEntityJsonPath + propertyName + '^' });
-    console.log(subEntitiesParent);
 
     if (
       subEntitiesParent &&
