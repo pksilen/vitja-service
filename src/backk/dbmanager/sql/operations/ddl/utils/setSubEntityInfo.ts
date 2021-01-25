@@ -11,17 +11,23 @@ export default function setSubEntityInfo(
   subEntityName: string,
   isArrayType: boolean
 ) {
+  let tableName = entityName;
+
+  if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
+    tableName = entityAnnotationContainer.entityNameToTableNameMap[entityName];
+  }
+
   if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
     const manyToManyRelationTableSpec: ManyToManyRelationTableSpec = {
       entityFieldName: fieldName,
-      associationTableName: (entityName + '_' + subEntityName),
-      entityForeignIdFieldName: entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id',
+      associationTableName: (tableName + '_' + subEntityName),
+      entityForeignIdFieldName: tableName.charAt(0).toLowerCase() + tableName.slice(1) + 'Id',
       subEntityForeignIdFieldName: subEntityName.charAt(0).toLowerCase() + subEntityName.slice(1) + 'Id'
     }
 
     entityAnnotationContainer.manyToManyRelationTableSpecs.push(manyToManyRelationTableSpec);
   } else {
-    const subEntityForeignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
+    const subEntityForeignIdFieldName = tableName.charAt(0).toLowerCase() + tableName.slice(1) + 'Id';
 
     if (entityAnnotationContainer.entityNameToForeignIdFieldNamesMap[subEntityName]) {
       entityAnnotationContainer.entityNameToForeignIdFieldNamesMap[subEntityName].push(
@@ -37,9 +43,15 @@ export default function setSubEntityInfo(
 
     const isReadonly = doesClassPropertyContainCustomValidation(EntityClass, fieldName, 'isUndefined');
 
+    let subEntityTableName = subEntityName;
+
+    if (entityAnnotationContainer.entityNameToTableNameMap[subEntityName]) {
+      subEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[subEntityName];
+    }
+
     const entityJoinSpec: EntityJoinSpec = {
       entityFieldName: fieldName,
-      subEntityTableName: subEntityName,
+      subEntityTableName: subEntityTableName,
       entityIdFieldName: '_id',
       subEntityForeignIdFieldName,
       isReadonly

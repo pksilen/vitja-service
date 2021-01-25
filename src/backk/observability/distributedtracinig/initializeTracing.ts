@@ -8,7 +8,7 @@ export function initializeTracing(spanProcessor: SpanProcessor) {
   tracerProvider.addSpanProcessor(spanProcessor);
 }
 
-export function initializeDefaultJaegerTracing(jaegerExporterOptions?: ExporterConfig) {
+export function initializeDefaultJaegerTracing(jaegerExporterOptions?: Partial<ExporterConfig>) {
   initializeTracing(
     new SimpleSpanProcessor(
       new JaegerExporter({

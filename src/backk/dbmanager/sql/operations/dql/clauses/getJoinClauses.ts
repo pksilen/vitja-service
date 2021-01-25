@@ -101,18 +101,19 @@ export default function getJoinClauses(
     .map(
       ({ entityFieldName, associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
         const joinEntityPath = subEntityPath ? subEntityPath + '.' + entityFieldName : entityFieldName;
-        let subEntityTableName = associationTableName.split('_')[1];
+        const logicalSubEntityTableName = associationTableName.split('_')[1];
+        let physicalSubEntityTableName = logicalSubEntityTableName;
 
-        if (entityAnnotationContainer.entityNameToTableNameMap[subEntityTableName]) {
-          subEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[subEntityTableName];
+        if (entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName]) {
+          physicalSubEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName];
         }
 
-        if (!shouldIncludeField('_id', subEntityPath + '.' + subEntityTableName, projection)) {
+        if (!shouldIncludeField('_id', subEntityPath + '.' + logicalSubEntityTableName, projection)) {
           return '';
         }
 
         const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
-        const joinTableAlias = dbManager.schema + '_' + subEntityTableName.toLowerCase();
+        const joinTableAlias = dbManager.schema + '_' + logicalSubEntityTableName.toLowerCase();
         const outerSortBys = tryGetSortClause(
           dbManager,
           joinEntityPath,
@@ -138,7 +139,7 @@ export default function getJoinClauses(
           subEntityForeignIdFieldName.toLowerCase();
 
         let joinClausePart = 'LEFT JOIN ';
-        joinClausePart += dbManager.schema + '.' + associationTableName;
+        joinClausePart += dbManager.schema + '.' + associationTableName.toLowerCase();
         joinClausePart += ' ON ';
         joinClausePart +=
           dbManager.schema +
@@ -154,14 +155,14 @@ export default function getJoinClauses(
           ' LEFT JOIN LATERAL (SELECT * FROM ' +
           dbManager.schema +
           '.' +
-          subEntityTableName.toLowerCase() +
+          physicalSubEntityTableName.toLowerCase() +
           (whereClause ? ' ' + whereClause + ' AND ' + whereClausePart : ' WHERE ' + whereClausePart) +
           (sortClause ? ' ' + sortClause : '') +
           (paginationClause ? ' ' + paginationClause : '') +
-          ')  AS ' +
+          ') AS ' +
           dbManager.schema +
           '_' +
-          subEntityTableName.toLowerCase() +
+          logicalSubEntityTableName.toLowerCase() +
           ' ON ' +
           dbManager.schema +
           '.' +
@@ -171,7 +172,7 @@ export default function getJoinClauses(
           ' = ' +
           dbManager.schema +
           '_' +
-          subEntityTableName.toLowerCase() +
+          logicalSubEntityTableName.toLowerCase() +
           '._id';
 
         return joinClausePart;

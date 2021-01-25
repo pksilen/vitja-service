@@ -7,9 +7,15 @@ export default function addArrayValuesTableJoinSpec(
   fieldName: string,
   subEntityForeignIdFieldName: string
 ) {
+  let tableName = entityName;
+
+  if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
+    tableName = entityAnnotationContainer.entityNameToTableNameMap[entityName];
+  }
+
   const entityJoinSpec: EntityJoinSpec = {
     entityFieldName: fieldName,
-    subEntityTableName: (entityName + '_' + fieldName.slice(0, -1)).toLowerCase(),
+    subEntityTableName: (tableName + '_' + fieldName.slice(0, -1)).toLowerCase(),
     entityIdFieldName: '_id',
     subEntityForeignIdFieldName,
     isReadonly: false
