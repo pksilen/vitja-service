@@ -37,9 +37,16 @@ export default function getJoinClauses(
         return '';
       }
 
+      const logicalSubEntityTableName = joinSpec.subEntityTableName;
+      let physicalSubEntityTableName = logicalSubEntityTableName;
+
+      if (entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName]) {
+        physicalSubEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName];
+      }
+
       const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
       const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
-      const joinTableAlias = dbManager.schema + '_' + joinSpec.subEntityTableName;
+      const joinTableAlias = dbManager.schema + '_' + logicalSubEntityTableName;
       const outerSortBys = tryGetSortClause(
         dbManager,
         joinEntityPath,
@@ -64,7 +71,7 @@ export default function getJoinClauses(
         joinSpec.entityIdFieldName.toLowerCase();
 
       let joinClausePart = 'LEFT JOIN LATERAL (SELECT * FROM ';
-      joinClausePart += dbManager.schema + '.' + joinSpec.subEntityTableName.toLowerCase();
+      joinClausePart += dbManager.schema + '.' + physicalSubEntityTableName.toLowerCase();
 
       joinClausePart +=
         (whereClause ? ' ' + whereClause + ' AND ' + whereClausePart : ' WHERE ' + whereClausePart) +
@@ -73,7 +80,7 @@ export default function getJoinClauses(
         ') AS ' +
         dbManager.schema +
         '_' +
-        joinSpec.subEntityTableName.toLowerCase();
+        logicalSubEntityTableName.toLowerCase();
 
       joinClausePart += ' ON ';
 
@@ -86,7 +93,7 @@ export default function getJoinClauses(
         ' = ' +
         dbManager.schema +
         '_' +
-        joinSpec.subEntityTableName.toLowerCase() +
+        logicalSubEntityTableName.toLowerCase() +
         '.' +
         joinSpec.subEntityForeignIdFieldName.toLowerCase();
 

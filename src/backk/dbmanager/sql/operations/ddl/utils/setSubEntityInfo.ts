@@ -20,7 +20,7 @@ export default function setSubEntityInfo(
   if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
     const manyToManyRelationTableSpec: ManyToManyRelationTableSpec = {
       entityFieldName: fieldName,
-      associationTableName: (tableName + '_' + subEntityName),
+      associationTableName: (entityName + '_' + subEntityName),
       entityForeignIdFieldName: tableName.charAt(0).toLowerCase() + tableName.slice(1) + 'Id',
       subEntityForeignIdFieldName: subEntityName.charAt(0).toLowerCase() + subEntityName.slice(1) + 'Id'
     }
@@ -43,15 +43,9 @@ export default function setSubEntityInfo(
 
     const isReadonly = doesClassPropertyContainCustomValidation(EntityClass, fieldName, 'isUndefined');
 
-    let subEntityTableName = subEntityName;
-
-    if (entityAnnotationContainer.entityNameToTableNameMap[subEntityName]) {
-      subEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[subEntityName];
-    }
-
     const entityJoinSpec: EntityJoinSpec = {
       entityFieldName: fieldName,
-      subEntityTableName: subEntityTableName,
+      subEntityTableName: subEntityName,
       entityIdFieldName: '_id',
       subEntityForeignIdFieldName,
       isReadonly

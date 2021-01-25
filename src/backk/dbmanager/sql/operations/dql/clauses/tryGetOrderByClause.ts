@@ -46,7 +46,7 @@ export default function tryGetOrderByClause<T>(
 
       if (projection) {
         if (tableAlias) {
-          return tableAlias + '.' + sortBy.fieldName + ' ' + sortBy.sortDirection;
+          return tableAlias.toLowerCase() + '.' + sortBy.fieldName + ' ' + sortBy.sortDirection;
         } else {
           return sortBy.fieldName + ' ' + sortBy.sortDirection;
         }
