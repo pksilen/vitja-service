@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { getNamespace, Namespace } from "cls-hooked";
-import { FilterQuery } from "mongodb";
 import SqlExpression from "./sql/expressions/SqlExpression";
 import { RecursivePartial } from "../types/RecursivePartial";
 import { ErrorResponse } from "../types/ErrorResponse";
@@ -110,7 +109,7 @@ export default abstract class AbstractDbManager {
   abstract addSubEntity<T extends Entity, U extends SubEntity>(
     _id: string,
     subEntitiesPath: string,
-    newSubEntity: Omit<U, 'id'>,
+    newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
     subEntityClass: new () => U,
     preHooks?: PreHook | PreHook[],
@@ -120,7 +119,7 @@ export default abstract class AbstractDbManager {
   abstract addSubEntities<T extends Entity, U extends object>(
     _id: string,
     subEntitiesPath: string,
-    newSubEntities: Array<Omit<U, 'id'>>,
+    newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     entityClass: new () => T,
     subEntityClass: new () => U,
     preHooks?: PreHook | PreHook[],

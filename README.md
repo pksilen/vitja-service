@@ -1,9 +1,10 @@
 # Vitja service
 
 TODO
-- New entities: User has Followers (User-User manyToMany), show SalesItems from followers
-  - User has FollowingUser subentity, which is same as User, but remove following related fields
-  - FollowingUser is logical entity and physical entity is User
+- Create followUser function
+- MongoDb test Following/FolledUser functionality
+- Change subEntitiesPath to subEntitiesJsonPath where relevant
+- PostHooks (e.g. sendToKafka stuff could be put there)
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

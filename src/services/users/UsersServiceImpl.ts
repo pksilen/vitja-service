@@ -14,9 +14,19 @@ import UsersService from './UsersService';
 import _Id from '../../backk/types/id/_Id';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
-import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from './errors/usersServiceErrors';
+import {
+  CANNOT_FOLLOW_SELF,
+  INVALID_CURRENT_PASSWORD,
+  USER_NAME_CANNOT_BE_CHANGED
+} from './errors/usersServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
+import FollowedUser from './types/entities/FollowedUser';
+import { Update } from '../../backk/decorators/service/function/Update';
+import FollowingUser from './types/entities/FollowingUser';
+import NoAutoTests from "../../backk/decorators/service/NoAutoTests";
+import { NoAutoTest } from "../../backk/decorators/service/function/NoAutoTest";
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -88,6 +98,22 @@ export default class UsersServiceImpl extends UsersService {
         }
       ]
     );
+  }
+
+  @AllowForSelf()
+  @Update()
+  @Errors([CANNOT_FOLLOW_SELF])
+  followUser({ _id, userId }: _IdAndUserId): Promise<User | ErrorResponse> {
+    return this.dbManager.addSubEntity(_id, 'followedUsers', { _id: userId }, User, FollowedUser, [
+      {
+        hookFunc: () => _id === userId,
+        error: CANNOT_FOLLOW_SELF
+      },
+      {
+        hookFunc: async () =>
+          await this.dbManager.addSubEntity(userId, 'followingUsers', { _id }, User, FollowingUser)
+      }
+    ]);
   }
 
   @AllowForSelf()

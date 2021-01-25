@@ -22,13 +22,13 @@ import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeed
 import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import { SubEntity } from '../../../../types/entities/SubEntity';
-import getEntityById from "../dql/getEntityById";
+import getEntityById from '../dql/getEntityById';
 
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   subEntitiesPath: string,
-  newSubEntities: Array<Omit<U, 'id'>>,
+  newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
   SubEntityClass: new () => U,
   preHooks?: PreHook | PreHook[],
@@ -42,7 +42,13 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, postQueryOperations, true);
+    const currentEntityOrErrorResponse = await getEntityById(
+      dbManager,
+      _id,
+      EntityClass,
+      postQueryOperations,
+      true
+    );
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
     await tryUpdateEntityLastModifiedTimestampIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
@@ -96,19 +102,13 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
           parentEntityClassAndPropertyNameForSubEntity[1]
         )
       ) {
-        let subEntityOrErrorResponse = await dbManager.getEntityById(newSubEntity._id ?? '', SubEntityClass);
+        const subEntityOrErrorResponse = await dbManager.getEntityById(
+          newSubEntity._id ?? '',
+          SubEntityClass
+        );
         if ('errorMessage' in subEntityOrErrorResponse) {
-          subEntityOrErrorResponse = await dbManager.createEntity(
-            newSubEntity as any,
-            SubEntityClass,
-            undefined,
-            undefined,
-            false
-          );
-          if ('errorMessage' in subEntityOrErrorResponse) {
-            // noinspection ExceptionCaughtLocallyJS
-            throw subEntityOrErrorResponse;
-          }
+          // noinspection ExceptionCaughtLocallyJS
+          throw subEntityOrErrorResponse;
         }
 
         const associationTable = `${EntityClass.name}_${SubEntityClass}`;

@@ -8,3 +8,8 @@ export const INVALID_CURRENT_PASSWORD = {
   errorMessage: 'Invalid current password'
 }
 
+export const CANNOT_FOLLOW_SELF = {
+  errorCode: 'usersService.3',
+  errorMessage: 'Cannot follow self'
+}
+

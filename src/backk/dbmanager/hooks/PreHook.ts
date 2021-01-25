@@ -1,4 +1,5 @@
 import { ErrorResponse } from "../../types/ErrorResponse";
+import { Entity } from "../../types/entities/Entity";
 
 export interface ErrorCodeAndMessage {
   errorCode: string;
@@ -8,7 +9,7 @@ export interface ErrorCodeAndMessage {
 
 export interface PreHook {
   currentEntityJsonPath?: string;
-  hookFunc: (valueFromJsonPath?: any) => Promise<boolean | undefined | void | ErrorResponse> | boolean;
+  hookFunc: (valueFromJsonPath?: any) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean;
   error?: ErrorCodeAndMessage;
   disregardInTests?: boolean;
 }

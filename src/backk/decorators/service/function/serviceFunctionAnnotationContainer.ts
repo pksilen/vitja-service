@@ -18,6 +18,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToRetryIntervalsInSecsMap: { [key: string]: number[] } = {};
   private readonly serviceFunctionNameToIsUpdateFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToResponseHeadersMap: { [key: string]: HttpHeaders } = {};
+  private readonly serviceFunctionNameToHasNoAutoTestMap: { [key: string]: boolean } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -95,6 +96,10 @@ class ServiceFunctionAnnotationContainer {
 
   addResponseHeadersForServiceFunction(serviceClass: Function, functionName: string, headers: HttpHeaders) {
     this.serviceFunctionNameToResponseHeadersMap[`${serviceClass.name}${functionName}`] = headers;
+  }
+
+  addNoAutoTestAnnotation(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToHasNoAutoTestMap[`${serviceClass.name}${functionName}`] = true;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -310,6 +315,21 @@ class ServiceFunctionAnnotationContainer {
     }
 
     return undefined;
+  }
+
+  hasNoAutoTests(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToHasNoAutoTestMap[`${proto.constructor.name}${functionName}`] !==
+        undefined
+      ) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
   }
 }
 

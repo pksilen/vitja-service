@@ -30,6 +30,9 @@ export default async function tryExecutePreHooks<T extends object>(
     const hookCallResult = await preHook.hookFunc(items);
 
     if (hookCallResult !== undefined) {
+      if (typeof hookCallResult === 'object' && '_id' in hookCallResult) {
+        return;
+      }
       if (
         typeof hookCallResult !== 'boolean' &&
         'errorMessage' in hookCallResult

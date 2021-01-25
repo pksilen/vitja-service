@@ -43,7 +43,21 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     let previousFunctionType: string;
     let lastGetFunctionMetadata: FunctionMetadata;
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
-      if (isReadFunction((controller as any)[serviceMetadata.serviceName].constructor, functionMetadata.functionName)) {
+      if (
+        serviceFunctionAnnotationContainer.hasNoAutoTests(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        )
+      ) {
+        return;
+      }
+
+      if (
+        isReadFunction(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        )
+      ) {
         lastGetFunctionMetadata = functionMetadata;
       }
 
@@ -62,9 +76,15 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       let isUpdate = false;
       if (
-        isUpdateFunction((controller as any)[serviceMetadata.serviceName].constructor, functionMetadata.functionName) ||
+        isUpdateFunction(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        ) ||
         (previousFunctionType === 'update' &&
-          !isDeleteFunction((controller as any)[serviceMetadata.serviceName].constructor, functionMetadata.functionName))
+          !isDeleteFunction(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            functionMetadata.functionName
+          ))
       ) {
         isUpdate = true;
         previousFunctionType = 'update';
@@ -116,8 +136,12 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       }
 
       if (
-        isDeleteFunction((controller as any)[serviceMetadata.serviceName].constructor, functionMetadata.functionName) &&
-        index === serviceMetadata.functions.length - 1 && lastGetFunctionMetadata
+        isDeleteFunction(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        ) &&
+        index === serviceMetadata.functions.length - 1 &&
+        lastGetFunctionMetadata
       ) {
         const getFunctionTests = getServiceFunctionTests(
           (controller as any)[serviceMetadata.serviceName].Types,
