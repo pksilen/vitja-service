@@ -4,5 +4,5 @@ import IsStringOrObjectId from "../../decorators/typeproperty/IsStringOrObjectId
 export default class Id {
   @IsStringOrObjectId()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
-  id!: string;
+  public id!: string;
 }

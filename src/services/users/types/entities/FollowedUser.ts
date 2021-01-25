@@ -20,7 +20,7 @@ export default class FollowedUser {
   @MaxLengthAndMatches(24, /^[a-f\d]+$/, {
     groups: ['__backk_update__']
   })
-  _id!: string;
+  public _id!: string;
 
   @MaxLength(512)
   public displayName!: string;

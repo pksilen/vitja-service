@@ -8,5 +8,5 @@ export default class _Id implements Entity {
   @IsUndefined({ groups: ['__backk_create__'] })
   @IsStringOrObjectId({ groups: ['__backk_update__'] })
   @MaxLengthAndMatches(24, /^[a-f\d]+$/, { groups: ['__backk_update__'] })
-  _id!: string;
+  public _id!: string;
 }

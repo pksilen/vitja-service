@@ -9,9 +9,7 @@ import { postgreSqlDbManager } from "./database/postgreSqlDbManager";
 import { mongoDbManager } from "./database/mongoDbManager";
 import { mySqlDbManager } from "./database/mySqlDatabaseManager";
 
-initializeDefaultJaegerTracing({
-  maxPacketSize: 65000
-});
+initializeDefaultJaegerTracing();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());

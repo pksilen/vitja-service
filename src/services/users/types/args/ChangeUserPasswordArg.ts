@@ -22,7 +22,7 @@ export default class ChangeUserPasswordArg {
   @MaxLengthAndMatches(24, /^[a-f\d]+$/, {
     groups: ['__backk_update__']
   })
-  _id!: string;
+  public _id!: string;
 
   @Unique()
   @MaxLength(512)
