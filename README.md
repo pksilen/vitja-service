@@ -1,10 +1,9 @@
 # Vitja service
 
 TODO
-- Can user defaultpaymentmethod, favoritesalesitemids and paymentmethods has default value
-- Change subEntitiesPath to subEntitiesJsonPath where relevant
-- MongoDb test Following/FolledUser functionality
+- Change subEntitiesPath to subEntitiesJsonPath where relevant 
 - PostHooks (e.g. sendToKafka stuff could be put there)
+- MongoDb test Following/FolledUser functionality
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

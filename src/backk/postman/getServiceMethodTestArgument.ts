@@ -7,6 +7,7 @@ import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFrom
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import { doesClassPropertyContainCustomValidation } from '../validation/setClassPropertyValidationDecorators';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
+import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 
 export default function getServiceMethodTestArgument(
   serviceTypes: { [key: string]: Function },
@@ -162,7 +163,18 @@ export default function getServiceMethodTestArgument(
 
     if (isArrayType) {
       if (propertyName.endsWith('Ids') && testValue === undefined) {
-        sampleArg[propertyName] = [`{{${propertyName.slice(0, -3)}Id}}`];
+        let entityName = propertyName.slice(0, -3);
+        entityName = entityName.charAt(0).toUpperCase() + entityName.slice(1);
+        if (entityAnnotationContainer.entityNameToClassMap[entityName]) {
+          sampleArg[propertyName] = [`{{${propertyName.slice(0, -3)}Id}}`];
+        } else {
+          sampleArg[propertyName] =
+            defaultValueStr === undefined
+              ? Array.isArray(sampleArg[propertyName])
+                ? sampleArg[propertyName]
+                : [sampleArg[propertyName]]
+              : JSON.parse(defaultValueStr);
+        }
       } else {
         sampleArg[propertyName] =
           defaultValueStr === undefined
