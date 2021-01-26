@@ -69,7 +69,7 @@ export default class OrdersServiceImpl extends OrdersService {
         },
         Order,
         {
-          hookFunc: async () =>
+          isTrueOrSuccessful: async () =>
             (await this.updateSalesItemStates(salesItemIds, 'sold', 'forSale')) ||
             (await this.shoppingCartService.deleteShoppingCartById({ _id: shoppingCartId, userId }))
         }
@@ -97,7 +97,7 @@ export default class OrdersServiceImpl extends OrdersService {
       async () =>
         (await this.dbManager.removeSubEntityById(orderId, 'orderItems', orderItemId, Order, {
           currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-          hookFunc: ([state]) => state === 'toBeDelivered',
+          isTrueOrSuccessful: ([state]) => state === 'toBeDelivered',
           error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
         })) ||
         (await sendToRemoteService(
@@ -155,7 +155,7 @@ export default class OrdersServiceImpl extends OrdersService {
           [],
           {
             currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-            hookFunc: ([state]) => state === 'toBeDelivered',
+            isTrueOrSuccessful: ([state]) => state === 'toBeDelivered',
             error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
           }
         )) ||
@@ -184,7 +184,7 @@ export default class OrdersServiceImpl extends OrdersService {
         [],
         {
           currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
-          hookFunc: async ([{ salesItemId, state }]) =>
+          isTrueOrSuccessful: async ([{ salesItemId, state }]) =>
             (newState === 'returned'
               ? await this.salesItemsService.updateSalesItemState(
                   {
@@ -217,13 +217,13 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.deleteEntityById(_id, Order, [
       {
         currentEntityJsonPath: 'orderItems[?(@.state != "toBeDelivered")]',
-        hookFunc: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
+        isTrueOrSuccessful: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
         error: DELETE_ORDER_NOT_ALLOWED,
         disregardInTests: true
       },
       {
         currentEntityJsonPath: 'orderItems[*].salesItemId',
-        hookFunc: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
+        isTrueOrSuccessful: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
       }
     ]);
   }

@@ -13,6 +13,7 @@ import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors
 import { HttpStatusCodes } from '../../../../constants/constants';
 import transformRowsToObjects from './transformresults/transformRowsToObjects';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import getTableName from "../../utils/getTableName";
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -53,8 +54,8 @@ export default async function getEntityWhere<T>(
       outerSortClause
     } = getSqlSelectStatementParts(dbManager, finalPostQueryOperations, EntityClass, filters);
 
-    const tableName = EntityClass.name.toLowerCase();
-    const tableAlias = dbManager.schema + '_' + tableName;
+    const tableName = getTableName(EntityClass.name);
+    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
 
     const selectStatement = [
       `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName}`,

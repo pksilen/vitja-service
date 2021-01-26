@@ -53,12 +53,15 @@ export default async function removeSubEntities<T extends Entity, U extends obje
           parentEntityClassAndPropertyNameForSubEntity[1]
         )
       ) {
-        const associationTableName = `${EntityClass.name}_${subEntity.constructor}`;
+        const associationTableName = `${EntityClass.name}_${subEntity.constructor.name}`;
+
         const {
           entityForeignIdFieldName,
           subEntityForeignIdFieldName
         } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
+
         const numericId = parseInt(_id, 10);
+
         await dbManager.tryExecuteSql(
           `DELETE FROM ${
             dbManager.schema.toLowerCase()
@@ -69,6 +72,7 @@ export default async function removeSubEntities<T extends Entity, U extends obje
         );
       } else {
         const possibleErrorResponse = await deleteEntityById(dbManager, subEntity.id, subEntity.constructor);
+
         if (possibleErrorResponse) {
           throw possibleErrorResponse;
         }

@@ -12,6 +12,7 @@ import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount
 import { HttpStatusCodes } from '../../../../constants/constants';
 import isUniqueField from './utils/isUniqueField';
 import SqlEquals from '../../expressions/SqlEquals';
+import getTableName from "../../utils/getTableName";
 
 export default async function getEntitiesWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -54,8 +55,8 @@ export default async function getEntitiesWhere<T>(
       outerSortClause
     } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters);
 
-    const tableName = EntityClass.name.toLowerCase();
-    const tableAlias = dbManager.schema + '_' + tableName;
+    const tableName = getTableName(EntityClass.name);
+    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
 
     const selectStatement = [
       `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName}`,

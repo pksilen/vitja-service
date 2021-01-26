@@ -9,7 +9,7 @@ export interface ErrorCodeAndMessage {
 
 export interface PreHook {
   currentEntityJsonPath?: string;
-  hookFunc: (valueFromJsonPath?: any) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean;
+  isTrueOrSuccessful: (valueFromJsonPath?: any) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean;
   error?: ErrorCodeAndMessage;
   disregardInTests?: boolean;
 }

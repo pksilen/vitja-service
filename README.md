@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO
-- create Unfollow user function
+- Can FollowedUser and followingUser not be readonly and have MaxArraySize
 - Change subEntitiesPath to subEntitiesJsonPath where relevant
 - MongoDb test Following/FolledUser functionality
 - PostHooks (e.g. sendToKafka stuff could be put there)

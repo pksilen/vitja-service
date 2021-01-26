@@ -8,6 +8,7 @@ import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import { HttpStatusCodes } from '../../../../constants/constants';
+import getTableName from "../../utils/getTableName";
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
@@ -37,8 +38,8 @@ export default async function getEntitiesByIds<T>(
     });
 
     const idPlaceholders = _ids.map((_, index) => dbManager.getValuePlaceholder(index + 1)).join(', ');
-    const tableName = EntityClass.name.toLowerCase();
-    const tableAlias = dbManager.schema + '_' + tableName;
+    const tableName = getTableName(EntityClass.name);
+    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
 
     const selectStatement = [
       `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} WHERE _id IN (${idPlaceholders})`,

@@ -38,7 +38,7 @@ export default function executeCronJobs(controller: any, dbManager: AbstractDbMa
                     { lastScheduledTimestamp: new Date(), nextScheduledTimestamp: interval.next().toDate() },
                     __Backk__CronJobScheduling,
                     {
-                      hookFunc: ([{ nextScheduledTimestamp }]) =>
+                      isTrueOrSuccessful: ([{ nextScheduledTimestamp }]) =>
                         Math.abs(Date.now() - nextScheduledTimestamp.valueOf()) < 500
                     }
                   );

@@ -42,6 +42,7 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
+
     const currentEntityOrErrorResponse = await getEntityById(
       dbManager,
       _id,
@@ -49,6 +50,7 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
       postQueryOperations,
       true
     );
+
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
     await tryUpdateEntityLastModifiedTimestampIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
@@ -93,7 +95,6 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
       }
     }
 
-    const foreignIdFieldName = entityAnnotationContainer.getForeignIdFieldName(SubEntityClass.name);
     await forEachAsyncParallel(newSubEntities, async (newSubEntity, index) => {
       if (
         parentEntityClassAndPropertyNameForSubEntity &&
@@ -111,11 +112,12 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
           throw subEntityOrErrorResponse;
         }
 
-        const associationTable = `${EntityClass.name}_${SubEntityClass}`;
+        const associationTable = `${EntityClass.name}_${SubEntityClass.name}`;
         const {
           entityForeignIdFieldName,
           subEntityForeignIdFieldName
         } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTable);
+
         dbManager.tryExecuteSql(
           `INSERT INTO ${dbManager.schema.toLowerCase()}.${associationTable.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}) VALUES (${dbManager.getValuePlaceholder(
             1
@@ -123,6 +125,8 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
           [(currentEntityOrErrorResponse as any)._id, subEntityOrErrorResponse._id]
         );
       } else {
+        const foreignIdFieldName = entityAnnotationContainer.getForeignIdFieldName(SubEntityClass.name);
+
         const subEntityOrErrorResponse = await dbManager.createEntity(
           {
             ...newSubEntity,

@@ -8,6 +8,7 @@ import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount
 import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
 import MongoDbQuery from "../../../mongodb/MongoDbQuery";
 import convertFilterObjectToSqlEquals from "./utils/convertFilterObjectToSqlEquals";
+import getTableName from "../../utils/getTableName";
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
@@ -34,7 +35,7 @@ export default async function getEntitiesCount<T>(
       filters as SqlExpression[] | UserDefinedFilter[] | undefined
     );
 
-    const tableName = EntityClass.name.toLowerCase();
+    const tableName = getTableName(EntityClass.name);
 
     const sqlStatement = [`SELECT COUNT(*) FROM ${dbManager.schema}.${tableName}`, rootWhereClause]
       .filter((sqlPart) => sqlPart)

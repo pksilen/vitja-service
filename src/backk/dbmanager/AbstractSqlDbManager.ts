@@ -638,7 +638,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
-    const subEntityPath = `${subEntitiesPath}[?(@.id == '${subEntityId}')]`;
+    const subEntityPath = `${subEntitiesPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
     const response = this.removeSubEntities(_id, subEntityPath, entityClass, preHooks);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;

@@ -1,9 +1,10 @@
-import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
-import { JSONPath } from "jsonpath-plus";
-import { ErrorResponse } from "../../types/ErrorResponse";
-import { PreHook } from "./PreHook";
-import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
-import isErrorResponse from "../../errors/isErrorResponse";
+import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
+import { JSONPath } from 'jsonpath-plus';
+import { ErrorResponse } from '../../types/ErrorResponse';
+import { PreHook } from './PreHook';
+import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
+import isErrorResponse from '../../errors/isErrorResponse';
+import { HttpStatusCodes } from '../../constants/constants';
 
 export default async function tryExecutePreHooks<T extends object>(
   preHooks?: PreHook | PreHook[],
@@ -27,26 +28,32 @@ export default async function tryExecutePreHooks<T extends object>(
       items = JSONPath({ json: itemOrErrorResponse, path: preHook.currentEntityJsonPath ?? '$' });
     }
 
-    const hookCallResult = await preHook.hookFunc(items);
+    const hookCallResult = await preHook.isTrueOrSuccessful(items);
 
     if (hookCallResult !== undefined) {
       if (typeof hookCallResult === 'object' && '_id' in hookCallResult) {
         return;
       }
-      if (
-        typeof hookCallResult !== 'boolean' &&
-        'errorMessage' in hookCallResult
-      ) {
+
+      if (typeof hookCallResult !== 'boolean' && 'errorMessage' in hookCallResult) {
         throw hookCallResult;
       } else if (hookCallResult === false) {
         if (process.env.NODE_ENV === 'development' && preHook.disregardInTests) {
           return;
         }
+
         let errorMessage = 'Unspecified pre-hook error';
+
         if (preHook.error) {
           errorMessage = 'Error code ' + preHook.error.errorCode + ':' + preHook.error.errorMessage;
         }
-        throw new Error(createErrorMessageWithStatusCode(errorMessage, preHook.error?.statusCode ?? 400));
+
+        throw new Error(
+          createErrorMessageWithStatusCode(
+            errorMessage,
+            preHook.error?.statusCode ?? HttpStatusCodes.BAD_REQUEST
+          )
+        );
       } else if (
         process.env.NODE_ENV === 'development' &&
         hookCallResult === true &&

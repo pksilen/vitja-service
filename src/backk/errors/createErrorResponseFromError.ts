@@ -12,10 +12,9 @@ export default function createErrorResponseFromError(error: Error): ErrorRespons
 
   let errorCode;
   if (errorMessage.startsWith('Error code ')) {
-    const [errorCodeStr, errorMessagePrefix, ...errorMessageParts] = errorMessage.split(':');
+    const [errorCodeStr, ...errorMessageParts] = errorMessage.split(':');
     errorCode = errorCodeStr.slice(11);
-    errorMessage = `${errorMessagePrefix ? errorMessagePrefix + ':' : ''}${errorMessageParts.join('')}`;
-    errorMessage = errorMessage.trim();
+    errorMessage = errorMessageParts.join('').trim();
   }
 
   if (process.env.NODE_ENV === 'development' && statusCode >= 500) {

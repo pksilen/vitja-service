@@ -15,5 +15,6 @@ export default abstract class UsersService extends CrudResourceService {
   abstract updateUser(arg: User): Promise<void | ErrorResponse>;
   abstract changeUserPassword(arg: ChangeUserPasswordArg): Promise<void | ErrorResponse>;
   abstract followUser(arg: _IdAndUserId): Promise<User | ErrorResponse>;
+  abstract unfollowUser(arg: _IdAndUserId): Promise<void | ErrorResponse>;
   abstract deleteUserById(arg: _Id): Promise<void | ErrorResponse>;
 }
