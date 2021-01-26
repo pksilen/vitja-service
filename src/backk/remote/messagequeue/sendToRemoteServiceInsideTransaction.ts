@@ -9,7 +9,7 @@ export interface CallOrSendTo {
   options?: SendToOptions;
 }
 
-export default async function sendInsideTransaction(sends: CallOrSendTo[]) {
+export default async function sendToRemoteServiceInsideTransaction(sends: CallOrSendTo[]) {
   const uniqueSendTosByBroker = _.uniqBy(
     sends,
     ({ remoteServiceFunctionUrl }) => parseRemoteServiceFunctionCallUrlParts(remoteServiceFunctionUrl).server

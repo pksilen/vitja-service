@@ -54,40 +54,35 @@ export default class OrdersServiceImpl extends OrdersService {
     salesItemIds,
     paymentInfo
   }: CreateOrderArg): Promise<Order | ErrorResponse> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      const createdOrderOrErrorResponse = await this.dbManager.createEntity(
-        {
-          userId,
-          orderItems: salesItemIds.map((salesItemId, index) => ({
-            id: index.toString(),
-            salesItemId,
-            state: 'toBeDelivered' as OrderState,
-            trackingUrl: null,
-            deliveryTimestamp: null
-          })),
-          paymentInfo
-        },
-        Order,
-        {
-          isTrueOrSuccessful: async () =>
-            (await this.updateSalesItemStates(salesItemIds, 'sold', 'forSale')) ||
-            (await this.shoppingCartService.deleteShoppingCartById({ _id: shoppingCartId, userId }))
-        }
-      );
-
-      let possibleErrorResponse: void | ErrorResponse;
-      if (!('errorMessage' in createdOrderOrErrorResponse)) {
-        possibleErrorResponse = await sendToRemoteService(
-          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
-          {
-            userId,
-            salesItemIds
-          }
-        );
+    return this.dbManager.createEntity(
+      {
+        userId,
+        orderItems: salesItemIds.map((salesItemId, index) => ({
+          id: index.toString(),
+          salesItemId,
+          state: 'toBeDelivered' as OrderState,
+          trackingUrl: null,
+          deliveryTimestamp: null
+        })),
+        paymentInfo
+      },
+      Order,
+      {
+        expectTrueOrSuccess: async () =>
+          (await this.updateSalesItemStates(salesItemIds, 'sold', 'forSale')) ||
+          (await this.shoppingCartService.deleteShoppingCartById({ _id: shoppingCartId, userId }))
+      },
+      {
+        expectSuccess: () =>
+          sendToRemoteService(
+            `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
+            {
+              userId,
+              salesItemIds
+            }
+          )
       }
-
-      return possibleErrorResponse || createdOrderOrErrorResponse;
-    });
+    );
   }
 
   @AllowForSelf()
@@ -96,8 +91,8 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.executeInsideTransaction(
       async () =>
         (await this.dbManager.removeSubEntityById(orderId, 'orderItems', orderItemId, Order, {
-          currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-          isTrueOrSuccessful: ([state]) => state === 'toBeDelivered',
+          hookFuncArgFromCurrentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
+          expectTrueOrSuccess: ([{ state }]) => state === 'toBeDelivered',
           error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
         })) ||
         (await sendToRemoteService(
@@ -154,8 +149,8 @@ export default class OrdersServiceImpl extends OrdersService {
           Order,
           [],
           {
-            currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')].state`,
-            isTrueOrSuccessful: ([state]) => state === 'toBeDelivered',
+            hookFuncArgFromCurrentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
+            expectTrueOrSuccess: ([{ state }]) => state === 'toBeDelivered',
             error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
           }
         )) ||
@@ -183,8 +178,8 @@ export default class OrdersServiceImpl extends OrdersService {
         Order,
         [],
         {
-          currentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
-          isTrueOrSuccessful: async ([{ salesItemId, state }]) =>
+          hookFuncArgFromCurrentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
+          expectTrueOrSuccess: async ([{ salesItemId, state }]) =>
             (newState === 'returned'
               ? await this.salesItemsService.updateSalesItemState(
                   {
@@ -216,14 +211,14 @@ export default class OrdersServiceImpl extends OrdersService {
   deleteOrderById({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, Order, [
       {
-        currentEntityJsonPath: 'orderItems[?(@.state != "toBeDelivered")]',
-        isTrueOrSuccessful: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
+        hookFuncArgFromCurrentEntityJsonPath: 'orderItems[?(@.state != "toBeDelivered")]',
+        expectTrueOrSuccess: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
         error: DELETE_ORDER_NOT_ALLOWED,
-        disregardInTests: true
+        shouldDisregardFailureInTests: true
       },
       {
-        currentEntityJsonPath: 'orderItems[*].salesItemId',
-        isTrueOrSuccessful: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
+        hookFuncArgFromCurrentEntityJsonPath: 'orderItems[*].salesItemId',
+        expectTrueOrSuccess: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
       }
     ]);
   }

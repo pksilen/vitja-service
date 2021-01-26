@@ -54,7 +54,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       },
       SalesItem,
       {
-        isTrueOrSuccessful: async () => {
+        expectTrueOrSuccess: async () => {
           const usersActiveSalesItemCountOrErrorResponse = await this.dbManager.getEntitiesCount(
             { userId: arg.userId, state: 'forSale' },
             SalesItem
@@ -157,7 +157,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
   async updateSalesItem(arg: SalesItem): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity(arg, SalesItem, [], {
-      isTrueOrSuccessful: async ([{ _id, state, price }]) =>
+      expectTrueOrSuccess: async ([{ _id, state, price }]) =>
         (await this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, [])) ||
         state === 'forSale',
       error: SALES_ITEM_STATE_MUST_BE_FOR_SALE
@@ -176,7 +176,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       [],
       requiredCurrentState
         ? {
-            isTrueOrSuccessful: ([{ state }]) => state === requiredCurrentState,
+            expectTrueOrSuccess: ([{ state }]) => state === requiredCurrentState,
             error: INVALID_SALES_ITEM_STATE
           }
         : undefined

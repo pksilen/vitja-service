@@ -53,6 +53,7 @@ import getRootOperations from './mongodb/getRootOperations';
 import convertMongoDbQueriesToMatchExpression from './mongodb/convertMongoDbQueriesToMatchExpression';
 import paginateSubEntities from './mongodb/paginateSubEntities';
 import convertFilterObjectToMongoDbQueries from './mongodb/convertFilterObjectToMongoDbQueries';
+import { PostHook } from "./hooks/PostHook";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -185,6 +186,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     EntityClass: new () => T,
     preHooks?: PreHook | PreHook[],
+    postHook?: PostHook,
     postQueryOperations?: PostQueryOperations,
     isInternalCall = false
   ): Promise<T | ErrorResponse> {

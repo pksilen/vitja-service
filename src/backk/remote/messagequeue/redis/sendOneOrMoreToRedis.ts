@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { CallOrSendTo } from '../sendInsideTransaction';
+import { CallOrSendTo } from '../sendToRemoteServiceInsideTransaction';
 import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseRemoteServiceFunctionCallUrlParts';
 import { getNamespace } from 'cls-hooked';
 import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';

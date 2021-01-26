@@ -35,7 +35,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @Errors([SHOPPING_CART_ALREADY_EXISTS])
   async createShoppingCart(arg: ShoppingCart): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.createEntity(arg, ShoppingCart, {
-      isTrueOrSuccessful: async () => {
+      expectTrueOrSuccess: async () => {
         const shoppingCartCountOrErrorResponse = await this.dbManager.getEntitiesCount(
           { userId: arg.userId },
           ShoppingCart
@@ -60,8 +60,8 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       shoppingCartItemId,
       ShoppingCart,
       {
-        currentEntityJsonPath: `shoppingCartItems[?(@.id == '${shoppingCartItemId}')]`,
-        isTrueOrSuccessful: async ([{ salesItemId }]) =>
+        hookFuncArgFromCurrentEntityJsonPath: `shoppingCartItems[?(@.id == '${shoppingCartItemId}')]`,
+        expectTrueOrSuccess: async ([{ salesItemId }]) =>
           await this.salesItemService.updateSalesItemState({ _id: salesItemId, newState: 'forSale' })
       }
     );
@@ -79,7 +79,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       ShoppingCart,
       ShoppingCartItem,
       {
-        isTrueOrSuccessful: async () =>
+        expectTrueOrSuccess: async () =>
           getErrorResponseOrResultOf(
             await this.salesItemService.getSalesItemById({ _id: salesItemId }),
             (salesItem) => salesItem.state === 'forSale'

@@ -87,11 +87,11 @@ export default class UsersServiceImpl extends UsersService {
       [],
       [
         {
-          isTrueOrSuccessful: ([currentEntity]) => currentEntity.userName === userName,
+          expectTrueOrSuccess: ([currentEntity]) => currentEntity.userName === userName,
           error: USER_NAME_CANNOT_BE_CHANGED
         },
         {
-          isTrueOrSuccessful: async ([{ password: hashedPassword }]) =>
+          expectTrueOrSuccess: async ([{ password: hashedPassword }]) =>
             await argon2.verify(hashedPassword, currentPassword),
           error: INVALID_CURRENT_PASSWORD
         }
@@ -106,11 +106,11 @@ export default class UsersServiceImpl extends UsersService {
   followUser({ _id, userId }: _IdAndUserId): Promise<User | ErrorResponse> {
     return this.dbManager.addSubEntity(_id, 'followedUsers', { _id: userId }, User, FollowedUser, [
       {
-        isTrueOrSuccessful: () => _id !== userId,
+        expectTrueOrSuccess: () => _id !== userId,
         error: CANNOT_FOLLOW_SELF
       },
       {
-        isTrueOrSuccessful: async () =>
+        expectTrueOrSuccess: async () =>
           await this.dbManager.addSubEntity(userId, 'followingUsers', { _id }, User, FollowingUser)
       }
     ]);
@@ -123,7 +123,7 @@ export default class UsersServiceImpl extends UsersService {
   unfollowUser({ _id, userId }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.removeSubEntityById(_id, 'followedUsers', userId, User, [
       {
-        isTrueOrSuccessful: async () => await this.dbManager.removeSubEntityById(userId, 'followingUsers', _id, User)
+        expectTrueOrSuccess: async () => await this.dbManager.removeSubEntityById(userId, 'followingUsers', _id, User)
       }
     ]);
   }

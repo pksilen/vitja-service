@@ -18,12 +18,15 @@ import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 
 export default async function createEntity<T>(
   dbManager: AbstractSqlDbManager,
   entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
   EntityClass: new () => T,
   preHooks?: PreHook | PreHook[],
+  postHook?: PostHook,
   postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false,
   shouldReturnItem = true
@@ -157,6 +160,7 @@ export default async function createEntity<T>(
                 subEntity,
                 SubEntityClass,
                 preHooks,
+                postHook,
                 postQueryOperations,
                 true,
                 false
@@ -175,6 +179,7 @@ export default async function createEntity<T>(
             subEntityOrEntities,
             (Types as any)[relationEntityName],
             preHooks,
+            postHook,
             postQueryOperations,
             true,
             false
@@ -200,6 +205,10 @@ export default async function createEntity<T>(
       isRecursiveCall || !shouldReturnItem
         ? ({ _id } as any)
         : await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
+
+    if (!isRecursiveCall && postHook) {
+      await tryExecutePostHook(postHook, response);
+    }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return response;

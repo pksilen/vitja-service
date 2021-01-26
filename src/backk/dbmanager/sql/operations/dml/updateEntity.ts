@@ -144,6 +144,7 @@ export default async function updateEntity<T extends Entity>(
                     SubEntityClass,
                     undefined,
                     undefined,
+                    undefined,
                     false,
                     false
                   );

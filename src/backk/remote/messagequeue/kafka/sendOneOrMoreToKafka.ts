@@ -2,7 +2,7 @@ import { CompressionTypes, Kafka, Producer, Transaction } from 'kafkajs';
 import { getNamespace } from 'cls-hooked';
 import tracerProvider from '../../../observability/distributedtracinig/tracerProvider';
 import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
-import { CallOrSendTo } from '../sendInsideTransaction';
+import { CallOrSendTo } from '../sendToRemoteServiceInsideTransaction';
 import log, { Severity } from '../../../observability/logging/log';
 import { CanonicalCode } from '@opentelemetry/api';
 import createErrorResponseFromError from '../../../errors/createErrorResponseFromError';

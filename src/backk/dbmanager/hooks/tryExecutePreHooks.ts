@@ -25,20 +25,20 @@ export default async function tryExecutePreHooks<T extends object>(
   await forEachAsyncSequential(Array.isArray(preHooks) ? preHooks : [preHooks], async (preHook: PreHook) => {
     let items: any[] | undefined;
     if (itemOrErrorResponse !== undefined) {
-      items = JSONPath({ json: itemOrErrorResponse, path: preHook.currentEntityJsonPath ?? '$' });
+      items = JSONPath({ json: itemOrErrorResponse, path: preHook.hookFuncArgFromCurrentEntityJsonPath ?? '$' });
     }
 
-    const hookCallResult = await preHook.isTrueOrSuccessful(items);
+    const hookCallResult = await preHook.expectTrueOrSuccess(items);
 
     if (hookCallResult !== undefined) {
       if (typeof hookCallResult === 'object' && '_id' in hookCallResult) {
         return;
       }
 
-      if (typeof hookCallResult !== 'boolean' && 'errorMessage' in hookCallResult) {
+      if (typeof hookCallResult === 'object' && 'errorMessage' in hookCallResult) {
         throw hookCallResult;
       } else if (hookCallResult === false) {
-        if (process.env.NODE_ENV === 'development' && preHook.disregardInTests) {
+        if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureInTests) {
           return;
         }
 
@@ -57,9 +57,9 @@ export default async function tryExecutePreHooks<T extends object>(
       } else if (
         process.env.NODE_ENV === 'development' &&
         hookCallResult === true &&
-        preHook.disregardInTests
+        preHook.shouldDisregardFailureInTests
       ) {
-        throw new Error('Invalid hook result (=true) when disregardInTest is true');
+        throw new Error('Invalid hook result (=true) when disregardFailureInTest is true');
       }
     }
   });

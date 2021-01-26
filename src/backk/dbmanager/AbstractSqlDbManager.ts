@@ -35,6 +35,7 @@ import getAllEntities from './sql/operations/dql/getAllEntities';
 import { SubEntity } from '../types/entities/SubEntity';
 import deleteEntitiesByFilters from './sql/operations/dml/deleteEntitiesByFilters';
 import MongoDbQuery from './mongodb/MongoDbQuery';
+import { PostHook } from "./hooks/PostHook";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -376,6 +377,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
+    postHook?: PostHook,
     postQueryOperations?: PostQueryOperations,
     shouldReturnItem = true
   ): Promise<T | ErrorResponse> {
@@ -386,6 +388,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       entity,
       entityClass,
       preHooks,
+      postHook,
       postQueryOperations,
       false,
       shouldReturnItem

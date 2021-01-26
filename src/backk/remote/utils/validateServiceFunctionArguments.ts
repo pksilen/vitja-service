@@ -1,4 +1,4 @@
-import { CallOrSendTo } from "../messagequeue/sendInsideTransaction";
+import { CallOrSendTo } from "../messagequeue/sendToRemoteServiceInsideTransaction";
 import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
 import parseRemoteServiceFunctionCallUrlParts from "./parseRemoteServiceFunctionCallUrlParts";
 import fs from "fs";

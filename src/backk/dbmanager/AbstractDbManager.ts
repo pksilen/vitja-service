@@ -15,6 +15,7 @@ import { SubEntity } from "../types/entities/SubEntity";
 import __Backk__CronJobScheduling from "../scheduling/entities/__Backk__CronJobScheduling";
 import __Backk__JobScheduling from "../scheduling/entities/__Backk__JobScheduling";
 import MongoDbQuery from "./mongodb/MongoDbQuery";
+import { PostHook } from "./hooks/PostHook";
 
 export interface Field {
   name: string;
@@ -74,6 +75,7 @@ export default abstract class AbstractDbManager {
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
+    postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
@@ -91,6 +93,7 @@ export default abstract class AbstractDbManager {
               entity,
               entityClass,
               preHooks,
+              undefined,
               postQueryOperations
             );
             if ('errorMessage' in entityOrErrorResponse && isErrorResponse(entityOrErrorResponse)) {

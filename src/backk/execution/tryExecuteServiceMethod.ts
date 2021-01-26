@@ -1,31 +1,30 @@
-import { HttpException } from "@nestjs/common";
-import { plainToClass } from "class-transformer";
-import { createNamespace, getNamespace } from "cls-hooked";
-import _ from "lodash";
-import Redis from "ioredis";
-import tryAuthorize from "../authorization/tryAuthorize";
-import BaseService from "../service/BaseService";
-import tryVerifyCaptchaToken from "../captcha/tryVerifyCaptchaToken";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
-import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
-import UsersBaseService from "../users/UsersBaseService";
-import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
-import tryValidateServiceFunctionArgument from "../validation/tryValidateServiceFunctionArgument";
-import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
-import tryValidateServiceFunctionResponse from "../validation/tryValidateServiceFunctionResponse";
-import isErrorResponse from "../errors/isErrorResponse";
-import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
-import createErrorResponseFromError from "../errors/createErrorResponseFromError";
-import log, { Severity } from "../observability/logging/log";
-import serviceFunctionAnnotationContainer
-  from "../decorators/service/function/serviceFunctionAnnotationContainer";
-import { HttpStatusCodes, MAX_INT_VALUE } from "../constants/constants";
-import getNamespacedServiceName from "../utils/getServiceNamespace";
-import AuditLoggingService from "../observability/logging/audit/AuditLoggingService";
-import createAuditLogEntry from "../observability/logging/audit/createAuditLogEntry";
-import executeMultipleServiceFunctions from "./executeMultipleServiceFunctions";
-import tryScheduleJobExecution from "../scheduling/tryScheduleJobExecution";
-import isExecuteMultipleRequest from "./isExecuteMultipleRequest";
+import { HttpException } from '@nestjs/common';
+import { plainToClass } from 'class-transformer';
+import { createNamespace, getNamespace } from 'cls-hooked';
+import _ from 'lodash';
+import Redis from 'ioredis';
+import tryAuthorize from '../authorization/tryAuthorize';
+import BaseService from '../service/BaseService';
+import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
+import UsersBaseService from '../users/UsersBaseService';
+import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
+import tryValidateServiceFunctionArgument from '../validation/tryValidateServiceFunctionArgument';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import tryValidateServiceFunctionResponse from '../validation/tryValidateServiceFunctionResponse';
+import isErrorResponse from '../errors/isErrorResponse';
+import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
+import createErrorResponseFromError from '../errors/createErrorResponseFromError';
+import log, { Severity } from '../observability/logging/log';
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import { HttpStatusCodes, MAX_INT_VALUE } from '../constants/constants';
+import getNamespacedServiceName from '../utils/getServiceNamespace';
+import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
+import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
+import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
+import tryScheduleJobExecution from '../scheduling/tryScheduleJobExecution';
+import isExecuteMultipleRequest from './isExecuteMultipleRequest';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -35,7 +34,7 @@ export interface ExecuteServiceFunctionOptions {
   areMultipleServiceFunctionExecutionsAllowed?: boolean;
   maxServiceFunctionCountInMultipleServiceFunctionExecution?: number;
   shouldAllowTemplatesInMultipleServiceFunctionExecution?: boolean;
-  allowedServiceFunctionsRegExpForRemoteServiceCalls?: RegExp
+  allowedServiceFunctionsRegExpForRemoteServiceCalls?: RegExp;
 }
 
 export default async function tryExecuteServiceMethod(
@@ -319,6 +318,7 @@ export default async function tryExecuteServiceMethod(
         clsNamespace.set('authHeader', headers.Authorization);
         clsNamespace.set('dbLocalTransactionCount', 0);
         clsNamespace.set('remoteServiceCallCount', 0);
+        clsNamespace.set('postHookRemoteServiceCallCount', 0);
         clsNamespace.set('dbManagerOperationAfterRemoteServiceCall', false);
         let response;
 
@@ -361,7 +361,8 @@ export default async function tryExecuteServiceMethod(
                 ': database manager operation and remote service callRemoteService must be executed inside a transaction or service function must be annotated with @NoTransaction if no transaction is needed'
             );
           } else if (
-            clsNamespace.get('remoteServiceCallCount') > 1 &&
+            (clsNamespace.get('remoteServiceCallCount') > 1 ||
+              clsNamespace.get('postHookRemoteServiceCallCount') > 1) &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonDistributedTransactional(
               controller[serviceName].constructor,
               functionName

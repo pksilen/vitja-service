@@ -8,8 +8,8 @@ export interface ErrorCodeAndMessage {
 }
 
 export interface PreHook {
-  currentEntityJsonPath?: string;
-  isTrueOrSuccessful: (valueFromJsonPath?: any) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean;
+  hookFuncArgFromCurrentEntityJsonPath?: string;
+  expectTrueOrSuccess: (valueFromJsonPath?: any) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean;
   error?: ErrorCodeAndMessage;
-  disregardInTests?: boolean;
+  shouldDisregardFailureInTests?: boolean;
 }

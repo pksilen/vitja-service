@@ -1,7 +1,6 @@
 # Vitja service
 
-TODO
-- Change subEntitiesPath to subEntitiesJsonPath where relevant 
+TODO 
 - PostHooks (e.g. sendToKafka stuff could be put there)
 - MongoDb test Following/FolledUser functionality
 - Split to multiple microservices

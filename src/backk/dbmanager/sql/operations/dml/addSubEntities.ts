@@ -136,6 +136,7 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
           SubEntityClass,
           undefined,
           undefined,
+          undefined,
           false
         );
 

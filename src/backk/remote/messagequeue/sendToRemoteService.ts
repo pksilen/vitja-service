@@ -1,7 +1,7 @@
 import { CompressionTypes } from "kafkajs";
 import { ErrorResponse } from "../../types/ErrorResponse";
 import { getNamespace } from "cls-hooked";
-import { CallOrSendTo } from "./sendInsideTransaction";
+import { CallOrSendTo } from "./sendToRemoteServiceInsideTransaction";
 import sendOneOrMoreToKafka, { SendAcknowledgementType } from "./kafka/sendOneOrMoreToKafka";
 import sendOneOrMoreToRedis from "./redis/sendOneOrMoreToRedis";
 import parseRemoteServiceFunctionCallUrlParts from "../utils/parseRemoteServiceFunctionCallUrlParts";
@@ -14,7 +14,11 @@ export interface SendToOptions {
 
 export async function sendOneOrMore(sends: CallOrSendTo[], isTransactional: boolean): Promise<void | ErrorResponse> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
-  clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
+  if (clsNamespace?.get('isInsidePostHook')) {
+    clsNamespace?.set('postHookRemoteServiceCallCount', clsNamespace?.get('postHookRemoteServiceCallCount') + 1);
+  } else {
+    clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
+  }
 
   if (process.env.NODE_ENV === 'development') {
     await validateServiceFunctionArguments(sends);
