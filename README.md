@@ -1,9 +1,9 @@
 # Vitja service
 
 TODO
-- Create followUser function
-- MongoDb test Following/FolledUser functionality
+- create Unfollow user function
 - Change subEntitiesPath to subEntitiesJsonPath where relevant
+- MongoDb test Following/FolledUser functionality
 - PostHooks (e.g. sendToKafka stuff could be put there)
 - Split to multiple microservices
   - Implement subentities as remote service queries
