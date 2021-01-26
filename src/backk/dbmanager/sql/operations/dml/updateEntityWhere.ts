@@ -11,6 +11,7 @@ import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransact
 import { PreHook } from "../../../hooks/PreHook";
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 import getEntityWhere from "../dql/getEntityWhere";
+import { PostHook } from "../../../hooks/PostHook";
 
 export default async function updateEntityWhere<T extends Entity>(
   dbManager: AbstractSqlDbManager,
@@ -18,7 +19,8 @@ export default async function updateEntityWhere<T extends Entity>(
   fieldValue: T[keyof T] | string,
   entity: RecursivePartial<T>,
   EntityClass: new () => T,
-  preHooks?: PreHook | PreHook[]
+  preHooks?: PreHook | PreHook[],
+  postHook?: PostHook
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);

@@ -3,6 +3,7 @@
 TODO 
 - PostHooks (e.g. sendToKafka stuff could be put there)
 - MongoDb test Following/FolledUser functionality
+- Remote service operation cnt === 1 and must be in last operation, no db operations afterwards
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

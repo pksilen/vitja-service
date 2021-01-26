@@ -53,7 +53,7 @@ import getRootOperations from './mongodb/getRootOperations';
 import convertMongoDbQueriesToMatchExpression from './mongodb/convertMongoDbQueriesToMatchExpression';
 import paginateSubEntities from './mongodb/paginateSubEntities';
 import convertFilterObjectToMongoDbQueries from './mongodb/convertFilterObjectToMongoDbQueries';
-import { PostHook } from "./hooks/PostHook";
+import { PostHook } from './hooks/PostHook';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -251,6 +251,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entityClass: new () => T,
     subEntityClass: new () => U,
     preHooks?: PreHook | PreHook[],
+    postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
@@ -262,6 +263,7 @@ export default class MongoDbManager extends AbstractDbManager {
       entityClass,
       subEntityClass,
       preHooks,
+      postHook,
       postQueryOperations
     );
 
@@ -276,6 +278,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     preHooks?: PreHook | PreHook[],
+    postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
@@ -299,7 +302,10 @@ export default class MongoDbManager extends AbstractDbManager {
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
-        const [parentEntity] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath + '^' });
+        const [parentEntity] = JSONPath({
+          json: currentEntityOrErrorResponse,
+          path: subEntitiesJsonPath + '^'
+        });
         const [subEntities] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });
         const maxSubItemId = subEntities.reduce((maxSubItemId: number, subEntity: any) => {
           const subItemId = parseInt(subEntity.id, 10);
@@ -846,6 +852,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
     preHooks?: PreHook | PreHook[],
+    postHook?: PostHook,
     isRecursiveCall = false
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
@@ -960,7 +967,8 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
-    preHooks?: PreHook | PreHook[]
+    preHooks?: PreHook | PreHook[],
+    postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
     // noinspection AssignmentToFunctionParameterJS
@@ -996,7 +1004,8 @@ export default class MongoDbManager extends AbstractDbManager {
   async deleteEntityById<T extends object>(
     _id: string,
     EntityClass: new () => T,
-    preHooks?: PreHook | PreHook[]
+    preHooks?: PreHook | PreHook[],
+    postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
     // noinspection AssignmentToFunctionParameterJS
@@ -1126,7 +1135,8 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     subEntitiesJsonPath: string,
     EntityClass: new () => T,
-    preHooks?: PreHook | PreHook[]
+    preHooks?: PreHook | PreHook[],
+    postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
     // noinspection AssignmentToFunctionParameterJS
@@ -1165,7 +1175,8 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntitiesJsonPath: string,
     subEntityId: string,
     EntityClass: new () => T,
-    preHooks?: PreHook | PreHook[]
+    preHooks?: PreHook | PreHook[],
+    postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;

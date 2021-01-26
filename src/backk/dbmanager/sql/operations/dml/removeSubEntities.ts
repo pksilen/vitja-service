@@ -19,13 +19,15 @@ import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntit
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import findParentEntityAndPropertyNameForSubEntity from '../../../../metadata/findParentEntityAndPropertyNameForSubEntity';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import { PostHook } from "../../../hooks/PostHook";
 
 export default async function removeSubEntities<T extends Entity, U extends object>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   subEntitiesJsonPath: string,
   EntityClass: new () => T,
-  preHooks?: PreHook | PreHook[]
+  preHooks?: PreHook | PreHook[],
+  postHook?: PostHook
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);

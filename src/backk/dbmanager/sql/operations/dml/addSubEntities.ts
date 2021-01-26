@@ -23,6 +23,7 @@ import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntit
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import { SubEntity } from '../../../../types/entities/SubEntity';
 import getEntityById from '../dql/getEntityById';
+import { PostHook } from '../../../hooks/PostHook';
 
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -32,6 +33,7 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
   EntityClass: new () => T,
   SubEntityClass: new () => U,
   preHooks?: PreHook | PreHook[],
+  postHook?: PostHook,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS

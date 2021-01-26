@@ -24,6 +24,7 @@ import deleteEntityById from './deleteEntityById';
 import createEntity from './createEntity';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
+import { PostHook } from "../../../hooks/PostHook";
 
 export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
@@ -31,6 +32,7 @@ export default async function updateEntity<T extends Entity>(
   EntityClass: new () => T,
   allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
   preHooks?: PreHook | PreHook[],
+  postHook?: PostHook,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
@@ -169,6 +171,7 @@ export default async function updateEntity<T extends Entity>(
                   SubEntityClass,
                   allowAdditionAndRemovalForSubEntityClasses,
                   undefined,
+                  undefined,
                   true
                 );
 
@@ -185,6 +188,7 @@ export default async function updateEntity<T extends Entity>(
             subEntityOrEntities,
             (Types as any)[baseTypeName],
             allowAdditionAndRemovalForSubEntityClasses,
+            undefined,
             undefined,
             true
           );

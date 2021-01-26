@@ -14,12 +14,14 @@ import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTran
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import { HttpStatusCodes } from '../../../../constants/constants';
+import { PostHook } from "../../../hooks/PostHook";
 
 export default async function deleteEntityById<T extends object>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   EntityClass: new () => T,
-  preHooks?: PreHook | PreHook[]
+  preHooks?: PreHook | PreHook[],
+  postHook?: PostHook
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
