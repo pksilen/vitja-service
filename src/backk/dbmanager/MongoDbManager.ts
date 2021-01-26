@@ -244,7 +244,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   addSubEntity<T extends Entity, U extends object>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
     subEntityClass: new () => U,
@@ -255,7 +255,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
     const response = this.addSubEntities(
       _id,
-      subEntitiesPath,
+      subEntitiesJsonPath,
       [newSubEntity],
       entityClass,
       subEntityClass,
@@ -269,7 +269,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: new () => T,
     SubEntityClass: new () => U,
@@ -297,8 +297,8 @@ export default class MongoDbManager extends AbstractDbManager {
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
-        const [parentEntity] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath + '^' });
-        const [subEntities] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath });
+        const [parentEntity] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath + '^' });
+        const [subEntities] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });
         const maxSubItemId = subEntities.reduce((maxSubItemId: number, subEntity: any) => {
           const subItemId = parseInt(subEntity.id, 10);
           return subItemId > maxSubItemId ? subItemId : maxSubItemId;
@@ -1122,7 +1122,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async removeSubEntities<T extends Entity>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     EntityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
@@ -1139,7 +1139,7 @@ export default class MongoDbManager extends AbstractDbManager {
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
-        const subEntities = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath });
+        const subEntities = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });
 
         if (subEntities.length === 0) {
           return;
@@ -1160,13 +1160,13 @@ export default class MongoDbManager extends AbstractDbManager {
 
   removeSubEntityById<T extends Entity>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     subEntityId: string,
     EntityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
-    const subEntityPath = `${subEntitiesPath}[?(@.id == '${subEntityId}')]`;
+    const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
     const response = this.removeSubEntities(_id, subEntityPath, EntityClass, preHooks);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;

@@ -55,7 +55,7 @@ export default class User extends _IdAndCaptcha {
 
   @ArrayMaxSize(10)
   public paymentMethods!: PaymentMethod[];
-  
+
   @ArrayMaxSize(100)
   public favoriteSalesItemIds!: string[];
 

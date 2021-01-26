@@ -108,7 +108,7 @@ export default abstract class AbstractDbManager {
 
   abstract addSubEntity<T extends Entity, U extends SubEntity>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
     subEntityClass: new () => U,
@@ -118,7 +118,7 @@ export default abstract class AbstractDbManager {
 
   abstract addSubEntities<T extends Entity, U extends object>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     entityClass: new () => T,
     subEntityClass: new () => U,
@@ -264,14 +264,14 @@ export default abstract class AbstractDbManager {
 
   abstract removeSubEntities<T extends Entity>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse>;
 
   abstract removeSubEntityById<T extends Entity>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     subEntityId: string,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]

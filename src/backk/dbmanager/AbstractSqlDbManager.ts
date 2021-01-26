@@ -397,7 +397,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   async addSubEntity<T extends Entity, U extends object>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
     subEntityClass: new () => U,
@@ -409,7 +409,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     const response = addSubEntities(
       this,
       _id,
-      subEntitiesPath,
+      subEntitiesJsonPath,
       [newSubEntity],
       entityClass,
       subEntityClass,
@@ -423,7 +423,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   async addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     entityClass: new () => T,
     subEntityClass: new () => U,
@@ -435,7 +435,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     const response = addSubEntities(
       this,
       _id,
-      subEntitiesPath,
+      subEntitiesJsonPath,
       newSubEntities,
       entityClass,
       subEntityClass,
@@ -620,26 +620,26 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   async removeSubEntities<T extends Entity, U extends object>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
-    const response = removeSubEntities(this, _id, subEntitiesPath, entityClass, preHooks);
+    const response = removeSubEntities(this, _id, subEntitiesJsonPath, entityClass, preHooks);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
   removeSubEntityById<T extends Entity>(
     _id: string,
-    subEntitiesPath: string,
+    subEntitiesJsonPath: string,
     subEntityId: string,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[]
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
-    const subEntityPath = `${subEntitiesPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-    const response = this.removeSubEntities(_id, subEntityPath, entityClass, preHooks);
+    const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
+    const response = this.removeSubEntities(_id, subEntityJsonPath, entityClass, preHooks);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

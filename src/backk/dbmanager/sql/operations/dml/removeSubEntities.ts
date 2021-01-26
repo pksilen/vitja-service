@@ -23,7 +23,7 @@ import typePropertyAnnotationContainer from '../../../../decorators/typeproperty
 export default async function removeSubEntities<T extends Entity, U extends object>(
   dbManager: AbstractSqlDbManager,
   _id: string,
-  subEntitiesPath: string,
+  subEntitiesJsonPath: string,
   EntityClass: new () => T,
   preHooks?: PreHook | PreHook[]
 ): Promise<void | ErrorResponse> {
@@ -38,7 +38,7 @@ export default async function removeSubEntities<T extends Entity, U extends obje
     await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
     await tryUpdateEntityLastModifiedTimestampIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
     const currentEntityInstance = plainToClass(EntityClass, currentEntityOrErrorResponse);
-    const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesPath });
+    const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesJsonPath });
 
     await forEachAsyncParallel(subEntities, async (subEntity: any) => {
       const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(

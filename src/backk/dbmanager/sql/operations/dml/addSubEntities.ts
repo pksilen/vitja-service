@@ -27,7 +27,7 @@ import getEntityById from '../dql/getEntityById';
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
-  subEntitiesPath: string,
+  subEntitiesJsonPath: string,
   newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
   SubEntityClass: new () => U,
@@ -54,7 +54,7 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
     await tryUpdateEntityLastModifiedTimestampIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
-    const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesPath }).reduce(
+    const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath }).reduce(
       (maxSubItemId: number, subItem: any) => {
         const subItemId = parseInt(subItem.id);
         return subItemId > maxSubItemId ? subItemId : maxSubItemId;
