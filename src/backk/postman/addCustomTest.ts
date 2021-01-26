@@ -42,9 +42,7 @@ export default function addCustomTest(writtenTest: any, items: any[]) {
         instantiatedWrittenTest.testTemplate.serviceName +
         '.' +
         instantiatedWrittenTest.testTemplate.functionName +
-        ' (' +
-        test.testName +
-        ')';
+        (test.testName ? ' (' + test.testName + ')' : '');
 
       items.push(createPostmanCollectionItemFromCustomTest(instantiatedWrittenTest));
     });

@@ -1,0 +1,61 @@
+- testTemplate:
+    serviceName: usersService
+    functionName: createUser
+    functionArgument:
+      captchaToken: abc
+      userName: test2@test.com
+      displayName: test2
+      isBusinessUser: true
+      password: Jepulis0!
+      streetAddress: abc
+      postalCode: abc
+      city: abc
+      defaultPaymentMethod: null
+      paymentMethods: [ ]
+      favoriteSalesItemIds: [ ]
+    executeAfter: usersService.changeUserPassword
+    response:
+      statusCode: 200
+      tests:
+        - pm.collectionVariables.set("secondUserId", response._id)
+  tests:
+    - testName: 2nd user
+
+- testTemplate:
+    serviceName: usersService
+    functionName: followUser
+    functionArgument:
+      _id: '{{userId}}'
+      userId: '{{secondUserId}}'
+    executeAfter: usersService.changeUserPassword
+    response:
+      statusCode: 200
+      tests:
+        - pm.expect(response.followedUsers[0]._id).to.eql(pm.collectionVariables.get('secondUserId'))
+  tests:
+    - testName: ''
+
+- testTemplate:
+    serviceName: usersService
+    functionName: unfollowUser
+    functionArgument:
+      _id: '{{userId}}'
+      userId: '{{secondUserId}}'
+    executeAfter: usersService.changeUserPassword
+    response:
+      statusCode: 200
+  tests:
+    - testName: ''
+
+- testTemplate:
+    serviceName: usersService
+    functionName: getUserByUserName
+    functionArgument:
+      userName: test@test.com
+    executeAfter: usersService.changeUserPassword
+    response:
+      statusCode: 200
+      tests:
+        - pm.expect(response.followedUsers).to.eql([])
+  tests:
+    - testName: ''

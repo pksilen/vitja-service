@@ -25,6 +25,7 @@ import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
 import FollowedUser from './types/entities/FollowedUser';
 import { Update } from '../../backk/decorators/service/function/Update';
 import FollowingUser from './types/entities/FollowingUser';
+import { NoAutoTest } from "../../backk/decorators/service/function/NoAutoTest";
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -101,6 +102,7 @@ export default class UsersServiceImpl extends UsersService {
   @AllowForSelf()
   @Update()
   @Errors([CANNOT_FOLLOW_SELF])
+  @NoAutoTest()
   followUser({ _id, userId }: _IdAndUserId): Promise<User | ErrorResponse> {
     return this.dbManager.addSubEntity(_id, 'followedUsers', { _id: userId }, User, FollowedUser, [
       {
@@ -117,6 +119,7 @@ export default class UsersServiceImpl extends UsersService {
   @AllowForSelf()
   @Update()
   @Errors([CANNOT_FOLLOW_SELF])
+  @NoAutoTest()
   unfollowUser({ _id, userId }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.removeSubEntityById(_id, 'followedUsers', userId, User, [
       {
@@ -126,6 +129,7 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
+  @NoAutoTest()
   deleteUserById({ _id }: _Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, User);
   }

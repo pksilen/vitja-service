@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO
+-Can user defaultpaymentmethod, favoritesalesitemids and paymentmethods has default value
 - Can FollowedUser and followingUser not be readonly and have MaxArraySize
 - Change subEntitiesPath to subEntitiesJsonPath where relevant
 - MongoDb test Following/FolledUser functionality
