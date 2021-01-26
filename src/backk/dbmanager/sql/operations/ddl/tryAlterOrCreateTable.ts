@@ -10,12 +10,14 @@ export default async function tryAlterOrCreateTable(
   schema: string | undefined
 ) {
   let fields;
+  let isPhysicalTable = true
 
   try {
     let tableName = entityName.toLowerCase();
 
     if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
       tableName = entityAnnotationContainer.entityNameToTableNameMap[entityName].toLowerCase();
+      isPhysicalTable = false;
     }
 
     fields = await dbManager.tryExecuteSqlWithoutCls(
@@ -24,7 +26,7 @@ export default async function tryAlterOrCreateTable(
       false
     );
   } catch (error) {
-    await tryCreateTable(dbManager, entityName, entityClass, schema);
+    await tryCreateTable(dbManager, entityName, entityClass, schema, isPhysicalTable);
     return;
   }
 

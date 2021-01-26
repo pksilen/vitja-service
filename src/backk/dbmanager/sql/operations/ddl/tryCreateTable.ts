@@ -17,7 +17,8 @@ export default async function tryCreateTable(
   dbManager: AbstractDbManager,
   entityName: string,
   EntityClass: Function,
-  schema: string | undefined
+  schema: string | undefined,
+  isPhysicalTable: boolean
 ) {
   const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
   const tableName = entityName.toLowerCase();
@@ -66,13 +67,16 @@ export default async function tryCreateTable(
     }
   );
 
-  await dbManager.tryExecuteSqlWithoutCls(
-    createTableStatement +
-      ')' +
-      (entityAnnotationContainer.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]
-        ? ' ' + entityAnnotationContainer.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]
-        : '')
-  );
+  if (isPhysicalTable) {
+    await dbManager.tryExecuteSqlWithoutCls(
+      createTableStatement +
+        ')' +
+        (entityAnnotationContainer.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]
+          ? ' ' +
+            entityAnnotationContainer.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]
+          : '')
+    );
+  }
 
   await forEachAsyncSequential(
     Object.entries({ ...entityMetadata, ...(idColumn ? {} : { id: 'string' }) }),
@@ -95,7 +99,10 @@ export default async function tryCreateTable(
       }
 
       if (!isEntityTypeName(baseTypeName) && isArrayType) {
-        await createArrayValuesTable(schema, entityName, fieldName, sqlColumnType ?? '', dbManager);
+        if (isPhysicalTable) {
+          await createArrayValuesTable(schema, entityName, fieldName, sqlColumnType ?? '', dbManager);
+        }
+
         const foreignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
         addArrayValuesTableJoinSpec(entityName, fieldName, foreignIdFieldName);
       }
