@@ -64,7 +64,8 @@ export default class User extends _IdAndCaptcha {
   public readonly orders!: Order[];
 
   @ManyToMany()
-  public readonly followedUsers!: FollowedUser[];
+  @ArrayMaxSize(10000)
+  public followedUsers: FollowedUser[] = [];
 
   @ManyToMany()
   public readonly followingUsers!: FollowingUser[];
