@@ -20,6 +20,7 @@ import entityAnnotationContainer from '../../../../decorators/entity/entityAnnot
 import findParentEntityAndPropertyNameForSubEntity from '../../../../metadata/findParentEntityAndPropertyNameForSubEntity';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 
 export default async function removeSubEntities<T extends Entity, U extends object>(
   dbManager: AbstractSqlDbManager,
@@ -80,6 +81,10 @@ export default async function removeSubEntities<T extends Entity, U extends obje
         }
       }
     });
+
+    if (postHook) {
+      await tryExecutePostHook(postHook);
+    }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
   } catch (errorOrErrorResponse) {

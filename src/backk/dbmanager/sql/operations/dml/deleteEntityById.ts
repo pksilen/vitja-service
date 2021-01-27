@@ -15,6 +15,7 @@ import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import { HttpStatusCodes } from '../../../../constants/constants';
 import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 
 export default async function deleteEntityById<T extends object>(
   dbManager: AbstractSqlDbManager,
@@ -81,6 +82,10 @@ export default async function deleteEntityById<T extends object>(
         [numericId]
       )
     ]);
+
+    if (postHook) {
+      await tryExecutePostHook(postHook);
+    }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
   } catch (errorOrErrorResponse) {

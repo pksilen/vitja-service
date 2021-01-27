@@ -25,6 +25,7 @@ import createEntity from './createEntity';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 
 export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
@@ -268,6 +269,11 @@ export default async function updateEntity<T extends Entity>(
     }
 
     await Promise.all(promises);
+
+    if (postHook) {
+      await tryExecutePostHook(postHook);
+    }
+
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
   } catch (errorOrErrorResponse) {
     if (isRecursiveCall) {

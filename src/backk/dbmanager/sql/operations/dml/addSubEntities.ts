@@ -24,6 +24,7 @@ import typePropertyAnnotationContainer from '../../../../decorators/typeproperty
 import { SubEntity } from '../../../../types/entities/SubEntity';
 import getEntityById from '../dql/getEntityById';
 import { PostHook } from '../../../hooks/PostHook';
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -149,8 +150,14 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
       }
     });
 
+    const response = await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
+
+    if (postHook) {
+      await tryExecutePostHook(postHook, response);
+    }
+
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
+    return response;
   } catch (errorOrErrorResponse) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
