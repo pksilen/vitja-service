@@ -1,11 +1,6 @@
-import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
-import { JSONPath } from 'jsonpath-plus';
-import { ErrorResponse } from '../../types/ErrorResponse';
-import { PreHook } from './PreHook';
-import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
-import isErrorResponse from '../../errors/isErrorResponse';
-import { HttpStatusCodes } from '../../constants/constants';
-import { PostHook } from './PostHook';
+import { ErrorResponse } from "../../types/ErrorResponse";
+import isErrorResponse from "../../errors/isErrorResponse";
+import { PostHook } from "./PostHook";
 import { getNamespace } from "cls-hooked";
 
 export default async function tryExecutePostHook(
@@ -22,7 +17,17 @@ export default async function tryExecutePostHook(
 
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('isInsidePostHook', true);
-  const hookCallResult = await postHook.expectSuccess();
+  const postHookFunc = typeof postHook === 'function' ? postHook : postHook.postHookFunc;
+
+  let hookCallResult;
+  if (typeof postHook === 'object' && postHook.executePostHookIf) {
+    if (postHook.executePostHookIf()) {
+      hookCallResult = await postHookFunc();
+    }
+  } else {
+    hookCallResult = await postHookFunc();
+  }
+
   clsNamespace?.set('isInsidePostHook', false);
 
   if (typeof hookCallResult === 'object' && 'errorMessage' in hookCallResult) {

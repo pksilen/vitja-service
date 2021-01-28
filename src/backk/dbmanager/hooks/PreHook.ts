@@ -1,5 +1,5 @@
-import { ErrorResponse } from "../../types/ErrorResponse";
-import { Entity } from "../../types/entities/Entity";
+import { ErrorResponse } from '../../types/ErrorResponse';
+import { Entity } from '../../types/entities/Entity';
 
 export interface ErrorCodeAndMessage {
   errorCode: string;
@@ -7,9 +7,14 @@ export interface ErrorCodeAndMessage {
   statusCode?: number;
 }
 
-export interface PreHook {
-  hookFuncArgFromCurrentEntityJsonPath?: string;
-  expectTrueOrSuccess: (valueFromJsonPath?: any) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean;
-  error?: ErrorCodeAndMessage;
-  shouldDisregardFailureInTests?: boolean;
-}
+export type PreHook =
+  | {
+      executePreHookFuncIf?: (valueFromJsonPath?: any) => boolean;
+      entityJsonPathForPreHookFuncArg?: string;
+      preHookFunc: (
+        preHookFuncArg?: any
+      ) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean;
+      errorMessageOnPreHookFuncFailure?: ErrorCodeAndMessage;
+      shouldDisregardFailureWhenExecutingTests?: boolean;
+    }
+  | ((preHookFuncArg?: any) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean);

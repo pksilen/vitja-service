@@ -25,7 +25,7 @@ import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
 import FollowedUser from './types/entities/FollowedUser';
 import { Update } from '../../backk/decorators/service/function/Update';
 import FollowingUser from './types/entities/FollowingUser';
-import { NoAutoTest } from "../../backk/decorators/service/function/NoAutoTest";
+import { NoAutoTest } from '../../backk/decorators/service/function/NoAutoTest';
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -47,25 +47,20 @@ export default class UsersServiceImpl extends UsersService {
       { ...arg, commissionDiscountPercentage: 0 },
       User
     );
-    return 'errorMessage' in userOrErrorResponse
-      ? userOrErrorResponse
-      : UsersServiceImpl.getUserResponse(userOrErrorResponse);
+
+    return UsersServiceImpl.getUserResponse(userOrErrorResponse);
   }
 
   @AllowForSelf()
   async getUserByUserName({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.getEntityWhere('userName', userName, User);
-    return 'errorMessage' in userOrErrorResponse
-      ? userOrErrorResponse
-      : UsersServiceImpl.getUserResponse(userOrErrorResponse);
+    return UsersServiceImpl.getUserResponse(userOrErrorResponse);
   }
 
   @AllowForServiceInternalUse()
   async getUserById({ _id }: _Id): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.getEntityById(_id, User);
-    return 'errorMessage' in userOrErrorResponse
-      ? userOrErrorResponse
-      : UsersServiceImpl.getUserResponse(userOrErrorResponse);
+    return UsersServiceImpl.getUserResponse(userOrErrorResponse);
   }
 
   @AllowForSelf()
@@ -87,13 +82,13 @@ export default class UsersServiceImpl extends UsersService {
       [],
       [
         {
-          expectTrueOrSuccess: ([currentEntity]) => currentEntity.userName === userName,
-          error: USER_NAME_CANNOT_BE_CHANGED
+          preHookFunc: ([currentEntity]) => currentEntity.userName === userName,
+          errorMessageOnPreHookFuncFailure: USER_NAME_CANNOT_BE_CHANGED
         },
         {
-          expectTrueOrSuccess: async ([{ password: hashedPassword }]) =>
+          preHookFunc: async ([{ password: hashedPassword }]) =>
             await argon2.verify(hashedPassword, currentPassword),
-          error: INVALID_CURRENT_PASSWORD
+          errorMessageOnPreHookFuncFailure: INVALID_CURRENT_PASSWORD
         }
       ]
     );
@@ -106,13 +101,10 @@ export default class UsersServiceImpl extends UsersService {
   followUser({ _id, userId }: _IdAndUserId): Promise<User | ErrorResponse> {
     return this.dbManager.addSubEntity(_id, 'followedUsers', { _id: userId }, User, FollowedUser, [
       {
-        expectTrueOrSuccess: () => _id !== userId,
-        error: CANNOT_FOLLOW_SELF
+        preHookFunc: () => _id !== userId,
+        errorMessageOnPreHookFuncFailure: CANNOT_FOLLOW_SELF
       },
-      {
-        expectTrueOrSuccess: async () =>
-          await this.dbManager.addSubEntity(userId, 'followingUsers', { _id }, User, FollowingUser)
-      }
+      () => this.dbManager.addSubEntity(userId, 'followingUsers', { _id }, User, FollowingUser)
     ]);
   }
 
@@ -122,9 +114,7 @@ export default class UsersServiceImpl extends UsersService {
   @NoAutoTest()
   unfollowUser({ _id, userId }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.removeSubEntityById(_id, 'followedUsers', userId, User, [
-      {
-        expectTrueOrSuccess: async () => await this.dbManager.removeSubEntityById(userId, 'followingUsers', _id, User)
-      }
+      () => this.dbManager.removeSubEntityById(userId, 'followingUsers', _id, User)
     ]);
   }
 
@@ -134,9 +124,13 @@ export default class UsersServiceImpl extends UsersService {
     return this.dbManager.deleteEntityById(_id, User);
   }
 
-  private static getUserResponse(user: User): UserResponse {
+  private static getUserResponse(userOrErrorResponse: User | ErrorResponse): UserResponse | ErrorResponse {
+    if ('errorMessage' in userOrErrorResponse) {
+      return userOrErrorResponse;
+    }
+
     return {
-      ...user,
+      ...userOrErrorResponse,
       extraInfo: 'Some extra info'
     };
   }

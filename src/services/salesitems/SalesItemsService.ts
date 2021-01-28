@@ -9,6 +9,7 @@ import _IdsAndDefaultPostQueryOperations
 import _Id from "../../backk/types/id/_Id";
 import CrudResourceService from "../../backk/crudresource/CrudResourceService";
 import GetSalesItemsByUserDefinedFiltersArg from "./types/args/GetSalesItemsByUserDefinedFiltersArg";
+import { SalesItemState } from "./types/enums/SalesItemState";
 
 export default abstract class SalesItemsService extends CrudResourceService {
   abstract deleteAllSalesItems(): Promise<void | ErrorResponse>;
@@ -22,7 +23,7 @@ export default abstract class SalesItemsService extends CrudResourceService {
 
   abstract updateSalesItemState(
     arg: UpdateSalesItemStateArg,
-    requiredCurrentState?: 'forSale' | 'sold'
+    requiredCurrentState?: SalesItemState
   ): Promise<void | ErrorResponse>;
 
   abstract deleteSalesItemById(arg: _IdAndUserId): Promise<void | ErrorResponse>;

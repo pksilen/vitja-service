@@ -1,6 +1,8 @@
 import { Entity } from "../../types/entities/Entity";
 import { ErrorResponse } from "../../types/ErrorResponse";
 
-export interface PostHook {
-  expectSuccess: () => Promise<void | Entity | ErrorResponse>;
-}
+export type PostHook = {
+  executePostHookIf: () => boolean,
+  postHookFunc: () => Promise<void | Entity | ErrorResponse>
+} | (() => Promise<void | Entity | ErrorResponse>);
+

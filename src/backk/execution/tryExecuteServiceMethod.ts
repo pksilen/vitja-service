@@ -286,7 +286,7 @@ export default async function tryExecuteServiceMethod(
       try {
         cachedResponseJson = await redis.get(key);
       } catch (error) {
-        log(Severity.ERROR, 'Redis cache error: ' + error.message, error.stack, {
+        log(Severity.ERROR, 'Redis cache errorMessageOnPreHookFuncFailure: ' + error.message, error.stack, {
           redisServer: process.env.REDIS_SERVER
         });
       }
@@ -448,7 +448,7 @@ export default async function tryExecuteServiceMethod(
               await redis.expire(key, ttl);
             }
           } catch (error) {
-            log(Severity.ERROR, 'Redis cache error: ' + error.message, error.stack, {
+            log(Severity.ERROR, 'Redis cache errorMessageOnPreHookFuncFailure: ' + error.message, error.stack, {
               redisUrl: process.env.REDIS_SERVER
             });
           }

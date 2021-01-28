@@ -29,6 +29,7 @@ import { SalesItemState } from './types/enums/SalesItemState';
 import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
 import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
 import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
+import awaitDbOperationAndGetResultOfPredicate from '../../backk/utils/getErrorResponseOrResultOf';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -54,16 +55,12 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       },
       SalesItem,
       {
-        expectTrueOrSuccess: async () => {
-          const usersActiveSalesItemCountOrErrorResponse = await this.dbManager.getEntitiesCount(
-            { userId: arg.userId, state: 'forSale' },
-            SalesItem
-          );
-          return typeof usersActiveSalesItemCountOrErrorResponse === 'number'
-            ? usersActiveSalesItemCountOrErrorResponse <= 100
-            : usersActiveSalesItemCountOrErrorResponse;
-        },
-        error: MAXIMUM_SALES_ITEM_COUNT_EXCEEDED
+        preHookFunc: () =>
+          awaitDbOperationAndGetResultOfPredicate(
+            this.dbManager.getEntitiesCount({ userId: arg.userId, state: 'forSale' }, SalesItem),
+            (usersSellableSalesItemCount) => usersSellableSalesItemCount <= 100
+          ),
+        errorMessageOnPreHookFuncFailure: MAXIMUM_SALES_ITEM_COUNT_EXCEEDED
       }
     );
   }
@@ -156,12 +153,18 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   @AllowForSelf()
   @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
   async updateSalesItem(arg: SalesItem): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity(arg, SalesItem, [], {
-      expectTrueOrSuccess: async ([{ _id, state, price }]) =>
-        (await this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, [])) ||
-        state === 'forSale',
-      error: SALES_ITEM_STATE_MUST_BE_FOR_SALE
-    });
+    return this.dbManager.updateEntity(
+      arg,
+      SalesItem,
+      [],
+      [
+        ([{ _id, price }]) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, []),
+        {
+          preHookFunc: async ([{ state }]) => state === 'forSale',
+          errorMessageOnPreHookFuncFailure: SALES_ITEM_STATE_MUST_BE_FOR_SALE
+        }
+      ]
+    );
   }
 
   @AllowForServiceInternalUse()
@@ -176,8 +179,8 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       [],
       requiredCurrentState
         ? {
-            expectTrueOrSuccess: ([{ state }]) => state === requiredCurrentState,
-            error: INVALID_SALES_ITEM_STATE
+            preHookFunc: ([{ state }]) => state === requiredCurrentState,
+            errorMessageOnPreHookFuncFailure: INVALID_SALES_ITEM_STATE
           }
         : undefined
     );

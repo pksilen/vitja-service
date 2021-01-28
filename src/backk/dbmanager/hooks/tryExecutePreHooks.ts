@@ -8,14 +8,14 @@ import { HttpStatusCodes } from '../../constants/constants';
 
 export default async function tryExecutePreHooks<T extends object>(
   preHooks?: PreHook | PreHook[],
-  itemOrErrorResponse?: T | ErrorResponse
+  currentEntityOrErrorResponse?: T | ErrorResponse
 ) {
   if (
-    typeof itemOrErrorResponse === 'object' &&
-    'errorMessage' in itemOrErrorResponse &&
-    isErrorResponse(itemOrErrorResponse)
+    typeof currentEntityOrErrorResponse === 'object' &&
+    'errorMessage' in currentEntityOrErrorResponse &&
+    isErrorResponse(currentEntityOrErrorResponse)
   ) {
-    throw itemOrErrorResponse;
+    throw currentEntityOrErrorResponse;
   }
 
   if (!preHooks) {
@@ -24,11 +24,23 @@ export default async function tryExecutePreHooks<T extends object>(
 
   await forEachAsyncSequential(Array.isArray(preHooks) ? preHooks : [preHooks], async (preHook: PreHook) => {
     let items: any[] | undefined;
-    if (itemOrErrorResponse !== undefined) {
-      items = JSONPath({ json: itemOrErrorResponse, path: preHook.hookFuncArgFromCurrentEntityJsonPath ?? '$' });
+
+    if (typeof preHook === 'object' && currentEntityOrErrorResponse !== undefined) {
+      items = JSONPath({ json: currentEntityOrErrorResponse, path: preHook.entityJsonPathForPreHookFuncArg ?? '$' });
     }
 
-    const hookCallResult = await preHook.expectTrueOrSuccess(items);
+    const hookFunc = typeof preHook === 'function' ? preHook: preHook.preHookFunc;
+
+    let hookCallResult;
+    if (typeof preHook === 'object' && preHook.executePreHookFuncIf) {
+      if (preHook.executePreHookFuncIf(items)) {
+        hookCallResult = await hookFunc(items);
+      }
+    } else {
+      hookCallResult = await hookFunc(items);
+    }
+
+
 
     if (hookCallResult !== undefined) {
       if (typeof hookCallResult === 'object' && '_id' in hookCallResult) {
@@ -37,27 +49,28 @@ export default async function tryExecutePreHooks<T extends object>(
 
       if (typeof hookCallResult === 'object' && 'errorMessage' in hookCallResult) {
         throw hookCallResult;
-      } else if (hookCallResult === false) {
-        if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureInTests) {
+      } else if (typeof preHook === 'object' && hookCallResult === false) {
+        if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
           return;
         }
 
-        let errorMessage = 'Unspecified pre-hook error';
+        let errorMessage = 'Unspecified pre-hook errorMessageOnPreHookFuncFailure';
 
-        if (preHook.error) {
-          errorMessage = 'Error code ' + preHook.error.errorCode + ':' + preHook.error.errorMessage;
+        if (preHook.errorMessageOnPreHookFuncFailure) {
+          errorMessage = 'Error code ' + preHook.errorMessageOnPreHookFuncFailure.errorCode + ':' + preHook.errorMessageOnPreHookFuncFailure.errorMessage;
         }
 
         throw new Error(
           createErrorMessageWithStatusCode(
             errorMessage,
-            preHook.error?.statusCode ?? HttpStatusCodes.BAD_REQUEST
+            preHook.errorMessageOnPreHookFuncFailure?.statusCode ?? HttpStatusCodes.BAD_REQUEST
           )
         );
       } else if (
+        typeof preHook === 'object' &&
         process.env.NODE_ENV === 'development' &&
         hookCallResult === true &&
-        preHook.shouldDisregardFailureInTests
+        preHook.shouldDisregardFailureWhenExecutingTests
       ) {
         throw new Error('Invalid hook result (=true) when disregardFailureInTest is true');
       }

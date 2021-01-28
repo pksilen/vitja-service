@@ -1,11 +1,8 @@
 - testTemplate:
-    serviceName: ordersService
-    functionName: updateOrderItemState
-    functionArgument:
-      orderId: '{{orderId}}'
-      orderItemId: '{{orderItemId}}'
-      newState: '{{newState}}'
+    serviceFunctionName: ordersService.updateOrderItemState
     executeAfter: ordersService.updateOrderItemState
+    argument:
+      newState: '{{newState}}'
     response:
       statusCode: 200
   tests:
@@ -20,10 +17,7 @@
         newState: returned
 
 - testTemplate:
-    serviceName: salesItemsService
-    functionName: getSalesItemById
-    functionArgument:
-      _id: '{{salesItemId}}'
+    serviceFunctionName: salesItemsService.getSalesItemById
     executeAfter: ordersService.createOrder
     response:
       statusCode: 200
@@ -33,10 +27,7 @@
     - testName: state == sold
 
 - testTemplate:
-    serviceName: salesItemsService
-    functionName: getSalesItemById
-    functionArgument:
-      _id: '{{salesItemId}}'
+    serviceFunctionName: salesItemsService.getSalesItemById
     executeAfter: ordersService.updateOrderItemState
     response:
       statusCode: 200

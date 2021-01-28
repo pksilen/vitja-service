@@ -54,6 +54,7 @@ import convertMongoDbQueriesToMatchExpression from './mongodb/convertMongoDbQuer
 import paginateSubEntities from './mongodb/paginateSubEntities';
 import convertFilterObjectToMongoDbQueries from './mongodb/convertFilterObjectToMongoDbQueries';
 import { PostHook } from './hooks/PostHook';
+import tryExecutePostHook from "./hooks/tryExecutePostHook";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -150,7 +151,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
     this.getClsNamespace()?.set('globalTransaction', true);
 
-    let result: T | ErrorResponse = createInternalServerError('Transaction execution error');
+    let result: T | ErrorResponse = createInternalServerError('Transaction execution errorMessageOnPreHookFuncFailure');
     try {
       await this.tryBeginTransaction();
       const session = this.getClsNamespace()?.get('session');
@@ -230,16 +231,22 @@ export default class MongoDbManager extends AbstractDbManager {
           .insertOne(entity);
 
         const _id = createEntityResult.insertedId.toHexString();
-        return isInternalCall
+        const response = isInternalCall
           ? ({ _id } as any)
           : await this.getEntityById(_id, EntityClass, postQueryOperations);
+
+        if (postHook) {
+          await tryExecutePostHook(postHook, response);
+        }
+
+        return response;
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
         : createErrorResponseFromError(errorOrErrorResponse);
     } finally {
-      await cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
   }
@@ -369,7 +376,13 @@ export default class MongoDbManager extends AbstractDbManager {
           .collection(EntityClass.name.toLowerCase())
           .updateOne({ _id: new ObjectId(_id) }, { $set: currentEntityOrErrorResponse });
 
-        return await this.getEntityById(_id, EntityClass, postQueryOperations);
+        const response = await this.getEntityById(_id, EntityClass, postQueryOperations);
+
+        if (postHook) {
+          await tryExecutePostHook(postHook, response);
+        }
+
+        return response;
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -950,7 +963,9 @@ export default class MongoDbManager extends AbstractDbManager {
           return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
         }
 
-        return undefined;
+        if (!isRecursiveCall && postHook) {
+          await tryExecutePostHook(postHook);
+        }
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -984,12 +999,19 @@ export default class MongoDbManager extends AbstractDbManager {
           fieldValue,
           EntityClass
         );
+
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
-        return await this.updateEntity(
+
+        await this.updateEntity(
           { _id: (currentEntityOrErrorResponse as T)._id, ...entity },
           EntityClass,
           []
         );
+
+        if (postHook) {
+          await tryExecutePostHook(postHook);
+        }
+
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -1014,6 +1036,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
       return await this.tryExecute(shouldUseTransaction, async (client) => {
         if (preHooks) {
           const entityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
@@ -1025,7 +1048,9 @@ export default class MongoDbManager extends AbstractDbManager {
           .collection(EntityClass.name.toLowerCase())
           .deleteOne({ _id: new ObjectId(_id) });
 
-        return undefined;
+        if (postHook) {
+          await tryExecutePostHook(postHook);
+        }
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -1159,6 +1184,11 @@ export default class MongoDbManager extends AbstractDbManager {
 
         removeSubEntities(currentEntityOrErrorResponse, subEntities);
         this.updateEntity(currentEntityOrErrorResponse as any, EntityClass, 'all');
+
+        if (postHook) {
+          await tryExecutePostHook(postHook);
+        }
+
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -1180,7 +1210,7 @@ export default class MongoDbManager extends AbstractDbManager {
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-    const response = this.removeSubEntities(_id, subEntityPath, EntityClass, preHooks);
+    const response = this.removeSubEntities(_id, subEntityPath, EntityClass, preHooks, postHook);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

@@ -1,11 +1,16 @@
 # Vitja service
 
-TODO 
-- PostHooks (e.g. sendToKafka stuff could be put there)
+TODO
 - PostHooks for MongoDb
 - get default argument to custom test and merge it with given argument
-- MongoDb test Following/FolledUser functionality
+- MongoDb test Following/FollowedUser functionality
 - Remote service operation cnt === 1 and must be in last operation, no db operations afterwards
+- remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
+- Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
+- Rename createOrder to placeOrder?
+  - placeOrder should execute remote operation for payment which returns PaymentInfo
+  - can paymentOperation be a remote service call decorator on PaymentInfo attribute
+  - How to handle remote+local transaction on payment failure
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

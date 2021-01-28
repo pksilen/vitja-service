@@ -1,5 +1,5 @@
 export default function createPostmanCollectionItemFromCustomTest({
-  testTemplate: { testTemplateName, serviceName, functionName, functionArgument, response }
+  testTemplate: { testTemplateName, serviceFunctionName, argument, response }
 }: any) {
   const checkResponseCode = response.statusCode
     ? `pm.test("Status code is ${response.statusCode} OK", function () {
@@ -12,7 +12,7 @@ export default function createPostmanCollectionItemFromCustomTest({
     request: {
       method: 'POST',
       header:
-        functionArgument === undefined
+        argument === undefined
           ? []
           : [
               {
@@ -23,11 +23,11 @@ export default function createPostmanCollectionItemFromCustomTest({
               }
             ],
       body:
-        functionArgument === undefined
+        argument === undefined
           ? undefined
           : {
               mode: 'raw',
-              raw: JSON.stringify(functionArgument, null, 4),
+              raw: JSON.stringify(argument, null, 4),
               options: {
                 raw: {
                   language: 'json'
@@ -35,20 +35,20 @@ export default function createPostmanCollectionItemFromCustomTest({
               }
             },
       url: {
-        raw: 'http://localhost:3000/' + serviceName + '.' + functionName,
+        raw: 'http://localhost:3000/' + serviceFunctionName,
         protocol: 'http',
         host: ['localhost'],
         port: '3000',
-        path: [serviceName + '.' + functionName]
+        path: [serviceFunctionName]
       }
     },
     response: [],
     event: [
       {
-        id: serviceName + '.' + functionName,
+        id: serviceFunctionName,
         listen: 'test',
         script: {
-          id: serviceName + '.' + functionName,
+          id: serviceFunctionName,
           exec: [
             checkResponseCode,
             response.tests ? 'const response = pm.response.json();' : '',

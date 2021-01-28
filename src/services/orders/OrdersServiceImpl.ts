@@ -67,41 +67,42 @@ export default class OrdersServiceImpl extends OrdersService {
         paymentInfo
       },
       Order,
-      {
-        expectTrueOrSuccess: async () =>
-          (await this.updateSalesItemStates(salesItemIds, 'sold', 'forSale')) ||
-          (await this.shoppingCartService.deleteShoppingCartById({ _id: shoppingCartId, userId }))
-      },
-      {
-        expectSuccess: () =>
-          sendToRemoteService(
-            `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
-            {
-              userId,
-              salesItemIds
-            }
-          )
-      }
+      [
+        () => this.updateSalesItemStates(salesItemIds, 'sold', 'forSale'),
+        () => this.shoppingCartService.deleteShoppingCartById({ _id: shoppingCartId, userId })
+      ],
+      () =>
+        sendToRemoteService(
+          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
+          {
+            userId,
+            salesItemIds
+          }
+        )
     );
   }
 
   @AllowForSelf()
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.executeInsideTransaction(
-      async () =>
-        (await this.dbManager.removeSubEntityById(orderId, 'orderItems', orderItemId, Order, {
-          hookFuncArgFromCurrentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
-          expectTrueOrSuccess: ([{ state }]) => state === 'toBeDelivered',
-          error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
-        })) ||
-        (await sendToRemoteService(
+    return this.dbManager.removeSubEntityById(
+      orderId,
+      'orderItems',
+      orderItemId,
+      Order,
+      {
+        entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
+        preHookFunc: ([{ state }]) => state === 'toBeDelivered',
+        errorMessageOnPreHookFuncFailure: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+      },
+      () =>
+        sendToRemoteService(
           `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
           {
             orderId,
             orderItemId
           }
-        ))
+        )
     );
   }
 
@@ -139,29 +140,27 @@ export default class OrdersServiceImpl extends OrdersService {
     orderItemId,
     ...restOfArg
   }: DeliverOrderItemArg): Promise<void | ErrorResponse> {
-    return this.dbManager.executeInsideTransaction(
-      async () =>
-        (await this.dbManager.updateEntity(
-          {
-            _id: orderId,
-            orderItems: [{ state: 'delivering', id: orderItemId, ...restOfArg }]
-          },
-          Order,
-          [],
-          {
-            hookFuncArgFromCurrentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
-            expectTrueOrSuccess: ([{ state }]) => state === 'toBeDelivered',
-            error: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
-          }
-        )) ||
-        (await sendToRemoteService(
+    return this.dbManager.updateEntity(
+      {
+        _id: orderId,
+        orderItems: [{ state: 'delivering', id: orderItemId, ...restOfArg }]
+      },
+      Order,
+      [],
+      {
+        entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
+        preHookFunc: ([{ state }]) => state === 'toBeDelivered',
+        errorMessageOnPreHookFuncFailure: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+      },
+      () =>
+        sendToRemoteService(
           `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderItemDeliveryNotification`,
           {
             orderId,
             orderItemId,
             ...restOfArg
           }
-        ))
+        )
     );
   }
 
@@ -172,53 +171,52 @@ export default class OrdersServiceImpl extends OrdersService {
     orderItemId,
     newState
   }: UpdateOrderItemStateArg): Promise<void | ErrorResponse> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      let possibleErrorResponse = await this.dbManager.updateEntity(
-        { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
-        Order,
-        [],
+    return this.dbManager.updateEntity(
+      { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
+      Order,
+      [],
+      [
         {
-          hookFuncArgFromCurrentEntityJsonPath: `orderItems[?(@.id == '${orderItemId}')]`,
-          expectTrueOrSuccess: async ([{ salesItemId, state }]) =>
-            (newState === 'returned'
-              ? await this.salesItemsService.updateSalesItemState(
-                  {
-                    _id: salesItemId,
-                    newState: 'forSale'
-                  },
-                  'sold'
-                )
-              : false) || state === OrdersServiceImpl.getPreviousOrderStateFor(newState),
-          error: INVALID_ORDER_ITEM_STATE
+          executePreHookFuncIf: () => newState === 'returned',
+          entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
+          preHookFunc: ([{ salesItemId }]) =>
+            this.salesItemsService.updateSalesItemState({
+              _id: salesItemId,
+              newState: 'forSale'
+            })
+        },
+        {
+          entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
+          preHookFunc: ([{ state }]) => state === OrdersServiceImpl.getValidPreviousOrderStateFor(newState),
+          errorMessageOnPreHookFuncFailure: INVALID_ORDER_ITEM_STATE
         }
-      );
-
-      if (newState === 'returned') {
-        possibleErrorResponse = await sendToRemoteService(
-          `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
-          {
-            orderId,
-            orderItemId
-          }
-        );
+      ],
+      {
+        executePostHookIf: () => newState === 'returned',
+        postHookFunc: () =>
+          sendToRemoteService(
+            `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
+            {
+              orderId,
+              orderItemId
+            }
+          )
       }
-
-      return possibleErrorResponse;
-    });
+    );
   }
 
   @AllowForSelf()
   deleteOrderById({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, Order, [
       {
-        hookFuncArgFromCurrentEntityJsonPath: 'orderItems[?(@.state != "toBeDelivered")]',
-        expectTrueOrSuccess: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
-        error: DELETE_ORDER_NOT_ALLOWED,
-        shouldDisregardFailureInTests: true
+        entityJsonPathForPreHookFuncArg: 'orderItems[?(@.state != "toBeDelivered")]',
+        preHookFunc: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
+        errorMessageOnPreHookFuncFailure: DELETE_ORDER_NOT_ALLOWED,
+        shouldDisregardFailureWhenExecutingTests: true
       },
       {
-        hookFuncArgFromCurrentEntityJsonPath: 'orderItems[*].salesItemId',
-        expectTrueOrSuccess: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
+        entityJsonPathForPreHookFuncArg: 'orderItems[*].salesItemId',
+        preHookFunc: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
       }
     ]);
   }
@@ -241,7 +239,7 @@ export default class OrdersServiceImpl extends OrdersService {
     );
   }
 
-  private static getPreviousOrderStateFor(newState: OrderState): OrderState {
+  private static getValidPreviousOrderStateFor(newState: OrderState): OrderState {
     switch (newState) {
       case 'delivered':
         return 'delivering';

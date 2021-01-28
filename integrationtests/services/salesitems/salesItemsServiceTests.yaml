@@ -1,8 +1,6 @@
 - testTemplate:
-    serviceName: salesItemsService
-    functionName: createSalesItem
-    functionArgument:
-      userId: '{{userId}}'
+    serviceFunctionName: salesItemsService.createSalesItem
+    argument:
       title: '{{title}}'
       description: '{{description}}'
       area: '{{area}}'
@@ -10,11 +8,6 @@
       productCategory: '{{category}}'
       productSubCategory: '{{category}}'
       price: '{{price}}'
-      shippingCost: 0
-      primaryImageDataUri: abc
-      secondaryImageDataUris:
-        - abc
-      tags: []
     response:
       statusCode: 200
       tests:
@@ -35,14 +28,12 @@
         area: Area2
         category: Clothes
 
-
 - testTemplate:
-    serviceName: salesItemsService
-    functionName: getSalesItems
-    functionArgument:
+    serviceFunctionName: salesItemsService.getSalesItems
+    argument:
       '{{argumentPropertyName1}}': '{{argumentPropertyValue1}}'
       '{{argumentPropertyName2}}': '{{argumentPropertyValue2}}'
-      includeResponseFields: [ ]
+      includeResponseFields: []
     response:
       statusCode: 200
       tests:
@@ -134,4 +125,3 @@
         responsePropertyName: price
         responsePropertyValue: 1
         responseLength: 1
-

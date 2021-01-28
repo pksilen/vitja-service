@@ -102,7 +102,7 @@ export default async function sendOneOrMoreToKafka(
             code: CanonicalCode.OK
           });
         } catch (error) {
-          log(Severity.ERROR, 'Kafka producer error: ' + error.message, error.stack, {
+          log(Severity.ERROR, 'Kafka producer errorMessageOnPreHookFuncFailure: ' + error.message, error.stack, {
             serviceFunctionCallUrl: remoteServiceFunctionUrl,
             serviceFunction: serviceFunctionName
           });

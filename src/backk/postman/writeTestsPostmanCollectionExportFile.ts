@@ -175,17 +175,17 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
         )
         .forEach((writtenTest) => {
-          addCustomTest(writtenTest, items);
+          addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
 
       if (index === serviceMetadata.functions.length - 1) {
         writtenTests
           .filter(
-            ({ testTemplate: { serviceName, executeAfter } }) =>
-              serviceName === serviceMetadata.serviceName && !executeAfter
+            ({ testTemplate: { serviceFunctionName, executeAfter } }) =>
+              serviceFunctionName.split('.')[0] === serviceMetadata.serviceName && !executeAfter
           )
           .forEach((writtenTest) => {
-            addCustomTest(writtenTest, items);
+            addCustomTest(writtenTest, controller, servicesMetadata, items);
           });
       }
     });

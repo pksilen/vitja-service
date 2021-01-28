@@ -24,7 +24,7 @@ export default async function initializeCronJobSchedulingTable(dbManager: Abstra
 
             const interval = parser.parseExpression(cronSchedule);
 
-            // TODO check if error response is NOT_FOUND or INTERNAL_SERVER_ERROR
+            // TODO check if errorMessageOnPreHookFuncFailure response is NOT_FOUND or INTERNAL_SERVER_ERROR
             if ('errorMessage' in entityOrErrorResponse) {
               await dbManager.createEntity(
                 {
