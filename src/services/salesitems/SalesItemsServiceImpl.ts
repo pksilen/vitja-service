@@ -158,11 +158,11 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       SalesItem,
       [],
       [
-        ([{ _id, price }]) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, []),
         {
-          preHookFunc: async ([{ state }]) => state === 'forSale',
+          preHookFunc: ([{ state }]) => state === 'forSale',
           errorMessageOnPreHookFuncFailure: SALES_ITEM_STATE_MUST_BE_FOR_SALE
-        }
+        },
+        ([{ _id, price }]) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, []),
       ]
     );
   }

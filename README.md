@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO
-- PostHooks for MongoDb
-- get default argument to custom test and merge it with given argument
 - MongoDb test Following/FollowedUser functionality
 - Remote service operation cnt === 1 and must be in last operation, no db operations afterwards
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that

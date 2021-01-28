@@ -1,14 +1,14 @@
-import SqlExpression from "../../expressions/SqlExpression";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
-import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
-import MongoDbQuery from "../../../mongodb/MongoDbQuery";
-import convertFilterObjectToSqlEquals from "./utils/convertFilterObjectToSqlEquals";
-import getTableName from "../../utils/getTableName";
+import SqlExpression from '../../expressions/SqlExpression';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
+import MongoDbQuery from '../../../mongodb/MongoDbQuery';
+import convertFilterObjectToSqlEquals from './utils/convertFilterObjectToSqlEquals';
+import getTableName from '../../utils/getTableName';
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
@@ -18,8 +18,7 @@ export default async function getEntitiesCount<T>(
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);
-  }
-  else if (filters?.find((filter) => filter instanceof MongoDbQuery)) {
+  } else if (filters?.find((filter) => filter instanceof MongoDbQuery)) {
     throw new Error('filters must be an array of SqlExpressions and/or UserDefinedFilters');
   }
 
@@ -37,7 +36,7 @@ export default async function getEntitiesCount<T>(
 
     const tableName = getTableName(EntityClass.name);
 
-    const sqlStatement = [`SELECT COUNT(*) FROM ${dbManager.schema}.${tableName}`, rootWhereClause]
+    const sqlStatement = [`SELECT COUNT(*) as count FROM ${dbManager.schema}.${tableName}`, rootWhereClause]
       .filter((sqlPart) => sqlPart)
       .join(' ');
 
