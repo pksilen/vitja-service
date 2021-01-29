@@ -104,7 +104,7 @@ export default class UsersServiceImpl extends UsersService {
         preHookFunc: () => _id !== userId,
         errorMessageOnPreHookFuncFailure: CANNOT_FOLLOW_SELF
       },
-      // () => this.dbManager.addSubEntity(userId, 'followingUsers', { _id }, User, FollowingUser)
+      () => this.dbManager.addSubEntity(userId, 'followingUsers', { _id }, User, FollowingUser)
     ]);
   }
 
