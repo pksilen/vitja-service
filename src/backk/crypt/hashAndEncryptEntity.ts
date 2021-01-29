@@ -67,7 +67,7 @@ async function hashOrEncryptEntityValues(
   });
 }
 
-export default async function hashAndEncryptItem<T extends { [key: string]: any }>(
+export default async function hashAndEncryptEntity<T extends { [key: string]: any }>(
   entity: T,
   EntityClass: new () => T,
   Types: object

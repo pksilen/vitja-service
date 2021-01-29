@@ -1,10 +1,15 @@
 import decrypt from './decrypt';
-import encrypt from './encrypt';
 import shouldEncryptValue from './shouldEncryptValue';
 import getClassPropertyNameToPropertyTypeNameMap from '../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import typePropertyAnnotationContainer from "../decorators/typeproperty/typePropertyAnnotationContainer";
 
-function decryptItemValues(entity: { [key: string]: any }, EntityClass: new () => any, Types: object) {
+function decryptEntityValues(
+  entity: { [key: string]: any },
+  EntityClass: new () => any,
+  Types: object,
+  shouldDecryptManyToMany = true
+) {
   if (entity === null) {
     return;
   }
@@ -13,13 +18,19 @@ function decryptItemValues(entity: { [key: string]: any }, EntityClass: new () =
     if (Array.isArray(propertyValue) && propertyValue.length > 0) {
       if (typeof propertyValue[0] === 'object' && propertyValue[0] !== null) {
         const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
-        propertyValue.forEach((pv: any) => {
-          decryptItemValues(
-            pv,
-            (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],
-            Types
-          );
-        });
+        const isManyToMany = typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)
+
+        if (!isManyToMany || isManyToMany && shouldDecryptManyToMany) {
+          propertyValue.forEach((pv: any) => {
+            decryptEntityValues(
+              pv,
+              (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],
+              Types,
+              shouldDecryptManyToMany
+            );
+          });
+        }
+
       } else if (shouldEncryptValue(propertyName, EntityClass)) {
         if (typeof propertyValue[0] !== 'string') {
           throw new Error(
@@ -32,10 +43,11 @@ function decryptItemValues(entity: { [key: string]: any }, EntityClass: new () =
       }
     } else if (propertyName !== '_id' && typeof propertyValue === 'object' && propertyValue !== null) {
       const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
-      decryptItemValues(
+      decryptEntityValues(
         propertyValue,
         (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],
-        Types
+        Types,
+        shouldDecryptManyToMany
       );
     } else if (
       propertyValue !== null &&
@@ -50,10 +62,11 @@ function decryptItemValues(entity: { [key: string]: any }, EntityClass: new () =
   });
 }
 
-export default function decryptItems<T extends { [key: string]: any }>(
+export default function decryptEntities<T extends { [key: string]: any }>(
   entities: T[],
   EntityClass: new () => T,
-  Types: object
+  Types: object,
+  shouldDecryptManyToMany = true
 ) {
-  entities.forEach((entity) => decryptItemValues(entity, EntityClass, Types));
+  entities.forEach((entity) => decryptEntityValues(entity, EntityClass, Types, shouldDecryptManyToMany));
 }

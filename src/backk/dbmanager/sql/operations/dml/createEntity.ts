@@ -1,4 +1,4 @@
-import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
+import hashAndEncryptEntity from '../../../../crypt/hashAndEncryptEntity';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import isErrorResponse from '../../../../errors/isErrorResponse';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
@@ -41,7 +41,7 @@ export default async function createEntity<T>(
     const Types = dbManager.getTypes();
 
     if (!isRecursiveCall) {
-      await hashAndEncryptItem(entity, EntityClass, Types);
+      await hashAndEncryptEntity(entity, EntityClass, Types);
     }
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);

@@ -1,4 +1,4 @@
-import hashAndEncryptItem from '../../../../crypt/hashAndEncryptItem';
+import hashAndEncryptEntity from '../../../../crypt/hashAndEncryptEntity';
 import isErrorResponse from '../../../../errors/isErrorResponse';
 import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
@@ -48,7 +48,7 @@ export default async function updateEntity<T extends Entity>(
   try {
     const Types = dbManager.getTypes();
     if (!isRecursiveCall) {
-      await hashAndEncryptItem(restOfEntity, EntityClass as any, Types);
+      await hashAndEncryptEntity(restOfEntity, EntityClass as any, Types);
     }
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);

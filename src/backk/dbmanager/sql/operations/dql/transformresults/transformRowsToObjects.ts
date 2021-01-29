@@ -1,6 +1,6 @@
 import joinjs from "join-js";
 import transformNonEntityArrays from "./transformNonEntityArrays";
-import decryptItems from "../../../../../crypt/decryptItems";
+import decryptEntities from "../../../../../crypt/decryptEntities";
 import createResultMaps from "./createResultMaps";
 import removeSingleSubEntitiesWithNullProperties from "./removeSingleSubEntitiesWithNullProperties";
 import { PostQueryOperations } from "../../../../../types/postqueryoperations/PostQueryOperations";
@@ -24,7 +24,7 @@ function getMappedRows(
   );
 
   transformNonEntityArrays(mappedRows, EntityClass, Types);
-  decryptItems(mappedRows, EntityClass, Types);
+  decryptEntities(mappedRows, EntityClass, Types);
   removeSingleSubEntitiesWithNullProperties(mappedRows);
   return mappedRows;
 }

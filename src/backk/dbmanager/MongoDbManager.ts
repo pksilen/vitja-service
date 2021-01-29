@@ -13,7 +13,7 @@ import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
 import { SubEntity } from '../types/entities/SubEntity';
 import tryStartLocalTransactionIfNeeded from './sql/operations/transaction/tryStartLocalTransactionIfNeeded';
 import tryExecutePreHooks from './hooks/tryExecutePreHooks';
-import hashAndEncryptItem from '../crypt/hashAndEncryptItem';
+import hashAndEncryptEntity from '../crypt/hashAndEncryptEntity';
 import cleanupLocalTransactionIfNeeded from './sql/operations/transaction/cleanupLocalTransactionIfNeeded';
 import { getNamespace } from 'cls-hooked';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
@@ -36,7 +36,7 @@ import { HttpStatusCodes } from '../constants/constants';
 import performPostQueryOperations from './mongodb/performPostQueryOperations';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 import tryFetchAndAssignSubEntitiesForManyToManyRelationships from './mongodb/tryFetchAndAssignSubEntitiesForManyToManyRelationships';
-import decryptItems from '../crypt/decryptItems';
+import decryptEntities from '../crypt/decryptEntities';
 import updateDbLocalTransactionCount from './sql/operations/dql/utils/updateDbLocalTransactionCount';
 import shouldUseRandomInitializationVector from '../crypt/shouldUseRandomInitializationVector';
 import shouldEncryptValue from '../crypt/shouldEncryptValue';
@@ -56,7 +56,7 @@ import convertFilterObjectToMongoDbQueries from './mongodb/convertFilterObjectTo
 import { PostHook } from './hooks/PostHook';
 import tryExecutePostHook from './hooks/tryExecutePostHook';
 import getTableName from './utils/getTableName';
-import getFieldOrdering from "./mongodb/getFieldOrdering";
+import getFieldOrdering from './mongodb/getFieldOrdering';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -202,7 +202,7 @@ export default class MongoDbManager extends AbstractDbManager {
     let shouldUseTransaction = false;
 
     try {
-      await hashAndEncryptItem(entity, EntityClass, Types);
+      await hashAndEncryptEntity(entity, EntityClass, Types);
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
@@ -315,12 +315,12 @@ export default class MongoDbManager extends AbstractDbManager {
         );
 
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
-        await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
-        await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
+
         const [parentEntity] = JSONPath({
           json: currentEntityOrErrorResponse,
           path: subEntitiesJsonPath + '^'
         });
+
         const [subEntities] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });
         const maxSubItemId = subEntities.reduce((maxSubItemId: number, subEntity: any) => {
           const subItemId = parseInt(subEntity.id, 10);
@@ -368,7 +368,7 @@ export default class MongoDbManager extends AbstractDbManager {
               parentEntityClassAndPropertyNameForSubEntity[1]
             )
           ) {
-            parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push(newSubEntity._id);
+            parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push(newSubEntity);
           } else if (parentEntityClassAndPropertyNameForSubEntity) {
             parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push({
               ...newSubEntity,
@@ -377,13 +377,7 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
-        delete (currentEntityOrErrorResponse as any)._id;
-
-        await client
-          .db(this.dbName)
-          .collection(EntityClass.name.toLowerCase())
-          .updateOne({ _id: new ObjectId(_id) }, { $set: currentEntityOrErrorResponse });
-
+        await this.updateEntity(currentEntityOrErrorResponse as any, EntityClass, 'all');
         const response = await this.getEntityById(_id, EntityClass, postQueryOperations);
 
         if (postHook) {
@@ -436,7 +430,7 @@ export default class MongoDbManager extends AbstractDbManager {
         paginateSubEntities(rows, finalPostQueryOperations.paginations, EntityClass, this.getTypes());
 
         removePrivateProperties(rows, EntityClass, this.getTypes());
-        decryptItems(rows, EntityClass, this.getTypes());
+        decryptEntities(rows, EntityClass, this.getTypes(), false);
         return rows;
       });
     } catch (errorOrErrorResponse) {
@@ -513,7 +507,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         paginateSubEntities(rows, postQueryOperations.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes());
-        decryptItems(rows, EntityClass, this.getTypes());
+        decryptEntities(rows, EntityClass, this.getTypes(), false);
         return rows;
       });
     } catch (errorOrErrorResponse) {
@@ -620,7 +614,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         paginateSubEntities(rows, postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes(), isInternalCall);
-        decryptItems(rows, EntityClass, this.getTypes());
+        decryptEntities(rows, EntityClass, this.getTypes(), false);
         return rows[0];
       });
     } catch (errorOrErrorResponse) {
@@ -713,7 +707,7 @@ export default class MongoDbManager extends AbstractDbManager {
         paginateSubEntities(rows, postQueryOperations.paginations, EntityClass, this.getTypes());
 
         removePrivateProperties(rows, EntityClass, this.getTypes());
-        decryptItems(rows, EntityClass, this.getTypes());
+        decryptEntities(rows, EntityClass, this.getTypes(), false);
         return rows;
       });
     } catch (errorOrErrorResponse) {
@@ -777,7 +771,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         paginateSubEntities(rows, postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes());
-        decryptItems(rows, EntityClass, this.getTypes());
+        decryptEntities(rows, EntityClass, this.getTypes(), false);
         return rows;
       });
 
@@ -849,7 +843,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         paginateSubEntities(rows, postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes());
-        decryptItems(rows, EntityClass, this.getTypes());
+        decryptEntities(rows, EntityClass, this.getTypes(), false);
         return rows;
       });
 
@@ -894,12 +888,12 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       if (!isRecursiveCall) {
-        await hashAndEncryptItem(restOfEntity, EntityClass as any, Types);
+        await hashAndEncryptEntity(restOfEntity, EntityClass as any, Types);
       }
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
         let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
-        if (!isRecursiveCall || allowAdditionAndRemovalForSubEntityClasses) {
+        if (!isRecursiveCall && (preHooks || allowAdditionAndRemovalForSubEntityClasses !== 'all')) {
           currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
         }
 
@@ -941,7 +935,7 @@ export default class MongoDbManager extends AbstractDbManager {
                     );
 
                     if (foundUpdatedSubEntity) {
-                      await hashAndEncryptItem(currentSubEntity, SubEntityClass, Types);
+                      await hashAndEncryptEntity(currentSubEntity, SubEntityClass, Types);
                     }
 
                     return foundUpdatedSubEntity
