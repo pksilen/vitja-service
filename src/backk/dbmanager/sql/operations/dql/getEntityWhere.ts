@@ -13,7 +13,7 @@ import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors
 import { HttpStatusCodes } from '../../../../constants/constants';
 import transformRowsToObjects from './transformresults/transformRowsToObjects';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getTableName from "../../utils/getTableName";
+import getTableName from "../../../utils/getTableName";
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,

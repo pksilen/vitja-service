@@ -54,7 +54,9 @@ import convertMongoDbQueriesToMatchExpression from './mongodb/convertMongoDbQuer
 import paginateSubEntities from './mongodb/paginateSubEntities';
 import convertFilterObjectToMongoDbQueries from './mongodb/convertFilterObjectToMongoDbQueries';
 import { PostHook } from './hooks/PostHook';
-import tryExecutePostHook from "./hooks/tryExecutePostHook";
+import tryExecutePostHook from './hooks/tryExecutePostHook';
+import getTableName from './utils/getTableName';
+import getFieldOrdering from "./mongodb/getFieldOrdering";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -151,7 +153,9 @@ export default class MongoDbManager extends AbstractDbManager {
 
     this.getClsNamespace()?.set('globalTransaction', true);
 
-    let result: T | ErrorResponse = createInternalServerError('Transaction execution errorMessageOnPreHookFuncFailure');
+    let result: T | ErrorResponse = createInternalServerError(
+      'Transaction execution errorMessageOnPreHookFuncFailure'
+    );
     try {
       await this.tryBeginTransaction();
       const session = this.getClsNamespace()?.get('session');
@@ -204,7 +208,7 @@ export default class MongoDbManager extends AbstractDbManager {
       return await this.tryExecute(shouldUseTransaction, async (client) => {
         const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
 
-        await forEachAsyncSequential(Object.entries(entityMetadata), async ([fieldName, fieldTypeName]) => {
+        Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]) => {
           if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
             delete (entity as any)[fieldName];
           }
@@ -219,18 +223,22 @@ export default class MongoDbManager extends AbstractDbManager {
             }
           } else if (isArrayType && isEntityTypeName(baseTypeName)) {
             if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-              (entity as any)[fieldName] = (entity as any)[fieldName].map((subEntity: any) => subEntity._id);
+              (entity as any)[fieldName] = ((entity as any)[fieldName] ?? []).map(
+                (subEntity: any) => subEntity._id
+              );
             }
           }
         });
 
         await tryExecutePreHooks(preHooks);
+
         const createEntityResult = await client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .insertOne(entity);
 
         const _id = createEntityResult.insertedId.toHexString();
+
         const response = isInternalCall
           ? ({ _id } as any)
           : await this.getEntityById(_id, EntityClass, postQueryOperations);
@@ -409,8 +417,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const cursor = client
           .db(this.dbName)
-          .collection<T>(EntityClass.name.toLowerCase())
-          .aggregate(joinPipelines)
+          .collection<T>(getTableName(EntityClass.name))
+          .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
           .match({});
 
         performPostQueryOperations(cursor, finalPostQueryOperations, EntityClass, this.getTypes());
@@ -487,8 +495,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const cursor = client
           .db(this.dbName)
-          .collection<T>(EntityClass.name.toLowerCase())
-          .aggregate(joinPipelines)
+          .collection<T>(getTableName(EntityClass.name))
+          .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
           .match(matchExpression);
 
         performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
@@ -561,7 +569,7 @@ export default class MongoDbManager extends AbstractDbManager {
       return await this.tryExecute(false, async (client) => {
         return await client
           .db(this.dbName)
-          .collection<T>(EntityClass.name.toLowerCase())
+          .collection<T>(getTableName(EntityClass.name))
           .countDocuments(matchExpression);
       });
     } catch (error) {
@@ -587,8 +595,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const cursor = client
           .db(this.dbName)
-          .collection(EntityClass.name.toLowerCase())
-          .aggregate(joinPipelines)
+          .collection(getTableName(EntityClass.name))
+          .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
           .match({ _id: new ObjectId(_id) });
 
         performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
@@ -686,8 +694,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const cursor = client
           .db(this.dbName)
-          .collection(EntityClass.name.toLowerCase())
-          .aggregate(joinPipelines)
+          .collection(getTableName(EntityClass.name))
+          .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
           .match({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } });
 
         performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
@@ -751,8 +759,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const cursor = client
           .db(this.dbName)
-          .collection(EntityClass.name.toLowerCase())
-          .aggregate(joinPipelines)
+          .collection(getTableName(EntityClass.name))
+          .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
           .match(matchExpression);
 
         performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
@@ -804,7 +812,7 @@ export default class MongoDbManager extends AbstractDbManager {
     const lastDotPosition = fieldPathName.lastIndexOf('.');
     const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
     if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
-      finalFieldValue = encrypt(fieldValue as any, false);
+      finalFieldValue = encrypt(fieldValue, false);
     }
 
     const filters = [
@@ -823,8 +831,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const cursor = client
           .db(this.dbName)
-          .collection(EntityClass.name.toLowerCase())
-          .aggregate(joinPipelines)
+          .collection(getTableName(EntityClass.name))
+          .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
           .match(matchExpression);
 
         performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
@@ -1002,16 +1010,11 @@ export default class MongoDbManager extends AbstractDbManager {
 
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
 
-        await this.updateEntity(
-          { _id: (currentEntityOrErrorResponse as T)._id, ...entity },
-          EntityClass,
-          []
-        );
+        await this.updateEntity({ _id: (currentEntityOrErrorResponse as T)._id, ...entity }, EntityClass, []);
 
         if (postHook) {
           await tryExecutePostHook(postHook);
         }
-
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -1188,7 +1191,6 @@ export default class MongoDbManager extends AbstractDbManager {
         if (postHook) {
           await tryExecutePostHook(postHook);
         }
-
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)

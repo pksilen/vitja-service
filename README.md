@@ -2,6 +2,8 @@
 
 TODO
 - MongoDb test Following/FollowedUser functionality
+- For AddItem functions add custom test to test that item was added
+- MongoDB query project to get fields in same order as in metadata
 - Remote service operation cnt === 1 and must be in last operation, no db operations afterwards
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem

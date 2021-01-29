@@ -7,7 +7,7 @@ import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
 import Pagination from '../../../../types/postqueryoperations/Pagination';
-import getTableName from "../../utils/getTableName";
+import getTableName from "../../../utils/getTableName";
 
 export default async function getAllEntities<T>(
   dbManager: AbstractSqlDbManager,

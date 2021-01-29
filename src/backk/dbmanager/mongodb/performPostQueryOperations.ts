@@ -1,8 +1,8 @@
-import { AggregationCursor, Cursor } from "mongodb";
-import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
-import getProjection from "./getProjection";
-import getRootProjection from "./getRootProjection";
-import getRootOperations from "./getRootOperations";
+import { AggregationCursor, Cursor } from 'mongodb';
+import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
+import getProjection from './getProjection';
+import getRootProjection from './getRootProjection';
+import getRootOperations from './getRootOperations';
 
 export default function performPostQueryOperations<T>(
   cursor: Cursor<T> | AggregationCursor<T>,
@@ -10,12 +10,10 @@ export default function performPostQueryOperations<T>(
   EntityClass: new () => T,
   Types: any
 ) {
-  if (postQueryOperations) {
-    const projection = getProjection(postQueryOperations);
-    const rootProjection = getRootProjection(projection, EntityClass, Types);
-    if (Object.keys(rootProjection).length > 0) {
-      cursor.project(rootProjection);
-    }
+  const projection = getProjection(EntityClass, postQueryOperations);
+  const rootProjection = getRootProjection(projection, EntityClass, Types);
+  if (Object.keys(rootProjection).length > 0) {
+    cursor.project(rootProjection);
   }
 
   if (postQueryOperations?.sortBys) {

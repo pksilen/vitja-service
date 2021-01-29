@@ -14,6 +14,7 @@ export interface EntityJoinSpec {
   subEntityForeignIdFieldName: string;
   isReadonly: boolean;
   asFieldName?: string;
+  EntityClass?: Function;
 }
 
 class EntityAnnotationContainer {

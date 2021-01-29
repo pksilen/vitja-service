@@ -9,15 +9,16 @@ import typePropertyAnnotationContainer from "../../decorators/typeproperty/typeP
 function setJoinSpec(entityName: string, EntityClass: Function, fieldName: string, subEntityName: string) {
   const isReadonly = doesClassPropertyContainCustomValidation(EntityClass, fieldName, 'isUndefined');
 
-  if (isReadonly) {
+  if (isReadonly && !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
     const subEntityForeignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
 
     const entityJoinSpec: EntityJoinSpec = {
+      EntityClass,
+      isReadonly,
       entityFieldName: fieldName,
       subEntityTableName: subEntityName,
       entityIdFieldName: '_id',
       subEntityForeignIdFieldName,
-      isReadonly,
       asFieldName: fieldName
     };
 

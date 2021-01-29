@@ -34,53 +34,53 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
             path: propertyJsonPath + propertyName
           });
 
-          if (subEntityIds) {
-            const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
-            const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
-            const subEntityFilters = replaceSubEntityPaths(filters, wantedSubEntityPath);
-            const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
+          const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
+          const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
+          const subEntityFilters = replaceSubEntityPaths(filters, wantedSubEntityPath);
+          const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
-            const subEntitySortBys = replaceSubEntityPaths(
-              finalPostQueryOperations.sortBys,
-              wantedSubEntityPath
-            );
+          const subEntitySortBys = replaceSubEntityPaths(
+            finalPostQueryOperations.sortBys,
+            wantedSubEntityPath
+          );
 
-            const subEntityPaginations = replaceSubEntityPaths(
-              finalPostQueryOperations.paginations,
-              wantedSubEntityPath
-            );
+          const subEntityPaginations = replaceSubEntityPaths(
+            finalPostQueryOperations.paginations,
+            wantedSubEntityPath
+          );
 
-            const subEntityIncludeResponseFields = replaceFieldPathNames(
-              finalPostQueryOperations.includeResponseFields,
-              wantedSubEntityPath
-            );
+          const subEntityIncludeResponseFields = replaceFieldPathNames(
+            finalPostQueryOperations.includeResponseFields,
+            wantedSubEntityPath
+          );
 
-            const subEntityExcludeResponseFields = replaceFieldPathNames(
-              finalPostQueryOperations.excludeResponseFields,
-              wantedSubEntityPath
-            );
+          const subEntityExcludeResponseFields = replaceFieldPathNames(
+            finalPostQueryOperations.excludeResponseFields,
+            wantedSubEntityPath
+          );
 
-            const subEntitiesOrErrorResponse = await dbManager.getEntitiesByFilters(
-              [
-                new MongoDbQuery({
-                  _id: { $in: subEntityIds.map((subEntityId: any) => new ObjectId(subEntityId)) }
-                }),
-                ...(subEntityFilters ?? [])
-              ],
-              (Types as any)[baseTypeName],
-              {
-                includeResponseFields: subEntityIncludeResponseFields,
-                excludeResponseFields: subEntityExcludeResponseFields,
-                sortBys: subEntitySortBys,
-                paginations: subEntityPaginations
-              }
-            );
-
-            if ('errorMessage' in subEntitiesOrErrorResponse) {
-              throw subEntitiesOrErrorResponse;
+          const subEntitiesOrErrorResponse = await dbManager.getEntitiesByFilters(
+            [
+              new MongoDbQuery({
+                _id: { $in: (subEntityIds ?? []).map((subEntityId: any) => new ObjectId(subEntityId)) }
+              }),
+              ...(subEntityFilters ?? [])
+            ],
+            (Types as any)[baseTypeName],
+            {
+              includeResponseFields: subEntityIncludeResponseFields,
+              excludeResponseFields: subEntityExcludeResponseFields,
+              sortBys: subEntitySortBys,
+              paginations: subEntityPaginations
             }
+          );
 
-            const [subEntitiesParent] = JSONPath({ json: row, path: propertyJsonPath + propertyName + '^' });
+          if ('errorMessage' in subEntitiesOrErrorResponse) {
+            throw subEntitiesOrErrorResponse;
+          }
+
+          const [subEntitiesParent] = JSONPath({ json: row, path: propertyJsonPath + propertyName + '^' });
+          if (subEntitiesParent) {
             subEntitiesParent[propertyName] = subEntitiesOrErrorResponse;
           }
         });

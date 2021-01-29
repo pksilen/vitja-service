@@ -8,7 +8,7 @@ import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount
 import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
 import MongoDbQuery from '../../../mongodb/MongoDbQuery';
 import convertFilterObjectToSqlEquals from './utils/convertFilterObjectToSqlEquals';
-import getTableName from '../../utils/getTableName';
+import getTableName from '../../../utils/getTableName';
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,

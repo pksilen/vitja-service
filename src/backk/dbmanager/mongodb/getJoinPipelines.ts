@@ -1,28 +1,27 @@
-import entityAnnotationContainer from '../../decorators/entity/entityAnnotationContainer';
-import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
-import isEntityTypeName from '../../utils/type/isEntityTypeName';
+import entityAnnotationContainer from "../../decorators/entity/entityAnnotationContainer";
 
 export default function getJoinPipelines(EntityClass: Function, Types: object) {
   let joinPipelines: any[] = [];
 
   if (entityAnnotationContainer.entityNameToJoinsMap[EntityClass.name]) {
-    joinPipelines = entityAnnotationContainer.entityNameToJoinsMap[EntityClass.name].map((joinSpec) => {
-      return [
-        { $addFields: { entityIdFieldNameAsString: { $toString: `$${joinSpec.entityIdFieldName}` } } },
-        {
-          $lookup: {
-            from: joinSpec.subEntityTableName,
-            localField: 'entityIdFieldNameAsString',
-            foreignField: joinSpec.subEntityForeignIdFieldName,
-            as: joinSpec.asFieldName
+    joinPipelines = entityAnnotationContainer.entityNameToJoinsMap[EntityClass.name]
+      .map((joinSpec) => {
+        return [
+          { $addFields: { entityIdFieldNameAsString: { $toString: `$${joinSpec.entityIdFieldName}` } } },
+          {
+            $lookup: {
+              from: joinSpec.subEntityTableName,
+              localField: 'entityIdFieldNameAsString',
+              foreignField: joinSpec.subEntityForeignIdFieldName,
+              as: joinSpec.asFieldName
+            }
           }
-        }
-      ];
-    }).flat();
+        ];
+      })
+      .flat();
   }
 
-  const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
+  /* const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
 
   Object.entries(entityMetadata).forEach(([, fieldTypeName]: [any, any]) => {
     const { baseTypeName } = getTypeInfoForTypeName(fieldTypeName);
@@ -33,7 +32,7 @@ export default function getJoinPipelines(EntityClass: Function, Types: object) {
         joinPipelines = joinPipelines.concat(subEntityJoinPipelines);
       }
     }
-  });
+  }); */
 
   return joinPipelines;
 }

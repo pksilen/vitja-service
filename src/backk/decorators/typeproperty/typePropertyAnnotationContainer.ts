@@ -130,7 +130,11 @@ class TypePropertyAnnotationContainer {
     return false;
   }
 
-  isTypePropertyManyToMany(Type: Function, propertyName: string) {
+  isTypePropertyManyToMany(Type: Function | undefined, propertyName: string) {
+    if (!Type) {
+      return false;
+    }
+
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
       if (this.typePropertyNameToIsManyToManyMap[`${proto.constructor.name}${propertyName}`] !== undefined) {

@@ -8,7 +8,7 @@ import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import { HttpStatusCodes } from '../../../../constants/constants';
-import getTableName from "../../utils/getTableName";
+import getTableName from "../../../utils/getTableName";
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,

@@ -1,4 +1,4 @@
-import entityAnnotationContainer from "../../../decorators/entity/entityAnnotationContainer";
+import entityAnnotationContainer from "../../decorators/entity/entityAnnotationContainer";
 
 export default function getTableName(entityName: string): string {
   if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {

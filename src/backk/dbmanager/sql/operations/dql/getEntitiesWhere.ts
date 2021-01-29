@@ -12,7 +12,7 @@ import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount
 import { HttpStatusCodes } from '../../../../constants/constants';
 import isUniqueField from './utils/isUniqueField';
 import SqlEquals from '../../expressions/SqlEquals';
-import getTableName from "../../utils/getTableName";
+import getTableName from "../../../utils/getTableName";
 
 export default async function getEntitiesWhere<T>(
   dbManager: AbstractSqlDbManager,

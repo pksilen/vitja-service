@@ -10,7 +10,7 @@ import DefaultPostQueryOperations from '../../../../types/postqueryoperations/De
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import { HttpStatusCodes } from '../../../../constants/constants';
-import getTableName from "../../utils/getTableName";
+import getTableName from "../../../utils/getTableName";
 
 export default async function getEntityById<T>(
   dbManager: AbstractSqlDbManager,
