@@ -119,7 +119,6 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
-  @NoAutoTest()
   deleteUserById({ _id }: _Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, User);
   }

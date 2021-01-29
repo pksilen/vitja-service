@@ -1,16 +1,13 @@
 # Vitja service
 
 TODO
-- MongoDb test Following/FollowedUser functionality
-- For AddItem functions add custom test to test that item was added
 - Don't rehash a hashed field
 - Remote service operation cnt === 1 and must be in last operation, no db operations afterwards
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
 - Rename createOrder to placeOrder?
   - placeOrder should execute remote operation for payment which returns PaymentInfo
-  - can paymentOperation be a remote service call decorator on PaymentInfo attribute
-  - How to handle remote+local transaction on payment failure
+  - remote payment operation could have a url parameter for testing to return fake paymentInfo 
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

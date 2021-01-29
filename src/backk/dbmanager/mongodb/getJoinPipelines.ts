@@ -21,18 +21,5 @@ export default function getJoinPipelines(EntityClass: Function, Types: object) {
       .flat();
   }
 
-  /* const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
-
-  Object.entries(entityMetadata).forEach(([, fieldTypeName]: [any, any]) => {
-    const { baseTypeName } = getTypeInfoForTypeName(fieldTypeName);
-
-    if (isEntityTypeName(baseTypeName)) {
-      const subEntityJoinPipelines = getJoinPipelines((Types as any)[baseTypeName], Types);
-      if (subEntityJoinPipelines !== undefined) {
-        joinPipelines = joinPipelines.concat(subEntityJoinPipelines);
-      }
-    }
-  }); */
-
   return joinPipelines;
 }
