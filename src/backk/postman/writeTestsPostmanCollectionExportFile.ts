@@ -75,8 +75,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       );
 
       let isUpdate = false;
-      const isVoidFunction = getTypeInfoForTypeName(functionMetadata.returnValueType).baseTypeName;
-
+      const isVoidFunction = getTypeInfoForTypeName(functionMetadata.returnValueType).isVoid;
+      
       if (
         isUpdateFunction(
           (controller as any)[serviceMetadata.serviceName].constructor,
@@ -110,32 +110,41 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       items.push(createPostmanCollectionItem(serviceMetadata, functionMetadata, sampleArg, tests));
 
       if (isUpdate && isVoidFunction) {
-        const getFunctionTests = getServiceFunctionTests(
-          (controller as any)[serviceMetadata.serviceName].Types,
-          serviceMetadata,
-          lastGetFunctionMetadata,
-          true,
-          200,
-          sampleArg
-        );
+        const foundCustomTest = writtenTests
+          .find(
+            ({ testTemplate: { serviceFunctionName, executeAfter } }) =>
+              serviceFunctionName === serviceMetadata.serviceName + '.' + lastGetFunctionMetadata.functionName &&
+              executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
+          );
 
-        const getFunctionSampleArg = getServiceMethodTestArgument(
-          (controller as any)[serviceMetadata.serviceName].Types,
-          lastGetFunctionMetadata.functionName,
-          lastGetFunctionMetadata.argType,
-          serviceMetadata,
-          isUpdate,
-          sampleArg
-        );
-
-        items.push(
-          createPostmanCollectionItem(
+        if (!foundCustomTest) {
+          const getFunctionTests = getServiceFunctionTests(
+            (controller as any)[serviceMetadata.serviceName].Types,
             serviceMetadata,
             lastGetFunctionMetadata,
-            getFunctionSampleArg,
-            getFunctionTests
-          )
-        );
+            true,
+            200,
+            sampleArg
+          );
+
+          const getFunctionSampleArg = getServiceMethodTestArgument(
+            (controller as any)[serviceMetadata.serviceName].Types,
+            lastGetFunctionMetadata.functionName,
+            lastGetFunctionMetadata.argType,
+            serviceMetadata,
+            isUpdate,
+            sampleArg
+          );
+
+          items.push(
+            createPostmanCollectionItem(
+              serviceMetadata,
+              lastGetFunctionMetadata,
+              getFunctionSampleArg,
+              getFunctionTests
+            )
+          );
+        }
       }
 
       if (
