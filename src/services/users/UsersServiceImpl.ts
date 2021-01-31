@@ -26,6 +26,7 @@ import FollowedUser from './types/entities/FollowedUser';
 import { Update } from '../../backk/decorators/service/function/Update';
 import FollowingUser from './types/entities/FollowingUser';
 import { NoAutoTest } from '../../backk/decorators/service/function/NoAutoTest';
+import _IdAndFollowedUserId from './types/args/_IdAndFollowedUserId';
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -64,6 +65,29 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
+  @Update()
+  @Errors([CANNOT_FOLLOW_SELF])
+  followUser({ _id, followedUserId }: _IdAndFollowedUserId): Promise<User | ErrorResponse> {
+    return this.dbManager.addSubEntity(
+      _id,
+      'followedUsers',
+      { _id: followedUserId },
+      User,
+      FollowedUser,
+      () => this.dbManager.addSubEntity(followedUserId, 'followingUsers', { _id }, User, FollowingUser)
+    );
+  }
+
+  @AllowForSelf()
+  @Update()
+  @Errors([CANNOT_FOLLOW_SELF])
+  unfollowUser({ _id, followedUserId }: _IdAndFollowedUserId): Promise<void | ErrorResponse> {
+    return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserId, User, [
+      () => this.dbManager.removeSubEntityById(followedUserId, 'followingUsers', _id, User)
+    ]);
+  }
+
+  @AllowForSelf()
   updateUser(arg: User): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity(arg, User, 'all');
   }
@@ -92,30 +116,6 @@ export default class UsersServiceImpl extends UsersService {
         }
       ]
     );
-  }
-
-  @AllowForSelf()
-  @Update()
-  @Errors([CANNOT_FOLLOW_SELF])
-  @NoAutoTest()
-  followUser({ _id, userId }: _IdAndUserId): Promise<User | ErrorResponse> {
-    return this.dbManager.addSubEntity(_id, 'followedUsers', { _id: userId }, User, FollowedUser, [
-      {
-        preHookFunc: () => _id !== userId,
-        errorMessageOnPreHookFuncFailure: CANNOT_FOLLOW_SELF
-      },
-      () => this.dbManager.addSubEntity(userId, 'followingUsers', { _id }, User, FollowingUser)
-    ]);
-  }
-
-  @AllowForSelf()
-  @Update()
-  @Errors([CANNOT_FOLLOW_SELF])
-  @NoAutoTest()
-  unfollowUser({ _id, userId }: _IdAndUserId): Promise<void | ErrorResponse> {
-    return this.dbManager.removeSubEntityById(_id, 'followedUsers', userId, User, [
-      () => this.dbManager.removeSubEntityById(userId, 'followingUsers', _id, User)
-    ]);
   }
 
   @AllowForSelf()

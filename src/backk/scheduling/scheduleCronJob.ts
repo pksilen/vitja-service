@@ -24,7 +24,7 @@ export async function scheduleCronJob(
       await delay(retryIntervalInSecs * 1000);
       const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
       const clsNamespace2 = createNamespace('serviceFunctionExecution');
-      const response = await clsNamespace.runAndReturn(async () => {
+      return await clsNamespace.runAndReturn(async () => {
         return await clsNamespace2.runAndReturn(async () => {
           try {
             await dbManager.tryReserveDbConnectionFromPool();
@@ -64,8 +64,6 @@ export async function scheduleCronJob(
           }
         });
       });
-
-      return response;
     });
   });
 

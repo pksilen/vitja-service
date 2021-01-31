@@ -1,41 +1,18 @@
 - testTemplate:
     serviceFunctionName: usersService.createUser
-    executeAfter: usersService.changeUserPassword
+    executeAfter: usersService.getUserByUserName
     argument:
       userName: test2@test.com
-      displayName: test2
     response:
       statusCode: 200
       tests:
-        - pm.collectionVariables.set('secondUserId', response._id)
+        - pm.collectionVariables.set('followedUserId', response._id)
   tests:
-    - testName: 2nd user
-
-- testTemplate:
-    serviceFunctionName: usersService.followUser
-    executeAfter: usersService.changeUserPassword
-    argument:
-      userId: '{{secondUserId}}'
-    response:
-      statusCode: 200
-      tests:
-        - pm.expect(response.followedUsers[0]._id).to.eql(pm.collectionVariables.get('secondUserId'))
-  tests:
-    - testName: ''
-
-- testTemplate:
-    serviceFunctionName: usersService.unfollowUser
-    executeAfter: usersService.changeUserPassword
-    argument:
-      userId: '{{secondUserId}}'
-    response:
-      statusCode: 200
-  tests:
-    - testName: ''
+    - testName: followed user
 
 - testTemplate:
     serviceFunctionName: usersService.getUserByUserName
-    executeAfter: usersService.changeUserPassword
+    executeAfter: usersService.unfollowUser
     argument:
       userName: test@test.com
     response:
