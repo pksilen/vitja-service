@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO
-- If update method has a same get method in custom tests, don't add get method twice.
+- change argon2
 - Remote service operation cnt === 1 and must be in last operation, no db operations afterwards
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
