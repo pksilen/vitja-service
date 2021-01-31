@@ -15,6 +15,7 @@ import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
 import isReadFunction from '../crudresource/utils/isReadFunction';
 import isUpdateFunction from '../crudresource/utils/isUpdateFunction';
 import isDeleteFunction from '../crudresource/utils/isDeleteFunction';
+import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -26,8 +27,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     testFilePathNames.map((testFilePathName) => {
       const testFileContents = readFileSync(testFilePathName, { encoding: 'UTF-8' });
       const fileType = testFilePathName.endsWith('json') ? 'json' : 'yaml';
-      const result = fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
-      return result;
+      return  fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
     })
   );
 
@@ -75,6 +75,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       );
 
       let isUpdate = false;
+      const isVoidFunction = getTypeInfoForTypeName(functionMetadata.returnValueType).baseTypeName;
+
       if (
         isUpdateFunction(
           (controller as any)[serviceMetadata.serviceName].constructor,
@@ -88,7 +90,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       ) {
         isUpdate = true;
         previousFunctionType = 'update';
-        if (lastGetFunctionMetadata === undefined) {
+
+        if (lastGetFunctionMetadata === undefined && isVoidFunction) {
           throw new Error(
             'There must be a get function defined before update/modify/change function in: ' +
               serviceMetadata.serviceName
@@ -106,7 +109,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       items.push(createPostmanCollectionItem(serviceMetadata, functionMetadata, sampleArg, tests));
 
-      if (isUpdate) {
+      if (isUpdate && isVoidFunction) {
         const getFunctionTests = getServiceFunctionTests(
           (controller as any)[serviceMetadata.serviceName].Types,
           serviceMetadata,

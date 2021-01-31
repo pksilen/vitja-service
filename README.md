@@ -1,10 +1,10 @@
 # Vitja service
 
 TODO
-- If update method returns value, don't execute get method after that in postman tests
 - If update method has a same get method in custom tests, don't add get method twice.
 - Remote service operation cnt === 1 and must be in last operation, no db operations afterwards
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
+  - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
 - Rename createOrder to placeOrder?
   - placeOrder should execute remote operation for payment which returns PaymentInfo

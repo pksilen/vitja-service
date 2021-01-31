@@ -52,6 +52,7 @@ export default function getTypeInfoForTypeName(typeName: string) {
 
   return {
     baseTypeName: typeName,
+    isVoid: typeName === 'void',
     canBeErrorResponse,
     defaultValueStr,
     isArrayType,

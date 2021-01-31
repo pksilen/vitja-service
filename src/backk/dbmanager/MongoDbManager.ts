@@ -154,8 +154,9 @@ export default class MongoDbManager extends AbstractDbManager {
     this.getClsNamespace()?.set('globalTransaction', true);
 
     let result: T | ErrorResponse = createInternalServerError(
-      'Transaction execution errorMessageOnPreHookFuncFailure'
+      'Transaction execution error'
     );
+
     try {
       await this.tryBeginTransaction();
       const session = this.getClsNamespace()?.get('session');

@@ -32,6 +32,7 @@ export default function executeCronJobs(controller: any, dbManager: AbstractDbMa
                 clsNamespace.set('connection', true);
                 const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
                   clsNamespace.set('globalTransaction', true);
+
                   const possibleErrorResponse = await dbManager.updateEntityWhere(
                     'serviceFunctionName',
                     serviceFunctionName,
@@ -56,8 +57,8 @@ export default function executeCronJobs(controller: any, dbManager: AbstractDbMa
                     ))
                   );
                 });
-                clsNamespace.set('globalTransaction', true);
 
+                clsNamespace.set('globalTransaction', true);
                 return !isErrorResponse(possibleErrorResponse);
               } catch (error) {
                 logError(error);
