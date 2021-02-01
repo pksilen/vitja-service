@@ -19,6 +19,9 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToIsUpdateFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToResponseHeadersMap: { [key: string]: HttpHeaders } = {};
   private readonly serviceFunctionNameToHasNoAutoTestMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap: {
+    [key: string]: { [key: string]: any };
+  } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -100,6 +103,16 @@ class ServiceFunctionAnnotationContainer {
 
   addNoAutoTestAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoAutoTestMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
+  expectServiceFunctionResponseValueToContainInTests(
+    serviceClass: Function,
+    functionName: string,
+    fieldPathNameToFieldValueMap: { [key: string]: string }
+  ) {
+    this.serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap[
+      `${serviceClass.name}${functionName}`
+    ] = fieldPathNameToFieldValueMap;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -321,8 +334,7 @@ class ServiceFunctionAnnotationContainer {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToHasNoAutoTestMap[`${proto.constructor.name}${functionName}`] !==
-        undefined
+        this.serviceFunctionNameToHasNoAutoTestMap[`${proto.constructor.name}${functionName}`] !== undefined
       ) {
         return true;
       }
@@ -330,6 +342,27 @@ class ServiceFunctionAnnotationContainer {
     }
 
     return false;
+  }
+
+  getExpectedResponseValueFieldPathNameToFieldValueMapForTests(
+    serviceClass: Function,
+    functionName: string
+  ): { [key: string]: any } | undefined {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap[
+          `${proto.constructor.name}${functionName}`
+        ] !== undefined
+      ) {
+        return this.serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap[
+          `${proto.constructor.name}${functionName}`
+        ];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return undefined;
   }
 }
 

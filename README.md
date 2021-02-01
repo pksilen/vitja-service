@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Remote service operation cnt === 1 and must be in last operation, no db operations afterwards
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
@@ -13,6 +12,7 @@ TODO
     - create new sales item with special id assigned in tests and then deleteOldSalesItem
   - deleteOldSalesItem method specifies timestamp offset as minus 5 months
     - ensure that create sales item was deleted
+- create default sample args for regexps and other types (string)
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
@@ -23,11 +23,10 @@ TODO
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
 
+
 Split services to different microservices
 - Create notification-service
     - Sales item cron job: send email at 16:00 if sales item is going to be removed
-- Test call()
-  
 - Remote Http service integration tests:
   - COnfigure @Before tasks: eg. Order service tests should first do following:
     -initialize Sales item service with integration_uuid, creates a new temp database for test usage
@@ -37,8 +36,6 @@ Split services to different microservices
 - Kafka sendTo integration tests, create topic name with uuid postfix, use that and delete topic at end of testing
 - Redis sendTo integeration tests, create db/topic name with uuid postfix, use that and delete topic at end of testing
 - mysql2 distributed tracing
-- remote service calls can have rollback action and commit action
-  - Deletes can move stuff to shadow table and in commit clear from shadow table and do delete
 - Default loginService, signUpService, passwordReset service
     - Login route, check Referer header exists and domain ending is correct, eg. https://<something>.domain.com
     - User, add role field, joka voi olla createUserissa vain "user"

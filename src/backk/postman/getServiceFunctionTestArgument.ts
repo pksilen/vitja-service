@@ -9,7 +9,7 @@ import { doesClassPropertyContainCustomValidation } from '../validation/setClass
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 
-export default function getServiceMethodTestArgument(
+export default function getServiceFunctionTestArgument(
   serviceTypes: { [key: string]: Function },
   functionName: string,
   argTypeName: string,
@@ -91,6 +91,7 @@ export default function getServiceMethodTestArgument(
     }
 
     const testValue = testValueContainer.getTestValue(serviceTypes[argTypeName], propertyName);
+
     const minValue =
       getValidationConstraint(serviceTypes[argTypeName], propertyName, 'min') ??
       getCustomValidationConstraint(serviceTypes[argTypeName], propertyName, 'minMax', 1);
@@ -149,7 +150,7 @@ export default function getServiceMethodTestArgument(
             : parseInt(enumValues[0]);
       }
     } else if (types[baseTypeName]) {
-      sampleArg[propertyName] = getServiceMethodTestArgument(
+      sampleArg[propertyName] = getServiceFunctionTestArgument(
         serviceTypes,
         functionName,
         baseTypeName,

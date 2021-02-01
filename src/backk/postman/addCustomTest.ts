@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import createPostmanCollectionItemFromCustomTest from './createPostmanCollectionItemFromCustomTest';
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
-import getServiceMethodTestArgument from './getServiceMethodTestArgument';
+import getServiceFunctionTestArgument from './getServiceFunctionTestArgument';
 
 export default function addCustomTest(
   writtenTest: any,
@@ -42,7 +42,7 @@ export default function addCustomTest(
         );
       }
 
-      const sampleFunctionArgument = getServiceMethodTestArgument(
+      const sampleFunctionArgument = getServiceFunctionTestArgument(
         controller[serviceMetadata.serviceName].Types,
         functionMetadata.functionName,
         functionMetadata.argType,

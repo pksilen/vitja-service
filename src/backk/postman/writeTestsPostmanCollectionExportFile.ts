@@ -7,7 +7,7 @@ import serviceFunctionAnnotationContainer from '../decorators/service/function/s
 import { sign } from 'jsonwebtoken';
 import { Base64 } from 'js-base64';
 import getServiceFunctionTests from './getServiceFunctionTests';
-import getServiceMethodTestArgument from './getServiceMethodTestArgument';
+import getServiceFunctionTestArgument from './getServiceFunctionTestArgument';
 import createPostmanCollectionItem from './createPostmanCollectionItem';
 import addCustomTest from './addCustomTest';
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
@@ -15,7 +15,7 @@ import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
 import isReadFunction from '../crudresource/utils/isReadFunction';
 import isUpdateFunction from '../crudresource/utils/isUpdateFunction';
 import isDeleteFunction from '../crudresource/utils/isDeleteFunction';
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -27,7 +27,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     testFilePathNames.map((testFilePathName) => {
       const testFileContents = readFileSync(testFilePathName, { encoding: 'UTF-8' });
       const fileType = testFilePathName.endsWith('json') ? 'json' : 'yaml';
-      return  fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
+      return fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
     })
   );
 
@@ -41,7 +41,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     }
 
     let previousFunctionType: string;
-    let lastGetFunctionMetadata: FunctionMetadata;
+    let lastGetFunctionMetadata: FunctionMetadata | undefined;
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
       if (
         serviceFunctionAnnotationContainer.hasNoAutoTests(
@@ -66,12 +66,19 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         functionMetadata.functionName
       );
 
+      const expectedResponseFieldPathNameToFieldValueMapInTests = serviceFunctionAnnotationContainer.getExpectedResponseValueFieldPathNameToFieldValueMapForTests(
+        (controller as any)[serviceMetadata.serviceName].constructor,
+        functionMetadata.functionName
+      );
+
+
       const tests = getServiceFunctionTests(
         (controller as any)[serviceMetadata.serviceName].Types,
         serviceMetadata,
         functionMetadata,
         false,
-        expectedResponseStatusCodeInTests
+        expectedResponseStatusCodeInTests,
+        expectedResponseFieldPathNameToFieldValueMapInTests
       );
 
       let isUpdate = false;
@@ -99,7 +106,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         }
       }
 
-      const sampleArg = getServiceMethodTestArgument(
+      const sampleArg = getServiceFunctionTestArgument(
         (controller as any)[serviceMetadata.serviceName].Types,
         functionMetadata.functionName,
         functionMetadata.argType,
@@ -109,25 +116,32 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       items.push(createPostmanCollectionItem(serviceMetadata, functionMetadata, sampleArg, tests));
 
-      if (isUpdate && isVoidFunction) {
-        const foundCustomTest = writtenTests
-          .find(
-            ({ testTemplate: { serviceFunctionName, executeAfter } }) =>
-              serviceFunctionName === serviceMetadata.serviceName + '.' + lastGetFunctionMetadata.functionName &&
-              executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
-          );
+      if (isUpdate && isVoidFunction && lastGetFunctionMetadata) {
+        const foundCustomTest = writtenTests.find(
+          ({ testTemplate: { serviceFunctionName, executeAfter } }) =>
+            serviceFunctionName ===
+              serviceMetadata.serviceName + '.' + lastGetFunctionMetadata?.functionName &&
+            executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
+        );
 
         if (!foundCustomTest) {
+
+          const expectedResponseFieldPathNameToFieldValueMapInTests = serviceFunctionAnnotationContainer.getExpectedResponseValueFieldPathNameToFieldValueMapForTests(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            lastGetFunctionMetadata.functionName
+          );
+
           const getFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].Types,
             serviceMetadata,
             lastGetFunctionMetadata,
             true,
             200,
+            expectedResponseFieldPathNameToFieldValueMapInTests,
             sampleArg
           );
 
-          const getFunctionSampleArg = getServiceMethodTestArgument(
+          const getFunctionSampleArg = getServiceFunctionTestArgument(
             (controller as any)[serviceMetadata.serviceName].Types,
             lastGetFunctionMetadata.functionName,
             lastGetFunctionMetadata.argType,
@@ -155,15 +169,21 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         index === serviceMetadata.functions.length - 1 &&
         lastGetFunctionMetadata
       ) {
+        const expectedResponseFieldPathNameToFieldValueMapInTests = serviceFunctionAnnotationContainer.getExpectedResponseValueFieldPathNameToFieldValueMapForTests(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          lastGetFunctionMetadata.functionName
+        );
+
         const getFunctionTests = getServiceFunctionTests(
           (controller as any)[serviceMetadata.serviceName].Types,
           serviceMetadata,
           lastGetFunctionMetadata,
           false,
-          404
+          404,
+          expectedResponseFieldPathNameToFieldValueMapInTests
         );
 
-        const getFunctionSampleArg = getServiceMethodTestArgument(
+        const getFunctionSampleArg = getServiceFunctionTestArgument(
           (controller as any)[serviceMetadata.serviceName].Types,
           lastGetFunctionMetadata.functionName,
           lastGetFunctionMetadata.argType,

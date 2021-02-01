@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { sign } from 'jsonwebtoken';
 import { Base64 } from 'js-base64';
-import getServiceMethodTestArgument from './getServiceMethodTestArgument';
+import getServiceFunctionTestArgument from './getServiceFunctionTestArgument';
 import createPostmanCollectionItem from './createPostmanCollectionItem';
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
@@ -11,9 +11,11 @@ export default function writeApiPostmanCollectionExportFile<T>(
   servicesMetadata: ServiceMetadata[]
 ) {
   const items: any[] = [];
+
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
-      const sampleArg = getServiceMethodTestArgument(
+
+      const sampleArg = getServiceFunctionTestArgument(
         (controller as any)[serviceMetadata.serviceName].Types,
         functionMetadata.functionName,
         functionMetadata.argType,

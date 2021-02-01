@@ -15,8 +15,10 @@ export default function getServiceFunctionReturnValueTests(
   isOptional: boolean,
   isUpdate: boolean,
   sampleArg: object | undefined,
+  expectedResponseFieldPathNameToFieldValueMapInTests: { [key: string]: any } | undefined,
   isRecursive = false,
-  isManyToMany = false
+  isManyToMany = false,
+  fieldPath = ''
 ): string[] {
   const returnValueMetadata = serviceMetadata.types[returnValueTypeName];
   const types = serviceMetadata.types;
@@ -50,7 +52,11 @@ export default function getServiceFunctionReturnValueTests(
     isOptionalType = isOptionalType || isOptional;
     let expectedValue: any;
     let allowAnyValue;
-    const testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
+    let testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
+
+    if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPath + propertyName]) {
+      testValue = expectedResponseFieldPathNameToFieldValueMapInTests[fieldPath + propertyName]
+    }
 
     const expectAnyTestValue = testValueContainer.getExpectAnyTestValue(
       serviceTypes[returnValueTypeName],
@@ -75,14 +81,15 @@ export default function getServiceFunctionReturnValueTests(
     }
 
     let isBooleanValue;
-    if (testValue !== undefined) {
+
+    if (expectAnyTestValue !== undefined) {
+      allowAnyValue = true;
+    } else if (testValue !== undefined) {
       if (typeof testValue === 'string') {
         expectedValue = "'" + testValue + "'";
       } else {
         expectedValue = testValue;
       }
-    } else if (expectAnyTestValue !== undefined) {
-      allowAnyValue = true;
     } else if (propertyName === '_id') {
       if (isRecursive) {
         expectedValue = `pm.collectionVariables.get('${returnValueTypeName.charAt(0).toLowerCase() +
@@ -141,11 +148,13 @@ export default function getServiceFunctionReturnValueTests(
             ? (sampleArg as any)[propertyName][0]
             : (sampleArg as any)[propertyName]
           : undefined,
+        expectedResponseFieldPathNameToFieldValueMapInTests,
         true,
         typePropertyAnnotationContainer.isTypePropertyManyToMany(
           serviceTypes[returnValueTypeName],
           propertyName
-        )
+        ),
+        fieldPath + propertyName + '.'
       );
 
       javascriptLines.push(
@@ -156,18 +165,22 @@ export default function getServiceFunctionReturnValueTests(
       return javascriptLines;
     }
 
-    let expectation;
-    if (testValueToEvaluate) {
-      expectation = `pm.expect((${testValueToEvaluate})(response${responsePath.slice(0, -1)})).to.eql(true);`;
-    } else if (isBooleanValue) {
-      expectation = `pm.expect(response${responsePath}${propertyName}).to.${
-        expectedValue ? 'be.ok' : 'not.be.ok'
-      }`;
-    } else {
-      expectation = `pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});`;
-    }
-
     if (!allowAnyValue) {
+      let expectation;
+
+      if (testValueToEvaluate) {
+        expectation = `pm.expect((${testValueToEvaluate})(response${responsePath.slice(
+          0,
+          -1
+        )})).to.eql(true);`;
+      } else if (isBooleanValue) {
+        expectation = `pm.expect(response${responsePath}${propertyName}).to.${
+          expectedValue ? 'be.ok' : 'not.be.ok'
+        }`;
+      } else {
+        expectation = `pm.expect(response${responsePath}${propertyName}).to.eql(${expectedValue});`;
+      }
+
       if (isOptionalType) {
         if (isArrayType) {
           javascriptLines.push(
