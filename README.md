@@ -1,15 +1,18 @@
 # Vitja service
 
 TODO
-- change argon2
 - Remote service operation cnt === 1 and must be in last operation, no db operations afterwards
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
 - Rename createOrder to placeOrder?
   - placeOrder should execute remote operation for payment which returns PaymentInfo
-  - remote payment operation could have a url parameter for testing to return fake paymentInfo 
-- Test mongodb executeCronJobs
+  - remote payment operation could have a url parameter for testing to return fake paymentInfo
+- CronJob tests
+  - Move dbcleanupservice method to salesitemservice
+    - create new sales item with special id assigned in tests and then deleteOldSalesItem
+  - deleteOldSalesItem method specifies timestamp offset as minus 5 months
+    - ensure that create sales item was deleted
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
@@ -20,8 +23,6 @@ TODO
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
 
-
-TODO NEXT RELEASE:
 Split services to different microservices
 - Create notification-service
     - Sales item cron job: send email at 16:00 if sales item is going to be removed

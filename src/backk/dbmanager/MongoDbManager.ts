@@ -60,7 +60,7 @@ import getFieldOrdering from './mongodb/getFieldOrdering';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
-  private readonly mongoClient: MongoClient;
+  private mongoClient: MongoClient;
 
   constructor(private readonly uri: string, public readonly dbName: string) {
     super('');
@@ -87,6 +87,10 @@ export default class MongoDbManager extends AbstractDbManager {
     shouldUseTransaction: boolean,
     executeDbOperations: (client: MongoClient) => Promise<any>
   ): Promise<any> {
+    if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
+      this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
+    }
+    
     if (shouldUseTransaction) {
       const session = this.getClsNamespace()?.get('session');
       if (!session) {
@@ -134,7 +138,14 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   tryBeginTransaction(): Promise<void> {
-    this.getClsNamespace()?.set('session', this.getClient().startSession());
+    try {
+      this.getClsNamespace()?.set('session', this.getClient().startSession());
+    } catch(error) {
+      this.mongoClient = new MongoClient(this.uri, { useNewUrlParser: true, useUnifiedTopology: true });
+      this.tryReserveDbConnectionFromPool();
+      this.getClsNamespace()?.set('session', this.getClient().startSession());
+    }
+
     return Promise.resolve();
   }
 

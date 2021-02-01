@@ -18,7 +18,7 @@ export default class DbCleanupServiceImpl extends DbCleanupService {
 
   @CronJob({ minutes: 0, hours: 2 }, [1, 2, 5, 10, 30, 60, 120, 500])
   deleteOldUnsoldSalesItems(): Promise<void | ErrorResponse> {
-    console.log('exec: ' + new Date());
+    console.log('deleteOldUnsoldSalesItems: ' + new Date());
     return this.dbManager.deleteEntitiesByFilters(
       this.dbManager instanceof MongoDbManager
         ? [

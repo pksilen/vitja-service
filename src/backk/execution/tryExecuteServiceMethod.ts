@@ -373,7 +373,11 @@ export default async function tryExecuteServiceMethod(
               serviceFunctionName +
                 ": multiple remote service calls cannot be executed because distributed transactions are not supported. To allow multiple remote service calls that don't require a transaction, annotate service function with @NoDistributedTransaction"
             );
-          } else if (clsNamespace.get('dbManagerOperationAfterRemoteServiceCall')) {
+          } else if (clsNamespace.get('dbManagerOperationAfterRemoteServiceCall') &&
+            !serviceFunctionAnnotationContainer.isServiceFunctionNonDistributedTransactional(
+              controller[serviceName].constructor,
+              functionName
+            )) {
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
               serviceFunctionName +
