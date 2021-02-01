@@ -29,6 +29,7 @@ import { SalesItemState } from '../salesitems/types/enums/SalesItemState';
 import { OrderState } from './types/enum/OrderState';
 import { Update } from '../../backk/decorators/service/function/Update';
 import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
+import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -84,7 +85,8 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForSelf()
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
-  deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<void | ErrorResponse> {
+  @ExpectReturnValueToContainInTests({ orderItems: [] })
+  deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<Order | ErrorResponse> {
     return this.dbManager.removeSubEntityById(
       orderId,
       'orderItems',

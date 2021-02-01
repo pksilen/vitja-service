@@ -276,8 +276,9 @@ export default abstract class AbstractDbManager {
     subEntitiesJsonPath: string,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    postHook?: PostHook
-  ): Promise<void | ErrorResponse>;
+    postHook?: PostHook,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T| ErrorResponse>;
 
   abstract removeSubEntityById<T extends Entity>(
     _id: string,
@@ -285,8 +286,9 @@ export default abstract class AbstractDbManager {
     subEntityId: string,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    postHook?: PostHook
-  ): Promise<void | ErrorResponse>;
+    postHook?: PostHook,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse>;
 
   abstract deleteAllEntities<T>(entityClass: new () => T): Promise<void | ErrorResponse>;
 }

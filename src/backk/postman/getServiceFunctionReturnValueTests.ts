@@ -53,9 +53,11 @@ export default function getServiceFunctionReturnValueTests(
     let expectedValue: any;
     let allowAnyValue;
     let testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
+    let isTestValueJson = false;
 
     if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPath + propertyName]) {
-      testValue = expectedResponseFieldPathNameToFieldValueMapInTests[fieldPath + propertyName]
+      testValue = JSON.stringify(expectedResponseFieldPathNameToFieldValueMapInTests[fieldPath + propertyName]);
+      isTestValueJson = true;
     }
 
     const expectAnyTestValue = testValueContainer.getExpectAnyTestValue(
@@ -85,7 +87,7 @@ export default function getServiceFunctionReturnValueTests(
     if (expectAnyTestValue !== undefined) {
       allowAnyValue = true;
     } else if (testValue !== undefined) {
-      if (typeof testValue === 'string') {
+      if (typeof testValue === 'string' && !isTestValueJson) {
         expectedValue = "'" + testValue + "'";
       } else {
         expectedValue = testValue;
@@ -134,7 +136,7 @@ export default function getServiceFunctionReturnValueTests(
         enumValues = parseEnumValuesFromSrcFile(baseTypeName);
       }
       expectedValue = isUpdate && enumValues.length >= 3 ? enumValues[1] : enumValues[0];
-    } else if (types[baseTypeName]) {
+    } else if (types[baseTypeName] && testValue === undefined) {
       const finalResponsePath = responsePath + propertyName + (isArrayType ? '[0]' : '') + '.';
       const returnValueTests = getServiceFunctionReturnValueTests(
         serviceTypes,
@@ -182,7 +184,7 @@ export default function getServiceFunctionReturnValueTests(
       }
 
       if (isOptionalType) {
-        if (isArrayType) {
+        if (isArrayType && !types[baseTypeName]) {
           javascriptLines.push(
             `pm.test("response${responsePath}${propertyName}", function () {
   if (response${responsePath}${propertyName} !== undefined) 
@@ -202,7 +204,7 @@ export default function getServiceFunctionReturnValueTests(
           );
         }
       } else {
-        if (isArrayType) {
+        if (isArrayType && !types[baseTypeName]) {
           javascriptLines.push(
             `pm.test("response${responsePath}${propertyName}", function () {
   pm.expect(response${responsePath}${propertyName}).to.have.members([${expectedValue}]); 

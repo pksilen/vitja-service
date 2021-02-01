@@ -13,10 +13,11 @@ import ShoppingCartItem from "./types/entities/ShoppingCartItem";
 import { SHOPPING_CART_ALREADY_EXISTS } from "./errors/shoppingCartServiceErrors";
 import { Errors } from "../../backk/decorators/service/function/Errors";
 import AddShoppingCartItemArg from "./types/args/AddShoppingCartItemArg";
-import RemoveShoppingCartItemByIdArg from "./types/args/RemoveShoppingCartItemByIdArg";
+import RemoveShoppingCartItemArg from "./types/args/RemoveShoppingCartItemArg";
 import { SALES_ITEM_STATE_MUST_BE_FOR_SALE } from "../salesitems/errors/salesItemsServiceErrors";
 import SalesItemsService from "../salesitems/SalesItemsService";
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -45,10 +46,11 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  removeShoppingCartItemById({
+  @ExpectReturnValueToContainInTests({shoppingCartItems: []})
+  removeShoppingCartItem({
     shoppingCartId,
     shoppingCartItemId
-  }: RemoveShoppingCartItemByIdArg): Promise<void | ErrorResponse> {
+  }: RemoveShoppingCartItemArg): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.removeSubEntityById(
       shoppingCartId,
       'shoppingCartItems',

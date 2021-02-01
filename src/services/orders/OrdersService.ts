@@ -12,7 +12,7 @@ import CrudResourceService from "../../backk/crudresource/CrudResourceService";
 export default abstract class OrdersService extends CrudResourceService {
   abstract deleteAllOrders(): Promise<void | ErrorResponse>;
   abstract createOrder(arg: CreateOrderArg): Promise<Order | ErrorResponse>;
-  abstract deleteOrderItem(arg: DeleteOrderItemArg): Promise<void | ErrorResponse>;
+  abstract deleteOrderItem(arg: DeleteOrderItemArg): Promise<Order | ErrorResponse>;
   abstract addOrderItem(arg: AddOrderItemArg): Promise<Order | ErrorResponse>;
   abstract getOrdersByUserId(arg: GetByUserIdArg): Promise<Order[] | ErrorResponse>;
   abstract getOrderById(arg: _IdAndUserId): Promise<Order | ErrorResponse>;

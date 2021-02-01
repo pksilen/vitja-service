@@ -90,7 +90,7 @@ export default class MongoDbManager extends AbstractDbManager {
     if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
       this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
     }
-    
+
     if (shouldUseTransaction) {
       const session = this.getClsNamespace()?.get('session');
       if (!session) {
@@ -1170,8 +1170,9 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntitiesJsonPath: string,
     EntityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    postHook?: PostHook
-  ): Promise<void | ErrorResponse> {
+    postHook?: PostHook,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1180,7 +1181,7 @@ export default class MongoDbManager extends AbstractDbManager {
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
-      await this.tryExecute(shouldUseTransaction, async () => {
+      return await this.tryExecute(shouldUseTransaction, async () => {
         const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
         await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
@@ -1192,11 +1193,15 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         removeSubEntities(currentEntityOrErrorResponse, subEntities);
-        this.updateEntity(currentEntityOrErrorResponse as any, EntityClass, 'all');
+        await this.updateEntity(currentEntityOrErrorResponse as any, EntityClass, 'all');
+
+        const response = await this.getEntityById(_id, EntityClass, postQueryOperations);
 
         if (postHook) {
           await tryExecutePostHook(postHook);
         }
+
+        return response;
       });
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -1208,17 +1213,18 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  removeSubEntityById<T extends Entity>(
+  async removeSubEntityById<T extends Entity>(
     _id: string,
     subEntitiesJsonPath: string,
     subEntityId: string,
     EntityClass: new () => T,
     preHooks?: PreHook | PreHook[],
-    postHook?: PostHook
-  ): Promise<void | ErrorResponse> {
+    postHook?: PostHook,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-    const response = this.removeSubEntities(_id, subEntityPath, EntityClass, preHooks, postHook);
+    const response = await this.removeSubEntities(_id, subEntityPath, EntityClass, preHooks, postHook, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

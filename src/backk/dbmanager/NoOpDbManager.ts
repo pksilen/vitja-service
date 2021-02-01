@@ -105,12 +105,12 @@ export default class NoOpDbManager extends AbstractDbManager {
   }
 
   removeSubEntities<T extends Entity>(
-  ): Promise<void | ErrorResponse> {
+  ): Promise<T | ErrorResponse> {
     throw new Error('Not implemented')
   }
 
   removeSubEntityById<T extends Entity>(
-  ): Promise<void | ErrorResponse> {
+  ): Promise<T | ErrorResponse> {
     throw new Error('Not implemented')
   }
 

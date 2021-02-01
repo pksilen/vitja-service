@@ -21,6 +21,7 @@ import findParentEntityAndPropertyNameForSubEntity from '../../../../metadata/fi
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import { PostHook } from "../../../hooks/PostHook";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
 export default async function removeSubEntities<T extends Entity, U extends object>(
   dbManager: AbstractSqlDbManager,
@@ -28,8 +29,9 @@ export default async function removeSubEntities<T extends Entity, U extends obje
   subEntitiesJsonPath: string,
   EntityClass: new () => T,
   preHooks?: PreHook | PreHook[],
-  postHook?: PostHook
-): Promise<void | ErrorResponse> {
+  postHook?: PostHook,
+  postQueryOperations?: PostQueryOperations
+): Promise<T | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
@@ -82,11 +84,14 @@ export default async function removeSubEntities<T extends Entity, U extends obje
       }
     });
 
+    const response = await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
+
     if (postHook) {
       await tryExecutePostHook(postHook);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
+    return response;
   } catch (errorOrErrorResponse) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)

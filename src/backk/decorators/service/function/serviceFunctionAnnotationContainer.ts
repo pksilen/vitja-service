@@ -105,7 +105,7 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToHasNoAutoTestMap[`${serviceClass.name}${functionName}`] = true;
   }
 
-  expectServiceFunctionResponseValueToContainInTests(
+  expectServiceFunctionReturnValueToContainInTests(
     serviceClass: Function,
     functionName: string,
     fieldPathNameToFieldValueMap: { [key: string]: string }

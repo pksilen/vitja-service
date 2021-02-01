@@ -10,14 +10,3 @@
   tests:
     - testName: followed user
 
-- testTemplate:
-    serviceFunctionName: usersService.getUserByUserName
-    executeAfter: usersService.unfollowUser
-    argument:
-      userName: test@test.com
-    response:
-      statusCode: 200
-      tests:
-        - pm.expect(response.followedUsers).to.eql([])
-  tests:
-    - testName: ''

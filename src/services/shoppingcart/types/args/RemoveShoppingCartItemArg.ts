@@ -1,5 +1,5 @@
 import ShoppingCartIdAndUserId from './ShoppingCartIdAndUserId';
 
-export default class RemoveShoppingCartItemByIdArg extends ShoppingCartIdAndUserId {
+export default class RemoveShoppingCartItemArg extends ShoppingCartIdAndUserId {
   shoppingCartItemId!: string;
 }
