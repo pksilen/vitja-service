@@ -30,6 +30,7 @@ export default function addCustomTest(
       });
 
       const [serviceName, functionName] = instantiatedWrittenTest.testTemplate.serviceFunctionName.split('.');
+
       const serviceMetadata = servicesMetadata.find(
         (serviceMetadata) => serviceMetadata.serviceName === serviceName
       );
@@ -38,8 +39,40 @@ export default function addCustomTest(
 
       if (!serviceMetadata || !functionMetadata) {
         throw new Error(
-          'Unknown service function: ' + instantiatedWrittenTest.testTemplate.serviceFunctionName
+          'Integration tests: unknown service function: ' + instantiatedWrittenTest.testTemplate.serviceFunctionName
         );
+      }
+
+      if (instantiatedWrittenTest.testTemplate.executeBefore) {
+        const [serviceName, functionName] = instantiatedWrittenTest.testTemplate.executeBefore.split('.');
+
+        const serviceMetadata = servicesMetadata.find(
+          (serviceMetadata) => serviceMetadata.serviceName === serviceName
+        );
+
+        const functionMetadata = serviceMetadata?.functions.find((func) => func.functionName === functionName);
+
+        if (!serviceMetadata || !functionMetadata) {
+          throw new Error(
+            'Integration tests: unknown executeBefore: ' + instantiatedWrittenTest.testTemplate.serviceFunctionName
+          );
+        }
+      }
+
+      if (instantiatedWrittenTest.testTemplate.executeAfter) {
+        const [serviceName, functionName] = instantiatedWrittenTest.testTemplate.executeAfter.split('.');
+
+        const serviceMetadata = servicesMetadata.find(
+          (serviceMetadata) => serviceMetadata.serviceName === serviceName
+        );
+
+        const functionMetadata = serviceMetadata?.functions.find((func) => func.functionName === functionName);
+
+        if (!serviceMetadata || !functionMetadata) {
+          throw new Error(
+            'Integration tests: unknown executeAfter: ' + instantiatedWrittenTest.testTemplate.serviceFunctionName
+          );
+        }
       }
 
       const sampleFunctionArgument = getServiceFunctionTestArgument(

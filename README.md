@@ -1,9 +1,6 @@
 # Vitja service
 
 TODO
-  - Move dbcleanupservice method to salesitemservice
-    - create new sales item with special id assigned in tests and then deleteOldSalesItem
-    - ensure that create sales item was deleted
 - in Custom test, check that executeAfter, executeBefore and servicefunctionnames exists
 - create default sample args for regexps and other types (string)
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
