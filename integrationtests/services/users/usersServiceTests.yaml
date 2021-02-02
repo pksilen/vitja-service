@@ -1,12 +1,11 @@
 - testTemplate:
-    executeAfter: usersService.getUserByUserName
     serviceFunctionName: usersService.createUser
     argument:
       userName: test2@test.com
     response:
-      statusCode: 200
       tests:
         - pm.collectionVariables.set('followedUserId', response._id)
+    executeAfter: usersService.getUserByUserName
   tests:
     - testName: followed user
 

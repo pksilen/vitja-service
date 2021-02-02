@@ -16,6 +16,7 @@ import isReadFunction from '../crudresource/utils/isReadFunction';
 import isUpdateFunction from '../crudresource/utils/isUpdateFunction';
 import isDeleteFunction from '../crudresource/utils/isDeleteFunction';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import tryValidateIntegrationTests from './tryValidateIntegrationTests';
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -30,6 +31,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       return fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
     })
   );
+
+  tryValidateIntegrationTests(writtenTests, servicesMetadata);
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
     if (

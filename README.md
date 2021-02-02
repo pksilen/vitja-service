@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- in Custom test, check that executeAfter, executeBefore and servicefunctionnames exists
 - create default sample args for regexps and other types (string)
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true

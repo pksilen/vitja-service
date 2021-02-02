@@ -1,20 +1,17 @@
 - testTemplate:
-    executeAfter: salesItemsService.deleteOldUnsoldSalesItems
     serviceFunctionName: salesItemsService.getSalesItemById
     response:
       statusCode: 404
+    executeAfter: salesItemsService.deleteOldUnsoldSalesItems
   tests:
     - testName: not found
 
 - testTemplate:
-    executeAfter: salesItemsService.deleteOldUnsoldSalesItems
     serviceFunctionName: salesItemsService.createSalesItem
     response:
-      statusCode: 200
       tests:
         - pm.collectionVariables.set('salesItemId', response._id)
-  tests:
-    - testName:
+    executeAfter: salesItemsService.deleteOldUnsoldSalesItems
 
 - testTemplate:
     serviceFunctionName: salesItemsService.createSalesItem
@@ -27,7 +24,6 @@
       productSubCategory: '{{category}}'
       price: '{{price}}'
     response:
-      statusCode: 200
       tests:
         - pm.collectionVariables.set("salesItemId", response._id)
   tests:
@@ -53,7 +49,6 @@
       '{{argumentPropertyName2}}': '{{argumentPropertyValue2}}'
       includeResponseFields: []
     response:
-      statusCode: 200
       tests:
         - pm.expect(response[0].{{responsePropertyName}}).to.eql({{responsePropertyValue}});
           pm.expect(response.length).to.eql({{responseLength}});
