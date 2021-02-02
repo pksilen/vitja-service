@@ -10,7 +10,6 @@ export default class PaymentMethod extends Id {
 
   @IsCreditCard()
   @MaxLength(19)
-  @TestValue('4111 1111 1111 1111')
   public creditCardNumber!: string;
 
   @MaxLengthAndMatches(5, /^(0[1-9]|1[0-2])\/([0-9]{2})$/)

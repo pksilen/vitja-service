@@ -2,6 +2,7 @@
 
 TODO
 - create default sample args for regexps and other types (string)
+- If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem

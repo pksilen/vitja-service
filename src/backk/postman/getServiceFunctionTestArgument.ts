@@ -8,6 +8,7 @@ import typePropertyAnnotationContainer from '../decorators/typeproperty/typeProp
 import { doesClassPropertyContainCustomValidation } from '../validation/setClassPropertyValidationDecorators';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
+import getSampleStringArg from "./getSampleStringArg";
 
 export default function getServiceFunctionTestArgument(
   serviceTypes: { [key: string]: Function },
@@ -33,6 +34,7 @@ export default function getServiceFunctionTestArgument(
     return undefined;
   }
 
+  // noinspection FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
   Object.entries(argTypeProperties).forEach(([propertyName, propertyTypeName]: [string, string]) => {
     if (
       doesClassPropertyContainCustomValidation(
@@ -100,6 +102,7 @@ export default function getServiceFunctionTestArgument(
       getValidationConstraint(serviceTypes[argTypeName], propertyName, 'max') ??
       getCustomValidationConstraint(serviceTypes[argTypeName], propertyName, 'minMax', 2);
 
+    // noinspection IfStatementWithTooManyBranchesJS
     if (testValue !== undefined) {
       sampleArg[propertyName] = testValue;
     } else if (propertyName === '_id') {
@@ -123,8 +126,10 @@ export default function getServiceFunctionTestArgument(
     } else if (baseTypeName.startsWith('boolean')) {
       sampleArg[propertyName] = !isUpdate;
     } else if (baseTypeName.startsWith('string')) {
+      getSampleStringArg(serviceTypes[argTypeName], propertyName, isUpdate)
       sampleArg[propertyName] = isUpdate ? 'abcd' : 'abc';
     } else if (baseTypeName.startsWith('Date')) {
+      // noinspection MagicNumberJS
       sampleArg[propertyName] = isUpdate ? new Date(120000).toISOString() : new Date(60000).toISOString();
     } else if (isEnumTypeName(baseTypeName)) {
       let enumValues;

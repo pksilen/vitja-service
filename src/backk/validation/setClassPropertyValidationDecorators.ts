@@ -12,7 +12,7 @@ import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFrom
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 
-function getPropertyValidationOfType(typeClass: Function, propertyName: string, validationType: string) {
+export function getPropertyValidationOfType(typeClass: Function, propertyName: string, validationType: string) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
 
   return validationMetadatas.find(
