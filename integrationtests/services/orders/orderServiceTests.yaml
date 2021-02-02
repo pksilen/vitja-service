@@ -1,6 +1,6 @@
 - testTemplate:
-    serviceFunctionName: ordersService.updateOrderItemState
     executeAfter: ordersService.updateOrderItemState
+    serviceFunctionName: ordersService.updateOrderItemState
     argument:
       newState: '{{newState}}'
     response:
@@ -17,8 +17,8 @@
         newState: returned
 
 - testTemplate:
-    serviceFunctionName: salesItemsService.getSalesItemById
     executeAfter: ordersService.createOrder
+    serviceFunctionName: salesItemsService.getSalesItemById
     response:
       statusCode: 200
       tests:
@@ -27,8 +27,8 @@
     - testName: state == sold
 
 - testTemplate:
-    serviceFunctionName: salesItemsService.getSalesItemById
     executeAfter: ordersService.updateOrderItemState
+    serviceFunctionName: salesItemsService.getSalesItemById
     response:
       statusCode: 200
       tests:

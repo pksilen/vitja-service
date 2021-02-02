@@ -98,9 +98,11 @@ export default class MongoDbManager extends AbstractDbManager {
       }
 
       let result;
+
       await session.withTransaction(async () => {
         result = await executeDbOperations(this.mongoClient);
       });
+
       return result;
     } else {
       return await executeDbOperations(this.mongoClient);
@@ -137,12 +139,18 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  tryBeginTransaction(): Promise<void> {
+  async tryBeginTransaction(): Promise<void> {
     try {
       this.getClsNamespace()?.set('session', this.getClient().startSession());
     } catch(error) {
+      try {
+        await this.mongoClient.close();
+      } catch(error) {
+        // NO OPERATION
+      }
+
       this.mongoClient = new MongoClient(this.uri, { useNewUrlParser: true, useUnifiedTopology: true });
-      this.tryReserveDbConnectionFromPool();
+      await this.tryReserveDbConnectionFromPool();
       this.getClsNamespace()?.set('session', this.getClient().startSession());
     }
 

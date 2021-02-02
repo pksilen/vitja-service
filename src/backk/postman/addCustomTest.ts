@@ -1,7 +1,7 @@
-import _ from 'lodash';
-import createPostmanCollectionItemFromCustomTest from './createPostmanCollectionItemFromCustomTest';
-import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
-import getServiceFunctionTestArgument from './getServiceFunctionTestArgument';
+import _ from "lodash";
+import createPostmanCollectionItemFromCustomTest from "./createPostmanCollectionItemFromCustomTest";
+import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
+import getServiceFunctionTestArgument from "./getServiceFunctionTestArgument";
 
 export default function addCustomTest(
   writtenTest: any,
@@ -49,12 +49,10 @@ export default function addCustomTest(
         serviceMetadata
       );
 
-      const mergedArgument = {
+      instantiatedWrittenTest.testTemplate.argument = {
         ...sampleFunctionArgument,
         ...(instantiatedWrittenTest.testTemplate.argument || {})
       };
-
-      instantiatedWrittenTest.testTemplate.argument = mergedArgument;
 
       Object.keys(instantiatedWrittenTest.testTemplate.argument).forEach(
         (argumentKey: string) => {

@@ -21,8 +21,6 @@ import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggi
 import AuditLoggingServiceImpl from "../services/auditlogging/AuditLoggingServiceImpl";
 import TagsService from "../services/tags/TagsService";
 import TagsServiceImpl from "../services/tags/TagsServiceImpl";
-import DbCleanupService from "../services/dbcleanup/DbCleanupService";
-import DbCleanupServiceImpl from "../services/dbcleanup/DbCleanupServiceImpl";
 import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
 import { mongoDbManager } from "../database/mongoDbManager";
 import { mySqlDbManager } from "../database/mySqlDatabaseManager";
@@ -48,8 +46,7 @@ import { mySqlDbManager } from "../database/mySqlDatabaseManager";
     { provide: TagsService, useClass: TagsServiceImpl },
     { provide: UsersService, useClass: UsersServiceImpl },
     { provide: OrdersService, useClass: OrdersServiceImpl },
-    { provide: ShoppingCartService, useClass: ShoppingCartServiceImpl },
-    { provide: DbCleanupService, useClass: DbCleanupServiceImpl }
+    { provide: ShoppingCartService, useClass: ShoppingCartServiceImpl }
   ]
 })
 export class AppModule {}

@@ -58,12 +58,8 @@ export default function generateServicesMetadata<T>(
       const functions: FunctionMetadata[] = functionNames
         .filter(
           (functionName) =>
-            !serviceFunctionAnnotationContainer.isServiceFunctionPrivate(
+            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForServiceInternalUse(
               (controller as any)[serviceName].constructor,
-              functionName
-            ) &&
-            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(
-              ServiceClass,
               functionName
             )
         )
@@ -79,7 +75,7 @@ export default function generateServicesMetadata<T>(
               functionName
             ) &&
             serviceFunctionAnnotationContainer.getAllowedUserRoles(ServiceClass, functionName).length === 0 &&
-            !serviceFunctionAnnotationContainer.isServiceFunctionPrivate(ServiceClass, functionName) &&
+            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForServiceInternalUse(ServiceClass, functionName) &&
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForTests(ServiceClass, functionName)
           ) {
             throw new Error(serviceName + '.' + functionName + ': is missing authorization annotation');

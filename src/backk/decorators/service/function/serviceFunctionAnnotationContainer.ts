@@ -6,7 +6,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToIsAllowedForEveryUserMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsAllowedForClusterInternalUseMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsAllowedForSelfMap: { [key: string]: boolean } = {};
-  private readonly serviceFunctionNameToIsPrivateMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToIsAllowedForServicePrivateUseMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
   private readonly serviceFunctionNameToDocStringMap: { [key: string]: string } = {};
   private readonly serviceFunctionNameToExpectedResponseStatusCodeInTestsMap: { [key: string]: number } = {};
@@ -43,8 +43,8 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToIsAllowedForSelfMap[`${serviceClass.name}${functionName}`] = true;
   }
 
-  addPrivateServiceFunction(serviceClass: Function, functionName: string) {
-    this.serviceFunctionNameToIsPrivateMap[`${serviceClass.name}${functionName}`] = true;
+  addServiceFunctionAllowedForServiceInternalUse(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToIsAllowedForServicePrivateUseMap[`${serviceClass.name}${functionName}`] = true;
   }
 
   addDocumentationForServiceFunction(serviceClass: Function, functionName: string, docString: string) {
@@ -176,10 +176,10 @@ class ServiceFunctionAnnotationContainer {
     return false;
   }
 
-  isServiceFunctionPrivate(serviceClass: Function, functionName: string) {
+  isServiceFunctionAllowedForServiceInternalUse(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.serviceFunctionNameToIsPrivateMap[`${proto.constructor.name}${functionName}`] !== undefined) {
+      if (this.serviceFunctionNameToIsAllowedForServicePrivateUseMap[`${proto.constructor.name}${functionName}`] !== undefined) {
         return true;
       }
       proto = Object.getPrototypeOf(proto);

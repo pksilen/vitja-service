@@ -30,6 +30,9 @@ import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUs
 import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
 import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
 import awaitDbOperationAndGetResultOfPredicate from '../../backk/utils/getErrorResponseOrResultOf';
+import { CronJob } from '../../backk/decorators/service/function/CronJob';
+import DeleteOldUnsoldSalesItemsArg from './types/args/DeleteOldUnsoldSalesItemsArg';
+import dayjs from 'dayjs';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -162,7 +165,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
           preHookFunc: ([{ state }]) => state === 'forSale',
           errorMessageOnPreHookFuncFailure: SALES_ITEM_STATE_MUST_BE_FOR_SALE
         },
-        ([{ _id, price }]) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, []),
+        ([{ _id, price }]) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, [])
       ]
     );
   }
@@ -183,6 +186,38 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
             errorMessageOnPreHookFuncFailure: INVALID_SALES_ITEM_STATE
           }
         : undefined
+    );
+  }
+
+  @CronJob({ minutes: 0, hours: 2 }, [1, 2, 5, 10, 30, 60, 120, 500])
+  deleteOldUnsoldSalesItems({
+    deletableUnsoldSalesItemMinAgeInMonths
+  }: DeleteOldUnsoldSalesItemsArg): Promise<void | ErrorResponse> {
+    console.log(
+      'deleteOldUnsoldSalesItems: ' + new Date(),
+      dayjs()
+        .subtract(deletableUnsoldSalesItemMinAgeInMonths, 'months')
+        .toDate()
+    );
+    return this.dbManager.deleteEntitiesByFilters(
+      this.dbManager instanceof MongoDbManager
+        ? [
+            new MongoDbQuery<SalesItem>({
+              state: 'forSale',
+              createdAtTimestamp: {
+                $lt: dayjs()
+                  .subtract(deletableUnsoldSalesItemMinAgeInMonths, 'months')
+                  .toDate()
+              }
+            })
+          ]
+        : [
+            new SqlEquals({ state: 'forSale' }),
+            new SqlExpression(
+              `createdattimestamp < current_timestamp() - INTERVAL ${deletableUnsoldSalesItemMinAgeInMonths} month`
+            )
+          ],
+      SalesItem
     );
   }
 

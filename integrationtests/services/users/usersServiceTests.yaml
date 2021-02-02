@@ -1,6 +1,6 @@
 - testTemplate:
-    serviceFunctionName: usersService.createUser
     executeAfter: usersService.getUserByUserName
+    serviceFunctionName: usersService.createUser
     argument:
       userName: test2@test.com
     response:

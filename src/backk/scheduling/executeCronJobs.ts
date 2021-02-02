@@ -10,6 +10,7 @@ import { createNamespace } from 'cls-hooked';
 import { logError } from '../observability/logging/log';
 import isErrorResponse from '../errors/isErrorResponse';
 import tryExecuteServiceMethod from '../execution/tryExecuteServiceMethod';
+import findServiceFunctionArgumentType from '../metadata/findServiceFunctionArgumentType';
 
 const cronJobs: { [key: string]: CronJob } = {};
 
@@ -44,12 +45,19 @@ export default function executeCronJobs(controller: any, dbManager: AbstractDbMa
                     }
                   );
 
+                  const ServiceFunctionArgType = findServiceFunctionArgumentType(
+                    controller,
+                    serviceFunctionName
+                  );
+
+                  const serviceFunctionArgument = ServiceFunctionArgType ? new ServiceFunctionArgType() : {};
+
                   return (
                     possibleErrorResponse ||
                     (await tryExecuteServiceMethod(
                       controller,
                       serviceFunctionName,
-                      {},
+                      serviceFunctionArgument,
                       {},
                       undefined,
                       undefined,

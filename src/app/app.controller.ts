@@ -23,7 +23,6 @@ import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggi
 import initializeController from "../backk/controller/initializeController";
 import TagsService from "../services/tags/TagsService";
 import AbstractDbManager from "../backk/dbmanager/AbstractDbManager";
-import DbCleanupService from "../services/dbcleanup/DbCleanupService";
 
 export let appController: any;
 
@@ -41,8 +40,7 @@ export class AppController {
     private readonly tagsService: TagsService,
     private readonly salesItemsService: SalesItemsService,
     private readonly shoppingCartService: ShoppingCartService,
-    private readonly ordersService: OrdersService,
-    private readonly dbCleanupService: DbCleanupService
+    private readonly ordersService: OrdersService
   ) {
     appController = this;
     initializeController(appController, dbManager);

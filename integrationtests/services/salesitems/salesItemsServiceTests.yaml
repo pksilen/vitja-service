@@ -1,4 +1,22 @@
 - testTemplate:
+    executeAfter: salesItemsService.deleteOldUnsoldSalesItems
+    serviceFunctionName: salesItemsService.getSalesItemById
+    response:
+      statusCode: 404
+  tests:
+    - testName: not found
+
+- testTemplate:
+    executeAfter: salesItemsService.deleteOldUnsoldSalesItems
+    serviceFunctionName: salesItemsService.createSalesItem
+    response:
+      statusCode: 200
+      tests:
+        - pm.collectionVariables.set('salesItemId', response._id)
+  tests:
+    - testName:
+
+- testTemplate:
     serviceFunctionName: salesItemsService.createSalesItem
     argument:
       title: '{{title}}'

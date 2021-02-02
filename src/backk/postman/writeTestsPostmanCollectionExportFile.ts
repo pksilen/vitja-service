@@ -43,6 +43,15 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     let previousFunctionType: string;
     let lastGetFunctionMetadata: FunctionMetadata | undefined;
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
+      writtenTests
+        .filter(
+          ({ testTemplate: { executeBefore } }) =>
+            executeBefore === serviceMetadata.serviceName + '.' + functionMetadata.functionName
+        )
+        .forEach((writtenTest) => {
+          addCustomTest(writtenTest, controller, servicesMetadata, items);
+        });
+
       if (
         serviceFunctionAnnotationContainer.hasNoAutoTests(
           (controller as any)[serviceMetadata.serviceName].constructor,
@@ -70,7 +79,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         (controller as any)[serviceMetadata.serviceName].constructor,
         functionMetadata.functionName
       );
-
 
       const tests = getServiceFunctionTests(
         (controller as any)[serviceMetadata.serviceName].Types,
@@ -125,7 +133,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         );
 
         if (!foundCustomTest) {
-
           const expectedResponseFieldPathNameToFieldValueMapInTests = serviceFunctionAnnotationContainer.getExpectedResponseValueFieldPathNameToFieldValueMapForTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
             lastGetFunctionMetadata.functionName
