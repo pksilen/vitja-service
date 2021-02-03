@@ -1,6 +1,10 @@
 import RandExp from 'randexp';
-import { getPropertyValidationOfType } from '../validation/setClassPropertyValidationDecorators';
+import {
+  doesClassPropertyContainCustomValidation,
+  getPropertyValidationOfType
+} from "../validation/setClassPropertyValidationDecorators";
 import getValidationConstraint from '../validation/getValidationConstraint';
+import getCustomValidationConstraint from "../validation/getCustomValidationConstraint";
 
 const classAndPropertyNameToSampleStringMap: { [key: string]: string } = {}
 
@@ -282,7 +286,24 @@ export default function getSampleStringArg(Class: Function, propertyName: string
     }
 
     const randomRegExp = new RandExp(matchesValidationConstraint);
+    randomRegExp.max = 10;
     const sampleString = randomRegExp.gen();
+    classAndPropertyNameToSampleStringMap[`${Class.name}_${propertyName}`] = sampleString;
+    return sampleString;
+  }
+
+  const hasLengthAndMatchesValiation = doesClassPropertyContainCustomValidation(Class, propertyName, 'lengthAndMatches');
+  const maxLengthConstraint = getCustomValidationConstraint(Class, propertyName, 'lengthAndMatches', 2)
+  const regExpConstraint = getCustomValidationConstraint(Class, propertyName, 'lengthAndMatches', 3)
+
+  if (hasLengthAndMatchesValiation) {
+    if (classAndPropertyNameToSampleStringMap[`${Class.name}_${propertyName}`]) {
+      return classAndPropertyNameToSampleStringMap[`${Class.name}_${propertyName}`]
+    }
+
+    const randomRegExp = new RandExp(regExpConstraint);
+    randomRegExp.max = 10;
+    const sampleString = randomRegExp.gen().slice(0, maxLengthConstraint);
     classAndPropertyNameToSampleStringMap[`${Class.name}_${propertyName}`] = sampleString;
     return sampleString;
   }
