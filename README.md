@@ -1,20 +1,18 @@
 # Vitja service
 
 TODO
-- Truncate to MaxLength, Length
-- Generate longer: Length, lengthAndMatches
-- Support MatchesAll 
-- IsOneOfFrom('usersService.getCities')
+- Support MatchesAll
+- Require validation for Strings, if none, use isAnyString()
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation
-- Require validation for Strings, if none, use isAnyString()
-- request's description in postman.json should list possible enum values
+- IsOneOfFrom('usersService.getCities')
 - postman api def json: add sample response
+- request's description in postman.json should list possible enum values
 - In initializeDB, check if field is integer => bigInt or varChar should be longer
-- user can create db preparation files in dbPreparation directory, eg.
-  Tag.json will contain Tags to be inserted for certain version change e.g. null => 1.0
-  - store 
+  - store table metadata to backk_table_metadata, with columns: tableName, columnName, columnType
+- user can create db preparation service, whose all methods are executed in order
+  - methods can use function: migrateDb(fromVersion, toVersion, migrationFunc)
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem

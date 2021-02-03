@@ -299,6 +299,30 @@ export default function getSampleStringValue(
     }
   }
 
+  const hasLengthAndMatchesAllValidation = doesClassPropertyContainCustomValidation(
+    Class,
+    propertyName,
+    'lengthAndMatchesAll'
+  );
+
+  if (hasLengthAndMatchesAllValidation) {
+    const maxLengthConstraint = getCustomValidationConstraint(Class, propertyName, 'lengthAndMatchesAll', 2);
+    const regExpConstraints: RegExp[] = getCustomValidationConstraint(Class, propertyName, 'lengthAndMatchesAll', 3);
+
+    if (regExpToSampleStringMap[regExpConstraints.join('')]) {
+      sampleStringValue = regExpToSampleStringMap[regExpConstraints.join('')];
+    } else {
+      sampleStringValue = regExpConstraints.reduce((sampleStringValue: string, regExp: RegExp) => {
+        const randomRegExp = new RandExp(regExp);
+        randomRegExp.max = 5;
+        return sampleStringValue + randomRegExp.gen();
+      }, '');
+
+      sampleStringValue = sampleStringValue.slice(0, maxLengthConstraint);
+      regExpToSampleStringMap[regExpConstraints.join('')] = sampleStringValue;
+    }
+  }
+
   const hasMaxLengthAndMatchesValidation = doesClassPropertyContainCustomValidation(
     Class,
     propertyName,
@@ -316,6 +340,30 @@ export default function getSampleStringValue(
       randomRegExp.max = 10;
       sampleStringValue = randomRegExp.gen().slice(0, maxLengthConstraint);
       regExpToSampleStringMap[regExpConstraint] = sampleStringValue;
+    }
+  }
+
+  const hasMaxLengthAndMatchesAllValidation = doesClassPropertyContainCustomValidation(
+    Class,
+    propertyName,
+    'maxLengthAndMatchesAll'
+  );
+
+  if (hasMaxLengthAndMatchesAllValidation) {
+    const maxLengthConstraint = getCustomValidationConstraint(Class, propertyName, 'maxLengthAndMatchesAll', 1);
+    const regExpConstraints: RegExp[] = getCustomValidationConstraint(Class, propertyName, 'maxLengthAndMatchesAll', 2);
+
+    if (regExpToSampleStringMap[regExpConstraints.join('')]) {
+      sampleStringValue = regExpToSampleStringMap[regExpConstraints.join('')];
+    } else {
+      sampleStringValue = regExpConstraints.reduce((sampleStringValue: string, regExp: RegExp) => {
+        const randomRegExp = new RandExp(regExp);
+        randomRegExp.max = 5;
+        return sampleStringValue + randomRegExp.gen();
+      }, '');
+
+      sampleStringValue = sampleStringValue.slice(0, maxLengthConstraint);
+      regExpToSampleStringMap[regExpConstraints.join('')] = sampleStringValue;
     }
   }
 
