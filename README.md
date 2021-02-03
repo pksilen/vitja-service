@@ -1,9 +1,9 @@
 # Vitja service
 
 TODO
-- Other Matches: maxLengthAndMacthes
 - Truncate to MaxLength, MaxLengthAndMaches, Length, LengthAndMatches
 - Generate longer: Length, lengthAndMatches
+- Support MatchesAll 
 - IsOneOfFrom('usersService.getCities')
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
 - Add isCreditCardExpiry validation, check that expiry is in the future

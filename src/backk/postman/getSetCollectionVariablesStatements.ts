@@ -19,13 +19,13 @@ export default function getSetCollectionVariableStatements(
       collectionVariableSetStatements.push(
         `  pm.collectionVariables.set("${entityName}Id", response${responsePath}_id)`
       );
-      collectionVariableSetStatements.push('} catch(errorMessageOnPreHookFuncFailure) {\n}');
+      collectionVariableSetStatements.push('} catch(error) {\n}');
     } else if (propertyName === 'id') {
       collectionVariableSetStatements.push('try {');
       collectionVariableSetStatements.push(
         `  pm.collectionVariables.set("${entityName}Id", response${responsePath}id)`
       );
-      collectionVariableSetStatements.push('} catch(errorMessageOnPreHookFuncFailure) {\n}');
+      collectionVariableSetStatements.push('} catch(error) {\n}');
     }
 
     if (types[baseTypeName]) {

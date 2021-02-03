@@ -1,7 +1,7 @@
 import { ArrayMaxSize, IsEmail, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
-import { IsExprTrue } from "../../../../backk/decorators/typeproperty/IsExprTrue";
+import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
 import { TestValue } from "../../../../backk/decorators/typeproperty/testing/TestValue";
 import DefaultPaymentMethod from "./DefaultPaymentMethod";
 import PaymentMethod from "./PaymentMethod";
@@ -28,11 +28,11 @@ export default class User extends _IdAndCaptcha {
   public isBusinessUser!: boolean;
 
   @Documentation('Password doc goes here...')
-  @IsExprTrue(
+  @ShouldBeTrueForEntity(
     ({ password }) => !password.toLowerCase().includes('password'),
     'Password may not contain word password'
   )
-  @IsExprTrue(
+  @ShouldBeTrueForEntity(
     ({ password, userName }) => (!password.toLowerCase().includes(userName.toLowerCase())),
     'Password may not contain username'
   )

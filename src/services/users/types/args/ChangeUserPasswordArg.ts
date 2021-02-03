@@ -4,7 +4,7 @@
 
 import { IsEmail, MaxLength } from 'class-validator';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
-import { IsExprTrue } from '../../../../backk/decorators/typeproperty/IsExprTrue';
+import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
@@ -31,11 +31,11 @@ export default class ChangeUserPasswordArg {
   userName!: string;
 
   @Documentation('Password doc goes here...')
-  @IsExprTrue(
+  @ShouldBeTrueForEntity(
     ({ password }) => !password.toLowerCase().includes('password'),
     'Password may not contain word password'
   )
-  @IsExprTrue(
+  @ShouldBeTrueForEntity(
     ({ password, userName }) => !password.toLowerCase().includes(userName.toLowerCase()),
     'Password may not contain username'
   )
