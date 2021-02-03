@@ -335,5 +335,36 @@ export default function getSampleStringValue(
     sampleStringValue = sampleStringValue.toUpperCase();
   }
 
+  const maxLengthValidation = getPropertyValidationOfType(Class, propertyName, 'maxLength');
+
+  if (maxLengthValidation) {
+    const maxLengthConstraint = getValidationConstraint(Class, propertyName, 'maxLength');
+
+    sampleStringValue = sampleStringValue.slice(0, maxLengthConstraint);
+  }
+
+  const lengthValidation = getPropertyValidationOfType(Class, propertyName, 'isLength');
+
+  if (lengthValidation) {
+    const minLengthConstraint = getValidationConstraint(Class, propertyName, 'isLength', 0);
+    const maxLengthConstraint = getValidationConstraint(Class, propertyName, 'isLength', 1);
+
+    while (sampleStringValue.length < minLengthConstraint) {
+      sampleStringValue += sampleStringValue;
+    }
+
+    sampleStringValue = sampleStringValue.slice(0, maxLengthConstraint);
+  }
+
+  const minLengthValidation = getPropertyValidationOfType(Class, propertyName, 'minLength');
+
+  if (minLengthValidation) {
+    const minLengthConstraint = getValidationConstraint(Class, propertyName, 'minLength');
+
+    while (sampleStringValue.length < minLengthConstraint) {
+      sampleStringValue += sampleStringValue;
+    }
+  }
+
   return sampleStringValue;
 }
