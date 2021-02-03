@@ -308,5 +308,21 @@ export default function getSampleStringArg(Class: Function, propertyName: string
     return sampleString;
   }
 
+  const hasMaxLengthAndMatchesValiation = doesClassPropertyContainCustomValidation(Class, propertyName, 'maxLengthAndMatches');
+
+  if (hasMaxLengthAndMatchesValiation) {
+    if (classAndPropertyNameToSampleStringMap[`${Class.name}_${propertyName}`]) {
+      return classAndPropertyNameToSampleStringMap[`${Class.name}_${propertyName}`]
+    }
+
+    const maxLengthConstraint = getCustomValidationConstraint(Class, propertyName, 'maxLengthAndMatches', 1)
+    const regExpConstraint = getCustomValidationConstraint(Class, propertyName, 'maxLengthAndMatches', 2)
+    const randomRegExp = new RandExp(regExpConstraint);
+    randomRegExp.max = 10;
+    const sampleString = randomRegExp.gen().slice(0, maxLengthConstraint);
+    classAndPropertyNameToSampleStringMap[`${Class.name}_${propertyName}`] = sampleString;
+    return sampleString;
+  }
+
   return isUpdate ? 'abcd' : 'abc';
 }
