@@ -1,8 +1,20 @@
 # Vitja service
 
 TODO
-- create default sample args for regexps and other types (string)
+- Other Matches: LengthAndMatches, maxLengthAndMacthes
+- Truncate to MaxLength, MaxLengthAndMaches, Length, LengthAndMatches
+- Generate longer: Length, lengthAndMatches
+- IsOneOfFrom('usersService.getCities')
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
+- Add isCreditCardExpiry validation, check that expiry is in the future
+- Add isCVC validation
+- Require validation for Strings, if none, use isAnyString()
+- request's description in postman.json should list possible enum values
+- postman api def json: add sample response
+- In initializeDB, check if field is integer => bigInt or varChar should be longer
+- user can create db preparation files in dbPreparation directory, eg.
+  Tag.json will contain Tags to be inserted for certain version change e.g. null => 1.0
+  - store 
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem

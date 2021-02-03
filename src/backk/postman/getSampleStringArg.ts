@@ -2,6 +2,8 @@ import RandExp from 'randexp';
 import { getPropertyValidationOfType } from '../validation/setClassPropertyValidationDecorators';
 import getValidationConstraint from '../validation/getValidationConstraint';
 
+const classAndPropertyNameToSampleStringMap: { [key: string]: string } = {}
+
 export default function getSampleStringArg(Class: Function, propertyName: string, isUpdate: boolean): string {
   const booleanStringValidation = getPropertyValidationOfType(Class, propertyName, 'isBooleanString');
 
@@ -275,8 +277,14 @@ export default function getSampleStringArg(Class: Function, propertyName: string
   const matchesValidationConstraint: RegExp = getValidationConstraint(Class, propertyName, 'matches');
 
   if (matchesValidation) {
+    if (classAndPropertyNameToSampleStringMap[`${Class.name}_${propertyName}`]) {
+      return classAndPropertyNameToSampleStringMap[`${Class.name}_${propertyName}`]
+    }
+
     const randomRegExp = new RandExp(matchesValidationConstraint);
-    return randomRegExp.gen();
+    const sampleString = randomRegExp.gen();
+    classAndPropertyNameToSampleStringMap[`${Class.name}_${propertyName}`] = sampleString;
+    return sampleString;
   }
 
   return isUpdate ? 'abcd' : 'abc';

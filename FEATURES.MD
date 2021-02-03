@@ -1,0 +1,3 @@
+- No need to learn new type system, types are same as in Typescript (as opposed to GraphQl)
+- Validation is ALWAYS required for literal types: numbers and string (as compared to GraphQl)
+- Database upgrades are open for extension and closed for modification (Open-Close principle)

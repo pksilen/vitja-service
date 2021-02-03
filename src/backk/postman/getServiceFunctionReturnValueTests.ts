@@ -6,6 +6,7 @@ import isEnumTypeName from '../utils/type/isEnumTypeName';
 import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFromSrcFile';
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
+import getSampleStringArg from "./getSampleStringArg";
 
 export default function getServiceFunctionReturnValueTests(
   serviceTypes: { [key: string]: Function },
@@ -79,6 +80,7 @@ export default function getServiceFunctionReturnValueTests(
       getCustomValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'minMax', 2);
 
     if (isManyToMany) {
+      // noinspection AssignmentToFunctionParameterJS
       isUpdate = false;
     }
 
@@ -106,9 +108,12 @@ export default function getServiceFunctionReturnValueTests(
     } else if (isNullableType && !isUpdate && !types[baseTypeName]) {
       expectedValue = null;
     } else {
+      let sampleString;
+
       switch (baseTypeName) {
         case 'string':
-          expectedValue = isUpdate ? "'abcd'" : "'abc'";
+          sampleString = getSampleStringArg(serviceTypes[returnValueTypeName], propertyName, isUpdate);
+          expectedValue = `'${sampleString}'`;
           break;
         case 'boolean':
           expectedValue = !isUpdate;

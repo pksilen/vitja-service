@@ -97,7 +97,7 @@ export default class MongoDbManager extends AbstractDbManager {
         throw new Error('Session not set');
       }
 
-      let result;
+      let result = undefined;
 
       await session.withTransaction(async () => {
         result = await executeDbOperations(this.mongoClient);
@@ -153,8 +153,6 @@ export default class MongoDbManager extends AbstractDbManager {
       await this.tryReserveDbConnectionFromPool();
       this.getClsNamespace()?.set('session', this.getClient().startSession());
     }
-
-    return Promise.resolve();
   }
 
   cleanupTransaction() {

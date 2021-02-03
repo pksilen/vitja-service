@@ -126,8 +126,7 @@ export default function getServiceFunctionTestArgument(
     } else if (baseTypeName.startsWith('boolean')) {
       sampleArg[propertyName] = !isUpdate;
     } else if (baseTypeName.startsWith('string')) {
-      getSampleStringArg(serviceTypes[argTypeName], propertyName, isUpdate)
-      sampleArg[propertyName] = isUpdate ? 'abcd' : 'abc';
+      sampleArg[propertyName] = getSampleStringArg(serviceTypes[argTypeName], propertyName, isUpdate);
     } else if (baseTypeName.startsWith('Date')) {
       // noinspection MagicNumberJS
       sampleArg[propertyName] = isUpdate ? new Date(120000).toISOString() : new Date(60000).toISOString();
