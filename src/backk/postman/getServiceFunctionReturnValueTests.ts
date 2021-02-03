@@ -6,7 +6,7 @@ import isEnumTypeName from '../utils/type/isEnumTypeName';
 import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFromSrcFile';
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
-import getSampleStringArg from "./getSampleStringArg";
+import getSampleStringValue from "./getSampleStringValue";
 
 export default function getServiceFunctionReturnValueTests(
   serviceTypes: { [key: string]: Function },
@@ -112,7 +112,7 @@ export default function getServiceFunctionReturnValueTests(
 
       switch (baseTypeName) {
         case 'string':
-          sampleString = getSampleStringArg(serviceTypes[returnValueTypeName], propertyName, isUpdate);
+          sampleString = getSampleStringValue(serviceTypes[returnValueTypeName], propertyName, isUpdate);
           expectedValue = `'${sampleString}'`;
           break;
         case 'boolean':

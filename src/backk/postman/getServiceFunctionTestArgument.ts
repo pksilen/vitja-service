@@ -8,7 +8,7 @@ import typePropertyAnnotationContainer from '../decorators/typeproperty/typeProp
 import { doesClassPropertyContainCustomValidation } from '../validation/setClassPropertyValidationDecorators';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
-import getSampleStringArg from "./getSampleStringArg";
+import getSampleStringValue from "./getSampleStringValue";
 
 export default function getServiceFunctionTestArgument(
   serviceTypes: { [key: string]: Function },
@@ -126,7 +126,7 @@ export default function getServiceFunctionTestArgument(
     } else if (baseTypeName.startsWith('boolean')) {
       sampleArg[propertyName] = !isUpdate;
     } else if (baseTypeName.startsWith('string')) {
-      sampleArg[propertyName] = getSampleStringArg(serviceTypes[argTypeName], propertyName, isUpdate);
+      sampleArg[propertyName] = getSampleStringValue(serviceTypes[argTypeName], propertyName, isUpdate);
     } else if (baseTypeName.startsWith('Date')) {
       // noinspection MagicNumberJS
       sampleArg[propertyName] = isUpdate ? new Date(120000).toISOString() : new Date(60000).toISOString();

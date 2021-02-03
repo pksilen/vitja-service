@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO
-- Truncate to MaxLength, MaxLengthAndMaches, Length, LengthAndMatches
+- Truncate to MaxLength, Length
 - Generate longer: Length, lengthAndMatches
 - Support MatchesAll 
 - IsOneOfFrom('usersService.getCities')
