@@ -13,16 +13,17 @@ import Order from "../../../orders/types/entities/Order";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
 import FollowedUser from "./FollowedUser";
 import FollowingUser from "./FollowingUser";
+import AllowAnyString from "../../../../backk/decorators/typeproperty/AllowAnyString";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
   @Unique()
   @MaxLength(512)
   @IsEmail()
-  @TestValue('test@test.com')
   userName!: string;
 
   @MaxLength(512)
+  @AllowAnyString()
   public displayName!: string;
 
   public isBusinessUser!: boolean;

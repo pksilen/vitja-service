@@ -390,7 +390,11 @@ export default function getSampleStringValue(
     }
   }
 
-  sampleStringValue = getClassPropertyCustomValidationTestValue(Class, propertyName);
+  const customValidationTestValue = getClassPropertyCustomValidationTestValue(Class, propertyName);
+  
+  if (customValidationTestValue) {
+    sampleStringValue = customValidationTestValue
+  }
 
   // noinspection OverlyComplexBooleanExpressionJS
   if (

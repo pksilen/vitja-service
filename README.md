@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO
+- Add Unique() to Tag.name
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
