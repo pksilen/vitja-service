@@ -36,8 +36,7 @@ export default class User extends _IdAndCaptcha {
     ({ password, userName }) => (!password.toLowerCase().includes(userName.toLowerCase())),
     'Password may not contain username'
   )
-  @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
-  @TestValue('Jepulis0!')
+  @LengthAndMatchesAll(8, 512, [/[a-z]+/, /[A-Z]+/, /\d+/, /[^\w\s]+/])
   password!: string;
 
   @MaxLength(512)

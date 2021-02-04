@@ -4,11 +4,11 @@
 
 import { IsEmail, MaxLength } from 'class-validator';
 import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
-import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
 import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
 import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 
@@ -39,11 +39,9 @@ export default class ChangeUserPasswordArg {
     ({ password, userName }) => !password.toLowerCase().includes(userName.toLowerCase()),
     'Password may not contain username'
   )
-  @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
-  @TestValue('Jepulis0!')
+  @LengthAndMatchesAll(8, 512, [/[a-z]+/, /[A-Z]+/, /\d+/, /[^\w\s]+/])
   password!: string;
 
-  @LengthAndMatchesAll(8, 512, [/[a-z]/, /[A-Z]/, /\d/, /[^\w\s]/])
-  @TestValue('Jepulis0!')
+  @LengthAndMatchesAll(8, 512, [/[a-z]+/, /[A-Z]+/, /\d+/, /[^\w\s]+/])
   currentPassword!: string;
 }
