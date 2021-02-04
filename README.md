@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- create custom validator with test value
 - Require validation for Strings, if none, use isAnyString()
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation

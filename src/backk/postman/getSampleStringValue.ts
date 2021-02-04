@@ -64,6 +64,12 @@ export default function getSampleStringValue(
     sampleStringValue = '2011-10-05T14:48:00.000Z';
   }
 
+  const decimalValidation = getPropertyValidationOfType(Class, propertyName, 'isDecimal');
+
+  if (decimalValidation) {
+    sampleStringValue = '1.23';
+  }
+
   const eanValidation = getPropertyValidationOfType(Class, propertyName, 'isEAN');
 
   if (eanValidation) {
@@ -307,7 +313,12 @@ export default function getSampleStringValue(
 
   if (hasLengthAndMatchesAllValidation) {
     const maxLengthConstraint = getCustomValidationConstraint(Class, propertyName, 'lengthAndMatchesAll', 2);
-    const regExpConstraints: RegExp[] = getCustomValidationConstraint(Class, propertyName, 'lengthAndMatchesAll', 3);
+    const regExpConstraints: RegExp[] = getCustomValidationConstraint(
+      Class,
+      propertyName,
+      'lengthAndMatchesAll',
+      3
+    );
 
     if (regExpToSampleStringMap[regExpConstraints.join('')]) {
       sampleStringValue = regExpToSampleStringMap[regExpConstraints.join('')];
@@ -350,8 +361,18 @@ export default function getSampleStringValue(
   );
 
   if (hasMaxLengthAndMatchesAllValidation) {
-    const maxLengthConstraint = getCustomValidationConstraint(Class, propertyName, 'maxLengthAndMatchesAll', 1);
-    const regExpConstraints: RegExp[] = getCustomValidationConstraint(Class, propertyName, 'maxLengthAndMatchesAll', 2);
+    const maxLengthConstraint = getCustomValidationConstraint(
+      Class,
+      propertyName,
+      'maxLengthAndMatchesAll',
+      1
+    );
+    const regExpConstraints: RegExp[] = getCustomValidationConstraint(
+      Class,
+      propertyName,
+      'maxLengthAndMatchesAll',
+      2
+    );
 
     if (regExpToSampleStringMap[regExpConstraints.join('')]) {
       sampleStringValue = regExpToSampleStringMap[regExpConstraints.join('')];
@@ -365,6 +386,27 @@ export default function getSampleStringValue(
       sampleStringValue = sampleStringValue.slice(0, maxLengthConstraint);
       regExpToSampleStringMap[regExpConstraints.join('')] = sampleStringValue;
     }
+  }
+
+  if (sampleStringValue === undefined &&
+    !doesClassPropertyContainCustomValidation(Class, propertyName, 'allowAnyString') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isCurrency') &&
+    !getPropertyValidationOfType(Class, propertyName, 'IsFirebasePushId') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isHash') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isIdentityCard') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isMobilePhone') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isMongoId') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isPassportNumber') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isPhoneNumber') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isPostalCode') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isRFC3339')
+  ) {
+    throw new Error(
+      Class.name +
+        '.' +
+        propertyName +
+        ' needs have a string value validator or use @AllowAnyString() annotation'
+    );
   }
 
   if (sampleStringValue === undefined) {
