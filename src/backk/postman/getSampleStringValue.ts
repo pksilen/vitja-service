@@ -1,13 +1,15 @@
-import RandExp from 'randexp';
+import RandExp from "randexp";
 import {
   doesClassPropertyContainCustomValidation,
+  getClassPropertyCustomValidationTestValue,
   getPropertyValidationOfType
-} from '../validation/setClassPropertyValidationDecorators';
-import getValidationConstraint from '../validation/getValidationConstraint';
-import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
+} from "../validation/setClassPropertyValidationDecorators";
+import getValidationConstraint from "../validation/getValidationConstraint";
+import getCustomValidationConstraint from "../validation/getCustomValidationConstraint";
 
 const regExpToSampleStringMap: { [key: string]: string } = {};
 
+// noinspection OverlyComplexBooleanExpressionJS,OverlyComplexBooleanExpressionJS
 export default function getSampleStringValue(
   Class: Function,
   propertyName: string,
@@ -388,8 +390,15 @@ export default function getSampleStringValue(
     }
   }
 
-  if (sampleStringValue === undefined &&
+  sampleStringValue = getClassPropertyCustomValidationTestValue(Class, propertyName);
+
+  // noinspection OverlyComplexBooleanExpressionJS
+  if (
+    sampleStringValue === undefined &&
     !doesClassPropertyContainCustomValidation(Class, propertyName, 'allowAnyString') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isAlpha') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isAlphanumeric') &&
+    !getPropertyValidationOfType(Class, propertyName, 'isAscii') &&
     !getPropertyValidationOfType(Class, propertyName, 'isCurrency') &&
     !getPropertyValidationOfType(Class, propertyName, 'IsFirebasePushId') &&
     !getPropertyValidationOfType(Class, propertyName, 'isHash') &&

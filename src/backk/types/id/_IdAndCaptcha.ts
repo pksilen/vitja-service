@@ -1,4 +1,4 @@
-import { IsString, MaxLength } from "class-validator";
+import { IsAscii, IsString, MaxLength } from "class-validator";
 import _Id from "./_Id";
 import { Transient } from "../../decorators/typeproperty/Transient";
 
@@ -7,5 +7,6 @@ export default class _IdAndCaptcha extends _Id {
   @Transient()
   @IsString()
   @MaxLength(512)
+  @IsAscii()
   captchaToken!: string;
 }

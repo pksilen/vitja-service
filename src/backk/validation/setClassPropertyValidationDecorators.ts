@@ -11,8 +11,13 @@ import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFromSrcFile';
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
+import { customDecoratorNameToTestValueMap } from '../decorators/registerCustomDecorator';
 
-export function getPropertyValidationOfType(typeClass: Function, propertyName: string, validationType: string) {
+export function getPropertyValidationOfType(
+  typeClass: Function,
+  propertyName: string,
+  validationType: string
+) {
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(typeClass, '');
 
   return validationMetadatas.find(
@@ -30,6 +35,21 @@ function doesPropertyContainValidation(typeClass: Function, propertyName: string
   );
 
   return foundValidation !== undefined;
+}
+
+export function getClassPropertyCustomValidationTestValue(Class: Function, propertyName: string) {
+  const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
+
+  const foundCustomValidationWithTestValue = validationMetadatas.find(
+    (validationMetadata: ValidationMetadata) =>
+      validationMetadata.propertyName === propertyName &&
+      validationMetadata.type === 'customValidation' &&
+      customDecoratorNameToTestValueMap[validationMetadata.constraints[0]]
+  );
+
+  return foundCustomValidationWithTestValue
+    ? customDecoratorNameToTestValueMap[foundCustomValidationWithTestValue.constraints[0]]
+    : undefined;
 }
 
 export function doesClassPropertyContainCustomValidation(

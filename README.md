@@ -1,11 +1,11 @@
 # Vitja service
 
 TODO
-- Require validation for Strings, if none, use isAnyString()
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
 - IsOneOfFrom('usersService.getCities')
+- SampleArg/RetValTest: contain custom decorator with testvalue
 - postman api def json: add sample response
 - request's description in postman.json should list possible enum values
 - In initializeDB, check if field is integer => bigInt or varChar should be longer
