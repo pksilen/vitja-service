@@ -5,7 +5,8 @@ TODO
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
-- IsOneOfFrom('usersService.getCities')
+- IsOneOf('usersService.getCities')
+- IsNotAnyOf('usersService.getNotAllowedUserNames')
 - SampleArg/RetValTest: contain custom decorator with testvalue
 - postman api def json: add sample response
 - request's description in postman.json should list possible enum values

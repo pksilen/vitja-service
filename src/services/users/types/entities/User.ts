@@ -14,6 +14,7 @@ import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany
 import FollowedUser from "./FollowedUser";
 import FollowingUser from "./FollowingUser";
 import AllowAnyString from "../../../../backk/decorators/typeproperty/AllowAnyString";
+import LengthAndMatches from "../../../../backk/decorators/typeproperty/LengthAndMatches";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -41,12 +42,14 @@ export default class User extends _IdAndCaptcha {
   password!: string;
 
   @MaxLength(512)
+  @AllowAnyString()
   public streetAddress!: string;
 
-  @MaxLength(32)
+  @LengthAndMatches(5, 5,/^\d{5}$/)
   public postalCode!: string;
 
   @MaxLength(256)
+  @AllowAnyString()
   public city!: string;
 
   public readonly commissionDiscountPercentage!: 0 | 25 | 50;

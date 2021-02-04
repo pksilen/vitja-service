@@ -4,10 +4,10 @@ export function ShouldBeTrueForEntity(func: (value: any) => boolean, errorMessag
   // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, propertyName: string) {
     registerDecorator({
-      name: 'isExprTrue',
+      name: 'shouldBeTrueForEntity',
       target: object.constructor,
       propertyName: propertyName,
-      constraints: ['isExprTrue', func],
+      constraints: ['shouldBeTrueForEntity', func],
       options: validationOptions,
       validator: {
         validate(value: any, args: ValidationArguments) {

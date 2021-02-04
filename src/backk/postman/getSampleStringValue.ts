@@ -1,11 +1,11 @@
-import RandExp from "randexp";
+import RandExp from 'randexp';
 import {
   doesClassPropertyContainCustomValidation,
   getClassPropertyCustomValidationTestValue,
   getPropertyValidationOfType
-} from "../validation/setClassPropertyValidationDecorators";
-import getValidationConstraint from "../validation/getValidationConstraint";
-import getCustomValidationConstraint from "../validation/getCustomValidationConstraint";
+} from '../validation/setClassPropertyValidationDecorators';
+import getValidationConstraint from '../validation/getValidationConstraint';
+import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
 
 const regExpToSampleStringMap: { [key: string]: string } = {};
 
@@ -391,15 +391,16 @@ export default function getSampleStringValue(
   }
 
   const customValidationTestValue = getClassPropertyCustomValidationTestValue(Class, propertyName);
-  
+
   if (customValidationTestValue) {
-    sampleStringValue = customValidationTestValue
+    sampleStringValue = customValidationTestValue;
   }
 
   // noinspection OverlyComplexBooleanExpressionJS
   if (
     sampleStringValue === undefined &&
     !doesClassPropertyContainCustomValidation(Class, propertyName, 'allowAnyString') &&
+    !doesClassPropertyContainCustomValidation(Class, propertyName, 'shouldBeTrueForEntity') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAlpha') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAlphanumeric') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAscii') &&
