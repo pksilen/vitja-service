@@ -11,15 +11,19 @@ export default class GetSalesItemsArg extends DefaultPostQueryOperations {
   textFilter?: string;
 
   @ArrayMaxSize(10)
+  @ArrayUnique()
   areas?: Area[];
 
   @ArrayMaxSize(10)
+  @ArrayUnique()
   productDepartments?: Department[];
 
   @ArrayMaxSize(10)
+  @ArrayUnique()
   productCategories?: Category[];
 
   @ArrayMaxSize(10)
+  @ArrayUnique()
   productSubCategories?: Category[];
 
   @IsInt()
