@@ -302,6 +302,16 @@ export default function getSampleStringValue(
     sampleStringValue = getPostalCodeSampleValue(locale);
   }
 
+  const creditCardExpirationValidation = doesClassPropertyContainCustomValidation(
+    Class,
+    propertyName,
+    'isCreditCardExpiration'
+  );
+
+  if (creditCardExpirationValidation) {
+    sampleStringValue = isUpdate ? '12/99' : '11/99';
+  }
+
   const mobilePhoneValidation = getPropertyValidationOfType(
     Class,
     propertyName,

@@ -1,16 +1,15 @@
 # Vitja service
 
 TODO
-- Add Unique() to Tag.name
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation
 - If number or string array, must have ArrayUnique or ArrayNotUnique
   - Entity-type arrays shall have ArrayDeepEqualUnique annotation
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
-- PaymentInfo.gatewayId/brokerId, if gateway/broker service name not found, use normal test value, not id template test value as for other Id ending fields
 - IsOneOf('usersService.getCities')
 - IsNotAnyOf('usersService.getNotAllowedUserNames')
 - SampleArg/RetValTest: contain custom decorator with testvalue
+- Check based on String validator, if maxLength or Length annotation can be given automatically
 - postman api def json: add sample response
 - request's description in postman.json should list possible enum values
 - In initializeDB, check if field is integer => bigInt or varChar should be longer

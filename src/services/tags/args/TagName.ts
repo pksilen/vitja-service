@@ -4,9 +4,11 @@
 
 import { MaxLength } from 'class-validator';
 import IsAnyString from '../../../backk/decorators/typeproperty/IsAnyString';
+import { Unique } from '../../../backk/decorators/typeproperty/Unique';
 
 export default class TagName {
   @MaxLength(64)
   @IsAnyString()
+  @Unique()
   public name!: string;
 }

@@ -4,6 +4,7 @@
 
 import { IsCreditCard, MaxLength } from 'class-validator';
 import Entity from '../../../../backk/decorators/entity/Entity';
+import IsCreditCardExpiration from '../../../../backk/decorators/typeproperty/IsCreditCardExpiration';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
 
@@ -15,8 +16,8 @@ export default class DefaultPaymentMethod {
   @MaxLength(19)
   public creditCardNumber!: string;
 
-  @MaxLengthAndMatches(5, /^(0[1-9]|1[0-2])\/([0-9]{2})$/)
-  @TestValue('11/21')
+  @MaxLength(7)
+  @IsCreditCardExpiration()
   public creditCardExpiration!: string;
 
   @MaxLengthAndMatches(4, /^[0-9]{3,4}$/)
