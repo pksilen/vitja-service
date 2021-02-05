@@ -89,6 +89,10 @@ export default function getServiceFunctionReturnValueTests(
     if (expectAnyTestValue !== undefined) {
       allowAnyValue = true;
     } else if (testValue !== undefined) {
+      if (baseTypeName === 'string') {
+        getSampleStringValue(serviceTypes[returnValueTypeName], propertyName, isUpdate);
+      }
+
       if (typeof testValue === 'string' && !isTestValueJson) {
         expectedValue = "'" + testValue + "'";
       } else {
@@ -101,7 +105,7 @@ export default function getServiceFunctionReturnValueTests(
       } else {
         expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
       }
-    } else if (propertyName.endsWith('Id')) {
+    } else if (propertyName.endsWith('Id') && !propertyName.endsWith('ExternalId')) {
       expectedValue = `pm.collectionVariables.get('${propertyName}')`;
     } else if (propertyName === 'id') {
       expectedValue = "'0'";

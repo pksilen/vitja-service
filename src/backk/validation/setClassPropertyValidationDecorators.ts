@@ -195,8 +195,8 @@ export default function setClassPropertyValidationDecorators(
           if (
             propertyName === '_id' ||
             propertyName === 'id' ||
-            propertyName.endsWith('Id') ||
-            propertyName.endsWith('Ids')
+            (propertyName.endsWith('Id') && !propertyName.endsWith('ExternalId')) ||
+            (propertyName.endsWith('Ids') && !propertyName.endsWith('ExternalIds'))
           ) {
             if (!doesClassPropertyContainCustomValidation(Class, propertyName, 'maxLengthAndMatches')) {
               const validationMetadataArgs: ValidationMetadataArgs = {

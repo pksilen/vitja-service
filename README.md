@@ -8,6 +8,7 @@ TODO
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
+- PaymentInfo.gatewayId/brokerId, if gateway/broker service name not found, use normal test value, not id template test value as for other Id ending fields
 - IsOneOf('usersService.getCities')
 - IsNotAnyOf('usersService.getNotAllowedUserNames')
 - SampleArg/RetValTest: contain custom decorator with testvalue

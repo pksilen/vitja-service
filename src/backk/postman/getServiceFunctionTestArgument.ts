@@ -104,6 +104,10 @@ export default function getServiceFunctionTestArgument(
 
     // noinspection IfStatementWithTooManyBranchesJS
     if (testValue !== undefined) {
+      if (baseTypeName.startsWith('string')) {
+        getSampleStringValue(serviceTypes[argTypeName], propertyName, isUpdate);
+      }
+
       sampleArg[propertyName] = testValue;
     } else if (propertyName === '_id') {
       if (isRecursive) {
@@ -113,7 +117,7 @@ export default function getServiceFunctionTestArgument(
       }
     } else if (propertyName === '_ids') {
       sampleArg[propertyName] = `{{${serviceEntityName}Id}}`;
-    } else if (propertyName.endsWith('Id')) {
+    } else if (propertyName.endsWith('Id') && !propertyName.endsWith('ExternalId')) {
       sampleArg[propertyName] = `{{${propertyName}}}`;
     } else if (propertyName === 'id') {
       sampleArg[propertyName] = '0';
