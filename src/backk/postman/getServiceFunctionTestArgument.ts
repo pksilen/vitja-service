@@ -102,6 +102,11 @@ export default function getServiceFunctionTestArgument(
       getValidationConstraint(serviceTypes[argTypeName], propertyName, 'max') ??
       getCustomValidationConstraint(serviceTypes[argTypeName], propertyName, 'minMax', 2);
 
+    const isExternalId = typePropertyAnnotationContainer.isTypePropertyExternalId(
+      serviceTypes[argTypeName],
+      propertyName
+    );
+
     // noinspection IfStatementWithTooManyBranchesJS
     if (testValue !== undefined) {
       if (baseTypeName.startsWith('string')) {
@@ -117,7 +122,7 @@ export default function getServiceFunctionTestArgument(
       }
     } else if (propertyName === '_ids') {
       sampleArg[propertyName] = `{{${serviceEntityName}Id}}`;
-    } else if (propertyName.endsWith('Id') && !propertyName.endsWith('ExternalId')) {
+    } else if (propertyName.endsWith('Id') && !isExternalId) {
       sampleArg[propertyName] = `{{${propertyName}}}`;
     } else if (propertyName === 'id') {
       sampleArg[propertyName] = '0';

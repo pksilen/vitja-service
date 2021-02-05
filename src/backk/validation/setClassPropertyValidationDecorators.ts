@@ -191,12 +191,13 @@ export default function setClassPropertyValidationDecorators(
           }
           let validationType;
           let constraints;
+          const isExternalId = typePropertyAnnotationContainer.isTypePropertyExternalId(Class, propertyName);
 
           if (
             propertyName === '_id' ||
             propertyName === 'id' ||
-            (propertyName.endsWith('Id') && !propertyName.endsWith('ExternalId')) ||
-            (propertyName.endsWith('Ids') && !propertyName.endsWith('ExternalIds'))
+            (propertyName.endsWith('Id') && !isExternalId) ||
+            (propertyName.endsWith('Ids') && !isExternalId)
           ) {
             if (!doesClassPropertyContainCustomValidation(Class, propertyName, 'maxLengthAndMatches')) {
               const validationMetadataArgs: ValidationMetadataArgs = {

@@ -1,17 +1,19 @@
-import MaxLengthAndMatches from "../../../../backk/decorators/typeproperty/MaxLengthAndMatches";
 import { IsAlphanumeric, IsNumber, MaxLength } from "class-validator";
 import MinMax from "../../../../backk/decorators/typeproperty/MinMax";
 import Entity from "../../../../backk/decorators/entity/Entity";
+import { IsExternalId } from "../../../../backk/decorators/typeproperty/IsExternalId";
 
 @Entity()
 export default class PaymentInfo {
   @MaxLength(256)
   @IsAlphanumeric()
-  public gatewayExternalId!: string;
+  @IsExternalId()
+  public gatewayId!: string;
 
   @MaxLength(256)
   @IsAlphanumeric()
-  public brokerExternalId!: string;
+  @IsExternalId()
+  public brokerId!: string;
 
   @MaxLength(256)
   @IsAlphanumeric()

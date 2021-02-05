@@ -8,6 +8,7 @@ class TypePropertyAnnotationContainer {
   private readonly typePropertyNameToIsPrivateMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsManyToManyMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsTransientMap: { [key: string]: boolean } = {};
+  private readonly typePropertyNameToIsExternalIdMap: { [key: string]: boolean } = {};
 
   addDocumentationForTypeProperty(Type: Function, propertyName: string, docString: string) {
     this.typePropertyNameToDocStringMap[`${Type.name}${propertyName}`] = docString;
@@ -45,6 +46,9 @@ class TypePropertyAnnotationContainer {
     this.typePropertyNameToIsTransientMap[`${Type.name}${propertyName}`] = true;
   }
 
+  setTypePropertyAsExternalId(Type: Function, propertyName: string) {
+    this.typePropertyNameToIsExternalIdMap[`${Type.name}${propertyName}`] = true;
+  }
 
   getDocumentationForTypeProperty(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
@@ -151,6 +155,18 @@ class TypePropertyAnnotationContainer {
     while (proto !== Object.prototype) {
       if (this.typePropertyNameToIsTransientMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
         return this.typePropertyNameToIsTransientMap[`${proto.constructor.name}${propertyName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isTypePropertyExternalId(Type: Function, propertyName: string) {
+    let proto = Object.getPrototypeOf(new (Type as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.typePropertyNameToIsExternalIdMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsExternalIdMap[`${proto.constructor.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }

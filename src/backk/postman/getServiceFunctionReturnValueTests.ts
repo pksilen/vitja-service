@@ -6,7 +6,7 @@ import isEnumTypeName from '../utils/type/isEnumTypeName';
 import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFromSrcFile';
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
-import getSampleStringValue from "./getSampleStringValue";
+import getSampleStringValue from './getSampleStringValue';
 
 export default function getServiceFunctionReturnValueTests(
   serviceTypes: { [key: string]: Function },
@@ -57,7 +57,9 @@ export default function getServiceFunctionReturnValueTests(
     let isTestValueJson = false;
 
     if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPath + propertyName]) {
-      testValue = JSON.stringify(expectedResponseFieldPathNameToFieldValueMapInTests[fieldPath + propertyName]);
+      testValue = JSON.stringify(
+        expectedResponseFieldPathNameToFieldValueMapInTests[fieldPath + propertyName]
+      );
       isTestValueJson = true;
     }
 
@@ -66,8 +68,12 @@ export default function getServiceFunctionReturnValueTests(
       propertyName
     );
 
-    const predicate = getCustomValidationConstraint(serviceTypes[returnValueTypeName],
-      propertyName, 'shouldBeTrueForEntity', 1);
+    const predicate = getCustomValidationConstraint(
+      serviceTypes[returnValueTypeName],
+      propertyName,
+      'shouldBeTrueForEntity',
+      1
+    );
 
     const minValue =
       getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'min') ??
@@ -83,6 +89,11 @@ export default function getServiceFunctionReturnValueTests(
     }
 
     let isBooleanValue;
+
+    const isExternalId = typePropertyAnnotationContainer.isTypePropertyExternalId(
+      serviceTypes[returnValueTypeName],
+      propertyName
+    );
 
     if (expectAnyTestValue !== undefined) {
       allowAnyValue = true;
@@ -103,7 +114,7 @@ export default function getServiceFunctionReturnValueTests(
       } else {
         expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
       }
-    } else if (propertyName.endsWith('Id') && !propertyName.endsWith('ExternalId')) {
+    } else if (propertyName.endsWith('Id') && !isExternalId) {
       expectedValue = `pm.collectionVariables.get('${propertyName}')`;
     } else if (propertyName === 'id') {
       expectedValue = "'0'";
@@ -178,10 +189,7 @@ export default function getServiceFunctionReturnValueTests(
       let expectation;
 
       if (predicate) {
-        expectation = `pm.expect((${predicate})(response${responsePath.slice(
-          0,
-          -1
-        )})).to.eql(true);`;
+        expectation = `pm.expect((${predicate})(response${responsePath.slice(0, -1)})).to.eql(true);`;
       } else if (isBooleanValue) {
         expectation = `pm.expect(response${responsePath}${propertyName}).to.${
           expectedValue ? 'be.ok' : 'not.be.ok'
