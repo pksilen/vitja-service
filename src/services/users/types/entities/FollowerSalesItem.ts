@@ -4,6 +4,8 @@
 
 import { IsNumber, MaxLength } from 'class-validator';
 import Entity from '../../../../backk/decorators/entity/Entity';
+import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
+import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
@@ -17,15 +19,17 @@ export default class FollowerSalesItem {
   @IsStringOrObjectId({
     groups: ['__backk_update__']
   })
-  @MaxLengthAndMatches(24, /^[a-f\d]+$/, {
+  @MaxLengthAndMatches(24, /^[a-f\d]{1,24}$/, {
     groups: ['__backk_update__']
   })
   public _id!: string;
 
   @MaxLength(64)
+  @IsAnyString()
   public title!: string;
 
   @MaxLength(1024)
+  @IsAnyString()
   public description!: string;
 
   @IsNumber({
@@ -34,6 +38,7 @@ export default class FollowerSalesItem {
   @MinMax(0, 1000000000)
   public price!: number;
 
-  @MaxLength(2097152)
+  @MaxLength(10485760)
+  @IsDataUri()
   public primaryImageDataUri!: string;
 }

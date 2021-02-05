@@ -1,10 +1,10 @@
-import { validateOrReject, ValidationError } from 'class-validator';
-import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
-import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
-import getValidationErrors from './getValidationErrors';
-import { HttpStatusCodes } from '../constants/constants';
-import isCreateFunction from '../crudresource/utils/isCreateFunction';
-import AbstractDbManager from '../dbmanager/AbstractDbManager';
+import { validateOrReject, ValidationError } from "class-validator";
+import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
+import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
+import getValidationErrors from "./getValidationErrors";
+import { HttpStatusCodes } from "../constants/constants";
+import isCreateFunction from "../crudresource/utils/isCreateFunction";
+import AbstractDbManager from "../dbmanager/AbstractDbManager";
 
 function filterOutManyToManyIdErrors(validationErrors: ValidationError[]) {
   validationErrors.forEach((validationError) => {
@@ -67,6 +67,7 @@ export default async function tryValidateServiceFunctionArgument(
 
     const errorMessage =
       'Error code invalidArgument: Invalid argument: ' + getValidationErrors(validationErrors);
+
     createErrorFromErrorMessageAndThrowError(
       createErrorMessageWithStatusCode(errorMessage, HttpStatusCodes.BAD_REQUEST)
     );

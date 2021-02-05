@@ -3,8 +3,10 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { MaxLength } from 'class-validator';
+import IsAnyString from '../../../backk/decorators/typeproperty/IsAnyString';
 
 export default class TagName {
   @MaxLength(64)
+  @IsAnyString()
   public name!: string;
 }

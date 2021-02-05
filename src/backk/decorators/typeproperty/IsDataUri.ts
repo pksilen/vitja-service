@@ -4,10 +4,10 @@ import isDataUri from 'validator/lib/isDataURI';
 export default function IsDataUri(validationOptions?: ValidationOptions) {
   return function(object: Record<string, any>, propertyName: string) {
     registerDecorator({
-      name: 'isAnyString',
+      name: 'isDataUri',
       target: object.constructor,
       propertyName: propertyName,
-      constraints: ['isAnyString'],
+      constraints: ['isDataUri'],
       options: validationOptions,
       validator: {
         validate(value: any) {

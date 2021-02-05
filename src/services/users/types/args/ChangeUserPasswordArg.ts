@@ -9,7 +9,6 @@ import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
-import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
 import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 
 export default class ChangeUserPasswordArg {
@@ -19,7 +18,7 @@ export default class ChangeUserPasswordArg {
   @IsStringOrObjectId({
     groups: ['__backk_update__']
   })
-  @MaxLengthAndMatches(24, /^[a-f\d]+$/, {
+  @MaxLengthAndMatches(24, /^[a-f\d]{1,24}$/, {
     groups: ['__backk_update__']
   })
   public _id!: string;
@@ -27,7 +26,6 @@ export default class ChangeUserPasswordArg {
   @Unique()
   @MaxLength(512)
   @IsEmail()
-  @TestValue('test@test.com')
   userName!: string;
 
   @Documentation('Password doc goes here...')

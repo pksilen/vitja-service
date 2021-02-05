@@ -1,4 +1,4 @@
-import { MaxLength } from "class-validator";
+import { IsUrl, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { ExpectTrueForResponseInTests } from "../../../../backk/decorators/typeproperty/testing/ExpectTrueForResponseInTests";
 import Id from "../../../../backk/types/id/Id";
@@ -17,7 +17,8 @@ export default class OrderItem extends Id {
 
   public state!: OrderState;
 
-  @MaxLength(1024)
+  @MaxLength(4096)
+  @IsUrl()
   @ExpectTrueForResponseInTests(
     ({ state, trackingUrl }) =>
       (state === 'toBeDelivered' && trackingUrl ===  null) || (state !== 'toBeDelivered' && trackingUrl !== null)

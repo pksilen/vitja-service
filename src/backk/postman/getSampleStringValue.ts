@@ -54,7 +54,7 @@ export default function getSampleStringValue(
     sampleStringValue = '4111 1111 1111 1111';
   }
 
-  const dataUriValidation = getPropertyValidationOfType(Class, propertyName, 'isDataURI');
+  const dataUriValidation = doesClassPropertyContainCustomValidation(Class, propertyName, 'isDataUri');
 
   if (dataUriValidation) {
     sampleStringValue = 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==';

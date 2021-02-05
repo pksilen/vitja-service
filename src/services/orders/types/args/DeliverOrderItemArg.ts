@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { MaxLength } from 'class-validator';
+import { IsUrl, MaxLength } from 'class-validator';
 import { ExpectTrueForResponseInTests } from '../../../../backk/decorators/typeproperty/testing/ExpectTrueForResponseInTests';
 
 export default class DeliverOrderItemArg {
@@ -17,7 +17,8 @@ export default class DeliverOrderItemArg {
   )
   public deliveryTimestamp!: Date | null;
 
-  @MaxLength(1024)
+  @MaxLength(4096)
+  @IsUrl()
   @ExpectTrueForResponseInTests(
     ({ state, trackingUrl }) =>
       (state === 'toBeDelivered' && trackingUrl === null) ||

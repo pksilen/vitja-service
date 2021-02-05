@@ -1,7 +1,8 @@
 # Vitja service
 
 TODO
-- Datauri validation
+- Add array uniques
+- @ExpectTrueForResponseInTests ja @ShouldBeTrueForEntity combined
 - PostalCode validation
 - Add Unique() to Tag.name
 - Add isCreditCardExpiry validation, check that expiry is in the future
@@ -18,7 +19,8 @@ TODO
   - methods can use function: migrateDb(fromVersion, toVersion, migrationFunc)
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - In updateEntities, check list of ETags
-- AddsubEntities, check if already added
+- AddsubEntities, check if already added and use ETag
+- scheduleJob, miten hakea response myöhemmin (REdis)
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
@@ -35,6 +37,8 @@ TODO
    http-kubernetes-mongodb
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
+- Create backk-client library
+  -Sets ETag automatically and removes readonly properties
 
 
 Split services to different microservices
