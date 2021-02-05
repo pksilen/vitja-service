@@ -57,6 +57,7 @@
     "jsonpath-plus": "^4.0.0",
     "jsonwebtoken": "^8.5.1",
     "kafkajs": "^1.15.0",
+    "libphonenumber-js": "^1.9.9",
     "lodash": "^4.17.19",
     "mongodb": "^3.6.3",
     "mustache": "^4.0.1",
