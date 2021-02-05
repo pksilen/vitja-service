@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Add isCVC validation
 - If number or string array, must have ArrayUnique or ArrayNotUnique
   - Entity-type arrays shall have ArrayDeepEqualUnique annotation
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests

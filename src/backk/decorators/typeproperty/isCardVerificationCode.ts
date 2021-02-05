@@ -14,7 +14,9 @@ export default function IsCardVerificationCode(validationOptions?: ValidationOpt
       validator: {
         validate(value: string) {
           return !!value.match(/^[0-9]{3,4}$/);
-        }
+        },
+        defaultMessage: () =>
+          propertyName + ' is not a valid credit card verification code'
       }
     });
   };

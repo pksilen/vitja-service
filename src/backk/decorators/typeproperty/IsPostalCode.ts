@@ -15,7 +15,9 @@ export default function IsPostalCode(
       validator: {
         validate(value: any, args: ValidationArguments) {
           return isPostalCode(value, args.constraints[1]);
-        }
+        },
+        defaultMessage: () =>
+          propertyName + ' is not a valid postal code for locale: ' + locale
       }
     });
   };

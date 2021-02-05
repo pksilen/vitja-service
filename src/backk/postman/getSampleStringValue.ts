@@ -318,7 +318,7 @@ export default function getSampleStringValue(
     'isCardVerificationCode'
   );
 
-  if (cardVerificationValidation) {
+  if (cardVerificationCodeValidation) {
     sampleStringValue = isUpdate ? '346' : '345';
   }
 

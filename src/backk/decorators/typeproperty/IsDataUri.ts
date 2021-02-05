@@ -13,7 +13,9 @@ export default function IsDataUri(validationOptions?: ValidationOptions) {
         validate(value: any) {
           // TODO: support validationOption each:true
           return isDataUri(value);
-        }
+        },
+        defaultMessage: () =>
+          propertyName + ' is not a valid data URI'
       }
     });
   };
