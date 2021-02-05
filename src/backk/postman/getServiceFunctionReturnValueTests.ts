@@ -66,10 +66,8 @@ export default function getServiceFunctionReturnValueTests(
       propertyName
     );
 
-    const testValueToEvaluate = testValueContainer.getTestValueToEvaluateTrue(
-      serviceTypes[returnValueTypeName],
-      propertyName
-    );
+    const predicate = getCustomValidationConstraint(serviceTypes[returnValueTypeName],
+      propertyName, 'shouldBeTrueForEntity', 1);
 
     const minValue =
       getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'min') ??
@@ -179,8 +177,8 @@ export default function getServiceFunctionReturnValueTests(
     if (!allowAnyValue) {
       let expectation;
 
-      if (testValueToEvaluate) {
-        expectation = `pm.expect((${testValueToEvaluate})(response${responsePath.slice(
+      if (predicate) {
+        expectation = `pm.expect((${predicate})(response${responsePath.slice(
           0,
           -1
         )})).to.eql(true);`;

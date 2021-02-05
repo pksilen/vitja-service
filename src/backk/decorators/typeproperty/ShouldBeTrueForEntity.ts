@@ -1,6 +1,10 @@
 import { registerDecorator, ValidationArguments, ValidationOptions } from 'class-validator';
 
-export function ShouldBeTrueForEntity(func: (value: any) => boolean, errorMessage: string, validationOptions?: ValidationOptions) {
+export function ShouldBeTrueForEntity(
+  func: (entity: any) => boolean,
+  errorMessage?: string,
+  validationOptions?: ValidationOptions
+) {
   // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, propertyName: string) {
     registerDecorator({
@@ -13,7 +17,8 @@ export function ShouldBeTrueForEntity(func: (value: any) => boolean, errorMessag
         validate(value: any, args: ValidationArguments) {
           return func(args.object);
         },
-        defaultMessage: () => errorMessage
+        defaultMessage: () =>
+          errorMessage ? errorMessage : 'Entity did not match predicate: ' + func.toString()
       }
     });
   };

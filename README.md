@@ -1,12 +1,12 @@
 # Vitja service
 
 TODO
-- Add array uniques
 - @ExpectTrueForResponseInTests ja @ShouldBeTrueForEntity combined
 - PostalCode validation
 - Add Unique() to Tag.name
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation
+- If number or string array, must have ArrayUnique or ArrayNotUnique
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
 - PaymentInfo.gatewayId/brokerId, if gateway/broker service name not found, use normal test value, not id template test value as for other Id ending fields
 - IsOneOf('usersService.getCities')
