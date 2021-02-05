@@ -1,27 +1,27 @@
-import { ArrayMaxSize, IsNumber, MaxLength } from "class-validator";
-import Entity from "../../../../backk/decorators/entity/Entity";
-import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp
-  from "../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp";
-import { Area } from "../enums/Area";
-import { Department } from "../enums/Department";
-import { Category } from "../enums/Category";
-import { SalesItemState } from "../enums/SalesItemState";
-import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
-import Tag from "../../../tags/entities/Tag";
-import Index from "../../../../backk/decorators/typeproperty";
-import MinMax from "../../../../backk/decorators/typeproperty/MinMax";
-import AllowAnyString from "../../../../backk/decorators/typeproperty/AllowAnyString";
+import { ArrayMaxSize, IsNumber, MaxLength } from 'class-validator';
+import Entity from '../../../../backk/decorators/entity/Entity';
+import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp from '../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp';
+import { Area } from '../enums/Area';
+import { Department } from '../enums/Department';
+import { Category } from '../enums/Category';
+import { SalesItemState } from '../enums/SalesItemState';
+import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany';
+import Tag from '../../../tags/entities/Tag';
+import Index from '../../../../backk/decorators/typeproperty';
+import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
+import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
+import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
   public userId!: string;
 
   @MaxLength(64)
-  @AllowAnyString()
+  @IsAnyString()
   public title!: string;
 
   @MaxLength(1024)
-  @AllowAnyString()
+  @IsAnyString()
   public description!: string;
 
   @ManyToMany()
@@ -45,10 +45,12 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   @MinMax(0, 1000000000)
   public shippingCost!: number;
 
-  @MaxLength(2097152)
+  @MaxLength(10485760)
+  @IsDataUri()
   public primaryImageDataUri!: string;
 
-  @MaxLength(2097152, { each: true })
+  @MaxLength(10485760, { each: true })
+  @IsDataUri({ each: true })
   @ArrayMaxSize(10)
   public secondaryImageDataUris!: string[];
 

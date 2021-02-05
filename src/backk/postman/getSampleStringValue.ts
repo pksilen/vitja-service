@@ -399,7 +399,7 @@ export default function getSampleStringValue(
   // noinspection OverlyComplexBooleanExpressionJS
   if (
     sampleStringValue === undefined &&
-    !doesClassPropertyContainCustomValidation(Class, propertyName, 'allowAnyString') &&
+    !doesClassPropertyContainCustomValidation(Class, propertyName, 'isAnyString') &&
     !doesClassPropertyContainCustomValidation(Class, propertyName, 'shouldBeTrueForEntity') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAlpha') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAlphanumeric') &&
@@ -419,7 +419,7 @@ export default function getSampleStringValue(
       Class.name +
         '.' +
         propertyName +
-        ' needs have a string value validator or use @AllowAnyString() annotation'
+        ' needs have a string value validator or use @IsAnyString() annotation'
     );
   }
 

@@ -1,6 +1,8 @@
 # Vitja service
 
 TODO
+- Datauri validation
+- PostalCode validation
 - Add Unique() to Tag.name
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation
@@ -14,6 +16,9 @@ TODO
   - store table metadata to backk_table_metadata, with columns: tableName, columnName, columnType
 - user can create db preparation service, whose all methods are executed in order
   - methods can use function: migrateDb(fromVersion, toVersion, migrationFunc)
+- If ETag contains version/lastmodifiedtimestamp, that is checked before update
+- In updateEntities, check list of ETags
+- AddsubEntities, check if already added
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem

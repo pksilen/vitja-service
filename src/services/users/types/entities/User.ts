@@ -13,7 +13,7 @@ import Order from "../../../orders/types/entities/Order";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
 import FollowedUser from "./FollowedUser";
 import FollowingUser from "./FollowingUser";
-import AllowAnyString from "../../../../backk/decorators/typeproperty/AllowAnyString";
+import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
 import LengthAndMatches from "../../../../backk/decorators/typeproperty/LengthAndMatches";
 
 @Entity()
@@ -24,7 +24,7 @@ export default class User extends _IdAndCaptcha {
   userName!: string;
 
   @MaxLength(512)
-  @AllowAnyString()
+  @IsAnyString()
   public displayName!: string;
 
   public isBusinessUser!: boolean;
@@ -42,14 +42,14 @@ export default class User extends _IdAndCaptcha {
   password!: string;
 
   @MaxLength(512)
-  @AllowAnyString()
+  @IsAnyString()
   public streetAddress!: string;
 
   @LengthAndMatches(5, 5,/^\d{5}$/)
   public postalCode!: string;
 
   @MaxLength(256)
-  @AllowAnyString()
+  @IsAnyString()
   public city!: string;
 
   public readonly commissionDiscountPercentage!: 0 | 25 | 50;

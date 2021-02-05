@@ -1,12 +1,12 @@
 import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
 
-export default function AllowAnyString(validationOptions?: ValidationOptions) {
+export default function IsAnyString(validationOptions?: ValidationOptions) {
   return function (object: Record<string, any>, propertyName: string) {
     registerDecorator({
-      name: 'allowAnyString',
+      name: 'isAnyString',
       target: object.constructor,
       propertyName: propertyName,
-      constraints: ['allowAnyString'],
+      constraints: ['isAnyString'],
       options: validationOptions,
       validator: {
         validate() {
