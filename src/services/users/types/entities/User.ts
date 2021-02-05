@@ -1,4 +1,4 @@
-import { ArrayMaxSize, IsEmail, MaxLength } from "class-validator";
+import { ArrayMaxSize, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
 import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
@@ -53,6 +53,10 @@ export default class User extends _IdAndCaptcha {
   @MaxLength(256)
   @IsAnyString()
   public city!: string;
+
+  @MaxLength(64)
+  @IsPhoneNumber('FI')
+  public phoneNumber!: string;
 
   public readonly commissionDiscountPercentage!: 0 | 25 | 50;
 

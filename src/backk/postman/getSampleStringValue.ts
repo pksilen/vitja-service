@@ -9,6 +9,7 @@ import getCustomValidationConstraint from '../validation/getCustomValidationCons
 import getPostalCodeSampleValue from "./samplevalues/getPostalCodeSampleValue";
 import getMobilePhoneNumberSampleValue from "./samplevalues/getMobilePhoneNumberSampleValue";
 import { IsPhoneNumber } from "class-validator";
+import getPhoneNumberSampleValue from "./samplevalues/getPhoneNumberSampleValue";
 
 export const regExpToSampleStringMap: { [key: string]: string } = {};
 
@@ -320,7 +321,7 @@ export default function getSampleStringValue(
 
   if (phoneNumberValidation) {
     const country = getValidationConstraint(Class, propertyName, 'isPhoneNumber');
-    sampleStringValue = getMobilePhoneNumberSampleValue(country);
+    sampleStringValue = getPhoneNumberSampleValue(country);
   }
 
   const hasLengthAndMatchesValidation = doesClassPropertyContainCustomValidation(

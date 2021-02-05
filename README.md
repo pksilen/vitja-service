@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- PhoneNumber/Mobile phone number validation
 - Add Unique() to Tag.name
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation
@@ -22,6 +21,8 @@ TODO
 - In updateEntities, check list of ETags
 - AddsubEntities, check if already added and use ETag
 - scheduleJob, miten hakea response myöhemmin (REdis)
+- IsStrongPassword validation
+  
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
