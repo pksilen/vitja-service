@@ -15,6 +15,7 @@ import FollowedUser from "./FollowedUser";
 import FollowingUser from "./FollowingUser";
 import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
 import LengthAndMatches from "../../../../backk/decorators/typeproperty/LengthAndMatches";
+import IsPostalCode from "../../../../backk/decorators/typeproperty/IsPostalCode";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -45,7 +46,9 @@ export default class User extends _IdAndCaptcha {
   @IsAnyString()
   public streetAddress!: string;
 
-  @LengthAndMatches(5, 5,/^\d{5}$/)
+  @MaxLength(32)
+  @IsPostalCode('FI')
+  @TestValue('37500')
   public postalCode!: string;
 
   @MaxLength(256)

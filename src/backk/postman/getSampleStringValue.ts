@@ -401,6 +401,7 @@ export default function getSampleStringValue(
     sampleStringValue === undefined &&
     !doesClassPropertyContainCustomValidation(Class, propertyName, 'isAnyString') &&
     !doesClassPropertyContainCustomValidation(Class, propertyName, 'shouldBeTrueForEntity') &&
+    !doesClassPropertyContainCustomValidation(Class, propertyName, 'isPostalCode') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAlpha') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAlphanumeric') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAscii') &&
@@ -412,7 +413,6 @@ export default function getSampleStringValue(
     !getPropertyValidationOfType(Class, propertyName, 'isMongoId') &&
     !getPropertyValidationOfType(Class, propertyName, 'isPassportNumber') &&
     !getPropertyValidationOfType(Class, propertyName, 'isPhoneNumber') &&
-    !getPropertyValidationOfType(Class, propertyName, 'isPostalCode') &&
     !getPropertyValidationOfType(Class, propertyName, 'isRFC3339')
   ) {
     throw new Error(
