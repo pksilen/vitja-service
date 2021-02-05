@@ -2,12 +2,16 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsCreditCard, MaxLength } from 'class-validator';
-import Entity from '../../../../backk/decorators/entity/Entity';
-import IsCreditCardExpiration from '../../../../backk/decorators/typeproperty/IsCreditCardExpiration';
-import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
-import { TestValue } from '../../../../backk/decorators/typeproperty/testing/TestValue';
+import { IsCreditCard, MaxLength } from "class-validator";
+import { TestValue } from "../../../../backk/decorators/typeproperty/testing/TestValue";
+import Entity from "../../../../backk/decorators/entity/Entity";
+import Id from "../../../../backk/types/id/Id";
+import MaxLengthAndMatches from "../../../../backk/decorators/typeproperty/MaxLengthAndMatches";
+import IsCreditCardExpiration from "../../../../backk/decorators/typeproperty/IsCreditCardExpiration";
+import IsCardVerificationCode from "../../../../backk/decorators/typeproperty/isCardVerificationCode";
+import IsStringOrObjectId from "../../../../backk/decorators/typeproperty/IsStringOrObjectId";
 
+import Entity from '../../../../backk/decorators/entity/Entity';
 @Entity()
 export default class DefaultPaymentMethod {
   public paymentMethodType!: 'creditCard';
@@ -20,7 +24,8 @@ export default class DefaultPaymentMethod {
   @IsCreditCardExpiration()
   public creditCardExpiration!: string;
 
-  @MaxLengthAndMatches(4, /^[0-9]{3,4}$/)
-  @TestValue('345')
+  @MaxLength(4)
+  @IsCardVerificationCode()
   public cardVerificationCode!: string;
+
 }

@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation
 - If number or string array, must have ArrayUnique or ArrayNotUnique
   - Entity-type arrays shall have ArrayDeepEqualUnique annotation

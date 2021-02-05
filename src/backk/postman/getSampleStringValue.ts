@@ -312,6 +312,16 @@ export default function getSampleStringValue(
     sampleStringValue = isUpdate ? '12/99' : '11/99';
   }
 
+  const cardVerificationCodeValidation = doesClassPropertyContainCustomValidation(
+    Class,
+    propertyName,
+    'isCardVerificationCode'
+  );
+
+  if (cardVerificationValidation) {
+    sampleStringValue = isUpdate ? '346' : '345';
+  }
+
   const mobilePhoneValidation = getPropertyValidationOfType(
     Class,
     propertyName,

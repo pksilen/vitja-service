@@ -4,6 +4,7 @@ import Entity from "../../../../backk/decorators/entity/Entity";
 import Id from "../../../../backk/types/id/Id";
 import MaxLengthAndMatches from "../../../../backk/decorators/typeproperty/MaxLengthAndMatches";
 import IsCreditCardExpiration from "../../../../backk/decorators/typeproperty/IsCreditCardExpiration";
+import IsCardVerificationCode from "../../../../backk/decorators/typeproperty/isCardVerificationCode";
 
 @Entity()
 export default class PaymentMethod extends Id {
@@ -17,7 +18,7 @@ export default class PaymentMethod extends Id {
   @IsCreditCardExpiration()
   public creditCardExpiration!: string;
 
-  @MaxLengthAndMatches(4, /^[0-9]{3,4}$/)
-  @TestValue('345')
+  @MaxLength(4)
+  @IsCardVerificationCode()
   public cardVerificationCode!: string;
 }
