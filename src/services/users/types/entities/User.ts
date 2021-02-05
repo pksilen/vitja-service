@@ -48,7 +48,6 @@ export default class User extends _IdAndCaptcha {
 
   @MaxLength(32)
   @IsPostalCode('FI')
-  @TestValue('37500')
   public postalCode!: string;
 
   @MaxLength(256)

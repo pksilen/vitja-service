@@ -1,7 +1,8 @@
 # Vitja service
 
 TODO
-- PostalCode validation
+- IsExternalId annotation
+- PhoneNumber/Mobile phone number validation
 - Add Unique() to Tag.name
 - Add isCreditCardExpiry validation, check that expiry is in the future
 - Add isCVC validation

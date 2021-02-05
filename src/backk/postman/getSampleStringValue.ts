@@ -6,8 +6,9 @@ import {
 } from '../validation/setClassPropertyValidationDecorators';
 import getValidationConstraint from '../validation/getValidationConstraint';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
+import getPostalCodeSampleValue from "./samplevalues/getPostalCodeSampleValue";
 
-const regExpToSampleStringMap: { [key: string]: string } = {};
+export const regExpToSampleStringMap: { [key: string]: string } = {};
 
 // noinspection OverlyComplexBooleanExpressionJS,OverlyComplexBooleanExpressionJS
 export default function getSampleStringValue(
@@ -287,6 +288,17 @@ export default function getSampleStringValue(
       .join('');
   }
 
+  const postalCodeValidation = doesClassPropertyContainCustomValidation(
+    Class,
+    propertyName,
+    'isPostalCode'
+  );
+
+  if (postalCodeValidation) {
+    const locale = getCustomValidationConstraint(Class, propertyName, 'isPostalCode', 1);
+    sampleStringValue = getPostalCodeSampleValue(locale);
+  }
+
   const hasLengthAndMatchesValidation = doesClassPropertyContainCustomValidation(
     Class,
     propertyName,
@@ -401,7 +413,6 @@ export default function getSampleStringValue(
     sampleStringValue === undefined &&
     !doesClassPropertyContainCustomValidation(Class, propertyName, 'isAnyString') &&
     !doesClassPropertyContainCustomValidation(Class, propertyName, 'shouldBeTrueForEntity') &&
-    !doesClassPropertyContainCustomValidation(Class, propertyName, 'isPostalCode') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAlpha') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAlphanumeric') &&
     !getPropertyValidationOfType(Class, propertyName, 'isAscii') &&
