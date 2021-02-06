@@ -12,6 +12,7 @@ import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFrom
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 import { customDecoratorNameToTestValueMap } from '../decorators/registerCustomDecorator';
+import getValidationConstraint from "./getValidationConstraint";
 
 export function getPropertyValidationOfType(
   typeClass: Function,
@@ -235,9 +236,9 @@ export default function setClassPropertyValidationDecorators(
             ) {
               throw new Error(
                 Class.name +
-                '.' +
-                propertyName +
-                ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
+                  '.' +
+                  propertyName +
+                  ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
               );
             }
 
@@ -259,6 +260,94 @@ export default function setClassPropertyValidationDecorators(
                   '.' +
                   propertyName +
                   ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
+              );
+            }
+
+            let maxLength: number | undefined;
+
+            if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_BOOLEAN_STRING)) {
+              maxLength = 5;
+            } else if (
+              doesClassPropertyContainCustomValidation(Class, propertyName, 'isBIC')
+            ) {
+              maxLength = 11;
+            } else if(doesClassPropertyContainCustomValidation(Class, propertyName, 'isBtcAddress')) {
+              maxLength = 35;
+            } else if(doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_CREDIT_CARD)) {
+              maxLength = 19;
+            } else if(doesPropertyContainValidation(Class, propertyName, ValidationTypes. IS_DATE_STRING)) {
+              maxLength = 64;
+            } else if(doesClassPropertyContainCustomValidation(Class, propertyName, 'isEAN')) {
+              maxLength = 13;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isEthereumAddress')) {
+              maxLength = 42;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isHSL')) {
+              maxLength = 64;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_HEX_COLOR)) {
+              maxLength = 7;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISIN)) {
+              maxLength = 12;
+            }else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isIBAN')) {
+              maxLength = 42;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_IP)) {
+              let ipValidationConstraint = getValidationConstraint(Class, propertyName, ValidationTypes.IS_IP);
+
+              if (typeof ipValidationConstraint === 'string') {
+                ipValidationConstraint = parseInt(ipValidationConstraint, 10);
+              }
+
+              maxLength = ipValidationConstraint === 4 ? 15: 39;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISO31661_ALPHA_2)) {
+              maxLength = 2;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISO31661_ALPHA_3)) {
+              maxLength = 3;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISO8601)) {
+              maxLength = 64;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isISRC')) {
+              maxLength = 15;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISSN)) {
+              maxLength = 9;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_JWT)) {
+              maxLength = 8192;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isLocale')) {
+              maxLength = 5;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_MAC_ADDRESS)) {
+              maxLength = 17;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_MILITARY_TIME)) {
+              maxLength = 5;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isMimeType')) {
+              maxLength = 64;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_PORT)) {
+              maxLength = 5;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isRgbColor')) {
+              maxLength = 32;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isSemVer')) {
+              maxLength = 32;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_UUID)) {
+              maxLength = 36;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isPostalCode')) {
+              maxLength = 32;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isCreditCardExpiration')) {
+              maxLength = 7;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isCardVerificationCode')) {
+              maxLength = 4;
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isMobileNumber')) {
+              maxLength = 32;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_PHONE_NUMBER)) {
+              maxLength = 32;
+            }
+
+            if (maxLength && !doesPropertyContainValidation(Class, propertyName, ValidationTypes.MAX_LENGTH)) {
+              const validationMetadataArgs: ValidationMetadataArgs = {
+                type: ValidationTypes.MAX_LENGTH,
+                target: Class,
+                propertyName,
+                constraints: [maxLength],
+                validationOptions: { each: isArrayType }
+              };
+
+              getFromContainer(MetadataStorage).addValidationMetadata(
+                new ValidationMetadata(validationMetadataArgs)
               );
             }
 
@@ -314,9 +403,9 @@ export default function setClassPropertyValidationDecorators(
             ) {
               throw new Error(
                 Class.name +
-                '.' +
-                propertyName +
-                ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
+                  '.' +
+                  propertyName +
+                  ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
               );
             }
 

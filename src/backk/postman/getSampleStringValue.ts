@@ -6,10 +6,9 @@ import {
 } from '../validation/setClassPropertyValidationDecorators';
 import getValidationConstraint from '../validation/getValidationConstraint';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
-import getPostalCodeSampleValue from "./samplevalues/getPostalCodeSampleValue";
-import getMobilePhoneNumberSampleValue from "./samplevalues/getMobilePhoneNumberSampleValue";
-import { IsPhoneNumber } from "class-validator";
-import getPhoneNumberSampleValue from "./samplevalues/getPhoneNumberSampleValue";
+import getPostalCodeSampleValue from './samplevalues/getPostalCodeSampleValue';
+import getMobilePhoneNumberSampleValue from './samplevalues/getMobilePhoneNumberSampleValue';
+import getPhoneNumberSampleValue from './samplevalues/getPhoneNumberSampleValue';
 
 export const regExpToSampleStringMap: { [key: string]: string } = {};
 
@@ -31,13 +30,13 @@ export default function getSampleStringValue(
   const containsValidationConstraint = getValidationConstraint(Class, propertyName, 'contains');
 
   if (containsValidation) {
-    sampleStringValue = containsValidationConstraint;
+    sampleStringValue = isUpdate ? containsValidationConstraint + 'a' : containsValidationConstraint;
   }
 
   const bicValidation = getPropertyValidationOfType(Class, propertyName, 'isBIC');
 
   if (bicValidation) {
-    sampleStringValue = 'NDEAFIHH';
+    sampleStringValue = isUpdate ? 'NEDSZAJJXXX' : 'NDEAFIHH';
   }
 
   const base32Validation = getPropertyValidationOfType(Class, propertyName, 'isBase32');
@@ -49,25 +48,29 @@ export default function getSampleStringValue(
   const btcAddressValidation = getPropertyValidationOfType(Class, propertyName, 'isBtcAddress');
 
   if (btcAddressValidation) {
-    sampleStringValue = '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2';
+    sampleStringValue = isUpdate
+      ? '2BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2'
+      : '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2';
   }
 
   const creditCardValidation = getPropertyValidationOfType(Class, propertyName, 'isCreditCard');
 
   if (creditCardValidation) {
-    sampleStringValue = '4111 1111 1111 1111';
+    sampleStringValue = isUpdate ? '4111 1111 1111 1112' : '4111 1111 1111 1111';
   }
 
   const dataUriValidation = doesClassPropertyContainCustomValidation(Class, propertyName, 'isDataUri');
 
   if (dataUriValidation) {
-    sampleStringValue = 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==';
+    sampleStringValue = isUpdate
+      ? 'data:text/plain;base64,XYZsbG8sIFdvcmxkIQ=='
+      : 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==';
   }
 
   const dateStringValidation = getPropertyValidationOfType(Class, propertyName, 'isDateString');
 
   if (dateStringValidation) {
-    sampleStringValue = '2011-10-05T14:48:00.000Z';
+    sampleStringValue = isUpdate ? '2011-10-05T15:48:00.000Z' : '2011-10-05T14:48:00.000Z';
   }
 
   const decimalValidation = getPropertyValidationOfType(Class, propertyName, 'isDecimal');
@@ -76,22 +79,24 @@ export default function getSampleStringValue(
     sampleStringValue = '1.23';
   }
 
-  const eanValidation = getPropertyValidationOfType(Class, propertyName, 'isEAN');
+  const eanValidation = doesClassPropertyContainCustomValidation(Class, propertyName, 'isEAN');
 
   if (eanValidation) {
-    sampleStringValue = '0049720026679';
+    sampleStringValue = isUpdate ? '978020137962' : '0049720026679';
   }
 
   const emailValidation = getPropertyValidationOfType(Class, propertyName, 'isEmail');
 
   if (emailValidation) {
-    sampleStringValue = 'test@test.com';
+    sampleStringValue = isUpdate ? 'test2@test.com' : 'test@test.com';
   }
 
   const ethereumAddressValidation = getPropertyValidationOfType(Class, propertyName, 'isEthereumAddress');
 
   if (ethereumAddressValidation) {
-    sampleStringValue = '0xb794f5ea0ba39494ce839613fffba74279579268';
+    sampleStringValue = isUpdate
+      ? '0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'
+      : '0xb794f5ea0ba39494ce839613fffba74279579268';
   }
 
   const fqdnValidation = getPropertyValidationOfType(Class, propertyName, 'isFqdn');
@@ -103,13 +108,13 @@ export default function getSampleStringValue(
   const hslValidation = getPropertyValidationOfType(Class, propertyName, 'isHSL');
 
   if (hslValidation) {
-    sampleStringValue = 'hsl(120,100%,50%)';
+    sampleStringValue = isUpdate ? 'hsl(100,100%,50%)' : 'hsl(120,100%,50%)';
   }
 
   const hexColorValidation = getPropertyValidationOfType(Class, propertyName, 'isHexColor');
 
   if (hexColorValidation) {
-    sampleStringValue = '#ffffff';
+    sampleStringValue = isUpdate ? '#000000' : '#ffffff';
   }
 
   const hexadecimalNumberValidation = getPropertyValidationOfType(Class, propertyName, 'isHexadecimal');
@@ -121,7 +126,7 @@ export default function getSampleStringValue(
   const ibanValidation = getPropertyValidationOfType(Class, propertyName, 'isIBAN');
 
   if (ibanValidation) {
-    sampleStringValue = 'FI211235600000785';
+    sampleStringValue = isUpdate ? 'FR7630006000011234567890189' : 'FI211235600000785';
   }
 
   const ipValidation = getPropertyValidationOfType(Class, propertyName, 'isIp');
@@ -132,8 +137,13 @@ export default function getSampleStringValue(
   }
 
   if (ipValidation) {
-    sampleStringValue =
-      ipValidationConstraint === 4 ? '127.0.0.1' : '2001:0db8:85a3:0000:0000:8a2e:0370:7334';
+    if (ipValidationConstraint === 4) {
+      sampleStringValue = isUpdate ? '255.255.255.255' : '127.0.0.1';
+    } else {
+      sampleStringValue = isUpdate
+        ? '2000:0db8:85a3:0000:0000:8a2e:0370:7334'
+        : '2001:0db8:85a3:0000:0000:8a2e:0370:7334';
+    }
   }
 
   const isbnValidation = getPropertyValidationOfType(Class, propertyName, 'isIsbn');
@@ -150,19 +160,19 @@ export default function getSampleStringValue(
   const isinValidation = getPropertyValidationOfType(Class, propertyName, 'isIsin');
 
   if (isinValidation) {
-    sampleStringValue = 'US0378331005';
+    sampleStringValue = isUpdate ? 'AU0000XVGZA3' : 'US0378331005';
   }
 
   const iso31661Alpha2inValidation = getPropertyValidationOfType(Class, propertyName, 'isISO31661Alpha2');
 
   if (iso31661Alpha2inValidation) {
-    sampleStringValue = 'FI';
+    sampleStringValue = isUpdate ? 'DE' : 'FI';
   }
 
   const iso31661Alpha3inValidation = getPropertyValidationOfType(Class, propertyName, 'isISO31661Alpha3');
 
   if (iso31661Alpha3inValidation) {
-    sampleStringValue = 'FIN';
+    sampleStringValue = isUpdate ? 'SWE' : 'FIN';
   }
 
   const iso8601Validation = getPropertyValidationOfType(Class, propertyName, 'isIso8601');
@@ -174,7 +184,7 @@ export default function getSampleStringValue(
   const isrcValidation = getPropertyValidationOfType(Class, propertyName, 'isISRC');
 
   if (isrcValidation) {
-    sampleStringValue = 'US-S1Z-99-00001';
+    sampleStringValue = isUpdate ? 'USRC17607839' : 'US-S1Z-99-00001';
   }
 
   const issnValidation = getPropertyValidationOfType(Class, propertyName, 'isISSN');
@@ -192,38 +202,41 @@ export default function getSampleStringValue(
   const jwtValidation = getPropertyValidationOfType(Class, propertyName, 'isJwt');
 
   if (jwtValidation) {
-    sampleStringValue =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+    sampleStringValue = isUpdate
+      ? 'abJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+      : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
   }
 
   const localeValidation = getPropertyValidationOfType(Class, propertyName, 'isLocale');
 
   if (localeValidation) {
-    sampleStringValue = 'en-GB';
+    sampleStringValue = isUpdate ? 'en-US' : 'en-GB';
   }
 
   const macAddressValidation = getPropertyValidationOfType(Class, propertyName, 'isMacAddress');
 
   if (macAddressValidation) {
-    sampleStringValue = '06-00-00-00-00-00';
+    sampleStringValue = isUpdate ? '01-00-00-00-00-00' : '06-00-00-00-00-00';
   }
 
   const magnetUriValidation = getPropertyValidationOfType(Class, propertyName, 'isMagnetURI');
 
   if (magnetUriValidation) {
-    sampleStringValue = 'magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a';
+    sampleStringValue = isUpdate
+      ? 'magnet:?xt=urn:btih:a12fe1c06bba254a9dc9f519b335aa7c1367a88a'
+      : 'magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a';
   }
 
   const militaryTimeValidation = getPropertyValidationOfType(Class, propertyName, 'isMilitaryTime');
 
   if (militaryTimeValidation) {
-    sampleStringValue = '13:00';
+    sampleStringValue = isUpdate ? '14:00' : '13:00';
   }
 
   const mimeTypeValidation = getPropertyValidationOfType(Class, propertyName, 'isMimeType');
 
   if (mimeTypeValidation) {
-    sampleStringValue = 'application/json';
+    sampleStringValue = isUpdate ? 'text/html' : 'application/json';
   }
 
   const numberStringValidation = getPropertyValidationOfType(Class, propertyName, 'isNumberString');
@@ -241,19 +254,19 @@ export default function getSampleStringValue(
   const portNumberValidation = getPropertyValidationOfType(Class, propertyName, 'isPort');
 
   if (portNumberValidation) {
-    sampleStringValue = '8080';
+    sampleStringValue = isUpdate ? '80' : '8080';
   }
 
   const rgbColorValidation = getPropertyValidationOfType(Class, propertyName, 'isRgbColor');
 
   if (rgbColorValidation) {
-    sampleStringValue = 'rgb(128,128,128)';
+    sampleStringValue = isUpdate ? 'rgb(255,255,255)' : 'rgb(128,128,128)';
   }
 
   const semVerValidation = getPropertyValidationOfType(Class, propertyName, 'isSemVer');
 
   if (semVerValidation) {
-    sampleStringValue = '1.2.3';
+    sampleStringValue = isUpdate ? '1.2.4' : '1.2.3';
   }
 
   const uuidValidation = getPropertyValidationOfType(Class, propertyName, 'isUuid');
@@ -291,11 +304,7 @@ export default function getSampleStringValue(
       .join('');
   }
 
-  const postalCodeValidation = doesClassPropertyContainCustomValidation(
-    Class,
-    propertyName,
-    'isPostalCode'
-  );
+  const postalCodeValidation = doesClassPropertyContainCustomValidation(Class, propertyName, 'isPostalCode');
 
   if (postalCodeValidation) {
     const locale = getCustomValidationConstraint(Class, propertyName, 'isPostalCode', 1);
@@ -322,43 +331,26 @@ export default function getSampleStringValue(
     sampleStringValue = isUpdate ? '346' : '345';
   }
 
-  const oneOfValidation = doesClassPropertyContainCustomValidation(
-    Class,
-    propertyName,
-    'isOneOf'
-  );
+  const oneOfValidation = doesClassPropertyContainCustomValidation(Class, propertyName, 'isOneOf');
 
   if (oneOfValidation) {
     sampleStringValue = getCustomValidationConstraint(Class, propertyName, 'isOneOf', 2);
   }
 
-  const noneOfValidation = doesClassPropertyContainCustomValidation(
-    Class,
-    propertyName,
-    'isNoneOf'
-  );
+  const noneOfValidation = doesClassPropertyContainCustomValidation(Class, propertyName, 'isNoneOf');
 
   if (noneOfValidation) {
     sampleStringValue = getCustomValidationConstraint(Class, propertyName, 'isNoneOf', 2);
   }
 
-
-  const mobilePhoneValidation = getPropertyValidationOfType(
-    Class,
-    propertyName,
-    'isMobilePhone'
-  );
+  const mobilePhoneValidation = getPropertyValidationOfType(Class, propertyName, 'isMobilePhone');
 
   if (mobilePhoneValidation) {
     const locale = getValidationConstraint(Class, propertyName, 'isMobilePhone');
     sampleStringValue = getMobilePhoneNumberSampleValue(locale);
   }
 
-  const phoneNumberValidation = getPropertyValidationOfType(
-    Class,
-    propertyName,
-    'isPhoneNumber'
-  );
+  const phoneNumberValidation = getPropertyValidationOfType(Class, propertyName, 'isPhoneNumber');
 
   if (phoneNumberValidation) {
     const country = getValidationConstraint(Class, propertyName, 'isPhoneNumber');
@@ -491,10 +483,8 @@ export default function getSampleStringValue(
     !getPropertyValidationOfType(Class, propertyName, 'IsFirebasePushId') &&
     !getPropertyValidationOfType(Class, propertyName, 'isHash') &&
     !getPropertyValidationOfType(Class, propertyName, 'isIdentityCard') &&
-    !getPropertyValidationOfType(Class, propertyName, 'isMobilePhone') &&
     !getPropertyValidationOfType(Class, propertyName, 'isMongoId') &&
     !getPropertyValidationOfType(Class, propertyName, 'isPassportNumber') &&
-    !getPropertyValidationOfType(Class, propertyName, 'isPhoneNumber') &&
     !getPropertyValidationOfType(Class, propertyName, 'isRFC3339')
   ) {
     throw new Error(
