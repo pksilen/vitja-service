@@ -88,7 +88,11 @@ export default function getSampleStringValue(
   const emailValidation = getPropertyValidationOfType(Class, propertyName, 'isEmail');
 
   if (emailValidation) {
-    sampleStringValue = isUpdate ? 'test2@test.com' : 'test@test.com';
+    if (propertyName.toLowerCase() === 'username') {
+      sampleStringValue = 'test@test.com';
+    } else {
+      sampleStringValue = isUpdate ? 'test2@test.com' : 'test@test.com';
+    }
   }
 
   const ethereumAddressValidation = getPropertyValidationOfType(Class, propertyName, 'isEthereumAddress');
