@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- IsOneOf('usersService.getCities')
 - IsNotAnyOf('usersService.getNotAllowedUserNames')
 - SampleArg/RetValTest: contain custom decorator with testvalue
 - Check based on String validator, if maxLength or Length annotation can be given automatically

@@ -25,7 +25,7 @@ export default function IsOneOf(
           return possibleValuesOrErrorResponse.some((possibleValue) => value === possibleValue.name);
         },
         defaultMessage: () =>
-          propertyName + ' must be one of the result of service function call: ' + serviceFunctionName
+          propertyName + ' must be one from the result of service function call: ' + serviceFunctionName
       }
     });
   };

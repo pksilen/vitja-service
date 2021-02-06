@@ -18,6 +18,6 @@ export default async function getCities(): Promise<Name[] | ErrorResponse> {
       );
     }
   }
-  
+
   return Promise.resolve(cities);
 }

@@ -382,6 +382,7 @@ export default function getSampleStringValue(
   );
 
   if (hasLengthAndMatchesAllValidation) {
+    const minLengthConstraint = getCustomValidationConstraint(Class, propertyName, 'lengthAndMatchesAll', 1);
     const maxLengthConstraint = getCustomValidationConstraint(Class, propertyName, 'lengthAndMatchesAll', 2);
     const regExpConstraints: RegExp[] = getCustomValidationConstraint(
       Class,
@@ -398,6 +399,10 @@ export default function getSampleStringValue(
         randomRegExp.max = 5;
         return sampleStringValue + randomRegExp.gen();
       }, '');
+
+      while (sampleStringValue.length < minLengthConstraint) {
+        sampleStringValue += sampleStringValue;
+      }
 
       sampleStringValue = sampleStringValue.slice(0, maxLengthConstraint);
       regExpToSampleStringMap[regExpConstraints.join('')] = sampleStringValue;

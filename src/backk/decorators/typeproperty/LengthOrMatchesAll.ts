@@ -37,7 +37,7 @@ export default function LengthAndMatchesAll(
             minLength +
             '-' +
             maxLength +
-            'and must match all: ' +
+            ' and must match all: ' +
             regExps.map((regExp) => regExp.toString()).join(', ')
       }
     });
