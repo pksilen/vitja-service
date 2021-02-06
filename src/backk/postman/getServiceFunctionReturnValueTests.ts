@@ -7,6 +7,7 @@ import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFrom
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
 import getSampleStringValue from './getSampleStringValue';
+import { ValidationTypes } from "class-validator";
 
 export default function getServiceFunctionReturnValueTests(
   serviceTypes: { [key: string]: Function },
@@ -83,6 +84,11 @@ export default function getServiceFunctionReturnValueTests(
       getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'max') ??
       getCustomValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'minMax', 2);
 
+    const minDate =
+      getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, ValidationTypes.MIN_DATE);
+    const maxDate =
+      getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, ValidationTypes.MAX_DATE);
+
     if (isManyToMany) {
       // noinspection AssignmentToFunctionParameterJS
       isUpdate = false;
@@ -140,9 +146,10 @@ export default function getServiceFunctionReturnValueTests(
           expectedValue = isUpdate ? parseFloat(maxValue.toFixed(2)) : parseFloat(minValue.toFixed(2));
           break;
         case 'Date':
+
           expectedValue = isUpdate
-            ? `'${new Date(120000).toISOString()}'`
-            : `'${new Date(60000).toISOString()}'`;
+            ? `'${maxDate?.toISOString() ?? new Date(120000).toISOString()}'`
+            : `'${minDate?.toISOString() ?? new Date(60000).toISOString()}'`;
       }
     }
 

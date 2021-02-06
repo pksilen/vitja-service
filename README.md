@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO
-- If number or string or enum array, must have ArrayUnique or ArrayNotUnique
-- Entity-type arrays shall have ArrayDeepEqualUnique annotation
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
 - includeResponseFields validate first longer
 - IsOneOf('usersService.getCities')

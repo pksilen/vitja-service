@@ -9,6 +9,7 @@ import { doesClassPropertyContainCustomValidation } from '../validation/setClass
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 import getSampleStringValue from "./getSampleStringValue";
+import { ValidationTypes } from "class-validator";
 
 export default function getServiceFunctionTestArgument(
   serviceTypes: { [key: string]: Function },
@@ -137,8 +138,12 @@ export default function getServiceFunctionTestArgument(
     } else if (baseTypeName.startsWith('string')) {
       sampleArg[propertyName] = getSampleStringValue(serviceTypes[argTypeName], propertyName, isUpdate);
     } else if (baseTypeName.startsWith('Date')) {
+      const minDate =
+        getValidationConstraint(serviceTypes[argTypeName], propertyName, ValidationTypes.MIN_DATE);
+      const maxDate =
+        getValidationConstraint(serviceTypes[argTypeName], propertyName, ValidationTypes.MAX_DATE);
       // noinspection MagicNumberJS
-      sampleArg[propertyName] = isUpdate ? new Date(120000).toISOString() : new Date(60000).toISOString();
+      sampleArg[propertyName] = isUpdate ? (maxDate ?? new Date(120000).toISOString()) : (new Date(60000).toISOString() ?? minDate);
     } else if (isEnumTypeName(baseTypeName)) {
       let enumValues;
       if (baseTypeName.startsWith('(')) {
