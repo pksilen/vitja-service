@@ -2,6 +2,7 @@
 
 TODO
 - Add validation group to MaxLength type validators and validate them before other validators
+- IsStrongPassword validation
 - postman api def json: add sample response
 - request's description in postman.json should list possible enum values
 - In initializeDB, check if field is integer => bigInt or varChar should be longer
@@ -12,7 +13,6 @@ TODO
 - In updateEntities, check list of ETags
 - AddsubEntities, check if already added and use ETag
 - scheduleJob, miten hakea response myöhemmin (REdis)
-- IsStrongPassword validation
 - change fieldPathName in xxxWhere db operations to => subEntityPath, fieldName
   
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that

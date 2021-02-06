@@ -56,7 +56,7 @@ export default function getSampleStringValue(
   const creditCardValidation = getPropertyValidationOfType(Class, propertyName, 'isCreditCard');
 
   if (creditCardValidation) {
-    sampleStringValue = isUpdate ? '4111 1111 1111 1112' : '4111 1111 1111 1111';
+    sampleStringValue = isUpdate ? '5500 0000 0000 0004' : '4111 1111 1111 1111';
   }
 
   const dataUriValidation = doesClassPropertyContainCustomValidation(Class, propertyName, 'isDataUri');
