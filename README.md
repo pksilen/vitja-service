@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- includeResponseFields validate first longer
 - IsOneOf('usersService.getCities')
 - IsNotAnyOf('usersService.getNotAllowedUserNames')
 - SampleArg/RetValTest: contain custom decorator with testvalue

@@ -28,6 +28,7 @@ import _IdAndCaptchaAndVersionAndLastModifiedTimestamp
 import _IdAndCaptchaAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp
   from "./id/_IdAndCaptchaAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp";
 import OrFilter from "./userdefinedfilters/OrFilter";
+import { Name } from "./Name";
 
 const types = {
   _Id,
@@ -54,7 +55,8 @@ const types = {
   Pagination,
   UserDefinedFilter,
   OrFilter,
-  Captcha
+  Captcha,
+  Name
 }
 
 export default types

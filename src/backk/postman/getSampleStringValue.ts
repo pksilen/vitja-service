@@ -322,6 +322,17 @@ export default function getSampleStringValue(
     sampleStringValue = isUpdate ? '346' : '345';
   }
 
+  const oneOfValidation = doesClassPropertyContainCustomValidation(
+    Class,
+    propertyName,
+    'isOneOf'
+  );
+
+  if (oneOfValidation) {
+    sampleStringValue = getCustomValidationConstraint(Class, propertyName, 'isOneOf', 2);
+  }
+
+
   const mobilePhoneValidation = getPropertyValidationOfType(
     Class,
     propertyName,

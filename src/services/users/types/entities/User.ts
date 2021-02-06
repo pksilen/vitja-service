@@ -1,21 +1,22 @@
-import { ArrayMaxSize, ArrayUnique, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
-import Entity from "../../../../backk/decorators/entity/Entity";
-import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
-import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
-import { TestValue } from "../../../../backk/decorators/typeproperty/testing/TestValue";
-import DefaultPaymentMethod from "./DefaultPaymentMethod";
-import PaymentMethod from "./PaymentMethod";
-import LengthAndMatchesAll from "../../../../backk/decorators/typeproperty/LengthOrMatchesAll";
-import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
-import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
-import { SalesItem } from "../../../salesitems/types/entities/SalesItem";
-import Order from "../../../orders/types/entities/Order";
-import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
-import FollowedUser from "./FollowedUser";
-import FollowingUser from "./FollowingUser";
-import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
-import LengthAndMatches from "../../../../backk/decorators/typeproperty/LengthAndMatches";
-import IsPostalCode from "../../../../backk/decorators/typeproperty/IsPostalCode";
+import { ArrayMaxSize, ArrayUnique, IsEmail, IsPhoneNumber, MaxLength } from 'class-validator';
+import Entity from '../../../../backk/decorators/entity/Entity';
+import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
+import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
+import DefaultPaymentMethod from './DefaultPaymentMethod';
+import PaymentMethod from './PaymentMethod';
+import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
+import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
+import _IdAndCaptcha from '../../../../backk/types/id/_IdAndCaptcha';
+import { SalesItem } from '../../../salesitems/types/entities/SalesItem';
+import Order from '../../../orders/types/entities/Order';
+import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany';
+import FollowedUser from './FollowedUser';
+import FollowingUser from './FollowingUser';
+import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
+import IsPostalCode from '../../../../backk/decorators/typeproperty/IsPostalCode';
+import IsOneOf from '../../../../backk/decorators/typeproperty/IsOneOf';
+import UsersServiceImpl from '../../UsersServiceImpl';
+import getCities from '../../validation/getCities';
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -36,7 +37,7 @@ export default class User extends _IdAndCaptcha {
     'Password may not contain word password'
   )
   @ShouldBeTrueForEntity(
-    ({ password, userName }) => (!password.toLowerCase().includes(userName.toLowerCase())),
+    ({ password, userName }) => !password.toLowerCase().includes(userName.toLowerCase()),
     'Password may not contain username'
   )
   @LengthAndMatchesAll(8, 512, [/[a-z]+/, /[A-Z]+/, /\d+/, /[^\w\s]+/])
@@ -51,7 +52,7 @@ export default class User extends _IdAndCaptcha {
   public postalCode!: string;
 
   @MaxLength(256)
-  @IsAnyString()
+  @IsOneOf(getCities, 'usersService.getCities', 'Tampere')
   public city!: string;
 
   @MaxLength(64)
