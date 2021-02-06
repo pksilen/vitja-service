@@ -8,6 +8,7 @@ import typePropertyAnnotationContainer from '../decorators/typeproperty/typeProp
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
 import getSampleStringValue from './getSampleStringValue';
 import { ValidationTypes } from "class-validator";
+import { getClassPropertyCustomValidationTestValue } from "../validation/setClassPropertyValidationDecorators";
 
 export default function getServiceFunctionReturnValueTests(
   serviceTypes: { [key: string]: Function },
@@ -56,6 +57,15 @@ export default function getServiceFunctionReturnValueTests(
     let allowAnyValue;
     let testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
     let isTestValueJson = false;
+
+    const customValidationTestValue = getClassPropertyCustomValidationTestValue(
+      serviceTypes[returnValueTypeName],
+      propertyName
+    );
+
+    if (customValidationTestValue) {
+      testValue = customValidationTestValue;
+    }
 
     if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPath + propertyName]) {
       testValue = JSON.stringify(

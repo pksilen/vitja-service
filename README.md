@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- IsNotAnyOf('usersService.getNotAllowedUserNames')
 - SampleArg/RetValTest: contain custom decorator with testvalue
 - Check based on String validator, if maxLength or Length annotation can be given automatically
 - Add validation group to MaxLength type validators and validate them before other validators

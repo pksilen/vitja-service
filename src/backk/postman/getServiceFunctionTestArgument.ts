@@ -5,11 +5,14 @@ import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import isEnumTypeName from '../utils/type/isEnumTypeName';
 import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFromSrcFile';
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
-import { doesClassPropertyContainCustomValidation } from '../validation/setClassPropertyValidationDecorators';
+import {
+  doesClassPropertyContainCustomValidation,
+  getClassPropertyCustomValidationTestValue
+} from '../validation/setClassPropertyValidationDecorators';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
-import getSampleStringValue from "./getSampleStringValue";
-import { ValidationTypes } from "class-validator";
+import getSampleStringValue from './getSampleStringValue';
+import { ValidationTypes } from 'class-validator';
 
 export default function getServiceFunctionTestArgument(
   serviceTypes: { [key: string]: Function },
@@ -93,7 +96,16 @@ export default function getServiceFunctionTestArgument(
       isUpdate = false;
     }
 
-    const testValue = testValueContainer.getTestValue(serviceTypes[argTypeName], propertyName);
+    let testValue = testValueContainer.getTestValue(serviceTypes[argTypeName], propertyName);
+
+    const customValidationTestValue = getClassPropertyCustomValidationTestValue(
+      serviceTypes[argTypeName],
+      propertyName
+    );
+
+    if (customValidationTestValue) {
+      testValue = customValidationTestValue;
+    }
 
     const minValue =
       getValidationConstraint(serviceTypes[argTypeName], propertyName, 'min') ??
@@ -138,12 +150,20 @@ export default function getServiceFunctionTestArgument(
     } else if (baseTypeName.startsWith('string')) {
       sampleArg[propertyName] = getSampleStringValue(serviceTypes[argTypeName], propertyName, isUpdate);
     } else if (baseTypeName.startsWith('Date')) {
-      const minDate =
-        getValidationConstraint(serviceTypes[argTypeName], propertyName, ValidationTypes.MIN_DATE);
-      const maxDate =
-        getValidationConstraint(serviceTypes[argTypeName], propertyName, ValidationTypes.MAX_DATE);
+      const minDate = getValidationConstraint(
+        serviceTypes[argTypeName],
+        propertyName,
+        ValidationTypes.MIN_DATE
+      );
+      const maxDate = getValidationConstraint(
+        serviceTypes[argTypeName],
+        propertyName,
+        ValidationTypes.MAX_DATE
+      );
       // noinspection MagicNumberJS
-      sampleArg[propertyName] = isUpdate ? (maxDate ?? new Date(120000).toISOString()) : (new Date(60000).toISOString() ?? minDate);
+      sampleArg[propertyName] = isUpdate
+        ? maxDate ?? new Date(120000).toISOString()
+        : new Date(60000).toISOString() ?? minDate;
     } else if (isEnumTypeName(baseTypeName)) {
       let enumValues;
       if (baseTypeName.startsWith('(')) {
