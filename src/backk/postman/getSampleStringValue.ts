@@ -332,6 +332,16 @@ export default function getSampleStringValue(
     sampleStringValue = getCustomValidationConstraint(Class, propertyName, 'isOneOf', 2);
   }
 
+  const noneOfValidation = doesClassPropertyContainCustomValidation(
+    Class,
+    propertyName,
+    'isNoneOf'
+  );
+
+  if (noneOfValidation) {
+    sampleStringValue = getCustomValidationConstraint(Class, propertyName, 'isNoneOf', 2);
+  }
+
 
   const mobilePhoneValidation = getPropertyValidationOfType(
     Class,
