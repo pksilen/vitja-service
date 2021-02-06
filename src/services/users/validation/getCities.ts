@@ -9,8 +9,10 @@ export let cities: Name[] = [];
 export default async function getCities(): Promise<Name[] | ErrorResponse> {
   if (cities.length === 0) {
     try {
-      const citiesFileContent = readFileSync('resources/cities.txt', { encoding: 'UTF-8' });
-      cities = citiesFileContent.split('\n').filter(city => city).map((city) => ({ name: city }));
+      cities = readFileSync('resources/cities.txt', { encoding: 'UTF-8' })
+        .split('\n')
+        .filter((city) => city)
+        .map((city) => ({ name: city.trim() }));
     } catch (error) {
       return createErrorResponseFromErrorMessageAndStatusCode(
         error.message,

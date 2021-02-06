@@ -5,9 +5,11 @@ import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
 import { Category } from '../enums/Category';
 import { Department } from '../enums/Department';
 import { Area } from '../enums/Area';
+import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
 
 export default class GetSalesItemsArg extends DefaultPostQueryOperations {
   @MaxLength(512)
+  @IsAnyString()
   textFilter?: string;
 
   @ArrayMaxSize(10)
@@ -34,9 +36,6 @@ export default class GetSalesItemsArg extends DefaultPostQueryOperations {
   @MinMax(0, 1000000000)
   maxPrice?: number;
 
-  @MaxLength(512, { each: true })
-  @ArrayMaxSize(50)
-  @ArrayUnique()
   includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];
 
   sortBys: SortBy[] = [

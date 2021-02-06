@@ -1,27 +1,25 @@
-import { ArrayMaxSize, ArrayUnique, IsEmail, IsPhoneNumber, MaxLength } from 'class-validator';
-import Entity from '../../../../backk/decorators/entity/Entity';
-import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
-import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
-import DefaultPaymentMethod from './DefaultPaymentMethod';
-import PaymentMethod from './PaymentMethod';
-import LengthAndMatchesAll from '../../../../backk/decorators/typeproperty/LengthOrMatchesAll';
-import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
-import _IdAndCaptcha from '../../../../backk/types/id/_IdAndCaptcha';
-import { SalesItem } from '../../../salesitems/types/entities/SalesItem';
-import Order from '../../../orders/types/entities/Order';
-import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany';
-import FollowedUser from './FollowedUser';
-import FollowingUser from './FollowingUser';
-import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
-import IsPostalCode from '../../../../backk/decorators/typeproperty/IsPostalCode';
-import IsOneOf from '../../../../backk/decorators/typeproperty/IsOneOf';
-import UsersServiceImpl from '../../UsersServiceImpl';
-import getCities from '../../validation/getCities';
+import { ArrayMaxSize, ArrayUnique, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
+import Entity from "../../../../backk/decorators/entity/Entity";
+import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
+import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
+import DefaultPaymentMethod from "./DefaultPaymentMethod";
+import PaymentMethod from "./PaymentMethod";
+import LengthAndMatchesAll from "../../../../backk/decorators/typeproperty/LengthOrMatchesAll";
+import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
+import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
+import { SalesItem } from "../../../salesitems/types/entities/SalesItem";
+import Order from "../../../orders/types/entities/Order";
+import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
+import FollowedUser from "./FollowedUser";
+import FollowingUser from "./FollowingUser";
+import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
+import IsPostalCode from "../../../../backk/decorators/typeproperty/IsPostalCode";
+import IsOneOf from "../../../../backk/decorators/typeproperty/IsOneOf";
+import getCities from "../../validation/getCities";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
   @Unique()
-  @MaxLength(512)
   @IsEmail()
   userName!: string;
 
@@ -47,7 +45,6 @@ export default class User extends _IdAndCaptcha {
   @IsAnyString()
   public streetAddress!: string;
 
-  @MaxLength(32)
   @IsPostalCode('FI')
   public postalCode!: string;
 
@@ -55,7 +52,6 @@ export default class User extends _IdAndCaptcha {
   @IsOneOf(getCities, 'usersService.getCities', 'Tampere')
   public city!: string;
 
-  @MaxLength(64)
   @IsPhoneNumber('FI')
   public phoneNumber!: string;
 

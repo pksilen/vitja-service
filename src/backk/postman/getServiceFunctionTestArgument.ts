@@ -89,6 +89,9 @@ export default function getServiceFunctionTestArgument(
     } = getTypeInfoForTypeName(propertyTypeName);
 
     if (isOptionalType && defaultValueStr === undefined && !isUpdate) {
+      if (baseTypeName.startsWith('string')) {
+        getSampleStringValue(serviceTypes[argTypeName], propertyName, isUpdate);
+      }
       return;
     }
 

@@ -12,7 +12,7 @@ import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFrom
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 import { customDecoratorNameToTestValueMap } from '../decorators/registerCustomDecorator';
-import getValidationConstraint from "./getValidationConstraint";
+import getValidationConstraint from './getValidationConstraint';
 
 export function getPropertyValidationOfType(
   typeClass: Function,
@@ -190,6 +190,7 @@ export default function setClassPropertyValidationDecorators(
 
             ({ baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(propertyTypeName));
           }
+
           let validationType;
           let constraints;
           const isExternalId = typePropertyAnnotationContainer.isTypePropertyExternalId(Class, propertyName);
@@ -265,20 +266,21 @@ export default function setClassPropertyValidationDecorators(
 
             let maxLength: number | undefined;
 
+            // noinspection IfStatementWithTooManyBranchesJS
             if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_BOOLEAN_STRING)) {
               maxLength = 5;
-            } else if (
-              doesClassPropertyContainCustomValidation(Class, propertyName, 'isBIC')
-            ) {
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isBIC')) {
               maxLength = 11;
-            } else if(doesClassPropertyContainCustomValidation(Class, propertyName, 'isBtcAddress')) {
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isBtcAddress')) {
               maxLength = 35;
-            } else if(doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_CREDIT_CARD)) {
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_CREDIT_CARD)) {
               maxLength = 19;
-            } else if(doesPropertyContainValidation(Class, propertyName, ValidationTypes. IS_DATE_STRING)) {
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_DATE_STRING)) {
               maxLength = 64;
-            } else if(doesClassPropertyContainCustomValidation(Class, propertyName, 'isEAN')) {
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isEAN')) {
               maxLength = 13;
+            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_EMAIL)) {
+              maxLength = 320;
             } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isEthereumAddress')) {
               maxLength = 42;
             } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isHSL')) {
@@ -287,19 +289,27 @@ export default function setClassPropertyValidationDecorators(
               maxLength = 7;
             } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISIN)) {
               maxLength = 12;
-            }else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isIBAN')) {
+            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isIBAN')) {
               maxLength = 42;
             } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_IP)) {
-              let ipValidationConstraint = getValidationConstraint(Class, propertyName, ValidationTypes.IS_IP);
+              let ipValidationConstraint = getValidationConstraint(
+                Class,
+                propertyName,
+                ValidationTypes.IS_IP
+              );
 
               if (typeof ipValidationConstraint === 'string') {
                 ipValidationConstraint = parseInt(ipValidationConstraint, 10);
               }
 
-              maxLength = ipValidationConstraint === 4 ? 15: 39;
-            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISO31661_ALPHA_2)) {
+              maxLength = ipValidationConstraint === 4 ? 15 : 39;
+            } else if (
+              doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISO31661_ALPHA_2)
+            ) {
               maxLength = 2;
-            } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISO31661_ALPHA_3)) {
+            } else if (
+              doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISO31661_ALPHA_3)
+            ) {
               maxLength = 3;
             } else if (doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_ISO8601)) {
               maxLength = 64;
@@ -327,9 +337,13 @@ export default function setClassPropertyValidationDecorators(
               maxLength = 36;
             } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isPostalCode')) {
               maxLength = 32;
-            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isCreditCardExpiration')) {
+            } else if (
+              doesClassPropertyContainCustomValidation(Class, propertyName, 'isCreditCardExpiration')
+            ) {
               maxLength = 7;
-            } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isCardVerificationCode')) {
+            } else if (
+              doesClassPropertyContainCustomValidation(Class, propertyName, 'isCardVerificationCode')
+            ) {
               maxLength = 4;
             } else if (doesClassPropertyContainCustomValidation(Class, propertyName, 'isMobileNumber')) {
               maxLength = 32;
@@ -337,7 +351,10 @@ export default function setClassPropertyValidationDecorators(
               maxLength = 32;
             }
 
-            if (maxLength && !doesPropertyContainValidation(Class, propertyName, ValidationTypes.MAX_LENGTH)) {
+            if (
+              maxLength &&
+              !doesPropertyContainValidation(Class, propertyName, ValidationTypes.MAX_LENGTH)
+            ) {
               const validationMetadataArgs: ValidationMetadataArgs = {
                 type: ValidationTypes.MAX_LENGTH,
                 target: Class,
@@ -380,6 +397,19 @@ export default function setClassPropertyValidationDecorators(
             if (Types[baseTypeName]) {
               constraints = [Types[baseTypeName]];
             } else if (hasSrcFilenameForTypeName(baseTypeName)) {
+              if (
+                isArrayType &&
+                !doesPropertyContainValidation(Class, propertyName, ValidationTypes.ARRAY_UNIQUE) &&
+                !doesClassPropertyContainCustomValidation(Class, propertyName, 'arrayNotUnique')
+              ) {
+                throw new Error(
+                  Class.name +
+                    '.' +
+                    propertyName +
+                    ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
+                );
+              }
+
               const enumValues = parseEnumValuesFromSrcFile(baseTypeName);
               validationType = ValidationTypes.IS_IN;
               constraints = [enumValues];

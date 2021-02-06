@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Check based on String validator, if maxLength or Length annotation can be given automatically
 - Add validation group to MaxLength type validators and validate them before other validators
 - postman api def json: add sample response
 - request's description in postman.json should list possible enum values
