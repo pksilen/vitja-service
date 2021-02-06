@@ -28,7 +28,7 @@ export default function IsCreditCardExpiration(validationOptions?: ValidationOpt
           const expirationTimestamp = dayjs(
             `${year.length === 4 ? year : century + year}-${month}-01T00:00:00`
           );
-          
+
           return (
             !!value.match(/^(0[1-9]|1[0-2])\/([0-9]{2}|[2-9][0-9]{3})$/) &&
             expirationTimestamp.isSameOrAfter(currentTimestamp)

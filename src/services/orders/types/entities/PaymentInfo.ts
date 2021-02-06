@@ -5,19 +5,12 @@ import { IsExternalId } from "../../../../backk/decorators/typeproperty/IsExtern
 
 @Entity()
 export default class PaymentInfo {
-  @MaxLength(256)
-  @IsAlphanumeric()
-  @IsExternalId()
-  public gatewayId!: string;
+  public gateway!: 'Paytrail' | 'PayPal' | 'Klarna';
 
   @MaxLength(256)
   @IsAlphanumeric()
   @IsExternalId()
-  public brokerId!: string;
-
-  @MaxLength(256)
-  @IsAlphanumeric()
-  public transactionUuid!: string;
+  public transactionId!: string;
 
   public transactionTimestamp!: Date;
 

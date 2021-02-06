@@ -1,13 +1,15 @@
 # Vitja service
 
 TODO
-- If number or string array, must have ArrayUnique or ArrayNotUnique
-  - Entity-type arrays shall have ArrayDeepEqualUnique annotation
+- remove brokerId, change gateway to enum: Paytrail | paypal | klarna, change transactionUUid => transactionId
+- If number or string or enum array, must have ArrayUnique or ArrayNotUnique
+- Entity-type arrays shall have ArrayDeepEqualUnique annotation
 - If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
 - IsOneOf('usersService.getCities')
 - IsNotAnyOf('usersService.getNotAllowedUserNames')
 - SampleArg/RetValTest: contain custom decorator with testvalue
 - Check based on String validator, if maxLength or Length annotation can be given automatically
+- Add validation group to MaxLength type validators and validate them before other validators
 - postman api def json: add sample response
 - request's description in postman.json should list possible enum values
 - In initializeDB, check if field is integer => bigInt or varChar should be longer
@@ -19,12 +21,19 @@ TODO
 - AddsubEntities, check if already added and use ETag
 - scheduleJob, miten hakea response myöhemmin (REdis)
 - IsStrongPassword validation
+- change fieldPathName in xxxWhere db operations to => subEntityPath, fieldName
   
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
-- Rename createOrder to placeOrder?
-  - placeOrder should execute remote operation for payment which returns PaymentInfo
+- Rename createOrder to placeOrder
+  - placeOrder should has gateway as input arg and create order with paymentinfo: null, then response:
+    HTTP/1.1 301 Moved Permanently
+    Location: https://payment-gateway/...?successUrl=https://backk-dynamic-frontend/?=backk=OrdersService.payOrder?orderId=xxxx&failureUrl=https://backk-dynamic-frontend/?=backk=discardOrder&orderId=xxx
+    paymentGateway adds query params to successUrl to indicate transactionId and amount
+    payOrder updates order with paymentinfo: transactionId and amount
+    discardOrder removes order by id
+    -Create CronJob to remove unpaid orders at intervals
   - remote payment operation could have a url parameter for testing to return fake paymentInfo
 
 - Split to multiple microservices
