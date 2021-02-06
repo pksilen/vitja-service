@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- If date is minDate and MaxDate annotation, use them in sampleArg/ResponseTests
 - includeResponseFields validate first longer
 - IsOneOf('usersService.getCities')
 - IsNotAnyOf('usersService.getNotAllowedUserNames')

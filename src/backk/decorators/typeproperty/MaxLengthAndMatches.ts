@@ -4,7 +4,8 @@ import RE2 from 're2';
 export default function MaxLengthAndMatches(
   maxLength: number,
   regexp: RegExp,
-  validationOptions?: ValidationOptions
+  validationOptions?: ValidationOptions,
+  isIncludeOrExcludeResponseFieldsProperty = false
 ) {
   return function(object: Record<string, any>, propertyName: string) {
     registerDecorator({
@@ -14,11 +15,16 @@ export default function MaxLengthAndMatches(
       constraints: ['maxLengthAndMatches', maxLength, regexp],
       options: validationOptions,
       validator: {
-        validate(value: any, args: ValidationArguments) {
-          // TODO implement array support
+        validate(value: any) {
+          if (isIncludeOrExcludeResponseFieldsProperty && value.includes('{')) {
+            // noinspection AssignmentToFunctionParameterJS
+            maxLength = 65536
+          }
+
           if (value.length > maxLength) {
             return false;
           }
+
           const re2RegExp = new RE2(regexp);
           return re2RegExp.test(value);
         },
