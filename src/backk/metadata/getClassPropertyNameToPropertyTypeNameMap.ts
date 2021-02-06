@@ -18,14 +18,18 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
   const prototypes = [];
   let prototype = Object.getPrototypeOf(new Class());
+
   while (prototype !== Object.prototype) {
     prototypes.push(prototype);
     prototype = Object.getPrototypeOf(prototype);
   }
+
   prototypes.reverse();
+
   prototypes.forEach((prototype) => {
     validationMetadatas.sort(({ target }) => (target === prototype.constructor ? -1 : 0));
   });
+
   validationMetadatas.reverse();
 
   const propNameToIsOptionalMap: { [key: string]: boolean } = {};
@@ -38,10 +42,11 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   });
 
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
-    const hasDifferentdbManagerGroup = validationMetadata.groups?.find(
+    const hasDifferentDbManagerGroup = validationMetadata.groups?.find(
       (group) => group.startsWith('DbManager: ') && group !== 'DbManager: ' + dbManager?.getDbManagerType()
     );
-    if (hasDifferentdbManagerGroup) {
+
+    if (hasDifferentDbManagerGroup) {
       return;
     }
 
@@ -51,6 +56,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
 
     if (
       (validationMetadata.type === 'maxLength' ||
+        validationMetadata.type === 'length' ||
         validationMetadata.type === 'conditionalValidation' ||
         validationMetadata.type === 'nestedValidation') &&
       !validationMetadata.groups?.includes('__backk_none__')
