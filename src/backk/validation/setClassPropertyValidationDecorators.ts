@@ -229,6 +229,19 @@ export default function setClassPropertyValidationDecorators(
             );
           } else if (baseTypeName === 'number') {
             if (
+              isArrayType &&
+              !doesPropertyContainValidation(Class, propertyName, ValidationTypes.ARRAY_UNIQUE) &&
+              !doesClassPropertyContainCustomValidation(Class, propertyName, 'arrayNotUnique')
+            ) {
+              throw new Error(
+                Class.name +
+                '.' +
+                propertyName +
+                ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
+              );
+            }
+
+            if (
               !doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_INT) &&
               !doesClassPropertyContainCustomValidation(Class, propertyName, 'isBigInt')
             ) {
@@ -236,6 +249,19 @@ export default function setClassPropertyValidationDecorators(
               constraints = [{}];
             }
           } else if (baseTypeName === 'string') {
+            if (
+              isArrayType &&
+              !doesPropertyContainValidation(Class, propertyName, ValidationTypes.ARRAY_UNIQUE) &&
+              !doesClassPropertyContainCustomValidation(Class, propertyName, 'arrayNotUnique')
+            ) {
+              throw new Error(
+                Class.name +
+                  '.' +
+                  propertyName +
+                  ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
+              );
+            }
+
             if (
               propertyName === '_id' ||
               propertyName === 'id' ||
@@ -280,6 +306,19 @@ export default function setClassPropertyValidationDecorators(
             }
           } else if (baseTypeName !== 'any') {
             validationType = ValidationTypes.IS_IN;
+
+            if (
+              isArrayType &&
+              !doesPropertyContainValidation(Class, propertyName, ValidationTypes.ARRAY_UNIQUE) &&
+              !doesClassPropertyContainCustomValidation(Class, propertyName, 'arrayNotUnique')
+            ) {
+              throw new Error(
+                Class.name +
+                '.' +
+                propertyName +
+                ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
+              );
+            }
 
             if (baseTypeName[0] === '(' && baseTypeName[baseTypeName.length - 1] === ')') {
               baseTypeName = baseTypeName.slice(1, -1);

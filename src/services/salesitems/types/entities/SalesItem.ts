@@ -11,6 +11,7 @@ import Index from '../../../../backk/decorators/typeproperty';
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
 import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
+import ArrayNotUnique from "../../../../backk/decorators/typeproperty/ArrayNotUnique";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
@@ -52,6 +53,7 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   @MaxLength(10485760, { each: true })
   @IsDataUri({ each: true })
   @ArrayMaxSize(10)
+  @ArrayNotUnique()
   public secondaryImageDataUris!: string[];
 
   @Index()

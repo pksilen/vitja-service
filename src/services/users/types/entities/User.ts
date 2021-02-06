@@ -1,4 +1,4 @@
-import { ArrayMaxSize, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
+import { ArrayMaxSize, ArrayUnique, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
 import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
@@ -66,6 +66,7 @@ export default class User extends _IdAndCaptcha {
   public paymentMethods!: PaymentMethod[];
 
   @ArrayMaxSize(100)
+  @ArrayUnique()
   public favoriteSalesItemIds!: string[];
 
   public readonly salesItems!: SalesItem[];
