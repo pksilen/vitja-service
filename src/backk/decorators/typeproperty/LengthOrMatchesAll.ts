@@ -1,5 +1,7 @@
 import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
 import RE2 from 're2';
+import hasAtMostRepeatingOrConsecutiveCharacters
+  from "../../validation/hasAtMostRepeatingOrConsecutiveCharacters";
 
 export default function LengthAndMatchesAll(
   minLength: number,
@@ -17,10 +19,10 @@ export default function LengthAndMatchesAll(
       options: validationOptions,
       validator: {
         validate(value: any, args: ValidationArguments) {
-          // TODO implement array support
           if (value.length > maxLength || value.length < minLength) {
             return false;
           }
+
           for (const regExp of regExps) {
             const re2RegExp = new RE2(regExp);
             const doesMatch = re2RegExp.test(value);
@@ -28,6 +30,7 @@ export default function LengthAndMatchesAll(
               return false;
             }
           }
+
           return true;
         },
         defaultMessage: () =>

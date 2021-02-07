@@ -398,13 +398,19 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
             propertyName === validationMetadata.propertyName && constraints?.[0] === 'lengthAndMatchesAll'
         );
 
+        const hasStrongPasswordValidation = !!validationMetadatas.find(
+          ({ constraints, propertyName }: ValidationMetadata) =>
+            propertyName === validationMetadata.propertyName && constraints?.[0] === 'isStrongPassword'
+        );
+
         if (
           !hasMaxLengthValidation &&
           !hasMaxLengthAndMatchesValidation &&
           !hasMaxLengthAndMatchesAllValidation &&
           !hasLengthValidation &&
           !hasLengthAndMatchesValidation &&
-          !hasLengthAndMatchesAllValidation
+          !hasLengthAndMatchesAllValidation &&
+          !hasStrongPasswordValidation
         ) {
           throw new Error(
             'Property ' +

@@ -16,6 +16,7 @@ import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
 import IsPostalCode from "../../../../backk/decorators/typeproperty/IsPostalCode";
 import IsOneOf from "../../../../backk/decorators/typeproperty/IsOneOf";
 import getCities from "../../validation/getCities";
+import IsStrongPassword from "../../../../backk/decorators/typeproperty/IsStrongPassword";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -30,15 +31,7 @@ export default class User extends _IdAndCaptcha {
   public isBusinessUser!: boolean;
 
   @Documentation('Password doc goes here...')
-  @ShouldBeTrueForEntity(
-    ({ password }) => !password.toLowerCase().includes('password'),
-    'Password may not contain word password'
-  )
-  @ShouldBeTrueForEntity(
-    ({ password, userName }) => !password.toLowerCase().includes(userName.toLowerCase()),
-    'Password may not contain username'
-  )
-  @LengthAndMatchesAll(8, 512, [/[a-z]+/, /[A-Z]+/, /\d+/, /[^\w\s]+/])
+  @IsStrongPassword()
   password!: string;
 
   @MaxLength(512)
