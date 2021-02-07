@@ -115,7 +115,8 @@ export default class UsersServiceImpl extends UsersService {
         {
           preHookFunc: async ([{ password: hashedPassword }]) =>
             await argon2.verify(hashedPassword, currentPassword),
-          errorMessageOnPreHookFuncFailure: INVALID_CURRENT_PASSWORD
+          errorMessageOnPreHookFuncFailure: INVALID_CURRENT_PASSWORD,
+          shouldDisregardFailureWhenExecutingTests: true
         }
       ]
     );
