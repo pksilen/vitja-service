@@ -1,5 +1,16 @@
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+
+function getNestedTypeNames(typeMetadata: object, types: any, nestedTypeNames: string[]) {
+  Object.values(typeMetadata ?? {}).forEach((typeName) => {
+    const { baseTypeName } = getTypeInfoForTypeName(typeName);
+    if (types[baseTypeName]) {
+      nestedTypeNames.push(baseTypeName);
+      getNestedTypeNames(types[baseTypeName], types, nestedTypeNames);
+    }
+  });
+}
 
 export default function createPostmanCollectionItem(
   serviceMetadata: ServiceMetadata,
@@ -7,12 +18,93 @@ export default function createPostmanCollectionItem(
   sampleArg: object | undefined,
   tests?: object,
   sampleResponse?: object,
-  isArrayResponse: boolean =false
+  isArrayResponse: boolean = false
 ) {
+  const typeNames: string[] = [];
+
+  if (functionMetadata.argType) {
+    const { baseTypeName } = getTypeInfoForTypeName(functionMetadata.argType);
+    typeNames.push(baseTypeName);
+    getNestedTypeNames(serviceMetadata.publicTypes[baseTypeName], serviceMetadata.publicTypes, typeNames);
+  }
+
+  if (functionMetadata.returnValueType) {
+    const { baseTypeName } = getTypeInfoForTypeName(functionMetadata.returnValueType);
+    typeNames.push(baseTypeName);
+    getNestedTypeNames(serviceMetadata.publicTypes[baseTypeName], serviceMetadata.publicTypes, typeNames);
+  }
+
+  const types = Object.entries(serviceMetadata.publicTypes).reduce((types, [typeName, typeMetadata]) => {
+    if (typeNames.includes(typeName)) {
+      const propertyModifiers: any = serviceMetadata.propertyModifiers[typeName];
+
+      const newTypeMetadata = Object.entries(typeMetadata).reduce(
+        (newTypeMetadata, [propertyName, typeName]) => {
+          if (propertyModifiers[propertyName]) {
+            return {
+              ...newTypeMetadata,
+              [propertyModifiers[propertyName] + ' ' + propertyName]: typeName
+            };
+          }
+          return newTypeMetadata;
+        },
+        {}
+      );
+
+      return {
+        ...types,
+        [typeName]: newTypeMetadata
+      };
+    }
+
+    return types;
+  }, {});
+
+  const typeDocs = Object.entries(serviceMetadata.typesDocumentation as any).reduce(
+    (types, [typeName, typeDocs]) => {
+      if (typeNames.includes(typeName)) {
+        return {
+          ...types,
+          [typeName]: typeDocs
+        };
+      }
+      return types;
+    },
+    {}
+  );
+
+  const validations = Object.entries(serviceMetadata.validations as any).reduce(
+    (types, [typeName, validations]) => {
+      if (typeNames.includes(typeName)) {
+        return {
+          ...types,
+          [typeName]: validations
+        };
+      }
+      return types;
+    },
+    {}
+  );
+
   const postmanCollectionItem = {
     name: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
     request: {
-      description: 'jee',
+      description: {
+        content:
+          '### Contract\n```\n' +
+          JSON.stringify({ serviceName: serviceMetadata.serviceName, ...functionMetadata }, null, 4) +
+          '\n```\n' +
+          '### Types\n```\n' +
+          JSON.stringify(types, null, 4) +
+          '\n```\n' +
+          (Object.keys(typeDocs).length > 0
+            ? '### Type documentation\n```\n' + JSON.stringify(typeDocs, null, 4) + '\n```\n'
+            : '') +
+          '### Validations\n```\n' +
+          JSON.stringify(validations, null, 4) +
+          '\n```\n',
+        type: 'text/markdown'
+      },
       method: 'POST',
       header:
         sampleArg === undefined
@@ -61,7 +153,9 @@ export default function createPostmanCollectionItem(
             type: 'JSON'
           }
         ],
-        body: isArrayResponse ? [JSON.stringify(sampleResponse, null, 4)] : JSON.stringify(sampleResponse, null, 4),
+        body: isArrayResponse
+          ? [JSON.stringify(sampleResponse, null, 4)]
+          : JSON.stringify(sampleResponse, null, 4),
         code: 200
       }
     ];
