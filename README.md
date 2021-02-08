@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- postman api def json: add sample response
 - request's description in postman API .json should give metadata for service function
 - In initializeDB, check if field is integer => bigInt or varChar should be longer
   - store table metadata to backk_table_metadata, with columns: tableName, columnName, columnType

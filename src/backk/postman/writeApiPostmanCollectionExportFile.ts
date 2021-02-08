@@ -5,6 +5,7 @@ import getServiceFunctionTestArgument from './getServiceFunctionTestArgument';
 import createPostmanCollectionItem from './createPostmanCollectionItem';
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 export default function writeApiPostmanCollectionExportFile<T>(
   controller: T,
@@ -13,8 +14,7 @@ export default function writeApiPostmanCollectionExportFile<T>(
   const items: any[] = [];
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
-    serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
-
+    serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata) => {
       const sampleArg = getServiceFunctionTestArgument(
         (controller as any)[serviceMetadata.serviceName].Types,
         functionMetadata.functionName,
@@ -23,7 +23,26 @@ export default function writeApiPostmanCollectionExportFile<T>(
         false
       );
 
-      items.push(createPostmanCollectionItem(serviceMetadata, functionMetadata, sampleArg));
+      const { baseTypeName, isArrayType } = getTypeInfoForTypeName(functionMetadata.returnValueType);
+
+      const sampleResponse = getServiceFunctionTestArgument(
+        (controller as any)[serviceMetadata.serviceName].Types,
+        functionMetadata.functionName,
+        baseTypeName,
+        serviceMetadata,
+        false
+      );
+
+      items.push(
+        createPostmanCollectionItem(
+          serviceMetadata,
+          functionMetadata,
+          sampleArg,
+          undefined,
+          sampleResponse,
+          isArrayType
+        )
+      );
     });
   });
 
