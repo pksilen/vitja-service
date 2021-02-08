@@ -9,7 +9,7 @@ export interface ErrorCodeAndMessage {
 
 export type PreHook =
   | {
-      executePreHookFuncIf?: (valueFromJsonPath?: any) => boolean;
+      executePreHookFuncIf?: (valueFromJsonPath?: any) => boolean | Promise<boolean | ErrorResponse>;
       entityJsonPathForPreHookFuncArg?: string;
       preHookFunc: (
         preHookFuncArg?: any

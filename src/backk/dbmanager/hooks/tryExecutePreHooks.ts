@@ -36,17 +36,19 @@ export default async function tryExecutePreHooks<T extends object>(
     }
 
     const hookFunc = typeof preHook === 'function' ? preHook: preHook.preHookFunc;
-
     let hookCallResult;
+
     if (typeof preHook === 'object' && preHook.executePreHookFuncIf) {
-      if (preHook.executePreHookFuncIf(items)) {
+      const ifResult = await preHook.executePreHookFuncIf(items);
+      if (typeof ifResult === 'object' && 'errorMessage' in ifResult) {
+        throw ifResult;
+      }
+      if (ifResult) {
         hookCallResult = await hookFunc(items);
       }
     } else {
       hookCallResult = await hookFunc(items);
     }
-
-
 
     if (hookCallResult !== undefined) {
       if (typeof hookCallResult === 'object' && '_id' in hookCallResult) {
@@ -60,7 +62,7 @@ export default async function tryExecutePreHooks<T extends object>(
           return;
         }
 
-        let errorMessage = 'Unspecified pre-hook errorMessageOnPreHookFuncFailure';
+        let errorMessage = 'Unspecified pre-hook error';
 
         if (preHook.errorMessageOnPreHookFuncFailure) {
           errorMessage = 'Error code ' + preHook.errorMessageOnPreHookFuncFailure.errorCode + ':' + preHook.errorMessageOnPreHookFuncFailure.errorMessage;

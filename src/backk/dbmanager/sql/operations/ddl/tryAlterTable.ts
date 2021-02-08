@@ -62,12 +62,13 @@ export default async function tryAlterTable(
           addArrayValuesTableJoinSpec(entityName, fieldName, foreignIdFieldName);
         } else {
           const isUnique = typeAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName);
+
           alterTableStatement +=
             fieldName.toLowerCase() +
             ' ' +
             sqlColumnType +
-            (fieldName === 'id' ? '' : ' NOT NULL') +
             (isUnique ? ' UNIQUE' : '');
+
           await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
         }
       }

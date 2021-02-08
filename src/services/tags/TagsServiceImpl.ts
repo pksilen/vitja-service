@@ -1,22 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import TagsService from './TagsService';
-import Tag from './entities/Tag';
-import TagName from './args/TagName';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
-import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
-import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
-import { SalesItem } from '../salesitems/types/entities/SalesItem';
-import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
-import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
+import { Injectable } from "@nestjs/common";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import TagsService from "./TagsService";
+import Tag from "./entities/Tag";
+import TagName from "./args/TagName";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
+import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
+import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
+import { SalesItem } from "../salesitems/types/entities/SalesItem";
+import MongoDbManager from "../../backk/dbmanager/MongoDbManager";
+import MongoDbQuery from "../../backk/dbmanager/mongodb/MongoDbQuery";
+import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
+import DbTableVersion from "../../backk/dbmanager/version/DbTableVersion";
+import awaitDbOperationAndGetResultOfPredicate from "../../backk/utils/getErrorResponseOrResultOf";
 
 @Injectable()
 export default class TagsServiceImpl extends TagsService {
   constructor(dbManager: AbstractDbManager) {
     super(dbManager);
+  }
+
+  @OnStartUp()
+  async initializeDatabase(): Promise<DbTableVersion | ErrorResponse> {
+    return this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, [
+      {
+        executePreHookFuncIf: () =>
+          awaitDbOperationAndGetResultOfPredicate(
+            this.dbManager.getEntitiesCount({ entityName: 'Tag' }, DbTableVersion),
+            (tagVersionCount) => tagVersionCount === 0
+          ),
+        preHookFunc: async () => {
+          await this.createTag({ name: 'tag 1' });
+          await this.createTag({ name: 'tag 2' });
+        }
+      }
+    ]);
   }
 
   @AllowForTests()

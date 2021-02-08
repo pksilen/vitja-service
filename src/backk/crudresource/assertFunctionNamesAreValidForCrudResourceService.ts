@@ -2,21 +2,24 @@ import isCreateFunction from './utils/isCreateFunction';
 import isReadFunction from './utils/isReadFunction';
 import isUpdateFunction from './utils/isUpdateFunction';
 import isDeleteFunction from './utils/isDeleteFunction';
+import serviceFunctionAnnotationContainer
+  from "../decorators/service/function/serviceFunctionAnnotationContainer";
 
 export default function assertFunctionNamesAreValidForCrudResourceService(
-  serviceClass: Function,
+  ServiceClass: Function,
   functionNames: string[]
 ) {
   return functionNames.forEach((functionName) => {
     if (
       !isCreateFunction(functionName) &&
-      !isReadFunction(serviceClass, functionName) &&
-      !isUpdateFunction(serviceClass, functionName) &&
-      !isDeleteFunction(serviceClass, functionName)
+      !isReadFunction(ServiceClass, functionName) &&
+      !isUpdateFunction(ServiceClass, functionName) &&
+      !isDeleteFunction(ServiceClass, functionName) &&
+      !serviceFunctionAnnotationContainer.hasOnStartUp(ServiceClass, functionName)
     ) {
       throw new Error(
         'Invalid function name: ' +
-          serviceClass.name +
+          ServiceClass.name +
           '.' +
           functionName +
           `\n

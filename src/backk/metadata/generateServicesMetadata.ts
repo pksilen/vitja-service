@@ -61,10 +61,15 @@ export default function generateServicesMetadata<T>(
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForServiceInternalUse(
               (controller as any)[serviceName].constructor,
               functionName
+            ) &&
+            !serviceFunctionAnnotationContainer.hasOnStartUp(
+              (controller as any)[serviceName].constructor,
+              functionName
             )
         )
         .map((functionName: string) => {
-          if (!remoteServiceRootDir &&
+          if (
+            !remoteServiceRootDir &&
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForSelf(ServiceClass, functionName) &&
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(
               ServiceClass,
@@ -75,7 +80,10 @@ export default function generateServicesMetadata<T>(
               functionName
             ) &&
             serviceFunctionAnnotationContainer.getAllowedUserRoles(ServiceClass, functionName).length === 0 &&
-            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForServiceInternalUse(ServiceClass, functionName) &&
+            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForServiceInternalUse(
+              ServiceClass,
+              functionName
+            ) &&
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForTests(ServiceClass, functionName)
           ) {
             throw new Error(serviceName + '.' + functionName + ': is missing authorization annotation');

@@ -18,7 +18,7 @@ export function isDbInitialized(dbManager: AbstractDbManager): boolean {
   return dbManagerToIsInitializedMap[`${dbManager.getDbHost()}`];
 }
 export default async function initializeDatabase(dbManager: AbstractDbManager): Promise<boolean> {
-  if (!dbManager.isDbReady()) {
+  if (!await dbManager.isDbReady()) {
     return false;
   }
 

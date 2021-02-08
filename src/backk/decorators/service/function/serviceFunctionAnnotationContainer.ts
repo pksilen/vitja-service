@@ -22,6 +22,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap: {
     [key: string]: { [key: string]: any };
   } = {};
+  private readonly serviceFunctionNameToOnStartUpMap: { [key: string]: boolean } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -105,6 +106,10 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToHasNoAutoTestMap[`${serviceClass.name}${functionName}`] = true;
   }
 
+  addOnStartUpAnnotation(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToOnStartUpMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
   expectServiceFunctionReturnValueToContainInTests(
     serviceClass: Function,
     functionName: string,
@@ -179,7 +184,11 @@ class ServiceFunctionAnnotationContainer {
   isServiceFunctionAllowedForServiceInternalUse(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.serviceFunctionNameToIsAllowedForServicePrivateUseMap[`${proto.constructor.name}${functionName}`] !== undefined) {
+      if (
+        this.serviceFunctionNameToIsAllowedForServicePrivateUseMap[
+          `${proto.constructor.name}${functionName}`
+        ] !== undefined
+      ) {
         return true;
       }
       proto = Object.getPrototypeOf(proto);
@@ -336,6 +345,18 @@ class ServiceFunctionAnnotationContainer {
       if (
         this.serviceFunctionNameToHasNoAutoTestMap[`${proto.constructor.name}${functionName}`] !== undefined
       ) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  hasOnStartUp(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.serviceFunctionNameToOnStartUpMap[`${proto.constructor.name}${functionName}`] !== undefined) {
         return true;
       }
       proto = Object.getPrototypeOf(proto);

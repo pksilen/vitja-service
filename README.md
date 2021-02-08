@@ -1,16 +1,14 @@
 # Vitja service
 
 TODO
-- request's description in postman API .json should give metadata for service function
-- In initializeDB, check if field is integer => bigInt or varChar should be longer
-  - store table metadata to backk_table_metadata, with columns: tableName, columnName, columnType
 - user can create db preparation service, whose all methods are executed in order
   - methods can use function: migrateDb(fromVersion, toVersion, migrationFunc)
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
+- AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags
-- AddsubEntities, check if already added and use ETag
 - scheduleJob, miten hakea response myöhemmin (REdis)
 - change fieldPathName in xxxWhere db operations to => subEntityPath, fieldName
+- Execute dbinitialization operations inside transaction
   
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true

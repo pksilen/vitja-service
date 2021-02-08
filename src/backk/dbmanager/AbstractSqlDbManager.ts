@@ -503,7 +503,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<any | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntity');
-    const response = await getSubEntities(this, _id, subEntityPath, entityClass, postQueryOperations, 'first');
+    const response = await getSubEntities(
+      this,
+      _id,
+      subEntityPath,
+      entityClass,
+      postQueryOperations,
+      'first'
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -550,7 +557,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesWhere');
-    const response = await getEntitiesWhere(this, fieldPathName, fieldValue, entityClass, postQueryOperations);
+    const response = await getEntitiesWhere(
+      this,
+      fieldPathName,
+      fieldValue,
+      entityClass,
+      postQueryOperations
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -637,9 +650,17 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     preHooks?: PreHook | PreHook[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<T| ErrorResponse> {
+  ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
-    const response = await removeSubEntities(this, _id, subEntitiesJsonPath, entityClass, preHooks, postHook, postQueryOperations);
+    const response = await removeSubEntities(
+      this,
+      _id,
+      subEntitiesJsonPath,
+      entityClass,
+      preHooks,
+      postHook,
+      postQueryOperations
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -655,7 +676,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-    const response = await this.removeSubEntities(_id, subEntityJsonPath, entityClass, preHooks, postHook, postQueryOperations);
+    const response = await this.removeSubEntities(
+      _id,
+      subEntityJsonPath,
+      entityClass,
+      preHooks,
+      postHook,
+      postQueryOperations
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
