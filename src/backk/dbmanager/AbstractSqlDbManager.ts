@@ -211,10 +211,18 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
     }
 
-    log(Severity.DEBUG, 'Database DML operation', sqlStatement);
+    log(Severity.DEBUG, 'Database DDL/DML operation', sqlStatement);
 
     try {
       const result = await this.executeSql(this.getClsNamespace()?.get('connection'), sqlStatement, values);
+
+      if (sqlStatement.startsWith('CREATE') || sqlStatement.startsWith('ALTER')) {
+        log(Severity.INFO, 'Database initialization operation', '', {
+          sqlStatement,
+          function: `${this.constructor.name}.tryExecuteSql`
+        });
+      }
+
       return this.getResultFields(result);
     } catch (error) {
       if (shouldReportError) {

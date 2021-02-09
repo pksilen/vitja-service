@@ -15,7 +15,7 @@ export default async function scheduledJobsForExecution(controller: any | undefi
   if (!controller) {
     return false;
   }
-  
+
   await findAsyncSequential([0, 1, 2, 5, 10, 30, 60, 120, 300, 600], async (retryDelayInSecs) => {
     await delay(retryDelayInSecs * 1000);
     const clsNamespace = createNamespace('serviceFunctionExecution');
