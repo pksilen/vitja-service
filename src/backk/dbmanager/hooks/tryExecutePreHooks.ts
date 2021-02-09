@@ -51,7 +51,6 @@ export default async function tryExecutePreHooks<T extends object>(
     }
 
     if (hookCallResult !== undefined) {
-      console.log(hookCallResult);
       if (typeof hookCallResult === 'object' && '_id' in hookCallResult) {
         return;
       }

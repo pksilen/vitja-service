@@ -47,6 +47,7 @@ export default async function updateEntity<T extends Entity>(
 
   try {
     const Types = dbManager.getTypes();
+
     if (!isRecursiveCall) {
       await hashAndEncryptEntity(restOfEntity, EntityClass as any, Types);
     }
@@ -187,6 +188,7 @@ export default async function updateEntity<T extends Entity>(
           }
         } else if (isEntityTypeName(baseTypeName) && subEntityOrEntities !== null) {
           subEntityOrEntities[foreignIdFieldName] = _id;
+
           const possibleErrorResponse = await updateEntity(
             dbManager,
             subEntityOrEntities,
@@ -258,26 +260,31 @@ export default async function updateEntity<T extends Entity>(
       .join(', ');
 
     const idFieldName = _id === undefined ? 'id' : '_id';
-    const numericId = parseInt(_id === undefined ? id ?? 0 : (_id as any), 10);
+    let numericId: number | undefined;
 
-    if (isNaN(numericId)) {
-      // noinspection ExceptionCaughtLocallyJS
-      throw new Error(
-        createErrorMessageWithStatusCode(
-          EntityClass.name + '.' + idFieldName + ': must be a numeric id',
-          HttpStatusCodes.BAD_REQUEST
-        )
-      );
+    if (_id !== undefined || id !== undefined) {
+      numericId = parseInt(_id ?? id, 10);
+
+      if (isNaN(numericId)) {
+        // noinspection ExceptionCaughtLocallyJS
+        throw new Error(
+          createErrorMessageWithStatusCode(
+            EntityClass.name + '.' + idFieldName + ': must be a numeric id',
+            HttpStatusCodes.BAD_REQUEST
+          )
+        );
+      }
     }
 
     if (setStatements) {
+      let sqlStatement = `UPDATE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} SET ${setStatements}`;
+
+      if (numericId !== undefined) {
+        sqlStatement += ` WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(columns.length + 1)}`;
+      }
+
       promises.push(
-        dbManager.tryExecuteSql(
-          `UPDATE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} SET ${setStatements} WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(
-            columns.length + 1
-          )}`,
-          [...values, numericId]
-        )
+        dbManager.tryExecuteSql(sqlStatement, numericId === undefined ? values : [...values, numericId])
       );
     }
 
