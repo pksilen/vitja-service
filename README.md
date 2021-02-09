@@ -6,6 +6,7 @@ TODO
 - In updateEntities, check list of ETags
 - scheduleJob, miten hakea response myöhemmin (REdis)
 - change fieldPathName in xxxWhere db operations to => subEntityPath, fieldName
+- In Postman API sample responses, readonly fields should be included, private fields not
   
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true

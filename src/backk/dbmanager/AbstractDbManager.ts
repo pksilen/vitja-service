@@ -151,6 +151,12 @@ export default abstract class AbstractDbManager {
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
+  abstract getEntityByFilters<T>(
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse>;
+
   abstract getEntitiesCount<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object | undefined,
     entityClass: new () => T

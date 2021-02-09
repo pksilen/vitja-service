@@ -35,7 +35,7 @@ export default async function tryExecutePreHooks<T extends object>(
       items = JSONPath({ json: currentEntityOrErrorResponse, path: jsonPath });
     }
 
-    const hookFunc = typeof preHook === 'function' ? preHook: preHook.preHookFunc;
+    const hookFunc = typeof preHook === 'function' ? preHook : preHook.preHookFunc;
     let hookCallResult;
 
     if (typeof preHook === 'object' && preHook.executePreHookFuncIf) {
@@ -51,28 +51,39 @@ export default async function tryExecutePreHooks<T extends object>(
     }
 
     if (hookCallResult !== undefined) {
+      console.log(hookCallResult);
       if (typeof hookCallResult === 'object' && '_id' in hookCallResult) {
         return;
       }
 
       if (typeof hookCallResult === 'object' && 'errorMessage' in hookCallResult) {
         throw hookCallResult;
-      } else if (typeof preHook === 'object' && hookCallResult === false) {
-        if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
-          return;
-        }
+      } else if (hookCallResult === false) {
+        if (typeof preHook === 'object') {
+          if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
+            return;
+          }
 
-        let errorMessage = 'Unspecified pre-hook error';
+          let errorMessage = 'Unspecified pre-hook error';
 
-        if (preHook.errorMessageOnPreHookFuncFailure) {
-          errorMessage = 'Error code ' + preHook.errorMessageOnPreHookFuncFailure.errorCode + ':' + preHook.errorMessageOnPreHookFuncFailure.errorMessage;
+          if (preHook.errorMessageOnPreHookFuncFailure) {
+            errorMessage =
+              'Error code ' +
+              preHook.errorMessageOnPreHookFuncFailure.errorCode +
+              ':' +
+              preHook.errorMessageOnPreHookFuncFailure.errorMessage;
+          }
+
+          throw new Error(
+            createErrorMessageWithStatusCode(
+              errorMessage,
+              preHook.errorMessageOnPreHookFuncFailure?.statusCode ?? HttpStatusCodes.BAD_REQUEST
+            )
+          );
         }
 
         throw new Error(
-          createErrorMessageWithStatusCode(
-            errorMessage,
-            preHook.errorMessageOnPreHookFuncFailure?.statusCode ?? HttpStatusCodes.BAD_REQUEST
-          )
+          createErrorMessageWithStatusCode('Pre-hook evaluated to false', HttpStatusCodes.BAD_REQUEST)
         );
       } else if (
         typeof preHook === 'object' &&

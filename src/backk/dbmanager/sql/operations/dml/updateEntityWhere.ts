@@ -29,12 +29,14 @@ export default async function updateEntityWhere<T extends Entity>(
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
+
     const currentEntityOrErrorResponse = await getEntityWhere(
       dbManager,
       fieldPathName,
       fieldValue,
       EntityClass
     );
+
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
 
     const possibleErrorResponse = await dbManager.updateEntity(

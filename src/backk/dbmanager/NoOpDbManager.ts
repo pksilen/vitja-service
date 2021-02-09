@@ -1,7 +1,7 @@
-import AbstractDbManager, { Field } from "./AbstractDbManager";
-import { Entity } from "../types/entities/Entity";
-import { SubEntity } from "../types/entities/SubEntity";
-import { ErrorResponse } from "../types/ErrorResponse";
+import AbstractDbManager, { Field } from './AbstractDbManager';
+import { Entity } from '../types/entities/Entity';
+import { SubEntity } from '../types/entities/SubEntity';
+import { ErrorResponse } from '../types/ErrorResponse';
 
 export default class NoOpDbManager extends AbstractDbManager {
   addSubEntities<T extends Entity, U extends object>(): Promise<ErrorResponse | T> {
@@ -48,48 +48,40 @@ export default class NoOpDbManager extends AbstractDbManager {
     return '';
   }
 
-  getEntitiesByFilters<T>(
-  ): Promise<T[] | ErrorResponse> {
-    throw new Error('Not implemented')
+  getEntitiesByFilters<T>(): Promise<T[] | ErrorResponse> {
+    throw new Error('Not implemented');
   }
 
-  getEntitiesByIds<T>(
-  ): Promise<T[] | ErrorResponse> {
-    throw new Error('Not implemented')
+  getEntitiesByIds<T>(): Promise<T[] | ErrorResponse> {
+    throw new Error('Not implemented');
   }
 
-  getEntitiesCount<T>(
-  ): Promise<number | ErrorResponse> {
-    throw new Error('Not implemented')
+  getEntitiesCount<T>(): Promise<number | ErrorResponse> {
+    throw new Error('Not implemented');
   }
 
-  getEntitiesWhere<T>(
-  ): Promise<T[] | ErrorResponse> {
-    throw new Error('Not implemented')
+  getEntitiesWhere<T>(): Promise<T[] | ErrorResponse> {
+    throw new Error('Not implemented');
   }
 
-  getEntityById<T>(
-  ): Promise<ErrorResponse | T> {
-    throw new Error('Not implemented')
+  getEntityById<T>(): Promise<ErrorResponse | T> {
+    throw new Error('Not implemented');
   }
 
-  getEntityWhere<T>(
-  ): Promise<ErrorResponse | T> {
-    throw new Error('Not implemented')
+  getEntityWhere<T>(): Promise<ErrorResponse | T> {
+    throw new Error('Not implemented');
   }
 
   getIdColumnType(): string {
     return '';
   }
 
-  getSubEntities<T extends object, U extends object>(
-  ): Promise<U[] | ErrorResponse> {
-    throw new Error('Not implemented')
+  getSubEntities<T extends object, U extends object>(): Promise<U[] | ErrorResponse> {
+    throw new Error('Not implemented');
   }
 
-  getSubEntity<T extends object, U extends object>(
-  ): Promise<ErrorResponse | U> {
-    throw new Error('Not implemented')
+  getSubEntity<T extends object, U extends object>(): Promise<ErrorResponse | U> {
+    throw new Error('Not implemented');
   }
 
   getTimestampType(): string {
@@ -104,27 +96,24 @@ export default class NoOpDbManager extends AbstractDbManager {
     return Promise.resolve(false);
   }
 
-  removeSubEntities<T extends Entity>(
-  ): Promise<T | ErrorResponse> {
-    throw new Error('Not implemented')
+  removeSubEntities<T extends Entity>(): Promise<T | ErrorResponse> {
+    throw new Error('Not implemented');
   }
 
-  removeSubEntityById<T extends Entity>(
-  ): Promise<T | ErrorResponse> {
-    throw new Error('Not implemented')
+  removeSubEntityById<T extends Entity>(): Promise<T | ErrorResponse> {
+    throw new Error('Not implemented');
   }
 
   tryExecute<T>(): Promise<T> {
-    throw new Error('Not implemented')
+    throw new Error('Not implemented');
   }
 
   tryExecuteSql<T>(): Promise<Field[]> {
-    throw new Error('Not implemented')
+    throw new Error('Not implemented');
   }
 
-  tryExecuteSqlWithoutCls<T>(
-  ): Promise<Field[]> {
-    throw new Error('Not implemented')
+  tryExecuteSqlWithoutCls<T>(): Promise<Field[]> {
+    throw new Error('Not implemented');
   }
 
   tryReleaseDbConnectionBackToPool(): void {
@@ -132,17 +121,15 @@ export default class NoOpDbManager extends AbstractDbManager {
   }
 
   tryReserveDbConnectionFromPool(): Promise<void> {
-      throw new Error('Not implemented')
+    throw new Error('Not implemented');
   }
 
-  updateEntity<T extends Entity>(
-  ): Promise<void | ErrorResponse> {
-    throw new Error('Not implemented')
+  updateEntity<T extends Entity>(): Promise<void | ErrorResponse> {
+    throw new Error('Not implemented');
   }
 
-  updateEntityWhere<T extends Entity>(
-  ): Promise<void | ErrorResponse> {
-    throw new Error('Not implemented')
+  updateEntityWhere<T extends Entity>(): Promise<void | ErrorResponse> {
+    throw new Error('Not implemented');
   }
 
   cleanupTransaction(): void {
@@ -163,5 +150,9 @@ export default class NoOpDbManager extends AbstractDbManager {
 
   disconnectMongoDb(): Promise<void> {
     return Promise.resolve(undefined);
+  }
+
+  getEntityByFilters<T>(): Promise<ErrorResponse | T> {
+    throw new Error('Not implemented');
   }
 }

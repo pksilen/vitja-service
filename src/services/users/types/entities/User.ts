@@ -1,10 +1,8 @@
 import { ArrayMaxSize, ArrayUnique, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
-import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
 import DefaultPaymentMethod from "./DefaultPaymentMethod";
 import PaymentMethod from "./PaymentMethod";
-import LengthAndMatchesAll from "../../../../backk/decorators/typeproperty/LengthOrMatchesAll";
 import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
 import { SalesItem } from "../../../salesitems/types/entities/SalesItem";

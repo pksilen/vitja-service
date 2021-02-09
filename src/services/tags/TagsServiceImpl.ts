@@ -24,34 +24,47 @@ export default class TagsServiceImpl extends TagsService {
   }
 
   @OnStartUp()
-  async initializeDbVersion1(): Promise<DbTableVersion | ErrorResponse> {
-    const tagVersionOrErrorResponse = await this.dbManager.getEntityWhere(
-      'entityName',
-      'Tag',
+  async initializeDatabase(): Promise<void | ErrorResponse> {
+    let tagTableVersionOrErrorResponse = await this.dbManager.getEntityByFilters(
+      { entityName: 'Tag' },
       DbTableVersion
     );
 
-    if (isErrorResponse(tagVersionOrErrorResponse, HttpStatusCodes.NOT_FOUND)) {
-      return await this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, {
-        preHookFunc: async () => {
-          await this.createTag({ name: 'tag 1' });
-          await this.createTag({ name: 'tag 2' });
+    if (isErrorResponse(tagTableVersionOrErrorResponse, HttpStatusCodes.NOT_FOUND)) {
+      tagTableVersionOrErrorResponse = await this.dbManager.createEntity(
+        { entityName: 'Tag' },
+        DbTableVersion,
+        {
+          preHookFunc: async () => {
+            await this.createTag({ name: 'tag 1.1' });
+            await this.createTag({ name: 'tag 1.2' });
+          }
         }
-      });
+      );
     }
 
-    return tagVersionOrErrorResponse;
+    return 'errorMessage' in tagTableVersionOrErrorResponse ? tagTableVersionOrErrorResponse : undefined;
   }
 
   @OnStartUp()
-  async initializeDbVersion2(): Promise<void | ErrorResponse> {
-    return await this.dbManager.updateEntityWhere('entityName', 'Tag', {}, DbTableVersion, [
-      ([{ version }]) => version === 1,
-      async () => {
-        await this.createTag({ name: 'tag 1' });
-        await this.createTag({ name: 'tag 2' });
+  async migrateDbFromVersion1To2(): Promise<void | ErrorResponse> {
+    const tagTableVersion1OrErrorResponse = await this.dbManager.getEntityByFilters(
+      { entityName: 'Tag', version: 1 },
+      DbTableVersion
+    );
+
+    if ('errorMessage' in tagTableVersion1OrErrorResponse) {
+      return isErrorResponse(tagTableVersion1OrErrorResponse, HttpStatusCodes.NOT_FOUND)
+        ? undefined
+        : tagTableVersion1OrErrorResponse;
+    }
+
+    return this.dbManager.updateEntity(tagTableVersion1OrErrorResponse, DbTableVersion, [], {
+      preHookFunc: async () => {
+        await this.createTag({ name: 'tag 2.1' });
+        await this.createTag({ name: 'tag 2.2' });
       }
-    ]);
+    });
   }
 
   @AllowForTests()

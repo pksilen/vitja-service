@@ -537,6 +537,29 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
+  async getEntityByFilters<T>(
+    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | object,
+    EntityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
+    const response = await this.getEntitiesByFilters(filters, EntityClass, postQueryOperations ?? new DefaultPostQueryOperations());
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+
+    if (Array.isArray(response)) {
+      if (response.length === 0) {
+        return createErrorResponseFromErrorMessageAndStatusCode(
+          `Entity by given filter(s) not found`,
+          HttpStatusCodes.NOT_FOUND
+        );
+      }
+
+      return response[0];
+    }
+
+    return response;
+  }
+
   async getEntitiesCount<T>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | object,
     EntityClass: new () => T
@@ -644,14 +667,14 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  getSubEntity<T extends object, U extends object>(
+  async getSubEntity<T extends object, U extends object>(
     _id: string,
     subEntityPath: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<U | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntity');
-    const response = this.getSubEntities(_id, subEntityPath, EntityClass, postQueryOperations, 'first');
+    const response = await this.getSubEntities(_id, subEntityPath, EntityClass, postQueryOperations, 'first');
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

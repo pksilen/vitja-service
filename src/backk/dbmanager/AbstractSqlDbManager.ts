@@ -36,6 +36,9 @@ import { SubEntity } from '../types/entities/SubEntity';
 import deleteEntitiesByFilters from './sql/operations/dml/deleteEntitiesByFilters';
 import MongoDbQuery from './mongodb/MongoDbQuery';
 import { PostHook } from './hooks/PostHook';
+import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import { HttpStatusCodes } from '../constants/constants';
+import DefaultPostQueryOperations from "../types/postqueryoperations/DefaultPostQueryOperations";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -161,16 +164,19 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     } catch (error) {
       if (this.firstDbOperationFailureTimeInMillis) {
         const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
+
         defaultServiceMetrics.recordDbFailureDurationInSecs(
           this.getDbManagerType(),
           this.getDbHost(),
           failureDurationInSecs
         );
       }
+
       log(Severity.ERROR, error.message, error.stack ?? '', {
         function: `${this.constructor.name}.tryBeginTransaction`,
         sqlStatement: 'BEGIN'
       });
+
       throw error;
     }
   }
@@ -187,6 +193,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
         function: `${this.constructor.name}.tryCommitTransaction`,
         sqlStatement: 'COMMIT'
       });
+
       throw error;
     }
   }
@@ -325,17 +332,21 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     } catch (error) {
       if (this.firstDbOperationFailureTimeInMillis) {
         const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
+
         defaultServiceMetrics.recordDbFailureDurationInSecs(
           this.getDbManagerType(),
           this.getDbHost(),
           failureDurationInSecs
         );
       }
+
       defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());
+
       log(Severity.ERROR, error.message, error.stack ?? '', {
         sqlStatement,
         function: `${this.constructor.name}.tryExecuteQueryWithNamedParameters`
       });
+
       throw error;
     }
   }
@@ -358,12 +369,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     } catch (error) {
       if (this.firstDbOperationFailureTimeInMillis) {
         const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
+
         defaultServiceMetrics.recordDbFailureDurationInSecs(
           this.getDbManagerType(),
           this.getDbHost(),
           failureDurationInSecs
         );
       }
+
       return createErrorResponseFromError(error);
     }
 
@@ -486,6 +499,29 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     const response = await getEntitiesByFilters(this, filters, entityClass, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  async getEntityByFilters<T>(
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    entityClass: new () => T,
+    postQueryOperations?: PostQueryOperations
+  ): Promise<T | ErrorResponse> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
+    const response = await getEntitiesByFilters(this, filters, entityClass, postQueryOperations ?? new DefaultPostQueryOperations());
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+
+    if (Array.isArray(response)) {
+      if (response.length === 0) {
+        return createErrorResponseFromErrorMessageAndStatusCode(
+          `Entity by given filter(s) not found`,
+          HttpStatusCodes.NOT_FOUND
+        );
+      }
+
+      return response[0];
+    }
+
     return response;
   }
 

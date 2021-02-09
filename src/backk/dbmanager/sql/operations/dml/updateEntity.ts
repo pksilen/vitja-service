@@ -24,8 +24,8 @@ import deleteEntityById from './deleteEntityById';
 import createEntity from './createEntity';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import { PostHook } from "../../../hooks/PostHook";
-import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import { PostHook } from '../../../hooks/PostHook';
+import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
@@ -70,9 +70,14 @@ export default async function updateEntity<T extends Entity>(
     await forEachAsyncSequential(
       Object.entries(entityMetadata),
       async ([fieldName, fieldTypeName]: [any, any]) => {
-        if ((restOfEntity as any)[fieldName] === undefined) {
+        if (
+          (restOfEntity as any)[fieldName] === undefined &&
+          fieldName !== 'version' &&
+          fieldName !== 'lastModifiedTimestamp'
+        ) {
           return;
         }
+
         if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
           return;
         }
@@ -104,11 +109,11 @@ export default async function updateEntity<T extends Entity>(
                     subEntityForeignIdFieldName
                   } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
                   await dbManager.tryExecuteSql(
-                    `DELETE FROM ${
-                      dbManager.schema.toLowerCase()
-                    }.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+                    `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
                       1
-                    )} AND ${subEntityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(2)}`,
+                    )} AND ${subEntityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+                      2
+                    )}`,
                     [parseInt(_id ?? id, 10), subEntity._id]
                   );
                 } else {
@@ -133,9 +138,7 @@ export default async function updateEntity<T extends Entity>(
                     subEntityForeignIdFieldName
                   } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
                   dbManager.tryExecuteSql(
-                    `INSERT INTO ${
-                      dbManager.schema.toLowerCase()
-                    }.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}) VALUES (${dbManager.getValuePlaceholder(
+                    `INSERT INTO ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}) VALUES (${dbManager.getValuePlaceholder(
                       1
                     )}, ${dbManager.getValuePlaceholder(2)})`,
                     [parseInt(_id ?? id, 10), subEntity._id]
@@ -213,40 +216,50 @@ export default async function updateEntity<T extends Entity>(
             forEachAsyncParallel((restOfEntity as any)[fieldName], async (subItem: any, index) => {
               const deleteStatement = `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase() +
                 '_' +
-                fieldName.slice(0, -1).toLowerCase()} WHERE ${foreignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(1)}`;
+                fieldName
+                  .slice(0, -1)
+                  .toLowerCase()} WHERE ${foreignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+                1
+              )}`;
               await dbManager.tryExecuteSql(deleteStatement, [_id]);
 
               const insertStatement = `INSERT INTO ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase() +
                 '_' +
-                fieldName.slice(0, -1).toLowerCase()} (id, ${foreignIdFieldName.toLowerCase()}, ${fieldName.slice(
-                0,
-                -1
-              ).toLowerCase()}) VALUES(${index}, ${dbManager.getValuePlaceholder(1)}, ${dbManager.getValuePlaceholder(2)})`;
+                fieldName
+                  .slice(0, -1)
+                  .toLowerCase()} (id, ${foreignIdFieldName.toLowerCase()}, ${fieldName
+                .slice(0, -1)
+                .toLowerCase()}) VALUES(${index}, ${dbManager.getValuePlaceholder(
+                1
+              )}, ${dbManager.getValuePlaceholder(2)})`;
               await dbManager.tryExecuteSql(insertStatement, [_id, subItem]);
             })
           );
         } else if (fieldName !== '_id' && fieldName !== 'id') {
-          if ((restOfEntity as any)[fieldName] !== undefined) {
+          if (fieldName === 'version') {
             columns.push(fieldName);
-            if (fieldName === 'version') {
-              values.push((parseInt((currentEntityOrErrorResponse as any).version, 10) + 1).toString());
-            } else if (fieldName === 'lastModifiedTimestamp') {
-              values.push(new Date());
-            } else {
-              values.push((restOfEntity as any)[fieldName]);
-            }
+            values.push((parseInt((currentEntityOrErrorResponse as any).version, 10) + 1).toString());
+          } else if (fieldName === 'lastModifiedTimestamp') {
+            columns.push(fieldName);
+            values.push(new Date());
+          } else {
+            columns.push(fieldName);
+            values.push((restOfEntity as any)[fieldName]);
           }
         }
       }
     );
 
     const setStatements = columns
-      .map((fieldName: string, index: number) => fieldName.toLowerCase() + ' = ' + dbManager.getValuePlaceholder(index + 1))
+      .map(
+        (fieldName: string, index: number) =>
+          fieldName.toLowerCase() + ' = ' + dbManager.getValuePlaceholder(index + 1)
+      )
       .join(', ');
 
     const idFieldName = _id === undefined ? 'id' : '_id';
-
     const numericId = parseInt(_id === undefined ? id ?? 0 : (_id as any), 10);
+
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error(
@@ -260,9 +273,9 @@ export default async function updateEntity<T extends Entity>(
     if (setStatements) {
       promises.push(
         dbManager.tryExecuteSql(
-          `UPDATE ${dbManager.schema.toLowerCase()}.${
-            EntityClass.name.toLowerCase()
-          } SET ${setStatements} WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(columns.length + 1)}`,
+          `UPDATE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} SET ${setStatements} WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(
+            columns.length + 1
+          )}`,
           [...values, numericId]
         )
       );

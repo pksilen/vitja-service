@@ -5,7 +5,6 @@ import { createNamespace } from 'cls-hooked';
 import __Backk__CronJobScheduling from './entities/__Backk__CronJobScheduling';
 import parser from 'cron-parser';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import { logError } from '../observability/logging/log';
 import { HttpStatusCodes } from '../constants/constants';
 import isErrorResponse from '../errors/isErrorResponse';
 
@@ -14,9 +13,9 @@ export default async function tryInitializeCronJobSchedulingTable(dbManager: Abs
     Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()),
     async ([serviceFunctionName, cronSchedule]) => {
       const clsNamespace = createNamespace('serviceFunctionExecution');
-      await clsNamespace.runAndReturn(async () => {
+      const possibleErrorResponse = await clsNamespace.runAndReturn(async () => {
         await dbManager.tryReserveDbConnectionFromPool();
-        await dbManager.executeInsideTransaction(async () => {
+        const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
           const entityOrErrorResponse = await dbManager.getEntityWhere(
             'serviceFunctionName',
             serviceFunctionName,
@@ -26,7 +25,7 @@ export default async function tryInitializeCronJobSchedulingTable(dbManager: Abs
           const interval = parser.parseExpression(cronSchedule);
 
           if (isErrorResponse(entityOrErrorResponse, HttpStatusCodes.NOT_FOUND)) {
-            await dbManager.createEntity(
+            return dbManager.createEntity(
               {
                 serviceFunctionName,
                 lastScheduledTimestamp: new Date(120000),
@@ -35,7 +34,7 @@ export default async function tryInitializeCronJobSchedulingTable(dbManager: Abs
               __Backk__CronJobScheduling
             );
           } else if (!('errorMessage' in entityOrErrorResponse)) {
-            await dbManager.updateEntity(
+            return await dbManager.updateEntity(
               {
                 _id: entityOrErrorResponse._id,
                 serviceFunctionName,
@@ -45,13 +44,18 @@ export default async function tryInitializeCronJobSchedulingTable(dbManager: Abs
               __Backk__CronJobScheduling,
               []
             );
-          } else {
-            throw entityOrErrorResponse.errorMessage;
           }
+
+          return entityOrErrorResponse;
         });
 
         dbManager.tryReleaseDbConnectionBackToPool();
+        return possibleErrorResponse;
       });
+
+      if (possibleErrorResponse && 'errorMessage' in possibleErrorResponse) {
+        throw new Error(possibleErrorResponse.errorMessage);
+      }
     }
   );
 }
