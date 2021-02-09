@@ -1,8 +1,7 @@
 # Vitja service
 
 TODO
-- user can create db preparation service, whose all methods are executed in order
-  - methods can use function: migrateDb(fromVersion, toVersion, migrationFunc)
+- onStartUp execution should be part of isDbReady
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags

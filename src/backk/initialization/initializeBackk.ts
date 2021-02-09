@@ -12,7 +12,7 @@ export default async function initializeBackk(controller: any, dbManager: Abstra
   logEnvironment();
   defaultSystemAndNodeJsMetrics.startCollectingMetrics();
   await initializeDatabase(dbManager);
-  await executeOnStartUpTasks(controller);
+  await executeOnStartUpTasks(controller, dbManager);
   executeCronJobs(controller, dbManager);
   await executeScheduledJobs(controller, dbManager);
   reloadLoggingConfigOnChange();

@@ -59,6 +59,10 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         serviceFunctionAnnotationContainer.hasNoAutoTests(
           (controller as any)[serviceMetadata.serviceName].constructor,
           functionMetadata.functionName
+        ) ||
+        serviceFunctionAnnotationContainer.hasOnStartUp(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
         )
       ) {
         return;

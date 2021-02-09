@@ -6,6 +6,7 @@ import createPostmanCollectionItem from './createPostmanCollectionItem';
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
 
 export default function writeApiPostmanCollectionExportFile<T>(
   controller: T,
@@ -15,6 +16,15 @@ export default function writeApiPostmanCollectionExportFile<T>(
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata) => {
+      if (
+        serviceFunctionAnnotationContainer.hasOnStartUp(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        )
+      ) {
+        return;
+      }
+
       const sampleArg = getServiceFunctionTestArgument(
         (controller as any)[serviceMetadata.serviceName].Types,
         functionMetadata.functionName,

@@ -14,7 +14,8 @@ import MongoDbManager from "../../backk/dbmanager/MongoDbManager";
 import MongoDbQuery from "../../backk/dbmanager/mongodb/MongoDbQuery";
 import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
 import DbTableVersion from "../../backk/dbmanager/version/DbTableVersion";
-import awaitDbOperationAndGetResultOfPredicate from "../../backk/utils/getErrorResponseOrResultOf";
+import { HttpStatusCodes } from "../../backk/constants/constants";
+import isErrorResponse from "../../backk/errors/isErrorResponse";
 
 @Injectable()
 export default class TagsServiceImpl extends TagsService {
@@ -24,19 +25,24 @@ export default class TagsServiceImpl extends TagsService {
 
   @OnStartUp()
   async initializeDatabase(): Promise<DbTableVersion | ErrorResponse> {
-    return this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, [
-      {
-        executePreHookFuncIf: () =>
-          awaitDbOperationAndGetResultOfPredicate(
-            this.dbManager.getEntitiesCount({ entityName: 'Tag' }, DbTableVersion),
-            (tagVersionCount) => tagVersionCount === 0
-          ),
-        preHookFunc: async () => {
-          await this.createTag({ name: 'tag 1' });
-          await this.createTag({ name: 'tag 2' });
-        }
+    return this.dbManager.executeInsideTransaction(async () => {
+      const tagVersionOrErrorResponse = await this.dbManager.getEntityWhere(
+        'entityName',
+        'Tag',
+        DbTableVersion
+      );
+
+      if (isErrorResponse(tagVersionOrErrorResponse, HttpStatusCodes.NOT_FOUND)) {
+        return await this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, {
+          preHookFunc: async () => {
+            await this.createTag({ name: 'tag 1' });
+            await this.createTag({ name: 'tag 2' });
+          }
+        });
       }
-    ]);
+
+      return tagVersionOrErrorResponse;
+    });
   }
 
   @AllowForTests()

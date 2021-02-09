@@ -61,10 +61,6 @@ export default function generateServicesMetadata<T>(
             !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForServiceInternalUse(
               (controller as any)[serviceName].constructor,
               functionName
-            ) &&
-            !serviceFunctionAnnotationContainer.hasOnStartUp(
-              (controller as any)[serviceName].constructor,
-              functionName
             )
         )
         .map((functionName: string) => {
@@ -84,7 +80,11 @@ export default function generateServicesMetadata<T>(
               ServiceClass,
               functionName
             ) &&
-            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForTests(ServiceClass, functionName)
+            !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForTests(
+              ServiceClass,
+              functionName
+            ) &&
+            !serviceFunctionAnnotationContainer.hasOnStartUp(ServiceClass, functionName)
           ) {
             throw new Error(serviceName + '.' + functionName + ': is missing authorization annotation');
           }
