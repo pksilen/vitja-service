@@ -206,7 +206,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async tryExecuteSql<T>(sqlStatement: string, values?: any[]): Promise<Field[]> {
+  async tryExecuteSql<T>(sqlStatement: string, values?: any[], shouldReportError = true): Promise<Field[]> {
     if (this.getClsNamespace()?.get('remoteServiceCallCount') > 0) {
       this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
     }
@@ -217,11 +217,15 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       const result = await this.executeSql(this.getClsNamespace()?.get('connection'), sqlStatement, values);
       return this.getResultFields(result);
     } catch (error) {
-      defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());
-      log(Severity.ERROR, error.message, error.stack ?? '', {
-        sqlStatement,
-        function: `${this.constructor.name}.tryExecuteSql`
-      });
+      if (shouldReportError) {
+        defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());
+
+        log(Severity.ERROR, error.message, error.stack ?? '', {
+          sqlStatement,
+          function: `${this.constructor.name}.tryExecuteSql`
+        });
+      }
+
       throw error;
     }
   }
@@ -245,11 +249,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     } catch (error) {
       if (shouldReportError) {
         defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());
+
         log(Severity.ERROR, error.message, error.stack ?? '', {
           sqlStatement,
           function: `${this.constructor.name}.tryExecuteSqlWithoutCls`
         });
       }
+
       throw error;
     }
   }

@@ -20,7 +20,7 @@ export default async function tryAlterOrCreateTable(
       isPhysicalTable = false;
     }
 
-    fields = await dbManager.tryExecuteSqlWithoutCls(
+    fields = await dbManager.tryExecuteSql(
       `SELECT * FROM ${schema?.toLowerCase()}.${tableName} LIMIT 1`,
       undefined,
       false

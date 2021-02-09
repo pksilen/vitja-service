@@ -9,9 +9,13 @@ import { logError } from '../observability/logging/log';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import { scheduleCronJob } from "./scheduleCronJob";
 
-export default async function executeScheduledJobs(controller: any, dbManager: AbstractDbManager) {
-  let scheduledJobsOrErrorResponse: __Backk__JobScheduling[] | ErrorResponse | undefined;
+export let scheduledJobsOrErrorResponse: __Backk__JobScheduling[] | ErrorResponse | undefined;
 
+export default async function scheduledJobsForExecution(controller: any | undefined, dbManager: AbstractDbManager) {
+  if (!controller) {
+    return false;
+  }
+  
   await findAsyncSequential([0, 1, 2, 5, 10, 30, 60, 120, 300, 600], async (retryDelayInSecs) => {
     await delay(retryDelayInSecs * 1000);
     const clsNamespace = createNamespace('serviceFunctionExecution');
@@ -26,7 +30,7 @@ export default async function executeScheduledJobs(controller: any, dbManager: A
 
   if (!scheduledJobsOrErrorResponse || 'errorMessage' in scheduledJobsOrErrorResponse) {
     logError(new Error('Unable to load scheduled jobs from database'));
-    return;
+    return false;
   }
 
   await forEachAsyncParallel(
@@ -49,4 +53,6 @@ export default async function executeScheduledJobs(controller: any, dbManager: A
       );
     }
   );
+
+  return true;
 }

@@ -68,7 +68,7 @@ export default async function tryCreateTable(
   );
 
   if (isPhysicalTable) {
-    await dbManager.tryExecuteSqlWithoutCls(
+    await dbManager.tryExecuteSql(
       createTableStatement +
         ')' +
         (entityAnnotationContainer.entityNameToAdditionalSqlCreateTableStatementOptionsMap[entityName]

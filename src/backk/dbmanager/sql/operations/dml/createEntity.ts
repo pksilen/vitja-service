@@ -216,6 +216,7 @@ export default async function createEntity<T>(
     if (isRecursiveCall) {
       throw errorOrErrorResponse;
     }
+
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse

@@ -69,7 +69,7 @@ export default async function tryAlterTable(
             sqlColumnType +
             (isUnique ? ' UNIQUE' : '');
 
-          await dbManager.tryExecuteSqlWithoutCls(alterTableStatement);
+          await dbManager.tryExecuteSql(alterTableStatement);
         }
       }
     }

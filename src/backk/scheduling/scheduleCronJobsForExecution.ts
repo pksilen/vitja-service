@@ -14,7 +14,7 @@ import findServiceFunctionArgumentType from '../metadata/findServiceFunctionArgu
 
 const cronJobs: { [key: string]: CronJob } = {};
 
-export default function executeCronJobs(controller: any, dbManager: AbstractDbManager) {
+export default function scheduleCronJobsForExecution(controller: any, dbManager: AbstractDbManager) {
   Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()).forEach(
     ([serviceFunctionName, cronSchedule]) => {
       const job = new CronJob(cronSchedule, async () => {

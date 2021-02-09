@@ -7,6 +7,7 @@ import createErrorResponseFromErrorMessageAndStatusCode
 import initializeDatabase, { isDbInitialized } from "../dbmanager/sql/operations/ddl/initializeDatabase";
 import { HttpStatusCodes } from "../constants/constants";
 import { AllowForClusterInternalUse } from "../decorators/service/function/AllowForClusterInternalUse";
+import scheduledJobsForExecution, { scheduledJobsOrErrorResponse } from "../scheduling/scheduledJobsForExecution";
 
 @Injectable()
 export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
@@ -16,7 +17,19 @@ export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
 
   @AllowForClusterInternalUse()
   async isReady(): Promise<void | ErrorResponse> {
-    if (!isDbInitialized(this.dbManager) && !(await initializeDatabase(this.dbManager))) {
+    if (
+      !isDbInitialized(this.dbManager) &&
+      !(await initializeDatabase(ReadinessCheckService.controller, this.dbManager))
+    ) {
+      return createErrorResponseFromErrorMessageAndStatusCode(
+        'Database not ready',
+        HttpStatusCodes.SERVICE_UNAVAILABLE
+      );
+    } else if (
+      scheduledJobsOrErrorResponse &&
+      'errorMessage' in scheduledJobsOrErrorResponse &&
+      !await scheduledJobsForExecution(ReadinessCheckService.controller, this.dbManager)
+    ) {
       return createErrorResponseFromErrorMessageAndStatusCode(
         'Database not ready',
         HttpStatusCodes.SERVICE_UNAVAILABLE

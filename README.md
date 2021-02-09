@@ -1,13 +1,11 @@
 # Vitja service
 
 TODO
-- onStartUp execution should be part of isDbReady
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags
 - scheduleJob, miten hakea response myöhemmin (REdis)
 - change fieldPathName in xxxWhere db operations to => subEntityPath, fieldName
-- Execute dbinitialization operations inside transaction
   
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
