@@ -24,7 +24,7 @@ export default class TagsServiceImpl extends TagsService {
   }
 
   @OnStartUp()
-  async initializeDatabase(): Promise<DbTableVersion | ErrorResponse> {
+  async initializeDbVersion1(): Promise<DbTableVersion | ErrorResponse> {
     const tagVersionOrErrorResponse = await this.dbManager.getEntityWhere(
       'entityName',
       'Tag',
@@ -41,6 +41,17 @@ export default class TagsServiceImpl extends TagsService {
     }
 
     return tagVersionOrErrorResponse;
+  }
+
+  @OnStartUp()
+  async initializeDbVersion2(): Promise<void | ErrorResponse> {
+    return await this.dbManager.updateEntityWhere('entityName', 'Tag', {}, DbTableVersion, [
+      ([{ version }]) => version === 1,
+      async () => {
+        await this.createTag({ name: 'tag 1' });
+        await this.createTag({ name: 'tag 2' });
+      }
+    ]);
   }
 
   @AllowForTests()
