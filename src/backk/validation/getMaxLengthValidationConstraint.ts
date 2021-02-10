@@ -92,6 +92,5 @@ export default function getMaxLengthValidationConstraint(Class: Function, proper
     return calculateMaxLength(Class, propertyName, 512);
   }
 
-  console.log(Class.name, propertyName);
   throw new Error("Cannot figure out string property's maximum length");
 }
