@@ -33,19 +33,19 @@ export default async function initializeDatabase(
 
   try {
     if (dbManager instanceof AbstractSqlDbManager) {
-      await forEachAsyncParallel(
+      await forEachAsyncSequential(
         Object.entries(entityAnnotationContainer.entityNameToClassMap),
         async ([entityName, entityClass]: [any, any]) =>
           await tryAlterOrCreateTable(dbManager, entityName, entityClass, dbManager.schema)
       );
 
-      await forEachAsyncParallel(
+      await forEachAsyncSequential(
         Object.entries(entityAnnotationContainer.indexNameToIndexFieldsMap),
         async ([indexName, indexFields]: [any, any]) =>
           await tryCreateIndex(dbManager, indexName, dbManager.schema, indexFields)
       );
 
-      await forEachAsyncParallel(
+      await forEachAsyncSequential(
         Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
         async ([indexName, indexFields]: [any, any]) =>
           await tryCreateUniqueIndex(dbManager, indexName, dbManager.schema, indexFields)

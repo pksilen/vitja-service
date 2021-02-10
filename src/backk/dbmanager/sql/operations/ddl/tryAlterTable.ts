@@ -21,6 +21,7 @@ export default async function tryAlterTable(
   databaseFields: Field[]
 ) {
   const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
+
   await forEachAsyncParallel(
     Object.entries(entityMetadata),
     async ([fieldName, fieldTypeName]: [any, any]) => {
