@@ -68,13 +68,13 @@ export default async function createEntity<T>(
         if (!isArrayType && !isEntityTypeName(baseTypeName) && fieldName !== '_id') {
           columns.push(fieldName);
 
-          if (fieldName === 'id' || fieldName.endsWith('Id')) {
+          if (
+            (fieldName === 'id' || fieldName.endsWith('Id')) &&
+            !typePropertyAnnotationContainer.isTypePropertyExternalId(EntityClass, fieldName)
+          ) {
             const numericId = parseInt((entity as any)[fieldName], 10);
 
-            if (
-              isNaN(numericId) &&
-              !typePropertyAnnotationContainer.isTypePropertyExternalId(EntityClass, fieldName)
-            ) {
+            if (isNaN(numericId)) {
               throw new Error(
                 createErrorMessageWithStatusCode(
                   EntityClass.name + '.' + fieldName + ': must be a numeric id',
