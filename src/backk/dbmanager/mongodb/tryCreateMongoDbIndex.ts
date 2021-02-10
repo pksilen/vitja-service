@@ -10,6 +10,7 @@ export default async function tryCreateMongoDbIndex(
 ) {
   const collectionName = indexName.split(':')[0].toLowerCase();
   const sortOrder = entityAnnotationContainer.indexNameToSortOrderMap[indexName];
+
   const sortOrders = indexFields.map((indexField) => {
     if (indexField.toUpperCase().includes(' ASC')) {
       return 1;
@@ -18,12 +19,13 @@ export default async function tryCreateMongoDbIndex(
     }
     return 1;
   });
+
   await dbManager.tryReserveDbConnectionFromPool();
+
   await dbManager.tryExecute(false, async (client) => {
-    client
+    await client
       .db(dbManager.dbName)
-      .collection(collectionName)
-      .createIndex(
+      .createIndex(collectionName,
         indexFields.reduce(
           (indexFieldsSpec, indexField, index) => ({
             ...indexFieldsSpec,

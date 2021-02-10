@@ -215,7 +215,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
         : [
             new SqlEquals({ state: 'forSale' }),
             new SqlExpression(
-              `createdattimestamp < current_timestamp - INTERVAL '${deletableUnsoldSalesItemMinAgeInMonths}' month`
+              `createdattimestamp <= current_timestamp - INTERVAL '${deletableUnsoldSalesItemMinAgeInMonths}' month`
             )
           ],
       SalesItem
