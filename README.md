@@ -11,7 +11,7 @@ TODO
 - db operations where filters, allow Partial<T>
 - allowAdditionOrRemovalOFSubentitiies = array, 'all', 'none', none is same as []
 - shouldInitializeDb SQL
-  - backk taulun nimi: backk_db_initialization: columns: appVersion, isInitialized
+  - backk taulun nimi: backk_db_initialization: columns: @Unique appVersion, isInitialized
   - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version
   - when init is ok update isInitialized to true
 - shouldInitializeDb for MongoDB

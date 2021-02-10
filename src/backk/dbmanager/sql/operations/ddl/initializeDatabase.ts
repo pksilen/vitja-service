@@ -11,11 +11,6 @@ import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import MongoDbManager from "../../../MongoDbManager";
 import tryCreateMongoDbIndex from "../../../mongodb/tryCreateMongoDbIndex";
 import setJoinSpecs from "../../../mongodb/setJoinSpecs";
-import BaseService from "../../../../service/BaseService";
-import serviceFunctionAnnotationContainer
-  from "../../../../decorators/service/function/serviceFunctionAnnotationContainer";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import isErrorResponse from "../../../../errors/isErrorResponse";
 import tryExecuteOnStartUpTasks from "../../../../initialization/tryExecuteOnStartupTasks";
 
 const dbManagerToIsInitializedMap: { [key: string]: boolean } = {};

@@ -12,7 +12,7 @@ export default async function tryExecuteOnStartUpTasks(controller: any, dbManage
   const possibleErrorResponse = await clsNamespace.runAndReturn(async () => {
     await dbManager.tryReserveDbConnectionFromPool();
 
-    const possibleErrorResponse: any = await dbManager.executeInsideTransaction(async () => {
+    const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
       const serviceNameToServiceEntries = Object.entries(controller).filter(
         ([, service]: [string, any]) => service instanceof BaseService
       );
