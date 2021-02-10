@@ -1,12 +1,20 @@
 # Vitja service
 
 TODO
+- Always execute alter table modify column for bigint and varchar fields
+- Change tag db init templates so that tags are read from resources file
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags
 - scheduleJob, miten hakea response myöhemmin (REdis)
-- change fieldPathName in xxxWhere db operations to => subEntityPath, fieldName
 - In Postman API sample responses, readonly fields should be included, private fields not
+- db operations where filters, allow Partial<T>
+- allowAdditionOrRemovalOFSubentitiies = array, 'all', 'none', none is same as []
+- shouldInitializeDb SQL
+  - backk taulun nimi: backk_db_initialization: columns: appVersion, isInitialized
+  - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version
+  - when init is ok update isInitialized to true
+- shouldInitializeDb for MongoDB
   
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true

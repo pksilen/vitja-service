@@ -199,6 +199,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
         .subtract(deletableUnsoldSalesItemMinAgeInMonths, 'months')
         .toDate()
     );
+
     return this.dbManager.deleteEntitiesByFilters(
       this.dbManager instanceof MongoDbManager
         ? [

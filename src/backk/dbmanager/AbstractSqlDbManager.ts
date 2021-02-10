@@ -87,10 +87,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
         undefined,
         false
       );
+
       return true;
     } catch (error) {
       try {
-        const createTableStatement = `CREATE TABLE ${this.schema.toLowerCase()}.__backk__ (dummy INT)`;
+        const createTableStatement = `CREATE TABLE IF NOT EXISTS ${this.schema.toLowerCase()}.__backk__ (dummy INT)`;
         await this.tryExecuteSqlWithoutCls(createTableStatement);
         return true;
       } catch (error) {
@@ -218,18 +219,10 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       this.getClsNamespace()?.set('dbManagerOperationAfterRemoteServiceCall', true);
     }
 
-    log(Severity.DEBUG, 'Database DDL/DML operation', sqlStatement);
+    log(Severity.DEBUG, 'Database DML operation', sqlStatement);
 
     try {
       const result = await this.executeSql(this.getClsNamespace()?.get('connection'), sqlStatement, values);
-
-      if (sqlStatement.startsWith('CREATE') || sqlStatement.startsWith('ALTER')) {
-        log(Severity.INFO, 'Database initialization operation', '', {
-          sqlStatement,
-          function: `${this.constructor.name}.tryExecuteSql`
-        });
-      }
-
       return this.getResultFields(result);
     } catch (error) {
       if (shouldReportError) {
@@ -254,12 +247,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
     try {
       const result = await this.getPool().query(sqlStatement, values);
+
       if (sqlStatement.startsWith('CREATE') || sqlStatement.startsWith('ALTER')) {
         log(Severity.INFO, 'Database initialization operation', '', {
           sqlStatement,
           function: `${this.constructor.name}.tryExecuteSqlWithoutCls`
         });
       }
+
       return this.getResultFields(result);
     } catch (error) {
       if (shouldReportError) {
@@ -362,6 +357,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
     try {
       await this.tryBeginTransaction();
+
       if (this.firstDbOperationFailureTimeInMillis) {
         this.firstDbOperationFailureTimeInMillis = 0;
         defaultServiceMetrics.recordDbFailureDurationInSecs(this.getDbManagerType(), this.getDbHost(), 0);

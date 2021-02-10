@@ -81,5 +81,17 @@ export default function getMaxLengthValidationConstraint(Class: Function, proper
     return calculateMaxLength(Class, propertyName, maxLengthAndMatchesAllValidation.constraints[1]);
   }
 
+  const strongPasswordValidation = validationMetadatas.find(
+    (validationMetadata: ValidationMetadata) =>
+      validationMetadata.propertyName === propertyName &&
+      validationMetadata.type === 'customValidation' &&
+      validationMetadata.constraints[0] === 'isStrongPassword'
+  );
+
+  if (strongPasswordValidation) {
+    return calculateMaxLength(Class, propertyName, 512);
+  }
+
+  console.log(Class.name, propertyName);
   throw new Error("Cannot figure out string property's maximum length");
 }

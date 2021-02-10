@@ -30,6 +30,7 @@ export default async function deleteEntitiesByFilters<T extends object>(
   const nonRootFilters = (filters as Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter>).find(
     (filter) => filter.subEntityPath !== ''
   );
+
   if (nonRootFilters) {
     throw new Error('All filters must be have subEntityPath empty, ie. they must be root filters');
   }
