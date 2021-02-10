@@ -18,8 +18,8 @@ import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import { PostHook } from "../../../hooks/PostHook";
-import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import { PostHook } from '../../../hooks/PostHook';
+import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 
 export default async function createEntity<T>(
   dbManager: AbstractSqlDbManager,
@@ -67,9 +67,14 @@ export default async function createEntity<T>(
 
         if (!isArrayType && !isEntityTypeName(baseTypeName) && fieldName !== '_id') {
           columns.push(fieldName);
+
           if (fieldName === 'id' || fieldName.endsWith('Id')) {
             const numericId = parseInt((entity as any)[fieldName], 10);
-            if (isNaN(numericId)) {
+
+            if (
+              isNaN(numericId) &&
+              !typePropertyAnnotationContainer.isTypePropertyExternalId(EntityClass, fieldName)
+            ) {
               throw new Error(
                 createErrorMessageWithStatusCode(
                   EntityClass.name + '.' + fieldName + ': must be a numeric id',
@@ -77,6 +82,7 @@ export default async function createEntity<T>(
                 )
               );
             }
+
             values.push(numericId);
           } else {
             if (fieldName === 'version') {
@@ -191,10 +197,13 @@ export default async function createEntity<T>(
           await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index: number) => {
             const insertStatement = `INSERT INTO ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase() +
               '_' +
-              fieldName.slice(0, -1).toLowerCase()} (id, ${foreignIdFieldName.toLowerCase()}, ${fieldName.slice(
-              0,
-              -1
-            ).toLowerCase()}) VALUES(${index}, ${dbManager.getValuePlaceholder(1)}, ${dbManager.getValuePlaceholder(2)})`;
+              fieldName
+                .slice(0, -1)
+                .toLowerCase()} (id, ${foreignIdFieldName.toLowerCase()}, ${fieldName
+              .slice(0, -1)
+              .toLowerCase()}) VALUES(${index}, ${dbManager.getValuePlaceholder(
+              1
+            )}, ${dbManager.getValuePlaceholder(2)})`;
             await dbManager.tryExecuteSql(insertStatement, [_id, subItem]);
           });
         }

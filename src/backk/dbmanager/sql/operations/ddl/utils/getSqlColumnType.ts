@@ -1,5 +1,6 @@
-import AbstractDbManager from "../../../../AbstractDbManager";
-import getMaxLengthValidationConstraint from "../../../../../validation/getMaxLengthValidationConstraint";
+import AbstractDbManager from '../../../../AbstractDbManager';
+import getMaxLengthValidationConstraint from '../../../../../validation/getMaxLengthValidationConstraint';
+import typePropertyAnnotationContainer from '../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 
 export default function getSqlColumnType(
   dbManager: AbstractDbManager,
@@ -19,7 +20,10 @@ export default function getSqlColumnType(
     case 'Date':
       return dbManager.getTimestampType();
     case 'string':
-      if (fieldName.endsWith('Id') || fieldName === 'id') {
+      if (
+        (fieldName.endsWith('Id') || fieldName === 'id') &&
+        !typePropertyAnnotationContainer.isTypePropertyExternalId(EntityClass, fieldName)
+      ) {
         return 'BIGINT';
       } else {
         const maxLength = getMaxLengthValidationConstraint(EntityClass, fieldName);
