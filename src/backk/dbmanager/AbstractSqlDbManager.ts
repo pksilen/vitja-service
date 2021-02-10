@@ -249,7 +249,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     try {
       const result = await this.getPool().query(sqlStatement, values);
 
-      if (sqlStatement.startsWith('CREATE') || sqlStatement.startsWith('ALTER')) {
+      if (shouldReportSuccess && (sqlStatement.startsWith('CREATE') || sqlStatement.startsWith('ALTER'))) {
         log(Severity.INFO, 'Database initialization operation', '', {
           sqlStatement,
           function: `${this.constructor.name}.tryExecuteSqlWithoutCls`

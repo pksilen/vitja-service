@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Always execute alter table modify column for bigint and varchar fields
 - Change tag db init templates so that tags are read from resources file
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag
