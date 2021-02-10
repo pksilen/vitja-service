@@ -103,4 +103,16 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
     connection.config.namedPlaceholders = false;
     return result;
   }
+
+  getModifyColumnStatement(
+    schema: string,
+    tableName: string,
+    columnName: string,
+    columnType: string,
+    isUnique: boolean
+  ): string {
+    return `ALTER TABLE ${schema?.toLowerCase()}.${tableName.toLowerCase()} MODIFY COLUMN ${columnName.toLowerCase()} ${columnType} ${
+      isUnique ? 'UNIQUE' : ''
+    }`;
+  }
 }

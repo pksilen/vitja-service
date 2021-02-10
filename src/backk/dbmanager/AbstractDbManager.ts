@@ -57,17 +57,25 @@ export default abstract class AbstractDbManager {
   abstract getVarCharType(maxLength: number): string;
   abstract getDbManagerType(): string;
   abstract getDbHost(): string;
+  abstract getModifyColumnStatement(
+    schema: string | undefined,
+    tableName: string,
+    columnName: string,
+    columnType: string,
+    isUnique: boolean
+  ): string;
 
   abstract tryExecuteSql<T>(
     sqlStatement: string,
     values?: any[],
-    shouldReportError?: boolean
+    shouldReportError?: boolean,
   ): Promise<Field[]>;
 
   abstract tryExecuteSqlWithoutCls<T>(
     sqlStatement: string,
     values?: any[],
-    shouldReportError?: boolean
+    shouldReportError?: boolean,
+    shouldReportSuccess?: boolean
   ): Promise<Field[]>;
 
   abstract isDbReady(): Promise<boolean>;

@@ -93,4 +93,13 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   executeSqlWithNamedPlaceholders(connection: any, sqlStatement: string, values: object): Promise<any> {
     return connection.query(pg(sqlStatement)(values));
   }
+
+  getModifyColumnStatement(
+    schema: string,
+    tableName: string,
+    columnName: string,
+    columnType: string
+  ): string {
+    return `ALTER TABLE ${schema?.toLowerCase()}.${tableName.toLowerCase()} ALTER COLUMN ${columnName.toLowerCase()} SET DATA TYPE ${columnType}`;
+  }
 }

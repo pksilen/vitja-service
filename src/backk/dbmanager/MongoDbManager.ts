@@ -83,6 +83,11 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
+  getModifyColumnStatement(schema: string, tableName: string, columnName: string, columnType: string): string {
+    throw new Error('Not implemented');
+  }
+
+
   async tryExecute(
     shouldUseTransaction: boolean,
     executeDbOperations: (client: MongoClient) => Promise<any>

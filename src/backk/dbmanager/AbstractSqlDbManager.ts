@@ -241,7 +241,8 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async tryExecuteSqlWithoutCls<T>(
     sqlStatement: string,
     values?: any[],
-    shouldReportError = true
+    shouldReportError = true,
+    shouldReportSuccess = true
   ): Promise<Field[]> {
     log(Severity.DEBUG, 'Database DDL operation', sqlStatement);
 

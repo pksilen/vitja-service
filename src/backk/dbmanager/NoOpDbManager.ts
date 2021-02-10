@@ -4,6 +4,10 @@ import { SubEntity } from '../types/entities/SubEntity';
 import { ErrorResponse } from '../types/ErrorResponse';
 
 export default class NoOpDbManager extends AbstractDbManager {
+  getModifyColumnStatement(): string {
+      throw new Error("Not implemented");
+  }
+
   addSubEntities<T extends Entity, U extends object>(): Promise<ErrorResponse | T> {
     throw new Error('Not implemented');
   }

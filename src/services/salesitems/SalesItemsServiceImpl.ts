@@ -206,7 +206,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
             new MongoDbQuery<SalesItem>({
               state: 'forSale',
               createdAtTimestamp: {
-                $lt: dayjs()
+                $lte: dayjs()
                   .subtract(deletableUnsoldSalesItemMinAgeInMonths, 'months')
                   .toDate()
               }
