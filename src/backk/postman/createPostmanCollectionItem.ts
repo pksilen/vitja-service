@@ -1,6 +1,8 @@
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import isCreateFunction from '../crudresource/utils/isCreateFunction';
+import isUpdateFunction from '../crudresource/utils/isUpdateFunction';
 
 function getNestedTypeNames(typeMetadata: object, types: any, nestedTypeNames: string[]) {
   Object.values(typeMetadata ?? {}).forEach((typeName) => {
@@ -13,6 +15,7 @@ function getNestedTypeNames(typeMetadata: object, types: any, nestedTypeNames: s
 }
 
 export default function createPostmanCollectionItem(
+  ServiceClass: Function,
   serviceMetadata: ServiceMetadata,
   functionMetadata: FunctionMetadata,
   sampleArg: object | undefined,
@@ -86,6 +89,20 @@ export default function createPostmanCollectionItem(
     {}
   );
 
+  let otherHeaders: any[] = [];
+  if (
+    isCreateFunction(functionMetadata.functionName) ||
+    isUpdateFunction(ServiceClass, functionMetadata.functionName)
+  ) {
+    otherHeaders = [
+      {
+        key: 'X-Backk-ETag',
+        name: 'X-Backk-ETag',
+        value: 'any'
+      }
+    ];
+  }
+
   const postmanCollectionItem = {
     name: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
     request: {
@@ -115,7 +132,8 @@ export default function createPostmanCollectionItem(
                 name: 'Content-Type',
                 value: 'application/json',
                 type: 'text'
-              }
+              },
+              ...otherHeaders
             ],
       body:
         sampleArg === undefined

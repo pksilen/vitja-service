@@ -397,7 +397,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return result;
   }
 
-  async createEntity<T>(
+  async createEntity<T extends Entity | SubEntity>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],

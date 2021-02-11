@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags
 - ETags for mongoDB: updateEntity/entities, add/removeSubEntities
 - scheduleJob, miten hakea response myöhemmin (REdis)

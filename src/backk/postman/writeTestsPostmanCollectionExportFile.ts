@@ -129,7 +129,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         isUpdate
       );
 
-      items.push(createPostmanCollectionItem(serviceMetadata, functionMetadata, sampleArg, tests));
+      items.push(createPostmanCollectionItem((controller as any)[serviceMetadata.serviceName].constructor, serviceMetadata, functionMetadata, sampleArg, tests));
 
       if (isUpdate && isVoidFunction && lastGetFunctionMetadata) {
         const foundCustomTest = writtenTests.find(
@@ -166,6 +166,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
           items.push(
             createPostmanCollectionItem(
+              (controller as any)[serviceMetadata.serviceName].constructor,
               serviceMetadata,
               lastGetFunctionMetadata,
               getFunctionSampleArg,
@@ -207,6 +208,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
         items.push(
           createPostmanCollectionItem(
+            (controller as any)[serviceMetadata.serviceName].constructor,
             serviceMetadata,
             lastGetFunctionMetadata,
             getFunctionSampleArg,

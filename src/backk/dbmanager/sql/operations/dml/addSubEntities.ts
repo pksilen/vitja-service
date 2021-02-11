@@ -37,7 +37,7 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
   subEntitiesJsonPath: string,
   newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
-  SubEntityClass: new () => Omit<U, 'ETag'>,
+  SubEntityClass: new () => U,
   preHooks?: PreHook | PreHook[],
   postHook?: PostHook,
   postQueryOperations?: PostQueryOperations

@@ -45,6 +45,7 @@ export default function writeApiPostmanCollectionExportFile<T>(
 
       items.push(
         createPostmanCollectionItem(
+          (controller as any)[serviceMetadata.serviceName].constructor,
           serviceMetadata,
           functionMetadata,
           sampleArg,

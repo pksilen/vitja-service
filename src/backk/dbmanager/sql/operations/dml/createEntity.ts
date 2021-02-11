@@ -20,10 +20,13 @@ import typePropertyAnnotationContainer from '../../../../decorators/typeproperty
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import { Entity } from '../../../../types/entities/Entity';
+import { SubEntity } from "../../../../types/entities/SubEntity";
 
-export default async function createEntity<T>(
+export default async function createEntity<T extends Entity | SubEntity>(
   dbManager: AbstractSqlDbManager,
-  entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  { ETag, ...entity }: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
   EntityClass: new () => T,
   preHooks?: PreHook | PreHook[],
   postHook?: PostHook,

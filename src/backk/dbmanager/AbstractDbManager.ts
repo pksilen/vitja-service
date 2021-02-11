@@ -87,7 +87,7 @@ export default abstract class AbstractDbManager {
     executable: () => Promise<T | ErrorResponse>
   ): Promise<T | ErrorResponse>;
 
-  abstract createEntity<T>(
+  abstract createEntity<T extends Entity>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
     preHooks?: PreHook | PreHook[],
@@ -95,9 +95,9 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
-  async createEntities<T>(
+  async createEntities<T extends Entity>(
     entities: Array<Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>>,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
@@ -107,7 +107,7 @@ export default abstract class AbstractDbManager {
           entities.map(async (entity, index) => {
             const entityOrErrorResponse = await this.createEntity(
               entity,
-              entityClass,
+              EntityClass,
               preHooks,
               undefined,
               postQueryOperations
