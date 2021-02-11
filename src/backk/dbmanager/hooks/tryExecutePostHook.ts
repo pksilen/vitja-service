@@ -2,6 +2,8 @@ import { ErrorResponse } from "../../types/ErrorResponse";
 import isErrorResponse from "../../errors/isErrorResponse";
 import { PostHook } from "./PostHook";
 import { getNamespace } from "cls-hooked";
+import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
+import { HttpStatusCodes } from "../../constants/constants";
 
 export default async function tryExecutePostHook(
   postHook: PostHook,
@@ -18,14 +20,21 @@ export default async function tryExecutePostHook(
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('isInsidePostHook', true);
   const postHookFunc = typeof postHook === 'function' ? postHook : postHook.postHookFunc;
-
   let hookCallResult;
-  if (typeof postHook === 'object' && postHook.executePostHookIf) {
-    if (postHook.executePostHookIf()) {
+
+  try {
+    if (typeof postHook === 'object' && postHook.executePostHookIf) {
+      if (postHook.executePostHookIf()) {
+        hookCallResult = await postHookFunc();
+      }
+    } else {
       hookCallResult = await postHookFunc();
     }
-  } else {
-    hookCallResult = await postHookFunc();
+  } catch(error) {
+    createErrorMessageWithStatusCode(
+      error.errorMessage,
+      HttpStatusCodes.INTERNAL_SERVER_ERROR
+    )
   }
 
   clsNamespace?.set('isInsidePostHook', false);

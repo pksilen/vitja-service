@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- preHookFunc processing inside try-catch
   postHookFunc processing inside try-catch
 - GetValuesByJsonPathFromJsonFile(filePathName, jsonPath);
 - GetValuesByXPathFromXmlFile(filePathName, xPath);
