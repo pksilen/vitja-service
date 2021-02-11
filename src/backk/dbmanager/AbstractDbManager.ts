@@ -68,7 +68,7 @@ export default abstract class AbstractDbManager {
   abstract tryExecuteSql<T>(
     sqlStatement: string,
     values?: any[],
-    shouldReportError?: boolean,
+    shouldReportError?: boolean
   ): Promise<Field[]>;
 
   abstract tryExecuteSqlWithoutCls<T>(
@@ -222,6 +222,7 @@ export default abstract class AbstractDbManager {
 
   updateEntities<T extends Entity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
+    ETags: string[],
     entityClass: new () => T,
     allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
     preHooks?: PreHook | PreHook[]
@@ -230,7 +231,7 @@ export default abstract class AbstractDbManager {
       try {
         return await forEachAsyncParallel(entities, async (entity, index) => {
           const possibleErrorResponse = await this.updateEntity(
-            entity,
+            { ...entity, ETag: ETags?.[index] },
             entityClass,
             allowAdditionAndRemovalForSubEntityClasses,
             preHooks

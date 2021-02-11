@@ -3,7 +3,6 @@
 TODO
 - In updateEntities, check list of ETags
 - ETags for mongoDB: updateEntity/entities, add/removeSubEntities
-- scheduleJob, miten hakea response myöhemmin (REdis)
 - In Postman API sample responses, readonly fields should be included, private fields not
 - db operations where filters, allow Partial<T>
 - Duplicate entity error in createEntity

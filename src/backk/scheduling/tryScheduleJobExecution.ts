@@ -1,16 +1,16 @@
-import { createNamespace } from "cls-hooked";
-import BaseService from "../service/BaseService";
+import { createNamespace } from 'cls-hooked';
+import BaseService from '../service/BaseService';
 // eslint-disable-next-line @typescript-eslint/camelcase
-import __Backk__JobScheduling from "./entities/__Backk__JobScheduling";
-import { ErrorResponse } from "../types/ErrorResponse";
-import { validateOrReject } from "class-validator";
-import getValidationErrors from "../validation/getValidationErrors";
-import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
-import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
-import { HttpStatusCodes } from "../constants/constants";
-import { plainToClass } from "class-transformer";
-import JobScheduling from "./entities/JobScheduling";
-import { scheduleCronJob } from "./scheduleCronJob";
+import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
+import { ErrorResponse } from '../types/ErrorResponse';
+import { validateOrReject } from 'class-validator';
+import getValidationErrors from '../validation/getValidationErrors';
+import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import { HttpStatusCodes } from '../constants/constants';
+import { plainToClass } from 'class-transformer';
+import JobScheduling from './entities/JobScheduling';
+import { scheduleCronJob } from './scheduleCronJob';
 
 export default async function tryScheduleJobExecution(
   controller: any,
@@ -75,6 +75,7 @@ export default async function tryScheduleJobExecution(
   const clsNamespace = createNamespace('serviceFunctionExecution');
   await clsNamespace.runAndReturn(async () => {
     await dbManager.tryReserveDbConnectionFromPool();
+
     entityOrErrorResponse = await dbManager.createEntity(
       {
         serviceFunctionName,
@@ -84,6 +85,7 @@ export default async function tryScheduleJobExecution(
       },
       __Backk__JobScheduling
     );
+
     dbManager.tryReleaseDbConnectionBackToPool();
   });
 
@@ -92,18 +94,20 @@ export default async function tryScheduleJobExecution(
   }
 
   if (entityOrErrorResponse) {
+    const jobId = (entityOrErrorResponse as any)._id;
+
     await scheduleCronJob(
       scheduledExecutionTimestampAsDate,
       retryIntervalsInSecs,
       dbManager,
-      (entityOrErrorResponse as any)._id,
+      jobId,
       controller,
       serviceFunctionName,
-      serviceFunctionArgument
+      { ...serviceFunctionArgument, jobId }
     );
 
     resp?.send({
-      _id: (entityOrErrorResponse as any)._id
+      jobId
     });
   }
 }
