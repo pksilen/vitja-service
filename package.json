@@ -49,6 +49,7 @@
     "cls-hooked": "^4.2.2",
     "copyfiles": "^2.4.1",
     "cron": "^1.8.2",
+    "csv-parse": "^4.15.1",
     "dayjs": "^1.10.4",
     "expr-eval": "^2.0.2",
     "extends-classes": "^1.0.5",

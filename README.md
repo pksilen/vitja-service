@@ -1,9 +1,8 @@
 # Vitja service
 
 TODO
-  postHookFunc processing inside try-catch
-- GetValuesByJsonPathFromJsonFile(filePathName, jsonPath);
-- GetValuesByXPathFromXmlFile(filePathName, xPath);
+- tryGetRowsFromCsvFile(filePathName, headers: string[])npm
+- tryGetValuesByXPathFromXmlFile(filePathName, xPath);
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags
