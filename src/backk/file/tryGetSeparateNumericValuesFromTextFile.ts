@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 
-export default function tryGetSeparatedNumericValuesFromTextFile(
+export default function tryGetSeparatedIntegerValuesFromTextFile(
   filePathName: string,
   separator = '\n'
 ): number[] {

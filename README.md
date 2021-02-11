@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- tryGetRowsFromCsvFile(filePathName, headers: string[])npm
 - tryGetValuesByXPathFromXmlFile(filePathName, xPath);
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag

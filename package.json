@@ -72,6 +72,8 @@
     "rimraf": "^3.0.0",
     "rxjs": "^6.5.4",
     "typedoc-pksilen": "^0.17.4",
+    "xmldom": "^0.4.0",
+    "xpath": "0.0.32",
     "yaml": "^1.10.0",
     "yesql": "^4.1.1"
   },
@@ -95,6 +97,7 @@
     "@types/pg": "^7.14.3",
     "@types/supertest": "^2.0.8",
     "@types/uuid": "^8.3.0",
+    "@types/xmldom": "^0.1.30",
     "@types/yesql": "^3.2.2",
     "@typescript-eslint/eslint-plugin": "^2.12.0",
     "@typescript-eslint/parser": "^2.12.0",
