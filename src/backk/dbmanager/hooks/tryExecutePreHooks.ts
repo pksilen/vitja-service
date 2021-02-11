@@ -38,16 +38,28 @@ export default async function tryExecutePreHooks<T extends object>(
     const hookFunc = typeof preHook === 'function' ? preHook : preHook.preHookFunc;
     let hookCallResult;
 
-    if (typeof preHook === 'object' && preHook.executePreHookFuncIf) {
-      const ifResult = await preHook.executePreHookFuncIf(items);
-      if (typeof ifResult === 'object' && 'errorMessage' in ifResult) {
-        throw ifResult;
-      }
-      if (ifResult) {
+    try {
+      if (typeof preHook === 'object' && preHook.executePreHookFuncIf) {
+        const ifResult = await preHook.executePreHookFuncIf(items);
+
+        if (typeof ifResult === 'object' && 'errorMessage' in ifResult) {
+          throw ifResult;
+        }
+
+        if (ifResult) {
+          hookCallResult = await hookFunc(items);
+        }
+
+      } else {
         hookCallResult = await hookFunc(items);
       }
-    } else {
-      hookCallResult = await hookFunc(items);
+    } catch(error) {
+      throw new Error(
+        createErrorMessageWithStatusCode(
+          error.errorMessage,
+          HttpStatusCodes.INTERNAL_SERVER_ERROR
+        )
+      );
     }
 
     if (hookCallResult !== undefined) {

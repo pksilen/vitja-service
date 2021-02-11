@@ -1,10 +1,10 @@
 # Vitja service
 
 TODO
-- Change tag db init templates so that tags are read from resources file
 - preHookFunc processing inside try-catch
-- GetJsonFromFile(filePathName, jsonPath);
-- GetXmlFromFile(filePathName, xPath);
+  postHookFunc processing inside try-catch
+- GetValuesByJsonPathFromJsonFile(filePathName, jsonPath);
+- GetValuesByXPathFromXmlFile(filePathName, xPath);
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags
