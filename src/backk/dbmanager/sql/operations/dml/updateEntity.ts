@@ -66,7 +66,7 @@ export default async function updateEntity<T extends Entity>(
     let eTagCheckPreHook: PreHook;
     let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
-    if (ETag !== undefined && typeof currentEntityOrErrorResponse === 'object') {
+    if (ETag !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
       if ('version' in currentEntityOrErrorResponse) {
         eTagCheckPreHook = {
           preHookFunc: ([{ version }]) => version === ETag,
@@ -76,7 +76,7 @@ export default async function updateEntity<T extends Entity>(
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
       } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
         eTagCheckPreHook = {
-          preHookFunc: ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag),
+          preHookFunc: ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag ? ETag : 0),
           errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH
         };
 

@@ -422,12 +422,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async addSubEntity<T extends Entity, U extends object>(
+  async addSubEntity<T extends Entity, U extends SubEntity>(
     _id: string,
+    ETag: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
-    subEntityClass: new () => U,
+    subEntityClass: new () => U ,
     preHooks?: PreHook | PreHook[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
@@ -437,6 +438,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     const response = await addSubEntities(
       this,
       _id,
+      ETag,
       subEntitiesJsonPath,
       [newSubEntity],
       entityClass,
@@ -452,6 +454,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   async addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
+    ETag: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     entityClass: new () => T,
@@ -465,6 +468,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     const response = await addSubEntities(
       this,
       _id,
+      ETag,
       subEntitiesJsonPath,
       newSubEntities,
       entityClass,
@@ -690,7 +694,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async removeSubEntities<T extends Entity, U extends object>(
+  async removeSubEntities<T extends Entity>(
     _id: string,
     subEntitiesJsonPath: string,
     entityClass: new () => T,

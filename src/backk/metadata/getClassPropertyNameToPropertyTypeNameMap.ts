@@ -2,6 +2,7 @@ import { getFromContainer, MetadataStorage } from 'class-validator';
 import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import { MAX_INT_VALUE } from '../constants/constants';
+import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 
 const classNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 
@@ -58,7 +59,11 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       );
     }
 
-    if (isArgumentType && validationMetadata.propertyName === 'ETag') {
+    if (
+      isArgumentType &&
+      validationMetadata.propertyName === 'ETag' &&
+      !typePropertyAnnotationContainer.isTypePropertyInternal(Class, validationMetadata.propertyName)
+    ) {
       throw new Error(Class.name + ' may not contain property ETag. It is reserved for Backk internal use');
     }
 

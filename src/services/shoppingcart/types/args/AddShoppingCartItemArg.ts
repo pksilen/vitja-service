@@ -1,5 +1,5 @@
-import ShoppingCartIdAndUserId from "./ShoppingCartIdAndUserId";
+import ShoppingCartIdAndUserId from './ShoppingCartIdAndUserId';
 
-export default class AddShoppingCartItemArg extends ShoppingCartIdAndUserId{
+export default class AddShoppingCartItemArg extends ShoppingCartIdAndUserId {
   salesItemId!: string;
 }

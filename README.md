@@ -1,20 +1,21 @@
 # Vitja service
 
 TODO
-- If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags
 - ETags for mongoDB: updateEntity/entities, add/removeSubEntities
 - scheduleJob, miten hakea response myöhemmin (REdis)
 - In Postman API sample responses, readonly fields should be included, private fields not
 - db operations where filters, allow Partial<T>
+- Duplicate entity error in createEntity
+- Add entity NOT_FOUND backk error
+- Add invalid_argument backk error
 - @Update(shouldAllowAdditionOrRemoval)
 - shouldInitializeDb SQL
   - backk taulun nimi: backk_db_initialization: columns: @Unique appVersion, isInitialized
   - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version
   - when init is ok update isInitialized to true
-- Duplicate entity error in createEntity
-- Add entity NOT_FOUND backk error
+
   
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true

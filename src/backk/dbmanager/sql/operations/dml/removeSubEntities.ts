@@ -51,6 +51,7 @@ export default async function removeSubEntities<T extends Entity, U extends obje
         subEntity.constructor,
         dbManager.getTypes()
       );
+
       if (
         parentEntityClassAndPropertyNameForSubEntity &&
         typePropertyAnnotationContainer.isTypePropertyManyToMany(

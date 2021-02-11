@@ -67,10 +67,12 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   addShoppingCartItem({
     shoppingCartId,
-    salesItemId
+    salesItemId,
+    ETag
   }: AddShoppingCartItemArg): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.addSubEntity(
       shoppingCartId,
+      ETag,
       'shoppingCartItems',
       { salesItemId },
       ShoppingCart,

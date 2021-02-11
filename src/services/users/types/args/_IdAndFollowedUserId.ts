@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/class-name-casing */
-import _Id from '../../../../backk/types/id/_Id';
-import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
+import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
+import _IdAndETag from "../../../../backk/types/id/_IdAndETag";
 
-export default class _IdAndFollowedUserId extends _Id {
+export default class _IdAndFollowedUserId extends _IdAndETag {
   @ShouldBeTrueForEntity(
     ({ _id, followedUserId }) => _id !== followedUserId,
     '_id and followedUserId may not be same'

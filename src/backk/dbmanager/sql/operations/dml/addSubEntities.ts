@@ -25,14 +25,19 @@ import { SubEntity } from '../../../../types/entities/SubEntity';
 import getEntityById from '../dql/getEntityById';
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import {
+  BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH,
+  BACKK_ERRORS_VERSION_MISMATCH
+} from "../../../../errors/backkErrors";
 
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
+  ETag: string,
   subEntitiesJsonPath: string,
   newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
-  SubEntityClass: new () => U,
+  SubEntityClass: new () => Omit<U, 'ETag'>,
   preHooks?: PreHook | PreHook[],
   postHook?: PostHook,
   postQueryOperations?: PostQueryOperations
@@ -53,6 +58,27 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
       postQueryOperations,
       true
     );
+
+    let eTagCheckPreHook: PreHook;
+    let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
+
+    if (ETag !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
+      if ('version' in currentEntityOrErrorResponse) {
+        eTagCheckPreHook = {
+          preHookFunc: ([{ version }]) => version === ETag,
+          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS_VERSION_MISMATCH
+        };
+
+        finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
+      } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
+        eTagCheckPreHook = {
+          preHookFunc: ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag),
+          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH
+        };
+
+        finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
+      }
+    }
 
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
     await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);

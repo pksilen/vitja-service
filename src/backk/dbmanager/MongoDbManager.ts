@@ -83,10 +83,14 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  getModifyColumnStatement(schema: string, tableName: string, columnName: string, columnType: string): string {
+  getModifyColumnStatement(
+    schema: string,
+    tableName: string,
+    columnName: string,
+    columnType: string
+  ): string {
     throw new Error('Not implemented');
   }
-
 
   async tryExecute(
     shouldUseTransaction: boolean,
@@ -147,10 +151,10 @@ export default class MongoDbManager extends AbstractDbManager {
   async tryBeginTransaction(): Promise<void> {
     try {
       this.getClsNamespace()?.set('session', this.getClient().startSession());
-    } catch(error) {
+    } catch (error) {
       try {
         await this.mongoClient.close();
-      } catch(error) {
+      } catch (error) {
         // NO OPERATION
       }
 
@@ -175,9 +179,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
     this.getClsNamespace()?.set('globalTransaction', true);
 
-    let result: T | ErrorResponse = createInternalServerError(
-      'Transaction execution error'
-    );
+    let result: T | ErrorResponse = createInternalServerError('Transaction execution error');
 
     try {
       await this.tryBeginTransaction();
@@ -282,8 +284,9 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  addSubEntity<T extends Entity, U extends object>(
+  addSubEntity<T extends Entity, U extends SubEntity>(
     _id: string,
+    ETag: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
@@ -296,6 +299,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
     const response = this.addSubEntities(
       _id,
+      ETag,
       subEntitiesJsonPath,
       [newSubEntity],
       entityClass,
@@ -311,6 +315,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
+    ETag: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: new () => T,
@@ -548,7 +553,11 @@ export default class MongoDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
-    const response = await this.getEntitiesByFilters(filters, EntityClass, postQueryOperations ?? new DefaultPostQueryOperations());
+    const response = await this.getEntitiesByFilters(
+      filters,
+      EntityClass,
+      postQueryOperations ?? new DefaultPostQueryOperations()
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
 
     if (Array.isArray(response)) {
@@ -1258,7 +1267,14 @@ export default class MongoDbManager extends AbstractDbManager {
   ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-    const response = await this.removeSubEntities(_id, subEntityPath, EntityClass, preHooks, postHook, postQueryOperations);
+    const response = await this.removeSubEntities(
+      _id,
+      subEntityPath,
+      EntityClass,
+      preHooks,
+      postHook,
+      postQueryOperations
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

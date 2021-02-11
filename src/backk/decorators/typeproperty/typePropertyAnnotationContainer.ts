@@ -9,6 +9,7 @@ class TypePropertyAnnotationContainer {
   private readonly typePropertyNameToIsManyToManyMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsTransientMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsExternalIdMap: { [key: string]: boolean } = {};
+  private readonly typePropertyNameToIsInternalMap: { [key: string]: boolean } = {};
 
   addDocumentationForTypeProperty(Type: Function, propertyName: string, docString: string) {
     this.typePropertyNameToDocStringMap[`${Type.name}${propertyName}`] = docString;
@@ -48,6 +49,10 @@ class TypePropertyAnnotationContainer {
 
   setTypePropertyAsExternalId(Type: Function, propertyName: string) {
     this.typePropertyNameToIsExternalIdMap[`${Type.name}${propertyName}`] = true;
+  }
+
+  setTypePropertyAsInternal(Type: Function, propertyName: string) {
+    this.typePropertyNameToIsInternalMap[`${Type.name}${propertyName}`] = true;
   }
 
   getDocumentationForTypeProperty(Type: Function, propertyName: string) {
@@ -167,6 +172,18 @@ class TypePropertyAnnotationContainer {
     while (proto !== Object.prototype) {
       if (this.typePropertyNameToIsExternalIdMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
         return this.typePropertyNameToIsExternalIdMap[`${proto.constructor.name}${propertyName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isTypePropertyInternal(Type: Function, propertyName: string) {
+    let proto = Object.getPrototypeOf(new (Type as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.typePropertyNameToIsInternalMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsInternalMap[`${proto.constructor.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }

@@ -128,6 +128,7 @@ export default abstract class AbstractDbManager {
 
   abstract addSubEntity<T extends Entity, U extends SubEntity>(
     _id: string,
+    ETag: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
@@ -137,8 +138,9 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
-  abstract addSubEntities<T extends Entity, U extends object>(
+  abstract addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
+    ETag: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     entityClass: new () => T,
@@ -233,6 +235,7 @@ export default abstract class AbstractDbManager {
             allowAdditionAndRemovalForSubEntityClasses,
             preHooks
           );
+
           if (possibleErrorResponse) {
             possibleErrorResponse.errorMessage =
               'Entity ' + index + ': ' + possibleErrorResponse.errorMessage;
