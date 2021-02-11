@@ -77,18 +77,18 @@ export default async function tryExecutePreHooks<T extends object>(
 
           let errorMessage = 'Unspecified pre-hook error';
 
-          if (preHook.errorMessageOnPreHookFuncFailure) {
+          if (preHook.errorMessageOnPreHookFuncExecFailure) {
             errorMessage =
               'Error code ' +
-              preHook.errorMessageOnPreHookFuncFailure.errorCode +
+              preHook.errorMessageOnPreHookFuncExecFailure.errorCode +
               ':' +
-              preHook.errorMessageOnPreHookFuncFailure.errorMessage;
+              preHook.errorMessageOnPreHookFuncExecFailure.errorMessage;
           }
 
           throw new Error(
             createErrorMessageWithStatusCode(
               errorMessage,
-              preHook.errorMessageOnPreHookFuncFailure?.statusCode ?? HttpStatusCodes.BAD_REQUEST
+              preHook.errorMessageOnPreHookFuncExecFailure?.statusCode ?? HttpStatusCodes.BAD_REQUEST
             )
           );
         }

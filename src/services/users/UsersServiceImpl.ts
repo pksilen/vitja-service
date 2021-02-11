@@ -116,12 +116,12 @@ export default class UsersServiceImpl extends UsersService {
       [
         {
           preHookFunc: ([currentEntity]) => currentEntity.userName === userName,
-          errorMessageOnPreHookFuncFailure: USER_NAME_CANNOT_BE_CHANGED
+          errorMessageOnPreHookFuncExecFailure: USER_NAME_CANNOT_BE_CHANGED
         },
         {
           preHookFunc: async ([{ password: hashedPassword }]) =>
             await argon2.verify(hashedPassword, currentPassword),
-          errorMessageOnPreHookFuncFailure: INVALID_CURRENT_PASSWORD,
+          errorMessageOnPreHookFuncExecFailure: INVALID_CURRENT_PASSWORD,
           shouldDisregardFailureWhenExecutingTests: true
         }
       ]

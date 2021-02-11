@@ -14,7 +14,7 @@ export type PreHook =
       preHookFunc: (
         preHookFuncArg?: any
       ) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean;
-      errorMessageOnPreHookFuncFailure?: ErrorCodeAndMessage;
+      errorMessageOnPreHookFuncExecFailure?: ErrorCodeAndMessage;
       shouldDisregardFailureWhenExecutingTests?: boolean;
     }
   | ((preHookFuncArg?: any) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean);

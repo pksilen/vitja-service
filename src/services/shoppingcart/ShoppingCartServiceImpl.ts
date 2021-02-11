@@ -41,7 +41,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
           this.dbManager.getEntitiesCount({ userId: arg.userId }, ShoppingCart),
           (shoppingCartCount) => shoppingCartCount === 0
         ),
-      errorMessageOnPreHookFuncFailure: SHOPPING_CART_ALREADY_EXISTS
+      errorMessageOnPreHookFuncExecFailure: SHOPPING_CART_ALREADY_EXISTS
     });
   }
 
@@ -81,7 +81,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
             this.salesItemService.getSalesItemById({ _id: salesItemId }),
             (salesItem) => salesItem.state === 'forSale'
           ),
-        errorMessageOnPreHookFuncFailure: SALES_ITEM_STATE_MUST_BE_FOR_SALE
+        errorMessageOnPreHookFuncExecFailure: SALES_ITEM_STATE_MUST_BE_FOR_SALE
       }
     );
   }

@@ -26,6 +26,10 @@ import typePropertyAnnotationContainer from '../../../../decorators/typeproperty
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import {
+  BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH,
+  BACKK_ERRORS_VERSION_MISMATCH
+} from '../../../../errors/backkErrors';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
@@ -59,15 +63,23 @@ export default async function updateEntity<T extends Entity>(
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
     }
 
-    let eTagCheckPreHook: (currentEntities: T[]) => boolean;
-    let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : (preHooks ? [preHooks]: []);
+    let eTagCheckPreHook: PreHook;
+    let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
     if (ETag !== undefined && typeof currentEntityOrErrorResponse === 'object') {
       if ('version' in currentEntityOrErrorResponse) {
-        eTagCheckPreHook = ([{ version }]) => version === ETag;
+        eTagCheckPreHook = {
+          preHookFunc: ([{ version }]) => version === ETag,
+          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS_VERSION_MISMATCH
+        };
+
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
       } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
-        eTagCheckPreHook = ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag)
+        eTagCheckPreHook = {
+          preHookFunc: ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag),
+          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH
+        };
+
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
       }
     }

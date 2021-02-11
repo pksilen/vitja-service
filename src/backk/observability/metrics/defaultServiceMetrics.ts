@@ -137,7 +137,7 @@ class DefaultServiceMetrics {
     this.syncRemoteServiceHttp5xxErrorResponseCounter = meter.createCounter(
       'sync_remote_service_call_http_5xx_error_responses',
       {
-        description: 'Number of synchronous remote service callRemoteService HTTP 5xx errorMessageOnPreHookFuncFailure responses'
+        description: 'Number of synchronous remote service callRemoteService HTTP 5xx errorMessageOnPreHookFuncExecFailure responses'
       }
     );
 

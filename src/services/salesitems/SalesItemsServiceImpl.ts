@@ -63,7 +63,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
             this.dbManager.getEntitiesCount({ userId: arg.userId, state: 'forSale' }, SalesItem),
             (usersSellableSalesItemCount) => usersSellableSalesItemCount <= 100
           ),
-        errorMessageOnPreHookFuncFailure: MAXIMUM_SALES_ITEM_COUNT_EXCEEDED
+        errorMessageOnPreHookFuncExecFailure: MAXIMUM_SALES_ITEM_COUNT_EXCEEDED
       }
     );
   }
@@ -163,7 +163,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       [
         {
           preHookFunc: ([{ state }]) => state === 'forSale',
-          errorMessageOnPreHookFuncFailure: SALES_ITEM_STATE_MUST_BE_FOR_SALE
+          errorMessageOnPreHookFuncExecFailure: SALES_ITEM_STATE_MUST_BE_FOR_SALE
         },
         ([{ _id, price }]) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, [])
       ]
@@ -183,7 +183,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       requiredCurrentState
         ? {
             preHookFunc: ([{ state }]) => state === requiredCurrentState,
-            errorMessageOnPreHookFuncFailure: INVALID_SALES_ITEM_STATE
+            errorMessageOnPreHookFuncExecFailure: INVALID_SALES_ITEM_STATE
           }
         : undefined
     );

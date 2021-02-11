@@ -95,7 +95,7 @@ export default class OrdersServiceImpl extends OrdersService {
       {
         entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
         preHookFunc: ([{ state }]) => state === 'toBeDelivered',
-        errorMessageOnPreHookFuncFailure: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+        errorMessageOnPreHookFuncExecFailure: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
       },
       () =>
         sendToRemoteService(
@@ -152,7 +152,7 @@ export default class OrdersServiceImpl extends OrdersService {
       {
         entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
         preHookFunc: ([{ state }]) => state === 'toBeDelivered',
-        errorMessageOnPreHookFuncFailure: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+        errorMessageOnPreHookFuncExecFailure: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
       },
       () =>
         sendToRemoteService(
@@ -190,7 +190,7 @@ export default class OrdersServiceImpl extends OrdersService {
         {
           entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
           preHookFunc: ([{ state }]) => state === OrdersServiceImpl.getValidPreviousOrderStateFor(newState),
-          errorMessageOnPreHookFuncFailure: INVALID_ORDER_ITEM_STATE
+          errorMessageOnPreHookFuncExecFailure: INVALID_ORDER_ITEM_STATE
         }
       ],
       {
@@ -213,7 +213,7 @@ export default class OrdersServiceImpl extends OrdersService {
       {
         entityJsonPathForPreHookFuncArg: 'orderItems[?(@.state != "toBeDelivered")]',
         preHookFunc: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
-        errorMessageOnPreHookFuncFailure: DELETE_ORDER_NOT_ALLOWED,
+        errorMessageOnPreHookFuncExecFailure: DELETE_ORDER_NOT_ALLOWED,
         shouldDisregardFailureWhenExecutingTests: true
       },
       {
