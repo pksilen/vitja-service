@@ -25,6 +25,7 @@ import { ExpectReturnValueToContainInTests } from "../../backk/decorators/servic
 import { NoAutoTest } from "../../backk/decorators/service/function/NoAutoTest";
 import { Name } from "../../backk/types/Name";
 import getCities from "./validation/getCities";
+import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -32,6 +33,11 @@ import getCities from "./validation/getCities";
 export default class UsersServiceImpl extends UsersService {
   constructor(dbManager: AbstractDbManager) {
     super(dbManager);
+  }
+
+  @OnStartUp()
+  preloadCities(): Promise<Name[] | ErrorResponse> {
+    return getCities();
   }
 
   @AllowForTests()

@@ -29,7 +29,7 @@ import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
-  { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
+  { _id, id, ETag, ...restOfEntity }: RecursivePartial<T> & { _id: string; ETag?: string },
   EntityClass: new () => T,
   allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
   preHooks?: PreHook | PreHook[],
@@ -59,8 +59,21 @@ export default async function updateEntity<T extends Entity>(
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
     }
 
+    let eTagCheckPreHook: (currentEntities: T[]) => boolean;
+    let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : (preHooks ? [preHooks]: []);
+
+    if (ETag !== undefined && typeof currentEntityOrErrorResponse === 'object') {
+      if ('version' in currentEntityOrErrorResponse) {
+        eTagCheckPreHook = ([{ version }]) => version === ETag;
+        finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
+      } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
+        eTagCheckPreHook = ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag)
+        finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
+      }
+    }
+
     if (!isRecursiveCall) {
-      await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
+      await tryExecutePreHooks(finalPreHooks, currentEntityOrErrorResponse);
     }
 
     const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
