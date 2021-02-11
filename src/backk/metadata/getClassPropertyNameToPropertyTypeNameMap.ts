@@ -9,7 +9,8 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   Class: new () => T,
   dbManager?: AbstractDbManager,
   isGeneration = false,
-  isResponseValueType: boolean | undefined = undefined
+  isResponseValueType: boolean | undefined = undefined,
+  isArgumentType: boolean | undefined = undefined
 ): { [key: string]: string } {
   if (!isGeneration && classNameToMetadataMap[Class.name]) {
     return classNameToMetadataMap[Class.name];
@@ -51,7 +52,14 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     }
 
     if (isResponseValueType && validationMetadata.propertyName === 'errorMessage') {
-      throw new Error(Class.name + ' may not contain property errorMessage');
+      throw new Error(
+        Class.name +
+          ' may not contain property errorMessage, because that property is allowed only in ErrorResponse'
+      );
+    }
+
+    if (isArgumentType && validationMetadata.propertyName === 'ETag') {
+      throw new Error(Class.name + ' may not contain property ETag. It is reserved for Backk internal use');
     }
 
     if (

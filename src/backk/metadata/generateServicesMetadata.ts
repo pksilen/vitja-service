@@ -23,6 +23,7 @@ export default function generateServicesMetadata<T>(
     )
     .map(([serviceName, service]: [string, any]) => {
       const ServiceClass = service.constructor;
+
       const functionNames = Object.keys(
         (controller as any)[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap
       );
@@ -36,12 +37,19 @@ export default function generateServicesMetadata<T>(
           const isResponseValueType = Object.values(
             (controller as any)[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap
           ).includes(typeName);
+
+          const isArgumentType = Object.values(
+            (controller as any)[`${serviceName}__BackkTypes__`].functionNameToParamTypeNameMap
+          ).includes(typeName);
+
           const typeObject = getClassPropertyNameToPropertyTypeNameMap(
             Class,
             dbManager,
             true,
-            isResponseValueType
+            isResponseValueType,
+            isArgumentType
           );
+
           return { ...accumulatedTypes, [typeName]: typeObject };
         },
         {}

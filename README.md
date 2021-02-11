@@ -1,6 +1,8 @@
 # Vitja service
 
 TODO
+- Disallow ETag type property name
+- Read ETag header and put it in service function argument
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags
