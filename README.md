@@ -2,13 +2,16 @@
 
 TODO
 - Change tag db init templates so that tags are read from resources file
+- preHookFunc processing inside try-catch
+- GetJsonFromFile(filePathName, jsonPath);
+- GetXmlFromFile(filePathName, xPath);
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags
 - scheduleJob, miten hakea response myöhemmin (REdis)
 - In Postman API sample responses, readonly fields should be included, private fields not
 - db operations where filters, allow Partial<T>
-- allowAdditionOrRemovalOFSubentitiies = array, 'all', 'none', none is same as []
+- @Update(shouldAllowAdditionOrRemoval)
 - shouldInitializeDb SQL
   - backk taulun nimi: backk_db_initialization: columns: @Unique appVersion, isInitialized
   - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version

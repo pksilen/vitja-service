@@ -16,6 +16,10 @@ import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
 import DbTableVersion from '../../backk/dbmanager/version/DbTableVersion';
 import { HttpStatusCodes } from '../../backk/constants/constants';
 import isErrorResponse from '../../backk/errors/isErrorResponse';
+import { readFileSync } from 'fs';
+import forEachAsyncSequential from '../../backk/utils/forEachAsyncSequential';
+import tryGetSeparatedValuesFromFile from '../../backk/file/tryGetSeparatedValuesFromFile';
+import executeForAll from '../../backk/utils/executeForAll';
 
 @Injectable()
 export default class TagsServiceImpl extends TagsService {
@@ -34,11 +38,9 @@ export default class TagsServiceImpl extends TagsService {
       tagTableVersionOrErrorResponse = await this.dbManager.createEntity(
         { entityName: 'Tag' },
         DbTableVersion,
-        {
-          preHookFunc: async () => {
-            await this.createTag({ name: 'tag 1.1' });
-            await this.createTag({ name: 'tag 1.2' });
-          }
+        () => {
+          const tags = tryGetSeparatedValuesFromFile('resources/tag1.txt');
+          return executeForAll(tags, (tag) => this.createTag({ name: tag }));
         }
       );
     }
@@ -59,11 +61,9 @@ export default class TagsServiceImpl extends TagsService {
         : tagTableVersion1OrErrorResponse;
     }
 
-    return this.dbManager.updateEntity(tagTableVersion1OrErrorResponse, DbTableVersion, [], {
-      preHookFunc: async () => {
-        await this.createTag({ name: 'tag 2.1' });
-        await this.createTag({ name: 'tag 2.2' });
-      }
+    return this.dbManager.updateEntity(tagTableVersion1OrErrorResponse, DbTableVersion, [], () => {
+      const tags = tryGetSeparatedValuesFromFile('resources/tag2.txt');
+      return executeForAll(tags, (tag) => this.createTag({ name: tag }));
     });
   }
 
