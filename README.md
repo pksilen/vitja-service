@@ -9,7 +9,7 @@ TODO
 - Duplicate entity error in createEntity
 - Add entity NOT_FOUND backk error
 - Add invalid_argument backk error
-- @Update(shouldAllowAdditionOrRemoval)
+- shouldAllowAdditionOrRemoval = 'none'
 - shouldInitializeDb SQL
   - backk taulun nimi: backk_db_initialization: columns: @Unique appVersion, isInitialized
   - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version

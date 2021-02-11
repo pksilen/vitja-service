@@ -65,8 +65,8 @@ export default async function updateEntity<T extends Entity>(
 
     let eTagCheckPreHook: PreHook;
     let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
-
-    if (ETag !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
+    
+    if (ETag !== undefined && ETag !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
       if ('version' in currentEntityOrErrorResponse) {
         eTagCheckPreHook = {
           preHookFunc: ([{ version }]) => version === ETag,
