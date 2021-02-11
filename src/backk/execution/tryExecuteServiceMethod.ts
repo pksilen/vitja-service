@@ -286,7 +286,7 @@ export default async function tryExecuteServiceMethod(
       try {
         cachedResponseJson = await redis.get(key);
       } catch (error) {
-        log(Severity.ERROR, 'Redis cache errorMessageOnPreHookFuncFailure: ' + error.message, error.stack, {
+        log(Severity.ERROR, 'Redis cache error: ' + error.message, error.stack, {
           redisServer: process.env.REDIS_SERVER
         });
       }
@@ -310,6 +310,11 @@ export default async function tryExecuteServiceMethod(
     let ttl;
 
     if (!response) {
+
+      if (instantiatedServiceFunctionArgument) {
+        instantiatedServiceFunctionArgument.ETag = headers['X-Backk-ETag'];
+      }
+
       const clsNamespace = shouldCreateClsNamespace
         ? createNamespace('serviceFunctionExecution')
         : getNamespace('serviceFunctionExecution')!;

@@ -53,9 +53,9 @@ export default async function updateEntity<T extends Entity>(
     }
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-
     let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
-    if (!isRecursiveCall || allowAdditionAndRemovalForSubEntityClasses) {
+
+    if (!isRecursiveCall) {
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
     }
 

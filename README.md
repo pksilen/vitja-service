@@ -1,10 +1,10 @@
 # Vitja service
 
 TODO
-- Read ETag header and put it in service function argument
 - If ETag contains version/lastmodifiedtimestamp, that is checked before update
 - AddsubEntities/RemoveSubEntities, check if already added and use ETag
 - In updateEntities, check list of ETags
+- ETags for mongoDB: updateEntity/entities, add/removeSubEntities
 - scheduleJob, miten hakea response myöhemmin (REdis)
 - In Postman API sample responses, readonly fields should be included, private fields not
 - db operations where filters, allow Partial<T>
