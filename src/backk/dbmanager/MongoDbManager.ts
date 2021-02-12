@@ -471,7 +471,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByFilters<T>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | object,
+    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
@@ -548,7 +548,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntityByFilters<T>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | object,
+    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
@@ -575,7 +575,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntitiesCount<T>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | object,
+    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T
   ): Promise<number | ErrorResponse> {
     let matchExpression: object;
@@ -1150,7 +1150,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async deleteEntitiesByFilters<T extends object>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | object,
+    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');

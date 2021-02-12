@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- In getClassPropertyNameToTypeNameMap, validate Class name and property names to regexp _,a-zA-z0-9
 - In Postman API sample responses, readonly fields should be included, private fields not
 - db operations where filters, allow Partial<T>
 - Duplicate entity error in createEntity
@@ -13,7 +12,6 @@ TODO
   - backk taulun nimi: backk_db_initialization: columns: @Unique appVersion, isInitialized
   - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version
   - when init is ok update isInitialized to true
-
   
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true

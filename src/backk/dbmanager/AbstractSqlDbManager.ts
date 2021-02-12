@@ -493,7 +493,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByFilters<T>(
-    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
@@ -527,7 +527,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesCount<T>(
-    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object | undefined,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object | undefined,
     entityClass: new () => T
   ): Promise<number | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
@@ -685,7 +685,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async deleteEntitiesByFilters<T extends object>(
-    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[],
+    filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[] | Partial<T> | object,
     entityClass: new () => T
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
