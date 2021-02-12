@@ -7,6 +7,7 @@ import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import getServiceFunctionExampleReturnValue from "./getServiceFunctionExampleReturnValue";
 
 export default function writeApiPostmanCollectionExportFile<T>(
   controller: T,
@@ -35,7 +36,7 @@ export default function writeApiPostmanCollectionExportFile<T>(
 
       const { baseTypeName, isArrayType } = getTypeInfoForTypeName(functionMetadata.returnValueType);
 
-      const sampleResponse = getServiceFunctionTestArgument(
+      const exampleReturnValue = getServiceFunctionExampleReturnValue(
         (controller as any)[serviceMetadata.serviceName].Types,
         functionMetadata.functionName,
         baseTypeName,
@@ -50,7 +51,7 @@ export default function writeApiPostmanCollectionExportFile<T>(
           functionMetadata,
           sampleArg,
           undefined,
-          sampleResponse,
+          exampleReturnValue,
           isArrayType
         )
       );

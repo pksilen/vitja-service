@@ -38,7 +38,8 @@ export default function getServiceFunctionExampleReturnValue(
   // noinspection FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
   Object.entries(returnValueTypeProperties).forEach(([propertyName, propertyTypeName]: [string, string]) => {
     if (
-      typePropertyAnnotationContainer.isTypePropertyPrivate(serviceTypes[returnValueTypeName], propertyName)
+      typePropertyAnnotationContainer.isTypePropertyPrivate(serviceTypes[returnValueTypeName], propertyName) ||
+      typePropertyAnnotationContainer.isTypePropertyTransient(serviceTypes[returnValueTypeName], propertyName)
     ) {
       return;
     }
