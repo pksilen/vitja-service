@@ -1,3 +1,3 @@
-import BaseService from '../service/BaseService';
+import BaseService from '../BaseService';
 
 export default class CrudResourceService extends BaseService {}

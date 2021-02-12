@@ -71,6 +71,7 @@ export default function getServiceFunctionReturnValueTests(
       testValue = JSON.stringify(
         expectedResponseFieldPathNameToFieldValueMapInTests[fieldPath + propertyName]
       );
+
       isTestValueJson = true;
     }
 

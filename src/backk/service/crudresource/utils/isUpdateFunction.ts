@@ -1,5 +1,5 @@
 import serviceFunctionAnnotationContainer
-  from "../../decorators/service/function/serviceFunctionAnnotationContainer";
+  from "../../../decorators/service/function/serviceFunctionAnnotationContainer";
 
 export default function isUpdateFunction(ServiceClass: Function, functionName: string) {
   return (

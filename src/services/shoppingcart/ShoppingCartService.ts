@@ -4,7 +4,7 @@ import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
 import AddShoppingCartItemArg from "./types/args/AddShoppingCartItemArg";
 import RemoveShoppingCartItemArg from "./types/args/RemoveShoppingCartItemArg";
-import CrudResourceService from "../../backk/crudresource/CrudResourceService";
+import CrudResourceService from "../../backk/service/crudresource/CrudResourceService";
 
 export default abstract class ShoppingCartService extends CrudResourceService {
   abstract deleteAllShoppingCarts(): Promise<void | ErrorResponse>;

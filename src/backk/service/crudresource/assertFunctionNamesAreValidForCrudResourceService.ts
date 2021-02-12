@@ -3,7 +3,7 @@ import isReadFunction from './utils/isReadFunction';
 import isUpdateFunction from './utils/isUpdateFunction';
 import isDeleteFunction from './utils/isDeleteFunction';
 import serviceFunctionAnnotationContainer
-  from "../decorators/service/function/serviceFunctionAnnotationContainer";
+  from "../../decorators/service/function/serviceFunctionAnnotationContainer";
 
 export default function assertFunctionNamesAreValidForCrudResourceService(
   ServiceClass: Function,

@@ -1,7 +1,7 @@
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import Tag from "./entities/Tag";
 import TagName from "./args/TagName";
-import CrudResourceService from "../../backk/crudresource/CrudResourceService";
+import CrudResourceService from "../../backk/service/crudresource/CrudResourceService";
 
 export default abstract class TagsService extends CrudResourceService {
   abstract initializeDatabase(): Promise<void | ErrorResponse>;

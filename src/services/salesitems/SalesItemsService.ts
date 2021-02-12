@@ -6,7 +6,7 @@ import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import _IdsAndDefaultPostQueryOperations from '../../backk/types/postqueryoperations/_IdsAndDefaultPostQueryOperations';
 import _Id from '../../backk/types/id/_Id';
-import CrudResourceService from '../../backk/crudresource/CrudResourceService';
+import CrudResourceService from '../../backk/service/crudresource/CrudResourceService';
 import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
 import { SalesItemState } from './types/enums/SalesItemState';
 import DeleteOldUnsoldSalesItemsArg from './types/args/DeleteOldUnsoldSalesItemsArg';

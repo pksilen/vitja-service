@@ -7,8 +7,8 @@ import { FunctionMetadata } from './types/FunctionMetadata';
 import getValidationMetadata from './getValidationMetadata';
 import getTypeDocumentation from './getTypeDocumentation';
 import getTypePropertyModifiers from './getTypePropertyModifiers';
-import CrudResourceService from '../crudresource/CrudResourceService';
-import assertFunctionNamesAreValidForCrudResourceService from '../crudresource/assertFunctionNamesAreValidForCrudResourceService';
+import CrudResourceService from '../service/crudresource/CrudResourceService';
+import assertFunctionNamesAreValidForCrudResourceService from '../service/crudresource/assertFunctionNamesAreValidForCrudResourceService';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 
 export default function generateServicesMetadata<T>(

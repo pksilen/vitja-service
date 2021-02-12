@@ -2,7 +2,6 @@
 
 TODO
 - In Postman API sample responses, readonly fields should be included, private fields not
-- db operations where filters, allow Partial<T>
 - Duplicate entity error in createEntity
 - Add entity NOT_FOUND backk error
 - Add invalid_argument backk error

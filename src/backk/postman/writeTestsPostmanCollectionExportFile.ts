@@ -12,9 +12,9 @@ import createPostmanCollectionItem from './createPostmanCollectionItem';
 import addCustomTest from './addCustomTest';
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
-import isReadFunction from '../crudresource/utils/isReadFunction';
-import isUpdateFunction from '../crudresource/utils/isUpdateFunction';
-import isDeleteFunction from '../crudresource/utils/isDeleteFunction';
+import isReadFunction from '../service/crudresource/utils/isReadFunction';
+import isUpdateFunction from '../service/crudresource/utils/isUpdateFunction';
+import isDeleteFunction from '../service/crudresource/utils/isDeleteFunction';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import tryValidateIntegrationTests from './tryValidateIntegrationTests';
 

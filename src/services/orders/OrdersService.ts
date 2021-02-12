@@ -7,7 +7,7 @@ import AddOrderItemArg from "./types/args/AddOrderItemArg";
 import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
 import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import CrudResourceService from "../../backk/crudresource/CrudResourceService";
+import CrudResourceService from "../../backk/service/crudresource/CrudResourceService";
 
 export default abstract class OrdersService extends CrudResourceService {
   abstract deleteAllOrders(): Promise<void | ErrorResponse>;

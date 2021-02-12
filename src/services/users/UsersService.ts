@@ -4,7 +4,7 @@ import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import _Id from '../../backk/types/id/_Id';
 import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
 import User from './types/entities/User';
-import CrudResourceService from '../../backk/crudresource/CrudResourceService';
+import CrudResourceService from '../../backk/service/crudresource/CrudResourceService';
 import _IdAndFollowedUserId from './types/args/_IdAndFollowedUserId';
 import { Name } from "../../backk/types/Name";
 
