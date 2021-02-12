@@ -5,6 +5,7 @@ import getValidationErrors from "./getValidationErrors";
 import { HttpStatusCodes } from "../constants/constants";
 import isCreateFunction from "../service/crudresource/utils/isCreateFunction";
 import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import { BACKK_ERRORS_INVALID_ARGUMENT } from "../errors/backkErrors";
 
 function filterOutManyToManyIdErrors(validationErrors: ValidationError[]) {
   validationErrors.forEach((validationError) => {
@@ -66,7 +67,8 @@ export default async function tryValidateServiceFunctionArgument(
     }
 
     const errorMessage =
-      'Error code invalidArgument: Invalid argument: ' + getValidationErrors(validationErrors);
+      `Error code ${BACKK_ERRORS_INVALID_ARGUMENT.errorCode}:${BACKK_ERRORS_INVALID_ARGUMENT.errorMessage}:` +
+      getValidationErrors(validationErrors);
 
     createErrorFromErrorMessageAndThrowError(
       createErrorMessageWithStatusCode(errorMessage, HttpStatusCodes.BAD_REQUEST)

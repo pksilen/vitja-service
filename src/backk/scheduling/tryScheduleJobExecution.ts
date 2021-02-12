@@ -11,6 +11,7 @@ import { HttpStatusCodes } from '../constants/constants';
 import { plainToClass } from 'class-transformer';
 import JobScheduling from './entities/JobScheduling';
 import { scheduleCronJob } from './scheduleCronJob';
+import { BACKK_ERRORS_INVALID_ARGUMENT } from '../errors/backkErrors';
 
 export default async function tryScheduleJobExecution(
   controller: any,
@@ -27,7 +28,8 @@ export default async function tryScheduleJobExecution(
     });
   } catch (validationErrors) {
     const errorMessage =
-      'Error code invalidArgument: Invalid argument: ' + getValidationErrors(validationErrors);
+      `Error code ${BACKK_ERRORS_INVALID_ARGUMENT.errorCode}:${BACKK_ERRORS_INVALID_ARGUMENT.errorMessage}:` +
+      getValidationErrors(validationErrors);
     createErrorFromErrorMessageAndThrowError(
       createErrorMessageWithStatusCode(errorMessage, HttpStatusCodes.BAD_REQUEST)
     );

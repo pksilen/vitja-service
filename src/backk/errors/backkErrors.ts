@@ -25,3 +25,9 @@ export const BACKK_ERRORS_ENTITY_NOT_FOUND = {
   errorMessage: 'Entity not found',
   statusCode: HttpStatusCodes.NOT_FOUND
 };
+
+export const BACKK_ERRORS_INVALID_ARGUMENT = {
+  errorCode: '5',
+  errorMessage: 'Invalid argument: ',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};
