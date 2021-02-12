@@ -17,6 +17,10 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     return classNameToMetadataMap[Class.name];
   }
 
+  if (!Class.name.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/)) {
+    throw new Error(Class.name + ': must match regular expression /^[a-zA-Z_][a-zA-Z0-9_]*$/');
+  }
+
   const validationMetadatas = getFromContainer(MetadataStorage).getTargetValidationMetadatas(Class, '');
   const prototypes = [];
   let prototype = Object.getPrototypeOf(new Class());
@@ -44,6 +48,15 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   });
 
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
+    if (!validationMetadata.propertyName.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/)) {
+      throw new Error(
+        Class.name +
+          '.' +
+          validationMetadata.propertyName +
+          ': must match regular expression /^[a-zA-Z_][a-zA-Z0-9_]*$/'
+      );
+    }
+
     const hasDifferentDbManagerGroup = validationMetadata.groups?.find(
       (group) => group.startsWith('DbManager: ') && group !== 'DbManager: ' + dbManager?.getDbManagerType()
     );

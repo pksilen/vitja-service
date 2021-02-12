@@ -1,14 +1,14 @@
 # Vitja service
 
 TODO
-- In updateEntities, check list of ETags
-- ETags for mongoDB: updateEntity/entities, add/removeSubEntities
+- In getClassPropertyNameToTypeNameMap, validate Class name and property names to regexp _,a-zA-z0-9
 - In Postman API sample responses, readonly fields should be included, private fields not
 - db operations where filters, allow Partial<T>
 - Duplicate entity error in createEntity
 - Add entity NOT_FOUND backk error
 - Add invalid_argument backk error
 - shouldAllowAdditionOrRemoval = 'none'
+- ETags for mongoDB: updateEntity/entities, add/removeSubEntities
 - shouldInitializeDb SQL
   - backk taulun nimi: backk_db_initialization: columns: @Unique appVersion, isInitialized
   - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version
@@ -41,6 +41,7 @@ TODO
   -Sets ETag automatically and removes readonly properties
 
 
+https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object
 Split services to different microservices
 - Create notification-service
     - Sales item cron job: send email at 16:00 if sales item is going to be removed
