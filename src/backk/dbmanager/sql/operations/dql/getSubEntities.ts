@@ -27,15 +27,7 @@ export default async function getSubEntities<T extends object, U>(
     }
 
     const subItems = JSONPath({ json: itemOrErrorResponse, path: subEntityPath });
-
-    if (subItems.length > 0) {
-      return responseMode === 'first' ? subItems[0] : subItems;
-    } else {
-      return createErrorResponseFromErrorMessageAndStatusCode(
-        'Item with _id: ' + _id + ', sub item from path ' + subEntityPath + ' not found',
-        HttpStatusCodes.NOT_FOUND
-      );
-    }
+    return responseMode === 'first' ? subItems[0] : subItems;
   } catch (error) {
     return createErrorResponseFromError(error);
   }

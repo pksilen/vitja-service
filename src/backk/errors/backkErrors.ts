@@ -19,3 +19,9 @@ export const BACKK_ERRORS_DUPLICATE_ENTITY = {
   errorMessage: 'Duplicate entity',
   statusCode: HttpStatusCodes.BAD_REQUEST
 };
+
+export const BACKK_ERRORS_ENTITY_NOT_FOUND = {
+  errorCode: '4',
+  errorMessage: 'Entity not found',
+  statusCode: HttpStatusCodes.NOT_FOUND
+};

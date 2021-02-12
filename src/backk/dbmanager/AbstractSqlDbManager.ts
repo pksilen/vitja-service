@@ -36,9 +36,9 @@ import { SubEntity } from '../types/entities/SubEntity';
 import deleteEntitiesByFilters from './sql/operations/dml/deleteEntitiesByFilters';
 import MongoDbQuery from './mongodb/MongoDbQuery';
 import { PostHook } from './hooks/PostHook';
-import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
-import { HttpStatusCodes } from '../constants/constants';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
+import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS_ENTITY_NOT_FOUND } from '../errors/backkErrors';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -525,10 +525,10 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
     if (Array.isArray(response)) {
       if (response.length === 0) {
-        return createErrorResponseFromErrorMessageAndStatusCode(
-          `Entity by given filter(s) not found`,
-          HttpStatusCodes.NOT_FOUND
-        );
+        return createErrorResponseFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS_ENTITY_NOT_FOUND,
+          errorMessage: 'Entity with given filter(s) not found'
+        });
       }
 
       return response[0];

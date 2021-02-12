@@ -9,6 +9,9 @@ import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import { HttpStatusCodes } from '../../../../constants/constants';
 import getTableName from "../../../utils/getTableName";
+import createErrorResponseFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS_ENTITY_NOT_FOUND } from "../../../../errors/backkErrors";
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
@@ -55,10 +58,10 @@ export default async function getEntitiesByIds<T>(
     const result = await dbManager.tryExecuteQuery(selectStatement, numericIds);
 
     if (dbManager.getResultRows(result).length === 0) {
-      return createErrorResponseFromErrorMessageAndStatusCode(
-        `Item with _ids: ${_ids} not found`,
-        HttpStatusCodes.NOT_FOUND
-      );
+      return createErrorResponseFromErrorCodeMessageAndStatus({
+        ...BACKK_ERRORS_ENTITY_NOT_FOUND,
+        errorMessage: `Entities with _ids: ${_ids.join(', ')} not found`
+      });
     }
 
     return transformRowsToObjects(

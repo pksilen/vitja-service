@@ -57,6 +57,8 @@ import { PostHook } from './hooks/PostHook';
 import tryExecutePostHook from './hooks/tryExecutePostHook';
 import getTableName from './utils/getTableName';
 import getFieldOrdering from './mongodb/getFieldOrdering';
+import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS_ENTITY_NOT_FOUND } from '../errors/backkErrors';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -566,10 +568,10 @@ export default class MongoDbManager extends AbstractDbManager {
 
     if (Array.isArray(response)) {
       if (response.length === 0) {
-        return createErrorResponseFromErrorMessageAndStatusCode(
-          `Entity by given filter(s) not found`,
-          HttpStatusCodes.NOT_FOUND
-        );
+        return createErrorResponseFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS_ENTITY_NOT_FOUND,
+          errorMessage: 'Entity with given filter(s) not found'
+        });
       }
 
       return response[0];
@@ -656,10 +658,10 @@ export default class MongoDbManager extends AbstractDbManager {
         const rows = await cursor.toArray();
 
         if (rows.length === 0) {
-          return createErrorResponseFromErrorMessageAndStatusCode(
-            `Item with _id: ${_id} not found`,
-            HttpStatusCodes.NOT_FOUND
-          );
+          return createErrorResponseFromErrorCodeMessageAndStatus({
+            ...BACKK_ERRORS_ENTITY_NOT_FOUND,
+            errorMessage: `Entity with _id: ${_id} not found`
+          });
         }
 
         await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
@@ -716,15 +718,7 @@ export default class MongoDbManager extends AbstractDbManager {
       }
 
       const subItems = JSONPath({ json: itemOrErrorResponse, path: subEntityPath });
-
-      if (subItems.length > 0) {
-        return responseMode === 'first' ? subItems[0] : subItems;
-      } else {
-        return createErrorResponseFromErrorMessageAndStatusCode(
-          'Item with _id: ' + _id + ', sub item from path ' + subEntityPath + ' not found',
-          HttpStatusCodes.NOT_FOUND
-        );
-      }
+      return responseMode === 'first' ? subItems[0] : subItems;
     } catch (error) {
       return createErrorResponseFromError(error);
     } finally {
@@ -835,10 +829,10 @@ export default class MongoDbManager extends AbstractDbManager {
       });
 
       return entities.length === 0
-        ? createErrorResponseFromErrorMessageAndStatusCode(
-            `Item with ${fieldName}: ${fieldValue} not found`,
-            HttpStatusCodes.NOT_FOUND
-          )
+        ? createErrorResponseFromErrorCodeMessageAndStatus({
+            ...BACKK_ERRORS_ENTITY_NOT_FOUND,
+            errorMessage: `Entity with ${fieldName}: ${fieldValue} not found`
+          })
         : entities[0];
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -907,10 +901,10 @@ export default class MongoDbManager extends AbstractDbManager {
       });
 
       return entities.length === 0
-        ? createErrorResponseFromErrorMessageAndStatusCode(
-            `Item with ${fieldName}: ${fieldValue} not found`,
-            HttpStatusCodes.NOT_FOUND
-          )
+        ? createErrorResponseFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS_ENTITY_NOT_FOUND,
+          errorMessage: `Entity with ${fieldName}: ${fieldValue} not found`
+        })
         : entities;
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
@@ -1021,7 +1015,10 @@ export default class MongoDbManager extends AbstractDbManager {
           .updateOne({ _id: new ObjectId(_id) }, { $set: restOfEntity });
 
         if (updateOperationResult.matchedCount !== 1) {
-          return createErrorResponseFromErrorMessageAndStatusCode(`Item with _id: ${_id} not found`, 404);
+          return createErrorResponseFromErrorCodeMessageAndStatus({
+            ...BACKK_ERRORS_ENTITY_NOT_FOUND,
+            errorMessage: 'Entity with id: ' + _id + ' not found'
+          });
         }
 
         if (!isRecursiveCall && postHook) {

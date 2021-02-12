@@ -13,6 +13,9 @@ import { HttpStatusCodes } from '../../../../constants/constants';
 import isUniqueField from './utils/isUniqueField';
 import SqlEquals from '../../expressions/SqlEquals';
 import getTableName from "../../../utils/getTableName";
+import createErrorResponseFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS_ENTITY_NOT_FOUND } from "../../../../errors/backkErrors";
 
 export default async function getEntitiesWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -73,10 +76,10 @@ export default async function getEntitiesWhere<T>(
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     if (dbManager.getResultRows(result).length === 0) {
-      return createErrorResponseFromErrorMessageAndStatusCode(
-        `Item(s) with ${fieldName}: ${fieldValue} not found`,
-        HttpStatusCodes.NOT_FOUND
-      );
+      return createErrorResponseFromErrorCodeMessageAndStatus({
+        ...BACKK_ERRORS_ENTITY_NOT_FOUND,
+        errorMessage: `Entity with ${fieldName}: ${fieldValue} not found`
+      });
     }
 
     return transformRowsToObjects(

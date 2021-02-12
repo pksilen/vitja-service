@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- Duplicate entity error in createEntity SQL
 - Add entity NOT_FOUND backk error SQL
 - Add invalid_argument backk error SQL
 - Duplicate entity error in createEntity Mongo
