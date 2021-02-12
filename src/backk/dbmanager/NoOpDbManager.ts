@@ -159,4 +159,8 @@ export default class NoOpDbManager extends AbstractDbManager {
   getEntityByFilters<T>(): Promise<ErrorResponse | T> {
     throw new Error('Not implemented');
   }
+
+  isDuplicateEntityError(error: Error): boolean {
+    throw new Error('Not implemented');
+  }
 }

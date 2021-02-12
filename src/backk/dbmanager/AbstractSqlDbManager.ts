@@ -38,7 +38,7 @@ import MongoDbQuery from './mongodb/MongoDbQuery';
 import { PostHook } from './hooks/PostHook';
 import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
 import { HttpStatusCodes } from '../constants/constants';
-import DefaultPostQueryOperations from "../types/postqueryoperations/DefaultPostQueryOperations";
+import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -225,7 +225,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       const result = await this.executeSql(this.getClsNamespace()?.get('connection'), sqlStatement, values);
       return this.getResultFields(result);
     } catch (error) {
-      if (shouldReportError) {
+      if (shouldReportError && !this.isDuplicateEntityError(error)) {
         defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());
 
         log(Severity.ERROR, error.message, error.stack ?? '', {
@@ -288,19 +288,25 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
       return response;
     } catch (error) {
-      if (this.firstDbOperationFailureTimeInMillis) {
-        const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
-        defaultServiceMetrics.recordDbFailureDurationInSecs(
-          this.getDbManagerType(),
-          this.getDbHost(),
-          failureDurationInSecs
-        );
+      if (!this.isDuplicateEntityError(error)) {
+        if (this.firstDbOperationFailureTimeInMillis) {
+          const failureDurationInSecs = (Date.now() - this.firstDbOperationFailureTimeInMillis) / 1000;
+
+          defaultServiceMetrics.recordDbFailureDurationInSecs(
+            this.getDbManagerType(),
+            this.getDbHost(),
+            failureDurationInSecs
+          );
+        }
+
+        defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());
+
+        log(Severity.ERROR, error.message, error.stack ?? '', {
+          sqlStatement,
+          function: `${this.constructor.name}.tryExecuteQuery`
+        });
       }
-      defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());
-      log(Severity.ERROR, error.message, error.stack ?? '', {
-        sqlStatement,
-        function: `${this.constructor.name}.tryExecuteQuery`
-      });
+
       throw error;
     }
   }
@@ -428,7 +434,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
-    subEntityClass: new () => U ,
+    subEntityClass: new () => U,
     preHooks?: PreHook | PreHook[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
@@ -509,7 +515,12 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
-    const response = await getEntitiesByFilters(this, filters, entityClass, postQueryOperations ?? new DefaultPostQueryOperations());
+    const response = await getEntitiesByFilters(
+      this,
+      filters,
+      entityClass,
+      postQueryOperations ?? new DefaultPostQueryOperations()
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
 
     if (Array.isArray(response)) {

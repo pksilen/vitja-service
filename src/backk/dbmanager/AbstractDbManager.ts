@@ -52,6 +52,7 @@ export default abstract class AbstractDbManager {
   }
 
   abstract getClient(): any;
+  abstract isDuplicateEntityError(error: Error): boolean;
   abstract getIdColumnType(): string;
   abstract getTimestampType(): string;
   abstract getVarCharType(maxLength: number): string;

@@ -115,4 +115,8 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
       isUnique ? 'UNIQUE' : ''
     }`;
   }
+
+  isDuplicateEntityError(error: Error): boolean {
+    return error.message.startsWith('Duplicate entry');
+  }
 }

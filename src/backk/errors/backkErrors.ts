@@ -13,3 +13,9 @@ export const BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH = {
     'Entity lastModifiedTimestamp conflict. Entity was updated before this request, please re-fetch the entity and try update again',
   statusCode: HttpStatusCodes.CONFLICT
 };
+
+export const BACKK_ERRORS_DUPLICATE_ENTITY = {
+  errorCode: '3',
+  errorMessage: 'Duplicate entity',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};

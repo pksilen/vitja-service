@@ -83,6 +83,10 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
+  isDuplicateEntityError(error: Error): boolean {
+    return false;
+  }
+
   getModifyColumnStatement(
     schema: string,
     tableName: string,

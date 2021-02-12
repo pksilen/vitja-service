@@ -21,7 +21,9 @@ import entityAnnotationContainer from '../../../../decorators/entity/entityAnnot
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import { Entity } from '../../../../types/entities/Entity';
-import { SubEntity } from "../../../../types/entities/SubEntity";
+import { SubEntity } from '../../../../types/entities/SubEntity';
+import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS_DUPLICATE_ENTITY } from '../../../../errors/backkErrors';
 
 export default async function createEntity<T extends Entity | SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -230,6 +232,11 @@ export default async function createEntity<T extends Entity | SubEntity>(
     }
 
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
+
+    if ('message' in errorOrErrorResponse && dbManager.isDuplicateEntityError(errorOrErrorResponse)) {
+      return createErrorResponseFromErrorCodeMessageAndStatus(BACKK_ERRORS_DUPLICATE_ENTITY);
+    }
+
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
       : createErrorResponseFromError(errorOrErrorResponse);

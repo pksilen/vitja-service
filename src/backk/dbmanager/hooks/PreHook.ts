@@ -1,7 +1,7 @@
 import { ErrorResponse } from '../../types/ErrorResponse';
 import { Entity } from '../../types/entities/Entity';
 
-export interface ErrorCodeAndMessage {
+export interface ErrorCodeAndMessageAndStatus {
   errorCode: string;
   errorMessage: string;
   statusCode?: number;
@@ -14,7 +14,7 @@ export type PreHook =
       preHookFunc: (
         preHookFuncArg?: any
       ) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean;
-      errorMessageOnPreHookFuncExecFailure?: ErrorCodeAndMessage;
+      errorMessageOnPreHookFuncExecFailure?: ErrorCodeAndMessageAndStatus;
       shouldDisregardFailureWhenExecutingTests?: boolean;
     }
   | ((preHookFuncArg?: any) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean);

@@ -102,4 +102,8 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   ): string {
     return `ALTER TABLE ${schema?.toLowerCase()}.${tableName.toLowerCase()} ALTER COLUMN ${columnName.toLowerCase()} SET DATA TYPE ${columnType}`;
   }
+
+  isDuplicateEntityError(error: Error): boolean {
+    return error.message.startsWith('duplicate key');
+  }
 }
