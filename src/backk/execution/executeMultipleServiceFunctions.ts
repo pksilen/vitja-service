@@ -8,17 +8,15 @@ import forEachAsyncSequential from "../utils/forEachAsyncSequential";
 import { createNamespace } from "cls-hooked";
 import BaseService from "../service/BaseService";
 import isValidServiceFunctionName from "./isValidServiceFunctionName";
-import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
-import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
 import { HttpStatusCodes } from "../constants/constants";
 import { ErrorResponse } from "../types/ErrorResponse";
 import isErrorResponse from "../errors/isErrorResponse";
 import callRemoteService from "../remote/http/callRemoteService";
 import {
-  BACKK_ERRORS_ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED, BACKK_ERRORS_INVALID_ARGUMENT,
+  BACKK_ERRORS_ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED,
+  BACKK_ERRORS_INVALID_ARGUMENT,
   BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED,
-  BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION,
-  BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION
+  BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION
 } from "../errors/backkErrors";
 import createErrorResponseFromErrorCodeMessageAndStatus
   from "../errors/createErrorResponseFromErrorCodeMessageAndStatus";

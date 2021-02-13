@@ -3,7 +3,8 @@ import createErrorResponseFromError from './createErrorResponseFromError';
 import { HttpStatusCodes } from '../constants/constants';
 
 export default function createErrorResponseFromErrorCodeMessageAndStatus(
-  errorCodeMessageAndStatus: ErrorCodeAndMessageAndStatus
+  errorCodeMessageAndStatus: ErrorCodeAndMessageAndStatus,
+  triggerHttpException = false
 ) {
   return createErrorResponseFromError(
     new Error(

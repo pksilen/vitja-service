@@ -7,11 +7,9 @@ import tryAuthorize from '../authorization/tryAuthorize';
 import BaseService from '../service/BaseService';
 import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
-import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
 import UsersBaseService from '../users/UsersBaseService';
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import tryValidateServiceFunctionArgument from '../validation/tryValidateServiceFunctionArgument';
-import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
 import tryValidateServiceFunctionResponse from '../validation/tryValidateServiceFunctionResponse';
 import isErrorResponse from '../errors/isErrorResponse';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
@@ -33,6 +31,8 @@ import {
   BACKK_ERRORS_UNKNOWN_SERVICE,
   BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION
 } from '../errors/backkErrors';
+import { ErrorResponse } from '../types/ErrorResponse';
+import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -54,71 +54,73 @@ export default async function tryExecuteServiceMethod(
   options?: ExecuteServiceFunctionOptions,
   shouldCreateClsNamespace = true
 ): Promise<void | object> {
-  if (options?.areMultipleServiceFunctionExecutionsAllowed && isExecuteMultipleRequest(serviceFunctionName)) {
-    if (options?.maxServiceFunctionCountInMultipleServiceFunctionExecution) {
-      if (
-        Object.keys(serviceFunctionArgument).length >
-        options?.maxServiceFunctionCountInMultipleServiceFunctionExecution
-      ) {
-        throw createErrorFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS_INVALID_ARGUMENT,
-          errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + 'too many service functions called'
-        });
-      }
-    } else {
-      throw new Error('Missing maxServiceFunctionCountInMultipleServiceFunctionExecution option');
-    }
-
-    if (serviceFunctionName === 'executeMultipleInParallelWithoutTransaction') {
-      return await executeMultipleServiceFunctions(
-        true,
-        false,
-        controller,
-        serviceFunctionArgument,
-        headers,
-        resp,
-        options
-      );
-    } else if (serviceFunctionName === 'executeMultipleInSequenceWithoutTransaction') {
-      return await executeMultipleServiceFunctions(
-        false,
-        false,
-        controller,
-        serviceFunctionArgument,
-        headers,
-        resp,
-        options
-      );
-    } else if (serviceFunctionName === 'executeMultipleInParallelInsideTransaction') {
-      return await executeMultipleServiceFunctions(
-        true,
-        true,
-        controller,
-        serviceFunctionArgument,
-        headers,
-        resp,
-        options
-      );
-    } else if (serviceFunctionName === 'executeMultipleInSequenceInsideTransaction') {
-      return executeMultipleServiceFunctions(
-        false,
-        true,
-        controller,
-        serviceFunctionArgument,
-        headers,
-        resp,
-        options
-      );
-    }
-  }
-
-  const [serviceName, functionName] = serviceFunctionName.split('.');
-  let response: any;
   let storedError;
   let userName;
+  let response: any;
+  const [serviceName, functionName] = serviceFunctionName.split('.');
 
-  // noinspection ExceptionCaughtLocallyJS
   try {
+    if (
+      options?.areMultipleServiceFunctionExecutionsAllowed &&
+      isExecuteMultipleRequest(serviceFunctionName)
+    ) {
+      if (options?.maxServiceFunctionCountInMultipleServiceFunctionExecution) {
+        if (
+          Object.keys(serviceFunctionArgument).length >
+          options?.maxServiceFunctionCountInMultipleServiceFunctionExecution
+        ) {
+          throw createErrorResponseFromErrorCodeMessageAndStatus({
+            ...BACKK_ERRORS_INVALID_ARGUMENT,
+            errorMessage: BACKK_ERRORS_INVALID_ARGUMENT.errorMessage + 'too many service functions called'
+          });
+        }
+      } else {
+        throw new Error('Missing maxServiceFunctionCountInMultipleServiceFunctionExecution option');
+      }
+
+      if (serviceFunctionName === 'executeMultipleInParallelWithoutTransaction') {
+        return await executeMultipleServiceFunctions(
+          true,
+          false,
+          controller,
+          serviceFunctionArgument,
+          headers,
+          resp,
+          options
+        );
+      } else if (serviceFunctionName === 'executeMultipleInSequenceWithoutTransaction') {
+        return await executeMultipleServiceFunctions(
+          false,
+          false,
+          controller,
+          serviceFunctionArgument,
+          headers,
+          resp,
+          options
+        );
+      } else if (serviceFunctionName === 'executeMultipleInParallelInsideTransaction') {
+        return await executeMultipleServiceFunctions(
+          true,
+          true,
+          controller,
+          serviceFunctionArgument,
+          headers,
+          resp,
+          options
+        );
+      } else if (serviceFunctionName === 'executeMultipleInSequenceInsideTransaction') {
+        return executeMultipleServiceFunctions(
+          false,
+          true,
+          controller,
+          serviceFunctionArgument,
+          headers,
+          resp,
+          options
+        );
+      }
+    }
+
     log(Severity.DEBUG, 'Service function call', serviceFunctionName);
     defaultServiceMetrics.incrementServiceFunctionCallsByOne(serviceFunctionName);
 
@@ -142,7 +144,7 @@ export default async function tryExecuteServiceMethod(
         // noinspection AssignmentToFunctionParameterJS
         serviceFunctionArgument = JSON.parse(serviceFunctionArgument);
       } catch (error) {
-        throw createErrorFromErrorCodeMessageAndStatus({
+        throw createErrorResponseFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS_INVALID_ARGUMENT,
           errorMessage:
             BACKK_ERRORS_INVALID_ARGUMENT +
@@ -154,25 +156,28 @@ export default async function tryExecuteServiceMethod(
     if (serviceFunctionName === 'metadataService.getServicesMetadata') {
       if (!options || options.isMetadataServiceEnabled === undefined || options.isMetadataServiceEnabled) {
         resp?.send(controller.publicServicesMetadata);
+        return;
       } else {
-        throw createErrorFromErrorCodeMessageAndStatus({
+        throw createErrorResponseFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS_UNKNOWN_SERVICE,
-          errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE + serviceName
+          errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE.errorMessage + serviceName
         });
       }
     } else if (serviceFunctionName === 'livenessCheckService.isAlive') {
       resp?.send();
+      return;
     } else if (
       serviceFunctionName === 'readinessCheckService.isReady' &&
       (!controller[serviceName] || !controller[serviceName][functionName])
     ) {
       resp?.send();
+      return;
     }
 
     if (!controller[serviceName]) {
-      throw createErrorFromErrorCodeMessageAndStatus({
+      throw createErrorResponseFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS_UNKNOWN_SERVICE,
-        errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE + serviceName
+        errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE.errorMessage + serviceName
       });
     }
 
@@ -180,7 +185,7 @@ export default async function tryExecuteServiceMethod(
       controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName];
 
     if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
-      throw createErrorFromErrorCodeMessageAndStatus({
+      throw createErrorResponseFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION,
         errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION + serviceFunctionName
       });
@@ -194,7 +199,7 @@ export default async function tryExecuteServiceMethod(
       Array.isArray(serviceFunctionArgument) ||
       (serviceFunctionArgumentTypeName && serviceFunctionArgument === null)
     ) {
-      throw createErrorFromErrorCodeMessageAndStatus({
+      throw createErrorResponseFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS_INVALID_ARGUMENT,
         errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + 'argument must be a JSON object'
       });
@@ -259,7 +264,7 @@ export default async function tryExecuteServiceMethod(
       });
 
       if (!instantiatedServiceFunctionArgument) {
-        throw createErrorFromErrorCodeMessageAndStatus(BACKK_ERRORS_MISSING_ARGUMENT);
+        throw createErrorResponseFromErrorCodeMessageAndStatus(BACKK_ERRORS_MISSING_ARGUMENT);
       }
 
       await tryValidateServiceFunctionArgument(functionName, dbManager, instantiatedServiceFunctionArgument);
@@ -537,13 +542,22 @@ export default async function tryExecuteServiceMethod(
 
     resp?.status(HttpStatusCodes.SUCCESS);
     resp?.send(response);
-  } catch (error) {
-    storedError = error;
-    if (resp && error instanceof HttpException) {
-      resp.status(error.getStatus());
-      resp.send(error.getResponse());
+  } catch (errorOrErrorResponse) {
+    storedError = errorOrErrorResponse;
+    if (resp && errorOrErrorResponse instanceof HttpException) {
+      resp.status(errorOrErrorResponse.getStatus());
+      resp.send(errorOrErrorResponse.getResponse());
+    } else if (resp && 'errorMessage' in errorOrErrorResponse) {
+      resp.status((errorOrErrorResponse as ErrorResponse).statusCode);
+      resp.send(errorOrErrorResponse);
     } else {
-      throw error;
+      if (errorOrErrorResponse instanceof HttpException) {
+        throw errorOrErrorResponse;
+      } else if ('errorMessage' in errorOrErrorResponse) {
+        throw new HttpException(errorOrErrorResponse, errorOrErrorResponse.statusCode);
+      }
+
+      throw errorOrErrorResponse;
     }
   } finally {
     if (controller[serviceName] instanceof UsersBaseService || userName) {
