@@ -154,11 +154,12 @@ export default async function tryExecuteServiceMethod(
     if (serviceFunctionName === 'metadataService.getServicesMetadata') {
       if (!options || options.isMetadataServiceEnabled === undefined || options.isMetadataServiceEnabled) {
         resp?.send(controller.publicServicesMetadata);
+      } else {
+        throw createErrorFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS_UNKNOWN_SERVICE,
+          errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE + serviceName
+        });
       }
-      throw createErrorFromErrorCodeMessageAndStatus({
-        ...BACKK_ERRORS_UNKNOWN_SERVICE,
-        errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE + serviceName
-      });
     } else if (serviceFunctionName === 'livenessCheckService.isAlive') {
       resp?.send();
     } else if (
