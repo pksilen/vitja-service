@@ -85,3 +85,9 @@ export const BACKK_ERRORS_ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DE
   errorMessage: 'Allowed remote service functions regular expression pattern not defined',
   statusCode: HttpStatusCodes.BAD_REQUEST
 };
+
+export const BACKK_ERRORS_INVALID_HTTP_METHOD_MUST_BE_POST = {
+  errorCode: '15',
+  errorMessage: 'Invalid HTTP method. HTTP method must be POST',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};

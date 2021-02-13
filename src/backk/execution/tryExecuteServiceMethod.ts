@@ -26,7 +26,13 @@ import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
 import tryScheduleJobExecution from '../scheduling/tryScheduleJobExecution';
 import isExecuteMultipleRequest from './isExecuteMultipleRequest';
 import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS_INVALID_ARGUMENT } from '../errors/backkErrors';
+import {
+  BACKK_ERRORS_INVALID_ARGUMENT,
+  BACKK_ERRORS_INVALID_HTTP_METHOD_MUST_BE_POST,
+  BACKK_ERRORS_MISSING_ARGUMENT,
+  BACKK_ERRORS_UNKNOWN_SERVICE,
+  BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION
+} from '../errors/backkErrors';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -127,12 +133,7 @@ export default async function tryExecuteServiceMethod(
         !serviceFunctionName.match(options?.allowedServiceFunctionsRegExpForHttpGetMethod ?? /^\w+\.get/) ||
         options?.deniedServiceFunctionsForForHttpGetMethod?.includes(serviceFunctionName)
       ) {
-        createErrorFromErrorMessageAndThrowError(
-          createErrorMessageWithStatusCode(
-            'Service function cannot be called with HTTP GET. Use HTTP POST instead',
-            HttpStatusCodes.BAD_REQUEST
-          )
-        );
+        throw createErrorFromErrorCodeMessageAndStatus(BACKK_ERRORS_INVALID_HTTP_METHOD_MUST_BE_POST);
       }
 
       // noinspection AssignmentToFunctionParameterJS
@@ -154,9 +155,10 @@ export default async function tryExecuteServiceMethod(
       if (!options || options.isMetadataServiceEnabled === undefined || options.isMetadataServiceEnabled) {
         resp?.send(controller.publicServicesMetadata);
       }
-      createErrorFromErrorMessageAndThrowError(
-        createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, HttpStatusCodes.BAD_REQUEST)
-      );
+      throw createErrorFromErrorCodeMessageAndStatus({
+        ...BACKK_ERRORS_UNKNOWN_SERVICE,
+        errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE + serviceName
+      });
     } else if (serviceFunctionName === 'livenessCheckService.isAlive') {
       resp?.send();
     } else if (
@@ -167,21 +169,20 @@ export default async function tryExecuteServiceMethod(
     }
 
     if (!controller[serviceName]) {
-      createErrorFromErrorMessageAndThrowError(
-        createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, HttpStatusCodes.BAD_REQUEST)
-      );
+      throw createErrorFromErrorCodeMessageAndStatus({
+        ...BACKK_ERRORS_UNKNOWN_SERVICE,
+        errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE + serviceName
+      });
     }
 
     const serviceFunctionResponseValueTypeName =
       controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName];
 
     if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
-      createErrorFromErrorMessageAndThrowError(
-        createErrorMessageWithStatusCode(
-          `Unknown function: ${serviceName}.${functionName}`,
-          HttpStatusCodes.BAD_REQUEST
-        )
-      );
+      throw createErrorFromErrorCodeMessageAndStatus({
+        ...BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION,
+        errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION + serviceFunctionName
+      });
     }
 
     const serviceFunctionArgumentTypeName =
@@ -192,13 +193,10 @@ export default async function tryExecuteServiceMethod(
       Array.isArray(serviceFunctionArgument) ||
       (serviceFunctionArgumentTypeName && serviceFunctionArgument === null)
     ) {
-
-      createErrorFromErrorMessageAndThrowError(
-        createErrorMessageWithStatusCode(
-          `Invalid service function argument. Argument must be a JSON object string`,
-          HttpStatusCodes.BAD_REQUEST
-        )
-      );
+      throw createErrorFromErrorCodeMessageAndStatus({
+        ...BACKK_ERRORS_INVALID_ARGUMENT,
+        errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + 'argument must be a JSON object'
+      });
     }
 
     if (serviceFunctionArgument?.captchaToken) {
@@ -260,9 +258,7 @@ export default async function tryExecuteServiceMethod(
       });
 
       if (!instantiatedServiceFunctionArgument) {
-        createErrorFromErrorMessageAndThrowError(
-          createErrorMessageWithStatusCode('Missing service function argument', HttpStatusCodes.BAD_REQUEST)
-        );
+        throw createErrorFromErrorCodeMessageAndStatus(BACKK_ERRORS_MISSING_ARGUMENT);
       }
 
       await tryValidateServiceFunctionArgument(functionName, dbManager, instantiatedServiceFunctionArgument);

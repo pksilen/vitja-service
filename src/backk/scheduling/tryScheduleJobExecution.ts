@@ -11,7 +11,12 @@ import { HttpStatusCodes } from '../constants/constants';
 import { plainToClass } from 'class-transformer';
 import JobScheduling from './entities/JobScheduling';
 import { scheduleCronJob } from './scheduleCronJob';
-import { BACKK_ERRORS_INVALID_ARGUMENT } from '../errors/backkErrors';
+import {
+  BACKK_ERRORS_INVALID_ARGUMENT,
+  BACKK_ERRORS_UNKNOWN_SERVICE,
+  BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION
+} from "../errors/backkErrors";
+import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
 
 export default async function tryScheduleJobExecution(
   controller: any,
@@ -50,21 +55,20 @@ export default async function tryScheduleJobExecution(
   const [serviceName, functionName] = serviceFunctionName.split('.');
 
   if (!controller[serviceName]) {
-    createErrorFromErrorMessageAndThrowError(
-      createErrorMessageWithStatusCode(`Unknown service: ${serviceName}`, HttpStatusCodes.BAD_REQUEST)
-    );
+    throw createErrorFromErrorCodeMessageAndStatus({
+      ...BACKK_ERRORS_UNKNOWN_SERVICE,
+      errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE + serviceName
+    });
   }
 
   const serviceFunctionResponseValueTypeName =
     controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName];
 
   if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
-    createErrorFromErrorMessageAndThrowError(
-      createErrorMessageWithStatusCode(
-        `Unknown function: ${serviceName}.${functionName}`,
-        HttpStatusCodes.BAD_REQUEST
-      )
-    );
+    throw createErrorFromErrorCodeMessageAndStatus({
+      ...BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION,
+      errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION + serviceFunctionName
+    });
   }
 
   const retryIntervalsInSecsStr = retryIntervalsInSecs.join(',');

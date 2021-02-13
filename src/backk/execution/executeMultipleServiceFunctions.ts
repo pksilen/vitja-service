@@ -1,26 +1,28 @@
-import Mustache from 'mustache';
-import tryExecuteServiceMethod, { ExecuteServiceFunctionOptions } from './tryExecuteServiceMethod';
-import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import { ServiceFunctionCall } from './ServiceFunctionCall';
-import { ServiceFunctionCallResponse } from './ServiceFunctionCallResponse';
-import Response from './Response';
-import forEachAsyncSequential from '../utils/forEachAsyncSequential';
-import { createNamespace } from 'cls-hooked';
-import BaseService from '../service/BaseService';
-import isValidServiceFunctionName from './isValidServiceFunctionName';
-import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
-import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
-import { HttpStatusCodes } from '../constants/constants';
-import { ErrorResponse } from '../types/ErrorResponse';
-import isErrorResponse from '../errors/isErrorResponse';
-import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
-import callRemoteService from '../remote/http/callRemoteService';
+import Mustache from "mustache";
+import tryExecuteServiceMethod, { ExecuteServiceFunctionOptions } from "./tryExecuteServiceMethod";
+import forEachAsyncParallel from "../utils/forEachAsyncParallel";
+import { ServiceFunctionCall } from "./ServiceFunctionCall";
+import { ServiceFunctionCallResponse } from "./ServiceFunctionCallResponse";
+import Response from "./Response";
+import forEachAsyncSequential from "../utils/forEachAsyncSequential";
+import { createNamespace } from "cls-hooked";
+import BaseService from "../service/BaseService";
+import isValidServiceFunctionName from "./isValidServiceFunctionName";
+import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
+import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
+import { HttpStatusCodes } from "../constants/constants";
+import { ErrorResponse } from "../types/ErrorResponse";
+import isErrorResponse from "../errors/isErrorResponse";
+import callRemoteService from "../remote/http/callRemoteService";
 import {
-  BACKK_ERRORS_ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED,
+  BACKK_ERRORS_ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED, BACKK_ERRORS_INVALID_ARGUMENT,
   BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED,
-  BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION
+  BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION,
+  BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION
 } from "../errors/backkErrors";
-import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import createErrorResponseFromErrorCodeMessageAndStatus
+  from "../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import createErrorFromErrorCodeMessageAndStatus from "../errors/createErrorFromErrorCodeMessageAndStatus";
 
 async function executeMultiple<T>(
   isConcurrent: boolean,
@@ -144,12 +146,10 @@ export default async function executeMultipleServiceFunctions(
   );
 
   if (!areServiceFunctionCallsValid) {
-    createErrorFromErrorMessageAndThrowError(
-      createErrorMessageWithStatusCode(
-        'One or more invalid service function calls',
-        HttpStatusCodes.BAD_REQUEST
-      )
-    );
+    throw createErrorFromErrorCodeMessageAndStatus({
+      ...BACKK_ERRORS_INVALID_ARGUMENT,
+      errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + 'unknown service(s) or function(s) or invalid argument(s)'
+    });
   }
 
   const serviceFunctionCallIdToResponseMap: { [key: string]: ServiceFunctionCallResponse } = {};
