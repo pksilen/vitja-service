@@ -8,10 +8,9 @@ import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
 import { HttpStatusCodes } from '../../../../constants/constants';
-import getTableName from "../../../utils/getTableName";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS_ENTITY_NOT_FOUND } from "../../../../errors/backkErrors";
+import getTableName from '../../../utils/getTableName';
+import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS_ENTITY_NOT_FOUND, BACKK_ERRORS_INVALID_ARGUMENT } from '../../../../errors/backkErrors';
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
@@ -22,19 +21,22 @@ export default async function getEntitiesByIds<T>(
   try {
     updateDbLocalTransactionCount(dbManager);
 
-    const { rootSortClause, rootPaginationClause, columns, joinClauses, outerSortClause } = getSqlSelectStatementParts(
-      dbManager,
-      postQueryOperations,
-      EntityClass
-    );
+    const {
+      rootSortClause,
+      rootPaginationClause,
+      columns,
+      joinClauses,
+      outerSortClause
+    } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass);
 
     const numericIds = _ids.map((id) => {
       const numericId = parseInt(id, 10);
 
       if (isNaN(numericId)) {
-        throw new Error(
-          createErrorMessageWithStatusCode('All ids must be a numeric ids', HttpStatusCodes.BAD_REQUEST)
-        );
+        throw createErrorResponseFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS_INVALID_ARGUMENT,
+          errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + ' All _ids must be numeric values'
+        });
       }
 
       return numericId;

@@ -13,7 +13,9 @@ import { HttpStatusCodes } from '../../../../constants/constants';
 import getTableName from "../../../utils/getTableName";
 import createErrorResponseFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS_ENTITY_NOT_FOUND } from "../../../../errors/backkErrors";
+import { BACKK_ERRORS_ENTITY_NOT_FOUND, BACKK_ERRORS_INVALID_ARGUMENT } from "../../../../errors/backkErrors";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 
 export default async function getEntityById<T>(
   dbManager: AbstractSqlDbManager,
@@ -42,9 +44,10 @@ export default async function getEntityById<T>(
 
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(
-        createErrorMessageWithStatusCode(idFieldName + ': must be a numeric id', HttpStatusCodes.BAD_REQUEST)
-      );
+      throw createErrorFromErrorCodeMessageAndStatus({
+        ...BACKK_ERRORS_INVALID_ARGUMENT,
+        errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + idFieldName + ': must be a numeric id'
+      });
     }
 
     const tableName = getTableName(EntityClass.name);

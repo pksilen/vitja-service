@@ -14,8 +14,10 @@ import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTran
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import { HttpStatusCodes } from '../../../../constants/constants';
-import { PostHook } from "../../../hooks/PostHook";
-import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import { PostHook } from '../../../hooks/PostHook';
+import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS_INVALID_ARGUMENT } from '../../../../errors/backkErrors';
 
 export default async function deleteEntityById<T extends object>(
   dbManager: AbstractSqlDbManager,
@@ -41,9 +43,10 @@ export default async function deleteEntityById<T extends object>(
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
-      throw new Error(
-        createErrorMessageWithStatusCode(idFieldName + ': must be a numeric id', HttpStatusCodes.BAD_REQUEST)
-      );
+      throw createErrorFromErrorCodeMessageAndStatus({
+        ...BACKK_ERRORS_INVALID_ARGUMENT,
+        errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + idFieldName + ': must be a numeric id'
+      });
     }
 
     await Promise.all([
@@ -52,9 +55,9 @@ export default async function deleteEntityById<T extends object>(
         async (joinSpec: EntityJoinSpec) => {
           if (!joinSpec.isReadonly) {
             await dbManager.tryExecuteSql(
-              `DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()} WHERE ${
-                joinSpec.subEntityForeignIdFieldName.toLowerCase()
-              } = ${dbManager.getValuePlaceholder(1)}`,
+              `DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()} WHERE ${joinSpec.subEntityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+                1
+              )}`,
               [numericId]
             );
           }
@@ -65,9 +68,7 @@ export default async function deleteEntityById<T extends object>(
         async ({ associationTableName, entityForeignIdFieldName }) => {
           if (associationTableName.startsWith(EntityClass.name)) {
             await dbManager.tryExecuteSql(
-              `DELETE FROM ${
-                dbManager.schema.toLowerCase()
-              }.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+              `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
                 1
               )}`,
               [numericId]
@@ -76,9 +77,9 @@ export default async function deleteEntityById<T extends object>(
         }
       ),
       dbManager.tryExecuteSql(
-        `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${dbManager.schema.toLowerCase()}.${
-          EntityClass.name.toLowerCase()
-        }.${idFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(1)}`,
+        `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()}.${idFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+          1
+        )}`,
         [numericId]
       )
     ]);

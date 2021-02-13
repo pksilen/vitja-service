@@ -15,6 +15,12 @@ import { ErrorResponse } from '../types/ErrorResponse';
 import isErrorResponse from '../errors/isErrorResponse';
 import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
 import callRemoteService from '../remote/http/callRemoteService';
+import {
+  BACKK_ERRORS_ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED,
+  BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED,
+  BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION
+} from "../errors/backkErrors";
+import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
 
 async function executeMultiple<T>(
   isConcurrent: boolean,
@@ -53,37 +59,38 @@ async function executeMultiple<T>(
       if (localOrRemoteServiceFunctionName.includes('/')) {
         if (isTransactional) {
           response.send(
-            createErrorResponseFromErrorMessageAndStatusCode(
-              'Remote service function calls are not allowed inside transaction',
-              HttpStatusCodes.BAD_REQUEST
+            createErrorResponseFromErrorCodeMessageAndStatus(
+              BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION
             )
           );
+
           response.status(HttpStatusCodes.BAD_REQUEST);
         } else if (!options?.allowedServiceFunctionsRegExpForRemoteServiceCalls) {
           response.send(
-            createErrorResponseFromErrorMessageAndStatusCode(
-              'Allowed remote service function call regexp pattern not defined',
-              HttpStatusCodes.BAD_REQUEST
+            createErrorResponseFromErrorCodeMessageAndStatus(
+             BACKK_ERRORS_ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED
             )
           );
+
           response.status(HttpStatusCodes.BAD_REQUEST);
         } else if (
           !localOrRemoteServiceFunctionName.match(options.allowedServiceFunctionsRegExpForRemoteServiceCalls)
         ) {
           response.send(
-            createErrorResponseFromErrorMessageAndStatusCode(
-              'Remote service function call not allowed',
-              HttpStatusCodes.BAD_REQUEST
+            createErrorResponseFromErrorCodeMessageAndStatus(
+              BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED
             )
           );
           response.status(HttpStatusCodes.BAD_REQUEST);
         } else {
           const [serviceHost, serviceFunctionName] = localOrRemoteServiceFunctionName.split('/');
+
           const remoteServiceCallResponse = await callRemoteService(
             `http://${serviceHost}.svc.cluster.local/${serviceFunctionName}`
           );
 
           response.send(remoteServiceCallResponse);
+
           response.status(
             'errorMessage' in remoteServiceCallResponse
               ? remoteServiceCallResponse.statusCode

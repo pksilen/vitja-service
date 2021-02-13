@@ -3,6 +3,9 @@ import createErrorMessageWithStatusCode from '../../../../../../errors/createErr
 import { HttpStatusCodes } from '../../../../../../constants/constants';
 import getSqlColumnFromProjection from './getSqlColumnFromProjection';
 import AbstractSqlDbManager from "../../../../../AbstractSqlDbManager";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS_INVALID_ARGUMENT } from "../../../../../../errors/backkErrors";
 
 export default function tryGetSqlColumnForFieldName(
   fieldName: string,
@@ -14,12 +17,10 @@ export default function tryGetSqlColumnForFieldName(
   try {
     projection = tryGetProjection(dbManager, { includeResponseFields: [fieldName] }, entityClass, Types);
   } catch (error) {
-    throw new Error(
-      createErrorMessageWithStatusCode(
-        'Invalid sub pagination field: ' + fieldName,
-        HttpStatusCodes.BAD_REQUEST
-      )
-    );
+    throw createErrorFromErrorCodeMessageAndStatus({
+      ...BACKK_ERRORS_INVALID_ARGUMENT,
+      errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + 'invalid sub pagination field: ' + fieldName
+    });
   }
 
   return getSqlColumnFromProjection(projection);

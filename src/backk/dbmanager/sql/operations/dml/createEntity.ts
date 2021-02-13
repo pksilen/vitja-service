@@ -23,7 +23,8 @@ import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import { Entity } from '../../../../types/entities/Entity';
 import { SubEntity } from '../../../../types/entities/SubEntity';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS_DUPLICATE_ENTITY } from '../../../../errors/backkErrors';
+import { BACKK_ERRORS_DUPLICATE_ENTITY, BACKK_ERRORS_INVALID_ARGUMENT } from '../../../../errors/backkErrors';
+import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
 
 export default async function createEntity<T extends Entity | SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -80,12 +81,12 @@ export default async function createEntity<T extends Entity | SubEntity>(
             const numericId = parseInt((entity as any)[fieldName], 10);
 
             if (isNaN(numericId)) {
-              throw new Error(
-                createErrorMessageWithStatusCode(
-                  EntityClass.name + '.' + fieldName + ': must be a numeric id',
-                  HttpStatusCodes.BAD_REQUEST
-                )
-              );
+              throw createErrorFromErrorCodeMessageAndStatus({
+                ...BACKK_ERRORS_INVALID_ARGUMENT,
+                errorMessage:
+                  BACKK_ERRORS_INVALID_ARGUMENT +
+                  EntityClass.name + '.' + fieldName + ': must be a numeric id'
+              });
             }
 
             values.push(numericId);
@@ -155,14 +156,13 @@ export default async function createEntity<T extends Entity | SubEntity>(
                 subEntity.id = index;
               } else {
                 if (parseInt(subEntity.id, 10) !== index) {
-                  throw new Error(
-                    createErrorMessageWithStatusCode(
-                      'Invalid id values in ' +
-                        fieldName +
-                        '. Id values must be consecutive numbers starting from zero.',
-                      HttpStatusCodes.BAD_REQUEST
-                    )
-                  );
+                  throw createErrorFromErrorCodeMessageAndStatus({
+                    ...BACKK_ERRORS_INVALID_ARGUMENT,
+                    errorMessage:
+                      BACKK_ERRORS_INVALID_ARGUMENT +
+                      EntityClass.name + '.'+ fieldName +
+                      ': id values must be consecutive numbers starting from zero'
+                  });
                 }
               }
 

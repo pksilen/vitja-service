@@ -31,3 +31,57 @@ export const BACKK_ERRORS_INVALID_ARGUMENT = {
   errorMessage: 'Invalid argument: ',
   statusCode: HttpStatusCodes.BAD_REQUEST
 };
+
+export const BACKK_ERRORS_NOT_AUTHORIZED = {
+  errorCode: '6',
+  errorMessage: 'Service function call not authorized',
+  statusCode: HttpStatusCodes.FORBIDDEN
+};
+
+export const BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED = {
+  errorCode: '7',
+  errorMessage: 'Maximum sub-entity count reached. Cannot add new sub-entity',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};
+
+export const BACKK_ERRORS_UNKNOWN_SERVICE = {
+  errorCode: '8',
+  errorMessage: 'Unknown service: ',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};
+
+export const BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION = {
+  errorCode: '9',
+  errorMessage: 'Unknown function: ',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};
+
+export const BACKK_ERRORS_MISSING_ARGUMENT = {
+  errorCode: '10',
+  errorMessage: 'Missing service function argument',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};
+
+export const BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED = {
+  errorCode: '11',
+  errorMessage: 'Remote service function call not allowed',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};
+
+export const BACKK_ERRORS_TOO_MANY_SERVICE_FUNCTIONS_CALLED = {
+  errorCode: '12',
+  errorMessage: 'Too many service functions called',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};
+
+export const BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION = {
+  errorCode: '13',
+  errorMessage: 'Remote service function call not allowed inside transaction',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};
+
+export const BACKK_ERRORS_ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED = {
+  errorCode: '14',
+  errorMessage: 'Allowed remote service functions regular expression pattern not defined',
+  statusCode: HttpStatusCodes.BAD_REQUEST
+};

@@ -4,6 +4,8 @@ import SortBy from '../../../../../types/postqueryoperations/SortBy';
 import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
 import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
 import { HttpStatusCodes } from '../../../../../constants/constants';
+import createErrorFromErrorCodeMessageAndStatus from '../../../../../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS_INVALID_ARGUMENT } from '../../../../../errors/backkErrors';
 
 export default function tryGetOrderByClause<T>(
   dbManager: AbstractSqlDbManager,
@@ -35,12 +37,10 @@ export default function tryGetOrderByClause<T>(
         );
       } catch (error) {
         if (sortBy.subEntityPath !== '*') {
-          throw new Error(
-            createErrorMessageWithStatusCode(
-              'Invalid sort field: ' + sortBy.fieldName,
-              HttpStatusCodes.BAD_REQUEST
-            )
-          );
+          throw createErrorFromErrorCodeMessageAndStatus({
+            ...BACKK_ERRORS_INVALID_ARGUMENT,
+            errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + 'invalid sort field: ' + sortBy.fieldName
+          });
         }
       }
 

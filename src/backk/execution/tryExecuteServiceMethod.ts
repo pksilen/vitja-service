@@ -25,6 +25,8 @@ import createAuditLogEntry from '../observability/logging/audit/createAuditLogEn
 import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
 import tryScheduleJobExecution from '../scheduling/tryScheduleJobExecution';
 import isExecuteMultipleRequest from './isExecuteMultipleRequest';
+import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS_INVALID_ARGUMENT } from '../errors/backkErrors';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -52,9 +54,10 @@ export default async function tryExecuteServiceMethod(
         Object.keys(serviceFunctionArgument).length >
         options?.maxServiceFunctionCountInMultipleServiceFunctionExecution
       ) {
-        createErrorFromErrorMessageAndThrowError(
-          createErrorMessageWithStatusCode('Too many service functions called', HttpStatusCodes.BAD_REQUEST)
-        );
+        throw createErrorFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS_INVALID_ARGUMENT,
+          errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + 'too many service functions called'
+        });
       }
     } else {
       throw new Error('Missing maxServiceFunctionCountInMultipleServiceFunctionExecution option');
@@ -138,12 +141,12 @@ export default async function tryExecuteServiceMethod(
         // noinspection AssignmentToFunctionParameterJS
         serviceFunctionArgument = JSON.parse(serviceFunctionArgument);
       } catch (error) {
-        createErrorFromErrorMessageAndThrowError(
-          createErrorMessageWithStatusCode(
-            'Invalid or too long service function argument. Argument must be a URI encoded JSON object string',
-            HttpStatusCodes.BAD_REQUEST
-          )
-        );
+        throw createErrorFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS_INVALID_ARGUMENT,
+          errorMessage:
+            BACKK_ERRORS_INVALID_ARGUMENT +
+            'nvalid or too long argument. Argument must be a URI encoded JSON string'
+        });
       }
     }
 
@@ -189,6 +192,7 @@ export default async function tryExecuteServiceMethod(
       Array.isArray(serviceFunctionArgument) ||
       (serviceFunctionArgumentTypeName && serviceFunctionArgument === null)
     ) {
+
       createErrorFromErrorMessageAndThrowError(
         createErrorMessageWithStatusCode(
           `Invalid service function argument. Argument must be a JSON object string`,
@@ -310,7 +314,6 @@ export default async function tryExecuteServiceMethod(
     let ttl;
 
     if (!response) {
-
       if (instantiatedServiceFunctionArgument) {
         instantiatedServiceFunctionArgument.ETag = headers['X-Backk-ETag'];
       }
@@ -378,11 +381,13 @@ export default async function tryExecuteServiceMethod(
               serviceFunctionName +
                 ": multiple remote service calls cannot be executed because distributed transactions are not supported. To allow multiple remote service calls that don't require a transaction, annotate service function with @NoDistributedTransaction"
             );
-          } else if (clsNamespace.get('dbManagerOperationAfterRemoteServiceCall') &&
+          } else if (
+            clsNamespace.get('dbManagerOperationAfterRemoteServiceCall') &&
             !serviceFunctionAnnotationContainer.isServiceFunctionNonDistributedTransactional(
               controller[serviceName].constructor,
               functionName
-            )) {
+            )
+          ) {
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(
               serviceFunctionName +
@@ -414,9 +419,13 @@ export default async function tryExecuteServiceMethod(
         const ServiceFunctionReturnType = controller[serviceName]['Types'][serviceFunctionBaseReturnTypeName];
 
         if (Array.isArray(response) && response.length > 0 && typeof response[0] === 'object') {
-          await tryValidateServiceFunctionResponse(response[0], ServiceFunctionReturnType);
+          await tryValidateServiceFunctionResponse(
+            response[0],
+            ServiceFunctionReturnType,
+            serviceFunctionName
+          );
         } else if (typeof response === 'object') {
-          await tryValidateServiceFunctionResponse(response, ServiceFunctionReturnType);
+          await tryValidateServiceFunctionResponse(response, ServiceFunctionReturnType, serviceFunctionName);
         }
 
         if (
@@ -457,9 +466,14 @@ export default async function tryExecuteServiceMethod(
               await redis.expire(key, ttl);
             }
           } catch (error) {
-            log(Severity.ERROR, 'Redis cache errorMessageOnPreHookFuncExecFailure: ' + error.message, error.stack, {
-              redisUrl: process.env.REDIS_SERVER
-            });
+            log(
+              Severity.ERROR,
+              'Redis cache errorMessageOnPreHookFuncExecFailure: ' + error.message,
+              error.stack,
+              {
+                redisUrl: process.env.REDIS_SERVER
+              }
+            );
           }
         }
 
@@ -524,7 +538,7 @@ export default async function tryExecuteServiceMethod(
       }
     });
 
-    resp?.status(200);
+    resp?.status(HttpStatusCodes.SUCCESS);
     resp?.send(response);
   } catch (error) {
     storedError = error;

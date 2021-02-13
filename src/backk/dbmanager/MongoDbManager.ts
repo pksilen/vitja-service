@@ -58,7 +58,7 @@ import tryExecutePostHook from './hooks/tryExecutePostHook';
 import getTableName from './utils/getTableName';
 import getFieldOrdering from './mongodb/getFieldOrdering';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS_ENTITY_NOT_FOUND } from '../errors/backkErrors';
+import { BACKK_ERRORS_ENTITY_NOT_FOUND, BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED } from '../errors/backkErrors';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -384,13 +384,15 @@ export default class MongoDbManager extends AbstractDbManager {
             maxSubItemId + newSubEntities.length >= foundArrayMaxSizeValidation.constraints[0]
           ) {
             // noinspection ExceptionCaughtLocallyJS
-            throw createErrorResponseFromErrorMessageAndStatusCode(
-              parentEntityClassAndPropertyNameForSubEntity[0].name +
+            throw createErrorResponseFromErrorCodeMessageAndStatus({
+              ...BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED,
+              errorMessage:
+                parentEntityClassAndPropertyNameForSubEntity[0].name +
                 '.' +
                 parentEntityClassAndPropertyNameForSubEntity[1] +
-                ': Cannot add new entity. Maximum allowed entities limit reached',
-              HttpStatusCodes.BAD_REQUEST
-            );
+                ': ' +
+                BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED.errorMessage
+            });
           }
         }
 
@@ -902,9 +904,9 @@ export default class MongoDbManager extends AbstractDbManager {
 
       return entities.length === 0
         ? createErrorResponseFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS_ENTITY_NOT_FOUND,
-          errorMessage: `Entity with ${fieldName}: ${fieldValue} not found`
-        })
+            ...BACKK_ERRORS_ENTITY_NOT_FOUND,
+            errorMessage: `Entity with ${fieldName}: ${fieldValue} not found`
+          })
         : entities;
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)

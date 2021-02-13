@@ -27,9 +27,12 @@ import entityAnnotationContainer from '../../../../decorators/entity/entityAnnot
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import {
+  BACKK_ERRORS_INVALID_ARGUMENT,
   BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH,
   BACKK_ERRORS_VERSION_MISMATCH
-} from '../../../../errors/backkErrors';
+} from "../../../../errors/backkErrors";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 
 export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
@@ -231,12 +234,10 @@ export default async function updateEntity<T extends Entity>(
           const numericId = parseInt(_id, 10);
           if (isNaN(numericId)) {
             // noinspection ExceptionCaughtLocallyJS
-            throw new Error(
-              createErrorMessageWithStatusCode(
-                idFieldName + ': must be a numeric id',
-                HttpStatusCodes.BAD_REQUEST
-              )
-            );
+            throw createErrorFromErrorCodeMessageAndStatus({
+              ...BACKK_ERRORS_INVALID_ARGUMENT,
+              errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + idFieldName + ': must be a numeric id'
+            });
           }
 
           promises.push(
@@ -292,12 +293,10 @@ export default async function updateEntity<T extends Entity>(
 
       if (isNaN(numericId)) {
         // noinspection ExceptionCaughtLocallyJS
-        throw new Error(
-          createErrorMessageWithStatusCode(
-            EntityClass.name + '.' + idFieldName + ': must be a numeric id',
-            HttpStatusCodes.BAD_REQUEST
-          )
-        );
+        throw createErrorFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS_INVALID_ARGUMENT,
+          errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + idFieldName + ': must be a numeric id'
+        });
       }
     }
 

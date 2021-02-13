@@ -24,11 +24,13 @@ import typePropertyAnnotationContainer from '../../../../decorators/typeproperty
 import { SubEntity } from '../../../../types/entities/SubEntity';
 import getEntityById from '../dql/getEntityById';
 import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import {
   BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH,
+  BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED,
   BACKK_ERRORS_VERSION_MISMATCH
-} from "../../../../errors/backkErrors";
+} from '../../../../errors/backkErrors';
+import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
 
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -114,13 +116,15 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
         maxSubItemId + newSubEntities.length >= foundArrayMaxSizeValidation.constraints[0]
       ) {
         // noinspection ExceptionCaughtLocallyJS
-        throw createErrorResponseFromErrorMessageAndStatusCode(
-          parentEntityClassAndPropertyNameForSubEntity[0].name +
+        throw createErrorResponseFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED,
+          errorMessage:
+            parentEntityClassAndPropertyNameForSubEntity[0].name +
             '.' +
             parentEntityClassAndPropertyNameForSubEntity[1] +
-            ': Cannot add new entity. Maximum allowed entities limit reached',
-          HttpStatusCodes.BAD_REQUEST
-        );
+            ': ' +
+            BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED.errorMessage
+        });
       }
     }
 

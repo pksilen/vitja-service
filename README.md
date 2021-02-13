@@ -1,9 +1,8 @@
 # Vitja service
 
 TODO
-- Add invalid_argument backk error SQL
+- Entity not found and duplicate entity should give in error, the entity name
 - Duplicate entity error in createEntity Mongo
-- Add invalid_argument backk error Mongo
 - shouldAllowAdditionOrRemoval = 'none'
 - ETags for mongoDB: updateEntity/entities, add/removeSubEntities
 - shouldInitializeDb SQL

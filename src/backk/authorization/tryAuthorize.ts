@@ -6,6 +6,8 @@ import BaseService from '../service/BaseService';
 import UsersBaseService from '../users/UsersBaseService';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
+import { HttpStatusCodes } from '../constants/constants';
+import { BACKK_ERRORS_NOT_AUTHORIZED } from '../errors/backkErrors';
 
 export default async function tryAuthorize(
   service: BaseService,
@@ -24,7 +26,10 @@ export default async function tryAuthorize(
   if (authHeader === undefined) {
     if (
       serviceAnnotationContainer.isServiceAllowedForClusterInternalUse(ServiceClass) ||
-      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(ServiceClass, functionName)
+      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(
+        ServiceClass,
+        functionName
+      )
     ) {
       return;
     }
@@ -81,13 +86,20 @@ export default async function tryAuthorize(
     process.env.NODE_ENV === 'development' &&
     (serviceFunctionAnnotationContainer.isServiceFunctionAllowedForTests(ServiceClass, functionName) ||
       serviceAnnotationContainer.isServiceAllowedForClusterInternalUse(ServiceClass) ||
-      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(ServiceClass, functionName))
+      serviceFunctionAnnotationContainer.isServiceFunctionAllowedForClusterInternalUse(
+        ServiceClass,
+        functionName
+      ))
   ) {
     return;
   }
 
   defaultServiceMetrics.incrementAuthorizationFailuresByOne();
+
   createErrorFromErrorMessageAndThrowError(
-    createErrorMessageWithStatusCode('Attempted service function call not authorized', 403)
+    createErrorMessageWithStatusCode(
+      `Error code: ${BACKK_ERRORS_NOT_AUTHORIZED.errorCode}:${BACKK_ERRORS_NOT_AUTHORIZED.errorMessage}`,
+      HttpStatusCodes.FORBIDDEN
+    )
   );
 }

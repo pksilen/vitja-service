@@ -49,16 +49,12 @@ export default async function tryExecutePreHooks<T extends object>(
         if (ifResult) {
           hookCallResult = await hookFunc(items);
         }
-
       } else {
         hookCallResult = await hookFunc(items);
       }
-    } catch(error) {
+    } catch (error) {
       throw new Error(
-        createErrorMessageWithStatusCode(
-          error.errorMessage,
-          HttpStatusCodes.INTERNAL_SERVER_ERROR
-        )
+        createErrorMessageWithStatusCode(error.errorMessage, HttpStatusCodes.INTERNAL_SERVER_ERROR)
       );
     }
 
@@ -94,7 +90,10 @@ export default async function tryExecutePreHooks<T extends object>(
         }
 
         throw new Error(
-          createErrorMessageWithStatusCode('Pre-hook evaluated to false', HttpStatusCodes.BAD_REQUEST)
+          createErrorMessageWithStatusCode(
+            'Pre-hook evaluated to false without specific error message',
+            HttpStatusCodes.BAD_REQUEST
+          )
         );
       } else if (
         typeof preHook === 'object' &&
