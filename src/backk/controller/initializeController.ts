@@ -1,17 +1,17 @@
-import _ from "lodash";
-import BaseService from "../service/BaseService";
-import generateServicesMetadata from "../metadata/generateServicesMetadata";
-import parseServiceFunctionNameToArgAndReturnTypeNameMaps
-  from "../typescript/parser/parseServiceFunctionNameToArgAndReturnTypeNameMaps";
-import getSrcFilePathNameForTypeName from "../utils/file/getSrcFilePathNameForTypeName";
-import setClassPropertyValidationDecorators from "../validation/setClassPropertyValidationDecorators";
-import setNestedTypeValidationDecorators from "../validation/setNestedTypeValidationDecorators";
-import writeTestsPostmanCollectionExportFile from "../postman/writeTestsPostmanCollectionExportFile";
-import writeApiPostmanCollectionExportFile from "../postman/writeApiPostmanCollectionExportFile";
-import generateTypesForServices from "../metadata/generateTypesForService";
-import getNestedClasses from "../metadata/getNestedClasses";
-import AbstractDbManager from "../dbmanager/AbstractDbManager";
-import log, { Severity } from "../observability/logging/log";
+import _ from 'lodash';
+import BaseService from '../service/BaseService';
+import generateServicesMetadata from '../metadata/generateServicesMetadata';
+import parseServiceFunctionNameToArgAndReturnTypeNameMaps from '../typescript/parser/parseServiceFunctionNameToArgAndReturnTypeNameMaps';
+import getSrcFilePathNameForTypeName from '../utils/file/getSrcFilePathNameForTypeName';
+import setClassPropertyValidationDecorators from '../validation/setClassPropertyValidationDecorators';
+import setNestedTypeValidationDecorators from '../validation/setNestedTypeValidationDecorators';
+import writeTestsPostmanCollectionExportFile from '../postman/writeTestsPostmanCollectionExportFile';
+import writeApiPostmanCollectionExportFile from '../postman/writeApiPostmanCollectionExportFile';
+import generateTypesForServices from '../metadata/generateTypesForService';
+import getNestedClasses from '../metadata/getNestedClasses';
+import AbstractDbManager from '../dbmanager/AbstractDbManager';
+import log, { Severity } from '../observability/logging/log';
+import { BACKK_ERRORS } from '../errors/backkErrors';
 
 export interface ControllerInitOptions {
   generatePostmanTestFile?: boolean;
@@ -120,6 +120,11 @@ export default function initializeController(
         validations
       };
     });
+    
+    controller.publicServicesMetadata = {
+      servicesMetadata: controller.publicServicesMetadata,
+      genericErrors: BACKK_ERRORS
+    };
 
     if (process.env.NODE_ENV === 'development' && (controllerInitOptions?.generatePostmanTestFile ?? true)) {
       writeTestsPostmanCollectionExportFile(controller, servicesMetadata);

@@ -2,7 +2,6 @@
 
 TODO
 - Give generic errors in metadata
-- Entity not found and duplicate entity should give in error, the entity name
 - Duplicate entity error in createEntity Mongo
 - shouldAllowAdditionOrRemoval = 'none'
 - ETags for mongoDB: updateEntity/entities, add/removeSubEntities
