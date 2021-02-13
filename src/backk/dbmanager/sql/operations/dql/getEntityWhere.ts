@@ -1,22 +1,20 @@
-import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
-import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
-import encrypt from '../../../../crypt/encrypt';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
-import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
-import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
-import isUniqueField from './utils/isUniqueField';
-import SqlEquals from '../../expressions/SqlEquals';
-import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
-import { HttpStatusCodes } from '../../../../constants/constants';
-import transformRowsToObjects from './transformresults/transformRowsToObjects';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
+import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
+import encrypt from "../../../../crypt/encrypt";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
+import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import isUniqueField from "./utils/isUniqueField";
+import SqlEquals from "../../expressions/SqlEquals";
+import transformRowsToObjects from "./transformresults/transformRowsToObjects";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import getTableName from "../../../utils/getTableName";
 import createErrorResponseFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS_ENTITY_NOT_FOUND } from "../../../../errors/backkErrors";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -74,8 +72,8 @@ export default async function getEntityWhere<T>(
 
     if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorCodeMessageAndStatus({
-        ...BACKK_ERRORS_ENTITY_NOT_FOUND,
-        errorMessage: `Entity with ${fieldName}: ${fieldValue} not found`
+        ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+        errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
       });
     }
 

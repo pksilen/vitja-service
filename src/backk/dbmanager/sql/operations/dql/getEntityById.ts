@@ -1,21 +1,19 @@
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import transformRowsToObjects from './transformresults/transformRowsToObjects';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
-import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
-import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
-import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
-import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
-import { HttpStatusCodes } from '../../../../constants/constants';
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import transformRowsToObjects from "./transformresults/transformRowsToObjects";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
+import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 import getTableName from "../../../utils/getTableName";
 import createErrorResponseFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS_ENTITY_NOT_FOUND, BACKK_ERRORS_INVALID_ARGUMENT } from "../../../../errors/backkErrors";
 import createErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 
 export default async function getEntityById<T>(
   dbManager: AbstractSqlDbManager,
@@ -45,8 +43,8 @@ export default async function getEntityById<T>(
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
       throw createErrorFromErrorCodeMessageAndStatus({
-        ...BACKK_ERRORS_INVALID_ARGUMENT,
-        errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + idFieldName + ': must be a numeric id'
+        ...BACKK_ERRORS.INVALID_ARGUMENT,
+        errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + idFieldName + ' must be a numeric id'
       });
     }
 
@@ -66,8 +64,8 @@ export default async function getEntityById<T>(
 
     if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorCodeMessageAndStatus({
-        ...BACKK_ERRORS_ENTITY_NOT_FOUND,
-        errorMessage: `Entity with _id: ${_id} not found`
+        ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+        errorMessage: `${EntityClass.name} with _id: ${_id} not found`
       });
     }
 

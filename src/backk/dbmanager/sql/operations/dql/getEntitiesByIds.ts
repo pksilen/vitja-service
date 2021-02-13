@@ -1,16 +1,14 @@
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import transformRowsToObjects from './transformresults/transformRowsToObjects';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
-import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
-import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
-import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
-import { HttpStatusCodes } from '../../../../constants/constants';
-import getTableName from '../../../utils/getTableName';
-import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS_ENTITY_NOT_FOUND, BACKK_ERRORS_INVALID_ARGUMENT } from '../../../../errors/backkErrors';
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import transformRowsToObjects from "./transformresults/transformRowsToObjects";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import getTableName from "../../../utils/getTableName";
+import createErrorResponseFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
@@ -34,8 +32,8 @@ export default async function getEntitiesByIds<T>(
 
       if (isNaN(numericId)) {
         throw createErrorResponseFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS_INVALID_ARGUMENT,
-          errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + ' All _ids must be numeric values'
+          ...BACKK_ERRORS.INVALID_ARGUMENT,
+          errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + ' all _ids must be numeric values'
         });
       }
 
@@ -61,8 +59,8 @@ export default async function getEntitiesByIds<T>(
 
     if (dbManager.getResultRows(result).length === 0) {
       return createErrorResponseFromErrorCodeMessageAndStatus({
-        ...BACKK_ERRORS_ENTITY_NOT_FOUND,
-        errorMessage: `Entities with _ids: ${_ids.join(', ')} not found`
+        ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+        errorMessage: `${EntityClass.name}s with _ids: ${_ids.join(', ')} not found`
       });
     }
 

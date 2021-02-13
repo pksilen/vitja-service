@@ -58,7 +58,7 @@ import tryExecutePostHook from './hooks/tryExecutePostHook';
 import getTableName from './utils/getTableName';
 import getFieldOrdering from './mongodb/getFieldOrdering';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS_ENTITY_NOT_FOUND, BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED } from '../errors/backkErrors';
+import { BACKK_ERRORS } from '../errors/backkErrors';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -385,13 +385,13 @@ export default class MongoDbManager extends AbstractDbManager {
           ) {
             // noinspection ExceptionCaughtLocallyJS
             throw createErrorResponseFromErrorCodeMessageAndStatus({
-              ...BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED,
+              ...BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED,
               errorMessage:
                 parentEntityClassAndPropertyNameForSubEntity[0].name +
                 '.' +
                 parentEntityClassAndPropertyNameForSubEntity[1] +
                 ': ' +
-                BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED.errorMessage
+                BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED.errorMessage
             });
           }
         }
@@ -571,8 +571,8 @@ export default class MongoDbManager extends AbstractDbManager {
     if (Array.isArray(response)) {
       if (response.length === 0) {
         return createErrorResponseFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS_ENTITY_NOT_FOUND,
-          errorMessage: 'Entity with given filter(s) not found'
+          ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+          errorMessage: `${EntityClass.name} with given filter(s) not found`
         });
       }
 
@@ -661,8 +661,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
         if (rows.length === 0) {
           return createErrorResponseFromErrorCodeMessageAndStatus({
-            ...BACKK_ERRORS_ENTITY_NOT_FOUND,
-            errorMessage: `Entity with _id: ${_id} not found`
+            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+            errorMessage: `${EntityClass.name} with _id: ${_id} not found`
           });
         }
 
@@ -832,8 +832,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
       return entities.length === 0
         ? createErrorResponseFromErrorCodeMessageAndStatus({
-            ...BACKK_ERRORS_ENTITY_NOT_FOUND,
-            errorMessage: `Entity with ${fieldName}: ${fieldValue} not found`
+            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+            errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
           })
         : entities[0];
     } catch (errorOrErrorResponse) {
@@ -904,8 +904,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
       return entities.length === 0
         ? createErrorResponseFromErrorCodeMessageAndStatus({
-            ...BACKK_ERRORS_ENTITY_NOT_FOUND,
-            errorMessage: `Entity with ${fieldName}: ${fieldValue} not found`
+            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+            errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
           })
         : entities;
     } catch (errorOrErrorResponse) {
@@ -1018,8 +1018,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
         if (updateOperationResult.matchedCount !== 1) {
           return createErrorResponseFromErrorCodeMessageAndStatus({
-            ...BACKK_ERRORS_ENTITY_NOT_FOUND,
-            errorMessage: 'Entity with id: ' + _id + ' not found'
+            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+            errorMessage: EntityClass.name + ' with id: ' + _id + ' not found'
           });
         }
 

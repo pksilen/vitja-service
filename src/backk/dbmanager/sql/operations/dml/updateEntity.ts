@@ -11,14 +11,12 @@ import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getC
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { Entity } from '../../../../types/entities/Entity';
-import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import { HttpStatusCodes } from '../../../../constants/constants';
 import getSubEntitiesByAction from './utils/getSubEntitiesByAction';
 import deleteEntityById from './deleteEntityById';
 import createEntity from './createEntity';
@@ -26,13 +24,8 @@ import typePropertyAnnotationContainer from '../../../../decorators/typeproperty
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import {
-  BACKK_ERRORS_INVALID_ARGUMENT,
-  BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH,
-  BACKK_ERRORS_VERSION_MISMATCH
-} from "../../../../errors/backkErrors";
-import createErrorFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
@@ -73,14 +66,14 @@ export default async function updateEntity<T extends Entity>(
       if ('version' in currentEntityOrErrorResponse) {
         eTagCheckPreHook = {
           preHookFunc: ([{ version }]) => version === ETag,
-          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS_VERSION_MISMATCH
+          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
       } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
         eTagCheckPreHook = {
           preHookFunc: ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag ? ETag : 0),
-          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH
+          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -235,8 +228,9 @@ export default async function updateEntity<T extends Entity>(
           if (isNaN(numericId)) {
             // noinspection ExceptionCaughtLocallyJS
             throw createErrorFromErrorCodeMessageAndStatus({
-              ...BACKK_ERRORS_INVALID_ARGUMENT,
-              errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + idFieldName + ': must be a numeric id'
+              ...BACKK_ERRORS.INVALID_ARGUMENT,
+              errorMessage:
+                BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + idFieldName + ': must be a numeric id'
             });
           }
 
@@ -294,8 +288,8 @@ export default async function updateEntity<T extends Entity>(
       if (isNaN(numericId)) {
         // noinspection ExceptionCaughtLocallyJS
         throw createErrorFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS_INVALID_ARGUMENT,
-          errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + idFieldName + ': must be a numeric id'
+          ...BACKK_ERRORS.INVALID_ARGUMENT,
+          errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + idFieldName + ': must be a numeric id'
         });
       }
     }

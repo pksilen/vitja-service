@@ -38,7 +38,7 @@ import MongoDbQuery from './mongodb/MongoDbQuery';
 import { PostHook } from './hooks/PostHook';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS_ENTITY_NOT_FOUND } from '../errors/backkErrors';
+import { BACKK_ERRORS } from "../errors/backkErrors";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -511,14 +511,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   async getEntityByFilters<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
     const response = await getEntitiesByFilters(
       this,
       filters,
-      entityClass,
+      EntityClass,
       postQueryOperations ?? new DefaultPostQueryOperations()
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -526,8 +526,8 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     if (Array.isArray(response)) {
       if (response.length === 0) {
         return createErrorResponseFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS_ENTITY_NOT_FOUND,
-          errorMessage: 'Entity with given filter(s) not found'
+          ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+          errorMessage: EntityClass.name + ' with given filter(s) not found'
         });
       }
 

@@ -1,14 +1,13 @@
-import { HttpException, HttpStatus } from "@nestjs/common";
 import createErrorResponseFromErrorCodeMessageAndStatus
   from "../errors/createErrorResponseFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS_INVALID_ARGUMENT } from "../errors/backkErrors";
+import { BACKK_ERRORS } from "../errors/backkErrors";
 
 export default function assertIsSortDirection(value: any) {
   if (value.toUpperCase() !== 'ASC' && value.toUpperCase() !== 'DESC') {
     throw createErrorResponseFromErrorCodeMessageAndStatus({
-      ...BACKK_ERRORS_INVALID_ARGUMENT,
+      ...BACKK_ERRORS.INVALID_ARGUMENT,
       errorMessage:
-        BACKK_ERRORS_INVALID_ARGUMENT + `${value} in 'sortDirection' property is not a valid sort direction`
+        BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + `${value} in 'sortDirection' property is not a valid sort direction`
     });
   }
 }

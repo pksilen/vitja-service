@@ -7,17 +7,15 @@ import createErrorResponseFromError from '../../../../errors/createErrorResponse
 import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
-import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
 import isErrorResponse from '../../../../errors/isErrorResponse';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import { HttpStatusCodes } from '../../../../constants/constants';
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS_INVALID_ARGUMENT } from '../../../../errors/backkErrors';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 
 export default async function deleteEntityById<T extends object>(
   dbManager: AbstractSqlDbManager,
@@ -44,8 +42,8 @@ export default async function deleteEntityById<T extends object>(
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
       throw createErrorFromErrorCodeMessageAndStatus({
-        ...BACKK_ERRORS_INVALID_ARGUMENT,
-        errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + idFieldName + ': must be a numeric id'
+        ...BACKK_ERRORS.INVALID_ARGUMENT,
+        errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + idFieldName + ': must be a numeric id'
       });
     }
 

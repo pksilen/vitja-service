@@ -23,8 +23,8 @@ import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import { Entity } from '../../../../types/entities/Entity';
 import { SubEntity } from '../../../../types/entities/SubEntity';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS_DUPLICATE_ENTITY, BACKK_ERRORS_INVALID_ARGUMENT } from '../../../../errors/backkErrors';
 import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 
 export default async function createEntity<T extends Entity | SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -82,10 +82,13 @@ export default async function createEntity<T extends Entity | SubEntity>(
 
             if (isNaN(numericId)) {
               throw createErrorFromErrorCodeMessageAndStatus({
-                ...BACKK_ERRORS_INVALID_ARGUMENT,
+                ...BACKK_ERRORS.INVALID_ARGUMENT,
                 errorMessage:
-                  BACKK_ERRORS_INVALID_ARGUMENT +
-                  EntityClass.name + '.' + fieldName + ': must be a numeric id'
+                  BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +
+                  EntityClass.name +
+                  '.' +
+                  fieldName +
+                  ': must be a numeric id'
               });
             }
 
@@ -157,10 +160,12 @@ export default async function createEntity<T extends Entity | SubEntity>(
               } else {
                 if (parseInt(subEntity.id, 10) !== index) {
                   throw createErrorFromErrorCodeMessageAndStatus({
-                    ...BACKK_ERRORS_INVALID_ARGUMENT,
+                    ...BACKK_ERRORS.INVALID_ARGUMENT,
                     errorMessage:
-                      BACKK_ERRORS_INVALID_ARGUMENT +
-                      EntityClass.name + '.'+ fieldName +
+                      BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +
+                      EntityClass.name +
+                      '.' +
+                      fieldName +
                       ': id values must be consecutive numbers starting from zero'
                   });
                 }
@@ -234,7 +239,10 @@ export default async function createEntity<T extends Entity | SubEntity>(
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
 
     if ('message' in errorOrErrorResponse && dbManager.isDuplicateEntityError(errorOrErrorResponse)) {
-      return createErrorResponseFromErrorCodeMessageAndStatus(BACKK_ERRORS_DUPLICATE_ENTITY);
+      return createErrorResponseFromErrorCodeMessageAndStatus({
+        ...BACKK_ERRORS.DUPLICATE_ENTITY,
+        errorMessage: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(1)}`
+      });
     }
 
     return isErrorResponse(errorOrErrorResponse)

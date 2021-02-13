@@ -7,7 +7,7 @@ import UsersBaseService from '../users/UsersBaseService';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import { HttpStatusCodes } from '../constants/constants';
-import { BACKK_ERRORS_NOT_AUTHORIZED } from '../errors/backkErrors';
+import { BACKK_ERRORS } from '../errors/backkErrors';
 
 export default async function tryAuthorize(
   service: BaseService,
@@ -98,7 +98,7 @@ export default async function tryAuthorize(
 
   createErrorFromErrorMessageAndThrowError(
     createErrorMessageWithStatusCode(
-      `Error code: ${BACKK_ERRORS_NOT_AUTHORIZED.errorCode}:${BACKK_ERRORS_NOT_AUTHORIZED.errorMessage}`,
+      `Error code: ${BACKK_ERRORS.SERVICE_FUNCTION_CALL_NOT_AUTHORIZED.errorCode}:${BACKK_ERRORS.SERVICE_FUNCTION_CALL_NOT_AUTHORIZED.errorMessage}`,
       HttpStatusCodes.FORBIDDEN
     )
   );

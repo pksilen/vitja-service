@@ -25,12 +25,8 @@ import { SubEntity } from '../../../../types/entities/SubEntity';
 import getEntityById from '../dql/getEntityById';
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import {
-  BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH,
-  BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED,
-  BACKK_ERRORS_VERSION_MISMATCH
-} from '../../../../errors/backkErrors';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -68,14 +64,14 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
       if ('version' in currentEntityOrErrorResponse) {
         eTagCheckPreHook = {
           preHookFunc: ([{ version }]) => version === ETag,
-          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS_VERSION_MISMATCH
+          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
       } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
         eTagCheckPreHook = {
           preHookFunc: ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag),
-          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS_LAST_MODIFIED_TIMESTAMP_MISMATCH
+          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -117,13 +113,13 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
       ) {
         // noinspection ExceptionCaughtLocallyJS
         throw createErrorResponseFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED,
+          ...BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED,
           errorMessage:
             parentEntityClassAndPropertyNameForSubEntity[0].name +
             '.' +
             parentEntityClassAndPropertyNameForSubEntity[1] +
             ': ' +
-            BACKK_ERRORS_MAX_ENTITY_COUNT_REACHED.errorMessage
+            BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED.errorMessage
         });
       }
     }

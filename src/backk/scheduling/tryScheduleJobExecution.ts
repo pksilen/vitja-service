@@ -11,12 +11,8 @@ import { HttpStatusCodes } from '../constants/constants';
 import { plainToClass } from 'class-transformer';
 import JobScheduling from './entities/JobScheduling';
 import { scheduleCronJob } from './scheduleCronJob';
-import {
-  BACKK_ERRORS_INVALID_ARGUMENT,
-  BACKK_ERRORS_UNKNOWN_SERVICE,
-  BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION
-} from "../errors/backkErrors";
 import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../errors/backkErrors';
 
 export default async function tryScheduleJobExecution(
   controller: any,
@@ -33,7 +29,7 @@ export default async function tryScheduleJobExecution(
     });
   } catch (validationErrors) {
     const errorMessage =
-      `Error code ${BACKK_ERRORS_INVALID_ARGUMENT.errorCode}:${BACKK_ERRORS_INVALID_ARGUMENT.errorMessage}:` +
+      `Error code ${BACKK_ERRORS.INVALID_ARGUMENT.errorCode}:${BACKK_ERRORS.INVALID_ARGUMENT.errorMessage}:` +
       getValidationErrors(validationErrors);
     createErrorFromErrorMessageAndThrowError(
       createErrorMessageWithStatusCode(errorMessage, HttpStatusCodes.BAD_REQUEST)
@@ -56,8 +52,8 @@ export default async function tryScheduleJobExecution(
 
   if (!controller[serviceName]) {
     throw createErrorFromErrorCodeMessageAndStatus({
-      ...BACKK_ERRORS_UNKNOWN_SERVICE,
-      errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE + serviceName
+      ...BACKK_ERRORS.UNKNOWN_SERVICE,
+      errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE.errorMessage + serviceName
     });
   }
 
@@ -66,8 +62,8 @@ export default async function tryScheduleJobExecution(
 
   if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
     throw createErrorFromErrorCodeMessageAndStatus({
-      ...BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION,
-      errorMessage: BACKK_ERRORS_UNKNOWN_SERVICE_FUNCTION + serviceFunctionName
+      ...BACKK_ERRORS.UNKNOWN_SERVICE_FUNCTION,
+      errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE_FUNCTION.errorMessage + serviceFunctionName
     });
   }
 

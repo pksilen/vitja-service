@@ -1,26 +1,20 @@
-import Mustache from "mustache";
-import tryExecuteServiceMethod, { ExecuteServiceFunctionOptions } from "./tryExecuteServiceMethod";
-import forEachAsyncParallel from "../utils/forEachAsyncParallel";
-import { ServiceFunctionCall } from "./ServiceFunctionCall";
-import { ServiceFunctionCallResponse } from "./ServiceFunctionCallResponse";
-import Response from "./Response";
-import forEachAsyncSequential from "../utils/forEachAsyncSequential";
-import { createNamespace } from "cls-hooked";
-import BaseService from "../service/BaseService";
-import isValidServiceFunctionName from "./isValidServiceFunctionName";
-import { HttpStatusCodes } from "../constants/constants";
-import { ErrorResponse } from "../types/ErrorResponse";
-import isErrorResponse from "../errors/isErrorResponse";
-import callRemoteService from "../remote/http/callRemoteService";
-import {
-  BACKK_ERRORS_ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED,
-  BACKK_ERRORS_INVALID_ARGUMENT,
-  BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED,
-  BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION
-} from "../errors/backkErrors";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../errors/createErrorResponseFromErrorCodeMessageAndStatus";
-import createErrorFromErrorCodeMessageAndStatus from "../errors/createErrorFromErrorCodeMessageAndStatus";
+import Mustache from 'mustache';
+import tryExecuteServiceMethod, { ExecuteServiceFunctionOptions } from './tryExecuteServiceMethod';
+import forEachAsyncParallel from '../utils/forEachAsyncParallel';
+import { ServiceFunctionCall } from './ServiceFunctionCall';
+import { ServiceFunctionCallResponse } from './ServiceFunctionCallResponse';
+import Response from './Response';
+import forEachAsyncSequential from '../utils/forEachAsyncSequential';
+import { createNamespace } from 'cls-hooked';
+import BaseService from '../service/BaseService';
+import isValidServiceFunctionName from './isValidServiceFunctionName';
+import { HttpStatusCodes } from '../constants/constants';
+import { ErrorResponse } from '../types/ErrorResponse';
+import isErrorResponse from '../errors/isErrorResponse';
+import callRemoteService from '../remote/http/callRemoteService';
+import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../errors/backkErrors';
 
 async function executeMultiple<T>(
   isConcurrent: boolean,
@@ -60,7 +54,7 @@ async function executeMultiple<T>(
         if (isTransactional) {
           response.send(
             createErrorResponseFromErrorCodeMessageAndStatus(
-              BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION
+              BACKK_ERRORS.REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION
             )
           );
 
@@ -68,7 +62,7 @@ async function executeMultiple<T>(
         } else if (!options?.allowedServiceFunctionsRegExpForRemoteServiceCalls) {
           response.send(
             createErrorResponseFromErrorCodeMessageAndStatus(
-             BACKK_ERRORS_ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED
+              BACKK_ERRORS.ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED
             )
           );
 
@@ -78,7 +72,7 @@ async function executeMultiple<T>(
         ) {
           response.send(
             createErrorResponseFromErrorCodeMessageAndStatus(
-              BACKK_ERRORS_REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED
+              BACKK_ERRORS.REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED
             )
           );
           response.status(HttpStatusCodes.BAD_REQUEST);
@@ -145,8 +139,10 @@ export default async function executeMultipleServiceFunctions(
 
   if (!areServiceFunctionCallsValid) {
     throw createErrorFromErrorCodeMessageAndStatus({
-      ...BACKK_ERRORS_INVALID_ARGUMENT,
-      errorMessage: BACKK_ERRORS_INVALID_ARGUMENT + 'unknown service(s) or function(s) or invalid argument(s)'
+      ...BACKK_ERRORS.INVALID_ARGUMENT,
+      errorMessage:
+        BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +
+        'unknown service(s) or function(s) or invalid argument(s)'
     });
   }
 
