@@ -995,7 +995,8 @@ export default class MongoDbManager extends AbstractDbManager {
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
           } else if (
             'lastModifiedTimestamp' in currentEntityOrErrorResponse &&
-              (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
+            (restOfEntity as any).lastModifiedTimestamp &&
+            (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
           ) {
             eTagCheckPreHook = {
               preHookFunc: ([{ lastModifiedTimestamp }]) =>
