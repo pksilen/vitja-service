@@ -124,8 +124,10 @@ export default function getServiceFunctionTestArgument(
       propertyName
     );
 
-    if (propertyName === 'version' || propertyName === 'lastModifiedTimestamp') {
+    if (propertyName === 'version') {
       sampleArg[propertyName] = 'any';
+    } else if (propertyName === 'lastModifiedTimestamp') {
+      sampleArg[propertyName] = new Date(0);
     }
     // noinspection IfStatementWithTooManyBranchesJS
     else if (testValue !== undefined) {
