@@ -385,6 +385,7 @@ export default class MongoDbManager extends AbstractDbManager {
         });
 
         const [subEntities] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });
+
         const maxSubItemId = subEntities.reduce((maxSubItemId: number, subEntity: any) => {
           const subItemId = parseInt(subEntity.id, 10);
           return subItemId > maxSubItemId ? subItemId : maxSubItemId;
@@ -1300,26 +1301,24 @@ export default class MongoDbManager extends AbstractDbManager {
       return await this.tryExecute(shouldUseTransaction, async () => {
         const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
         await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
-        await tryUpdateEntityVersionIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
-        await tryUpdateEntityLastModifiedTimestampIfNeeded(this, currentEntityOrErrorResponse, EntityClass);
         const subEntities = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });
+        let response = currentEntityOrErrorResponse;
 
-        if (subEntities.length === 0) {
-          return;
+        if (subEntities.length > 0) {
+          removeSubEntities(currentEntityOrErrorResponse, subEntities);
+
+          await this.updateEntity(
+            currentEntityOrErrorResponse as any,
+            EntityClass,
+            'all',
+            undefined,
+            undefined,
+            false,
+            true
+          );
+
+          response = await this.getEntityById(_id, EntityClass, postQueryOperations);
         }
-
-        removeSubEntities(currentEntityOrErrorResponse, subEntities);
-        await this.updateEntity(
-          currentEntityOrErrorResponse as any,
-          EntityClass,
-          'all',
-          undefined,
-          undefined,
-          false,
-          true
-        );
-
-        const response = await this.getEntityById(_id, EntityClass, postQueryOperations);
 
         if (postHook) {
           await tryExecutePostHook(postHook);

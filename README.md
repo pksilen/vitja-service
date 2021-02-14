@@ -6,7 +6,8 @@ TODO
 - shouldInitializeDb SQL
   - backk taulun nimi: backk_db_initialization: columns: @Unique appVersion, isInitialized
   - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version
-  - when init is ok update isInitialized to true
+  - when init is ok update isInitialized to true 
+  TODO handle many-to-many removals for mongodb removesubentities
   
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
