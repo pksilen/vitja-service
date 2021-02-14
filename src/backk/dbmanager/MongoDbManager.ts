@@ -442,7 +442,16 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
-        await this.updateEntity(currentEntityOrErrorResponse as any, EntityClass, 'all');
+        await this.updateEntity(
+          currentEntityOrErrorResponse as any,
+          EntityClass,
+          'all',
+          undefined,
+          undefined,
+          false,
+          true
+        );
+
         const response = await this.getEntityById(_id, EntityClass, postQueryOperations);
 
         if (postHook) {
@@ -952,7 +961,8 @@ export default class MongoDbManager extends AbstractDbManager {
     allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
     preHooks?: PreHook | PreHook[],
     postHook?: PostHook,
-    isRecursiveCall = false
+    isRecursiveCall = false,
+    isInternalCall = false
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
 
@@ -985,7 +995,7 @@ export default class MongoDbManager extends AbstractDbManager {
         let eTagCheckPreHook: PreHook;
         let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
-        if (typeof currentEntityOrErrorResponse === 'object') {
+        if (!isInternalCall && typeof currentEntityOrErrorResponse === 'object') {
           if (
             'version' in currentEntityOrErrorResponse &&
             restOfEntity.version &&
@@ -1299,7 +1309,15 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         removeSubEntities(currentEntityOrErrorResponse, subEntities);
-        await this.updateEntity(currentEntityOrErrorResponse as any, EntityClass, 'all');
+        await this.updateEntity(
+          currentEntityOrErrorResponse as any,
+          EntityClass,
+          'all',
+          undefined,
+          undefined,
+          false,
+          true
+        );
 
         const response = await this.getEntityById(_id, EntityClass, postQueryOperations);
 
@@ -1330,6 +1348,7 @@ export default class MongoDbManager extends AbstractDbManager {
   ): Promise<T | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
+
     const response = await this.removeSubEntities(
       _id,
       subEntityPath,
@@ -1338,6 +1357,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook,
       postQueryOperations
     );
+
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
