@@ -995,11 +995,11 @@ export default class MongoDbManager extends AbstractDbManager {
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
           } else if (
             'lastModifiedTimestamp' in currentEntityOrErrorResponse &&
-              (restOfEntity as any).lastModifiedTimestamp !== new Date(0)
+              (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
           ) {
             eTagCheckPreHook = {
               preHookFunc: ([{ lastModifiedTimestamp }]) =>
-                lastModifiedTimestamp === (restOfEntity as any).lastModifiedTimestamp,
+                lastModifiedTimestamp.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
               errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
             };
 
