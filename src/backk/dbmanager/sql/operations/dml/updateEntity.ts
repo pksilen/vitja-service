@@ -63,7 +63,11 @@ export default async function updateEntity<T extends Entity>(
     let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
     if (typeof currentEntityOrErrorResponse === 'object') {
-      if ('version' in currentEntityOrErrorResponse && restOfEntity.version !== 'any') {
+      if (
+        'version' in currentEntityOrErrorResponse &&
+        restOfEntity.version &&
+        restOfEntity.version !== 'any'
+      ) {
         eTagCheckPreHook = {
           preHookFunc: ([{ version }]) => version === restOfEntity.version,
           errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
