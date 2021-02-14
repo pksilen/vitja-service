@@ -1074,7 +1074,7 @@ export default class MongoDbManager extends AbstractDbManager {
           } else if (fieldName !== '_id') {
             if (fieldName === 'version') {
               (restOfEntity as any)[fieldName] = (
-                parseInt((currentEntityOrErrorResponse as any).version, 10) + 1
+                parseInt((currentEntityOrErrorResponse as any)?.version ?? (restOfEntity as any).version, 10) + 1
               ).toString();
             } else if (fieldName === 'lastModifiedTimestamp') {
               (restOfEntity as any)[fieldName] = new Date();
