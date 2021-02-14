@@ -12,6 +12,7 @@ import MongoDbManager from "../../../MongoDbManager";
 import tryCreateMongoDbIndex from "../../../mongodb/tryCreateMongoDbIndex";
 import setJoinSpecs from "../../../mongodb/setJoinSpecs";
 import tryExecuteOnStartUpTasks from "../../../../initialization/tryExecuteOnStartupTasks";
+import tryCreateMongoDbIndexesForUniqueFields from "../../../mongodb/tryCreateMongoDbIndexesForUniqueFields";
 
 const dbManagerToIsInitializedMap: { [key: string]: boolean } = {};
 
@@ -137,16 +138,22 @@ export default async function initializeDatabase(
         }
       );
     } else if (dbManager instanceof MongoDbManager) {
-      await forEachAsyncParallel(
+      await forEachAsyncSequential(
         Object.entries(entityAnnotationContainer.indexNameToIndexFieldsMap),
         async ([indexName, indexFields]: [any, any]) =>
           await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields)
       );
 
-      await forEachAsyncParallel(
+      await forEachAsyncSequential(
         Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
         async ([indexName, indexFields]: [any, any]) =>
           await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields, true)
+      );
+
+      await forEachAsyncSequential(
+        Object.entries(entityAnnotationContainer.entityNameToClassMap),
+        async ([, EntityClass]: [any, any]) =>
+          await tryCreateMongoDbIndexesForUniqueFields(dbManager, EntityClass)
       );
 
       Object.entries(entityAnnotationContainer.entityNameToClassMap).forEach(([entityName, entityClass]) =>

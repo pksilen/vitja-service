@@ -6,7 +6,7 @@ import entityAnnotationContainer from "../../../../decorators/entity/entityAnnot
 export default async function tryAlterOrCreateTable(
   dbManager: AbstractDbManager,
   entityName: string,
-  entityClass: Function,
+  EntityClass: Function,
   schema: string | undefined
 ) {
   let fields;
@@ -26,9 +26,9 @@ export default async function tryAlterOrCreateTable(
       false
     );
   } catch (error) {
-    await tryCreateTable(dbManager, entityName, entityClass, schema, isPhysicalTable);
+    await tryCreateTable(dbManager, entityName, EntityClass, schema, isPhysicalTable);
     return;
   }
 
-  await tryAlterTable(dbManager, entityName, entityClass, schema, fields);
+  await tryAlterTable(dbManager, entityName, EntityClass, schema, fields);
 }

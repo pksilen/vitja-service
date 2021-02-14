@@ -27,6 +27,8 @@ import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromE
 import { ErrorResponse } from '../types/ErrorResponse';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
+import isCreateFunction from '../service/crudresource/utils/isCreateFunction';
+import isUpdateFunction from '../service/crudresource/utils/isUpdateFunction';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -312,7 +314,11 @@ export default async function tryExecuteServiceMethod(
     let ttl;
 
     if (!response) {
-      if (instantiatedServiceFunctionArgument) {
+      if (
+        instantiatedServiceFunctionArgument &&
+        (isCreateFunction(functionName) ||
+          isUpdateFunction(controller[serviceName].constructor, functionName))
+      ) {
         instantiatedServiceFunctionArgument.ETag = headers['X-Backk-ETag'];
       }
 

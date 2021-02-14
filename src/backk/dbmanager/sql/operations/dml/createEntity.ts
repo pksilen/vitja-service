@@ -1,30 +1,32 @@
-import hashAndEncryptEntity from '../../../../crypt/hashAndEncryptEntity';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import isErrorResponse from '../../../../errors/isErrorResponse';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { PreHook } from '../../../hooks/PreHook';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import createErrorMessageWithStatusCode from '../../../../errors/createErrorMessageWithStatusCode';
-import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
-import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import { HttpStatusCodes } from '../../../../constants/constants';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import { Entity } from '../../../../types/entities/Entity';
-import { SubEntity } from '../../../../types/entities/SubEntity';
-import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
-import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../../../../errors/backkErrors';
+import hashAndEncryptEntity from "../../../../crypt/hashAndEncryptEntity";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import isErrorResponse from "../../../../errors/isErrorResponse";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { PreHook } from "../../../hooks/PreHook";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import { Entity } from "../../../../types/entities/Entity";
+import { SubEntity } from "../../../../types/entities/SubEntity";
+import createErrorResponseFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 
 export default async function createEntity<T extends Entity | SubEntity>(
   dbManager: AbstractSqlDbManager,

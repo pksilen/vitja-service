@@ -1,7 +1,7 @@
-import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
-import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
-import * as util from 'util';
+import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import getTypeInfoForTypeName from "../../utils/type/getTypeInfoForTypeName";
 
 function removeEntityPrivateProperties<T>(
   entity: any,

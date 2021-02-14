@@ -120,7 +120,7 @@ export default function initializeController(
         validations
       };
     });
-    
+
     controller.publicServicesMetadata = {
       servicesMetadata: controller.publicServicesMetadata,
       genericErrors: BACKK_ERRORS

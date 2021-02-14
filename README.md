@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO
-- Give generic errors in metadata
-- Duplicate entity error in createEntity Mongo
+- Create Unique field indexes, Duplicate entity error in createEntity Mongo
+- Set Etags only in create/update functions for argument
 - shouldAllowAdditionOrRemoval = 'none'
 - ETags for mongoDB: updateEntity/entities, add/removeSubEntities
 - shouldInitializeDb SQL
