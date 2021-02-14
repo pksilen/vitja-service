@@ -1,9 +1,7 @@
-import _IdAndCaptcha from "./_IdAndCaptcha";
+import IsUndefined from "../decorators/typeproperty/IsUndefined";
 import { IsNumberString, IsString, MaxLength } from "class-validator";
-import IsUndefined from "../../decorators/typeproperty/IsUndefined";
 
-// eslint-disable-next-line @typescript-eslint/class-name-casing
-export default class _IdAndCaptchaAndVersion extends _IdAndCaptcha {
+export default class Version {
   @IsUndefined({groups: ['__backk_create__']})
   @IsString({ groups: ['__backk_none__'] })
   @MaxLength(25, { groups: ['__backk_none__'] })

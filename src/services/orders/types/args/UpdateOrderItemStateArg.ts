@@ -1,6 +1,6 @@
 import { OrderState } from '../enum/OrderState';
-import OrderIdAndOrderItemId from "./OrderIdAndOrderItemId";
+import _IdAndOrderItemId from './_IdAndOrderItemId';
 
-export default class UpdateOrderItemStateArg extends OrderIdAndOrderItemId{
+export default class UpdateOrderItemStateArg extends _IdAndOrderItemId {
   public newState!: OrderState;
 }

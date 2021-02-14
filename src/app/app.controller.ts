@@ -52,7 +52,6 @@ export class AppController {
     @Headers('authorization') authHeader: string,
     @Headers('x-forwarded-for') xForwardedForHeader: string,
     @Headers('if-none-match') ifNoneMatchHeader: string,
-    @Headers('x-backk-etag') xBackkEtagHeader: string,
     @Param() params: { serviceFunctionName: string },
     @Query('arg') serviceFunctionArgument: object,
     @Res() response: any
@@ -65,8 +64,7 @@ export class AppController {
       {
         Authorization: authHeader,
         'X-Forwarded-For': xForwardedForHeader,
-        'If-None-Match': ifNoneMatchHeader,
-        'X-Backk-ETag': xBackkEtagHeader
+        'If-None-Match': ifNoneMatchHeader
       },
       response,
       {
@@ -82,7 +80,6 @@ export class AppController {
     @Headers('authorization') authHeader: string,
     @Headers('x-forwarded-for') xForwardedForHeader: string,
     @Headers('if-none-match') ifNoneMatchHeader: string,
-    @Headers('x-backk-etag') xBackkEtagHeader: string,
     @Param() params: { serviceFunctionName: string },
     @Body() serviceFunctionArgument: object,
     @Res() response: any
@@ -95,8 +92,7 @@ export class AppController {
       {
         Authorization: authHeader,
         'X-Forwarded-For': xForwardedForHeader,
-        'If-None-Match': ifNoneMatchHeader,
-        'X-Backk-ETag': xBackkEtagHeader
+        'If-None-Match': ifNoneMatchHeader
       },
       response,
       {

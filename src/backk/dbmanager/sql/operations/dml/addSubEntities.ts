@@ -1,39 +1,35 @@
-import { JSONPath } from "jsonpath-plus";
-import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import { Entity } from "../../../../types/entities/Entity";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
-import { PreHook } from "../../../hooks/PreHook";
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
-import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
-import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
-import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import findParentEntityAndPropertyNameForSubEntity
-  from "../../../../metadata/findParentEntityAndPropertyNameForSubEntity";
-import { getFromContainer, MetadataStorage } from "class-validator";
-import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
-import tryUpdateEntityVersionIfNeeded from "./utils/tryUpdateEntityVersionIfNeeded";
-import tryUpdateEntityLastModifiedTimestampIfNeeded
-  from "./utils/tryUpdateEntityLastModifiedTimestampIfNeeded";
-import typePropertyAnnotationContainer
-  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
-import { SubEntity } from "../../../../types/entities/SubEntity";
-import getEntityById from "../dql/getEntityById";
-import { PostHook } from "../../../hooks/PostHook";
-import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import { JSONPath } from 'jsonpath-plus';
+import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import { Entity } from '../../../../types/entities/Entity';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
+import { PreHook } from '../../../hooks/PreHook';
+import isErrorResponse from '../../../../errors/isErrorResponse';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import findParentEntityAndPropertyNameForSubEntity from '../../../../metadata/findParentEntityAndPropertyNameForSubEntity';
+import { getFromContainer, MetadataStorage } from 'class-validator';
+import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeeded';
+import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
+import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import { SubEntity } from '../../../../types/entities/SubEntity';
+import getEntityById from '../dql/getEntityById';
+import { PostHook } from '../../../hooks/PostHook';
+import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 
 export default async function addSubEntities<T extends Entity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
-  ETag: string | 'any',
+  versionOrLastModifiedTimestamp: string | 'any',
   subEntitiesJsonPath: string,
   newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
@@ -62,17 +58,18 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
     let eTagCheckPreHook: PreHook;
     let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
-    if (ETag !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
-      if ('version' in currentEntityOrErrorResponse) {
+    if (versionOrLastModifiedTimestamp !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
+      if ('version' in currentEntityOrErrorResponse && !isNaN(parseInt(versionOrLastModifiedTimestamp, 10))) {
         eTagCheckPreHook = {
-          preHookFunc: ([{ version }]) => version === ETag,
+          preHookFunc: ([{ version }]) => version === versionOrLastModifiedTimestamp,
           errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
       } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
         eTagCheckPreHook = {
-          preHookFunc: ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag),
+          preHookFunc: ([{ lastModifiedTimestamp }]) =>
+            lastModifiedTimestamp === new Date(versionOrLastModifiedTimestamp),
           errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
         };
 

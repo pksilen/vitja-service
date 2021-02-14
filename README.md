@@ -2,9 +2,7 @@
 
 TODO
 - Create Unique field indexes, Duplicate entity error in createEntity Mongo
-- Set Etags only in create/update functions for argument
 - shouldAllowAdditionOrRemoval = 'none'
-- ETags for mongoDB: updateEntity/entities, add/removeSubEntities
 - shouldInitializeDb SQL
   - backk taulun nimi: backk_db_initialization: columns: @Unique appVersion, isInitialized
   - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version

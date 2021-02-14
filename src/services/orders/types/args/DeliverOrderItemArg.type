@@ -1,4 +1,4 @@
 export default class DeliverOrderItemArg {
-  ...OrderIdAndOrderItemId;
+  ..._IdAndOrderItemId;
   ...Pick<OrderItem, 'deliveryTimestamp' | 'trackingUrl'>;
 }

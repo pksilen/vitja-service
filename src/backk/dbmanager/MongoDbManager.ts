@@ -223,7 +223,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async createEntity<T extends Entity>(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    { ETag, ...entity }: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
+    entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     EntityClass: new () => T,
     preHooks?: PreHook | PreHook[],
     postHook?: PostHook,
@@ -296,7 +296,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   addSubEntity<T extends Entity, U extends SubEntity>(
     _id: string,
-    ETag: string | 'any',
+    versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
@@ -309,7 +309,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
     const response = this.addSubEntities(
       _id,
-      ETag,
+      versionOrLastModifiedTimestamp,
       subEntitiesJsonPath,
       [newSubEntity],
       entityClass,
@@ -325,7 +325,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
-    ETag: string | 'any',
+    versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: new () => T,
@@ -355,17 +355,21 @@ export default class MongoDbManager extends AbstractDbManager {
         let eTagCheckPreHook: PreHook;
         let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
-        if (ETag !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
-          if ('version' in currentEntityOrErrorResponse) {
+        if (versionOrLastModifiedTimestamp !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
+          if (
+            'version' in currentEntityOrErrorResponse &&
+            !isNaN(parseInt(versionOrLastModifiedTimestamp, 10))
+          ) {
             eTagCheckPreHook = {
-              preHookFunc: ([{ version }]) => version === ETag,
+              preHookFunc: ([{ version }]) => version === versionOrLastModifiedTimestamp,
               errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
             };
 
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
           } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
             eTagCheckPreHook = {
-              preHookFunc: ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag),
+              preHookFunc: ([{ lastModifiedTimestamp }]) =>
+                lastModifiedTimestamp === new Date(versionOrLastModifiedTimestamp),
               errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
             };
 
@@ -943,7 +947,7 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async updateEntity<T extends Entity>(
-    { _id, id, ETag, ...restOfEntity }: RecursivePartial<T> & { _id: string; ETag?: string },
+    { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
     allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
     preHooks?: PreHook | PreHook[],
@@ -981,17 +985,21 @@ export default class MongoDbManager extends AbstractDbManager {
         let eTagCheckPreHook: PreHook;
         let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
-        if (ETag !== undefined && ETag !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
-          if ('version' in currentEntityOrErrorResponse) {
+        if (typeof currentEntityOrErrorResponse === 'object') {
+          if ('version' in currentEntityOrErrorResponse && restOfEntity.version) {
             eTagCheckPreHook = {
-              preHookFunc: ([{ version }]) => version === ETag,
+              preHookFunc: ([{ version }]) => version === restOfEntity.version,
               errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
             };
 
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-          } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
+          } else if (
+            'lastModifiedTimestamp' in currentEntityOrErrorResponse &&
+            restOfEntity.lastModifiedTimestamp
+          ) {
             eTagCheckPreHook = {
-              preHookFunc: ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag),
+              preHookFunc: ([{ lastModifiedTimestamp }]) =>
+                lastModifiedTimestamp === new Date((restOfEntity as any).lastModifiedTimestamp),
               errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
             };
 

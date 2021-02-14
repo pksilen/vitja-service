@@ -129,7 +129,7 @@ export default abstract class AbstractDbManager {
 
   abstract addSubEntity<T extends Entity, U extends SubEntity>(
     _id: string,
-    ETag: string | 'any',
+    versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
@@ -141,7 +141,7 @@ export default abstract class AbstractDbManager {
 
   abstract addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
-    ETag: string | 'any',
+    versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     entityClass: new () => T,
@@ -223,7 +223,6 @@ export default abstract class AbstractDbManager {
 
   updateEntities<T extends Entity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
-    ETags: string[],
     entityClass: new () => T,
     allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
     preHooks?: PreHook | PreHook[]
@@ -232,7 +231,7 @@ export default abstract class AbstractDbManager {
       try {
         return await forEachAsyncParallel(entities, async (entity, index) => {
           const possibleErrorResponse = await this.updateEntity(
-            { ...entity, ETag: ETags?.[index] },
+            entity,
             entityClass,
             allowAdditionAndRemovalForSubEntityClasses,
             preHooks

@@ -86,9 +86,9 @@ export default class OrdersServiceImpl extends OrdersService {
   @AllowForSelf()
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   @ExpectReturnValueToContainInTests({ orderItems: [] })
-  deleteOrderItem({ orderId, orderItemId }: DeleteOrderItemArg): Promise<Order | ErrorResponse> {
+  deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): Promise<Order | ErrorResponse> {
     return this.dbManager.removeSubEntityById(
-      orderId,
+      _id,
       'orderItems',
       orderItemId,
       Order,
@@ -101,7 +101,7 @@ export default class OrdersServiceImpl extends OrdersService {
         sendToRemoteService(
           `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
           {
-            orderId,
+            orderId: _id,
             orderItemId
           }
         )
@@ -109,10 +109,10 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForTests()
-  addOrderItem({ orderId, salesItemId, ETag }: AddOrderItemArg): Promise<Order | ErrorResponse> {
+  addOrderItem({ orderId, salesItemId, version }: AddOrderItemArg): Promise<Order | ErrorResponse> {
     return this.dbManager.addSubEntity(
       orderId,
-      ETag,
+      version,
       'orderItems',
       {
         salesItemId,
@@ -139,13 +139,15 @@ export default class OrdersServiceImpl extends OrdersService {
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   async deliverOrderItem({
-    orderId,
+    _id,
+    version,
     orderItemId,
     ...restOfArg
   }: DeliverOrderItemArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity(
       {
-        _id: orderId,
+        version,
+        _id,
         orderItems: [{ state: 'delivering', id: orderItemId, ...restOfArg }]
       },
       Order,
@@ -159,7 +161,7 @@ export default class OrdersServiceImpl extends OrdersService {
         sendToRemoteService(
           `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderItemDeliveryNotification`,
           {
-            orderId,
+            orderId: _id,
             orderItemId,
             ...restOfArg
           }
@@ -170,12 +172,13 @@ export default class OrdersServiceImpl extends OrdersService {
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Errors([INVALID_ORDER_ITEM_STATE])
   async updateOrderItemState({
-    orderId,
+    _id,
+    version,
     orderItemId,
     newState
   }: UpdateOrderItemStateArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity(
-      { _id: orderId, orderItems: [{ id: orderItemId, state: newState }] },
+      { _id, version, orderItems: [{ id: orderItemId, state: newState }] },
       Order,
       [],
       [
@@ -200,7 +203,7 @@ export default class OrdersServiceImpl extends OrdersService {
           sendToRemoteService(
             `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
             {
-              orderId,
+              orderId: _id,
               orderItemId
             }
           )

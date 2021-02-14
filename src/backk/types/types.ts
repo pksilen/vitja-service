@@ -29,8 +29,7 @@ import _IdAndCaptchaAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp
   from "./id/_IdAndCaptchaAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp";
 import OrFilter from "./userdefinedfilters/OrFilter";
 import { Name } from "./Name";
-import ETag from "./ETag";
-import _IdAndETag from "./id/_IdAndETag";
+import Version from "./Version";
 
 const types = {
   _Id,
@@ -59,8 +58,7 @@ const types = {
   OrFilter,
   Captcha,
   Name,
-  ETag,
-  _IdAndETag
+  Version
 }
 
 export default types

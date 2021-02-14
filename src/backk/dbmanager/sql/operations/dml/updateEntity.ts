@@ -29,7 +29,7 @@ import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 
 export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
-  { _id, id, ETag, ...restOfEntity }: RecursivePartial<T> & { _id: string; ETag?: string },
+  { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
   allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
   preHooks?: PreHook | PreHook[],
@@ -62,17 +62,21 @@ export default async function updateEntity<T extends Entity>(
     let eTagCheckPreHook: PreHook;
     let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
-    if (ETag !== undefined && ETag !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
-      if ('version' in currentEntityOrErrorResponse) {
+    if (typeof currentEntityOrErrorResponse === 'object') {
+      if ('version' in currentEntityOrErrorResponse && restOfEntity.version) {
         eTagCheckPreHook = {
-          preHookFunc: ([{ version }]) => version === ETag,
+          preHookFunc: ([{ version }]) => version === restOfEntity.version,
           errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-      } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
+      } else if (
+        'lastModifiedTimestamp' in currentEntityOrErrorResponse &&
+        restOfEntity.lastModifiedTimestamp
+      ) {
         eTagCheckPreHook = {
-          preHookFunc: ([{ lastModifiedTimestamp }]) => lastModifiedTimestamp === new Date(ETag ? ETag : 0),
+          preHookFunc: ([{ lastModifiedTimestamp }]) =>
+            lastModifiedTimestamp === new Date((restOfEntity as any).lastModifiedTimestamp),
           errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
         };
 

@@ -31,7 +31,7 @@ import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 export default async function createEntity<T extends Entity | SubEntity>(
   dbManager: AbstractSqlDbManager,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  { ETag, ...entity }: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
+  entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
   EntityClass: new () => T,
   preHooks?: PreHook | PreHook[],
   postHook?: PostHook,

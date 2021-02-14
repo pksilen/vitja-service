@@ -76,10 +76,10 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   @Update()
-  followUser({ _id, ETag, followedUserId }: _IdAndFollowedUserId): Promise<User | ErrorResponse> {
+  followUser({ _id,  version, followedUserId }: _IdAndFollowedUserId): Promise<User | ErrorResponse> {
     return this.dbManager.addSubEntity(
       _id,
-      ETag,
+      version,
       'followedUsers',
       { _id: followedUserId },
       User,

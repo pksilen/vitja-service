@@ -73,14 +73,6 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     }
 
     if (
-      isArgumentType &&
-      validationMetadata.propertyName === 'ETag' &&
-      !typePropertyAnnotationContainer.isTypePropertyInternal(Class, validationMetadata.propertyName)
-    ) {
-      throw new Error(Class.name + ' may not contain property ETag. It is reserved for Backk internal use');
-    }
-
-    if (
       (validationMetadata.type === 'maxLength' ||
         validationMetadata.type === 'length' ||
         validationMetadata.type === 'conditionalValidation' ||

@@ -314,14 +314,6 @@ export default async function tryExecuteServiceMethod(
     let ttl;
 
     if (!response) {
-      if (
-        instantiatedServiceFunctionArgument &&
-        (isCreateFunction(functionName) ||
-          isUpdateFunction(controller[serviceName].constructor, functionName))
-      ) {
-        instantiatedServiceFunctionArgument.ETag = headers['X-Backk-ETag'];
-      }
-
       const clsNamespace = shouldCreateClsNamespace
         ? createNamespace('serviceFunctionExecution')
         : getNamespace('serviceFunctionExecution')!;

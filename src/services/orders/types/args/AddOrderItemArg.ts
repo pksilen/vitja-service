@@ -1,6 +1,6 @@
-import ETag from "../../../../backk/types/ETag";
+import Version from "../../../../backk/types/Version";
 
-export default class AddOrderItemArg extends ETag {
+export default class AddOrderItemArg extends Version {
   orderId!: string;
   salesItemId!: string;
 }

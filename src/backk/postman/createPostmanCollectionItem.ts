@@ -89,20 +89,6 @@ export default function createPostmanCollectionItem(
     {}
   );
 
-  let otherHeaders: any[] = [];
-  if (
-    isCreateFunction(functionMetadata.functionName) ||
-    isUpdateFunction(ServiceClass, functionMetadata.functionName)
-  ) {
-    otherHeaders = [
-      {
-        key: 'X-Backk-ETag',
-        name: 'X-Backk-ETag',
-        value: 'any'
-      }
-    ];
-  }
-
   const postmanCollectionItem = {
     name: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
     request: {
@@ -132,8 +118,7 @@ export default function createPostmanCollectionItem(
                 name: 'Content-Type',
                 value: 'application/json',
                 type: 'text'
-              },
-              ...otherHeaders
+              }
             ],
       body:
         sampleArg === undefined
