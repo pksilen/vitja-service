@@ -19,7 +19,6 @@ export default function getServiceFunctionReturnValueTests(
   isUpdate: boolean,
   sampleArg: object | undefined,
   expectedResponseFieldPathNameToFieldValueMapInTests: { [key: string]: any } | undefined,
-  updateCount = 1,
   isRecursive = false,
   isManyToMany = false,
   fieldPath = ''
@@ -119,9 +118,7 @@ export default function getServiceFunctionReturnValueTests(
       propertyName
     );
 
-    if (propertyName === 'version') {
-      expectedValue = 'any';
-    } else if (expectAnyTestValue !== undefined) {
+    if (expectAnyTestValue !== undefined) {
       allowAnyValue = true;
     } else if (testValue !== undefined) {
       if (baseTypeName === 'string') {
@@ -195,7 +192,6 @@ export default function getServiceFunctionReturnValueTests(
             : (sampleArg as any)[propertyName]
           : undefined,
         expectedResponseFieldPathNameToFieldValueMapInTests,
-        updateCount,
         true,
         typePropertyAnnotationContainer.isTypePropertyManyToMany(
           serviceTypes[returnValueTypeName],

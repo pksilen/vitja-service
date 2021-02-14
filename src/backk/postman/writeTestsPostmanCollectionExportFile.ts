@@ -103,8 +103,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         functionMetadata,
         false,
         expectedResponseStatusCodeInTests,
-        expectedResponseFieldPathNameToFieldValueMapInTests,
-        updateCount
+        expectedResponseFieldPathNameToFieldValueMapInTests
       );
 
       let isUpdate = false;
@@ -164,7 +163,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             true,
             200,
             expectedResponseFieldPathNameToFieldValueMapInTests,
-            1,
             sampleArg
           );
 
