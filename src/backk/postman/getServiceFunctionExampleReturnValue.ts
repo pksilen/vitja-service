@@ -38,7 +38,10 @@ export default function getServiceFunctionExampleReturnValue(
   // noinspection FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
   Object.entries(returnValueTypeProperties).forEach(([propertyName, propertyTypeName]: [string, string]) => {
     if (
-      typePropertyAnnotationContainer.isTypePropertyPrivate(serviceTypes[returnValueTypeName], propertyName) ||
+      typePropertyAnnotationContainer.isTypePropertyPrivate(
+        serviceTypes[returnValueTypeName],
+        propertyName
+      ) ||
       typePropertyAnnotationContainer.isTypePropertyTransient(serviceTypes[returnValueTypeName], propertyName)
     ) {
       return;
@@ -91,7 +94,7 @@ export default function getServiceFunctionExampleReturnValue(
       sampleArg[propertyName] = '1';
     }
     // noinspection IfStatementWithTooManyBranchesJS
-    if (testValue !== undefined) {
+    else if (testValue !== undefined) {
       if (baseTypeName.startsWith('string')) {
         getSampleStringValue(serviceTypes[returnValueTypeName], propertyName, isUpdate);
       }

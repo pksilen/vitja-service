@@ -120,7 +120,7 @@ export default function getServiceFunctionReturnValueTests(
     );
 
     if (propertyName === 'version') {
-      expectedValue = '' + updateCount;
+      expectedValue = 'any';
     } else if (expectAnyTestValue !== undefined) {
       allowAnyValue = true;
     } else if (testValue !== undefined) {

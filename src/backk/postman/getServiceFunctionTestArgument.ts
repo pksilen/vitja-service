@@ -125,7 +125,7 @@ export default function getServiceFunctionTestArgument(
     );
 
     if (propertyName === 'version') {
-      sampleArg[propertyName] = '' + updateCount;
+      sampleArg[propertyName] = 'any';
     }
     // noinspection IfStatementWithTooManyBranchesJS
     else if (testValue !== undefined) {
