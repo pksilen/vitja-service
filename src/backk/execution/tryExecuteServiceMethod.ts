@@ -131,7 +131,7 @@ export default async function tryExecuteServiceMethod(
         !serviceFunctionName.match(options?.allowedServiceFunctionsRegExpForHttpGetMethod ?? /^\w+\.get/) ||
         options?.deniedServiceFunctionsForForHttpGetMethod?.includes(serviceFunctionName)
       ) {
-        throw createErrorFromErrorCodeMessageAndStatus(BACKK_ERRORS.INVALID_HTTP_METHOD_MUST_BE_POST);
+        throw createErrorFromErrorCodeMessageAndStatus(BACKK_ERRORS.HTTP_METHOD_MUST_BE_POST);
       }
 
       // noinspection AssignmentToFunctionParameterJS

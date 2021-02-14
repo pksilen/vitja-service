@@ -73,7 +73,7 @@ export const BACKK_ERRORS = {
     errorMessage: 'Allowed remote service functions regular expression pattern not defined',
     statusCode: HttpStatusCodes.BAD_REQUEST
   },
-  INVALID_HTTP_METHOD_MUST_BE_POST: {
+  HTTP_METHOD_MUST_BE_POST: {
     errorCode: '15',
     errorMessage: 'Invalid HTTP method. HTTP method must be POST',
     statusCode: HttpStatusCodes.BAD_REQUEST

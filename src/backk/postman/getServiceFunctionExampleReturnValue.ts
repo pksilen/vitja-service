@@ -87,6 +87,9 @@ export default function getServiceFunctionExampleReturnValue(
       propertyName
     );
 
+    if (propertyName === 'version') {
+      sampleArg[propertyName] = '1';
+    }
     // noinspection IfStatementWithTooManyBranchesJS
     if (testValue !== undefined) {
       if (baseTypeName.startsWith('string')) {

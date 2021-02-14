@@ -986,7 +986,7 @@ export default class MongoDbManager extends AbstractDbManager {
         let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
         if (typeof currentEntityOrErrorResponse === 'object') {
-          if ('version' in currentEntityOrErrorResponse && restOfEntity.version) {
+          if ('version' in currentEntityOrErrorResponse && restOfEntity.version !== 'any') {
             eTagCheckPreHook = {
               preHookFunc: ([{ version }]) => version === restOfEntity.version,
               errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
@@ -995,7 +995,7 @@ export default class MongoDbManager extends AbstractDbManager {
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
           } else if (
             'lastModifiedTimestamp' in currentEntityOrErrorResponse &&
-            restOfEntity.lastModifiedTimestamp
+              (restOfEntity as any).lastModifiedTimestamp !== 'any'
           ) {
             eTagCheckPreHook = {
               preHookFunc: ([{ lastModifiedTimestamp }]) =>

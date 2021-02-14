@@ -20,6 +20,7 @@ export default function getServiceFunctionTestArgument(
   argTypeName: string,
   serviceMetadata: ServiceMetadata,
   isInitialUpdate: boolean = false,
+  updateCount = 1,
   previousUpdateSampleArg?: { [key: string]: any },
   isRecursive = false,
   isManyToMany = false
@@ -123,8 +124,11 @@ export default function getServiceFunctionTestArgument(
       propertyName
     );
 
+    if (propertyName === 'version') {
+      sampleArg[propertyName] = '' + updateCount;
+    }
     // noinspection IfStatementWithTooManyBranchesJS
-    if (testValue !== undefined) {
+    else if (testValue !== undefined) {
       if (baseTypeName.startsWith('string')) {
         getSampleStringValue(serviceTypes[argTypeName], propertyName, isUpdate);
       }
@@ -197,6 +201,7 @@ export default function getServiceFunctionTestArgument(
         baseTypeName,
         serviceMetadata,
         isUpdate,
+        updateCount,
         previousUpdateSampleArg?.[propertyName],
         true,
         typePropertyAnnotationContainer.isTypePropertyManyToMany(serviceTypes[argTypeName], propertyName)

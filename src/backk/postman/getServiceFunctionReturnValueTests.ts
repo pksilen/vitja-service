@@ -7,8 +7,8 @@ import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFrom
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
 import getSampleStringValue from './getSampleStringValue';
-import { ValidationTypes } from "class-validator";
-import { getClassPropertyCustomValidationTestValue } from "../validation/setClassPropertyValidationDecorators";
+import { ValidationTypes } from 'class-validator';
+import { getClassPropertyCustomValidationTestValue } from '../validation/setClassPropertyValidationDecorators';
 
 export default function getServiceFunctionReturnValueTests(
   serviceTypes: { [key: string]: Function },
@@ -19,6 +19,7 @@ export default function getServiceFunctionReturnValueTests(
   isUpdate: boolean,
   sampleArg: object | undefined,
   expectedResponseFieldPathNameToFieldValueMapInTests: { [key: string]: any } | undefined,
+  updateCount = 1,
   isRecursive = false,
   isManyToMany = false,
   fieldPath = ''
@@ -95,10 +96,16 @@ export default function getServiceFunctionReturnValueTests(
       getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'max') ??
       getCustomValidationConstraint(serviceTypes[returnValueTypeName], propertyName, 'minMax', 2);
 
-    const minDate =
-      getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, ValidationTypes.MIN_DATE);
-    const maxDate =
-      getValidationConstraint(serviceTypes[returnValueTypeName], propertyName, ValidationTypes.MAX_DATE);
+    const minDate = getValidationConstraint(
+      serviceTypes[returnValueTypeName],
+      propertyName,
+      ValidationTypes.MIN_DATE
+    );
+    const maxDate = getValidationConstraint(
+      serviceTypes[returnValueTypeName],
+      propertyName,
+      ValidationTypes.MAX_DATE
+    );
 
     if (isManyToMany) {
       // noinspection AssignmentToFunctionParameterJS
@@ -112,7 +119,9 @@ export default function getServiceFunctionReturnValueTests(
       propertyName
     );
 
-    if (expectAnyTestValue !== undefined) {
+    if (propertyName === 'version') {
+      expectedValue = '' + updateCount;
+    } else if (expectAnyTestValue !== undefined) {
       allowAnyValue = true;
     } else if (testValue !== undefined) {
       if (baseTypeName === 'string') {
@@ -157,7 +166,6 @@ export default function getServiceFunctionReturnValueTests(
           expectedValue = isUpdate ? parseFloat(maxValue.toFixed(2)) : parseFloat(minValue.toFixed(2));
           break;
         case 'Date':
-
           expectedValue = isUpdate
             ? `'${maxDate?.toISOString() ?? new Date(120000).toISOString()}'`
             : `'${minDate?.toISOString() ?? new Date(60000).toISOString()}'`;
@@ -187,6 +195,7 @@ export default function getServiceFunctionReturnValueTests(
             : (sampleArg as any)[propertyName]
           : undefined,
         expectedResponseFieldPathNameToFieldValueMapInTests,
+        updateCount,
         true,
         typePropertyAnnotationContainer.isTypePropertyManyToMany(
           serviceTypes[returnValueTypeName],

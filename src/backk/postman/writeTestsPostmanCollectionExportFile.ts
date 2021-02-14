@@ -35,6 +35,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   tryValidateIntegrationTests(writtenTests, servicesMetadata);
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
+    let updateCount = 0;
+
     if (
       serviceAnnotationContainer.hasNoAutoTestsAnnotationForServiceClass(
         (controller as any)[serviceMetadata.serviceName].constructor
@@ -87,13 +89,22 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         functionMetadata.functionName
       );
 
+      if (
+        isUpdateFunction(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        )) {
+        updateCount++;
+      }
+
       const tests = getServiceFunctionTests(
         (controller as any)[serviceMetadata.serviceName].Types,
         serviceMetadata,
         functionMetadata,
         false,
         expectedResponseStatusCodeInTests,
-        expectedResponseFieldPathNameToFieldValueMapInTests
+        expectedResponseFieldPathNameToFieldValueMapInTests,
+        updateCount
       );
 
       let isUpdate = false;
@@ -126,7 +137,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         functionMetadata.functionName,
         functionMetadata.argType,
         serviceMetadata,
-        isUpdate
+        isUpdate,
+        updateCount
       );
 
       items.push(createPostmanCollectionItem((controller as any)[serviceMetadata.serviceName].constructor, serviceMetadata, functionMetadata, sampleArg, tests));
@@ -152,6 +164,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             true,
             200,
             expectedResponseFieldPathNameToFieldValueMapInTests,
+            1,
             sampleArg
           );
 
@@ -161,6 +174,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             lastGetFunctionMetadata.argType,
             serviceMetadata,
             isUpdate,
+            1,
             sampleArg
           );
 

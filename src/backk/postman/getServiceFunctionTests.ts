@@ -11,6 +11,7 @@ export default function getServiceFunctionTests(
   isUpdate: boolean,
   expectedResponseStatusCode = 200,
   expectedResponseFieldPathNameToFieldValueMapInTests: {[key: string]: any } | undefined = undefined,
+  updateCount = 1,
   sampleArg: object | undefined = undefined
 ): object | undefined {
   const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
@@ -53,7 +54,8 @@ export default function getServiceFunctionTests(
             true,
             isUpdate,
             sampleArg,
-            expectedResponseFieldPathNameToFieldValueMapInTests
+            expectedResponseFieldPathNameToFieldValueMapInTests,
+            updateCount
           ).slice(1)
         ]
       }
