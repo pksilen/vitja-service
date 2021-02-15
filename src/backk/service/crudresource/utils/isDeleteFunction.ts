@@ -3,6 +3,8 @@ export default function isDeleteFunction(serviceClass: Function, functionName: s
     functionName.startsWith('delete') ||
     functionName.startsWith('remove') ||
     functionName.startsWith('erase') ||
-    functionName.startsWith('destroy')
+    functionName.startsWith('destroy') ||
+    functionName.startsWith('empty') ||
+    functionName.startsWith('clear')
   );
 }

@@ -10,11 +10,10 @@ import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
 import awaitDbOperationAndGetResultOfPredicate from "../../backk/utils/getErrorResponseOrResultOf";
 import ShoppingCartItem from "./types/entities/ShoppingCartItem";
-import { SHOPPING_CART_ALREADY_EXISTS } from "./errors/shoppingCartServiceErrors";
+import { SALES_ITEM_ALREADY_SOLD, SHOPPING_CART_ALREADY_EXISTS } from "./errors/shoppingCartServiceErrors";
 import { Errors } from "../../backk/decorators/service/function/Errors";
-import AddShoppingCartItemArg from "./types/args/AddShoppingCartItemArg";
-import RemoveShoppingCartItemArg from "./types/args/RemoveShoppingCartItemArg";
-import { SALES_ITEM_STATE_MUST_BE_FOR_SALE } from "../salesitems/errors/salesItemsServiceErrors";
+import AddToShoppingCartArg from "./types/args/AddToShoppingCartArg";
+import RemoveFromShoppingCartArg from "./types/args/RemoveFromShoppingCartArg";
 import SalesItemsService from "../salesitems/SalesItemsService";
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
@@ -47,12 +46,12 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @ExpectReturnValueToContainInTests({shoppingCartItems: []})
-  removeShoppingCartItem({
-    shoppingCartId,
+  removeFromShoppingCart({
+    _id,
     shoppingCartItemId
-  }: RemoveShoppingCartItemArg): Promise<ShoppingCart | ErrorResponse> {
+  }: RemoveFromShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.removeSubEntityById(
-      shoppingCartId,
+      _id,
       'shoppingCartItems',
       shoppingCartItemId,
       ShoppingCart,
@@ -65,14 +64,13 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  addShoppingCartItem({
-    shoppingCartId,
-    salesItemId,
-    version
-  }: AddShoppingCartItemArg): Promise<ShoppingCart | ErrorResponse> {
+  addToShoppingCart({
+   _id,
+    salesItemId
+  }: AddToShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.addSubEntity(
-      shoppingCartId,
-      version,
+      _id,
+      'any',
       'shoppingCartItems',
       { salesItemId },
       ShoppingCart,
@@ -83,18 +81,18 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
             this.salesItemService.getSalesItemById({ _id: salesItemId }),
             (salesItem) => salesItem.state === 'forSale'
           ),
-        errorMessageOnPreHookFuncExecFailure: SALES_ITEM_STATE_MUST_BE_FOR_SALE
+        errorMessageOnPreHookFuncExecFailure: SALES_ITEM_ALREADY_SOLD
       }
     );
   }
 
   @AllowForSelf()
-  getShoppingCartByUserId({ userId }: UserId): Promise<ShoppingCart | ErrorResponse> {
+  getShoppingCart({ userId }: UserId): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.getEntityWhere('userId', userId, ShoppingCart);
   }
 
   @AllowForSelf()
-  deleteShoppingCartById({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
+  emptyShoppingCart({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, ShoppingCart);
   }
 }

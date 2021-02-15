@@ -70,7 +70,7 @@ export default class OrdersServiceImpl extends OrdersService {
       Order,
       [
         () => this.updateSalesItemStates(salesItemIds, 'sold', 'forSale'),
-        () => this.shoppingCartService.deleteShoppingCartById({ _id: shoppingCartId, userId })
+        () => this.shoppingCartService.emptyShoppingCart({ _id: shoppingCartId, userId })
       ],
       () =>
         sendToRemoteService(

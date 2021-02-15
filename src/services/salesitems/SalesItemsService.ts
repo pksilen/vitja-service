@@ -15,13 +15,12 @@ export default abstract class SalesItemsService extends CrudResourceService {
   abstract deleteAllSalesItems(): Promise<void | ErrorResponse>;
   abstract createSalesItem(arg: SalesItem): Promise<SalesItem | ErrorResponse>;
   abstract getSalesItems(arg: GetSalesItemsArg): Promise<SalesItem[] | ErrorResponse>;
+
   abstract getSalesItemsByUserDefinedFilters(
     arg: GetSalesItemsByUserDefinedFiltersArg
   ): Promise<SalesItem[] | ErrorResponse>;
+
   abstract getSalesItemsByUserId(arg: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse>;
-  abstract getSalesItemsForSaleByIds(
-    arg: _IdsAndDefaultPostQueryOperations
-  ): Promise<SalesItem[] | ErrorResponse>;
   abstract getSalesItemById(arg: _Id): Promise<SalesItem | ErrorResponse>;
   abstract updateSalesItem(arg: SalesItem): Promise<void | ErrorResponse>;
 

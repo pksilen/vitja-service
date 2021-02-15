@@ -136,19 +136,6 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }
 
   @AllowForEveryUser()
-  getSalesItemsForSaleByIds({
-    _ids,
-    ...postQueryOperations
-  }: _IdsAndDefaultPostQueryOperations): Promise<SalesItem[] | ErrorResponse> {
-    const filters =
-      this.dbManager instanceof MongoDbManager
-        ? [new MongoDbQuery<SalesItem>({ state: 'forSale' as SalesItemState, _id: { $in: _ids } })]
-        : [new SqlEquals({ state: 'forSale' }), new SqlInExpression('_id', _ids)];
-
-    return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOperations);
-  }
-
-  @AllowForEveryUser()
   getSalesItemById({ _id }: _Id): Promise<SalesItem | ErrorResponse> {
     return this.dbManager.getEntityById(_id, SalesItem);
   }

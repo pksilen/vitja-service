@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO
-- setInterval, remove db-initialization rows where isinitialized is 0 (false)
-  
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem

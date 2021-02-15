@@ -20,6 +20,10 @@ import setDbInitialized from './setDbInitialized';
 let isMongoDBInitialized = false;
 
 export async function isDbInitialized(dbManager: AbstractDbManager) {
+  if (process.env.NODE_ENV === 'development') {
+    return true;
+  }
+
   if (dbManager instanceof MongoDbManager) {
     return isMongoDBInitialized;
   }
