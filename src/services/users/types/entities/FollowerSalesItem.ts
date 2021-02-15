@@ -7,7 +7,7 @@ import Entity from '../../../../backk/decorators/entity/Entity';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
 import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
-import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
 

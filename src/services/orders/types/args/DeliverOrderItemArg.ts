@@ -2,9 +2,10 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsNumberString, IsString, IsUrl, MaxLength } from 'class-validator';
+import { IsString, IsUrl, MaxLength } from 'class-validator';
+import IsIntegerStringOrAny from '../../../../backk/decorators/typeproperty/IsIntegerStringOrAny'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
-import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
 
@@ -29,7 +30,7 @@ export default class DeliverOrderItemArg {
   @MaxLength(25, {
     groups: ['__backk_none__']
   })
-  @IsNumberString({
+  @IsIntegerStringOrAny({
     groups: ['__backk_none__']
   })
   version!: string;
