@@ -1,13 +1,14 @@
-import { Injectable } from "@nestjs/common";
-import AbstractDbManager from "../dbmanager/AbstractDbManager";
-import ReadinessCheckService from "./ReadinessCheckService";
-import { ErrorResponse } from "../types/ErrorResponse";
-import createErrorResponseFromErrorMessageAndStatusCode
-  from "../errors/createErrorResponseFromErrorMessageAndStatusCode";
-import initializeDatabase, { isDbInitialized } from "../dbmanager/sql/operations/ddl/initializeDatabase";
-import { HttpStatusCodes } from "../constants/constants";
-import { AllowForClusterInternalUse } from "../decorators/service/function/AllowForClusterInternalUse";
-import scheduledJobsForExecution, { scheduledJobsOrErrorResponse } from "../scheduling/scheduledJobsForExecution";
+import { Injectable } from '@nestjs/common';
+import AbstractDbManager from '../dbmanager/AbstractDbManager';
+import ReadinessCheckService from './ReadinessCheckService';
+import { ErrorResponse } from '../types/ErrorResponse';
+import createErrorResponseFromErrorMessageAndStatusCode from '../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import initializeDatabase, { isDbInitialized } from '../dbmanager/sql/operations/ddl/initializeDatabase';
+import { HttpStatusCodes } from '../constants/constants';
+import { AllowForClusterInternalUse } from '../decorators/service/function/AllowForClusterInternalUse';
+import scheduledJobsForExecution, {
+  scheduledJobsOrErrorResponse
+} from '../scheduling/scheduledJobsForExecution';
 
 @Injectable()
 export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
@@ -18,7 +19,7 @@ export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
   @AllowForClusterInternalUse()
   async isReady(): Promise<void | ErrorResponse> {
     if (
-      !isDbInitialized(this.dbManager) &&
+      !(await isDbInitialized(this.dbManager)) &&
       !(await initializeDatabase(ReadinessCheckService.controller, this.dbManager))
     ) {
       return createErrorResponseFromErrorMessageAndStatusCode(
@@ -28,7 +29,7 @@ export default class ReadinessCheckServiceImpl extends ReadinessCheckService {
     } else if (
       scheduledJobsOrErrorResponse &&
       'errorMessage' in scheduledJobsOrErrorResponse &&
-      !await scheduledJobsForExecution(ReadinessCheckService.controller, this.dbManager)
+      !(await scheduledJobsForExecution(ReadinessCheckService.controller, this.dbManager))
     ) {
       return createErrorResponseFromErrorMessageAndStatusCode(
         'Database not ready',

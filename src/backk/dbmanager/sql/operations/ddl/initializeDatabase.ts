@@ -38,8 +38,6 @@ export async function isDbInitialized(dbManager: AbstractDbManager) {
     } finally {
       dbManager.tryReleaseDbConnectionBackToPool();
     }
-
-
   }
 
   return Promise.resolve(false);

@@ -1,10 +1,7 @@
 # Vitja service
 
 TODO
-- shouldInitializeDb SQL
-  - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version
-  - when init is ok update isInitialized to true
-  - when init fails remove row
+- setInterval, remove db-initialization rows where isinitialized is 0 (false)
   
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true

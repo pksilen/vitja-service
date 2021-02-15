@@ -258,7 +258,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
       return this.getResultFields(result);
     } catch (error) {
-      if (shouldReportError) {
+      if (shouldReportError && !this.isDuplicateEntityError(error)) {
         defaultServiceMetrics.incrementDbOperationErrorsByOne(this.getDbManagerType(), this.getDbHost());
 
         log(Severity.ERROR, error.message, error.stack ?? '', {
