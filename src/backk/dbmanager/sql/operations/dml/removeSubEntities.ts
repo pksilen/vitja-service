@@ -14,14 +14,13 @@ import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransa
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import tryUpdateEntityVersionIfNeeded from './utils/tryUpdateEntityVersionIfNeeded';
-import tryUpdateEntityLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityLastModifiedTimestampIfNeeded';
+import tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import findParentEntityAndPropertyNameForSubEntity from '../../../../metadata/findParentEntityAndPropertyNameForSubEntity';
 import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import { PostHook } from "../../../hooks/PostHook";
-import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import { PostHook } from '../../../hooks/PostHook';
+import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 
 export default async function removeSubEntities<T extends Entity, U extends object>(
   dbManager: AbstractSqlDbManager,
@@ -40,8 +39,13 @@ export default async function removeSubEntities<T extends Entity, U extends obje
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, undefined, true);
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
-    await tryUpdateEntityVersionIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
-    await tryUpdateEntityLastModifiedTimestampIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
+
+    await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(
+      dbManager,
+      currentEntityOrErrorResponse,
+      EntityClass
+    );
+
     const currentEntityInstance = plainToClass(EntityClass, currentEntityOrErrorResponse);
     const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesJsonPath });
 
@@ -69,9 +73,7 @@ export default async function removeSubEntities<T extends Entity, U extends obje
         const numericId = parseInt(_id, 10);
 
         await dbManager.tryExecuteSql(
-          `DELETE FROM ${
-            dbManager.schema.toLowerCase()
-          }.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+          `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
             1
           )} AND ${subEntityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(2)}`,
           [numericId, subEntity._id]
