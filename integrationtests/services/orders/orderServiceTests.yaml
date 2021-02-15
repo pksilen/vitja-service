@@ -15,16 +15,16 @@
         newState: returned
 
 - testTemplate:
-    serviceFunctionName: salesItemsService.getSalesItemById
+    serviceFunctionName: salesItemsService.getSalesItem
     response:
       tests:
         - pm.expect(response.state).to.eql('sold');
-    executeAfter: ordersService.createOrder
+    executeAfter: ordersService.placeOrder
   tests:
     - testName: state == sold
 
 - testTemplate:
-    serviceFunctionName: salesItemsService.getSalesItemById
+    serviceFunctionName: salesItemsService.getSalesItem
     response:
       tests:
         - pm.expect(response.state).to.eql('forSale');

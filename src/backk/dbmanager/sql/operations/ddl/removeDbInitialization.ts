@@ -20,7 +20,7 @@ export default async function removeDbInitialization(dbManager: AbstractDbManage
         clearInterval(intervalId);
       }
 
-      intervalId = setInterval(() => removeDbInitialization(dbManager), 120000);
+      intervalId = setInterval(() => removeDbInitialization(dbManager), 15000);
     }
   }
 }

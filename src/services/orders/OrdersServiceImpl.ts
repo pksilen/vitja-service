@@ -1,34 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import { AllowForUserRoles } from '../../backk/decorators/service/function/AllowForUserRoles';
-import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
-import SalesItemsService from '../salesitems/SalesItemsService';
-import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
-import OrdersService from './OrdersService';
-import CreateOrderArg from './types/args/CreateOrderArg';
-import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
-import Order from './types/entities/Order';
-import OrderItem from './types/entities/OrderItem';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
-import AddOrderItemArg from './types/args/AddOrderItemArg';
-import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
+import { Injectable } from "@nestjs/common";
+import AbstractDbManager from "src/backk/dbmanager/AbstractDbManager";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import { AllowForUserRoles } from "../../backk/decorators/service/function/AllowForUserRoles";
+import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
+import SalesItemsService from "../salesitems/SalesItemsService";
+import OrdersService from "./OrdersService";
+import PlaceOrderArg from "./types/args/PlaceOrderArg";
+import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
+import Order from "./types/entities/Order";
+import OrderItem from "./types/entities/OrderItem";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
+import AddOrderItemArg from "./types/args/AddOrderItemArg";
+import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
 import {
   DELETE_ORDER_NOT_ALLOWED,
   INVALID_ORDER_ITEM_STATE,
   ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
-} from './errors/ordersServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
-import executeForAll from '../../backk/utils/executeForAll';
-import ShoppingCartService from '../shoppingcart/ShoppingCartService';
-import { SalesItemState } from '../salesitems/types/enums/SalesItemState';
-import { OrderState } from './types/enum/OrderState';
-import { Update } from '../../backk/decorators/service/function/Update';
-import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
+} from "./errors/ordersServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
+import executeForAll from "../../backk/utils/executeForAll";
+import ShoppingCartService from "../shoppingcart/ShoppingCartService";
+import { SalesItemState } from "../salesitems/types/enums/SalesItemState";
+import { OrderState } from "./types/enum/OrderState";
+import { Update } from "../../backk/decorators/service/function/Update";
+import sendToRemoteService from "../../backk/remote/messagequeue/sendToRemoteService";
 import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
 
 @Injectable()
@@ -49,12 +48,12 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForSelf()
   @NoCaptcha()
-  async createOrder({
+  async placeOrder({
     userId,
     shoppingCartId,
     salesItemIds,
     paymentInfo
-  }: CreateOrderArg): Promise<Order | ErrorResponse> {
+  }: PlaceOrderArg): Promise<Order | ErrorResponse> {
     return this.dbManager.createEntity(
       {
         userId,
@@ -126,12 +125,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForSelf()
-  getOrdersByUserId({ userId, ...postQueryOperations }: GetByUserIdArg): Promise<Order[] | ErrorResponse> {
-    return this.dbManager.getEntitiesWhere('userId', userId, Order, postQueryOperations);
-  }
-
-  @AllowForSelf()
-  getOrderById({ _id }: _IdAndUserId): Promise<Order | ErrorResponse> {
+  getOrder({ _id }: _IdAndUserId): Promise<Order | ErrorResponse> {
     return this.dbManager.getEntityById(_id, Order);
   }
 
@@ -212,7 +206,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForSelf()
-  deleteOrderById({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
+  deleteOrder({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, Order, [
       {
         entityJsonPathForPreHookFuncArg: 'orderItems[?(@.state != "toBeDelivered")]',

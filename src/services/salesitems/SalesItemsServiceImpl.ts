@@ -127,16 +127,8 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, new DefaultPostQueryOperations());
   }
 
-  @AllowForSelf()
-  getSalesItemsByUserId({
-    userId,
-    ...postQueryOperations
-  }: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse> {
-    return this.dbManager.getEntitiesWhere('userId', userId, SalesItem, postQueryOperations);
-  }
-
   @AllowForEveryUser()
-  getSalesItemById({ _id }: _Id): Promise<SalesItem | ErrorResponse> {
+  getSalesItem({ _id }: _Id): Promise<SalesItem | ErrorResponse> {
     return this.dbManager.getEntityById(_id, SalesItem);
   }
 
@@ -210,7 +202,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   }
 
   @AllowForSelf()
-  deleteSalesItemById({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
+  deleteSalesItem({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, SalesItem);
   }
 }

@@ -163,7 +163,8 @@ export default async function tryExecuteServiceMethod(
       resp?.send();
       return;
     } else if (
-      serviceFunctionName === 'readinessCheckService.isReady' &&
+      (serviceFunctionName === 'readinessCheckService.initializeService' ||
+        serviceFunctionName === 'startupService.startupService') &&
       (!controller[serviceName] || !controller[serviceName][functionName])
     ) {
       resp?.send();

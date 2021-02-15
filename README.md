@@ -1,6 +1,8 @@
 # Vitja service
 
 TODO
+- Annotate getCities with @Metadata annotation
+- add getUsers function
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem

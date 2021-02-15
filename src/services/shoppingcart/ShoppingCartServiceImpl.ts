@@ -78,7 +78,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       {
         preHookFunc: () =>
           awaitDbOperationAndGetResultOfPredicate(
-            this.salesItemService.getSalesItemById({ _id: salesItemId }),
+            this.salesItemService.getSalesItem({ _id: salesItemId }),
             (salesItem) => salesItem.state === 'forSale'
           ),
         errorMessageOnPreHookFuncExecFailure: SALES_ITEM_ALREADY_SOLD

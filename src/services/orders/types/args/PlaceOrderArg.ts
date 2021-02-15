@@ -1,7 +1,7 @@
 import { ArrayMaxSize, ArrayUnique } from "class-validator";
 import PaymentInfo from "../entities/PaymentInfo";
 
-export default class CreateOrderArg {
+export default class PlaceOrderArg {
   userId!: string;
   shoppingCartId!: string;
 

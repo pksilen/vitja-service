@@ -39,12 +39,14 @@ export async function isDbInitialized(dbManager: AbstractDbManager) {
       const result = await dbManager.tryExecuteQuery(getAppVersionInitializationStatusSql);
       const rows = dbManager.getResultRows(result);
       return rows.length === 1;
+    } catch (error) {
+      return false;
     } finally {
       dbManager.tryReleaseDbConnectionBackToPool();
     }
   }
 
-  return Promise.resolve(false);
+  return false;
 }
 
 export default async function initializeDatabase(

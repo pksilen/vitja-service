@@ -20,8 +20,7 @@ export default abstract class SalesItemsService extends CrudResourceService {
     arg: GetSalesItemsByUserDefinedFiltersArg
   ): Promise<SalesItem[] | ErrorResponse>;
 
-  abstract getSalesItemsByUserId(arg: GetByUserIdArg): Promise<SalesItem[] | ErrorResponse>;
-  abstract getSalesItemById(arg: _Id): Promise<SalesItem | ErrorResponse>;
+  abstract getSalesItem(arg: _Id): Promise<SalesItem | ErrorResponse>;
   abstract updateSalesItem(arg: SalesItem): Promise<void | ErrorResponse>;
 
   abstract updateSalesItemState(
@@ -30,5 +29,5 @@ export default abstract class SalesItemsService extends CrudResourceService {
   ): Promise<void | ErrorResponse>;
 
   abstract deleteOldUnsoldSalesItems(arg: DeleteOldUnsoldSalesItemsArg): Promise<void | ErrorResponse>;
-  abstract deleteSalesItemById(arg: _IdAndUserId): Promise<void | ErrorResponse>;
+  abstract deleteSalesItem(arg: _IdAndUserId): Promise<void | ErrorResponse>;
 }

@@ -1,7 +1,7 @@
 Header:
    - Service name / logo
-   - Navigation: Sales Items, Shopping Cart
-   - User account
+   - Navigation: Sales Items, Shopping Cart, Users
+   - User Profile
 
 shoppingCartService - @UiProperties(entityCount: 1)
 tagsService - @UiProperties({ isShown: false )
@@ -13,15 +13,35 @@ Sales items:
           - List of sales items in user defined view type (list, grid) @UiProperties(defaultViewType: Grid)
           - double-click to view details
           - context actions: addToShoppingCart
-        - My Sales Items (getSalesItemsByUserId)
-          - Create sales item button in header
-          - List of sales items in user defined view type
-          - double click to view details, possibility to edit in details view
-          - Context actions: edit, delete, addToShoppingCart
     updateSalesItemState (is for service internal use, no effect)
 
 Shopping Cart: 
     Tabs: None
       - View directly details view of User's shopping cart or create it if not exists
-      - Header: Empty shopping cart button
+      - Header: Empty shopping cart button, Place order button
       - Context actions: remove from shopping cart
+
+Order:
+    header: button to delete order
+    list of order items
+     actions: remove order item
+   -other functions not, because they are for vitjaLogistic or for tests only
+
+User:
+   List users (list/grid)
+   actions: follow user, unfollow user
+
+User Profile:
+    Tabs: General, Favorite Sales Items, Sales Items, Orders, Followed Users, Following Users
+          General - Edit button, Delete button
+            My Sales Items (getSalesItemsByUserId)
+            - Create sales item button in header
+            - Use tagsService to get possible tags and create new tag
+            - List of sales items in user defined view type
+            - double click to view details, possibility to edit in details view
+            - Context actions: edit, delete
+          Orders - double click to view
+            - Order actions Delete 
+             - OrderItems, actions: Delete
+          Followed Users (actions: unfollow user)
+          Following users (action: follow user, unfollow user)

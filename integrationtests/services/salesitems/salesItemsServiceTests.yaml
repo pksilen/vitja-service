@@ -1,5 +1,5 @@
 - testTemplate:
-    serviceFunctionName: salesItemsService.getSalesItemById
+    serviceFunctionName: salesItemsService.getSalesItem
     response:
       statusCode: 404
     executeAfter: salesItemsService.deleteOldUnsoldSalesItems

@@ -13,7 +13,7 @@ import {
 import AuthorizationService from "../backk/authorization/AuthorizationService";
 import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
 import tryExecuteServiceMethod from "../backk/execution/tryExecuteServiceMethod";
-import ReadinessCheckService from "../backk/readinesscheck/ReadinessCheckService";
+import StartupService from "../backk/service/startup/StartupService";
 import OrdersService from "../services/orders/OrdersService";
 import SalesItemsService from "../services/salesitems/SalesItemsService";
 import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
@@ -32,7 +32,7 @@ export class AppController {
   constructor(
     dbManager: AbstractDbManager,
     private readonly captchaVerifyService: CaptchaVerifyService,
-    private readonly readinessCheckService: ReadinessCheckService,
+    private readonly startupService: StartupService,
     private readonly responseCacheConfigService: ResponseCacheConfigService,
     private readonly auditLoggingService: AuditLoggingService,
     private readonly authorizationService: AuthorizationService,

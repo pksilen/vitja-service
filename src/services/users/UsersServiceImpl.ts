@@ -63,7 +63,7 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
-  async getUserByUserName({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
+  async getUser({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.getEntityWhere('userName', userName, User);
     return UsersServiceImpl.getUserResponse(userOrErrorResponse);
   }
@@ -130,7 +130,7 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
-  deleteUserById({ _id }: _Id): Promise<void | ErrorResponse> {
+  deleteUser({ _id }: _Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, User);
   }
 

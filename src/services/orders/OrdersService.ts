@@ -1,5 +1,5 @@
 import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
-import CreateOrderArg from "./types/args/CreateOrderArg";
+import PlaceOrderArg from "./types/args/PlaceOrderArg";
 import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
 import Order from "./types/entities/Order";
 import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
@@ -11,12 +11,11 @@ import CrudResourceService from "../../backk/service/crudresource/CrudResourceSe
 
 export default abstract class OrdersService extends CrudResourceService {
   abstract deleteAllOrders(): Promise<void | ErrorResponse>;
-  abstract createOrder(arg: CreateOrderArg): Promise<Order | ErrorResponse>;
+  abstract placeOrder(arg: PlaceOrderArg): Promise<Order | ErrorResponse>;
   abstract deleteOrderItem(arg: DeleteOrderItemArg): Promise<Order | ErrorResponse>;
   abstract addOrderItem(arg: AddOrderItemArg): Promise<Order | ErrorResponse>;
-  abstract getOrdersByUserId(arg: GetByUserIdArg): Promise<Order[] | ErrorResponse>;
-  abstract getOrderById(arg: _IdAndUserId): Promise<Order | ErrorResponse>;
+  abstract getOrder(arg: _IdAndUserId): Promise<Order | ErrorResponse>;
   abstract deliverOrderItem(arg: DeliverOrderItemArg): Promise<void | ErrorResponse>;
   abstract updateOrderItemState(arg: UpdateOrderItemStateArg): Promise<void | ErrorResponse>;
-  abstract deleteOrderById(arg: _IdAndUserId): Promise<void | ErrorResponse>;
+  abstract deleteOrder(arg: _IdAndUserId): Promise<void | ErrorResponse>;
 }
