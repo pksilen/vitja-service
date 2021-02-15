@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO
-- shouldAllowAdditionOrRemoval = 'none'
 - shouldInitializeDb SQL
   - backk taulun nimi: backk_db_initialization: columns: @Unique appVersion, isInitialized
   - tsekkaa voiko lisätä uuden rivin app_version = process.env.npm_package_version
