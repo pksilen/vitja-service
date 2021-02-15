@@ -633,7 +633,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async updateEntity<T extends Entity>(
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
+    allowAdditionAndRemovalOfSubEntityClasses: (new () => any)[] | 'all',
     preHooks?: PreHook | PreHook[],
     postHook?: PostHook
   ): Promise<void | ErrorResponse> {
@@ -642,7 +642,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       this,
       entity,
       entityClass,
-      allowAdditionAndRemovalForSubEntityClasses,
+      allowAdditionAndRemovalOfSubEntityClasses,
       preHooks,
       postHook
     );

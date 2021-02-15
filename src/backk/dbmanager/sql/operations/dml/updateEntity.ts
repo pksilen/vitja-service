@@ -31,7 +31,7 @@ export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
   { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
-  allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
+  allowAdditionAndRemovalOfSubEntityClasses: (new () => any)[] | 'all',
   preHooks?: PreHook | PreHook[],
   postHook?: PostHook,
   isRecursiveCall = false
@@ -39,9 +39,9 @@ export default async function updateEntity<T extends Entity>(
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
 
-  const finalAllowAdditionAndRemovalForSubEntities = Array.isArray(allowAdditionAndRemovalForSubEntityClasses)
-    ? allowAdditionAndRemovalForSubEntityClasses.map((SubEntityClass) => dbManager.getType(SubEntityClass))
-    : allowAdditionAndRemovalForSubEntityClasses;
+  const finalAllowAdditionAndRemovalForSubEntities = Array.isArray(allowAdditionAndRemovalOfSubEntityClasses)
+    ? allowAdditionAndRemovalOfSubEntityClasses.map((SubEntityClass) => dbManager.getType(SubEntityClass))
+    : allowAdditionAndRemovalOfSubEntityClasses;
 
   let didStartTransaction = false;
 
@@ -204,7 +204,7 @@ export default async function updateEntity<T extends Entity>(
                   dbManager,
                   subEntity,
                   SubEntityClass,
-                  allowAdditionAndRemovalForSubEntityClasses,
+                  allowAdditionAndRemovalOfSubEntityClasses,
                   undefined,
                   undefined,
                   true
@@ -223,7 +223,7 @@ export default async function updateEntity<T extends Entity>(
             dbManager,
             subEntityOrEntities,
             (Types as any)[baseTypeName],
-            allowAdditionAndRemovalForSubEntityClasses,
+            allowAdditionAndRemovalOfSubEntityClasses,
             undefined,
             undefined,
             true

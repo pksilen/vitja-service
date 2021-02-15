@@ -265,7 +265,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         await tryExecutePreHooks(preHooks);
         let createEntityResult;
-        
+
         try {
           createEntityResult = await client
             .db(this.dbName)
@@ -971,7 +971,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async updateEntity<T extends Entity>(
     { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
-    allowAdditionAndRemovalForSubEntityClasses: (new () => any)[] | 'all',
+    allowAdditionAndRemovalOfSubEntityClasses: (new () => any)[] | 'all',
     preHooks?: PreHook | PreHook[],
     postHook?: PostHook,
     isRecursiveCall = false,
@@ -983,10 +983,10 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass = this.getType(EntityClass);
 
     const finalAllowAdditionAndRemovalForSubEntities = Array.isArray(
-      allowAdditionAndRemovalForSubEntityClasses
+      allowAdditionAndRemovalOfSubEntityClasses
     )
-      ? allowAdditionAndRemovalForSubEntityClasses.map((SubEntityClass) => this.getType(SubEntityClass))
-      : allowAdditionAndRemovalForSubEntityClasses;
+      ? allowAdditionAndRemovalOfSubEntityClasses.map((SubEntityClass) => this.getType(SubEntityClass))
+      : allowAdditionAndRemovalOfSubEntityClasses;
 
     const Types = this.getTypes();
     let shouldUseTransaction = false;
@@ -1001,7 +1001,7 @@ export default class MongoDbManager extends AbstractDbManager {
       await this.tryExecute(shouldUseTransaction, async (client) => {
         let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
 
-        if (!isRecursiveCall && (preHooks || allowAdditionAndRemovalForSubEntityClasses !== 'all')) {
+        if (!isRecursiveCall && (preHooks || allowAdditionAndRemovalOfSubEntityClasses !== 'all')) {
           currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
         }
 
