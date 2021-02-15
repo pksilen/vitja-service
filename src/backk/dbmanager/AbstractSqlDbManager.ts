@@ -38,7 +38,7 @@ import MongoDbQuery from './mongodb/MongoDbQuery';
 import { PostHook } from './hooks/PostHook';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from "../errors/backkErrors";
+import { BACKK_ERRORS } from '../errors/backkErrors';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -83,7 +83,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async isDbReady(): Promise<boolean> {
     try {
       await this.tryExecuteSqlWithoutCls(
-        `SELECT * FROM ${this.schema.toLowerCase()}.__backk__`,
+        `SELECT * FROM ${this.schema.toLowerCase()}.__backk_db_initialization`,
         undefined,
         false
       );
@@ -91,7 +91,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       return true;
     } catch (error) {
       try {
-        const createTableStatement = `CREATE TABLE IF NOT EXISTS ${this.schema.toLowerCase()}.__backk__ (dummy INT)`;
+        const createTableStatement = `CREATE TABLE IF NOT EXISTS ${this.schema.toLowerCase()}.__backk_db_initialization (appversion VARCHAR(64) PRIMARY KEY NOT NULL UNIQUE, isinitialized TINYINT)`;
         await this.tryExecuteSqlWithoutCls(createTableStatement);
         return true;
       } catch (error) {
