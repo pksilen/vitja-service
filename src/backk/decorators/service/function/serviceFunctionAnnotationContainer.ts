@@ -24,6 +24,7 @@ class ServiceFunctionAnnotationContainer {
   } = {};
   private readonly serviceFunctionNameToOnStartUpMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsCreateFunctionMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToIsMetadataFunctionMap: { [key: string]: boolean } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -113,6 +114,10 @@ class ServiceFunctionAnnotationContainer {
 
   addCreateAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToIsCreateFunctionMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
+  addMetadataFunctionAnnotation(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToIsMetadataFunctionMap[`${serviceClass.name}${functionName}`] = true;
   }
 
   expectServiceFunctionReturnValueToContainInTests(

@@ -3,6 +3,10 @@
 TODO
 - Annotate getCities with @Metadata annotation
 - add getUsers function
+- ShoppingCartItem => SalesItem
+- OrderItem contains SalesItem (ManyToOne)
+- Create shopping cart if getShoppingCart return not_found
+- Empty shopping cart => Delete and create new
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
