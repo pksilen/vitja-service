@@ -58,6 +58,11 @@ export default abstract class AbstractDbManager {
   abstract getVarCharType(maxLength: number): string;
   abstract getDbManagerType(): string;
   abstract getDbHost(): string;
+  abstract getFilters<T>(
+    mongoDbFilters: Array<MongoDbQuery<T>> | Partial<T> | object,
+    sqlFilters: SqlExpression[] | Partial<T> | object
+  ): Array<MongoDbQuery<T> | SqlExpression> | Partial<T> | object;
+
   abstract getModifyColumnStatement(
     schema: string | undefined,
     tableName: string,

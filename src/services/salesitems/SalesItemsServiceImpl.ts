@@ -1,38 +1,36 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
-import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
-import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
-import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
-import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
-import GetByUserIdArg from '../users/types/args/GetByUserIdArg';
-import SalesItemsService from './SalesItemsService';
-import GetSalesItemsArg from './types/args/GetSalesItemsArg';
-import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
-import { SalesItem } from './types/entities/SalesItem';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import _IdsAndDefaultPostQueryOperations from '../../backk/types/postqueryoperations/_IdsAndDefaultPostQueryOperations';
-import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
-import _Id from '../../backk/types/id/_Id';
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
+import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import MongoDbManager from "../../backk/dbmanager/MongoDbManager";
+import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
+import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
+import SqlInExpression from "../../backk/dbmanager/sql/expressions/SqlInExpression";
+import SalesItemsService from "./SalesItemsService";
+import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
+import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
+import { SalesItem } from "./types/entities/SalesItem";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
+import _Id from "../../backk/types/id/_Id";
 import {
   INVALID_SALES_ITEM_STATE,
   MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
   SALES_ITEM_STATE_MUST_BE_FOR_SALE
-} from './errors/salesItemsServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { SalesItemState } from './types/enums/SalesItemState';
-import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
-import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
-import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
-import awaitDbOperationAndGetResultOfPredicate from '../../backk/utils/getErrorResponseOrResultOf';
-import { CronJob } from '../../backk/decorators/service/function/CronJob';
-import DeleteOldUnsoldSalesItemsArg from './types/args/DeleteOldUnsoldSalesItemsArg';
-import dayjs from 'dayjs';
+} from "./errors/salesItemsServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { SalesItemState } from "./types/enums/SalesItemState";
+import GetSalesItemsByUserDefinedFiltersArg from "./types/args/GetSalesItemsByUserDefinedFiltersArg";
+import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
+import MongoDbQuery from "../../backk/dbmanager/mongodb/MongoDbQuery";
+import awaitDbOperationAndGetResultOfPredicate from "../../backk/utils/getErrorResponseOrResultOf";
+import { CronJob } from "../../backk/decorators/service/function/CronJob";
+import DeleteOldUnsoldSalesItemsArg from "./types/args/DeleteOldUnsoldSalesItemsArg";
+import dayjs from "dayjs";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -79,34 +77,29 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     maxPrice,
     ...postQueryOps
   }: GetSalesItemsArg): Promise<SalesItem[] | ErrorResponse> {
-    let filters;
-
-    if (this.dbManager instanceof MongoDbManager) {
-      filters = [
-        new MongoDbQuery<SalesItem>({
-          state: 'forSale' as SalesItemState,
-          ...(textFilter
-            ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
-            : {}),
-          ...(areas ? { area: { $in: areas } } : {}),
-          ...(productDepartments ? { productDepartment: { $in: productDepartments } } : {}),
-          ...(productCategories ? { productCategory: { $in: productCategories } } : {}),
-          ...(productSubCategories ? { productSubCategory: { $in: productSubCategories } } : {}),
-          ...(minPrice !== undefined || maxPrice
-            ? {
-                $and: [
-                  { price: { $gte: minPrice || 0 } },
-                  { price: { $lte: maxPrice || Number.MAX_SAFE_INTEGER } }
-                ]
-              }
-            : {})
-        })
-      ];
-    } else {
-      filters = [
+    const filters = this.dbManager.getFilters<SalesItem>(
+      {
+        state: 'forSale' as SalesItemState,
+        ...(textFilter
+          ? { $or: [{ title: new RegExp(textFilter) }, { description: new RegExp(textFilter) }] }
+          : {}),
+        ...(areas ? { area: { $in: areas } } : {}),
+        ...(productDepartments ? { productDepartment: { $in: productDepartments } } : {}),
+        ...(productCategories ? { productCategory: { $in: productCategories } } : {}),
+        ...(productSubCategories ? { productSubCategory: { $in: productSubCategories } } : {}),
+        ...(minPrice !== undefined || maxPrice
+          ? {
+              $and: [
+                { price: { $gte: minPrice || 0 } },
+                { price: { $lte: maxPrice || Number.MAX_SAFE_INTEGER } }
+              ]
+            }
+          : {})
+      },
+      [
         new SqlEquals({ state: 'forSale' }),
         new SqlExpression('title LIKE :textFilter OR description LIKE :textFilter', {
-          textFilter
+          textFilter: `%${textFilter}%`
         }),
         new SqlInExpression('area', areas),
         new SqlInExpression('productDepartment', productDepartments),
@@ -114,8 +107,8 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
         new SqlInExpression('productSubCategory', productSubCategories),
         new SqlExpression('price >= :minPrice', { minPrice }),
         new SqlExpression('price <= :maxPrice', { maxPrice })
-      ];
-    }
+      ]
+    );
 
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOps);
   }
@@ -168,6 +161,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     );
   }
 
+  // noinspection MagicNumberJS
   @CronJob({ minutes: 0, hours: 2 }, [1, 2, 5, 10, 30, 60, 120, 500])
   deleteOldUnsoldSalesItems({
     deletableUnsoldSalesItemMinAgeInMonths

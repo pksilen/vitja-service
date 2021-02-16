@@ -2,10 +2,12 @@ import AbstractDbManager, { Field } from './AbstractDbManager';
 import { Entity } from '../types/entities/Entity';
 import { SubEntity } from '../types/entities/SubEntity';
 import { ErrorResponse } from '../types/ErrorResponse';
+import MongoDbQuery from './mongodb/MongoDbQuery';
+import SqlExpression from './sql/expressions/SqlExpression';
 
 export default class NoOpDbManager extends AbstractDbManager {
   getModifyColumnStatement(): string {
-      throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
   addSubEntities<T extends Entity, U extends object>(): Promise<ErrorResponse | T> {
@@ -161,6 +163,13 @@ export default class NoOpDbManager extends AbstractDbManager {
   }
 
   isDuplicateEntityError(error: Error): boolean {
+    throw new Error('Not implemented');
+  }
+
+  getFilters<T>(
+    mongoDbFilters: Array<MongoDbQuery<T>> | Partial<T> | object,
+    sqlFilters: SqlExpression[] | Partial<T> | object
+  ): Array<MongoDbQuery<T> | SqlExpression> | Partial<T> | object {
     throw new Error('Not implemented');
   }
 }

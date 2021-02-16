@@ -80,6 +80,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     values: object
   ): Promise<any>;
 
+  getFilters<T>(
+    mongoDbFilters: Array<MongoDbQuery<T>> | Partial<T> | object,
+    sqlFilters: SqlExpression[] | Partial<T> | object
+  ): Array<MongoDbQuery<T> | SqlExpression> | Partial<T> | object {
+    return sqlFilters;
+  }
+
   async isDbReady(): Promise<boolean> {
     try {
       await this.tryExecuteSqlWithoutCls(

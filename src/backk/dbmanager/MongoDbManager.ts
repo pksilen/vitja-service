@@ -90,6 +90,13 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
+  getFilters<T>(
+    mongoDbFilters: Array<MongoDbQuery<T>> | Partial<T> | object,
+    sqlFilters: SqlExpression[] | Partial<T> | object
+  ): Array<MongoDbQuery<T> | SqlExpression> | Partial<T> | object {
+    return mongoDbFilters;
+  }
+
   async tryExecute(
     shouldUseTransaction: boolean,
     executeDbOperations: (client: MongoClient) => Promise<any>
