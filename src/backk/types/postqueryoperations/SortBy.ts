@@ -1,5 +1,6 @@
 import { IsIn, IsOptional, IsString } from "class-validator";
 import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
+import { Lengths } from "../../constants/constants";
 
 export default class SortBy {
   constructor(subEntityPath: string, fieldName: string, sortDirection: 'ASC' | 'DESC') {
@@ -9,11 +10,11 @@ export default class SortBy {
   }
 
   @IsOptional()
-  @MaxLengthAndMatches(2048, /^([a-zA-Z_][a-zA-Z0-9_.]*|\*|)$/)
+  @MaxLengthAndMatches(Lengths._2K, /^([a-zA-Z_][a-zA-Z0-9_.]*|\*|)$/)
   @IsString()
   subEntityPath?: string = '';
 
-  @MaxLengthAndMatches(512, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
+  @MaxLengthAndMatches(Lengths._512, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
   @IsString()
   fieldName!: string;
 

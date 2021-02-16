@@ -3,6 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { IsNumber, MaxLength } from 'class-validator';
+import { Lengths, Values } from '../../../../backk/constants/constants';
 import Entity from '../../../../backk/decorators/entity/Entity';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
 import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
@@ -24,21 +25,21 @@ export default class FollowerSalesItem {
   })
   public _id!: string;
 
-  @MaxLength(64)
+  @MaxLength(Lengths._64)
   @IsAnyString()
   public title!: string;
 
-  @MaxLength(1024)
+  @MaxLength(Lengths._1K)
   @IsAnyString()
   public description!: string;
 
   @IsNumber({
     maxDecimalPlaces: 2
   })
-  @MinMax(0, 1000000000)
+  @MinMax(0, Values._1B)
   public price!: number;
 
-  @MaxLength(10485760)
+  @MaxLength(Lengths._10M)
   @IsDataUri()
   public primaryImageDataUri!: string;
 }

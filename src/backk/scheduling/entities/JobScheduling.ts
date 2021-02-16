@@ -1,9 +1,10 @@
 import { ArrayMaxSize, IsArray, IsDate, IsInt, IsString, MaxLength } from 'class-validator';
 import { Type } from "class-transformer";
+import { Lengths } from "../../constants/constants";
 
 export default class JobScheduling {
   @IsString()
-  @MaxLength(256)
+  @MaxLength(Lengths._256)
   serviceFunctionName!: string;
 
   @IsDate()

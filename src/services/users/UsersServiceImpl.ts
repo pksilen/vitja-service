@@ -81,7 +81,7 @@ export default class UsersServiceImpl extends UsersService {
 
     return this.dbManager.getEntitiesByFilters(filters, User, {
       ...postQueryOperations,
-      includeResponseFields: ['userName', 'displayName', 'city']
+      includeResponseFields: ['userName', 'displayName', 'city', 'imageDataUri']
     });
   }
 

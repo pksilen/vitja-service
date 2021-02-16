@@ -10,16 +10,17 @@ import {
 } from "class-validator";
 import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
 import OrFilter from "./OrFilter";
+import { Lengths } from "../../constants/constants";
 
 export default class UserDefinedFilter {
   @IsOptional()
   @IsString()
-  @MaxLengthAndMatches(2048, /^([a-zA-Z_][a-zA-Z0-9_.]*|\*|)$/)
+  @MaxLengthAndMatches(Lengths._2K, /^([a-zA-Z_][a-zA-Z0-9_.]*|\*|)$/)
   subEntityPath?: string = '';
 
   @IsOptional()
   @IsString()
-  @MaxLengthAndMatches(512, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
+  @MaxLengthAndMatches(Lengths._512, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
   fieldName?: string;
 
   @IsOptional()

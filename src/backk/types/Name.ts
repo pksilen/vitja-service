@@ -1,8 +1,9 @@
 import { MaxLength } from "class-validator";
 import IsAnyString from "../decorators/typeproperty/IsAnyString";
+import { Lengths } from "../constants/constants";
 
 export class Name {
-  @MaxLength(1024)
+  @MaxLength(Lengths._1K)
   @IsAnyString()
   name!: string;
 }

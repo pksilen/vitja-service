@@ -1,9 +1,10 @@
 import { Allow, IsIn, IsOptional, IsString } from "class-validator";
 import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
+import { Lengths } from "../../constants/constants";
 
 export default class OrFilter {
   @IsString()
-  @MaxLengthAndMatches(512, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
+  @MaxLengthAndMatches(Lengths._512, /^[a-zA-Z_][a-zA-Z0-9_.]*$/)
   fieldName!: string;
 
   @IsOptional()

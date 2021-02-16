@@ -6,9 +6,10 @@ import { Category } from '../enums/Category';
 import { Department } from '../enums/Department';
 import { Area } from '../enums/Area';
 import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
+import { Lengths } from "../../../../backk/constants/constants";
 
 export default class GetSalesItemsArg extends DefaultPostQueryOperations {
-  @MaxLength(512)
+  @MaxLength(Lengths._512)
   @IsAnyString()
   textFilter?: string;
 

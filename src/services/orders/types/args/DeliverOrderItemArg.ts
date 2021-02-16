@@ -3,6 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { IsString, IsUrl, MaxLength } from 'class-validator';
+import { Lengths } from '../../../../backk/constants/constants';
 import IsIntegerStringOrAny from '../../../../backk/decorators/typeproperty/IsIntegerStringOrAny'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
@@ -44,7 +45,7 @@ export default class DeliverOrderItemArg {
   )
   public deliveryTimestamp!: Date | null;
 
-  @MaxLength(4096)
+  @MaxLength(Lengths._4K)
   @IsUrl()
   @ShouldBeTrueForEntity(
     ({ state, trackingUrl }) =>

@@ -11,17 +11,18 @@ import Index from '../../../../backk/decorators/typeproperty';
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
 import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
-import ArrayNotUnique from "../../../../backk/decorators/typeproperty/ArrayNotUnique";
+import ArrayNotUnique from '../../../../backk/decorators/typeproperty/ArrayNotUnique';
+import { Lengths, Values } from "../../../../backk/constants/constants";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
   public userId!: string;
 
-  @MaxLength(64)
+  @MaxLength(Lengths._64)
   @IsAnyString()
   public title!: string;
 
-  @MaxLength(1024)
+  @MaxLength(Lengths._1K)
   @IsAnyString()
   public description!: string;
 
@@ -35,22 +36,22 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   public productSubCategory!: Category;
 
   @IsNumber({ maxDecimalPlaces: 2 })
-  @MinMax(0, 1000000000)
+  @MinMax(0, Values._1B)
   public price!: number;
 
   @IsNumber({ maxDecimalPlaces: 2 })
-  @MinMax(-1, 1000000000)
+  @MinMax(-1, Values._1B)
   public readonly previousPrice!: number;
 
   @IsNumber({ maxDecimalPlaces: 2 })
-  @MinMax(0, 1000000000)
+  @MinMax(0, Values._1B)
   public shippingCost!: number;
 
-  @MaxLength(10485760)
+  @MaxLength(Lengths._10M)
   @IsDataUri()
   public primaryImageDataUri!: string;
 
-  @MaxLength(10485760, { each: true })
+  @MaxLength(Lengths._10M, { each: true })
   @IsDataUri({ each: true })
   @ArrayMaxSize(10)
   @ArrayNotUnique()

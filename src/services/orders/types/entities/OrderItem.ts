@@ -1,8 +1,9 @@
-import { IsUrl, MaxLength } from 'class-validator';
-import Entity from '../../../../backk/decorators/entity/Entity';
-import Id from '../../../../backk/types/id/Id';
-import { OrderState } from '../enum/OrderState';
-import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
+import { IsUrl, MaxLength } from "class-validator";
+import Entity from "../../../../backk/decorators/entity/Entity";
+import Id from "../../../../backk/types/id/Id";
+import { OrderState } from "../enum/OrderState";
+import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
+import { Lengths } from "../../../../backk/constants/constants";
 
 @Entity()
 export default class OrderItem extends Id {
@@ -17,7 +18,7 @@ export default class OrderItem extends Id {
 
   public state!: OrderState;
 
-  @MaxLength(4096)
+  @MaxLength(Lengths._4K)
   @IsUrl()
   @ShouldBeTrueForEntity(
     ({ state, trackingUrl }) =>

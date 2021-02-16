@@ -16,6 +16,7 @@ import IsOneOf from "../../../../backk/decorators/typeproperty/IsOneOf";
 import getCities from "../../validation/getCities";
 import IsStrongPassword from "../../../../backk/decorators/typeproperty/IsStrongPassword";
 import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
+import { Lengths } from "../../../../backk/constants/constants";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -23,7 +24,7 @@ export default class User extends _IdAndCaptcha {
   @IsEmail()
   userName!: string;
 
-  @MaxLength(512)
+  @MaxLength(Lengths._512)
   @IsAnyString()
   public displayName!: string;
 
@@ -33,14 +34,14 @@ export default class User extends _IdAndCaptcha {
   @IsStrongPassword()
   password!: string;
 
-  @MaxLength(512)
+  @MaxLength(Lengths._512)
   @IsAnyString()
   public streetAddress!: string;
 
   @IsPostalCode('FI')
   public postalCode!: string;
 
-  @MaxLength(256)
+  @MaxLength(Lengths._256)
   @IsOneOf(getCities, 'usersService.getCities', 'Tampere')
   public city!: string;
 
@@ -49,7 +50,7 @@ export default class User extends _IdAndCaptcha {
 
   public readonly commissionDiscountPercentage!: 0 | 25 | 50;
 
-  @MaxLength(10485760)
+  @MaxLength(Lengths._10M)
   @IsDataUri()
   public imageDataUri!: string;
 

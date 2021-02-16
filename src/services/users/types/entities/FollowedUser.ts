@@ -3,6 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { MaxLength } from 'class-validator';
+import { Lengths } from '../../../../backk/constants/constants';
 import Entity from '../../../../backk/decorators/entity/Entity';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
@@ -23,7 +24,7 @@ export default class FollowedUser {
   })
   public _id!: string;
 
-  @MaxLength(512)
+  @MaxLength(Lengths._512)
   @IsAnyString()
   public displayName!: string;
 

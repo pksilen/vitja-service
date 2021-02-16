@@ -1,5 +1,5 @@
-import { PostQueryOperations } from './PostQueryOperations';
-import SortBy from './SortBy';
+import { PostQueryOperations } from "./PostQueryOperations";
+import SortBy from "./SortBy";
 import {
   ArrayMaxSize,
   ArrayUnique,
@@ -8,14 +8,15 @@ import {
   IsOptional,
   IsString,
   ValidateNested
-} from 'class-validator';
-import Pagination from './Pagination';
-import MaxLengthAndMatches from '../../decorators/typeproperty/MaxLengthAndMatches';
+} from "class-validator";
+import Pagination from "./Pagination";
+import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
+import { Lengths } from "../../constants/constants";
 
 export default class DefaultPostQueryOperations implements PostQueryOperations {
   @IsOptional()
   @IsString({ each: true })
-  @MaxLengthAndMatches(2048, /^[a-zA-Z_]([a-zA-Z0-9_.])+$/, { each: true }, true)
+  @MaxLengthAndMatches(Lengths._2K, /^[a-zA-Z_]([a-zA-Z0-9_.])+$/, { each: true }, true)
   @IsArray()
   @ArrayMaxSize(100)
   @ArrayUnique()
@@ -23,7 +24,7 @@ export default class DefaultPostQueryOperations implements PostQueryOperations {
 
   @IsOptional()
   @IsString({ each: true })
-  @MaxLengthAndMatches(2048, /^[a-zA-Z_]([a-zA-Z0-9_.])+$/, { each: true }, true)
+  @MaxLengthAndMatches(Lengths._2K, /^[a-zA-Z_]([a-zA-Z0-9_.])+$/, { each: true }, true)
   @IsArray()
   @ArrayMaxSize(100)
   @ArrayUnique()
