@@ -1,10 +1,11 @@
-export default function isDeleteFunction(serviceClass: Function, functionName: string) {
+import serviceFunctionAnnotationContainer from '../../../decorators/service/function/serviceFunctionAnnotationContainer';
+
+export default function isDeleteFunction(ServiceClass: Function, functionName: string) {
   return (
     functionName.startsWith('delete') ||
     functionName.startsWith('remove') ||
     functionName.startsWith('erase') ||
     functionName.startsWith('destroy') ||
-    functionName.startsWith('empty') ||
-    functionName.startsWith('clear')
+    serviceFunctionAnnotationContainer.isDeleteServiceFunction(ServiceClass, functionName)
   );
 }

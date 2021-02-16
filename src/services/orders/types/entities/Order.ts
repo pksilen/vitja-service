@@ -4,12 +4,13 @@ import OrderItem from "./OrderItem";
 import PaymentInfo from "./PaymentInfo";
 import _IdAndVersionAndCreatedAtTimestamp
   from "../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestamp";
+import { Values } from "../../../../backk/constants/constants";
 
 @Entity()
 export default class Order extends _IdAndVersionAndCreatedAtTimestamp {
   public userId!: string;
 
-  @ArrayMaxSize(50)
+  @ArrayMaxSize(Values._50)
   public orderItems!: OrderItem[];
 
   public paymentInfo!: PaymentInfo;

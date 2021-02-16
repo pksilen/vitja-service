@@ -1,11 +1,10 @@
 # Vitja service
 
 TODO
-dbManager.GetFilters(mongo, sql)
 - ShoppingCartItem => SalesItem
 - OrderItem contains SalesItem (ManyToOne)
 - Create shopping cart if getShoppingCart return not_found
-- Empty shopping cart => Delete and create new
+- Empty shopping cart => Delete and create new, add custom test
 - remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
   - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem

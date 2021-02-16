@@ -25,6 +25,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToOnStartUpMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsCreateFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsMetadataFunctionMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToIsDeleteFunctionMap: { [key: string]: boolean } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -118,6 +119,10 @@ class ServiceFunctionAnnotationContainer {
 
   addMetadataFunctionAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToIsMetadataFunctionMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
+  addDeleteAnnotation(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToIsDeleteFunctionMap[`${serviceClass.name}${functionName}`] = true;
   }
 
   expectServiceFunctionReturnValueToContainInTests(
@@ -329,6 +334,21 @@ class ServiceFunctionAnnotationContainer {
     while (proto !== Object.prototype) {
       if (
         this.serviceFunctionNameToIsCreateFunctionMap[`${proto.constructor.name}${functionName}`] !==
+        undefined
+      ) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isDeleteServiceFunction(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToIsDeleteFunctionMap[`${proto.constructor.name}${functionName}`] !==
         undefined
       ) {
         return true;
