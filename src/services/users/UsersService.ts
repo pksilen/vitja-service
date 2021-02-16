@@ -7,11 +7,13 @@ import User from "./types/entities/User";
 import _IdAndFollowedUserId from "./types/args/_IdAndFollowedUserId";
 import { Name } from "../../backk/types/Name";
 import UsersBaseService from "../../backk/users/UsersBaseService";
+import GetUsersArg from "./types/args/GetUsersArg";
 
 export default abstract class UsersService extends UsersBaseService {
   abstract deleteAllUsers(): Promise<void | ErrorResponse>;
   abstract createUser(arg: User): Promise<UserResponse | ErrorResponse>;
   abstract getCities(): Promise<Name[] | ErrorResponse>;
+  abstract getUsers(arg: GetUsersArg): Promise<User[] | ErrorResponse>;
   abstract getUser(arg: UserName): Promise<UserResponse | ErrorResponse>;
   abstract getUserById(arg: _Id): Promise<UserResponse | ErrorResponse>;
   abstract followUser(arg: _IdAndFollowedUserId): Promise<User | ErrorResponse>;

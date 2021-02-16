@@ -22,11 +22,15 @@ import { Update } from '../../backk/decorators/service/function/Update';
 import FollowingUser from './types/entities/FollowingUser';
 import _IdAndFollowedUserId from './types/args/_IdAndFollowedUserId';
 import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
-import { NoAutoTest } from '../../backk/decorators/service/function/NoAutoTest';
 import { Name } from '../../backk/types/Name';
 import getCities from './validation/getCities';
 import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
-import { Create } from "../../backk/decorators/service/function/Create";
+import { Metadata } from '../../backk/decorators/service/function/Metadata';
+import GetUsersArg from './types/args/GetUsersArg';
+import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
+import Tag from '../tags/entities/Tag';
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -58,9 +62,31 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForEveryUser()
-  @NoAutoTest()
+  @Metadata()
   getCities(): Promise<Name[] | ErrorResponse> {
     return Promise.resolve(getCities());
+  }
+
+  getUsers({
+    userNameOrDisplayNameFilter,
+    ...postQueryOperations
+  }: GetUsersArg): Promise<User[] | ErrorResponse> {
+    const filters =
+      this.dbManager instanceof MongoDbManager
+        ? {
+            $or: [
+              { userName: new RegExp(userNameOrDisplayNameFilter) },
+              { displayName: new RegExp(userNameOrDisplayNameFilter) }
+            ]
+          }
+        : [
+            new SqlExpression(
+              'userName LIKE :userNameOrDisplayNameFilter OR displayName LIKE :userNameOrDisplayNameFilter',
+              { userNameOrDisplayNameFilter: `%${userNameOrDisplayNameFilter}%` }
+            )
+          ];
+
+    return this.dbManager.getEntitiesByFilters(filters, User, postQueryOperations);
   }
 
   @AllowForSelf()
@@ -77,7 +103,7 @@ export default class UsersServiceImpl extends UsersService {
 
   @AllowForSelf()
   @Update()
-  followUser({ _id,  version, followedUserId }: _IdAndFollowedUserId): Promise<User | ErrorResponse> {
+  followUser({ _id, version, followedUserId }: _IdAndFollowedUserId): Promise<User | ErrorResponse> {
     return this.dbManager.addSubEntity(
       _id,
       version,

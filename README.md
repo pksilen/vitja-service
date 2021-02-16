@@ -1,8 +1,7 @@
 # Vitja service
 
 TODO
-- Annotate getCities with @Metadata annotation
-- add getUsers function
+- add getUsersByDisplayNameFilter function (don't get self)
 - ShoppingCartItem => SalesItem
 - OrderItem contains SalesItem (ManyToOne)
 - Create shopping cart if getShoppingCart return not_found
