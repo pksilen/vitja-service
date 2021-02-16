@@ -266,7 +266,12 @@ export default async function tryExecuteServiceMethod(
         );
       }
 
-      await tryValidateServiceFunctionArgument(functionName, dbManager, instantiatedServiceFunctionArgument);
+      await tryValidateServiceFunctionArgument(
+        controller[serviceName].constructor,
+        functionName,
+        dbManager,
+        instantiatedServiceFunctionArgument
+      );
     }
 
     if (

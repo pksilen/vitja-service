@@ -17,9 +17,11 @@ export async function validateServiceFunctionArguments(sends: CallOrSendTo[]) {
 
     const [serviceName, functionName] = serviceFunctionName.split('.');
     let controller;
+    let ServiceClass;
 
     if (remoteServiceNameToControllerMap[`${topic}$/${serviceName}`]) {
       controller = remoteServiceNameToControllerMap[`${topic}$/${serviceName}`];
+      ServiceClass = controller[serviceName].constructor;
     } else {
       let remoteServiceRootDir;
 
@@ -31,7 +33,7 @@ export async function validateServiceFunctionArguments(sends: CallOrSendTo[]) {
         return;
       }
 
-      const ServiceClass = generateClassFromSrcFile(
+      ServiceClass = generateClassFromSrcFile(
         serviceName.charAt(0).toUpperCase() + serviceName.slice(1) + 'Impl',
         remoteServiceRootDir
       );
@@ -58,6 +60,7 @@ export async function validateServiceFunctionArguments(sends: CallOrSendTo[]) {
 
     try {
       await tryValidateServiceFunctionArgument(
+        ServiceClass,
         functionName,
         noOpDbManager,
         instantiatedServiceFunctionArgument as object

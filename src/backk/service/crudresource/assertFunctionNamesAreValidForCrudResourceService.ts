@@ -11,7 +11,7 @@ export default function assertFunctionNamesAreValidForCrudResourceService(
 ) {
   return functionNames.forEach((functionName) => {
     if (
-      !isCreateFunction(functionName) &&
+      !isCreateFunction(ServiceClass, functionName) &&
       !isReadFunction(ServiceClass, functionName) &&
       !isUpdateFunction(ServiceClass, functionName) &&
       !isDeleteFunction(ServiceClass, functionName) &&

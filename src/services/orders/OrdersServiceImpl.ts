@@ -29,6 +29,7 @@ import { OrderState } from "./types/enum/OrderState";
 import { Update } from "../../backk/decorators/service/function/Update";
 import sendToRemoteService from "../../backk/remote/messagequeue/sendToRemoteService";
 import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
+import { Create } from "../../backk/decorators/service/function/Create";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -48,6 +49,7 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForSelf()
   @NoCaptcha()
+  @Create()
   async placeOrder({
     userId,
     shoppingCartId,

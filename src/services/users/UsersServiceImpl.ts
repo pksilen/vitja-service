@@ -26,6 +26,7 @@ import { NoAutoTest } from '../../backk/decorators/service/function/NoAutoTest';
 import { Name } from '../../backk/types/Name';
 import getCities from './validation/getCities';
 import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
+import { Create } from "../../backk/decorators/service/function/Create";
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])

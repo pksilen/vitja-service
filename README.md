@@ -9,7 +9,7 @@ TODO
 - Rename createOrder to placeOrder
   - placeOrder should has gateway as input arg and create order with paymentinfo: null, then response:
     HTTP/1.1 301 Moved Permanently
-    Location: https://payment-gateway/...?successUrl=https://backk-dynamic-frontend/?=backk=OrdersService.payOrder?orderId=xxxx&failureUrl=https://backk-dynamic-frontend/?=backk=discardOrder&orderId=xxx
+    Location: https://payment-gateway/...?successUrl=https://backk-dynamic-frontend/?backk=OrdersService.payOrder?orderId=xxxx&failureUrl=https://backk-dynamic-frontend/?=backk=discardOrder&orderId=xxx
     paymentGateway adds query params to successUrl to indicate transactionId and amount
     payOrder updates order with paymentinfo: transactionId and amount
     discardOrder removes order by id

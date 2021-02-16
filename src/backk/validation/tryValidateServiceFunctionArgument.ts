@@ -37,6 +37,7 @@ function getValidationErrorConstraintsCount(validationErrors: ValidationError[])
 }
 
 export default async function tryValidateServiceFunctionArgument(
+  ServiceClass: Function,
   functionName: string,
   dbManager: AbstractDbManager | undefined,
   serviceFunctionArgument: object
@@ -51,8 +52,8 @@ export default async function tryValidateServiceFunctionArgument(
       forbidNonWhitelisted: true,
       groups: [
         '__backk_argument__',
-        ...(isCreateFunction(functionName) ? ['__backk_create__'] : []),
-        ...(isCreateFunction(functionName) ? [] : ['__backk_update__'])
+        ...(isCreateFunction(ServiceClass, functionName) ? ['__backk_create__'] : []),
+        ...(isCreateFunction(ServiceClass, functionName) ? [] : ['__backk_update__'])
       ]
     });
   } catch (validationErrors) {

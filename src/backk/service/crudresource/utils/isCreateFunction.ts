@@ -1,8 +1,10 @@
-export default function isCreateFunction(functionName: string) {
+import serviceFunctionAnnotationContainer from '../../../decorators/service/function/serviceFunctionAnnotationContainer';
+
+export default function isCreateFunction(ServiceClass: Function, functionName: string) {
   return (
     functionName.startsWith('create') ||
     functionName.startsWith('add') ||
     functionName.startsWith('insert') ||
-    functionName.startsWith('place')
+    serviceFunctionAnnotationContainer.isCreateServiceFunction(ServiceClass, functionName)
   );
 }

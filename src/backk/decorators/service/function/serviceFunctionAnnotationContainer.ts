@@ -23,6 +23,7 @@ class ServiceFunctionAnnotationContainer {
     [key: string]: { [key: string]: any };
   } = {};
   private readonly serviceFunctionNameToOnStartUpMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToIsCreateFunctionMap: { [key: string]: boolean } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -108,6 +109,10 @@ class ServiceFunctionAnnotationContainer {
 
   addOnStartUpAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToOnStartUpMap[`${serviceClass.name}${functionName}`] = true;
+  }
+
+  addCreateAnnotation(serviceClass: Function, functionName: string) {
+    this.serviceFunctionNameToIsCreateFunctionMap[`${serviceClass.name}${functionName}`] = true;
   }
 
   expectServiceFunctionReturnValueToContainInTests(
@@ -304,6 +309,21 @@ class ServiceFunctionAnnotationContainer {
     while (proto !== Object.prototype) {
       if (
         this.serviceFunctionNameToIsUpdateFunctionMap[`${proto.constructor.name}${functionName}`] !==
+        undefined
+      ) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isCreateServiceFunction(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToIsCreateFunctionMap[`${proto.constructor.name}${functionName}`] !==
         undefined
       ) {
         return true;
