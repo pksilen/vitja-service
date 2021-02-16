@@ -1,36 +1,34 @@
-import { Injectable } from '@nestjs/common';
-import * as argon2 from 'argon2';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import { FunctionDocumentation } from '../../backk/decorators/service/function/FunctionDocumentation';
-import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
-import ServiceDocumentation from '../../backk/decorators/service/ServiceDocumentation';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import UserName from './types/args/UserName';
-import User from './types/entities/User';
-import UserResponse from './types/responses/UserResponse';
-import UsersService from './UsersService';
-import _Id from '../../backk/types/id/_Id';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
-import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from './errors/usersServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import FollowedUser from './types/entities/FollowedUser';
-import { Update } from '../../backk/decorators/service/function/Update';
-import FollowingUser from './types/entities/FollowingUser';
-import _IdAndFollowedUserId from './types/args/_IdAndFollowedUserId';
-import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
-import { Name } from '../../backk/types/Name';
-import getCities from './validation/getCities';
-import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
-import { Metadata } from '../../backk/decorators/service/function/Metadata';
-import GetUsersArg from './types/args/GetUsersArg';
-import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
-import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
-import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
-import Tag from '../tags/entities/Tag';
+import { Injectable } from "@nestjs/common";
+import * as argon2 from "argon2";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import { FunctionDocumentation } from "../../backk/decorators/service/function/FunctionDocumentation";
+import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
+import ServiceDocumentation from "../../backk/decorators/service/ServiceDocumentation";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import UserName from "./types/args/UserName";
+import User from "./types/entities/User";
+import UserResponse from "./types/responses/UserResponse";
+import UsersService from "./UsersService";
+import _Id from "../../backk/types/id/_Id";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
+import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/usersServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import FollowedUser from "./types/entities/FollowedUser";
+import { Update } from "../../backk/decorators/service/function/Update";
+import FollowingUser from "./types/entities/FollowingUser";
+import _IdAndFollowedUserId from "./types/args/_IdAndFollowedUserId";
+import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
+import { Name } from "../../backk/types/Name";
+import getCities from "./validation/getCities";
+import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
+import { Metadata } from "../../backk/decorators/service/function/Metadata";
+import GetUsersArg from "./types/args/GetUsersArg";
+import MongoDbManager from "../../backk/dbmanager/MongoDbManager";
+import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -62,11 +60,6 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForEveryUser()
-  @Metadata()
-  getCities(): Promise<Name[] | ErrorResponse> {
-    return Promise.resolve(getCities());
-  }
-
   getUsers({
     userNameOrDisplayNameFilter,
     ...postQueryOperations
@@ -86,7 +79,10 @@ export default class UsersServiceImpl extends UsersService {
             )
           ];
 
-    return this.dbManager.getEntitiesByFilters(filters, User, postQueryOperations);
+    return this.dbManager.getEntitiesByFilters(filters, User, {
+      ...postQueryOperations,
+      includeResponseFields: ['userName', 'displayName', 'city']
+    });
   }
 
   @AllowForSelf()
@@ -159,6 +155,12 @@ export default class UsersServiceImpl extends UsersService {
   @AllowForSelf()
   deleteUser({ _id }: _Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, User);
+  }
+
+  @AllowForEveryUser()
+  @Metadata()
+  getCities(): Promise<Name[] | ErrorResponse> {
+    return Promise.resolve(getCities());
   }
 
   private static getUserResponse(userOrErrorResponse: User | ErrorResponse): UserResponse | ErrorResponse {

@@ -1,7 +1,8 @@
 # Vitja service
 
 TODO
-- add getUsersByDisplayNameFilter function (don't get self)
+dbManager.GetFilters(mongo, sql)
+- add imageDataUri to User
 - ShoppingCartItem => SalesItem
 - OrderItem contains SalesItem (ManyToOne)
 - Create shopping cart if getShoppingCart return not_found

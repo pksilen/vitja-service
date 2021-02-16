@@ -15,6 +15,7 @@ import IsPostalCode from "../../../../backk/decorators/typeproperty/IsPostalCode
 import IsOneOf from "../../../../backk/decorators/typeproperty/IsOneOf";
 import getCities from "../../validation/getCities";
 import IsStrongPassword from "../../../../backk/decorators/typeproperty/IsStrongPassword";
+import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -47,6 +48,10 @@ export default class User extends _IdAndCaptcha {
   public phoneNumber!: string;
 
   public readonly commissionDiscountPercentage!: 0 | 25 | 50;
+
+  @MaxLength(10485760)
+  @IsDataUri()
+  public imageDataUri!: string;
 
   public defaultPaymentMethod!: DefaultPaymentMethod | null;
 

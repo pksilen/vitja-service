@@ -12,7 +12,6 @@ import GetUsersArg from "./types/args/GetUsersArg";
 export default abstract class UsersService extends UsersBaseService {
   abstract deleteAllUsers(): Promise<void | ErrorResponse>;
   abstract createUser(arg: User): Promise<UserResponse | ErrorResponse>;
-  abstract getCities(): Promise<Name[] | ErrorResponse>;
   abstract getUsers(arg: GetUsersArg): Promise<User[] | ErrorResponse>;
   abstract getUser(arg: UserName): Promise<UserResponse | ErrorResponse>;
   abstract getUserById(arg: _Id): Promise<UserResponse | ErrorResponse>;
@@ -21,4 +20,6 @@ export default abstract class UsersService extends UsersBaseService {
   abstract updateUser(arg: User): Promise<void | ErrorResponse>;
   abstract changeUserPassword(arg: ChangeUserPasswordArg): Promise<void | ErrorResponse>;
   abstract deleteUser(arg: _Id): Promise<void | ErrorResponse>;
+
+  abstract getCities(): Promise<Name[] | ErrorResponse>;
 }
