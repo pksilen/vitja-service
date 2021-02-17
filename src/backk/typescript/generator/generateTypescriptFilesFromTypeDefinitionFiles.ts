@@ -23,14 +23,32 @@ function generateTypescriptFileFor(
   typeFileLines.forEach((typeFileLine) => {
     const trimmedTypeFileLine = typeFileLine.trim();
     if (trimmedTypeFileLine.startsWith('...') && trimmedTypeFileLine.endsWith(';')) {
-      const spreadType = trimmedTypeFileLine.slice(3, -1);
+      let spreadType = trimmedTypeFileLine.slice(3, -1);
+      let isBaseTypeOptional = false;
+      let isReadonly = false;
+      let isPublic = false;
+
+      if (spreadType.startsWith('Partial<')) {
+        spreadType = spreadType.slice(8, -1);
+        isBaseTypeOptional = true;
+      }
+
+      if (spreadType.startsWith('Readonly<')) {
+        spreadType = spreadType.slice(9, -1);
+        isReadonly = true;
+      }
+
+      if (spreadType.startsWith('Public<')) {
+        spreadType = spreadType.slice(7, -1);
+        isPublic = true;
+      }
+
       if (spreadType.startsWith('Omit<')) {
         let baseType = spreadType
           .slice(5)
           .split(',')[0]
           .trim();
 
-        let isBaseTypeOptional = false;
         if (baseType.startsWith('Partial<')) {
           baseType = baseType.slice(8, -1);
           isBaseTypeOptional = true;
@@ -53,10 +71,13 @@ function generateTypescriptFileFor(
         const [importLines, classPropertyDeclarations] = parseTypescriptLinesForTypeName(
           baseType,
           isBaseTypeOptional,
+          isReadonly,
+          isPublic,
           omittedKeys,
           'omit',
           typeFilePathName
         );
+
         outputImportCodeLines = outputImportCodeLines.concat(importLines);
         outputClassPropertyDeclarations = outputClassPropertyDeclarations.concat(classPropertyDeclarations);
       } else if (spreadType.startsWith('Pick<')) {
@@ -110,11 +131,14 @@ function generateTypescriptFileFor(
         const [importLines, classPropertyDeclarations] = parseTypescriptLinesForTypeName(
           baseType,
           isBaseTypeOptional,
+          isReadonly,
+          isPublic,
           pickedKeys,
           'pick',
           typeFilePathName,
           keyToNewKeyMap
         );
+
         outputImportCodeLines = outputImportCodeLines.concat(importLines);
         outputClassPropertyDeclarations = outputClassPropertyDeclarations.concat(classPropertyDeclarations);
       } else {
@@ -134,6 +158,8 @@ function generateTypescriptFileFor(
         const [importLines, classPropertyDeclarations] = parseTypescriptLinesForTypeName(
           baseType,
           isBaseTypeOptional,
+          isReadonly,
+          isPublic,
           [],
           'omit',
           typeFilePathName

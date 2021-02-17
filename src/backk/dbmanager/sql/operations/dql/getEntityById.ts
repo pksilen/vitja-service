@@ -34,7 +34,7 @@ export default async function getEntityById<T>(
     ) {
       return { _id } as any;
     }
-    
+
     const { columns, joinClauses, outerSortClause } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,

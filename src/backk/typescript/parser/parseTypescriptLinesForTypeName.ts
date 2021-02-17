@@ -71,6 +71,8 @@ function getDeclarationsFor(typeName: string, originatingTypeFilePathName: strin
 export default function parseTypescriptLinesForTypeName(
   typeName: string,
   isBaseTypeOptional: boolean,
+  isReadonly: boolean,
+  isPublic: boolean,
   keys: string[],
   keyType: 'omit' | 'pick',
   originatingTypeFilePathName: string,
@@ -150,20 +152,40 @@ export default function parseTypescriptLinesForTypeName(
               keyToNewKeyMap[propertyName].forEach((newKey) => {
                 const classProperty = _.cloneDeep(classBodyNode);
                 classProperty.key.name = newKey;
+
                 if (isBaseTypeOptional) {
                   classProperty.optional = true;
                   classProperty.definite = false;
                 }
+
+                if (isReadonly) {
+                  classProperty.readonly = true;
+                }
+
+                if (isPublic) {
+                  classProperty.accessibility = 'public';
+                }
+
                 finalClassPropertyDeclarations.push(classProperty);
               });
               return;
             }
           }
         }
+
         if (isBaseTypeOptional) {
           classBodyNode.optional = true;
           classBodyNode.definite = false;
         }
+
+        if (isReadonly) {
+          classBodyNode.readonly = true;
+        }
+
+        if (isPublic) {
+          classBodyNode.accessibility = 'public';
+        }
+
         finalClassPropertyDeclarations.push(classBodyNode);
       });
     }

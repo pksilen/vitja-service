@@ -1,7 +1,6 @@
 # Vitja service
 
-TODO
-- getEntityById, if includeFields is '_id', just return _id
+TODO:
 - Readonly<Pick/Omit>
 - Public<Pick/Omit>
 - ShoppingCartItem => SalesItem
