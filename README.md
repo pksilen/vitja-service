@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Readonly<Pick/Omit>
-- Public<Pick/Omit>
 - ShoppingCartItem => SalesItem
 - OrderItem contains SalesItem (ManyToOne)
 - Create shopping cart if getShoppingCart return not_found

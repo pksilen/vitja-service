@@ -4,8 +4,8 @@ import Id from "../../../../backk/types/id/Id";
 import { OrderState } from "../enum/OrderState";
 import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
 import { Lengths } from "../../../../backk/constants/constants";
-import { SalesItem } from "../../../salesitems/types/entities/SalesItem";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
+import OrderSalesItem from "./OrderSalesItem";
 
 @Entity()
 export default class OrderItem extends Id {

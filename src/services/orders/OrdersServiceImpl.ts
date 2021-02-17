@@ -1,36 +1,37 @@
-import { Injectable } from "@nestjs/common";
-import AbstractDbManager from "src/backk/dbmanager/AbstractDbManager";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
-import { AllowForUserRoles } from "../../backk/decorators/service/function/AllowForUserRoles";
-import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
-import SalesItemsService from "../salesitems/SalesItemsService";
-import OrdersService from "./OrdersService";
-import PlaceOrderArg from "./types/args/PlaceOrderArg";
-import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
-import Order from "./types/entities/Order";
-import OrderItem from "./types/entities/OrderItem";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
-import AddOrderItemArg from "./types/args/AddOrderItemArg";
-import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
+import { Injectable } from '@nestjs/common';
+import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import { AllowForUserRoles } from '../../backk/decorators/service/function/AllowForUserRoles';
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
+import SalesItemsService from '../salesitems/SalesItemsService';
+import OrdersService from './OrdersService';
+import PlaceOrderArg from './types/args/PlaceOrderArg';
+import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
+import Order from './types/entities/Order';
+import OrderItem from './types/entities/OrderItem';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
+import AddOrderItemArg from './types/args/AddOrderItemArg';
+import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
+import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
 import {
   DELETE_ORDER_NOT_ALLOWED,
   INVALID_ORDER_ITEM_STATE,
   ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
-} from "./errors/ordersServiceErrors";
-import { Errors } from "../../backk/decorators/service/function/Errors";
-import executeForAll from "../../backk/utils/executeForAll";
-import ShoppingCartService from "../shoppingcart/ShoppingCartService";
-import { SalesItemState } from "../salesitems/types/enums/SalesItemState";
-import { OrderState } from "./types/enum/OrderState";
-import { Update } from "../../backk/decorators/service/function/Update";
-import sendToRemoteService from "../../backk/remote/messagequeue/sendToRemoteService";
-import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
-import { Create } from "../../backk/decorators/service/function/Create";
-import { SalesItem } from "../salesitems/types/entities/SalesItem";
+} from './errors/ordersServiceErrors';
+import { Errors } from '../../backk/decorators/service/function/Errors';
+import executeForAll from '../../backk/utils/executeForAll';
+import ShoppingCartService from '../shoppingcart/ShoppingCartService';
+import { SalesItemState } from '../salesitems/types/enums/SalesItemState';
+import { OrderState } from './types/enum/OrderState';
+import { Update } from '../../backk/decorators/service/function/Update';
+import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
+import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
+import { Create } from '../../backk/decorators/service/function/Create';
+import { SalesItem } from '../salesitems/types/entities/SalesItem';
+import OrderSalesItem from './types/entities/OrderSalesItem';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -71,7 +72,7 @@ export default class OrdersServiceImpl extends OrdersService {
       },
       Order,
       [
-        () => this.updateSalesItemStates(salesItemIds, 'sold', 'forSale'),
+        () => this.updateSalesItemStates(salesItems, 'sold', 'forSale'),
         () => this.shoppingCartService.emptyShoppingCart({ _id: shoppingCartId, userId })
       ],
       () =>
@@ -79,7 +80,7 @@ export default class OrdersServiceImpl extends OrdersService {
           `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
           {
             userId,
-            salesItemIds
+            salesItems
           }
         )
     );
@@ -111,13 +112,13 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForTests()
-  addOrderItem({ orderId, salesItemId, version }: AddOrderItemArg): Promise<Order | ErrorResponse> {
+  addOrderItem({ orderId, salesItems, version }: AddOrderItemArg): Promise<Order | ErrorResponse> {
     return this.dbManager.addSubEntity(
       orderId,
       version,
       'orderItems',
       {
-        salesItemId,
+        salesItems,
         state: 'toBeDelivered',
         trackingUrl: null,
         deliveryTimestamp: null
@@ -225,13 +226,13 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   private async updateSalesItemStates(
-    salesItems: SalesItem[],
+    salesItems: OrderSalesItem[],
     newState: SalesItemState,
     currentState?: SalesItemState
   ): Promise<void | ErrorResponse> {
     return await executeForAll(
-      salesItemIds,
-      async (salesItemId) =>
+      salesItems,
+      async ({ salesItemId }) =>
         await this.salesItemsService.updateSalesItemState(
           {
             _id: salesItemId,

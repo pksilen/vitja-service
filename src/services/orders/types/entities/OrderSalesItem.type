@@ -1,3 +1,7 @@
+import Entity from '../../../../backk/decorators/entity/Entity';
+
+@Entity('SalesItem')
 export default class OrderSalesItem {
-  ...Pick<SalesItem, '_id', ''primaryImageThumbnailDataUri' | 'title' | 'price'>;
+  ...Pick<SalesItem, '_id'>;
+  ...Readonly<Pick<SalesItem, 'primaryImageThumbnailDataUri' | 'title' | 'price'>>;
 }
