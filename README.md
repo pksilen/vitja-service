@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Create shopping cart if getShoppingCart return not_found
 - Empty shopping cart => Delete and create new, add custom test
   - placeOrder should has gateway as input arg and create order with paymentinfo: null, then response:
     HTTP/1.1 301 Moved Permanently

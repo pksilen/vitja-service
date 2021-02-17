@@ -18,9 +18,9 @@ import { AllowForTests } from '../../backk/decorators/service/function/AllowForT
 import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
 import { NoAutoTest } from '../../backk/decorators/service/function/NoAutoTest';
 import { Delete } from '../../backk/decorators/service/function/Delete';
-import ShoppingCartOrOrderSalesItem from "../orders/types/entities/ShoppingCartOrOrderSalesItem";
-import { HttpStatusCodes } from "../../backk/constants/constants";
-import isErrorResponse from "../../backk/errors/isErrorResponse";
+import ShoppingCartOrOrderSalesItem from '../orders/types/entities/ShoppingCartOrOrderSalesItem';
+import { HttpStatusCodes } from '../../backk/constants/constants';
+import isErrorResponse from '../../backk/errors/isErrorResponse';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -83,19 +83,21 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   getShoppingCart({ userId }: UserId): Promise<ShoppingCart | ErrorResponse> {
-    const shoppingCartOrErrorResponse = this.dbManager.getEntityWhere('userId', userId, ShoppingCart);
+    return this.dbManager.executeInsideTransaction(async () => {
+      const shoppingCartOrErrorResponse = await this.dbManager.getEntityWhere('userId', userId, ShoppingCart);
 
-    if (isErrorResponse(shoppingCartOrErrorResponse, HttpStatusCodes.NOT_FOUND)) {
-      return this.dbManager.createEntity({ userId, salesItems: [] }, ShoppingCart);
-    }
+      if (isErrorResponse(shoppingCartOrErrorResponse, HttpStatusCodes.NOT_FOUND)) {
+        return await this.dbManager.createEntity({ userId, salesItems: [] }, ShoppingCart);
+      }
 
-    return shoppingCartOrErrorResponse;
+      return shoppingCartOrErrorResponse;
+    });
   }
 
   @AllowForSelf()
   @Delete()
   @NoAutoTest()
-  emptyShoppingCart({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
+  emptyShoppingCart({ _id, userId }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, ShoppingCart);
   }
 }
