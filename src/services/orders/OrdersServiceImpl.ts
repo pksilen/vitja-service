@@ -30,6 +30,7 @@ import { Update } from "../../backk/decorators/service/function/Update";
 import sendToRemoteService from "../../backk/remote/messagequeue/sendToRemoteService";
 import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
 import { Create } from "../../backk/decorators/service/function/Create";
+import { SalesItem } from "../salesitems/types/entities/SalesItem";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -53,18 +54,18 @@ export default class OrdersServiceImpl extends OrdersService {
   async placeOrder({
     userId,
     shoppingCartId,
-    salesItemIds,
+    salesItems,
     paymentInfo
   }: PlaceOrderArg): Promise<Order | ErrorResponse> {
     return this.dbManager.createEntity(
       {
         userId,
-        orderItems: salesItemIds.map((salesItemId, index) => ({
+        orderItems: salesItems.map((salesItem, index) => ({
           id: index.toString(),
-          salesItemId,
           state: 'toBeDelivered' as OrderState,
           trackingUrl: null,
-          deliveryTimestamp: null
+          deliveryTimestamp: null,
+          salesItems
         })),
         paymentInfo
       },
@@ -224,7 +225,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   private async updateSalesItemStates(
-    salesItemIds: string[],
+    salesItems: SalesItem[],
     newState: SalesItemState,
     currentState?: SalesItemState
   ): Promise<void | ErrorResponse> {

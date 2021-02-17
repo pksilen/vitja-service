@@ -28,6 +28,13 @@ export default async function getEntityById<T>(
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
   try {
+    if (
+      postQueryOperations?.includeResponseFields?.length === 1 &&
+      postQueryOperations.includeResponseFields[0] === '_id'
+    ) {
+      return { _id } as any;
+    }
+    
     const { columns, joinClauses, outerSortClause } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,

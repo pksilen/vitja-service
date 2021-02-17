@@ -51,6 +51,10 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   @IsDataUri()
   public primaryImageDataUri!: string;
 
+  @MaxLength(Lengths._1M)
+  @IsDataUri()
+  public readonly primaryImageThumbnailDataUri!: string;
+
   @MaxLength(Lengths._10M, { each: true })
   @IsDataUri({ each: true })
   @ArrayMaxSize(10)

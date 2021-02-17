@@ -1,4 +1,3 @@
-import GetByUserIdArg from "../users/types/args/GetByUserIdArg";
 import PlaceOrderArg from "./types/args/PlaceOrderArg";
 import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
 import Order from "./types/entities/Order";

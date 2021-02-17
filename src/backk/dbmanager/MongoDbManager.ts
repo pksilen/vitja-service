@@ -705,6 +705,13 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass = this.getType(EntityClass);
 
     try {
+      if (
+        postQueryOperations?.includeResponseFields?.length === 1 &&
+        postQueryOperations.includeResponseFields[0] === '_id'
+      ) {
+        return { _id } as any;
+      }
+
       return await this.tryExecute(false, async (client) => {
         const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
 

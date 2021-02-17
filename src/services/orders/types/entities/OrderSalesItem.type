@@ -1,0 +1,3 @@
+export default class OrderSalesItem {
+  ...Pick<SalesItem, '_id', ''primaryImageThumbnailDataUri' | 'title' | 'price'>;
+}

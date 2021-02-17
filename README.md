@@ -1,6 +1,9 @@
 # Vitja service
 
 TODO
+- getEntityById, if includeFields is '_id', just return _id
+- Readonly<Pick/Omit>
+- Public<Pick/Omit>
 - ShoppingCartItem => SalesItem
 - OrderItem contains SalesItem (ManyToOne)
 - Create shopping cart if getShoppingCart return not_found
