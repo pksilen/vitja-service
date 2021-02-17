@@ -36,6 +36,7 @@ import { ResponseStatusCode } from '../../backk/decorators/service/function/Resp
 import { ResponseHeaders } from '../../backk/decorators/service/function/ResponseHeaders';
 import getServiceName from '../../backk/utils/getServiceName';
 import { PaymentGateway } from './types/enum/PaymentGateway';
+import _Id from '../../backk/types/id/_Id';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -221,20 +222,14 @@ export default class OrdersServiceImpl extends OrdersService {
     );
   }
 
+  @AllowForUserRoles(['vitjaPaymentGateway'])
+  discardOrder({ _id }: _Id): Promise<void | ErrorResponse> {
+    return this.deleteOrder(_id);
+  }
+
   @AllowForSelf()
   deleteOrder({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteEntityById(_id, Order, [
-      {
-        entityJsonPathForPreHookFuncArg: 'orderItems[?(@.state != "toBeDelivered")]',
-        preHookFunc: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
-        errorMessageOnPreHookFuncExecFailure: DELETE_ORDER_NOT_ALLOWED,
-        shouldDisregardFailureWhenExecutingTests: true
-      },
-      {
-        entityJsonPathForPreHookFuncArg: 'orderItems[*].salesItemId',
-        preHookFunc: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
-      }
-    ]);
+    return this.deleteOrderById(_id);
   }
 
   private async updateSalesItemStates(
@@ -275,11 +270,11 @@ export default class OrdersServiceImpl extends OrdersService {
     const successUrl = encodeURIComponent(
       `https://${
         process.env.API_GATEWAY_FQDN
-      }/${getServiceName()}/ordersService.payOrder?orderId=${orderId}&transactionId=transactionId&transactionTimestamp=transactionTimestamp&amount=amount`
+      }/${getServiceName()}/ordersService.payOrder?_id=${orderId}&transactionId=transactionId&transactionTimestamp=transactionTimestamp&amount=amount`
     );
 
     const failureUrl = encodeURIComponent(
-      `https://${process.env.API_GATEWAY_FQDN}/${getServiceName()}/ordersService.discardOrder?orderId=${orderId}`
+      `https://${process.env.API_GATEWAY_FQDN}/${getServiceName()}/ordersService.discardOrder?_id=${orderId}`
     );
 
     const paymentSuccessMessage = `Order with id ${orderId} was successfully registered and paid`;
@@ -301,5 +296,20 @@ export default class OrdersServiceImpl extends OrdersService {
       default:
         return newState;
     }
+  }
+
+  private deleteOrderById(_id: string) {
+    return this.dbManager.deleteEntityById(_id, Order, [
+      {
+        entityJsonPathForPreHookFuncArg: 'orderItems[?(@.state != "toBeDelivered")]',
+        preHookFunc: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
+        errorMessageOnPreHookFuncExecFailure: DELETE_ORDER_NOT_ALLOWED,
+        shouldDisregardFailureWhenExecutingTests: true
+      },
+      {
+        entityJsonPathForPreHookFuncArg: 'orderItems[*].salesItemId',
+        preHookFunc: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
+      }
+    ]);
   }
 }

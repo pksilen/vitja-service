@@ -1,14 +1,13 @@
 # Vitja service
 
 TODO:
-  - Location: https://payment-gateway/...?successUrl=https://backk-dynamic-frontend/?backk=OrdersService.payOrder?orderId=xxxx&failureUrl=https://backk-dynamic-frontend/?=backk=discardOrder&orderId=xxx
-    paymentGateway adds query params to successUrl to indicate transactionId and amount
-    payOrder updates order with paymentinfo: transactionId and amount
+  - payOrder updates order with paymentinfo: transactionId and amount
     discardOrder removes order by id
     -Create CronJob to remove unpaid orders at intervals
   - remote payment operation could have a url parameter for testing to return fake paymentInfo
 - Get comments from source code and put them as FunctionDocumentation/ServiceDocumentation/Documentation(property) docs
-- Generate metadata where entity references are documented
+- Generate servicesMetadata where entity references are documented
+- Document @Metadata type functions in servicesMetadata
 
 - Split to multiple microservices
   - Implement subentities as remote service queries
