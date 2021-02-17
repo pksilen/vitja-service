@@ -8,7 +8,8 @@ import IsIntegerStringOrAny from '../../../../backk/decorators/typeproperty/IsIn
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
-import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
+import { ShouldBeTrueFor } from '../../../../backk/decorators/typeproperty/ShouldBeTrueFor';
+import OrderItem from '../entities/OrderItem';
 
 export default class DeliverOrderItemArg {
   @IsUndefined({
@@ -38,7 +39,7 @@ export default class DeliverOrderItemArg {
 
   orderItemId!: string;
 
-  @ShouldBeTrueForEntity(
+  @ShouldBeTrueFor<OrderItem>(
     ({ state, deliveryTimestamp }) =>
       (state === 'toBeDelivered' && deliveryTimestamp === null) ||
       (state !== 'toBeDelivered' && deliveryTimestamp !== null)
@@ -47,7 +48,7 @@ export default class DeliverOrderItemArg {
 
   @MaxLength(Lengths._4K)
   @IsUrl()
-  @ShouldBeTrueForEntity(
+  @ShouldBeTrueFor<OrderItem>(
     ({ state, trackingUrl }) =>
       (state === 'toBeDelivered' && trackingUrl === null) ||
       (state !== 'toBeDelivered' && trackingUrl !== null)

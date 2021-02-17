@@ -8,13 +8,18 @@ import _IdAndFollowedUserId from "./types/args/_IdAndFollowedUserId";
 import { Name } from "../../backk/types/Name";
 import UsersBaseService from "../../backk/users/UsersBaseService";
 import GetUsersArg from "./types/args/GetUsersArg";
+import FavoriteSalesItem from "./types/entities/FavoriteSalesItem";
+import PublicUser from "./types/entities/PublicUser";
+import _IdAndFavoriteSalesItem from "./types/args/_IdAndFavoriteSalesItem";
 
 export default abstract class UsersService extends UsersBaseService {
   abstract deleteAllUsers(): Promise<void | ErrorResponse>;
   abstract createUser(arg: User): Promise<UserResponse | ErrorResponse>;
-  abstract getUsers(arg: GetUsersArg): Promise<User[] | ErrorResponse>;
+  abstract getUsers(arg: GetUsersArg): Promise<PublicUser[] | ErrorResponse>;
   abstract getUser(arg: UserName): Promise<UserResponse | ErrorResponse>;
   abstract getUserById(arg: _Id): Promise<UserResponse | ErrorResponse>;
+  abstract addToFavoriteSalesItems(arg: _IdAndFavoriteSalesItem): Promise<User | ErrorResponse>;
+  abstract removeFromFavoriteSalesItems(arg: _IdAndFavoriteSalesItem): Promise<User | ErrorResponse>;
   abstract followUser(arg: _IdAndFollowedUserId): Promise<User | ErrorResponse>;
   abstract unfollowUser(arg: _IdAndFollowedUserId): Promise<User | ErrorResponse>;
   abstract updateUser(arg: User): Promise<void | ErrorResponse>;

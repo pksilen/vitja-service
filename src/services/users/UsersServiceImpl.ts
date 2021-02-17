@@ -17,9 +17,7 @@ import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
 import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from './errors/usersServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import FollowedUser from './types/entities/FollowedUser';
 import { Update } from '../../backk/decorators/service/function/Update';
-import FollowingUser from './types/entities/FollowingUser';
 import _IdAndFollowedUserId from './types/args/_IdAndFollowedUserId';
 import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
 import { Name } from '../../backk/types/Name';
@@ -27,10 +25,13 @@ import getCities from './validation/getCities';
 import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
 import { Metadata } from '../../backk/decorators/service/function/Metadata';
 import GetUsersArg from './types/args/GetUsersArg';
-import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
 import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
 import SortBy from '../../backk/types/postqueryoperations/SortBy';
+import PublicUser from './types/entities/PublicUser';
+import { SalesItem } from '../salesitems/types/entities/SalesItem';
+import FavoriteSalesItem from './types/entities/FavoriteSalesItem';
+import _IdAndFavoriteSalesItem from './types/args/_IdAndFavoriteSalesItem';
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -62,21 +63,24 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForEveryUser()
-  getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): Promise<User[] | ErrorResponse> {
+  getUsers({
+    displayNameFilter,
+    ...postQueryOperations
+  }: GetUsersArg): Promise<PublicUser[] | ErrorResponse> {
     const filters = this.dbManager.getFilters<User>(
       {
         displayName: new RegExp(displayNameFilter)
       },
       [
         new SqlExpression('displayName LIKE :displayNameFilter', {
-          userNameOrDisplayNameFilter: `%${displayNameFilter}%`
+          displayNameFilter: `%${displayNameFilter}%`
         })
       ]
     );
 
     return this.dbManager.getEntitiesByFilters(filters, User, {
       ...postQueryOperations,
-      includeResponseFields: ['_id', 'displayName', 'city', 'imageDataUri']
+      includeResponseFields: ['_id', 'displayName', 'city', 'imageDataUri', 'salesItems']
     });
   }
 
@@ -99,6 +103,29 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForSelf()
+  addToFavoriteSalesItems({
+    _id,
+    favoriteSalesItem
+  }: _IdAndFavoriteSalesItem): Promise<User | ErrorResponse> {
+    return this.dbManager.addSubEntity(
+      _id,
+      'any',
+      'favoriteSalesItems',
+      favoriteSalesItem,
+      User,
+      FavoriteSalesItem
+    );
+  }
+
+  @AllowForSelf()
+  removeFromFavoriteSalesItems({
+    _id,
+    favoriteSalesItem
+  }: _IdAndFavoriteSalesItem): Promise<User | ErrorResponse> {
+    return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', favoriteSalesItem._id, User);
+  }
+
+  @AllowForSelf()
   @Update()
   followUser({ _id, version, followedUserId }: _IdAndFollowedUserId): Promise<User | ErrorResponse> {
     return this.dbManager.addSubEntity(
@@ -107,8 +134,8 @@ export default class UsersServiceImpl extends UsersService {
       'followedUsers',
       { _id: followedUserId },
       User,
-      FollowedUser,
-      () => this.dbManager.addSubEntity(followedUserId, 'any', 'followingUsers', { _id }, User, FollowingUser)
+      PublicUser,
+      () => this.dbManager.addSubEntity(followedUserId, 'any', 'followingUsers', { _id }, User, PublicUser)
     );
   }
 

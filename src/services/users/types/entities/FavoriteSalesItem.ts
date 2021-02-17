@@ -27,15 +27,15 @@ export default class FavoriteSalesItem {
 
   @MaxLength(Lengths._64)
   @IsAnyString()
-  public title!: string;
+  public readonly title!: string;
 
   @IsNumber({
     maxDecimalPlaces: 2
   })
   @MinMax(0, Values._1B)
-  public price!: number;
+  public readonly price!: number;
 
   @MaxLength(Lengths._10M)
   @IsDataUri()
-  public primaryImageDataUri!: string;
+  public readonly primaryImageDataUri!: string;
 }

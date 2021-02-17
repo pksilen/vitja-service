@@ -1,6 +1,6 @@
 import { registerDecorator, ValidationArguments, ValidationOptions } from 'class-validator';
 
-export function ShouldBeTrueForEntity<T>(
+export function ShouldBeTrueFor<T>(
   func: (entity: T) => boolean,
   errorMessage?: string,
   validationOptions?: ValidationOptions

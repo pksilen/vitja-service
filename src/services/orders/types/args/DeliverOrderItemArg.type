@@ -1,3 +1,5 @@
+import OrderItem from '../entities/OrderItem';
+
 export default class DeliverOrderItemArg {
   ..._IdAndOrderItemId;
   ...Pick<OrderItem, 'deliveryTimestamp' | 'trackingUrl'>;

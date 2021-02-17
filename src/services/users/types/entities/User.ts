@@ -14,7 +14,7 @@ import getCities from "../../validation/getCities";
 import IsStrongPassword from "../../../../backk/decorators/typeproperty/IsStrongPassword";
 import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
 import { Lengths } from "../../../../backk/constants/constants";
-import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
+import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/ShouldBeTrueFor";
 import FavoriteSalesItem from "./FavoriteSalesItem";
 import PublicUser from "./PublicUser";
 
@@ -55,7 +55,7 @@ export default class User extends _IdAndCaptcha {
   public imageDataUri!: string;
 
   @ArrayMaxSize(10)
-  @ShouldBeTrueForEntity<User>(
+  @ShouldBeTrueFor<User>(
     ({ paymentMethods }) => paymentMethods.filter(({ isDefault }) => isDefault).length === 1,
     'There should be one default payment method'
   )
