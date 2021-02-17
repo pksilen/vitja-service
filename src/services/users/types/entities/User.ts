@@ -1,20 +1,22 @@
-import { ArrayMaxSize, ArrayUnique, IsEmail, IsPhoneNumber, MaxLength } from 'class-validator';
-import Entity from '../../../../backk/decorators/entity/Entity';
-import { Documentation } from '../../../../backk/decorators/typeproperty/Documentation';
-import PaymentMethod from './PaymentMethod';
-import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
-import _IdAndCaptcha from '../../../../backk/types/id/_IdAndCaptcha';
-import { SalesItem } from '../../../salesitems/types/entities/SalesItem';
-import Order from '../../../orders/types/entities/Order';
-import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany';
-import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
-import IsPostalCode from '../../../../backk/decorators/typeproperty/IsPostalCode';
-import IsOneOf from '../../../../backk/decorators/typeproperty/IsOneOf';
-import getCities from '../../validation/getCities';
-import IsStrongPassword from '../../../../backk/decorators/typeproperty/IsStrongPassword';
-import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
-import { Lengths } from '../../../../backk/constants/constants';
-import { ShouldBeTrueForEntity } from '../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity';
+import { ArrayMaxSize, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
+import Entity from "../../../../backk/decorators/entity/Entity";
+import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
+import PaymentMethod from "./PaymentMethod";
+import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
+import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
+import { SalesItem } from "../../../salesitems/types/entities/SalesItem";
+import Order from "../../../orders/types/entities/Order";
+import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
+import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
+import IsPostalCode from "../../../../backk/decorators/typeproperty/IsPostalCode";
+import IsOneOf from "../../../../backk/decorators/typeproperty/IsOneOf";
+import getCities from "../../validation/getCities";
+import IsStrongPassword from "../../../../backk/decorators/typeproperty/IsStrongPassword";
+import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
+import { Lengths } from "../../../../backk/constants/constants";
+import { ShouldBeTrueForEntity } from "../../../../backk/decorators/typeproperty/ShouldBeTrueForEntity";
+import FavoriteSalesItem from "./FavoriteSalesItem";
+import PublicUser from "./PublicUser";
 
 @Entity()
 export default class User extends _IdAndCaptcha {

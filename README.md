@@ -3,7 +3,6 @@
 TODO:
 - Create shopping cart if getShoppingCart return not_found
 - Empty shopping cart => Delete and create new, add custom test
-- isDefault attribute and return user sortedby that
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
 - AddSalesItemtoFavorites, removeSalesItemFromFavorites
   - placeOrder should has gateway as input arg and create order with paymentinfo: null, then response:
