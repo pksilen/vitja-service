@@ -3,7 +3,6 @@
 TODO:
 - Create shopping cart if getShoppingCart return not_found
 - Empty shopping cart => Delete and create new, add custom test
-- AddSalesItemtoFavorites, removeSalesItemFromFavorites
   - placeOrder should has gateway as input arg and create order with paymentinfo: null, then response:
     HTTP/1.1 301 Moved Permanently
     Location: https://payment-gateway/...?successUrl=https://backk-dynamic-frontend/?backk=OrdersService.payOrder?orderId=xxxx&failureUrl=https://backk-dynamic-frontend/?=backk=discardOrder&orderId=xxx
@@ -12,6 +11,7 @@ TODO:
     discardOrder removes order by id
     -Create CronJob to remove unpaid orders at intervals
   - remote payment operation could have a url parameter for testing to return fake paymentInfo
+- Get comments from source code and put them as FunctionDocumentation/ServiceDocumentation/Documentation(property) docs
 
 - Split to multiple microservices
   - Implement subentities as remote service queries

@@ -9,7 +9,6 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToIsAllowedForServicePrivateUseMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
   private readonly serviceFunctionNameToDocStringMap: { [key: string]: string } = {};
-  private readonly serviceFunctionNameToExpectedResponseStatusCodeInTestsMap: { [key: string]: number } = {};
   private readonly serviceFunctionNameToAllowedForTestsMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToErrorsMap: { [key: string]: ErrorCodeAndMessageAndStatus[] } = {};
   private readonly serviceFunctionNameToIsNotTransactionalMap: { [key: string]: boolean } = {};
@@ -26,6 +25,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToIsCreateFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsMetadataFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsDeleteFunctionMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToResponseStatusCodeMap: { [key: string]: number } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -55,12 +55,12 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToDocStringMap[`${serviceClass.name}${functionName}`] = docString;
   }
 
-  addExpectedResponseStatusCodeInTestsForServiceFunction(
+  addResponseStatusCodeForServiceFunction(
     serviceClass: Function,
     functionName: string,
     statusCode: number
   ) {
-    this.serviceFunctionNameToExpectedResponseStatusCodeInTestsMap[
+    this.serviceFunctionNameToResponseStatusCodeMap[
       `${serviceClass.name}${functionName}`
     ] = statusCode;
   }
@@ -239,15 +239,15 @@ class ServiceFunctionAnnotationContainer {
     return undefined;
   }
 
-  getExpectedResponseStatusCodeInTestsForServiceFunction(serviceClass: Function, functionName: string) {
+  getResponseStatusCodeForServiceFunction(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToExpectedResponseStatusCodeInTestsMap[
+        this.serviceFunctionNameToResponseStatusCodeMap[
           `${proto.constructor.name}${functionName}`
         ] !== undefined
       ) {
-        return this.serviceFunctionNameToExpectedResponseStatusCodeInTestsMap[
+        return this.serviceFunctionNameToResponseStatusCodeMap[
           `${proto.constructor.name}${functionName}`
         ];
       }

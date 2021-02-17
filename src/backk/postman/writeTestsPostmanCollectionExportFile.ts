@@ -79,7 +79,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         lastGetFunctionMetadata = functionMetadata;
       }
 
-      const expectedResponseStatusCodeInTests = serviceFunctionAnnotationContainer.getExpectedResponseStatusCodeInTestsForServiceFunction(
+      const expectedResponseStatusCode = serviceFunctionAnnotationContainer.getResponseStatusCodeForServiceFunction(
         (controller as any)[serviceMetadata.serviceName].constructor,
         functionMetadata.functionName
       );
@@ -102,7 +102,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         serviceMetadata,
         functionMetadata,
         false,
-        expectedResponseStatusCodeInTests,
+        expectedResponseStatusCode,
         expectedResponseFieldPathNameToFieldValueMapInTests
       );
 

@@ -1,9 +1,9 @@
 import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationContainer';
 
-export function ExpectResponseStatusCodeInTests(statusCode: number) {
+export function ResponseStatusCode(statusCode: number) {
   // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, functionName: string) {
-    serviceFunctionAnnotationContainer.addExpectedResponseStatusCodeInTestsForServiceFunction(
+    serviceFunctionAnnotationContainer.addResponseStatusCodeForServiceFunction(
       object.constructor,
       functionName,
       statusCode
