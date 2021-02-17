@@ -12,6 +12,7 @@ TODO:
     -Create CronJob to remove unpaid orders at intervals
   - remote payment operation could have a url parameter for testing to return fake paymentInfo
 - Get comments from source code and put them as FunctionDocumentation/ServiceDocumentation/Documentation(property) docs
+- Generate metadata where entity references are documented
 
 - Split to multiple microservices
   - Implement subentities as remote service queries

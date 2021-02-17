@@ -19,6 +19,8 @@ import { ExpectReturnValueToContainInTests } from '../../backk/decorators/servic
 import { NoAutoTest } from '../../backk/decorators/service/function/NoAutoTest';
 import { Delete } from '../../backk/decorators/service/function/Delete';
 import ShoppingCartOrOrderSalesItem from "../orders/types/entities/ShoppingCartOrOrderSalesItem";
+import { HttpStatusCodes } from "../../backk/constants/constants";
+import isErrorResponse from "../../backk/errors/isErrorResponse";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -81,7 +83,13 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   getShoppingCart({ userId }: UserId): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.getEntityWhere('userId', userId, ShoppingCart);
+    const shoppingCartOrErrorResponse = this.dbManager.getEntityWhere('userId', userId, ShoppingCart);
+
+    if (isErrorResponse(shoppingCartOrErrorResponse, HttpStatusCodes.NOT_FOUND)) {
+      return this.dbManager.createEntity({ userId, salesItems: [] }, ShoppingCart);
+    }
+
+    return shoppingCartOrErrorResponse;
   }
 
   @AllowForSelf()
