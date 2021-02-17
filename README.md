@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Empty shopping cart => Delete and create new, add custom test
   - placeOrder should has gateway as input arg and create order with paymentinfo: null, then response:
     HTTP/1.1 301 Moved Permanently
     Location: https://payment-gateway/...?successUrl=https://backk-dynamic-frontend/?backk=OrdersService.payOrder?orderId=xxxx&failureUrl=https://backk-dynamic-frontend/?=backk=discardOrder&orderId=xxx

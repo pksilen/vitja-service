@@ -3,10 +3,11 @@ import MinMax from "../../../../backk/decorators/typeproperty/MinMax";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { IsExternalId } from "../../../../backk/decorators/typeproperty/IsExternalId";
 import { Lengths, Values } from "../../../../backk/constants/constants";
+import { PaymentGateway } from "../enum/PaymentGateway";
 
 @Entity()
 export default class PaymentInfo {
-  public gateway!: 'Paytrail' | 'PayPal' | 'Klarna';
+  public paymentGateway!: PaymentGateway;
 
   @MaxLength(Lengths._256)
   @IsAlphanumeric()

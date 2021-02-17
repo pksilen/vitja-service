@@ -1,14 +1,7 @@
-import { ArrayMaxSize } from "class-validator";
-import PaymentInfo from "../entities/PaymentInfo";
-import { Values } from "../../../../backk/constants/constants";
-import ShoppingCartOrOrderSalesItem from "../entities/ShoppingCartOrOrderSalesItem";
+import ShoppingCart from "../../../shoppingcart/types/entities/ShoppingCart";
+import { PaymentGateway } from "../enum/PaymentGateway";
 
 export default class PlaceOrderArg {
-  userId!: string;
-  shoppingCartId!: string;
-
-  @ArrayMaxSize(Values._50)
-  salesItems!: ShoppingCartOrOrderSalesItem[];
-
-  paymentInfo!: PaymentInfo;
+  shoppingCart!: ShoppingCart;
+  paymentGateway!: PaymentGateway;
 }
