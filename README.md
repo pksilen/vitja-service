@@ -1,14 +1,11 @@
 # Vitja service
 
 TODO:
-- ShoppingCartItem => SalesItem
-- OrderItem contains SalesItem (ManyToOne)
 - Create shopping cart if getShoppingCart return not_found
 - Empty shopping cart => Delete and create new, add custom test
-- remove defaultPaymentMethod, replace with isDefault attribute and return user sortedby that
-  - test in IsExprTrue annotation that only one paymentmethod can have isDefault true
+- isDefault attribute and return user sortedby that
 - Make favoritesalesItemIds a many-to-many map to FavoriteSalesItem[] which is reference to SalesItem
-- Rename createOrder to placeOrder
+- AddSalesItemtoFavorites, removeSalesItemFromFavorites
   - placeOrder should has gateway as input arg and create order with paymentinfo: null, then response:
     HTTP/1.1 301 Moved Permanently
     Location: https://payment-gateway/...?successUrl=https://backk-dynamic-frontend/?backk=OrdersService.payOrder?orderId=xxxx&failureUrl=https://backk-dynamic-frontend/?=backk=discardOrder&orderId=xxx

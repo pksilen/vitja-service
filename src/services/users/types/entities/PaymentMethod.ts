@@ -6,6 +6,8 @@ import IsCardVerificationCode from "../../../../backk/decorators/typeproperty/is
 
 @Entity()
 export default class PaymentMethod extends Id {
+  public isDefault!: boolean;
+
   public paymentMethodType!: 'creditCard';
 
   @IsCreditCard()

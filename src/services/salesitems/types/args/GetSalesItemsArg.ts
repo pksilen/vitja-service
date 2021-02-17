@@ -37,7 +37,7 @@ export default class GetSalesItemsArg extends DefaultPostQueryOperations {
   @MinMax(0, 1000000000)
   maxPrice?: number;
 
-  includeResponseFields?: string[] = ['title', 'price', 'previousPrice', 'primaryImageDataUri'];
+  includeResponseFields?: string[] = ['_id', 'title', 'price', 'previousPrice', 'primaryImageDataUri'];
 
   sortBys: SortBy[] = [
     { fieldName: '_id', sortDirection: 'DESC' },

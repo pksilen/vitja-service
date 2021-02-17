@@ -1,6 +1,0 @@
-import Entity from '../../../../backk/decorators/entity/Entity';
-
-@Entity()
-export default class DefaultPaymentMethod {
-  ...Omit<PaymentMethod, 'id'>;
-}

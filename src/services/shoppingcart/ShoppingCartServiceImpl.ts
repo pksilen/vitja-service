@@ -9,7 +9,6 @@ import ShoppingCart from './types/entities/ShoppingCart';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
 import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
 import awaitDbOperationAndGetResultOfPredicate from '../../backk/utils/getErrorResponseOrResultOf';
-import ShoppingCartItem from './types/entities/ShoppingCartItem';
 import { SALES_ITEM_ALREADY_SOLD, SHOPPING_CART_ALREADY_EXISTS } from './errors/shoppingCartServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import AddToShoppingCartArg from './types/args/AddToShoppingCartArg';
@@ -19,6 +18,7 @@ import { AllowForTests } from '../../backk/decorators/service/function/AllowForT
 import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
 import { NoAutoTest } from '../../backk/decorators/service/function/NoAutoTest';
 import { Delete } from '../../backk/decorators/service/function/Delete';
+import ShoppingCartOrOrderSalesItem from "../orders/types/entities/ShoppingCartOrOrderSalesItem";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -50,28 +50,28 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @ExpectReturnValueToContainInTests({ shoppingCartItems: [] })
   removeFromShoppingCart({
     _id,
-    shoppingCartItemId
+    salesItemId
   }: RemoveFromShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
-    return this.dbManager.removeSubEntityById(_id, 'shoppingCartItems', shoppingCartItemId, ShoppingCart, {
-      entityJsonPathForPreHookFuncArg: `shoppingCartItems[?(@.id == '${shoppingCartItemId}')]`,
+    return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {
+      entityJsonPathForPreHookFuncArg: `salesItems[?(@._id == '${salesItemId}')]`,
       preHookFunc: ([{ salesItemId }]) =>
         this.salesItemService.updateSalesItemState({ _id: salesItemId, newState: 'forSale' })
     });
   }
 
   @AllowForSelf()
-  addToShoppingCart({ _id, salesItemId }: AddToShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
+  addToShoppingCart({ _id, salesItem }: AddToShoppingCartArg): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.addSubEntity(
       _id,
       'any',
-      'shoppingCartItems',
-      { salesItemId },
+      'salesItems',
+      salesItem,
       ShoppingCart,
-      ShoppingCartItem,
+      ShoppingCartOrOrderSalesItem,
       {
         preHookFunc: () =>
           awaitDbOperationAndGetResultOfPredicate(
-            this.salesItemService.getSalesItem({ _id: salesItemId }),
+            this.salesItemService.getSalesItem({ _id: salesItem._id }),
             (salesItem) => salesItem.state === 'forSale'
           ),
         errorMessageOnPreHookFuncExecFailure: SALES_ITEM_ALREADY_SOLD

@@ -7,5 +7,5 @@ import { Lengths } from "../../../../backk/constants/constants";
 export default class GetUsersArg extends DefaultPostQueryOperations {
   @MaxLength(Lengths._256)
   @IsAnyString()
-  userNameOrDisplayNameFilter!: string;
+  displayNameFilter!: string;
 }

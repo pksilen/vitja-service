@@ -29,6 +29,8 @@ import { Metadata } from '../../backk/decorators/service/function/Metadata';
 import GetUsersArg from './types/args/GetUsersArg';
 import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
 import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
+import SortBy from '../../backk/types/postqueryoperations/SortBy';
 
 @ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -60,34 +62,33 @@ export default class UsersServiceImpl extends UsersService {
   }
 
   @AllowForEveryUser()
-  getUsers({
-    userNameOrDisplayNameFilter,
-    ...postQueryOperations
-  }: GetUsersArg): Promise<User[] | ErrorResponse> {
+  getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): Promise<User[] | ErrorResponse> {
     const filters = this.dbManager.getFilters<User>(
       {
-        $or: [
-          { userName: new RegExp(userNameOrDisplayNameFilter) },
-          { displayName: new RegExp(userNameOrDisplayNameFilter) }
-        ]
+        displayName: new RegExp(displayNameFilter)
       },
       [
-        new SqlExpression(
-          'userName LIKE :userNameOrDisplayNameFilter OR displayName LIKE :userNameOrDisplayNameFilter',
-          { userNameOrDisplayNameFilter: `%${userNameOrDisplayNameFilter}%` }
-        )
+        new SqlExpression('displayName LIKE :displayNameFilter', {
+          userNameOrDisplayNameFilter: `%${displayNameFilter}%`
+        })
       ]
     );
 
     return this.dbManager.getEntitiesByFilters(filters, User, {
       ...postQueryOperations,
-      includeResponseFields: ['userName', 'displayName', 'city', 'imageDataUri']
+      includeResponseFields: ['_id', 'displayName', 'city', 'imageDataUri']
     });
   }
 
   @AllowForSelf()
   async getUser({ userName }: UserName): Promise<UserResponse | ErrorResponse> {
-    const userOrErrorResponse = await this.dbManager.getEntityWhere('userName', userName, User);
+    const defaultPostQueryOperations = new DefaultPostQueryOperations();
+
+    const userOrErrorResponse = await this.dbManager.getEntityWhere('userName', userName, User, {
+      ...defaultPostQueryOperations,
+      sortBys: [...defaultPostQueryOperations.sortBys, new SortBy('paymentMethods', 'isDefault', 'ASC')]
+    });
+
     return UsersServiceImpl.getUserResponse(userOrErrorResponse);
   }
 

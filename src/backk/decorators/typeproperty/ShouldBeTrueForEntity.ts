@@ -1,7 +1,7 @@
 import { registerDecorator, ValidationArguments, ValidationOptions } from 'class-validator';
 
-export function ShouldBeTrueForEntity(
-  func: (entity: any) => boolean,
+export function ShouldBeTrueForEntity<T>(
+  func: (entity: T) => boolean,
   errorMessage?: string,
   validationOptions?: ValidationOptions
 ) {
@@ -15,7 +15,7 @@ export function ShouldBeTrueForEntity(
       options: validationOptions,
       validator: {
         validate(value: any, args: ValidationArguments) {
-          return func(args.object);
+          return func(args.object as any);
         },
         defaultMessage: () =>
           errorMessage ? errorMessage : 'Entity did not match predicate: ' + func.toString()

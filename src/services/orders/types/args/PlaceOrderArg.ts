@@ -1,14 +1,14 @@
 import { ArrayMaxSize } from "class-validator";
 import PaymentInfo from "../entities/PaymentInfo";
 import { Values } from "../../../../backk/constants/constants";
-import OrderSalesItem from "../entities/OrderSalesItem";
+import ShoppingCartOrOrderSalesItem from "../entities/ShoppingCartOrOrderSalesItem";
 
 export default class PlaceOrderArg {
   userId!: string;
   shoppingCartId!: string;
 
   @ArrayMaxSize(Values._50)
-  salesItems!: OrderSalesItem[];
+  salesItems!: ShoppingCartOrOrderSalesItem[];
 
   paymentInfo!: PaymentInfo;
 }

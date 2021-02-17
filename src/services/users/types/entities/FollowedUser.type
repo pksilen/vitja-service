@@ -1,9 +1,0 @@
-import Entity from '../../../../backk/decorators/entity/Entity';
-import FollowerSalesItem from './FollowerSalesItem'
-
-@Entity('User')
-export default class FollowedUser {
-  ...Pick<User, '_id' | 'displayName'>;
-
-  public readonly followerSalesItems!: FollowerSalesItem[];
-}

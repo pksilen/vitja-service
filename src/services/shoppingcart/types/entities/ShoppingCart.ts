@@ -1,8 +1,8 @@
 import Entity from "../../../../backk/decorators/entity/Entity";
-import ShoppingCartItem from "./ShoppingCartItem";
 import _Id from "../../../../backk/types/id/_Id";
 import { ArrayMaxSize } from "class-validator";
 import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
+import ShoppingCartOrOrderSalesItem from "../../../orders/types/entities/ShoppingCartOrOrderSalesItem";
 
 @Entity()
 export default class ShoppingCart extends _Id {
@@ -10,5 +10,5 @@ export default class ShoppingCart extends _Id {
   public userId!: string;
 
   @ArrayMaxSize(50)
-  public shoppingCartItems!: ShoppingCartItem[];
+  public salesItems!: ShoppingCartOrOrderSalesItem[];
 }

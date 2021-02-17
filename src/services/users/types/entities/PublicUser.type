@@ -1,0 +1,8 @@
+import Entity from '../../../../backk/decorators/entity/Entity';
+import UserSalesItem from './UserSalesItem'
+
+@Entity('User')
+export default class PublicUser {
+  ...Pick<User, '_id', 'displayName', 'city', 'imageDataUri'>;
+  public readonly salesItems!: UserSalesItem[];
+}
