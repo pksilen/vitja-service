@@ -16,7 +16,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToCronScheduleMap: { [key: string]: string } = {};
   private readonly serviceFunctionNameToRetryIntervalsInSecsMap: { [key: string]: number[] } = {};
   private readonly serviceFunctionNameToIsUpdateFunctionMap: { [key: string]: boolean } = {};
-  private readonly serviceFunctionNameToResponseHeadersMap: { [key: string]: HttpHeaders } = {};
+  private readonly serviceFunctionNameToResponseHeadersMap: { [key: string]: HttpHeaders<any, any> } = {};
   private readonly serviceFunctionNameToHasNoAutoTestMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap: {
     [key: string]: { [key: string]: any };
@@ -101,7 +101,7 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToIsUpdateFunctionMap[`${serviceClass.name}${functionName}`] = true;
   }
 
-  addResponseHeadersForServiceFunction(serviceClass: Function, functionName: string, headers: HttpHeaders) {
+  addResponseHeadersForServiceFunction<T extends object, U extends any>(serviceClass: Function, functionName: string, headers: HttpHeaders<T,U>) {
     this.serviceFunctionNameToResponseHeadersMap[`${serviceClass.name}${functionName}`] = headers;
   }
 
@@ -367,10 +367,10 @@ class ServiceFunctionAnnotationContainer {
     return this.serviceFunctionNameToRetryIntervalsInSecsMap;
   }
 
-  getResponseHeadersForServiceFunction(
+  getResponseHeadersForServiceFunction<T extends object, U extends any>(
     serviceClass: Function,
     functionName: string
-  ): HttpHeaders | undefined {
+  ): HttpHeaders<T, U> | undefined {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (

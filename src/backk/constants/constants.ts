@@ -59,6 +59,7 @@ export class Values {
 export class HttpStatusCodes {
   static readonly SUCCESS = 200;
   static readonly ERRORS_START = 300;
+  static readonly MOVED_PERMANENTLY = 301;
   static readonly NOT_MODIFIED = 304;
   static readonly CLIENT_ERRORS_START = 400;
   static readonly BAD_REQUEST = 400;

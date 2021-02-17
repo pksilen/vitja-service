@@ -31,6 +31,11 @@ import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteSer
 import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
 import { Create } from '../../backk/decorators/service/function/Create';
 import ShoppingCartOrOrderSalesItem from './types/entities/ShoppingCartOrOrderSalesItem';
+import { HttpStatusCodes } from '../../backk/constants/constants';
+import { ResponseStatusCode } from '../../backk/decorators/service/function/ResponseStatusCode';
+import { ResponseHeaders } from '../../backk/decorators/service/function/ResponseHeaders';
+import getServiceName from '../../backk/utils/getServiceName';
+import { PaymentGateway } from './types/enum/PaymentGateway';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -51,6 +56,11 @@ export default class OrdersServiceImpl extends OrdersService {
   @AllowForSelf()
   @NoCaptcha()
   @Create()
+  @ResponseStatusCode(HttpStatusCodes.MOVED_PERMANENTLY)
+  @ResponseHeaders<PlaceOrderArg, Order>({
+    Location: ({ paymentGateway, uiRedirectUrl }, { _id }) =>
+      OrdersServiceImpl.getLocationHeaderUrl(paymentGateway, _id, uiRedirectUrl)
+  })
   async placeOrder({
     shoppingCart: { _id, userId, salesItems },
     paymentGateway
@@ -243,6 +253,41 @@ export default class OrdersServiceImpl extends OrdersService {
           currentState
         )
     );
+  }
+
+  private static getLocationHeaderUrl(
+    paymentGateway: PaymentGateway,
+    orderId: string,
+    uiRedirectUrl: string
+  ) {
+    let paymentGatewayHost;
+    switch (paymentGateway) {
+      case 'Paytrail':
+        paymentGatewayHost = 'server.paytrail.com';
+        break;
+      case 'PayPal':
+        paymentGatewayHost = 'server.paypal.com';
+        break;
+      case 'Klarna':
+        paymentGatewayHost = 'server.klarna.com';
+        break;
+    }
+    const successUrl = encodeURIComponent(
+      `https://${
+        process.env.API_GATEWAY_FQDN
+      }/${getServiceName()}/ordersService.payOrder?orderId=${orderId}&transactionId=transactionId&transactionTimestamp=transactionTimestamp&amount=amount`
+    );
+
+    const failureUrl = encodeURIComponent(
+      `https://${process.env.API_GATEWAY_FQDN}/${getServiceName()}/ordersService.discardOrder?orderId=${orderId}`
+    );
+
+    const paymentSuccessMessage = `Order with id ${orderId} was successfully registered and paid`;
+    const successUiRedirectUrl = encodeURIComponent(`${uiRedirectUrl}?message=${paymentSuccessMessage}`);
+    const paymentFailureMessage = `Order payment failed`;
+    const failureRedirectUrl = encodeURIComponent(`${uiRedirectUrl}?message=${paymentFailureMessage}`);
+
+    return `https://${paymentGatewayHost}/pay?successUrl=${successUrl}&failureUrl=${failureUrl}&successRedirectUrl=${successUiRedirectUrl}&failureRedirectUrl=${failureRedirectUrl}`;
   }
 
   private static getValidPreviousOrderStateFor(newState: OrderState): OrderState {
