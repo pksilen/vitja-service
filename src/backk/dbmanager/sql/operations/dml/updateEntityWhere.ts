@@ -20,7 +20,7 @@ export default async function updateEntityWhere<T extends Entity>(
   fieldValue: T[keyof T] | string,
   entity: RecursivePartial<T>,
   EntityClass: new () => T,
-  preHooks?: PreHook | PreHook[],
+  preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS

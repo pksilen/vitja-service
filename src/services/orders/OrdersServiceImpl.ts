@@ -19,6 +19,7 @@ import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
 import {
   DELETE_ORDER_NOT_ALLOWED,
   INVALID_ORDER_ITEM_STATE,
+  ORDER_ALREADY_PAID,
   ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
 } from './errors/ordersServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
@@ -37,6 +38,9 @@ import { ResponseHeaders } from '../../backk/decorators/service/function/Respons
 import getServiceName from '../../backk/utils/getServiceName';
 import { PaymentGateway } from './types/enum/PaymentGateway';
 import _Id from '../../backk/types/id/_Id';
+import { Delete } from '../../backk/decorators/service/function/Delete';
+import PayOrderArg from './types/args/PayOrderArg';
+import { JSONPath } from 'jsonpath-plus';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -63,7 +67,7 @@ export default class OrdersServiceImpl extends OrdersService {
       OrdersServiceImpl.getLocationHeaderUrl(paymentGateway, _id, uiRedirectUrl)
   })
   async placeOrder({
-    shoppingCart: { _id, userId, salesItems },
+    shoppingCart: { userId, salesItems },
     paymentGateway
   }: PlaceOrderArg): Promise<Order | ErrorResponse> {
     return this.dbManager.createEntity(
@@ -84,10 +88,7 @@ export default class OrdersServiceImpl extends OrdersService {
         }
       },
       Order,
-      [
-        () => this.updateSalesItemStates(salesItems, 'sold', 'forSale'),
-        () => this.shoppingCartService.emptyShoppingCart({ _id, userId })
-      ],
+      () => this.updateSalesItemStates(salesItems, 'sold', 'forSale'),
       () =>
         sendToRemoteService(
           `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
@@ -109,9 +110,10 @@ export default class OrdersServiceImpl extends OrdersService {
       orderItemId,
       Order,
       {
-        entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
-        preHookFunc: ([{ state }]) => state === 'toBeDelivered',
-        errorMessageOnPreHookFuncExecFailure: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+        isSuccessfulOrTrue: (order) =>
+          JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })?.[0] ===
+          'toBeDelivered',
+        errorMessage: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
       },
       () =>
         sendToRemoteService(
@@ -146,6 +148,18 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.getEntityById(_id, Order);
   }
 
+  @AllowForUserRoles(['vitjaPaymentGateway'])
+  @Update()
+  payOrder({ _id, ...paymentInfo }: PayOrderArg): Promise<void | ErrorResponse> {
+    return this.dbManager.updateEntity({ _id, paymentInfo }, Order, [
+      () => this.shoppingCartService.deleteShoppingCart({ _id }),
+      {
+        isSuccessfulOrTrue: ({ paymentInfo }) => paymentInfo.transactionId === null,
+        errorMessage: ORDER_ALREADY_PAID
+      }
+    ]);
+  }
+
   @Update()
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
@@ -162,11 +176,11 @@ export default class OrdersServiceImpl extends OrdersService {
         orderItems: [{ state: 'delivering', id: orderItemId, ...restOfArg }]
       },
       Order,
-      [],
       {
-        entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
-        preHookFunc: ([{ state }]) => state === 'toBeDelivered',
-        errorMessageOnPreHookFuncExecFailure: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+        isSuccessfulOrTrue: (order) =>
+          JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
+          'toBeDelivered',
+        errorMessage: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
       },
       () =>
         sendToRemoteService(
@@ -191,26 +205,30 @@ export default class OrdersServiceImpl extends OrdersService {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: newState }] },
       Order,
-      [],
       [
         {
-          executePreHookFuncIf: () => newState === 'returned',
-          entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
-          preHookFunc: ([{ salesItemId }]) =>
+          shouldExecutePreHook: () => newState === 'returned',
+          isSuccessfulOrTrue: (order) =>
             this.salesItemsService.updateSalesItemState({
-              _id: salesItemId,
+              _id: JSONPath({
+                json: order,
+                path: `orderItems[?(@.id == '${orderItemId}')].salesItems[0]._id`
+              })[0],
               newState: 'forSale'
             })
         },
         {
-          entityJsonPathForPreHookFuncArg: `orderItems[?(@.id == '${orderItemId}')]`,
-          preHookFunc: ([{ state }]) => state === OrdersServiceImpl.getValidPreviousOrderStateFor(newState),
-          errorMessageOnPreHookFuncExecFailure: INVALID_ORDER_ITEM_STATE
+          isSuccessfulOrTrue: (order) =>
+            JSONPath({
+              json: order,
+              path: `orderItems[?(@.id == '${orderItemId}')].state`
+            })[0] === OrdersServiceImpl.getValidPreviousOrderStateFor(newState),
+          errorMessage: INVALID_ORDER_ITEM_STATE
         }
       ],
       {
-        executePostHookIf: () => newState === 'returned',
-        postHookFunc: () =>
+        shouldExecutePostHook: () => newState === 'returned',
+        isSuccessful: () =>
           sendToRemoteService(
             `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
             {
@@ -223,8 +241,9 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
+  @Delete()
   discardOrder({ _id }: _Id): Promise<void | ErrorResponse> {
-    return this.deleteOrder(_id);
+    return this.deleteOrderById(_id);
   }
 
   @AllowForSelf()
@@ -301,15 +320,13 @@ export default class OrdersServiceImpl extends OrdersService {
   private deleteOrderById(_id: string) {
     return this.dbManager.deleteEntityById(_id, Order, [
       {
-        entityJsonPathForPreHookFuncArg: 'orderItems[?(@.state != "toBeDelivered")]',
-        preHookFunc: (orderItemsInDelivery) => orderItemsInDelivery.length === 0,
-        errorMessageOnPreHookFuncExecFailure: DELETE_ORDER_NOT_ALLOWED,
+        isSuccessfulOrTrue: (order) =>
+          JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
+        errorMessage: DELETE_ORDER_NOT_ALLOWED,
         shouldDisregardFailureWhenExecutingTests: true
       },
-      {
-        entityJsonPathForPreHookFuncArg: 'orderItems[*].salesItemId',
-        preHookFunc: async (salesItemIds) => await this.updateSalesItemStates(salesItemIds, 'forSale')
-      }
+      (order) =>
+        this.updateSalesItemStates(JSONPath({ json: order, path: 'orderItems[*].salesItems' }), 'forSale')
     ]);
   }
 }

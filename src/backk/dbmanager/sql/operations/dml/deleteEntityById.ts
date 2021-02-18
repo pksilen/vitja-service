@@ -16,12 +16,13 @@ import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
+import { Entity } from "../../../../types/entities/Entity";
 
-export default async function deleteEntityById<T extends object>(
+export default async function deleteEntityById<T extends Entity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   EntityClass: new () => T,
-  preHooks?: PreHook | PreHook[],
+  preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS

@@ -35,12 +35,12 @@ export default async function tryExecutePreHooks<T extends object>(
       items = JSONPath({ json: currentEntityOrErrorResponse, path: jsonPath });
     }
 
-    const hookFunc = typeof preHook === 'function' ? preHook : preHook.preHookFunc;
+    const hookFunc = typeof preHook === 'function' ? preHook : preHook.isSuccessfulOrTrue;
     let hookCallResult;
 
     try {
-      if (typeof preHook === 'object' && preHook.executePreHookFuncIf) {
-        const ifResult = await preHook.executePreHookFuncIf(items);
+      if (typeof preHook === 'object' && preHook.shouldExecutePreHook) {
+        const ifResult = await preHook.shouldExecutePreHook(items);
 
         if (typeof ifResult === 'object' && 'errorMessage' in ifResult) {
           throw ifResult;

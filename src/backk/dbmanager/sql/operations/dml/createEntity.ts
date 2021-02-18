@@ -33,7 +33,7 @@ export default async function createEntity<T extends Entity | SubEntity>(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
   EntityClass: new () => T,
-  preHooks?: PreHook | PreHook[],
+  preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook,
   postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false,

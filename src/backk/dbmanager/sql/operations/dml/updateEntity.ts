@@ -31,18 +31,12 @@ export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
   { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
-  allowAdditionAndRemovalOfSubEntityClasses: (new () => any)[] | 'all',
-  preHooks?: PreHook | PreHook[],
+  preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook,
   isRecursiveCall = false
 ): Promise<void | ErrorResponse> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
-
-  const finalAllowAdditionAndRemovalForSubEntities = Array.isArray(allowAdditionAndRemovalOfSubEntityClasses)
-    ? allowAdditionAndRemovalOfSubEntityClasses.map((SubEntityClass) => dbManager.getType(SubEntityClass))
-    : allowAdditionAndRemovalOfSubEntityClasses;
-
   let didStartTransaction = false;
 
   try {
@@ -59,7 +53,7 @@ export default async function updateEntity<T extends Entity>(
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
     }
 
-    let eTagCheckPreHook: PreHook;
+    let eTagCheckPreHook: PreHook<T>;
     let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
     if (typeof currentEntityOrErrorResponse === 'object') {
@@ -69,8 +63,8 @@ export default async function updateEntity<T extends Entity>(
         restOfEntity.version !== 'any'
       ) {
         eTagCheckPreHook = {
-          preHookFunc: ([{ version }]) => version === restOfEntity.version,
-          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
+          isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
+          errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -80,9 +74,9 @@ export default async function updateEntity<T extends Entity>(
         (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
       ) {
         eTagCheckPreHook = {
-          preHookFunc: ([{ lastModifiedTimestamp }]) =>
-            lastModifiedTimestamp.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
-          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
+          isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
+            lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
+          errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -122,9 +116,10 @@ export default async function updateEntity<T extends Entity>(
 
         if (isArrayType && isEntityTypeName(baseTypeName)) {
           // noinspection ReuseOfLocalVariableJS
+          const finalAllowAdditionAndRemovalForSubEntities = 'all';
+
           if (
-            finalAllowAdditionAndRemovalForSubEntities === 'all' ||
-            finalAllowAdditionAndRemovalForSubEntities?.includes(SubEntityClass)
+            finalAllowAdditionAndRemovalForSubEntities === 'all'
           ) {
             const { subEntitiesToDelete, subEntitiesToAdd, subEntitiesToUpdate } = getSubEntitiesByAction(
               subEntityOrEntities,
@@ -204,7 +199,6 @@ export default async function updateEntity<T extends Entity>(
                   dbManager,
                   subEntity,
                   SubEntityClass,
-                  allowAdditionAndRemovalOfSubEntityClasses,
                   undefined,
                   undefined,
                   true
@@ -223,7 +217,6 @@ export default async function updateEntity<T extends Entity>(
             dbManager,
             subEntityOrEntities,
             (Types as any)[baseTypeName],
-            allowAdditionAndRemovalOfSubEntityClasses,
             undefined,
             undefined,
             true

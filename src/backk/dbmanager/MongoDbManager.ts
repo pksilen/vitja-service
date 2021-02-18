@@ -230,7 +230,7 @@ export default class MongoDbManager extends AbstractDbManager {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     EntityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations,
     isInternalCall = false
@@ -320,7 +320,7 @@ export default class MongoDbManager extends AbstractDbManager {
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
     subEntityClass: new () => U,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
@@ -349,7 +349,7 @@ export default class MongoDbManager extends AbstractDbManager {
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: new () => T,
     SubEntityClass: new () => U,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
@@ -371,7 +371,7 @@ export default class MongoDbManager extends AbstractDbManager {
           true
         );
 
-        let eTagCheckPreHook: PreHook;
+        let eTagCheckPreHook: PreHook<T>;
         let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
         if (versionOrLastModifiedTimestamp !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
@@ -380,16 +380,16 @@ export default class MongoDbManager extends AbstractDbManager {
             !isNaN(parseInt(versionOrLastModifiedTimestamp, 10))
           ) {
             eTagCheckPreHook = {
-              preHookFunc: ([{ version }]) => version === versionOrLastModifiedTimestamp,
-              errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
+              isSuccessfulOrTrue: ({ version }) => version === versionOrLastModifiedTimestamp,
+              errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
             };
 
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
           } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
             eTagCheckPreHook = {
-              preHookFunc: ([{ lastModifiedTimestamp }]) =>
+              isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
                 lastModifiedTimestamp === new Date(versionOrLastModifiedTimestamp),
-              errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
+              errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
             };
 
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -465,7 +465,6 @@ export default class MongoDbManager extends AbstractDbManager {
         await this.updateEntity(
           currentEntityOrErrorResponse as any,
           EntityClass,
-          'all',
           undefined,
           undefined,
           false,
@@ -985,8 +984,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async updateEntity<T extends Entity>(
     { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
-    allowAdditionAndRemovalOfSubEntityClasses: (new () => any)[] | 'all',
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     isRecursiveCall = false,
     isInternalCall = false
@@ -995,12 +993,6 @@ export default class MongoDbManager extends AbstractDbManager {
 
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
-
-    const finalAllowAdditionAndRemovalForSubEntities = Array.isArray(
-      allowAdditionAndRemovalOfSubEntityClasses
-    )
-      ? allowAdditionAndRemovalOfSubEntityClasses.map((SubEntityClass) => this.getType(SubEntityClass))
-      : allowAdditionAndRemovalOfSubEntityClasses;
 
     const Types = this.getTypes();
     let shouldUseTransaction = false;
@@ -1015,11 +1007,11 @@ export default class MongoDbManager extends AbstractDbManager {
       await this.tryExecute(shouldUseTransaction, async (client) => {
         let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
 
-        if (!isRecursiveCall && (preHooks || allowAdditionAndRemovalOfSubEntityClasses !== 'all')) {
+        if (!isRecursiveCall && preHooks) {
           currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
         }
 
-        let eTagCheckPreHook: PreHook;
+        let eTagCheckPreHook: PreHook<T>;
         let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
         if (!isInternalCall && typeof currentEntityOrErrorResponse === 'object') {
@@ -1029,8 +1021,8 @@ export default class MongoDbManager extends AbstractDbManager {
             restOfEntity.version !== 'any'
           ) {
             eTagCheckPreHook = {
-              preHookFunc: ([{ version }]) => version === restOfEntity.version,
-              errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
+              isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
+              errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
             };
 
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -1040,9 +1032,9 @@ export default class MongoDbManager extends AbstractDbManager {
             (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
           ) {
             eTagCheckPreHook = {
-              preHookFunc: ([{ lastModifiedTimestamp }]) =>
-                lastModifiedTimestamp.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
-              errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
+              isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
+                lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
+              errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
             };
 
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -1065,10 +1057,9 @@ export default class MongoDbManager extends AbstractDbManager {
           const newSubEntities = (restOfEntity as any)[fieldName];
 
           if (isArrayType && isEntityTypeName(baseTypeName) && newSubEntities) {
-            if (
-              finalAllowAdditionAndRemovalForSubEntities === 'all' ||
-              finalAllowAdditionAndRemovalForSubEntities?.includes(SubEntityClass)
-            ) {
+            const finalAllowAdditionAndRemovalForSubEntities = 'all';
+
+            if (finalAllowAdditionAndRemovalForSubEntities === 'all') {
               if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
                 (restOfEntity as any)[fieldName] = newSubEntities.map((subEntity: any) => subEntity._id);
               }
@@ -1142,7 +1133,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
@@ -1178,10 +1169,10 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async deleteEntityById<T extends object>(
+  async deleteEntityById<T extends Entity>(
     _id: string,
     EntityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
@@ -1315,7 +1306,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     subEntitiesJsonPath: string,
     EntityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
@@ -1339,7 +1330,6 @@ export default class MongoDbManager extends AbstractDbManager {
           await this.updateEntity(
             currentEntityOrErrorResponse as any,
             EntityClass,
-            'all',
             undefined,
             undefined,
             false,
@@ -1370,7 +1360,7 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntitiesJsonPath: string,
     subEntityId: string,
     EntityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {

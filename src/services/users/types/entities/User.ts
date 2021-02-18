@@ -57,13 +57,13 @@ export default class User extends _IdAndCaptcha {
   @ArrayMaxSize(10)
   @ShouldBeTrueFor<User>(
     ({ paymentMethods }) => paymentMethods.filter(({ isDefault }) => isDefault).length === 1,
-    'There should be one default payment method'
+    'There should be exactly one default payment method'
   )
   public paymentMethods!: PaymentMethod[];
 
   @ManyToMany()
   @ArrayMaxSize(100)
-  public favoriteSalesItems!: FavoriteSalesItem[];
+  public readonly favoriteSalesItems!: FavoriteSalesItem[];
 
   public readonly salesItems!: SalesItem[];
 

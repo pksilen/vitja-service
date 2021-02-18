@@ -1,5 +1,7 @@
 import { ErrorResponse } from '../../types/ErrorResponse';
 import { Entity } from '../../types/entities/Entity';
+import { RecursivePartial } from "../../types/RecursivePartial";
+import { SubEntity } from "../../types/entities/SubEntity";
 
 export interface ErrorCodeAndMessageAndStatus {
   errorCode: string;
@@ -7,14 +9,13 @@ export interface ErrorCodeAndMessageAndStatus {
   statusCode?: number;
 }
 
-export type PreHook =
+export type PreHook<T extends Entity | SubEntity> =
   | {
-      executePreHookFuncIf?: (valueFromJsonPath?: any) => boolean | Promise<boolean | ErrorResponse>;
-      entityJsonPathForPreHookFuncArg?: string;
-      preHookFunc: (
-        preHookFuncArg?: any
+      shouldExecutePreHook?: (entity: T) => boolean | Promise<boolean | ErrorResponse>;
+      isSuccessfulOrTrue: (
+        entity: T
       ) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean;
-      errorMessageOnPreHookFuncExecFailure?: ErrorCodeAndMessageAndStatus;
+      errorMessage?: ErrorCodeAndMessageAndStatus;
       shouldDisregardFailureWhenExecutingTests?: boolean;
     }
-  | ((preHookFuncArg?: any) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean);
+  | ((entity: T) => Promise<boolean | undefined | void | Entity | ErrorResponse> | boolean);

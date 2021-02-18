@@ -27,7 +27,7 @@ export default async function removeSubEntities<T extends Entity, U extends obje
   _id: string,
   subEntitiesJsonPath: string,
   EntityClass: new () => T,
-  preHooks?: PreHook | PreHook[],
+  preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {

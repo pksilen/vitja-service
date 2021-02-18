@@ -7,7 +7,7 @@ import { PaymentGateway } from "../enum/PaymentGateway";
 
 @Entity()
 export default class PaymentInfo {
-  public paymentGateway!: PaymentGateway;
+  public paymentGateway: PaymentGateway = 'Paytrail';
 
   @MaxLength(Lengths._256)
   @IsAlphanumeric()

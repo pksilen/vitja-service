@@ -37,7 +37,7 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
   newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
   SubEntityClass: new () => U,
-  preHooks?: PreHook | PreHook[],
+  preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook,
   postQueryOperations?: PostQueryOperations
 ): Promise<T | ErrorResponse> {
@@ -58,22 +58,22 @@ export default async function addSubEntities<T extends Entity, U extends SubEnti
       true
     );
 
-    let eTagCheckPreHook: PreHook;
+    let eTagCheckPreHook: PreHook<T>;
     let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
     if (versionOrLastModifiedTimestamp !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
       if ('version' in currentEntityOrErrorResponse && !isNaN(parseInt(versionOrLastModifiedTimestamp, 10))) {
         eTagCheckPreHook = {
-          preHookFunc: ([{ version }]) => version === versionOrLastModifiedTimestamp,
-          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
+          isSuccessfulOrTrue: ({ version }) => version === versionOrLastModifiedTimestamp,
+          errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
       } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
         eTagCheckPreHook = {
-          preHookFunc: ([{ lastModifiedTimestamp }]) =>
-            lastModifiedTimestamp === new Date(versionOrLastModifiedTimestamp),
-          errorMessageOnPreHookFuncExecFailure: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
+          isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
+            lastModifiedTimestamp?.getTime() === new Date(versionOrLastModifiedTimestamp).getTime(),
+          errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];

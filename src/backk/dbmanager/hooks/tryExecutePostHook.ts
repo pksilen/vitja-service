@@ -19,12 +19,12 @@ export default async function tryExecutePostHook(
 
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('isInsidePostHook', true);
-  const postHookFunc = typeof postHook === 'function' ? postHook : postHook.postHookFunc;
+  const postHookFunc = typeof postHook === 'function' ? postHook : postHook.isSuccessful;
   let hookCallResult;
 
   try {
-    if (typeof postHook === 'object' && postHook.executePostHookIf) {
-      if (postHook.executePostHookIf()) {
+    if (typeof postHook === 'object' && postHook.shouldExecutePostHook) {
+      if (postHook.shouldExecutePostHook()) {
         hookCallResult = await postHookFunc();
       }
     } else {

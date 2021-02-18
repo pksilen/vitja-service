@@ -12,3 +12,8 @@ export const DELETE_ORDER_NOT_ALLOWED = {
   errorCode: 'ordersService.3',
   errorMessage: 'Deleting order is not allowed when some or all of order items have been delivered'
 }
+
+export const ORDER_ALREADY_PAID = {
+  errorCode: 'ordersService.4',
+  errorMessage: 'Order already paid'
+}

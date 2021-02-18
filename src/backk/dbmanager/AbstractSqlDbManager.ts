@@ -413,7 +413,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async createEntity<T extends Entity | SubEntity>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations,
     shouldReturnItem = true
@@ -442,7 +442,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
     subEntityClass: new () => U,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
@@ -472,7 +472,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     entityClass: new () => T,
     subEntityClass: new () => U,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {
@@ -640,8 +640,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async updateEntity<T extends Entity>(
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    allowAdditionAndRemovalOfSubEntityClasses: (new () => any)[] | 'all',
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
@@ -649,7 +648,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       this,
       entity,
       entityClass,
-      allowAdditionAndRemovalOfSubEntityClasses,
       preHooks,
       postHook
     );
@@ -662,7 +660,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntitiesBy');
@@ -682,7 +680,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async deleteEntityById<T extends object>(
     _id: string,
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
@@ -716,7 +714,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     _id: string,
     subEntitiesJsonPath: string,
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {

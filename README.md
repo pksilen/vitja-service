@@ -1,13 +1,16 @@
 # Vitja service
 
 TODO:
-  - payOrder updates order with paymentinfo: transactionId and amount
-    discardOrder removes order by id
-    -Create CronJob to remove unpaid orders at intervals
+  - PlaceOrder's order notification to PayOrder
+  - Create CronJob to remove unpaid orders at intervals
   - remote payment operation could have a url parameter for testing to return fake paymentInfo
 - Get comments from source code and put them as FunctionDocumentation/ServiceDocumentation/Documentation(property) docs
-- Generate servicesMetadata where entity references are documented
-- Document @Metadata type functions in servicesMetadata
+- Generate servicesMetadata where entity references are documented in separate section: typeReferences: 
+  {'FavoriteSalesItem: SalesItem' }
+- @Metadata functions should not show in services metadata
+- There should be check in addSubEntites for these and also ArrayMaxSize annotation is required:
+    @ManyToMany()
+    public readonly followedUsers!: PublicUser[];
 
 - Split to multiple microservices
   - Implement subentities as remote service queries
