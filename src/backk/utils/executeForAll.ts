@@ -1,8 +1,8 @@
-import { ErrorResponse } from '../types/ErrorResponse';
+import { ErrorResponse } from "../types/ErrorResponse";
 
-export default async function executeForAll<T>(
-  values: any[],
-  func: (value: any) => Promise<void | T | ErrorResponse>
+export default async function executeForAll<T, U>(
+  values: T[],
+  func: (value: T) => Promise<void | U | ErrorResponse>
 ): Promise<void | ErrorResponse> {
   const finalValues = Array.isArray(values) ? values : [values];
 

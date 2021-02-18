@@ -75,10 +75,10 @@ export default class OrdersServiceImpl extends OrdersService {
         userId,
         orderItems: salesItems.map((salesItem, index) => ({
           id: index.toString(),
-          state: 'toBeDelivered' as OrderState,
+          state: 'toBeDelivered',
           trackingUrl: null,
           deliveryTimestamp: null,
-          salesItems
+          salesItems: [salesItem]
         })),
         paymentInfo: {
           paymentGateway,
@@ -111,7 +111,7 @@ export default class OrdersServiceImpl extends OrdersService {
       Order,
       {
         isSuccessfulOrTrue: (order) =>
-          JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })?.[0] ===
+          JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
           'toBeDelivered',
         errorMessage: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
       },
@@ -150,6 +150,7 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update()
+  @Errors([ORDER_ALREADY_PAID])
   payOrder({ _id, ...paymentInfo }: PayOrderArg): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity({ _id, paymentInfo }, Order, [
       () => this.shoppingCartService.deleteShoppingCart({ _id }),
@@ -256,16 +257,14 @@ export default class OrdersServiceImpl extends OrdersService {
     newState: SalesItemState,
     currentState?: SalesItemState
   ): Promise<void | ErrorResponse> {
-    return await executeForAll(
-      salesItems,
-      async ({ salesItemId }) =>
-        await this.salesItemsService.updateSalesItemState(
-          {
-            _id: salesItemId,
-            newState
-          },
-          currentState
-        )
+    return await executeForAll(salesItems, ({ _id }) =>
+      this.salesItemsService.updateSalesItemState(
+        {
+          _id,
+          newState
+        },
+        currentState
+      )
     );
   }
 
@@ -275,17 +274,23 @@ export default class OrdersServiceImpl extends OrdersService {
     uiRedirectUrl: string
   ) {
     let paymentGatewayHost;
+    let paymentGatewayUrlPath;
+
     switch (paymentGateway) {
       case 'Paytrail':
         paymentGatewayHost = 'server.paytrail.com';
+        paymentGatewayUrlPath = 'pay';
         break;
       case 'PayPal':
         paymentGatewayHost = 'server.paypal.com';
+        paymentGatewayUrlPath = 'pay';
         break;
       case 'Klarna':
         paymentGatewayHost = 'server.klarna.com';
+        paymentGatewayUrlPath = 'pay';
         break;
     }
+
     const successUrl = encodeURIComponent(
       `https://${
         process.env.API_GATEWAY_FQDN
@@ -301,7 +306,7 @@ export default class OrdersServiceImpl extends OrdersService {
     const paymentFailureMessage = `Order payment failed`;
     const failureRedirectUrl = encodeURIComponent(`${uiRedirectUrl}?message=${paymentFailureMessage}`);
 
-    return `https://${paymentGatewayHost}/pay?successUrl=${successUrl}&failureUrl=${failureUrl}&successRedirectUrl=${successUiRedirectUrl}&failureRedirectUrl=${failureRedirectUrl}`;
+    return `https://${paymentGatewayHost}/${paymentGatewayUrlPath}?successUrl=${successUrl}&failureUrl=${failureUrl}&successRedirectUrl=${successUiRedirectUrl}&failureRedirectUrl=${failureRedirectUrl}`;
   }
 
   private static getValidPreviousOrderStateFor(newState: OrderState): OrderState {

@@ -2,6 +2,7 @@
 
 TODO:
   - PlaceOrder's order notification to PayOrder
+  - Arrays min size must be given
   - Create CronJob to remove unpaid orders at intervals
   - remote payment operation could have a url parameter for testing to return fake paymentInfo
 - Get comments from source code and put them as FunctionDocumentation/ServiceDocumentation/Documentation(property) docs
