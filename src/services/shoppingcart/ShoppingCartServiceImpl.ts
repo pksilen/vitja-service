@@ -61,6 +61,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
+  @Errors([SALES_ITEM_ALREADY_SOLD])
   addToShoppingCart({ _id, salesItem }: _IdAndUserIdAndSalesItem): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.addSubEntity(
       _id,

@@ -8,7 +8,6 @@ import _IdAndFollowedUserId from "./types/args/_IdAndFollowedUserId";
 import { Name } from "../../backk/types/Name";
 import UsersBaseService from "../../backk/users/UsersBaseService";
 import GetUsersArg from "./types/args/GetUsersArg";
-import FavoriteSalesItem from "./types/entities/FavoriteSalesItem";
 import PublicUser from "./types/entities/PublicUser";
 import _IdAndFavoriteSalesItem from "./types/args/_IdAndFavoriteSalesItem";
 

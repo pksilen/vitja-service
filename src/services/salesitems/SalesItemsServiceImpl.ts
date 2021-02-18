@@ -75,7 +75,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     productSubCategories,
     minPrice,
     maxPrice,
-    ...postQueryOps
+    ...postQueryOperations
   }: GetSalesItemsArg): Promise<SalesItem[] | ErrorResponse> {
     const filters = this.dbManager.getFilters<SalesItem>(
       {
@@ -110,7 +110,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
       ]
     );
 
-    return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOps);
+    return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOperations);
   }
 
   @AllowForEveryUser()
