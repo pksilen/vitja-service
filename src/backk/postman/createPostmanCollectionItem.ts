@@ -1,8 +1,6 @@
-import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
-import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
-import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
-import isCreateFunction from '../service/crudresource/utils/isCreateFunction';
-import isUpdateFunction from '../service/crudresource/utils/isUpdateFunction';
+import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
+import { FunctionMetadata } from "../metadata/types/FunctionMetadata";
+import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
 
 function getNestedTypeNames(typeMetadata: object, types: any, nestedTypeNames: string[]) {
   Object.values(typeMetadata ?? {}).forEach((typeName) => {

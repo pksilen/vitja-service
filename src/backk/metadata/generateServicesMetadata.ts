@@ -10,6 +10,7 @@ import getTypePropertyModifiers from './getTypePropertyModifiers';
 import CrudResourceService from '../service/crudresource/CrudResourceService';
 import assertFunctionNamesAreValidForCrudResourceService from '../service/crudresource/assertFunctionNamesAreValidForCrudResourceService';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
+import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 
 export default function generateServicesMetadata<T>(
   controller: T,
@@ -157,12 +158,29 @@ export default function generateServicesMetadata<T>(
         {}
       );
 
-      const typesDocumentation = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
+      const typesDocumentation = Object.entries((controller as any)[serviceName].PublicTypes ?? {}).reduce(
         (accumulatedTypesDocumentation, [typeName, typeClass]: [string, any]) => {
           const typeDocumentation = getTypeDocumentation((typesMetadata as any)[typeName], typeClass);
           return Object.keys(typeDocumentation).length > 0
             ? { ...accumulatedTypesDocumentation, [typeName]: typeDocumentation }
             : accumulatedTypesDocumentation;
+        },
+        {}
+      );
+
+      const typeReferences = Object.entries((controller as any)[serviceName].PublicTypes ?? {}).reduce(
+        (accumulatedTypeReferences, [typeName, typeClass]: [string, any]) => {
+          if (
+            entityAnnotationContainer.isEntity(typeClass) &&
+            entityAnnotationContainer.entityNameToTableNameMap[typeName]
+          ) {
+            return {
+              ...accumulatedTypeReferences,
+              [typeName]: entityAnnotationContainer.entityNameToTableNameMap[typeName]
+            };
+          }
+
+          return accumulatedTypeReferences;
         },
         {}
       );
@@ -191,6 +209,7 @@ export default function generateServicesMetadata<T>(
         },
         propertyModifiers,
         typesDocumentation,
+        typeReferences: Object.keys(typeReferences).length > 0 ? typeReferences : undefined,
         validations: validationMetadatas
       };
     });
