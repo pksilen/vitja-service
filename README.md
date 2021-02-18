@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Get comments from source code and put them as FunctionDocumentation/ServiceDocumentation/Documentation(property) docs
-
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
@@ -13,7 +11,7 @@ TODO:
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
 - Create backk-client library
-  -Sets ETag automatically and removes readonly properties
+  -Removes readonly properties
 
 
 https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object
