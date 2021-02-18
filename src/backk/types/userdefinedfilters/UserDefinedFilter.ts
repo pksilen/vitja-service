@@ -1,6 +1,6 @@
 import {
   Allow,
-  ArrayMaxSize,
+  ArrayMaxSize, ArrayMinSize,
   IsArray,
   IsIn,
   IsInstance,
@@ -90,6 +90,7 @@ export default class UserDefinedFilter {
   @IsInstance(OrFilter, { each: true })
   @ValidateNested({ each: true })
   @IsArray()
+  @ArrayMinSize(2)
   @ArrayMaxSize(10)
   orFilters?: OrFilter[];
 }

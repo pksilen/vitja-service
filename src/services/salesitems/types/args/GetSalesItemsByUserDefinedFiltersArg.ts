@@ -1,9 +1,9 @@
 import UserDefinedFilter from "../../../../backk/types/userdefinedfilters/UserDefinedFilter";
-import { ArrayMaxSize } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize } from "class-validator";
 import { TestValue } from "../../../../backk/decorators/typeproperty/testing/TestValue";
 
 export default class GetSalesItemsByUserDefinedFiltersArg {
-  @ArrayMaxSize(1)
+  @ArrayMinSize(1)
   @ArrayMaxSize(10)
   @TestValue([{
     fieldName: 'title',

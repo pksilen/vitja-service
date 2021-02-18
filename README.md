@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-  - Arrays min size must be given
   - Create CronJob to remove unpaid orders at intervals
 - Get comments from source code and put them as FunctionDocumentation/ServiceDocumentation/Documentation(property) docs
 - Generate servicesMetadata where entity references are documented in separate section: typeReferences: 
