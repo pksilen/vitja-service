@@ -6,6 +6,7 @@ import path from 'path';
 import getSrcFilePathNameForTypeName, {
   hasSrcFilenameForTypeName
 } from '../../utils/file/getSrcFilePathNameForTypeName';
+import * as util from "util";
 
 function getDeclarationsFor(typeName: string, originatingTypeFilePathName: string) {
   const typeFilePathName = getSrcFilePathNameForTypeName(typeName);

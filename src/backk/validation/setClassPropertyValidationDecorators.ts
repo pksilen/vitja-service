@@ -117,6 +117,15 @@ export default function setClassPropertyValidationDecorators(
           let propertyTypeName;
           let isNullableType = false;
           let isArrayType = false;
+          const documentation = classBodyNode.leadingComments?.[0].value;
+
+          if (documentation) {
+            typePropertyAnnotationContainer.addDocumentationForTypeProperty(
+              Class,
+              propertyName,
+              documentation
+            );
+          }
 
           const isPrivateProperty = classBodyNode.accessibility !== 'public';
           if (isPrivateProperty && entityAnnotationContainer.isEntity(Class)) {

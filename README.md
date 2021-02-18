@@ -2,8 +2,6 @@
 
 TODO:
 - Get comments from source code and put them as FunctionDocumentation/ServiceDocumentation/Documentation(property) docs
-- Generate servicesMetadata where entity references are documented in separate section: typeReferences: 
-  {'FavoriteSalesItem: SalesItem' }
 
 - Split to multiple microservices
   - Implement subentities as remote service queries

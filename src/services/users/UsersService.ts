@@ -11,9 +11,16 @@ import GetUsersArg from "./types/args/GetUsersArg";
 import PublicUser from "./types/entities/PublicUser";
 import _IdAndFavoriteSalesItem from "./types/args/_IdAndFavoriteSalesItem";
 
+/** Users service doc goes here
+ * - jee
+ * - jaa
+ * **/
 export default abstract class UsersService extends UsersBaseService {
   abstract deleteAllUsers(): Promise<void | ErrorResponse>;
+
+  // createUser documentation goes here..
   abstract createUser(arg: User): Promise<UserResponse | ErrorResponse>;
+
   abstract getUsers(arg: GetUsersArg): Promise<PublicUser[] | ErrorResponse>;
   abstract getUser(arg: UserName): Promise<UserResponse | ErrorResponse>;
   abstract getUserById(arg: _Id): Promise<UserResponse | ErrorResponse>;

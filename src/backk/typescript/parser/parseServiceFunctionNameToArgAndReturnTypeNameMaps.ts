@@ -6,9 +6,10 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
   serviceName: string,
   serviceFileName: string,
   remoteServiceRootDir = ''
-): [{ [key: string]: string }, { [key: string]: string }] {
+): [string | undefined, { [key: string]: string }, { [key: string]: string }, { [key: string]: string }] {
   const fileContentsStr = readFileSync(serviceFileName, { encoding: 'UTF-8' });
   const fileRows = fileContentsStr.split('\n');
+
   const ast = parseSync(fileContentsStr, {
     plugins: [
       ['@babel/plugin-proposal-decorators', { legacy: true }],
@@ -16,23 +17,29 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
       '@babel/plugin-transform-typescript'
     ]
   });
+
   const serviceClassName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
   const functionNameToFunctionArgumentTypeNameMap: { [key: string]: string } = {};
   const functionNameToFunctionReturnValueTypeNameMap: { [key: string]: string } = {};
-
+  let serviceDocumentation;
+  const functionNameToDocumentationMap: { [key: string]: string } = {};
   const nodes = (ast as any).program.body;
+
   for (const node of nodes) {
     if (
       node.type === 'ExportDefaultDeclaration' &&
       node.declaration.type === 'ClassDeclaration' &&
       node.declaration.id.name === serviceClassName
     ) {
+      serviceDocumentation = node.leadingComments?.[0].value;
+
       for (const classBodyNode of node.declaration.body.body) {
         if (classBodyNode.type === 'TSDeclareMethod') {
           if (classBodyNode.accessibility === 'private' || classBodyNode.accessibility === 'protected') {
             // noinspection ContinueStatementJS
             continue;
           }
+
           const functionName = classBodyNode.key.name;
 
           if (classBodyNode.params.length >= 1) {
@@ -64,10 +71,16 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
           }
 
           functionNameToFunctionReturnValueTypeNameMap[functionName] = returnTypeName;
+          functionNameToDocumentationMap[functionName] = classBodyNode.leadingComments?.[0].value;
         }
       }
     }
   }
 
-  return [functionNameToFunctionArgumentTypeNameMap, functionNameToFunctionReturnValueTypeNameMap];
+  return [
+    serviceDocumentation,
+    functionNameToFunctionArgumentTypeNameMap,
+    functionNameToFunctionReturnValueTypeNameMap,
+    functionNameToDocumentationMap
+  ];
 }

@@ -50,8 +50,10 @@ export default function initializeController(
     }
 
     const [
+      serviceDocumentation,
       functionNameToParamTypeNameMap,
-      functionNameToReturnTypeNameMap
+      functionNameToReturnTypeNameMap,
+      functionNameToDocumentationMap
     ] = parseServiceFunctionNameToArgAndReturnTypeNameMaps(
       serviceName,
       getSrcFilePathNameForTypeName(
@@ -62,8 +64,10 @@ export default function initializeController(
     );
 
     controller[`${serviceName}__BackkTypes__`] = {
+      serviceDocumentation,
       functionNameToParamTypeNameMap,
-      functionNameToReturnTypeNameMap
+      functionNameToReturnTypeNameMap,
+      functionNameToDocumentationMap
     };
   });
 

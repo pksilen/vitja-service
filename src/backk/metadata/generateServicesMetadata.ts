@@ -123,10 +123,8 @@ export default function generateServicesMetadata<T>(
 
           return {
             functionName,
-            functionDocumentation: serviceFunctionAnnotationContainer.getDocumentationForServiceFunction(
-              service.constructor,
-              functionName
-            ),
+            functionDocumentation: (controller as any)[`${serviceName}__BackkTypes__`]
+              .functionNameToDocumentationMap[functionName],
             argType: functionArgumentTypeName,
             returnValueType: returnValueTypeName,
             errors:
@@ -187,7 +185,7 @@ export default function generateServicesMetadata<T>(
 
       return {
         serviceName,
-        serviceDocumentation: serviceAnnotationContainer.getDocumentationForService(service.constructor),
+        serviceDocumentation: (controller as any)[`${serviceName}__BackkTypes__`].serviceDocumentation,
         functions,
         publicTypes: {
           ...publicTypesMetadata,

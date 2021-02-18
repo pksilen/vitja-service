@@ -1,38 +1,35 @@
-import { Injectable } from '@nestjs/common';
-import * as argon2 from 'argon2';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import { FunctionDocumentation } from '../../backk/decorators/service/function/FunctionDocumentation';
-import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
-import ServiceDocumentation from '../../backk/decorators/service/ServiceDocumentation';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import UserName from './types/args/UserName';
-import User from './types/entities/User';
-import UserResponse from './types/responses/UserResponse';
-import UsersService from './UsersService';
-import _Id from '../../backk/types/id/_Id';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
-import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from './errors/usersServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { Update } from '../../backk/decorators/service/function/Update';
-import _IdAndFollowedUserId from './types/args/_IdAndFollowedUserId';
-import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
-import { Name } from '../../backk/types/Name';
-import getCities from './validation/getCities';
-import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
-import { Metadata } from '../../backk/decorators/service/function/Metadata';
-import GetUsersArg from './types/args/GetUsersArg';
-import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
-import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
-import SortBy from '../../backk/types/postqueryoperations/SortBy';
-import PublicUser from './types/entities/PublicUser';
-import FavoriteSalesItem from './types/entities/FavoriteSalesItem';
-import _IdAndFavoriteSalesItem from './types/args/_IdAndFavoriteSalesItem';
+import { Injectable } from "@nestjs/common";
+import * as argon2 from "argon2";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import UserName from "./types/args/UserName";
+import User from "./types/entities/User";
+import UserResponse from "./types/responses/UserResponse";
+import UsersService from "./UsersService";
+import _Id from "../../backk/types/id/_Id";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
+import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/usersServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { Update } from "../../backk/decorators/service/function/Update";
+import _IdAndFollowedUserId from "./types/args/_IdAndFollowedUserId";
+import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
+import { Name } from "../../backk/types/Name";
+import getCities from "./validation/getCities";
+import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
+import { Metadata } from "../../backk/decorators/service/function/Metadata";
+import GetUsersArg from "./types/args/GetUsersArg";
+import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
+import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
+import SortBy from "../../backk/types/postqueryoperations/SortBy";
+import PublicUser from "./types/entities/PublicUser";
+import FavoriteSalesItem from "./types/entities/FavoriteSalesItem";
+import _IdAndFavoriteSalesItem from "./types/args/_IdAndFavoriteSalesItem";
 
-@ServiceDocumentation('Users service doc goes here...')
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
 export default class UsersServiceImpl extends UsersService {
@@ -50,7 +47,6 @@ export default class UsersServiceImpl extends UsersService {
     return this.dbManager.deleteAllEntities(User);
   }
 
-  @FunctionDocumentation('createUser function doc goes here...')
   @AllowForEveryUser()
   async createUser(arg: User): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.createEntity(

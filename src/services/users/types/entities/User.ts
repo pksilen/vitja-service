@@ -1,6 +1,5 @@
 import { ArrayMaxSize, ArrayMinSize, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
-import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
 import PaymentMethod from "./PaymentMethod";
 import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
@@ -30,7 +29,7 @@ export default class User extends _IdAndCaptcha {
 
   public isBusinessUser!: boolean;
 
-  @Documentation('Password doc goes here...')
+  /* 'Password doc goes here...*/
   @IsStrongPassword()
   password!: string;
 
