@@ -88,15 +88,7 @@ export default class OrdersServiceImpl extends OrdersService {
         }
       },
       Order,
-      () => this.updateSalesItemStates(salesItems, 'sold', 'forSale'),
-      () =>
-        sendToRemoteService(
-          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
-          {
-            userId,
-            salesItems
-          }
-        )
+      () => this.updateSalesItemStates(salesItems, 'sold', 'forSale')
     );
   }
 
@@ -152,13 +144,24 @@ export default class OrdersServiceImpl extends OrdersService {
   @Update()
   @Errors([ORDER_ALREADY_PAID])
   payOrder({ _id, ...paymentInfo }: PayOrderArg): Promise<void | ErrorResponse> {
-    return this.dbManager.updateEntity({ _id, paymentInfo }, Order, [
-      () => this.shoppingCartService.deleteShoppingCart({ _id }),
-      {
-        isSuccessfulOrTrue: ({ paymentInfo }) => paymentInfo.transactionId === null,
-        errorMessage: ORDER_ALREADY_PAID
-      }
-    ]);
+    return this.dbManager.updateEntity(
+      { _id, paymentInfo },
+      Order,
+      [
+        () => this.shoppingCartService.deleteShoppingCart({ _id }),
+        {
+          isSuccessfulOrTrue: ({ paymentInfo }) => paymentInfo.transactionId === null,
+          errorMessage: ORDER_ALREADY_PAID
+        }
+      ],
+      () =>
+        sendToRemoteService(
+          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
+          {
+            orderId: _id
+          }
+        )
+    );
   }
 
   @Update()

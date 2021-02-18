@@ -4,12 +4,11 @@ TODO:
   - PlaceOrder's order notification to PayOrder
   - Arrays min size must be given
   - Create CronJob to remove unpaid orders at intervals
-  - remote payment operation could have a url parameter for testing to return fake paymentInfo
 - Get comments from source code and put them as FunctionDocumentation/ServiceDocumentation/Documentation(property) docs
 - Generate servicesMetadata where entity references are documented in separate section: typeReferences: 
   {'FavoriteSalesItem: SalesItem' }
 - @Metadata functions should not show in services metadata
-- There should be check in addSubEntites for these and also ArrayMaxSize annotation is required:
+- There should be check in addSubEntites for these and also ArrayMax/MinSize annotation is required:
     @ManyToMany()
     public readonly followedUsers!: PublicUser[];
 
