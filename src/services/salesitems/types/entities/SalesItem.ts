@@ -1,4 +1,4 @@
-import { ArrayMaxSize, IsNumber, MaxLength } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsNumber, MaxLength } from "class-validator";
 import Entity from '../../../../backk/decorators/entity/Entity';
 import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp from '../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp';
 import { Area } from '../enums/Area';
@@ -27,6 +27,7 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   public description!: string;
 
   @ManyToMany()
+  @ArrayMinSize(0)
   @ArrayMaxSize(25)
   public tags!: Tag[];
 
@@ -57,6 +58,7 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
 
   @MaxLength(Lengths._10M, { each: true })
   @IsDataUri({ each: true })
+  @ArrayMinSize(0)
   @ArrayMaxSize(10)
   @ArrayNotUnique()
   public secondaryImageDataUris!: string[];

@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayUnique, IsInt, MaxLength } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, ArrayUnique, IsInt, MaxLength } from "class-validator";
 import SortBy from '../../../../backk/types/postqueryoperations/SortBy';
 import DefaultPostQueryOperations from '../../../../backk/types/postqueryoperations/DefaultPostQueryOperations';
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
@@ -13,18 +13,22 @@ export default class GetSalesItemsArg extends DefaultPostQueryOperations {
   @IsAnyString()
   textFilter?: string;
 
+  @ArrayMinSize(0)
   @ArrayMaxSize(10)
   @ArrayUnique()
   areas?: Area[];
 
+  @ArrayMinSize(0)
   @ArrayMaxSize(10)
   @ArrayUnique()
   productDepartments?: Department[];
 
+  @ArrayMinSize(0)
   @ArrayMaxSize(10)
   @ArrayUnique()
   productCategories?: Category[];
 
+  @ArrayMinSize(0)
   @ArrayMaxSize(10)
   @ArrayUnique()
   productSubCategories?: Category[];

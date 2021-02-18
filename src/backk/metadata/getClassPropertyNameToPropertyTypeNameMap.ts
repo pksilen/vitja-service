@@ -87,6 +87,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     }
 
     if (
+      validationMetadata.type !== 'arrayMinSize' &&
       validationMetadata.type !== 'arrayMaxSize' &&
       validationMetadata.type !== 'arrayUnique' &&
       (validationMetadata.type !== 'customValidation' ||
@@ -227,6 +228,12 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
           otherValidationMetadata.type === 'arrayMaxSize'
       );
 
+      const arrayMinSizeValidationMetadata = validationMetadatas.find(
+        (otherValidationMetadata: ValidationMetadata) =>
+          otherValidationMetadata.propertyName === validationMetadata.propertyName &&
+          otherValidationMetadata.type === 'arrayMinSize'
+      );
+
       const undefinedValidation = validationMetadatas.find(
         ({ propertyName, type, constraints }: ValidationMetadata) =>
           propertyName === validationMetadata.propertyName &&
@@ -241,6 +248,16 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
             '.' +
             validationMetadata.propertyName +
             ' has array type and must have @ArrayMaxSize annotation'
+        );
+      }
+
+      if (!undefinedValidation && !arrayMinSizeValidationMetadata) {
+        throw new Error(
+          'Property ' +
+          Class.name +
+          '.' +
+          validationMetadata.propertyName +
+          ' has array type and must have @ArrayMinSize annotation'
         );
       }
     }

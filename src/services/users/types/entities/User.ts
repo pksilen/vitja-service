@@ -1,4 +1,4 @@
-import { ArrayMaxSize, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { Documentation } from "../../../../backk/decorators/typeproperty/Documentation";
 import PaymentMethod from "./PaymentMethod";
@@ -54,6 +54,7 @@ export default class User extends _IdAndCaptcha {
   @IsDataUri()
   public imageDataUri!: string;
 
+  @ArrayMinSize(0)
   @ArrayMaxSize(10)
   @ShouldBeTrueFor<User>(
     ({ paymentMethods }) => paymentMethods.filter(({ isDefault }) => isDefault).length === 1,
@@ -62,7 +63,6 @@ export default class User extends _IdAndCaptcha {
   public paymentMethods!: PaymentMethod[];
 
   @ManyToMany()
-  @ArrayMaxSize(100)
   public readonly favoriteSalesItems!: FavoriteSalesItem[];
 
   public readonly salesItems!: SalesItem[];

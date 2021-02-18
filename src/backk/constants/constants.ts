@@ -47,6 +47,7 @@ export class Lengths {
 export class Values {
   static readonly _25 = 25;
   static readonly _50 = 50;
+  static readonly _500 = 500;
   static readonly _1K = 1000;
   static readonly _10K = 10000;
   static readonly _100K = 100000;
