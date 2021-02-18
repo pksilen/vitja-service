@@ -40,7 +40,7 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
                     { lastScheduledTimestamp: new Date(), nextScheduledTimestamp: interval.next().toDate() },
                     __Backk__CronJobScheduling,
                     {
-                      preHookFunc: ([{ nextScheduledTimestamp }]) =>
+                      isSuccessfulOrTrue: ({ nextScheduledTimestamp }) =>
                         Math.abs(Date.now() - nextScheduledTimestamp.valueOf()) < 500
                     }
                   );

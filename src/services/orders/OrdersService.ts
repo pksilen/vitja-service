@@ -8,6 +8,7 @@ import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import CrudResourceService from "../../backk/service/crudresource/CrudResourceService";
 import _Id from "../../backk/types/id/_Id";
+import PayOrderArg from "./types/args/PayOrderArg";
 
 export default abstract class OrdersService extends CrudResourceService {
   abstract deleteAllOrders(): Promise<void | ErrorResponse>;

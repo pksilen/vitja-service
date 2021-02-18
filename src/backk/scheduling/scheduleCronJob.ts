@@ -32,9 +32,9 @@ export async function scheduleCronJob(
             const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
               clsNamespace.set('globalTransaction', true);
 
-              const possibleErrorResponse = await dbManager.deleteEntityById(jobId, __Backk__JobScheduling, {
-                preHookFunc: (jobScheduling: any) => jobScheduling.length !== 0
-              });
+              const possibleErrorResponse = await dbManager.deleteEntityById(jobId, __Backk__JobScheduling,
+                 (jobScheduling) => !!jobScheduling
+              );
 
               return (
                 possibleErrorResponse ||

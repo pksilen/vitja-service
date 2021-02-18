@@ -677,14 +677,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async deleteEntityById<T extends object>(
+  async deleteEntityById<T extends Entity>(
     _id: string,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
-    const response = await deleteEntityById(this, _id, entityClass, preHooks, postHook);
+    const response = await deleteEntityById(this, _id, EntityClass, preHooks, postHook);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -737,7 +737,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     subEntitiesJsonPath: string,
     subEntityId: string,
     entityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
+    preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse> {

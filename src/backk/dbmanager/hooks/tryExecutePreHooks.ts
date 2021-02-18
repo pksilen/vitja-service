@@ -1,56 +1,43 @@
-import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
-import { JSONPath } from 'jsonpath-plus';
-import { ErrorResponse } from '../../types/ErrorResponse';
-import { PreHook } from './PreHook';
-import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
-import isErrorResponse from '../../errors/isErrorResponse';
-import { HttpStatusCodes } from '../../constants/constants';
+import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
+import { ErrorResponse } from "../../types/ErrorResponse";
+import { PreHook } from "./PreHook";
+import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
+import { HttpStatusCodes } from "../../constants/constants";
+import { Entity } from "../../types/entities/Entity";
+import { SubEntity } from "../../types/entities/SubEntity";
 
-export default async function tryExecutePreHooks<T extends object>(
-  preHooks?: PreHook | PreHook[],
+export default async function tryExecutePreHooks<T extends Entity | SubEntity>(
+  preHooks?: PreHook<T> | PreHook<T>[],
   currentEntityOrErrorResponse?: T | ErrorResponse
 ) {
+  if (currentEntityOrErrorResponse === undefined || !preHooks) {
+    return;
+  }
+
   if (
-    typeof currentEntityOrErrorResponse === 'object' &&
-    'errorMessage' in currentEntityOrErrorResponse &&
-    isErrorResponse(currentEntityOrErrorResponse)
+    'errorMessage' in currentEntityOrErrorResponse
   ) {
     throw currentEntityOrErrorResponse;
   }
 
-  if (!preHooks) {
-    return;
-  }
-
-  await forEachAsyncSequential(Array.isArray(preHooks) ? preHooks : [preHooks], async (preHook: PreHook) => {
+  await forEachAsyncSequential(Array.isArray(preHooks) ? preHooks : [preHooks], async (preHook: PreHook<T>) => {
     let items: any[] | undefined;
-
-    if (currentEntityOrErrorResponse !== undefined) {
-      let jsonPath = '$';
-
-      if (typeof preHook === 'object' && preHook.entityJsonPathForPreHookFuncArg) {
-        jsonPath = preHook.entityJsonPathForPreHookFuncArg;
-      }
-
-      items = JSONPath({ json: currentEntityOrErrorResponse, path: jsonPath });
-    }
-
     const hookFunc = typeof preHook === 'function' ? preHook : preHook.isSuccessfulOrTrue;
     let hookCallResult;
 
     try {
       if (typeof preHook === 'object' && preHook.shouldExecutePreHook) {
-        const ifResult = await preHook.shouldExecutePreHook(items);
+        const ifResult = await preHook.shouldExecutePreHook(currentEntityOrErrorResponse);
 
         if (typeof ifResult === 'object' && 'errorMessage' in ifResult) {
           throw ifResult;
         }
 
         if (ifResult) {
-          hookCallResult = await hookFunc(items);
+          hookCallResult = await hookFunc(currentEntityOrErrorResponse);
         }
       } else {
-        hookCallResult = await hookFunc(items);
+        hookCallResult = await hookFunc(currentEntityOrErrorResponse);
       }
     } catch (error) {
       throw new Error(
@@ -73,18 +60,18 @@ export default async function tryExecutePreHooks<T extends object>(
 
           let errorMessage = 'Unspecified pre-hook error';
 
-          if (preHook.errorMessageOnPreHookFuncExecFailure) {
+          if (preHook.errorMessage) {
             errorMessage =
               'Error code ' +
-              preHook.errorMessageOnPreHookFuncExecFailure.errorCode +
+              preHook.errorMessage.errorCode +
               ':' +
-              preHook.errorMessageOnPreHookFuncExecFailure.errorMessage;
+              preHook.errorMessage.errorMessage;
           }
 
           throw new Error(
             createErrorMessageWithStatusCode(
               errorMessage,
-              preHook.errorMessageOnPreHookFuncExecFailure?.statusCode ?? HttpStatusCodes.BAD_REQUEST
+              preHook.errorMessage?.statusCode ?? HttpStatusCodes.BAD_REQUEST
             )
           );
         }
