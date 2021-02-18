@@ -207,7 +207,7 @@ export default function generateServicesMetadata<T>(
         },
         propertyModifiers,
         typesDocumentation,
-        typeReferences: Object.keys(typeReferences).length > 0 ? typeReferences : undefined,
+        typeReferences,
         validations: validationMetadatas
       };
     });

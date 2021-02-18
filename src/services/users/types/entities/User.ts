@@ -29,7 +29,7 @@ export default class User extends _IdAndCaptcha {
 
   public isBusinessUser!: boolean;
 
-  /* 'Password doc goes here...*/
+  /* Password doc goes here...*/
   @IsStrongPassword()
   password!: string;
 

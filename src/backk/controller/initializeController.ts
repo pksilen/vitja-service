@@ -112,6 +112,7 @@ export default function initializeController(
         validations,
         propertyModifiers,
         serviceDocumentation,
+        typeReferences,
         typesDocumentation
       } = serviceMetadata;
       return {
@@ -121,6 +122,7 @@ export default function initializeController(
         types: publicTypes,
         propertyModifiers,
         typesDocumentation,
+        typeReferences,
         validations
       };
     });
