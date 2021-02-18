@@ -42,6 +42,9 @@ import { Delete } from '../../backk/decorators/service/function/Delete';
 import PayOrderArg from './types/args/PayOrderArg';
 import { JSONPath } from 'jsonpath-plus';
 import { CronJob } from '../../backk/decorators/service/function/CronJob';
+import dayjs from "dayjs";
+import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
+import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -258,7 +261,24 @@ export default class OrdersServiceImpl extends OrdersService {
 
   @CronJob({ minutes: 0, hourInterval: 1 })
   deleteIncompleteOrders(): Promise<void | ErrorResponse> {
-    return this.dbManager.deleteEntitiesWhere('paymentInfo.transactionId', null, Order);
+    const filters = this.dbManager.getFilters(
+      {
+        'paymentInfo.transactionId': null,
+        lastModifiedAtTimestamp: {
+          $lte: dayjs()
+            .subtract(1, 'hours')
+            .toDate()
+        }
+      },
+      [
+        new SqlEquals({ transactionId: null }, 'paymentInfo'),
+        new SqlExpression(
+          `lastModifiedTimestamp <= current_timestamp - INTERVAL '1' hour`
+        )
+      ]
+    );
+
+    return this.dbManager.deleteEntitiesByFilters(filters, Order);
   }
 
   private async updateSalesItemStates(

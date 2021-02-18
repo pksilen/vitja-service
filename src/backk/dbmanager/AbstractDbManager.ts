@@ -288,13 +288,13 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract deleteEntitiesWhere<T extends object>(
+  abstract deleteEntitiesWhere<T extends Entity>(
     fieldName: string,
     fieldValue: any,
     EntityClass: new () => T
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteEntitiesByFilters<T extends object>(
+  abstract deleteEntitiesByFilters<T extends Entity>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T
   ): Promise<void | ErrorResponse>;

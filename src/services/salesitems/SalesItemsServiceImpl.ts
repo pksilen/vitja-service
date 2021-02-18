@@ -159,33 +159,24 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
   deleteOldUnsoldSalesItems({
     deletableUnsoldSalesItemMinAgeInMonths
   }: DeleteOldUnsoldSalesItemsArg): Promise<void | ErrorResponse> {
-    console.log(
-      'deleteOldUnsoldSalesItems: ' + new Date(),
-      dayjs()
-        .subtract(deletableUnsoldSalesItemMinAgeInMonths, 'months')
-        .toDate()
+    const filters = this.dbManager.getFilters(
+      {
+        state: 'forSale',
+        createdAtTimestamp: {
+          $lte: dayjs()
+            .subtract(deletableUnsoldSalesItemMinAgeInMonths, 'months')
+            .toDate()
+        }
+      },
+      [
+        new SqlEquals({ state: 'forSale' }),
+        new SqlExpression(
+          `createdattimestamp <= current_timestamp - INTERVAL '${deletableUnsoldSalesItemMinAgeInMonths}' month`
+        )
+      ]
     );
 
-    return this.dbManager.deleteEntitiesByFilters(
-      this.dbManager instanceof MongoDbManager
-        ? [
-            new MongoDbQuery<SalesItem>({
-              state: 'forSale',
-              createdAtTimestamp: {
-                $lte: dayjs()
-                  .subtract(deletableUnsoldSalesItemMinAgeInMonths, 'months')
-                  .toDate()
-              }
-            })
-          ]
-        : [
-            new SqlEquals({ state: 'forSale' }),
-            new SqlExpression(
-              `createdattimestamp <= current_timestamp - INTERVAL '${deletableUnsoldSalesItemMinAgeInMonths}' month`
-            )
-          ],
-      SalesItem
-    );
+    return this.dbManager.deleteEntitiesByFilters(filters, SalesItem);
   }
 
   @AllowForSelf()
