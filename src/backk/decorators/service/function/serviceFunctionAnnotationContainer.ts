@@ -410,6 +410,18 @@ class ServiceFunctionAnnotationContainer {
     return false;
   }
 
+  isMetadataServiceFunction(serviceClass: Function, functionName: string) {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.serviceFunctionNameToIsMetadataFunctionMap[`${proto.constructor.name}${functionName}`] !== undefined) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
   getExpectedResponseValueFieldPathNameToFieldValueMapForTests(
     serviceClass: Function,
     functionName: string

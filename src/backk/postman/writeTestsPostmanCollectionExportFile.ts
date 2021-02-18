@@ -65,6 +65,10 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         serviceFunctionAnnotationContainer.hasOnStartUp(
           (controller as any)[serviceMetadata.serviceName].constructor,
           functionMetadata.functionName
+        ) ||
+        serviceFunctionAnnotationContainer.isMetadataServiceFunction(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
         )
       ) {
         return;
@@ -93,7 +97,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         isUpdateFunction(
           (controller as any)[serviceMetadata.serviceName].constructor,
           functionMetadata.functionName
-        )) {
+        )
+      ) {
         updateCount++;
       }
 
@@ -140,7 +145,15 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         updateCount
       );
 
-      items.push(createPostmanCollectionItem((controller as any)[serviceMetadata.serviceName].constructor, serviceMetadata, functionMetadata, sampleArg, tests));
+      items.push(
+        createPostmanCollectionItem(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          serviceMetadata,
+          functionMetadata,
+          sampleArg,
+          tests
+        )
+      );
 
       if (isUpdate && isVoidFunction && lastGetFunctionMetadata) {
         const foundCustomTest = writtenTests.find(
