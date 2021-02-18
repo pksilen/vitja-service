@@ -155,8 +155,7 @@ export default class SalesItemsServiceImpl extends SalesItemsService {
     );
   }
 
-  // noinspection MagicNumberJS
-  @CronJob({ minutes: 0, hours: 2 }, [1, 2, 5, 10, 30, 60, 120, 500])
+  @CronJob({ minutes: 0, hours: 2 })
   deleteOldUnsoldSalesItems({
     deletableUnsoldSalesItemMinAgeInMonths
   }: DeleteOldUnsoldSalesItemsArg): Promise<void | ErrorResponse> {

@@ -21,4 +21,5 @@ export default abstract class OrdersService extends CrudResourceService {
   abstract updateOrderItemState(arg: UpdateOrderItemStateArg): Promise<void | ErrorResponse>;
   abstract discardOrder(arg: _Id): Promise<void | ErrorResponse>;
   abstract deleteOrder(arg: _IdAndUserId): Promise<void | ErrorResponse>;
+  abstract deleteIncompleteOrders(): Promise<void | ErrorResponse>;
 }

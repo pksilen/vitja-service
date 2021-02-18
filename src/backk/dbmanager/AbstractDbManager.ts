@@ -290,7 +290,7 @@ export default abstract class AbstractDbManager {
 
   abstract deleteEntitiesWhere<T extends object>(
     fieldName: string,
-    fieldValue: T[keyof T],
+    fieldValue: any,
     EntityClass: new () => T
   ): Promise<void | ErrorResponse>;
 

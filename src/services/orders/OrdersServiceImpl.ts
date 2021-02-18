@@ -41,6 +41,7 @@ import _Id from '../../backk/types/id/_Id';
 import { Delete } from '../../backk/decorators/service/function/Delete';
 import PayOrderArg from './types/args/PayOrderArg';
 import { JSONPath } from 'jsonpath-plus';
+import { CronJob } from '../../backk/decorators/service/function/CronJob';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -253,6 +254,11 @@ export default class OrdersServiceImpl extends OrdersService {
   @AllowForSelf()
   deleteOrder({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
     return this.deleteOrderById(_id);
+  }
+
+  @CronJob({ minutes: 0, hourInterval: 1 })
+  deleteIncompleteOrders(): Promise<void | ErrorResponse> {
+    return this.dbManager.deleteEntitiesWhere('paymentInfo.transactionId', null, Order);
   }
 
   private async updateSalesItemStates(

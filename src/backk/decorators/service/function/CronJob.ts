@@ -1,4 +1,5 @@
 import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationContainer';
+import defaultRetryIntervals from '../../../scheduling/defaultRetryIntervals';
 
 export type Range = {
   start: number;
@@ -46,7 +47,7 @@ function getCronIntervalStr(interval: number | undefined): string {
   return '/' + interval;
 }
 
-export function CronJob(cronSchedule: CronSchedule, retryIntervalsInSecs: number[]) {
+export function CronJob(cronSchedule: CronSchedule, retryIntervalsInSecs: number[] = defaultRetryIntervals) {
   const cronScheduleStr = Array(6)
     .fill('')
     .map((defaultCronParameter, index) => {
@@ -105,7 +106,7 @@ export function CronJob(cronSchedule: CronSchedule, retryIntervalsInSecs: number
     ];
 
     if (cronSchedule) {
-      throw new Error('Only one cron job allowed per service function')
+      throw new Error('Only one cron job allowed per service function');
     }
 
     serviceFunctionAnnotationContainer.addCronScheduleForServiceFunction(
