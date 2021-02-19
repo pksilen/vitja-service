@@ -13,6 +13,8 @@ import getCustomValidationConstraint from '../validation/getCustomValidationCons
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 import getSampleStringValue from './getSampleStringValue';
 import { ValidationTypes } from 'class-validator';
+import isCreateFunction from "../service/crudresource/utils/isCreateFunction";
+import isUpdateFunction from "../service/crudresource/utils/isUpdateFunction";
 
 export default function getServiceFunctionTestArgument(
   serviceTypes: { [key: string]: Function },
@@ -49,10 +51,8 @@ export default function getServiceFunctionTestArgument(
         undefined,
         '__backk_create__'
       ) &&
-      (functionName.startsWith('create') ||
-        functionName.startsWith('add') ||
-        functionName.startsWith('insert')) &&
-      (propertyName !== '_id' || (propertyName === '_id' && !isRecursive))
+      isCreateFunction(serviceTypes[argTypeName], propertyName) &&
+      (propertyName !== '_id' || (propertyName === '_id' && !isManyToMany))
     ) {
       return;
     }
@@ -65,10 +65,8 @@ export default function getServiceFunctionTestArgument(
         undefined,
         '__backk_update__'
       ) &&
-      (functionName.startsWith('update') ||
-        functionName.startsWith('change') ||
-        functionName.startsWith('modify')) &&
-      (propertyName !== '_id' || (propertyName === '_id' && !isRecursive))
+      isUpdateFunction(serviceTypes[argTypeName], propertyName) &&
+      (propertyName !== '_id' || (propertyName === '_id' && !isManyToMany))
     ) {
       return;
     }

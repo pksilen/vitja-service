@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- replace T | ErrorResponse with [T, BackkError]
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
