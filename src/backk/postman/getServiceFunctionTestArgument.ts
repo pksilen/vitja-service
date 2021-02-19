@@ -17,6 +17,7 @@ import isCreateFunction from "../service/crudresource/utils/isCreateFunction";
 import isUpdateFunction from "../service/crudresource/utils/isUpdateFunction";
 
 export default function getServiceFunctionTestArgument(
+  ServiceClass: Function,
   serviceTypes: { [key: string]: Function },
   functionName: string,
   argTypeName: string,
@@ -51,7 +52,7 @@ export default function getServiceFunctionTestArgument(
         undefined,
         '__backk_create__'
       ) &&
-      isCreateFunction(serviceTypes[argTypeName], propertyName) &&
+      isCreateFunction(ServiceClass, functionName) &&
       (propertyName !== '_id' || (propertyName === '_id' && !isManyToMany))
     ) {
       return;
@@ -65,7 +66,7 @@ export default function getServiceFunctionTestArgument(
         undefined,
         '__backk_update__'
       ) &&
-      isUpdateFunction(serviceTypes[argTypeName], propertyName) &&
+      isUpdateFunction(ServiceClass, functionName) &&
       (propertyName !== '_id' || (propertyName === '_id' && !isManyToMany))
     ) {
       return;
@@ -196,6 +197,7 @@ export default function getServiceFunctionTestArgument(
       }
     } else if (types[baseTypeName]) {
       sampleArg[propertyName] = getServiceFunctionTestArgument(
+        ServiceClass,
         serviceTypes,
         functionName,
         baseTypeName,

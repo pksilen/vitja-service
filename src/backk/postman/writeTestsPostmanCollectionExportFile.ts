@@ -137,6 +137,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       }
 
       const sampleArg = getServiceFunctionTestArgument(
+        (controller as any)[serviceMetadata.serviceName].constructor,
         (controller as any)[serviceMetadata.serviceName].Types,
         functionMetadata.functionName,
         functionMetadata.argType,
@@ -180,6 +181,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           );
 
           const getFunctionSampleArg = getServiceFunctionTestArgument(
+            (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
             lastGetFunctionMetadata.functionName,
             lastGetFunctionMetadata.argType,
@@ -224,6 +226,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         );
 
         const getFunctionSampleArg = getServiceFunctionTestArgument(
+          (controller as any)[serviceMetadata.serviceName].constructor,
           (controller as any)[serviceMetadata.serviceName].Types,
           lastGetFunctionMetadata.functionName,
           lastGetFunctionMetadata.argType,

@@ -44,6 +44,7 @@ export default function addCustomTest(
     }
 
     const sampleFunctionArgument = getServiceFunctionTestArgument(
+      controller[serviceMetadata.serviceName].constructor,
       controller[serviceMetadata.serviceName].Types,
       functionMetadata.functionName,
       functionMetadata.argType,

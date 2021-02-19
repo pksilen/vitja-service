@@ -27,6 +27,7 @@ export default function writeApiPostmanCollectionExportFile<T>(
       }
 
       const sampleArg = getServiceFunctionTestArgument(
+        (controller as any)[serviceMetadata.serviceName].constructor,
         (controller as any)[serviceMetadata.serviceName].Types,
         functionMetadata.functionName,
         functionMetadata.argType,
