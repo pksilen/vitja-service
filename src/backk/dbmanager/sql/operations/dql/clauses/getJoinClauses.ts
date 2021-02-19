@@ -104,7 +104,7 @@ export default function getJoinClauses(
   }
 
   const joinClauseParts = entityAnnotationContainer.manyToManyRelationTableSpecs
-    .filter(({ associationTableName }) => associationTableName.startsWith(EntityClass.name))
+    .filter(({ associationTableName }) => associationTableName.startsWith(EntityClass.name + '_'))
     .map(
       ({ entityFieldName, associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
         const joinEntityPath = subEntityPath ? subEntityPath + '.' + entityFieldName : entityFieldName;
@@ -197,6 +197,7 @@ export default function getJoinClauses(
 
     if (isEntityTypeName(baseTypeName)) {
       const newSubEntityPath = subEntityPath ? subEntityPath + '.' + fieldName : fieldName;
+
       const subJoinClauses = getJoinClauses(
         dbManager,
         newSubEntityPath,
@@ -208,6 +209,8 @@ export default function getJoinClauses(
         Types,
         resultOuterSortBys
       );
+
+      //console.log(newSubEntityPath, (Types as any)[baseTypeName], subJoinClauses);
 
       if (subJoinClauses) {
         joinClauses += ' ' + subJoinClauses;

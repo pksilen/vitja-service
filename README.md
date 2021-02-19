@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- FollowedUser lisää SalesItems kenttä
 - replace T | ErrorResponse with [T, BackkError]
 - Split to multiple microservices
   - Implement subentities as remote service queries

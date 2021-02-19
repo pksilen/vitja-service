@@ -88,10 +88,6 @@ class EntityAnnotationContainer {
     }
   }
 
-  addManyToManyRelationTableSpec(manyToManyRelationTableSpec: ManyToManyRelationTableSpec) {
-    this.manyToManyRelationTableSpecs.push(manyToManyRelationTableSpec);
-  }
-
   addEntityTableName(entityName: string, tableName: string) {
     this.entityNameToTableNameMap[entityName] = tableName;
   }
