@@ -1,5 +1,4 @@
 import AbstractDbManager from '../../../AbstractDbManager';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import tryAlterOrCreateTable from './tryAlterOrCreateTable';
@@ -29,13 +28,12 @@ export async function isDbInitialized(dbManager: AbstractDbManager) {
   }
 
   if (dbManager instanceof AbstractSqlDbManager) {
-
     const getAppVersionInitializationStatusSql = `SELECT * ${dbManager.schema.toLowerCase()}.__backk_db_initialization WHERE isinitialized = 1 AND appversion = ${
       process.env.npm_package_version
     }`;
 
     try {
-      dbManager.tryReserveDbConnectionFromPool();
+      await dbManager.tryReserveDbConnectionFromPool();
       const result = await dbManager.tryExecuteQuery(getAppVersionInitializationStatusSql);
       const rows = dbManager.getResultRows(result);
       return rows.length === 1;
@@ -63,7 +61,7 @@ export default async function initializeDatabase(
 
   try {
     if (dbManager instanceof AbstractSqlDbManager) {
-      if (shouldInitializeDb(dbManager)) {
+      if (await shouldInitializeDb(dbManager)) {
         await forEachAsyncSequential(
           Object.entries(entityAnnotationContainer.entityNameToClassMap),
           async ([entityName, entityClass]: [any, any]) =>
@@ -97,7 +95,7 @@ export default async function initializeDatabase(
               false
             );
 
-            await forEachAsyncParallel(foreignIdFieldNames, async (foreignIdFieldName: any) => {
+            await forEachAsyncSequential(foreignIdFieldNames, async (foreignIdFieldName: any) => {
               if (!fields.find((field) => field.name.toLowerCase() === foreignIdFieldName.toLowerCase())) {
                 const alterTableStatementPrefix = `ALTER TABLE ${dbManager.schema.toLowerCase()}.${tableName} ADD `;
 
@@ -132,7 +130,12 @@ export default async function initializeDatabase(
 
         await forEachAsyncSequential(
           entityAnnotationContainer.manyToManyRelationTableSpecs,
-          async ({ associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
+          async ({
+            associationTableName,
+            entityIdFieldName,
+            entityForeignIdFieldName,
+            subEntityForeignIdFieldName
+          }) => {
             try {
               await dbManager.tryExecuteSqlWithoutCls(
                 `SELECT * FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} LIMIT 1`,
@@ -159,50 +162,50 @@ export default async function initializeDatabase(
                FOREIGN KEY(${entityForeignIdFieldName.toLowerCase()}) 
                REFERENCES ${dbManager.schema.toLowerCase()}.${entityForeignIdFieldName
                 .toLowerCase()
-                .slice(0, -2)}(_id),
+                .slice(0, -2)}(${entityIdFieldName}),
             FOREIGN KEY(${subEntityForeignIdFieldName.toLowerCase()}) 
-               REFERENCES ${dbManager.schema.toLowerCase()}.${subEntityTableName}(_id))`;
+               REFERENCES ${dbManager.schema.toLowerCase()}.${subEntityTableName}(${entityIdFieldName}))`;
 
               await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
             }
           }
         );
 
-        setDbInitialized(dbManager);
-        log(Severity.INFO, 'Database initialized', '');
-      } else if (dbManager instanceof MongoDbManager) {
-        await forEachAsyncSequential(
-          Object.entries(entityAnnotationContainer.indexNameToIndexFieldsMap),
-          async ([indexName, indexFields]: [any, any]) =>
-            await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields)
-        );
-
-        await forEachAsyncSequential(
-          Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
-          async ([indexName, indexFields]: [any, any]) =>
-            await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields, true)
-        );
-
-        await forEachAsyncSequential(
-          Object.entries(entityAnnotationContainer.entityNameToClassMap),
-          async ([, EntityClass]: [any, any]) =>
-            await tryCreateMongoDbIndexesForUniqueFields(dbManager, EntityClass)
-        );
-
-        Object.entries(entityAnnotationContainer.entityNameToClassMap).forEach(([entityName, entityClass]) =>
-          setJoinSpecs(dbManager, entityName, entityClass)
-        );
-
-        isMongoDBInitialized = true;
+        await setDbInitialized(dbManager);
         log(Severity.INFO, 'Database initialized', '');
       }
+    } else if (dbManager instanceof MongoDbManager) {
+      await forEachAsyncSequential(
+        Object.entries(entityAnnotationContainer.indexNameToIndexFieldsMap),
+        async ([indexName, indexFields]: [any, any]) =>
+          await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields)
+      );
+
+      await forEachAsyncSequential(
+        Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
+        async ([indexName, indexFields]: [any, any]) =>
+          await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields, true)
+      );
+
+      await forEachAsyncSequential(
+        Object.entries(entityAnnotationContainer.entityNameToClassMap),
+        async ([, EntityClass]: [any, any]) =>
+          await tryCreateMongoDbIndexesForUniqueFields(dbManager, EntityClass)
+      );
+
+      Object.entries(entityAnnotationContainer.entityNameToClassMap).forEach(([entityName, entityClass]) =>
+        setJoinSpecs(dbManager, entityName, entityClass)
+      );
+
+      isMongoDBInitialized = true;
+      log(Severity.INFO, 'Database initialized', '');
     }
 
     await tryExecuteOnStartUpTasks(controller, dbManager);
     await tryInitializeCronJobSchedulingTable(dbManager);
   } catch (error) {
     logError(error);
-    removeDbInitialization(dbManager);
+    await removeDbInitialization(dbManager);
     return false;
   }
 

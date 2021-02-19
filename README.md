@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- /* private */ for entity fields
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
@@ -21,6 +20,7 @@ TODO:
   - performs validation
 
 
+- remove hanging dbInitialization table entries that are not initialized and are 5 minutes ago or older
 https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object
 Split services to different microservices
 - Create notification-service

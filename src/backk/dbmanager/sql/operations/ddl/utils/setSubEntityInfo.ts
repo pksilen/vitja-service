@@ -9,7 +9,8 @@ export default function setSubEntityInfo(
   EntityClass: Function,
   fieldName: string,
   subEntityName: string,
-  isArrayType: boolean
+  isArrayType: boolean,
+  idColumnName: string,
 ) {
   let tableName = entityName;
 
@@ -20,6 +21,7 @@ export default function setSubEntityInfo(
   if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
     const manyToManyRelationTableSpec: ManyToManyRelationTableSpec = {
       entityFieldName: fieldName,
+      entityIdFieldName: idColumnName,
       associationTableName: (entityName + '_' + subEntityName),
       entityForeignIdFieldName: tableName.charAt(0).toLowerCase() + tableName.slice(1) + 'Id',
       subEntityForeignIdFieldName: subEntityName.charAt(0).toLowerCase() + subEntityName.slice(1) + 'Id'

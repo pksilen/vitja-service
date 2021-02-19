@@ -111,9 +111,7 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
     columnType: string,
     isUnique: boolean
   ): string {
-    return `ALTER TABLE ${schema?.toLowerCase()}.${tableName.toLowerCase()} MODIFY COLUMN ${columnName.toLowerCase()} ${columnType} ${
-      isUnique ? 'UNIQUE' : ''
-    }`;
+    return `ALTER TABLE ${schema?.toLowerCase()}.${tableName.toLowerCase()} MODIFY COLUMN ${columnName.toLowerCase()} ${columnType}`;
   }
 
   isDuplicateEntityError(error: Error): boolean {

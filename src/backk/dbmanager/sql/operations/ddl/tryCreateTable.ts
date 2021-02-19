@@ -24,10 +24,12 @@ export default async function tryCreateTable(
   const tableName = entityName.toLowerCase();
   let createTableStatement = `CREATE TABLE ${schema?.toLowerCase()}.${tableName} (`;
   let fieldCnt = 0;
-  const idColumn = Object.keys(entityMetadata).find((fieldName) => fieldName === '_id' || fieldName === 'id');
+  const idColumnName = Object.keys(entityMetadata).find(
+    (fieldName) => fieldName === '_id' || fieldName === 'id'
+  );
 
   await forEachAsyncSequential(
-    Object.entries({ ...entityMetadata, ...(idColumn ? {} : { id: 'string' }) }),
+    Object.entries({ ...entityMetadata, ...(idColumnName ? {} : { id: 'string' }) }),
     async ([fieldName, fieldTypeName]: [any, any]) => {
       if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
         return;
@@ -47,7 +49,14 @@ export default async function tryCreateTable(
       }
 
       if (!sqlColumnType && isEntityTypeName(baseTypeName)) {
-        setSubEntityInfo(entityName, EntityClass, fieldName, baseTypeName, isArrayType);
+        setSubEntityInfo(
+          entityName,
+          EntityClass,
+          fieldName,
+          baseTypeName,
+          isArrayType,
+          idColumnName ?? '_id'
+        );
       } else if (!isArrayType) {
         if (fieldCnt > 0) {
           createTableStatement += ', ';
@@ -79,7 +88,7 @@ export default async function tryCreateTable(
   }
 
   await forEachAsyncSequential(
-    Object.entries({ ...entityMetadata, ...(idColumn ? {} : { id: 'string' }) }),
+    Object.entries({ ...entityMetadata, ...(idColumnName ? {} : { id: 'string' }) }),
     async ([fieldName, fieldTypeName]: [any, any]) => {
       if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
         return;

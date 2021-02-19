@@ -49,7 +49,7 @@ export default async function tryAlterTable(
         }
 
         if (!sqlColumnType && isEntityTypeName(baseTypeName)) {
-          setSubEntityInfo(entityName, EntityClass, fieldName, baseTypeName, isArrayType);
+          setSubEntityInfo(entityName, EntityClass, fieldName, baseTypeName, isArrayType, '_id');
         } else if (isArrayType) {
           await createArrayValuesTable(schema, entityName, fieldName, sqlColumnType ?? '', dbManager);
           const foreignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';

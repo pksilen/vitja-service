@@ -22,7 +22,7 @@ export default async function tryCreateIndex(
       indexUsingOption ? 'USING ' + indexUsingOption : ''
     }(${lowerCaseIndexFields.join(', ')} ${sortOrderStr}) ${additionalSqlCreateIndexStatementOptions ?? ''}`;
 
-    await dbManager.tryExecuteSqlWithoutCls(createIndexStatement, undefined, false);
+    await dbManager.tryExecuteSqlWithoutCls(createIndexStatement, undefined, false, true);
   } catch(error) {
     // NOOP
   }
