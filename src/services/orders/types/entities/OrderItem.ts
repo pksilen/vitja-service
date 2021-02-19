@@ -5,14 +5,14 @@ import { OrderState } from "../enum/OrderState";
 import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/ShouldBeTrueFor";
 import { Lengths } from "../../../../backk/constants/constants";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
-import ShoppingCartOrOrderSalesItem from "./ShoppingCartOrOrderSalesItem";
+import OrderSalesItem from "./OrderSalesItem";
 
 @Entity()
 export default class OrderItem extends Id {
   @ManyToMany()
   @ArrayMinSize(1)
   @ArrayMaxSize(1)
-  public salesItems!: ShoppingCartOrOrderSalesItem[];
+  public salesItems!: OrderSalesItem[];
 
   @ShouldBeTrueFor<OrderItem>(
     ({ state, deliveryTimestamp }) =>

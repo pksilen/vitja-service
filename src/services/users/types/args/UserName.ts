@@ -8,5 +8,7 @@ import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 export default class UserName {
   @Unique()
   @IsEmail()
+
+  /* private */
   userName!: string;
 }

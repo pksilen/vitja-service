@@ -23,10 +23,14 @@ export default class ChangeUserPasswordArg {
 
   @Unique()
   @IsEmail()
+
+  /* private */
   userName!: string;
 
-  /* 'Password doc goes here...*/
+  /* Password doc goes here...*/
   @IsStrongPassword()
+
+  /* private */
   password!: string;
 
   @IsStrongPassword()

@@ -17,11 +17,11 @@ import { AllowForTests } from '../../backk/decorators/service/function/AllowForT
 import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
 import { NoAutoTest } from '../../backk/decorators/service/function/NoAutoTest';
 import { Delete } from '../../backk/decorators/service/function/Delete';
-import ShoppingCartOrOrderSalesItem from '../orders/types/entities/ShoppingCartOrOrderSalesItem';
 import { HttpStatusCodes } from '../../backk/constants/constants';
 import isErrorResponse from '../../backk/errors/isErrorResponse';
 import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
 import _Id from '../../backk/types/id/_Id';
+import ShoppingCartSalesItem from "./types/entities/ShoppingCartSalesItem";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -69,7 +69,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       'salesItems',
       salesItem,
       ShoppingCart,
-      ShoppingCartOrOrderSalesItem,
+      ShoppingCartSalesItem,
       {
         isSuccessfulOrTrue: () =>
           awaitOperationAndGetResultOfPredicate(

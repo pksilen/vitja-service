@@ -31,7 +31,6 @@ import { Update } from '../../backk/decorators/service/function/Update';
 import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
 import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
 import { Create } from '../../backk/decorators/service/function/Create';
-import ShoppingCartOrOrderSalesItem from './types/entities/ShoppingCartOrOrderSalesItem';
 import { HttpStatusCodes } from '../../backk/constants/constants';
 import { ResponseStatusCode } from '../../backk/decorators/service/function/ResponseStatusCode';
 import { ResponseHeaders } from '../../backk/decorators/service/function/ResponseHeaders';
@@ -45,6 +44,8 @@ import { CronJob } from '../../backk/decorators/service/function/CronJob';
 import dayjs from "dayjs";
 import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
+import OrderSalesItem from "./types/entities/OrderSalesItem";
+import ShoppingCartSalesItem from "../shoppingcart/types/entities/ShoppingCartSalesItem";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -82,7 +83,7 @@ export default class OrdersServiceImpl extends OrdersService {
           state: 'toBeDelivered',
           trackingUrl: null,
           deliveryTimestamp: null,
-          salesItems: [salesItem]
+          salesItems: [{ _id: salesItem._id } as OrderSalesItem]
         })),
         paymentInfo: {
           paymentGateway,
@@ -282,7 +283,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   private async updateSalesItemStates(
-    salesItems: ShoppingCartOrOrderSalesItem[],
+    salesItems: ShoppingCartSalesItem[],
     newState: SalesItemState,
     currentState?: SalesItemState
   ): Promise<void | ErrorResponse> {
