@@ -54,8 +54,7 @@ export default async function tryCreateTable(
           EntityClass,
           fieldName,
           baseTypeName,
-          isArrayType,
-          idColumnName ?? '_id'
+          isArrayType
         );
       } else if (!isArrayType) {
         if (fieldCnt > 0) {

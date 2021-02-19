@@ -1,39 +1,26 @@
 import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
-import { ErrorResponse } from "../../types/ErrorResponse";
-import { PreHook } from "./PreHook";
 import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
 import { HttpStatusCodes } from "../../constants/constants";
-import { Entity } from "../../types/entities/Entity";
-import { SubEntity } from "../../types/entities/SubEntity";
+import { CreatePreHook } from "./CreatePreHook";
 
-export default async function tryExecutePreHooks<T extends Entity | SubEntity>(
-  preHooks: PreHook<T> | PreHook<T>[],
-  currentEntityOrErrorResponse: T | ErrorResponse
-) {
-  if (
-    typeof currentEntityOrErrorResponse === 'object' &&
-    'errorMessage' in currentEntityOrErrorResponse
-  ) {
-    throw currentEntityOrErrorResponse;
-  }
-
-  await forEachAsyncSequential(Array.isArray(preHooks) ? preHooks : [preHooks], async (preHook: PreHook<T>) => {
+export default async function tryExecuteCreatePreHooks(preHooks: CreatePreHook | CreatePreHook[]) {
+  await forEachAsyncSequential(Array.isArray(preHooks) ? preHooks : [preHooks], async (preHook) => {
     const hookFunc = typeof preHook === 'function' ? preHook : preHook.isSuccessfulOrTrue;
     let hookCallResult;
 
     try {
       if (typeof preHook === 'object' && preHook.shouldExecutePreHook) {
-        const ifResult = await preHook.shouldExecutePreHook(currentEntityOrErrorResponse);
+        const ifResult = await preHook.shouldExecutePreHook();
 
         if (typeof ifResult === 'object' && 'errorMessage' in ifResult) {
           throw ifResult;
         }
 
         if (ifResult) {
-          hookCallResult = await hookFunc(currentEntityOrErrorResponse);
+          hookCallResult = await hookFunc();
         }
       } else {
-        hookCallResult = await hookFunc(currentEntityOrErrorResponse);
+        hookCallResult = await hookFunc();
       }
     } catch (error) {
       throw new Error(
@@ -58,10 +45,7 @@ export default async function tryExecutePreHooks<T extends Entity | SubEntity>(
 
           if (preHook.errorMessage) {
             errorMessage =
-              'Error code ' +
-              preHook.errorMessage.errorCode +
-              ':' +
-              preHook.errorMessage.errorMessage;
+              'Error code ' + preHook.errorMessage.errorCode + ':' + preHook.errorMessage.errorMessage;
           }
 
           throw new Error(

@@ -15,6 +15,7 @@ import tryCreateMongoDbIndexesForUniqueFields from '../../../mongodb/tryCreateMo
 import shouldInitializeDb from './shouldInitializeDb';
 import removeDbInitialization from './removeDbInitialization';
 import setDbInitialized from './setDbInitialized';
+import { createNamespace } from "cls-hooked";
 
 let isMongoDBInitialized = false;
 
@@ -33,10 +34,13 @@ export async function isDbInitialized(dbManager: AbstractDbManager) {
     }`;
 
     try {
-      await dbManager.tryReserveDbConnectionFromPool();
-      const result = await dbManager.tryExecuteQuery(getAppVersionInitializationStatusSql);
-      const rows = dbManager.getResultRows(result);
-      return rows.length === 1;
+      const clsNamespace = createNamespace('serviceFunctionExecution');
+      return await clsNamespace.runAndReturn(async () => {
+        await dbManager.tryReserveDbConnectionFromPool();
+        const result = await dbManager.tryExecuteQuery(getAppVersionInitializationStatusSql);
+        const rows = dbManager.getResultRows(result);
+        return rows.length === 1;
+      });
     } catch (error) {
       return false;
     } finally {
@@ -104,13 +108,17 @@ export default async function initializeDatabase(
 
                 await dbManager.tryExecuteSqlWithoutCls(addForeignIdColumnStatement);
 
-                const addPrimaryKeyStatement =
-                  alterTableStatementPrefix +
-                  'PRIMARY KEY (' +
+                const addUniqueIndexStatement =
+                  `CREATE UNIQUE INDEX ${
+                    foreignIdFieldName.toLowerCase() +
+                    entityAnnotationContainer.entityNameToIsArrayMap[entityName]
+                      ? '_id'
+                      : ''
+                  } ON ${dbManager.schema.toLowerCase()}.${tableName} (` +
                   foreignIdFieldName.toLowerCase() +
                   (entityAnnotationContainer.entityNameToIsArrayMap[entityName] ? ', id)' : ')');
 
-                await dbManager.tryExecuteSqlWithoutCls(addPrimaryKeyStatement);
+                await dbManager.tryExecuteSqlWithoutCls(addUniqueIndexStatement);
 
                 const addForeignKeyStatement =
                   alterTableStatementPrefix +
@@ -130,12 +138,7 @@ export default async function initializeDatabase(
 
         await forEachAsyncSequential(
           entityAnnotationContainer.manyToManyRelationTableSpecs,
-          async ({
-            associationTableName,
-            entityIdFieldName,
-            entityForeignIdFieldName,
-            subEntityForeignIdFieldName
-          }) => {
+          async ({ associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
             try {
               await dbManager.tryExecuteSqlWithoutCls(
                 `SELECT * FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} LIMIT 1`,
@@ -162,9 +165,9 @@ export default async function initializeDatabase(
                FOREIGN KEY(${entityForeignIdFieldName.toLowerCase()}) 
                REFERENCES ${dbManager.schema.toLowerCase()}.${entityForeignIdFieldName
                 .toLowerCase()
-                .slice(0, -2)}(${entityIdFieldName}),
+                .slice(0, -2)}(_id),
             FOREIGN KEY(${subEntityForeignIdFieldName.toLowerCase()}) 
-               REFERENCES ${dbManager.schema.toLowerCase()}.${subEntityTableName}(${entityIdFieldName}))`;
+               REFERENCES ${dbManager.schema.toLowerCase()}.${subEntityTableName}(_id))`;
 
               await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
             }

@@ -1,36 +1,34 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
-import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import MongoDbManager from '../../backk/dbmanager/MongoDbManager';
-import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
-import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
-import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
-import SalesItemsService from './SalesItemsService';
-import GetSalesItemsArg from './types/args/GetSalesItemsArg';
-import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
-import { SalesItem } from './types/entities/SalesItem';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
-import _Id from '../../backk/types/id/_Id';
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
+import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
+import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
+import SqlInExpression from "../../backk/dbmanager/sql/expressions/SqlInExpression";
+import SalesItemsService from "./SalesItemsService";
+import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
+import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
+import { SalesItem } from "./types/entities/SalesItem";
+import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
+import _Id from "../../backk/types/id/_Id";
 import {
   INVALID_SALES_ITEM_STATE,
   MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
   SALES_ITEM_STATE_MUST_BE_FOR_SALE
-} from './errors/salesItemsServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { SalesItemState } from './types/enums/SalesItemState';
-import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
-import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
-import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
-import awaitOperationAndGetResultOfPredicate from '../../backk/utils/getErrorResponseOrResultOf';
-import { CronJob } from '../../backk/decorators/service/function/CronJob';
-import DeleteOldUnsoldSalesItemsArg from './types/args/DeleteOldUnsoldSalesItemsArg';
-import dayjs from 'dayjs';
+} from "./errors/salesItemsServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { SalesItemState } from "./types/enums/SalesItemState";
+import GetSalesItemsByUserDefinedFiltersArg from "./types/args/GetSalesItemsByUserDefinedFiltersArg";
+import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
+import awaitOperationAndGetResultOfPredicate from "../../backk/utils/getErrorResponseOrResultOf";
+import { CronJob } from "../../backk/decorators/service/function/CronJob";
+import DeleteOldUnsoldSalesItemsArg from "./types/args/DeleteOldUnsoldSalesItemsArg";
+import dayjs from "dayjs";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])

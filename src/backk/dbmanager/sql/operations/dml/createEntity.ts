@@ -27,13 +27,15 @@ import createErrorResponseFromErrorCodeMessageAndStatus
 import createErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import tryExecuteCreatePreHooks from "../../../hooks/tryExecuteCreatePreHooks";
+import { CreatePreHook } from "../../../hooks/CreatePreHook";
 
 export default async function createEntity<T extends Entity | SubEntity>(
   dbManager: AbstractSqlDbManager,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
   EntityClass: new () => T,
-  preHooks?: PreHook<T> | PreHook<T>[],
+  preHooks?: CreatePreHook | CreatePreHook[],
   postHook?: PostHook,
   postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false,
@@ -55,7 +57,7 @@ export default async function createEntity<T extends Entity | SubEntity>(
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     if (!isRecursiveCall && preHooks) {
-      await tryExecutePreHooks(preHooks);
+      await tryExecuteCreatePreHooks(preHooks);
     }
 
     const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);

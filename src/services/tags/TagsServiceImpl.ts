@@ -1,21 +1,21 @@
-import { Injectable } from "@nestjs/common";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import TagsService from "./TagsService";
-import Tag from "./entities/Tag";
-import TagName from "./args/TagName";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
-import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
-import { SalesItem } from "../salesitems/types/entities/SalesItem";
-import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
-import DbTableVersion from "../../backk/dbmanager/version/DbTableVersion";
-import { HttpStatusCodes } from "../../backk/constants/constants";
-import isErrorResponse from "../../backk/errors/isErrorResponse";
-import tryGetSeparatedValuesFromTextFile from "../../backk/file/tryGetSeparatedValuesFromTextFile";
-import executeForAll from "../../backk/utils/executeForAll";
+import { Injectable } from '@nestjs/common';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import TagsService from './TagsService';
+import Tag from './entities/Tag';
+import TagName from './args/TagName';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
+import { SalesItem } from '../salesitems/types/entities/SalesItem';
+import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
+import DbTableVersion from '../../backk/dbmanager/version/DbTableVersion';
+import { HttpStatusCodes } from '../../backk/constants/constants';
+import isErrorResponse from '../../backk/errors/isErrorResponse';
+import tryGetSeparatedValuesFromTextFile from '../../backk/file/tryGetSeparatedValuesFromTextFile';
+import executeForAll from '../../backk/utils/executeForAll';
 
 @Injectable()
 export default class TagsServiceImpl extends TagsService {
@@ -25,39 +25,30 @@ export default class TagsServiceImpl extends TagsService {
 
   @OnStartUp()
   async initializeDatabase(): Promise<void | ErrorResponse> {
-    let tagTableVersionOrErrorResponse = await this.dbManager.getEntityByFilters(
-      { entityName: 'Tag' },
-      DbTableVersion
-    );
+    let tagTableVersion = await this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion);
 
-    if (isErrorResponse(tagTableVersionOrErrorResponse, HttpStatusCodes.NOT_FOUND)) {
-      tagTableVersionOrErrorResponse = await this.dbManager.createEntity(
-        { entityName: 'Tag' },
-        DbTableVersion,
-        () => {
-          const tags = tryGetSeparatedValuesFromTextFile('resources/tags1.txt');
-          return executeForAll(tags, (tag) => this.createTag({ name: tag }));
-        }
-      );
+    if (isErrorResponse(tagTableVersion, HttpStatusCodes.NOT_FOUND)) {
+      tagTableVersion = await this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, () => {
+        const tags = tryGetSeparatedValuesFromTextFile('resources/tags1.txt');
+        return executeForAll(tags, (tag) => this.createTag({ name: tag }));
+      });
     }
 
-    return 'errorMessage' in tagTableVersionOrErrorResponse ? tagTableVersionOrErrorResponse : undefined;
+    return 'errorMessage' in tagTableVersion ? tagTableVersion : undefined;
   }
 
   @OnStartUp()
   async migrateDbFromVersion1To2(): Promise<void | ErrorResponse> {
-    const tagTableVersion1OrErrorResponse = await this.dbManager.getEntityByFilters(
+    const tagTableVersion1 = await this.dbManager.getEntityByFilters(
       { entityName: 'Tag', version: 1 },
       DbTableVersion
     );
 
-    if ('errorMessage' in tagTableVersion1OrErrorResponse) {
-      return isErrorResponse(tagTableVersion1OrErrorResponse, HttpStatusCodes.NOT_FOUND)
-        ? undefined
-        : tagTableVersion1OrErrorResponse;
+    if ('errorMessage' in tagTableVersion1) {
+      return isErrorResponse(tagTableVersion1, HttpStatusCodes.NOT_FOUND) ? undefined : tagTableVersion1;
     }
 
-    return this.dbManager.updateEntity(tagTableVersion1OrErrorResponse, DbTableVersion, [], () => {
+    return this.dbManager.updateEntity(tagTableVersion1, DbTableVersion, () => {
       const tags = tryGetSeparatedValuesFromTextFile('resources/tags2.txt');
       return executeForAll(tags, (tag) => this.createTag({ name: tag }));
     });

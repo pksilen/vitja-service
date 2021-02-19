@@ -1,6 +1,5 @@
-import { ErrorResponse } from '../../types/ErrorResponse';
-import { Entity } from '../../types/entities/Entity';
-import { RecursivePartial } from "../../types/RecursivePartial";
+import { ErrorResponse } from "../../types/ErrorResponse";
+import { Entity } from "../../types/entities/Entity";
 import { SubEntity } from "../../types/entities/SubEntity";
 
 export interface ErrorCodeAndMessageAndStatus {

@@ -39,6 +39,7 @@ import { PostHook } from './hooks/PostHook';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
+import { CreatePreHook } from "./hooks/CreatePreHook";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -413,7 +414,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async createEntity<T extends Entity | SubEntity>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
+    preHooks?: CreatePreHook | CreatePreHook[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations,
     shouldReturnItem = true
@@ -435,6 +436,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
+  // noinspection OverlyComplexFunctionJS
   async addSubEntity<T extends Entity, U extends SubEntity>(
     _id: string,
     versionOrLastModifiedTimestamp: string | 'any',
@@ -465,6 +467,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
+  // noinspection OverlyComplexFunctionJS
   async addSubEntities<T extends Entity, U extends SubEntity>(
     _id: string,
     versionOrLastModifiedTimestamp: string | 'any',

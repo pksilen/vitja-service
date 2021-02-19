@@ -16,6 +16,8 @@ import { Lengths } from "../../../../backk/constants/constants";
 import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/ShouldBeTrueFor";
 import FavoriteSalesItem from "./FavoriteSalesItem";
 import PublicUser from "./PublicUser";
+import FollowedUser from "./FollowedUser";
+import FollowingUser from "./FollowingUser";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -70,8 +72,8 @@ export default class User extends _IdAndCaptcha {
   public readonly orders!: Order[];
 
   @ManyToMany()
-  public readonly followedUsers!: PublicUser[];
+  public readonly followedUsers!: FollowedUser[];
 
   @ManyToMany()
-  public readonly followingUsers!: PublicUser[];
+  public readonly followingUsers!: FollowingUser[];
 }

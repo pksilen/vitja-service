@@ -1,12 +1,10 @@
-import { JSONPath } from 'jsonpath-plus';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import getEntityById from './getEntityById';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import createErrorResponseFromErrorMessageAndStatusCode from '../../../../errors/createErrorResponseFromErrorMessageAndStatusCode';
-import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
-import { HttpStatusCodes } from '../../../../constants/constants';
+import { JSONPath } from "jsonpath-plus";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import getEntityById from "./getEntityById";
+import { ErrorResponse } from "../../../../types/ErrorResponse";
+import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 
 export default async function getSubEntities<T extends object, U>(
   dbManager: AbstractSqlDbManager,

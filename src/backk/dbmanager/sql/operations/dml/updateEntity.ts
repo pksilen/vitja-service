@@ -26,6 +26,7 @@ import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
+import emptyError from "../../../../errors/emptyError";
 
 export default async function updateEntity<T extends Entity>(
   dbManager: AbstractSqlDbManager,
@@ -47,7 +48,7 @@ export default async function updateEntity<T extends Entity>(
     }
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
+    let currentEntityOrErrorResponse: T | ErrorResponse  = emptyError;
 
     if (!isRecursiveCall) {
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);

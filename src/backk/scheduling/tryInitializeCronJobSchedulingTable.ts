@@ -9,10 +9,10 @@ import { HttpStatusCodes } from '../constants/constants';
 import isErrorResponse from '../errors/isErrorResponse';
 
 export default async function tryInitializeCronJobSchedulingTable(dbManager: AbstractDbManager) {
+  const clsNamespace = createNamespace('serviceFunctionExecution');
   await forEachAsyncParallel(
     Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()),
     async ([serviceFunctionName, cronSchedule]) => {
-      const clsNamespace = createNamespace('serviceFunctionExecution');
       const possibleErrorResponse = await clsNamespace.runAndReturn(async () => {
         await dbManager.tryReserveDbConnectionFromPool();
         const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {

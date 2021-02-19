@@ -2,7 +2,6 @@ import { SortOrder } from "../typeproperty";
 
 export interface ManyToManyRelationTableSpec {
   entityFieldName: string;
-  entityIdFieldName: string;
   associationTableName: string;
   entityForeignIdFieldName: string;
   subEntityForeignIdFieldName: string;

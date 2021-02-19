@@ -16,6 +16,7 @@ import __Backk__CronJobScheduling from '../scheduling/entities/__Backk__CronJobS
 import __Backk__JobScheduling from '../scheduling/entities/__Backk__JobScheduling';
 import MongoDbQuery from './mongodb/MongoDbQuery';
 import { PostHook } from './hooks/PostHook';
+import { CreatePreHook } from "./hooks/CreatePreHook";
 
 export interface Field {
   name: string;
@@ -96,7 +97,7 @@ export default abstract class AbstractDbManager {
   abstract createEntity<T extends Entity>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
+    preHooks?: CreatePreHook | CreatePreHook[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
@@ -104,7 +105,7 @@ export default abstract class AbstractDbManager {
   async createEntities<T extends Entity>(
     entities: Array<Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>>,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
+    preHooks?: CreatePreHook | CreatePreHook[],
     postQueryOperations?: PostQueryOperations
   ): Promise<T[] | ErrorResponse> {
     return this.executeInsideTransaction(async () => {

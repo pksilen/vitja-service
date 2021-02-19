@@ -56,6 +56,9 @@ import getFieldOrdering from './mongodb/getFieldOrdering';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
 import log, { Severity } from '../observability/logging/log';
+import { CreatePreHook } from "./hooks/CreatePreHook";
+import tryExecuteCreatePreHooks from "./hooks/tryExecuteCreatePreHooks";
+import emptyError from "../errors/emptyError";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -230,7 +233,7 @@ export default class MongoDbManager extends AbstractDbManager {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
+    preHooks?: CreatePreHook | CreatePreHook[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations,
     isInternalCall = false
@@ -270,7 +273,7 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
-        await tryExecutePreHooks(preHooks);
+        await tryExecuteCreatePreHooks(preHooks ?? []);
         let createEntityResult;
 
         try {
@@ -1005,7 +1008,7 @@ export default class MongoDbManager extends AbstractDbManager {
       }
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
-        let currentEntityOrErrorResponse: T | ErrorResponse | undefined;
+        let currentEntityOrErrorResponse: T | ErrorResponse = emptyError;
 
         if (!isRecursiveCall && preHooks) {
           currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
@@ -1151,7 +1154,7 @@ export default class MongoDbManager extends AbstractDbManager {
           EntityClass
         );
 
-        await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
+        await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
 
         await this.updateEntity({ _id: (currentEntityOrErrorResponse as T)._id, ...entity }, EntityClass, []);
 
@@ -1210,7 +1213,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async deleteEntitiesWhere<T extends object>(
     fieldName: string,
-    fieldValue: T[keyof T] | string,
+    fieldValue: any,
     EntityClass: new () => T
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesWhere');
@@ -1320,7 +1323,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
       return await this.tryExecute(shouldUseTransaction, async () => {
         const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
-        await tryExecutePreHooks(preHooks, currentEntityOrErrorResponse);
+        await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
         const subEntities = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });
         let response = currentEntityOrErrorResponse;
 
