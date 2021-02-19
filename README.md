@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- /* private */ for entity fields
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
@@ -10,8 +11,14 @@ TODO:
    http-kubernetes-mongodb
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
+
+- Create serviceClientImplGenerator that generates client service implementation that use backk-client library
+  to fetch data
 - Create backk-client library
-  -Removes readonly properties
+  - call Backk.setBearerToken() to set globally for Authorization header
+  - sets If-none-match header for GET requests
+  - Removes readonly properties
+  - performs validation
 
 
 https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object

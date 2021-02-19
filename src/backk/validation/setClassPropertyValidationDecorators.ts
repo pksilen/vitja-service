@@ -128,6 +128,20 @@ export default function setClassPropertyValidationDecorators(
           }
 
           const isPrivateProperty = classBodyNode.accessibility !== 'public';
+
+          if (
+            isPrivateProperty &&
+            entityAnnotationContainer.isEntity(Class) &&
+            classBodyNode.key.leadingComments?.[0].value.trim() !== 'private'
+          ) {
+            throw new Error(
+              Class.name +
+                '.' +
+                propertyName +
+                " is a private property and must be preceded by a comment: /* private */. Or if the property should be public, denote it with a 'public' keyword"
+            );
+          }
+
           if (isPrivateProperty && entityAnnotationContainer.isEntity(Class)) {
             typePropertyAnnotationContainer.setTypePropertyAsPrivate(Class, propertyName);
 

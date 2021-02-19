@@ -19,9 +19,10 @@ import PublicUser from "./PublicUser";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
+
   @Unique()
   @IsEmail()
-  userName!: string;
+  /* private */ userName!: string;
 
   @MaxLength(Lengths._512)
   @IsAnyString()
@@ -31,7 +32,7 @@ export default class User extends _IdAndCaptcha {
 
   /* Password doc goes here...*/
   @IsStrongPassword()
-  password!: string;
+  /* private */ password!: string;
 
   @MaxLength(Lengths._512)
   @IsAnyString()

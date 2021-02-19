@@ -8,5 +8,5 @@ export default class UserResponse extends User {
   @MaxLength(Lengths._16)
   @IsAnyString()
   @TestValue('Some extra info')
-  extraInfo!: string;
+  public extraInfo!: string;
 }

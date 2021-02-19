@@ -79,7 +79,6 @@ export class AppController {
   processPostRequests(
     @Headers('authorization') authHeader: string,
     @Headers('x-forwarded-for') xForwardedForHeader: string,
-    @Headers('if-none-match') ifNoneMatchHeader: string,
     @Param() params: { serviceFunctionName: string },
     @Body() serviceFunctionArgument: object,
     @Res() response: any
@@ -91,8 +90,7 @@ export class AppController {
       serviceFunctionArgument,
       {
         Authorization: authHeader,
-        'X-Forwarded-For': xForwardedForHeader,
-        'If-None-Match': ifNoneMatchHeader
+        'X-Forwarded-For': xForwardedForHeader
       },
       response,
       {
