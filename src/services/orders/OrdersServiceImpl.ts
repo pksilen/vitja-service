@@ -44,8 +44,7 @@ import { CronJob } from '../../backk/decorators/service/function/CronJob';
 import dayjs from "dayjs";
 import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import OrderSalesItem from "./types/entities/OrderSalesItem";
-import ShoppingCartSalesItem from "../shoppingcart/types/entities/ShoppingCartSalesItem";
+import ShoppingCartOrOrderSalesItem from "../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -83,7 +82,7 @@ export default class OrdersServiceImpl extends OrdersService {
           state: 'toBeDelivered',
           trackingUrl: null,
           deliveryTimestamp: null,
-          salesItems: [{ _id: salesItem._id } as OrderSalesItem]
+          salesItems: [salesItem]
         })),
         paymentInfo: {
           paymentGateway,
@@ -283,7 +282,7 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   private async updateSalesItemStates(
-    salesItems: ShoppingCartSalesItem[],
+    salesItems: ShoppingCartOrOrderSalesItem[],
     newState: SalesItemState,
     currentState?: SalesItemState
   ): Promise<void | ErrorResponse> {

@@ -3,7 +3,7 @@ import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import { Entity } from '../../../../types/entities/Entity';
+import { BackkEntity } from '../../../../types/entities/BackkEntity';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
@@ -14,7 +14,7 @@ import getEntityWhere from '../dql/getEntityWhere';
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 
-export default async function updateEntityWhere<T extends Entity>(
+export default async function updateEntityWhere<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
   fieldPathName: string,
   fieldValue: any,

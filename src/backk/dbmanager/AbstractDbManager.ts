@@ -4,7 +4,7 @@ import SqlExpression from './sql/expressions/SqlExpression';
 import { RecursivePartial } from '../types/RecursivePartial';
 import { ErrorResponse } from '../types/ErrorResponse';
 import { PreHook } from './hooks/PreHook';
-import { Entity } from '../types/entities/Entity';
+import { BackkEntity } from '../types/entities/BackkEntity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import { Injectable } from '@nestjs/common';
 import isErrorResponse from '../errors/isErrorResponse';
@@ -94,7 +94,7 @@ export default abstract class AbstractDbManager {
     executable: () => Promise<T | ErrorResponse>
   ): Promise<T | ErrorResponse>;
 
-  abstract createEntity<T extends Entity>(
+  abstract createEntity<T extends BackkEntity>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     EntityClass: new () => T,
     preHooks?: CreatePreHook | CreatePreHook[],
@@ -102,7 +102,7 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
-  async createEntities<T extends Entity>(
+  async createEntities<T extends BackkEntity>(
     entities: Array<Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>>,
     EntityClass: new () => T,
     preHooks?: CreatePreHook | CreatePreHook[],
@@ -122,7 +122,7 @@ export default abstract class AbstractDbManager {
 
             if ('errorMessage' in entityOrErrorResponse && isErrorResponse(entityOrErrorResponse)) {
               entityOrErrorResponse.errorMessage =
-                'Entity ' + index + ': ' + entityOrErrorResponse.errorMessage;
+                'BackkEntity ' + index + ': ' + entityOrErrorResponse.errorMessage;
               throw entityOrErrorResponse;
             }
           })
@@ -133,7 +133,7 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract addSubEntity<T extends Entity, U extends SubEntity>(
+  abstract addSubEntity<T extends BackkEntity, U extends SubEntity>(
     _id: string,
     versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
@@ -145,7 +145,7 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
-  abstract addSubEntities<T extends Entity, U extends SubEntity>(
+  abstract addSubEntities<T extends BackkEntity, U extends SubEntity>(
     _id: string,
     versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
@@ -219,14 +219,14 @@ export default abstract class AbstractDbManager {
     postQueryOperations: PostQueryOperations
   ): Promise<T[] | ErrorResponse>;
 
-  abstract updateEntity<T extends Entity>(
+  abstract updateEntity<T extends BackkEntity>(
     entity: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
   ): Promise<void | ErrorResponse>;
 
-  updateEntities<T extends Entity>(
+  updateEntities<T extends BackkEntity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[]
@@ -242,7 +242,7 @@ export default abstract class AbstractDbManager {
 
           if (possibleErrorResponse) {
             possibleErrorResponse.errorMessage =
-              'Entity ' + index + ': ' + possibleErrorResponse.errorMessage;
+              'BackkEntity ' + index + ': ' + possibleErrorResponse.errorMessage;
             throw possibleErrorResponse;
           }
         });
@@ -252,7 +252,7 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract updateEntityWhere<T extends Entity>(
+  abstract updateEntityWhere<T extends BackkEntity>(
     fieldPathName: string,
     fieldValue: any,
     entity: RecursivePartial<T>,
@@ -261,14 +261,14 @@ export default abstract class AbstractDbManager {
     postHook?: PostHook
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteEntityById<T extends Entity>(
+  abstract deleteEntityById<T extends BackkEntity>(
     _id: string,
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
   ): Promise<void | ErrorResponse>;
 
-  deleteEntitiesByIds<T extends Entity>(
+  deleteEntitiesByIds<T extends BackkEntity>(
     _ids: string[],
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[]
@@ -279,7 +279,7 @@ export default abstract class AbstractDbManager {
           const possibleErrorResponse = await this.deleteEntityById(_id, EntityClass, preHooks);
           if (possibleErrorResponse) {
             possibleErrorResponse.errorMessage =
-              'Entity ' + index + ': ' + possibleErrorResponse.errorMessage;
+              'BackkEntity ' + index + ': ' + possibleErrorResponse.errorMessage;
             throw possibleErrorResponse;
           }
         });
@@ -289,18 +289,18 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract deleteEntitiesWhere<T extends Entity>(
+  abstract deleteEntitiesWhere<T extends BackkEntity>(
     fieldName: string,
     fieldValue: any,
     EntityClass: new () => T
   ): Promise<void | ErrorResponse>;
 
-  abstract deleteEntitiesByFilters<T extends Entity>(
+  abstract deleteEntitiesByFilters<T extends BackkEntity>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T
   ): Promise<void | ErrorResponse>;
 
-  abstract removeSubEntities<T extends Entity>(
+  abstract removeSubEntities<T extends BackkEntity>(
     _id: string,
     subEntitiesJsonPath: string,
     EntityClass: new () => T,
@@ -309,7 +309,7 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): Promise<T | ErrorResponse>;
 
-  abstract removeSubEntityById<T extends Entity>(
+  abstract removeSubEntityById<T extends BackkEntity>(
     _id: string,
     subEntitiesJsonPath: string,
     subEntityId: string,

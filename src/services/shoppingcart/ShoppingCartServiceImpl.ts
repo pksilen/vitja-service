@@ -21,7 +21,7 @@ import { HttpStatusCodes } from '../../backk/constants/constants';
 import isErrorResponse from '../../backk/errors/isErrorResponse';
 import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
 import _Id from '../../backk/types/id/_Id';
-import ShoppingCartSalesItem from "./types/entities/ShoppingCartSalesItem";
+import ShoppingCartOrOrderSalesItem from "./types/entities/ShoppingCartOrOrderSalesItem";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -69,7 +69,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       'salesItems',
       salesItem,
       ShoppingCart,
-      ShoppingCartSalesItem,
+      ShoppingCartOrOrderSalesItem,
       {
         isSuccessfulOrTrue: () =>
           awaitOperationAndGetResultOfPredicate(

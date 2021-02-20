@@ -1,7 +1,0 @@
-import Entity from '../../../../backk/decorators/entity/Entity';
-
-@Entity('SalesItem')
-export default class OrderSalesItem {
-  ..._Id;
-  ...Readonly<Pick<SalesItem, 'primaryImageThumbnailDataUri' | 'title' | 'price'>>;
-}

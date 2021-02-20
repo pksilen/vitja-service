@@ -123,6 +123,7 @@ function generateTypescriptFileFor(
         });
 
         const baseTypeFilePathName = getTypeFilePathNameFor(baseType);
+
         if (baseTypeFilePathName) {
           handledTypeFilePathNames.push(baseTypeFilePathName);
           generateTypescriptFileFor(baseTypeFilePathName, handledTypeFilePathNames, promisifiedExecs);
@@ -164,6 +165,7 @@ function generateTypescriptFileFor(
           'omit',
           typeFilePathName
         );
+
         outputImportCodeLines = outputImportCodeLines.concat(importLines);
         outputClassPropertyDeclarations = outputClassPropertyDeclarations.concat(classPropertyDeclarations);
       }
@@ -193,8 +195,10 @@ function generateTypescriptFileFor(
         const argumentsStr = (decorator.expression.arguments ?? [])
           .map((argument: any) => argument.extra.raw)
           .join(', ');
+
         classDecoratorArguments.push(argumentsStr);
       });
+
       node.declaration.decorators = undefined;
 
       const declarations = outputClassPropertyDeclarations.concat(node.declaration.body.body);
@@ -208,6 +212,7 @@ function generateTypescriptFileFor(
   const classDecoratorLines = classDecoratorNames
     .map((classDecoratorName, index) => '@' + classDecoratorName + '(' + classDecoratorArguments[index] + ')')
     .join('\n');
+
   const outputCode = generate(ast as any).code;
   const outputFileHeaderLines = [
     '// This is an auto-generated file from the respective .type file',
@@ -219,15 +224,18 @@ function generateTypescriptFileFor(
   ];
 
   let outputFileContentsStr = outputFileHeaderLines.join('\n') + '\n' + outputCode;
+
   outputFileContentsStr = outputFileContentsStr
     .split('\n')
     .map((outputFileLine) => {
       if (outputFileLine.endsWith(';') && !outputFileLine.startsWith('import')) {
         return outputFileLine + '\n';
       }
+
       if (outputFileLine.startsWith('export default class') || outputFileLine.startsWith('export class')) {
         return classDecoratorLines + '\n' + outputFileLine;
       }
+
       return outputFileLine;
     })
     .join('\n');
@@ -238,6 +246,7 @@ function generateTypescriptFileFor(
   const organizeImportsPromise = promisifiedExec(
     process.cwd() + '/node_modules/.bin/organize-imports-cli ' + outputFileName
   );
+
   promisifiedExecs.push(organizeImportsPromise);
   organizeImportsPromise.then(() => {
     promisifiedExecs.push(

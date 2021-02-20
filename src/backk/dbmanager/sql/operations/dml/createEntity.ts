@@ -20,7 +20,7 @@ import typePropertyAnnotationContainer
 import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
 import { PostHook } from "../../../hooks/PostHook";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
-import { Entity } from "../../../../types/entities/Entity";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
 import { SubEntity } from "../../../../types/entities/SubEntity";
 import createErrorResponseFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
@@ -30,7 +30,7 @@ import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import tryExecuteCreatePreHooks from "../../../hooks/tryExecuteCreatePreHooks";
 import { CreatePreHook } from "../../../hooks/CreatePreHook";
 
-export default async function createEntity<T extends Entity | SubEntity>(
+export default async function createEntity<T extends BackkEntity | SubEntity>(
   dbManager: AbstractSqlDbManager,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,

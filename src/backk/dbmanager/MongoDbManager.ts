@@ -5,7 +5,7 @@ import AbstractDbManager, { Field } from './AbstractDbManager';
 import { ErrorResponse } from '../types/ErrorResponse';
 import { RecursivePartial } from '../types/RecursivePartial';
 import { PreHook } from './hooks/PreHook';
-import { Entity } from '../types/entities/Entity';
+import { BackkEntity } from '../types/entities/BackkEntity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
 import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
@@ -229,7 +229,7 @@ export default class MongoDbManager extends AbstractDbManager {
     return result;
   }
 
-  async createEntity<T extends Entity>(
+  async createEntity<T extends BackkEntity>(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     EntityClass: new () => T,
@@ -316,7 +316,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  addSubEntity<T extends Entity, U extends SubEntity>(
+  addSubEntity<T extends BackkEntity, U extends SubEntity>(
     _id: string,
     versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
@@ -345,7 +345,7 @@ export default class MongoDbManager extends AbstractDbManager {
     return response;
   }
 
-  async addSubEntities<T extends Entity, U extends SubEntity>(
+  async addSubEntities<T extends BackkEntity, U extends SubEntity>(
     _id: string,
     versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
@@ -984,7 +984,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async updateEntity<T extends Entity>(
+  async updateEntity<T extends BackkEntity>(
     { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
@@ -1131,7 +1131,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async updateEntityWhere<T extends Entity>(
+  async updateEntityWhere<T extends BackkEntity>(
     fieldPathName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
@@ -1172,7 +1172,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async deleteEntityById<T extends Entity>(
+  async deleteEntityById<T extends BackkEntity>(
     _id: string,
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
@@ -1305,7 +1305,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async removeSubEntities<T extends Entity>(
+  async removeSubEntities<T extends BackkEntity>(
     _id: string,
     subEntitiesJsonPath: string,
     EntityClass: new () => T,
@@ -1358,7 +1358,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async removeSubEntityById<T extends Entity>(
+  async removeSubEntityById<T extends BackkEntity>(
     _id: string,
     subEntitiesJsonPath: string,
     subEntityId: string,

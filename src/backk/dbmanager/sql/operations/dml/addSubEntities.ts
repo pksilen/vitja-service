@@ -3,7 +3,7 @@ import entityAnnotationContainer from "../../../../decorators/entity/entityAnnot
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { ErrorResponse } from "../../../../types/ErrorResponse";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import { Entity } from "../../../../types/entities/Entity";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 import { PreHook } from "../../../hooks/PreHook";
@@ -29,7 +29,7 @@ import createErrorResponseFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 
-export default async function addSubEntities<T extends Entity, U extends SubEntity>(
+export default async function addSubEntities<T extends BackkEntity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   versionOrLastModifiedTimestamp: string | 'any',

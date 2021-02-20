@@ -18,7 +18,7 @@ import getEntitiesByIds from './sql/operations/dql/getEntitiesByIds';
 import { ErrorResponse } from '../types/ErrorResponse';
 import { RecursivePartial } from '../types/RecursivePartial';
 import { PreHook } from './hooks/PreHook';
-import { Entity } from '../types/entities/Entity';
+import { BackkEntity } from '../types/entities/BackkEntity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createErrorResponseFromError from '../errors/createErrorResponseFromError';
@@ -411,7 +411,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return result;
   }
 
-  async createEntity<T extends Entity | SubEntity>(
+  async createEntity<T extends BackkEntity | SubEntity>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
     preHooks?: CreatePreHook | CreatePreHook[],
@@ -437,7 +437,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   // noinspection OverlyComplexFunctionJS
-  async addSubEntity<T extends Entity, U extends SubEntity>(
+  async addSubEntity<T extends BackkEntity, U extends SubEntity>(
     _id: string,
     versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
@@ -468,7 +468,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   // noinspection OverlyComplexFunctionJS
-  async addSubEntities<T extends Entity, U extends SubEntity>(
+  async addSubEntities<T extends BackkEntity, U extends SubEntity>(
     _id: string,
     versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
@@ -640,7 +640,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async updateEntity<T extends Entity>(
+  async updateEntity<T extends BackkEntity>(
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
@@ -658,7 +658,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async updateEntityWhere<T extends Entity>(
+  async updateEntityWhere<T extends BackkEntity>(
     fieldPathName: string,
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
@@ -680,7 +680,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async deleteEntityById<T extends Entity>(
+  async deleteEntityById<T extends BackkEntity>(
     _id: string,
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
@@ -713,7 +713,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async removeSubEntities<T extends Entity>(
+  async removeSubEntities<T extends BackkEntity>(
     _id: string,
     subEntitiesJsonPath: string,
     entityClass: new () => T,
@@ -735,7 +735,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async removeSubEntityById<T extends Entity>(
+  async removeSubEntityById<T extends BackkEntity>(
     _id: string,
     subEntitiesJsonPath: string,
     subEntityId: string,

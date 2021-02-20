@@ -16,9 +16,9 @@ import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import { Entity } from "../../../../types/entities/Entity";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
 
-export default async function deleteEntityById<T extends Entity>(
+export default async function deleteEntityById<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   EntityClass: new () => T,

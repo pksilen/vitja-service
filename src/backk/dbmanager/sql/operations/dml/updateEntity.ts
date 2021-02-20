@@ -10,7 +10,7 @@ import createErrorResponseFromError from '../../../../errors/createErrorResponse
 import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
-import { Entity } from '../../../../types/entities/Entity';
+import { BackkEntity } from '../../../../types/entities/BackkEntity';
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
@@ -28,7 +28,7 @@ import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createE
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 import emptyError from "../../../../errors/emptyError";
 
-export default async function updateEntity<T extends Entity>(
+export default async function updateEntity<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
   { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,

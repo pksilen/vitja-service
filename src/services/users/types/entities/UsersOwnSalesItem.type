@@ -2,5 +2,5 @@ import Entity from '../../../../backk/decorators/entity/Entity';
 
 @Entity('SalesItem')
 export default class UsersOwnSalesItem {
-  ...Pick<SalesItem, '_id' | 'primaryImageThumbnailDataUri' | 'title' | 'price' | 'state'>;
+  ...Pick<SalesItem, '_id' | 'primaryImageThumbnailDataUri' | 'title' | 'price' | 'createdAtTimestamp' | 'state'>;
 }

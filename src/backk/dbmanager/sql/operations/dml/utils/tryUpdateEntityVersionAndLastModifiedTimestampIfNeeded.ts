@@ -1,8 +1,8 @@
 import { ErrorResponse } from "../../../../../types/ErrorResponse";
 import AbstractDbManager from "../../../../AbstractDbManager";
-import { Entity } from "../../../../../types/entities/Entity";
+import { BackkEntity } from "../../../../../types/entities/BackkEntity";
 
-export default async function tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded<T extends Entity>(
+export default async function tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded<T extends BackkEntity>(
   dbManager: AbstractDbManager,
   currentEntityOrErrorResponse: T | ErrorResponse,
   EntityClass: new () => T

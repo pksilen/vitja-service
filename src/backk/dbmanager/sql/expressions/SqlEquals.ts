@@ -2,7 +2,7 @@ import SqlExpression from './SqlExpression';
 import shouldUseRandomInitializationVector from "../../../crypt/shouldUseRandomInitializationVector";
 import shouldEncryptValue from "../../../crypt/shouldEncryptValue";
 import encrypt from "../../../crypt/encrypt";
-import { Entity } from "../../../types/entities/Entity";
+import { BackkEntity } from "../../../types/entities/BackkEntity";
 
 export default class SqlEquals<T> extends SqlExpression {
   constructor(private readonly filters: Partial<T>, subEntityPath: string = '') {

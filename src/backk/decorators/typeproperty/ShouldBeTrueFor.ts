@@ -18,7 +18,7 @@ export function ShouldBeTrueFor<T>(
           return func(args.object as any);
         },
         defaultMessage: () =>
-          errorMessage ? errorMessage : 'Entity did not match predicate: ' + func.toString()
+          errorMessage ? errorMessage : 'BackkEntity did not match predicate: ' + func.toString()
       }
     });
   };

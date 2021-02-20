@@ -1,4 +1,4 @@
-export interface Entity {
+export interface BackkEntity {
   _id: string;
   id?: string;
   version?: string;

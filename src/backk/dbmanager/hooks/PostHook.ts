@@ -1,8 +1,8 @@
-import { Entity } from "../../types/entities/Entity";
+import { BackkEntity } from "../../types/entities/BackkEntity";
 import { ErrorResponse } from "../../types/ErrorResponse";
 
 export type PostHook = {
   shouldExecutePostHook: () => boolean,
-  isSuccessful: () => Promise<void | Entity | ErrorResponse>
-} | (() => Promise<void | Entity | ErrorResponse>);
+  isSuccessful: () => Promise<void | BackkEntity | ErrorResponse>
+} | (() => Promise<void | BackkEntity | ErrorResponse>);
 

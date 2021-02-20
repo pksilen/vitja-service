@@ -8,7 +8,7 @@ import { ErrorResponse } from '../../../../types/ErrorResponse';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
-import { Entity } from '../../../../types/entities/Entity';
+import { BackkEntity } from '../../../../types/entities/BackkEntity';
 import isErrorResponse from '../../../../errors/isErrorResponse';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
@@ -22,7 +22,7 @@ import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 
-export default async function removeSubEntities<T extends Entity, U extends object>(
+export default async function removeSubEntities<T extends BackkEntity, U extends object>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   subEntitiesJsonPath: string,

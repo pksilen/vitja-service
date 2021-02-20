@@ -3,10 +3,10 @@ import { ErrorResponse } from "../../types/ErrorResponse";
 import { PreHook } from "./PreHook";
 import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
 import { HttpStatusCodes } from "../../constants/constants";
-import { Entity } from "../../types/entities/Entity";
+import { BackkEntity } from "../../types/entities/BackkEntity";
 import { SubEntity } from "../../types/entities/SubEntity";
 
-export default async function tryExecutePreHooks<T extends Entity | SubEntity>(
+export default async function tryExecutePreHooks<T extends BackkEntity | SubEntity>(
   preHooks: PreHook<T> | PreHook<T>[],
   currentEntityOrErrorResponse: T | ErrorResponse
 ) {

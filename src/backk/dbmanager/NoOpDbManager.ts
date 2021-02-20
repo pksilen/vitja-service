@@ -1,5 +1,5 @@
 import AbstractDbManager, { Field } from './AbstractDbManager';
-import { Entity } from '../types/entities/Entity';
+import { BackkEntity } from '../types/entities/BackkEntity';
 import { SubEntity } from '../types/entities/SubEntity';
 import { ErrorResponse } from '../types/ErrorResponse';
 import MongoDbQuery from './mongodb/MongoDbQuery';
@@ -10,11 +10,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  addSubEntities<T extends Entity, U extends object>(): Promise<ErrorResponse | T> {
+  addSubEntities<T extends BackkEntity, U extends object>(): Promise<ErrorResponse | T> {
     throw new Error('Not implemented');
   }
 
-  addSubEntity<T extends Entity, U extends SubEntity>(): Promise<ErrorResponse | T> {
+  addSubEntity<T extends BackkEntity, U extends SubEntity>(): Promise<ErrorResponse | T> {
     throw new Error('Not implemented');
   }
 
@@ -102,11 +102,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     return Promise.resolve(false);
   }
 
-  removeSubEntities<T extends Entity>(): Promise<T | ErrorResponse> {
+  removeSubEntities<T extends BackkEntity>(): Promise<T | ErrorResponse> {
     throw new Error('Not implemented');
   }
 
-  removeSubEntityById<T extends Entity>(): Promise<T | ErrorResponse> {
+  removeSubEntityById<T extends BackkEntity>(): Promise<T | ErrorResponse> {
     throw new Error('Not implemented');
   }
 
@@ -130,11 +130,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  updateEntity<T extends Entity>(): Promise<void | ErrorResponse> {
+  updateEntity<T extends BackkEntity>(): Promise<void | ErrorResponse> {
     throw new Error('Not implemented');
   }
 
-  updateEntityWhere<T extends Entity>(): Promise<void | ErrorResponse> {
+  updateEntityWhere<T extends BackkEntity>(): Promise<void | ErrorResponse> {
     throw new Error('Not implemented');
   }
 
