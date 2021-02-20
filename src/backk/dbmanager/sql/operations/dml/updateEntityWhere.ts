@@ -17,7 +17,7 @@ import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 export default async function updateEntityWhere<T extends Entity>(
   dbManager: AbstractSqlDbManager,
   fieldPathName: string,
-  fieldValue: T[keyof T] | string,
+  fieldValue: any,
   entity: RecursivePartial<T>,
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],

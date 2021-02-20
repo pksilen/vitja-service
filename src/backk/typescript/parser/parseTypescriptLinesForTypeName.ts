@@ -1,12 +1,9 @@
-import _ from 'lodash';
-import { parseSync } from '@babel/core';
-import generate from '@babel/generator';
-import { readFileSync } from 'fs';
-import path from 'path';
-import getSrcFilePathNameForTypeName, {
-  hasSrcFilenameForTypeName
-} from '../../utils/file/getSrcFilePathNameForTypeName';
-import * as util from "util";
+import _ from "lodash";
+import { parseSync } from "@babel/core";
+import generate from "@babel/generator";
+import { readFileSync } from "fs";
+import path from "path";
+import getSrcFilePathNameForTypeName, { hasSrcFilenameForTypeName } from "../../utils/file/getSrcFilePathNameForTypeName";
 
 function getDeclarationsFor(typeName: string, originatingTypeFilePathName: string) {
   const typeFilePathName = getSrcFilePathNameForTypeName(typeName);

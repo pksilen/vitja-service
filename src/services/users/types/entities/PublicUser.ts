@@ -12,7 +12,6 @@ import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStri
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import getCities from '../../validation/getCities';
-import UserSalesItem from './UserSalesItem';
 
 @Entity('User')
 export default class PublicUser {
@@ -38,6 +37,4 @@ export default class PublicUser {
   @MaxLength(Lengths._10M)
   @IsDataUri()
   public imageDataUri!: string;
-
-  public readonly salesItems!: UserSalesItem[];
 }

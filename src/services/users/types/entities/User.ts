@@ -3,7 +3,6 @@ import Entity from "../../../../backk/decorators/entity/Entity";
 import PaymentMethod from "./PaymentMethod";
 import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
 import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
-import { SalesItem } from "../../../salesitems/types/entities/SalesItem";
 import Order from "../../../orders/types/entities/Order";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
 import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
@@ -15,9 +14,9 @@ import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
 import { Lengths } from "../../../../backk/constants/constants";
 import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/ShouldBeTrueFor";
 import FavoriteSalesItem from "./FavoriteSalesItem";
-import PublicUser from "./PublicUser";
 import FollowedUser from "./FollowedUser";
 import FollowingUser from "./FollowingUser";
+import UsersOwnSalesItem from "./UsersOwnSalesItem";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -67,7 +66,7 @@ export default class User extends _IdAndCaptcha {
   @ManyToMany()
   public readonly favoriteSalesItems!: FavoriteSalesItem[];
 
-  public readonly salesItems!: SalesItem[];
+  public readonly usersOwnSalesItems!: UsersOwnSalesItem[];
 
   public readonly orders!: Order[];
 

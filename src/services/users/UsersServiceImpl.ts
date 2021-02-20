@@ -3,7 +3,6 @@ import * as argon2 from "argon2";
 import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
 import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
 import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
-import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
 import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import UserName from "./types/args/UserName";
 import User from "./types/entities/User";
@@ -88,7 +87,6 @@ export default class UsersServiceImpl extends UsersService {
     return UsersServiceImpl.getUserResponse(userOrErrorResponse);
   }
 
-  @AllowForServiceInternalUse()
   async getUserById({ _id }: _Id): Promise<UserResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.getEntityById(_id, User);
     return UsersServiceImpl.getUserResponse(userOrErrorResponse);

@@ -35,6 +35,12 @@ export default class FavoriteSalesItem {
   @MinMax(0, Values._1B)
   public readonly price!: number;
 
+  @IsNumber({
+    maxDecimalPlaces: 2
+  })
+  @MinMax(-1, Values._1B)
+  public readonly previousPrice!: number;
+
   @MaxLength(Lengths._10M)
   @IsDataUri()
   public readonly primaryImageDataUri!: string;

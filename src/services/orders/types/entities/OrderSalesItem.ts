@@ -10,7 +10,6 @@ import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStri
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
-import Entity from "../../../../backk/decorators/entity/Entity";
 
 @Entity('SalesItem')
 export default class OrderSalesItem {

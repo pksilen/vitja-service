@@ -2,8 +2,9 @@
 
 TODO:
 - OrderSalesItem ja ShoppingCartSalesItem combined
-- User's salesItems should be of type UserSalesItem[]
-- FollowedUser lisää SalesItems kenttä
+- getFollowedUsersSalesItems
+- .type file: Pick/Omit, report errors for wrong fieldNames and syntax error
+- Annotate: OneToMany, ManyToMany, External (must be readonly)
 - replace T | ErrorResponse with Promise<[T, BackkError]>
 - Split to multiple microservices
   - Implement subentities as remote service queries

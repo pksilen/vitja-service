@@ -18,6 +18,10 @@ export default async function deleteEntitiesWhere<T extends object>(
   fieldValue: T[keyof T] | string,
   EntityClass: new () => T
 ): Promise<void | ErrorResponse> {
+  if (fieldName.includes('.')) {
+    throw new Error('fieldName parameter may not contain dots, i.e. it cannot be a field path name');
+  }
+
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;

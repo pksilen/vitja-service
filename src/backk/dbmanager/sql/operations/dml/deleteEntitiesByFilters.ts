@@ -32,7 +32,7 @@ export default async function deleteEntitiesByFilters<T extends object>(
   );
 
   if (nonRootFilters) {
-    throw new Error('All filters must be have subEntityPath empty, ie. they must be root filters');
+    throw new Error('All filters must have subEntityPath empty, ie. they must be root filters');
   }
 
   // noinspection AssignmentToFunctionParameterJS
