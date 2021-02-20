@@ -210,8 +210,6 @@ export default function getJoinClauses(
         resultOuterSortBys
       );
 
-      //console.log(newSubEntityPath, (Types as any)[baseTypeName], subJoinClauses);
-
       if (subJoinClauses) {
         joinClauses += ' ' + subJoinClauses;
       }

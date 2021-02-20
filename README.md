@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- OrderSalesItem ja ShoppingCartSalesItem combined
 - FollowedUser lisää SalesItems kenttä
 - replace T | ErrorResponse with [T, BackkError]
 - Split to multiple microservices
