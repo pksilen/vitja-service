@@ -15,7 +15,7 @@ export default function getFieldsForEntity(
   projection: Projection,
   fieldPath: string,
   isInternalCall = false,
-  tableName = ''
+  tableName?: string
 ) {
   const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(
     EntityClass as any
@@ -68,7 +68,7 @@ export default function getFieldsForEntity(
         }
       } else {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
-          const finalTableName = tableName.toLowerCase() ?? EntityClass.name.toLowerCase();
+          const finalTableName = tableName?.toLowerCase() ?? EntityClass.name.toLowerCase();
 
           if (
             entityPropertyName === '_id' ||
