@@ -33,16 +33,12 @@ export default async function getEntityWhere<T>(
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
   try {
-    let finalFieldValue = fieldValue;
     const lastDotPosition = fieldPathName.lastIndexOf('.');
     const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
-    if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
-      finalFieldValue = encrypt(fieldValue, false);
-    }
 
     const filters = [
       new SqlEquals(
-        { [fieldName]: finalFieldValue },
+        { [fieldName]: fieldValue },
         lastDotPosition === -1 ? '' : fieldPathName.slice(0, lastDotPosition)
       )
     ];

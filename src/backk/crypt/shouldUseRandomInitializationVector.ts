@@ -3,8 +3,6 @@ export default function shouldUseRandomInitializationVector(propertyName: string
   return !(
     lowerCasePropertyName === 'user' ||
     lowerCasePropertyName.includes('username') ||
-    lowerCasePropertyName.includes('user_name') ||
-    lowerCasePropertyName.includes('displayname') ||
-    lowerCasePropertyName.includes('display_name')
+    lowerCasePropertyName.includes('user_name')
   );
 }

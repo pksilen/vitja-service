@@ -3,8 +3,6 @@ import typePropertyAnnotationContainer from '../decorators/typeproperty/typeProp
 const subPropertyNamesWhoseValuesShouldBeEncrypted = [
   'username',
   'user_name',
-  'displayname',
-  'display_name',
   'address',
   'addr',
   'lastname',

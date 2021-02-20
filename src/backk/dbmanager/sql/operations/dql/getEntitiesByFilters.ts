@@ -55,6 +55,7 @@ export default async function getEntitiesByFilters<T>(
       .filter((sqlPart) => sqlPart)
       .join(' ');
 
+
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     return transformRowsToObjects(
