@@ -9,5 +9,5 @@ export default class _IdAndCaptchaAndVersion extends _IdAndCaptcha {
   @IsString({ groups: ['__backk_none__'] })
   @MaxLength(25, { groups: ['__backk_none__'] })
   @IsIntegerStringOrAny({ groups: ['__backk_none__'] })
-  version!: string;
+  public version!: string;
 }

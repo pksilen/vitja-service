@@ -7,5 +7,5 @@ import { BackkEntity } from "../entities/BackkEntity";
 export default class _IdAndUserId extends _Id implements BackkEntity {
   @IsString()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
-  userId!: string;
+  public userId!: string;
 }

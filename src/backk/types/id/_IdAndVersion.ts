@@ -10,5 +10,5 @@ export default class _IdAndVersion extends _Id implements BackkEntity {
   @IsString({ groups: ['__backk_none__'] })
   @MaxLength(25, { groups: ['__backk_none__'] })
   @IsIntegerStringOrAny({ groups: ['__backk_none__'] })
-  version!: string;
+  public version!: string;
 }

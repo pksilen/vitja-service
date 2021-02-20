@@ -6,5 +6,5 @@ import { IsDate } from "class-validator";
 export default class _IdAndCaptchaAndCreatedAtTimestampAndLastModifiedTimestamp extends _IdAndCaptchaAndCreatedAtTimestamp {
   @IsUndefined({groups: ['__backk_create__']})
   @IsDate({ groups: ['__backk_none__'] })
-  lastModifiedTimestamp!: Date;
+  public lastModifiedTimestamp!: Date;
 }

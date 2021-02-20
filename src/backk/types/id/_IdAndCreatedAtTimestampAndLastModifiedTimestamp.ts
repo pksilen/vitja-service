@@ -8,5 +8,5 @@ export default class _IdAndCreatedAtTimestampAndLastModifiedTimestamp extends _I
   implements BackkEntity {
   @IsUndefined({groups: ['__backk_create__']})
   @IsDate({ groups: ['__backk_none__'] })
-  readonly lastModifiedTimestamp!: Date;
+  public readonly lastModifiedTimestamp!: Date;
 }
