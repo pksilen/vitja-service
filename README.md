@@ -2,8 +2,9 @@
 
 TODO:
 - OrderSalesItem ja ShoppingCartSalesItem combined
+- User's salesItems should be of type UserSalesItem[]
 - FollowedUser lisää SalesItems kenttä
-- replace T | ErrorResponse with [T, BackkError]
+- replace T | ErrorResponse with Promise<[T, BackkError]>
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

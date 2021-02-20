@@ -1,4 +1,7 @@
 import SqlExpression from './SqlExpression';
+import shouldUseRandomInitializationVector from "../../../crypt/shouldUseRandomInitializationVector";
+import shouldEncryptValue from "../../../crypt/shouldEncryptValue";
+import encrypt from "../../../crypt/encrypt";
 
 export default class SqlInExpression extends SqlExpression {
   constructor(
@@ -12,14 +15,19 @@ export default class SqlInExpression extends SqlExpression {
 
   getValues(): object {
     if (this.inExpressionValues) {
-      return this.inExpressionValues.reduce(
-        (filterValues, value, index) => ({
+      return this.inExpressionValues.reduce((filterValues, value, index) => {
+        let finalValue = value;
+
+        if (!shouldUseRandomInitializationVector(this.fieldName) && shouldEncryptValue(this.fieldName)) {
+          finalValue = encrypt(value as any, false);
+        }
+
+        return {
           ...filterValues,
           [`${this.subEntityPath.replace('_', 'xx')}xx${this.fieldName.replace('_', 'xx')}${index +
-            1}`]: value
-        }),
-        {}
-      );
+            1}`]: finalValue
+        };
+      }, {});
     }
 
     return {};

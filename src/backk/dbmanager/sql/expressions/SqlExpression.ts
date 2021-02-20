@@ -1,3 +1,6 @@
+import shouldUseRandomInitializationVector from "../../../crypt/shouldUseRandomInitializationVector";
+import shouldEncryptValue from "../../../crypt/shouldEncryptValue";
+import encrypt from "../../../crypt/encrypt";
 
 export default class SqlExpression {
   constructor(readonly expression: string, readonly values?: object, readonly subEntityPath = '') {}
@@ -8,6 +11,21 @@ export default class SqlExpression {
   }
 
   getValues(): object | undefined {
+    if (this.values) {
+      return Object.entries(this.values).reduce((filterValues, [fieldName, fieldValue]) => {
+        let finalFieldValue = fieldValue;
+
+        if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
+          finalFieldValue = encrypt(fieldValue as any, false);
+        }
+
+        return {
+          ...filterValues,
+          [fieldName]: finalFieldValue
+        };
+      }, {});
+    }
+
     return this.values;
   }
 

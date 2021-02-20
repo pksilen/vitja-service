@@ -62,21 +62,18 @@ export default class UsersServiceImpl extends UsersService {
     displayNameFilter,
     ...postQueryOperations
   }: GetUsersArg): Promise<PublicUser[] | ErrorResponse> {
-    const filters = this.dbManager.getFilters<User>(
+    const filters = this.dbManager.getFilters<PublicUser>(
       {
         displayName: new RegExp(displayNameFilter)
       },
       [
-        new SqlExpression('displayName LIKE :displayNameFilter', {
+        new SqlExpression('displayname LIKE :displayNameFilter', {
           displayNameFilter: `%${displayNameFilter}%`
         })
       ]
     );
 
-    return this.dbManager.getEntitiesByFilters(filters, User, {
-      ...postQueryOperations,
-      includeResponseFields: ['_id', 'displayName', 'city', 'imageDataUri', 'salesItems']
-    });
+    return this.dbManager.getEntitiesByFilters(filters, PublicUser, postQueryOperations);
   }
 
   @AllowForSelf()

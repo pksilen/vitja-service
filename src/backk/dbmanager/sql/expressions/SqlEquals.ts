@@ -1,4 +1,8 @@
 import SqlExpression from './SqlExpression';
+import shouldUseRandomInitializationVector from "../../../crypt/shouldUseRandomInitializationVector";
+import shouldEncryptValue from "../../../crypt/shouldEncryptValue";
+import encrypt from "../../../crypt/encrypt";
+import { Entity } from "../../../types/entities/Entity";
 
 export default class SqlEquals<T> extends SqlExpression {
   constructor(private readonly filters: Partial<T>, subEntityPath: string = '') {
@@ -7,9 +11,15 @@ export default class SqlEquals<T> extends SqlExpression {
 
   getValues(): Partial<T> {
     return Object.entries(this.filters).reduce((filterValues, [fieldName, fieldValue]) => {
+      let finalFieldValue = fieldValue;
+
+      if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
+        finalFieldValue = encrypt(fieldValue as any, false);
+      }
+
       return {
         ...filterValues,
-        [`${this.subEntityPath.replace('.', 'xx')}xx${fieldName}`]: fieldValue
+        [`${this.subEntityPath.replace('.', 'xx')}xx${fieldName}`]: finalFieldValue
       };
     }, {});
   }
