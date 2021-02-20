@@ -28,7 +28,7 @@ export default async function deleteAllEntities<T>(
         }
       ),
       forEachAsyncParallel(entityContainer.manyToManyRelationTableSpecs, async ({ associationTableName }) => {
-        if (associationTableName.startsWith(EntityClass.name)) {
+        if (associationTableName.startsWith(EntityClass.name + '_')) {
           await dbManager.tryExecuteSql(`DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()}`);
         }
       }),

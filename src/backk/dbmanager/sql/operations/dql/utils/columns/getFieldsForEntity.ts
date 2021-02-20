@@ -5,6 +5,7 @@ import shouldIncludeField from './shouldIncludeField';
 import getTypeInfoForTypeName from '../../../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../../../utils/type/isEntityTypeName';
 import AbstractSqlDbManager from '../../../../../AbstractSqlDbManager';
+import getSingularName from "../../../../../../utils/getSingularName";
 
 export default function getFieldsForEntity(
   dbManager: AbstractSqlDbManager,
@@ -13,7 +14,8 @@ export default function getFieldsForEntity(
   Types: object,
   projection: Projection,
   fieldPath: string,
-  isInternalCall = false
+  isInternalCall = false,
+  tableName = ''
 ) {
   const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(
     EntityClass as any
@@ -39,7 +41,8 @@ export default function getFieldsForEntity(
           Types,
           projection,
           fieldPath + entityPropertyName + '.',
-          isInternalCall
+          isInternalCall,
+          getSingularName(entityPropertyName)
         );
       } else if (isArrayType) {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
@@ -65,7 +68,7 @@ export default function getFieldsForEntity(
         }
       } else {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
-          const tableName = EntityClass.name.toLowerCase();
+          const finalTableName = tableName.toLowerCase() ?? EntityClass.name.toLowerCase();
 
           if (
             entityPropertyName === '_id' ||
@@ -75,13 +78,13 @@ export default function getFieldsForEntity(
             fields.push(
               `CAST(${
                 dbManager.schema
-              }_${tableName}.${entityPropertyName.toLowerCase()} AS ${dbManager.getIdColumnCastType()}) AS ${tableName}_${entityPropertyName.toLowerCase()}`
+              }_${finalTableName}.${entityPropertyName.toLowerCase()} AS ${dbManager.getIdColumnCastType()}) AS ${finalTableName}_${entityPropertyName.toLowerCase()}`
             );
           } else {
             fields.push(
               `${
                 dbManager.schema
-              }_${tableName}.${entityPropertyName.toLowerCase()} AS ${tableName}_${entityPropertyName.toLowerCase()}`
+              }_${finalTableName}.${entityPropertyName.toLowerCase()} AS ${finalTableName}_${entityPropertyName.toLowerCase()}`
             );
           }
         }

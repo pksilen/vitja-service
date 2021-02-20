@@ -1,33 +1,30 @@
-import { JSONPath } from "jsonpath-plus";
-import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import { BackkEntity } from "../../../../types/entities/BackkEntity";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
-import { PreHook } from "../../../hooks/PreHook";
-import isErrorResponse from "../../../../errors/isErrorResponse";
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
-import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
-import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
-import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import findParentEntityAndPropertyNameForSubEntity
-  from "../../../../metadata/findParentEntityAndPropertyNameForSubEntity";
-import { getFromContainer, MetadataStorage } from "class-validator";
-import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
-import tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded
-  from "./utils/tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded";
-import typePropertyAnnotationContainer
-  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
-import { SubEntity } from "../../../../types/entities/SubEntity";
-import getEntityById from "../dql/getEntityById";
-import { PostHook } from "../../../hooks/PostHook";
-import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import { JSONPath } from 'jsonpath-plus';
+import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { ErrorResponse } from '../../../../types/ErrorResponse';
+import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import { BackkEntity } from '../../../../types/entities/BackkEntity';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
+import { PreHook } from '../../../hooks/PreHook';
+import isErrorResponse from '../../../../errors/isErrorResponse';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import findParentEntityAndPropertyNameForSubEntity from '../../../../metadata/findParentEntityAndPropertyNameForSubEntity';
+import { getFromContainer, MetadataStorage } from 'class-validator';
+import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
+import tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded';
+import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import { SubEntity } from '../../../../types/entities/SubEntity';
+import getEntityById from '../dql/getEntityById';
+import { PostHook } from '../../../hooks/PostHook';
+import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
+import getSingularName from '../../../../utils/getSingularName';
 
 export default async function addSubEntities<T extends BackkEntity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -81,7 +78,11 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
     }
 
     await tryExecutePreHooks(finalPreHooks ?? [], currentEntityOrErrorResponse);
-    await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntityOrErrorResponse, EntityClass);
+    await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(
+      dbManager,
+      currentEntityOrErrorResponse,
+      EntityClass
+    );
     const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath }).reduce(
       (maxSubItemId: number, subItem: any) => {
         const subItemId = parseInt(subItem.id);
@@ -142,7 +143,9 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
           throw subEntityOrErrorResponse;
         }
 
-        const associationTable = `${EntityClass.name}_${SubEntityClass.name}`;
+        const associationTable = `${EntityClass.name}_${getSingularName(
+          parentEntityClassAndPropertyNameForSubEntity[1]
+        )}`;
         const {
           entityForeignIdFieldName,
           subEntityForeignIdFieldName

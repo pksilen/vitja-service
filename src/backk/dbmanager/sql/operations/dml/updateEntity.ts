@@ -27,6 +27,7 @@ import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 import emptyError from "../../../../errors/emptyError";
+import getSingularName from "../../../../utils/getSingularName";
 
 export default async function updateEntity<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
@@ -130,11 +131,13 @@ export default async function updateEntity<T extends BackkEntity>(
             promises.push(
               forEachAsyncParallel(subEntitiesToDelete, async (subEntity: any) => {
                 if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-                  const associationTableName = `${EntityClass.name}_${SubEntityClass}`;
+                  const associationTableName = `${EntityClass.name}_${getSingularName(fieldName)}`;
+
                   const {
                     entityForeignIdFieldName,
                     subEntityForeignIdFieldName
                   } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
+
                   await dbManager.tryExecuteSql(
                     `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
                       1
@@ -159,7 +162,7 @@ export default async function updateEntity<T extends BackkEntity>(
             promises.push(
               forEachAsyncParallel(subEntitiesToAdd, async (subEntity: any) => {
                 if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-                  const associationTableName = `${EntityClass.name}_${SubEntityClass}`;
+                  const associationTableName = `${EntityClass.name}_${getSingularName(fieldName)}`;
                   const {
                     entityForeignIdFieldName,
                     subEntityForeignIdFieldName

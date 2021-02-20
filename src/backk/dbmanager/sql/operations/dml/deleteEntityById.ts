@@ -65,7 +65,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
       forEachAsyncParallel(
         entityContainer.manyToManyRelationTableSpecs,
         async ({ associationTableName, entityForeignIdFieldName }) => {
-          if (associationTableName.startsWith(EntityClass.name)) {
+          if (associationTableName.startsWith(EntityClass.name + '_')) {
             await dbManager.tryExecuteSql(
               `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
                 1

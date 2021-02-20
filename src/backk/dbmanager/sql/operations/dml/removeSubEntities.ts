@@ -21,6 +21,7 @@ import typePropertyAnnotationContainer from '../../../../decorators/typeproperty
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import getSingularName from "../../../../utils/getSingularName";
 
 export default async function removeSubEntities<T extends BackkEntity, U extends object>(
   dbManager: AbstractSqlDbManager,
@@ -63,7 +64,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
           parentEntityClassAndPropertyNameForSubEntity[1]
         )
       ) {
-        const associationTableName = `${EntityClass.name}_${subEntity.constructor.name}`;
+        const associationTableName = `${EntityClass.name}_${getSingularName(parentEntityClassAndPropertyNameForSubEntity[1])}`;
 
         const {
           entityForeignIdFieldName,

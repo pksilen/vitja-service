@@ -13,6 +13,7 @@ import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefin
 import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
 import SortBy from '../../../../../types/postqueryoperations/SortBy';
 import Pagination from '../../../../../types/postqueryoperations/Pagination';
+import getSingularName from "../../../../../utils/getSingularName";
 
 export default function getJoinClauses(
   dbManager: AbstractSqlDbManager,
@@ -37,16 +38,19 @@ export default function getJoinClauses(
         return '';
       }
 
-      const logicalSubEntityTableName = joinSpec.subEntityTableName;
+      let logicalSubEntityTableName = joinSpec.subEntityTableName;
       let physicalSubEntityTableName = logicalSubEntityTableName;
 
       if (entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName]) {
         physicalSubEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName];
       }
 
+      logicalSubEntityTableName = getSingularName(joinSpec.entityFieldName)
+
       const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
       const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
       const joinTableAlias = dbManager.schema + '_' + logicalSubEntityTableName;
+
       const outerSortBys = tryGetSortClause(
         dbManager,
         joinEntityPath,
@@ -106,14 +110,16 @@ export default function getJoinClauses(
   const joinClauseParts = entityAnnotationContainer.manyToManyRelationTableSpecs
     .filter(({ associationTableName }) => associationTableName.startsWith(EntityClass.name + '_'))
     .map(
-      ({ entityFieldName, associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
+      ({ entityFieldName, associationTableName, entityForeignIdFieldName, subEntityName, subEntityForeignIdFieldName }) => {
         const joinEntityPath = subEntityPath ? subEntityPath + '.' + entityFieldName : entityFieldName;
-        const logicalSubEntityTableName = associationTableName.split('_')[1];
+        let logicalSubEntityTableName = subEntityName;
         let physicalSubEntityTableName = logicalSubEntityTableName;
 
         if (entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName]) {
           physicalSubEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName];
         }
+
+        logicalSubEntityTableName = associationTableName.split('_')[1];
 
         if (!shouldIncludeField('_id', subEntityPath + '.' + logicalSubEntityTableName, projection)) {
           return '';

@@ -3,6 +3,7 @@ import { SortOrder } from "../typeproperty";
 export interface ManyToManyRelationTableSpec {
   entityFieldName: string;
   associationTableName: string;
+  subEntityName: string;
   entityForeignIdFieldName: string;
   subEntityForeignIdFieldName: string;
 }

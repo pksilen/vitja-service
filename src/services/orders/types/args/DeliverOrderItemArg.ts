@@ -35,7 +35,7 @@ export default class DeliverOrderItemArg {
   @IsIntegerStringOrAny({
     groups: ['__backk_none__']
   })
-  version!: string;
+  public version!: string;
 
   orderItemId!: string;
 

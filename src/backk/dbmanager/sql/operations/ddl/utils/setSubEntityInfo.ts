@@ -3,6 +3,7 @@ import entityAnnotationContainer, {
 } from "../../../../../decorators/entity/entityAnnotationContainer";
 import typePropertyAnnotationContainer from '../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import { doesClassPropertyContainCustomValidation } from "../../../../../validation/setClassPropertyValidationDecorators";
+import getSingularName from "../../../../../utils/getSingularName";
 
 export default function setSubEntityInfo(
   entityName: string,
@@ -19,8 +20,9 @@ export default function setSubEntityInfo(
 
   if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
     const manyToManyRelationTableSpec: ManyToManyRelationTableSpec = {
+      subEntityName,
       entityFieldName: fieldName,
-      associationTableName: (entityName + '_' + subEntityName),
+      associationTableName: (entityName + '_' + getSingularName(fieldName)),
       entityForeignIdFieldName: tableName.charAt(0).toLowerCase() + tableName.slice(1) + 'Id',
       subEntityForeignIdFieldName: subEntityName.charAt(0).toLowerCase() + subEntityName.slice(1) + 'Id'
     }

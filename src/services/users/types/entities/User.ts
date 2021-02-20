@@ -16,7 +16,7 @@ import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/Shoul
 import FavoriteSalesItem from "./FavoriteSalesItem";
 import FollowedUser from "./FollowedUser";
 import FollowingUser from "./FollowingUser";
-import UsersOwnSalesItem from "./UsersOwnSalesItem";
+import OwnSalesItem from "./OwnSalesItem";
 
 @Entity()
 export default class User extends _IdAndCaptcha {
@@ -66,7 +66,7 @@ export default class User extends _IdAndCaptcha {
   @ManyToMany()
   public readonly favoriteSalesItems!: FavoriteSalesItem[];
 
-  public readonly usersOwnSalesItems!: UsersOwnSalesItem[];
+  public readonly ownSalesItems!: OwnSalesItem[];
 
   public readonly orders!: Order[];
 

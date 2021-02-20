@@ -29,6 +29,7 @@ import createErrorFromErrorCodeMessageAndStatus
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import tryExecuteCreatePreHooks from "../../../hooks/tryExecuteCreatePreHooks";
 import { CreatePreHook } from "../../../hooks/CreatePreHook";
+import getSingularName from "../../../../utils/getSingularName";
 
 export default async function createEntity<T extends BackkEntity | SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -145,7 +146,8 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
                 throw subEntityOrErrorResponse;
               }
 
-              const associationTableName = `${EntityClass.name}_${SubEntityClass.name}`;
+              const associationTableName = `${EntityClass.name}_${getSingularName(fieldName)}`;
+
               const {
                 entityForeignIdFieldName,
                 subEntityForeignIdFieldName
