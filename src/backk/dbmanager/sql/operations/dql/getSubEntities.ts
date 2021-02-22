@@ -1,7 +1,7 @@
 import { JSONPath } from "jsonpath-plus";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import getEntityById from "./getEntityById";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { BackkError } from "../../../../types/BackkError";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
@@ -13,7 +13,7 @@ export default async function getSubEntities<T extends object, U>(
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
   responseMode?: 'first' | 'all'
-): Promise<U | ErrorResponse> {
+): Promise<[U, BackkError | null]> {
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);

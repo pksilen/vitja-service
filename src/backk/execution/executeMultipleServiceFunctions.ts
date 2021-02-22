@@ -9,7 +9,7 @@ import { createNamespace } from 'cls-hooked';
 import BaseService from '../service/BaseService';
 import isValidServiceFunctionName from './isValidServiceFunctionName';
 import { HttpStatusCodes } from '../constants/constants';
-import { ErrorResponse } from '../types/ErrorResponse';
+import { BackkError } from '../types/BackkError';
 import isErrorResponse from '../errors/isErrorResponse';
 import callRemoteService from '../remote/http/callRemoteService';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
@@ -27,7 +27,7 @@ async function executeMultiple<T>(
   isTransactional = false
 ) {
   const forEachFunc = isConcurrent ? forEachAsyncParallel : forEachAsyncSequential;
-  let possibleErrorResponse: ErrorResponse | undefined;
+  let possibleErrorResponse: BackkError | undefined;
 
   await forEachFunc(
     Object.entries(serviceFunctionArgument),
@@ -109,7 +109,7 @@ async function executeMultiple<T>(
       };
 
       if (isErrorResponse(response.getResponse())) {
-        possibleErrorResponse = response.getResponse() as ErrorResponse;
+        possibleErrorResponse = response.getResponse() as BackkError;
       }
 
       statusCodes.push(response.getStatusCode());

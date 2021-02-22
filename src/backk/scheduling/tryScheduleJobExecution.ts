@@ -2,7 +2,7 @@ import { createNamespace } from 'cls-hooked';
 import BaseService from '../service/BaseService';
 // eslint-disable-next-line @typescript-eslint/camelcase
 import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
-import { ErrorResponse } from '../types/ErrorResponse';
+import { BackkError } from '../types/BackkError';
 import { validateOrReject } from 'class-validator';
 import getValidationErrors from '../validation/getValidationErrors';
 import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
@@ -73,7 +73,7 @@ export default async function tryScheduleJobExecution(
   // TODO check that seconds are zero, because 1 min granularity only allowed
   const dbManager = (controller[serviceName] as BaseService).getDbManager();
   // eslint-disable-next-line @typescript-eslint/camelcase
-  let entityOrErrorResponse: __Backk__JobScheduling | ErrorResponse | undefined;
+  let entityOrErrorResponse: __Backk__JobScheduling | BackkError | undefined;
   const clsNamespace = createNamespace('serviceFunctionExecution');
   await clsNamespace.runAndReturn(async () => {
     await dbManager.tryReserveDbConnectionFromPool();

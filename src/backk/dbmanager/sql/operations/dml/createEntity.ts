@@ -2,7 +2,7 @@ import hashAndEncryptEntity from "../../../../crypt/hashAndEncryptEntity";
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import isErrorResponse from "../../../../errors/isErrorResponse";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { BackkError } from "../../../../types/BackkError";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import getClassPropertyNameToPropertyTypeNameMap
   from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
@@ -41,7 +41,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
   postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false,
   shouldReturnItem = true
-): Promise<T | ErrorResponse> {
+): Promise<[T, BackkError | null]> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
@@ -136,7 +136,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
           await forEachAsyncParallel(subEntityOrEntities ?? [], async (subEntity: any, index) => {
             const SubEntityClass = (Types as any)[baseTypeName];
             if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-              const subEntityOrErrorResponse: any | ErrorResponse = await dbManager.getEntityById(
+              const subEntityOrErrorResponse: [any, BackkError | null] = await dbManager.getEntityById(
                 subEntity._id ?? '',
                 SubEntityClass
               );
@@ -177,7 +177,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
                 }
               }
 
-              const subEntityOrErrorResponse: any | ErrorResponse = await createEntity(
+              const subEntityOrErrorResponse: [any, BackkError | null] = await createEntity(
                 dbManager,
                 subEntity,
                 SubEntityClass,
@@ -196,7 +196,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
         } else if (isEntityTypeName(baseTypeName) && subEntityOrEntities !== null) {
           const relationEntityName = baseTypeName;
           subEntityOrEntities[foreignIdFieldName] = _id;
-          const subEntityOrErrorResponse: any | ErrorResponse = await createEntity(
+          const subEntityOrErrorResponse: [any, BackkError | null] = await createEntity(
             dbManager,
             subEntityOrEntities,
             (Types as any)[relationEntityName],

@@ -1,5 +1,5 @@
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { BackkError } from "../../../../types/BackkError";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
@@ -15,7 +15,7 @@ export default async function getEntitiesByIds<T>(
   _ids: string[],
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
-): Promise<T[] | ErrorResponse> {
+): Promise<[T[], BackkError | null]> {
   try {
     updateDbLocalTransactionCount(dbManager);
 

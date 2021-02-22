@@ -1,7 +1,7 @@
-import { ErrorResponse, errorResponseSymbol } from '../types/ErrorResponse';
+import { BackkError, errorResponseSymbol } from '../types/BackkError';
 import log, { Severity } from '../observability/logging/log';
 
-export default function createErrorResponseFromError(error: Error): ErrorResponse {
+export default function createErrorResponseFromError(error: Error): BackkError {
   let statusCode = parseInt(error.message.slice(0, 3));
   let errorMessage = error.message.slice(4);
 

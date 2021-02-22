@@ -1,7 +1,7 @@
 import isErrorResponse from '../../../../errors/isErrorResponse';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
+import { BackkError } from '../../../../types/BackkError';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import { BackkEntity } from '../../../../types/entities/BackkEntity';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
@@ -22,7 +22,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook
-): Promise<void | ErrorResponse> {
+): Promise<BackkError | null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;

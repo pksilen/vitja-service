@@ -1,4 +1,4 @@
-import { ErrorResponse } from "../../types/ErrorResponse";
+import { BackkError } from "../../types/BackkError";
 import isErrorResponse from "../../errors/isErrorResponse";
 import { PostHook } from "./PostHook";
 import { getNamespace } from "cls-hooked";
@@ -7,7 +7,7 @@ import { HttpStatusCodes } from "../../constants/constants";
 
 export default async function tryExecutePostHook(
   postHook: PostHook,
-  responseOrErrorResponse?: any | ErrorResponse
+  responseOrErrorResponse?: [any,  BackkError | null]
 ) {
   if (
     typeof responseOrErrorResponse === 'object' &&

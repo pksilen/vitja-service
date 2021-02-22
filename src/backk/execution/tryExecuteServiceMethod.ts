@@ -25,7 +25,7 @@ import executeMultipleServiceFunctions from "./executeMultipleServiceFunctions";
 import tryScheduleJobExecution from "../scheduling/tryScheduleJobExecution";
 import isExecuteMultipleRequest from "./isExecuteMultipleRequest";
 import createErrorFromErrorCodeMessageAndStatus from "../errors/createErrorFromErrorCodeMessageAndStatus";
-import { ErrorResponse } from "../types/ErrorResponse";
+import { BackkError } from "../types/BackkError";
 import createErrorResponseFromErrorCodeMessageAndStatus
   from "../errors/createErrorResponseFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../errors/backkErrors";
@@ -548,7 +548,7 @@ export default async function tryExecuteServiceMethod(
       resp.status(errorOrErrorResponse.getStatus());
       resp.send(errorOrErrorResponse.getResponse());
     } else if (resp && 'errorMessage' in errorOrErrorResponse) {
-      resp.status((errorOrErrorResponse as ErrorResponse).statusCode);
+      resp.status((errorOrErrorResponse as BackkError).statusCode);
       resp.send(errorOrErrorResponse);
     } else {
       if (errorOrErrorResponse instanceof HttpException) {

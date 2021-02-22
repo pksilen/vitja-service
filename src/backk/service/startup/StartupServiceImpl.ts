@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import AbstractDbManager from '../../dbmanager/AbstractDbManager';
 import StartupService from './StartupService';
-import { ErrorResponse } from '../../types/ErrorResponse';
+import { BackkError } from '../../types/BackkError';
 import createErrorResponseFromErrorMessageAndStatusCode from '../../errors/createErrorResponseFromErrorMessageAndStatusCode';
 import initializeDatabase, { isDbInitialized } from '../../dbmanager/sql/operations/ddl/initializeDatabase';
 import { HttpStatusCodes } from '../../constants/constants';
@@ -17,7 +17,7 @@ export default class StartupServiceImpl extends StartupService {
   }
 
   @AllowForClusterInternalUse()
-  async initializeService(): Promise<void | ErrorResponse> {
+  async initializeService(): Promise<BackkError | null> {
     if (
       !(await isDbInitialized(this.dbManager)) &&
       !(await initializeDatabase(StartupService.controller, this.dbManager))

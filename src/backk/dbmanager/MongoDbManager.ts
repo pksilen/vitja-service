@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
 import SqlExpression from './sql/expressions/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
-import { ErrorResponse } from '../types/ErrorResponse';
+import { BackkError } from '../types/BackkError';
 import { RecursivePartial } from '../types/RecursivePartial';
 import { PreHook } from './hooks/PreHook';
 import { BackkEntity } from '../types/entities/BackkEntity';
@@ -188,15 +188,15 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async executeInsideTransaction<T>(
-    executable: () => Promise<T | ErrorResponse>
-  ): Promise<T | ErrorResponse> {
+    executable: () => Promise<[T, BackkError | null]>
+  ): Promise<[T, BackkError | null]> {
     if (getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction')) {
       return await executable();
     }
 
     this.getClsNamespace()?.set('globalTransaction', true);
 
-    let result: T | ErrorResponse = createInternalServerError('Transaction execution error');
+    let result: [T, BackkError | null] = createInternalServerError('Transaction execution error');
 
     try {
       await this.tryBeginTransaction();
@@ -237,7 +237,7 @@ export default class MongoDbManager extends AbstractDbManager {
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations,
     isInternalCall = false
-  ): Promise<T | ErrorResponse> {
+  ): Promise<[T, BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'createEntity');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -326,7 +326,7 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<T | ErrorResponse> {
+  ): Promise<[T, BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
 
     const response = this.addSubEntities(
@@ -355,7 +355,7 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<T | ErrorResponse> {
+  ): Promise<[T, BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -495,7 +495,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async getAllEntities<T>(
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<T[] | ErrorResponse> {
+  ): Promise<[T[], BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getAllEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -542,7 +542,7 @@ export default class MongoDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): Promise<T[] | ErrorResponse> {
+  ): Promise<[T[], BackkError | null]> {
     let matchExpression: any;
     let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
 
@@ -619,7 +619,7 @@ export default class MongoDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<T | ErrorResponse> {
+  ): Promise<[T, BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
     const response = await this.getEntitiesByFilters(
       filters,
@@ -645,7 +645,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async getEntitiesCount<T>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T
-  ): Promise<number | ErrorResponse> {
+  ): Promise<[number, BackkError]> {
     let matchExpression: object;
     let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
 
@@ -701,7 +701,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations,
     isInternalCall = false
-  ): Promise<T | ErrorResponse> {
+  ): Promise<[T, BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -761,7 +761,7 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntityPath: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<U | ErrorResponse> {
+  ): Promise<[U, BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntity');
     const response = await this.getSubEntities(_id, subEntityPath, EntityClass, postQueryOperations, 'first');
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -774,7 +774,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations,
     responseMode: 'first' | 'all' = 'all'
-  ): Promise<any | ErrorResponse> {
+  ): Promise<[any, BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntities');
     updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
@@ -799,7 +799,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _ids: string[],
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): Promise<T[] | ErrorResponse> {
+  ): Promise<[T[], BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByIds');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -846,7 +846,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<T | ErrorResponse> {
+  ): Promise<[T, BackkError | null]> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
     }
@@ -917,7 +917,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): Promise<T[] | ErrorResponse> {
+  ): Promise<[T[], BackkError | null]> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
     }
@@ -991,7 +991,7 @@ export default class MongoDbManager extends AbstractDbManager {
     postHook?: PostHook,
     isRecursiveCall = false,
     isInternalCall = false
-  ): Promise<void | ErrorResponse> {
+  ): Promise<BackkError | null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
 
     // noinspection AssignmentToFunctionParameterJS
@@ -1008,7 +1008,7 @@ export default class MongoDbManager extends AbstractDbManager {
       }
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
-        let currentEntityOrErrorResponse: T | ErrorResponse = emptyError;
+        let currentEntityOrErrorResponse: [T, BackkError | null] = emptyError;
 
         if (!isRecursiveCall && preHooks) {
           currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
@@ -1138,7 +1138,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
-  ): Promise<void | ErrorResponse> {
+  ): Promise<BackkError | null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1177,7 +1177,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
-  ): Promise<void | ErrorResponse> {
+  ): Promise<BackkError | null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1215,7 +1215,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldName: string,
     fieldValue: any,
     EntityClass: new () => T
-  ): Promise<void | ErrorResponse> {
+  ): Promise<BackkError | null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesWhere');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1249,7 +1249,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async deleteEntitiesByFilters<T extends object>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T
-  ): Promise<void | ErrorResponse> {
+  ): Promise<BackkError | null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1312,7 +1312,7 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<T | ErrorResponse> {
+  ): Promise<[T, BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1366,7 +1366,7 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<T | ErrorResponse> {
+  ): Promise<[T, BackkError | null]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
 
@@ -1383,7 +1383,7 @@ export default class MongoDbManager extends AbstractDbManager {
     return response;
   }
 
-  async deleteAllEntities<T>(EntityClass: new () => T): Promise<void | ErrorResponse> {
+  async deleteAllEntities<T>(EntityClass: new () => T): Promise<BackkError | null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteAllEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);

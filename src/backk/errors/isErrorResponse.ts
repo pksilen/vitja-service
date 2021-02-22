@@ -1,7 +1,7 @@
-import { ErrorResponse, errorResponseSymbol } from '../types/ErrorResponse';
+import { BackkError, errorResponseSymbol } from '../types/BackkError';
 
 export default function isErrorResponse<T>(
-  possibleErrorResponse: T | void | ErrorResponse,
+  possibleErrorResponse: T | BackkError | null,
   httpStatusCode?: number
 ): boolean {
   if (httpStatusCode === undefined) {

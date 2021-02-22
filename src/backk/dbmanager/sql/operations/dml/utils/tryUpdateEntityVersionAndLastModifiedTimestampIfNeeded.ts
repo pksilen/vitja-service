@@ -1,10 +1,10 @@
-import { ErrorResponse } from "../../../../../types/ErrorResponse";
+import { BackkError } from "../../../../../types/BackkError";
 import AbstractDbManager from "../../../../AbstractDbManager";
 import { BackkEntity } from "../../../../../types/entities/BackkEntity";
 
 export default async function tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded<T extends BackkEntity>(
   dbManager: AbstractDbManager,
-  currentEntityOrErrorResponse: T | ErrorResponse,
+  currentEntityOrErrorResponse: [T, BackkError | null],
   EntityClass: new () => T
 ) {
   if ('errorMessage' in currentEntityOrErrorResponse) {

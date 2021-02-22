@@ -1,9 +1,9 @@
-import { ErrorResponse } from '../types/ErrorResponse';
+import { BackkError } from '../types/BackkError';
 
 export default async function awaitOperationAndGetResultOfPredicate<T>(
-  dbOperationResultPromise: Promise<T | ErrorResponse>,
+  dbOperationResultPromise: Promise<[T, BackkError | null]>,
   func: (entity: T) => boolean
-): Promise<boolean | ErrorResponse> {
+): Promise<boolean | BackkError> {
   const entityOrErrorResponse = await dbOperationResultPromise;
 
   return typeof entityOrErrorResponse === 'object' &&

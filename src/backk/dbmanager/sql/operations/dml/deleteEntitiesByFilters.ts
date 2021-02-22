@@ -1,7 +1,7 @@
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import entityContainer, { EntityJoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
+import { BackkError } from '../../../../types/BackkError';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import isErrorResponse from '../../../../errors/isErrorResponse';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
@@ -19,7 +19,7 @@ export default async function deleteEntitiesByFilters<T extends object>(
   dbManager: AbstractSqlDbManager,
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
   EntityClass: new () => T
-): Promise<void | ErrorResponse> {
+): Promise<BackkError | null> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);

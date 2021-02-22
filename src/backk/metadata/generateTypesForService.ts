@@ -50,11 +50,11 @@ export default function generateTypesForServices<T>(controller: T, remoteService
         const returnValueTypeName: string = (controller as any)[`${serviceName}__BackkTypes__`]
           .functionNameToReturnTypeNameMap[functionName];
 
-        const { baseTypeName, canBeErrorResponse } = getTypeInfoForTypeName(returnValueTypeName);
+        const { baseTypeName, error } = getTypeInfoForTypeName(returnValueTypeName);
 
-        if (!canBeErrorResponse) {
+        if (error) {
           throw new Error(
-            serviceName + '.' + functionName + ": return type's right hand side type must be ErrorResponse"
+            serviceName + '.' + functionName + ': ' + error
           );
         }
 

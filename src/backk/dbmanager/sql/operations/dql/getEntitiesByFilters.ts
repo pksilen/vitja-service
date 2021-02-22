@@ -1,6 +1,6 @@
 import SqlExpression from "../../expressions/SqlExpression";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { BackkError } from "../../../../types/BackkError";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
@@ -16,7 +16,7 @@ export default async function getEntitiesByFilters<T>(
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
-): Promise<T[] | ErrorResponse> {
+): Promise<[T[], BackkError | null]> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);

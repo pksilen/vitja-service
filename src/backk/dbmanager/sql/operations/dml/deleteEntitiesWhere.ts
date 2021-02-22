@@ -1,7 +1,7 @@
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import entityContainer, { EntityJoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { BackkError } from "../../../../types/BackkError";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import isErrorResponse from "../../../../errors/isErrorResponse";
 import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
@@ -17,7 +17,7 @@ export default async function deleteEntitiesWhere<T extends object>(
   fieldName: string,
   fieldValue: T[keyof T] | string,
   EntityClass: new () => T
-): Promise<void | ErrorResponse> {
+): Promise<BackkError | null> {
   if (fieldName.includes('.')) {
     throw new Error('fieldName parameter may not contain dots, i.e. it cannot be a field path name');
   }

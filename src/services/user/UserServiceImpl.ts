@@ -3,7 +3,7 @@ import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServic
 import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import _Id from '../../backk/types/id/_Id';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import { BackkError } from '../../backk/types/BackkError';
 import GetUsersArg from './/types/args/GetUsersArg';
 import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import User from './types/entities/User';
@@ -17,7 +17,7 @@ export default class UserServiceImpl extends UserService {
   }
 
   @AllowForEveryUser()
-  getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): Promise<User[] | ErrorResponse> {
+  getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): Promise<[User[], BackkError | null]> {
     const filters = this.dbManager.getFilters<User>(
       {
         displayName: new RegExp(displayNameFilter)
@@ -36,7 +36,7 @@ export default class UserServiceImpl extends UserService {
   }
 
   @AllowForEveryUser()
-  getUser({ _id }: _Id): Promise<User | ErrorResponse> {
+  getUser({ _id }: _Id): Promise<[User, BackkError | null]> {
     return this.dbManager.getEntityById(_id, User);
   }
 }

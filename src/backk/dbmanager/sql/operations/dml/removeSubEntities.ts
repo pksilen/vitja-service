@@ -4,7 +4,7 @@ import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import getEntityById from '../dql/getEntityById';
 import deleteEntityById from './deleteEntityById';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
+import { BackkError } from '../../../../types/BackkError';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
@@ -31,7 +31,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook,
   postQueryOperations?: PostQueryOperations
-): Promise<T | ErrorResponse> {
+): Promise<[T, BackkError | null]> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;

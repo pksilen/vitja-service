@@ -1,5 +1,5 @@
 import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
-import { ErrorResponse } from "../../types/ErrorResponse";
+import { BackkError } from "../../types/BackkError";
 import { PreHook } from "./PreHook";
 import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
 import { HttpStatusCodes } from "../../constants/constants";
@@ -8,7 +8,7 @@ import { SubEntity } from "../../types/entities/SubEntity";
 
 export default async function tryExecutePreHooks<T extends BackkEntity | SubEntity>(
   preHooks: PreHook<T> | PreHook<T>[],
-  currentEntityOrErrorResponse: T | ErrorResponse
+  currentEntityOrErrorResponse: [T, BackkError | null]
 ) {
   if (
     typeof currentEntityOrErrorResponse === 'object' &&

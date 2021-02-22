@@ -6,7 +6,7 @@ import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSe
 import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import UserAccount from "./types/entities/UserAccount";
 import _Id from "../../backk/types/id/_Id";
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import { BackkError } from "../../backk/types/BackkError";
 import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
 import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/userAccountServiceErrors";
 import { Errors } from "../../backk/decorators/service/function/Errors";
@@ -37,17 +37,17 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @OnStartUp()
-  preloadCities(): Promise<Name[] | ErrorResponse> {
+  preloadCities(): Promise<Name[] | BackkError> {
     return getCities();
   }
 
   @AllowForTests()
-  deleteAllUserAccounts(): Promise<void | ErrorResponse> {
+  deleteAllUserAccounts(): Promise<BackkError | null> {
     return this.dbManager.deleteAllEntities(UserAccount);
   }
 
   @AllowForEveryUser()
-  async createUserAccount(arg: UserAccount): Promise<UserAccountResponse | ErrorResponse> {
+  async createUserAccount(arg: UserAccount): Promise<UserAccountResponse | BackkError> {
     const userOrErrorResponse = await this.dbManager.createEntity(
       { ...arg, commissionDiscountPercentage: 0 },
       UserAccount
@@ -57,7 +57,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  async getUserAccount({ userName }: UserName): Promise<UserAccountResponse | ErrorResponse> {
+  async getUserAccount({ userName }: UserName): Promise<UserAccountResponse | BackkError> {
     const filters = this.dbManager.getFilters<UserAccount>(
       [
         new MongoDbQuery({ userName }),
@@ -82,7 +82,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
     return UserAccountServiceImpl.getUserResponse(userOrErrorResponse);
   }
 
-  async getUserAccountById({ _id }: _Id): Promise<UserAccountResponse | ErrorResponse> {
+  async getUserAccountById({ _id }: _Id): Promise<UserAccountResponse | BackkError> {
     const userOrErrorResponse = await this.dbManager.getEntityById(_id, UserAccount);
     return UserAccountServiceImpl.getUserResponse(userOrErrorResponse);
   }
@@ -91,7 +91,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   addToFavoriteSalesItems({
     _id,
     favoriteSalesItem
-  }: _IdAndFavoriteSalesItem): Promise<UserAccount | ErrorResponse> {
+  }: _IdAndFavoriteSalesItem): Promise<UserAccoun[T, BackkError | null]> {
     return this.dbManager.addSubEntity(
       _id,
       'any',
@@ -106,13 +106,13 @@ export default class UserAccountServiceImpl extends UserAccountService {
   removeFromFavoriteSalesItems({
     _id,
     favoriteSalesItem
-  }: _IdAndFavoriteSalesItem): Promise<UserAccount | ErrorResponse> {
+  }: _IdAndFavoriteSalesItem): Promise<UserAccoun[T, BackkError | null]> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', favoriteSalesItem._id, UserAccount);
   }
 
   @AllowForSelf()
   @Update()
-  followUser({ _id, version, followedUserId }: _IdAndFollowedUserId): Promise<UserAccount | ErrorResponse> {
+  followUser({ _id, version, followedUserId }: _IdAndFollowedUserId): Promise<UserAccoun[T, BackkError | null]> {
     return this.dbManager.addSubEntity(
       _id,
       version,
@@ -128,14 +128,14 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update()
   @ExpectReturnValueToContainInTests({ followedUsers: [] })
-  unfollowUser({ _id, followedUserId }: _IdAndFollowedUserId): Promise<UserAccount | ErrorResponse> {
+  unfollowUser({ _id, followedUserId }: _IdAndFollowedUserId): Promise<UserAccoun[T, BackkError | null]> {
     return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserId, UserAccount, [
       () => this.dbManager.removeSubEntityById(followedUserId, 'followingUsers', _id, UserAccount)
     ]);
   }
 
   @AllowForSelf()
-  updateUserAccount(arg: UserAccount): Promise<void | ErrorResponse> {
+  updateUserAccount(arg: UserAccount): Promise<BackkError | null> {
     return this.dbManager.updateEntity(arg, UserAccount);
   }
 
@@ -146,7 +146,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
     currentPassword,
     password,
     userName
-  }: ChangeUserPasswordArg): Promise<void | ErrorResponse> {
+  }: ChangeUserPasswordArg): Promise<BackkError | null> {
     return this.dbManager.updateEntity({ _id, password }, UserAccount, [
       {
         isSuccessfulOrTrue: (currentEntity) => currentEntity.userName === userName,
@@ -162,19 +162,19 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  deleteUserAccount({ _id }: _Id): Promise<void | ErrorResponse> {
+  deleteUserAccount({ _id }: _Id): Promise<BackkError | null> {
     return this.dbManager.deleteEntityById(_id, UserAccount);
   }
 
   @AllowForEveryUser()
   @Metadata()
-  getCities(): Promise<Name[] | ErrorResponse> {
+  getCities(): Promise<Name[] | BackkError> {
     return Promise.resolve(getCities());
   }
 
   private static getUserResponse(
-    userOrErrorResponse: UserAccount | ErrorResponse
-  ): UserAccountResponse | ErrorResponse {
+    userOrErrorResponse: UserAccoun[T, BackkError | null]
+  ): UserAccountResponse | BackkError {
     return 'errorMessage' in userOrErrorResponse
       ? userOrErrorResponse
       : {

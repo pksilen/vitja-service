@@ -5,13 +5,13 @@ import { getNamespace } from 'cls-hooked';
 import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
 import log, { Severity } from '../../../observability/logging/log';
 import createErrorResponseFromError from '../../../errors/createErrorResponseFromError';
-import { ErrorResponse } from '../../../types/ErrorResponse';
+import { BackkError } from '../../../types/BackkError';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
 
 export default async function sendOneOrMoreToRedis(
   sends: CallOrSendTo[],
   isTransactional: boolean
-): Promise<void | ErrorResponse> {
+): Promise<BackkError | null> {
   const remoteServiceUrl = sends[0].remoteServiceFunctionUrl;
   const { server, topic } = parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl);
   const redis = new Redis(server);

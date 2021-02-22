@@ -2,7 +2,7 @@ import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRand
 import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
 import encrypt from "../../../../crypt/encrypt";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { BackkError } from "../../../../types/BackkError";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
@@ -21,7 +21,7 @@ export default async function getEntitiesWhere<T>(
   fieldValue: any,
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
-): Promise<T[] | ErrorResponse> {
+): Promise<[T[], BackkError | null]> {
   if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {
     throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
   }

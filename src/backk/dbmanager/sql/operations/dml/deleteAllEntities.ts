@@ -1,7 +1,7 @@
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import entityContainer, { EntityJoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { BackkError } from "../../../../types/BackkError";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
 import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
@@ -11,7 +11,7 @@ import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransact
 export default async function deleteAllEntities<T>(
   dbManager: AbstractSqlDbManager,
   EntityClass: new () => T
-): Promise<void | ErrorResponse> {
+): Promise<BackkError | null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;

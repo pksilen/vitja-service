@@ -12,7 +12,7 @@ import SalesItemService from "./SalesItemService";
 import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
 import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
 import { SalesItem } from "./types/entities/SalesItem";
-import { ErrorResponse } from "../../backk/types/ErrorResponse";
+import { BackkError } from "../../backk/types/BackkError";
 import _Id from "../../backk/types/id/_Id";
 import {
   INVALID_SALES_ITEM_STATE,
@@ -40,14 +40,14 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForTests()
-  deleteAllSalesItems(): Promise<void | ErrorResponse> {
+  deleteAllSalesItems(): Promise<BackkError | null> {
     return this.dbManager.deleteAllEntities(SalesItem);
   }
 
   @NoCaptcha()
   @AllowForSelf()
   @Errors([MAXIMUM_SALES_ITEM_COUNT_EXCEEDED])
-  async createSalesItem(arg: SalesItem): Promise<SalesItem | ErrorResponse> {
+  async createSalesItem(arg: SalesItem): Promise<[SalesItem, BackkError | null]> {
     return this.dbManager.createEntity(
       {
         ...arg,
@@ -79,7 +79,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     minPrice,
     maxPrice,
     ...postQueryOperations
-  }: GetSalesItemsArg): Promise<SalesItem[] | ErrorResponse> {
+  }: GetSalesItemsArg): Promise<[SalesItem[], BackkError | null]> {
     const filters = this.dbManager.getFilters<SalesItem>(
       {
         state: 'forSale' as SalesItemState,
@@ -119,12 +119,12 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForEveryUser()
   getSalesItemsByUserDefinedFilters({
     filters
-  }: GetSalesItemsByUserDefinedFiltersArg): Promise<SalesItem[] | ErrorResponse> {
+  }: GetSalesItemsByUserDefinedFiltersArg): Promise<[SalesItem[], BackkError | null]> {
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, new DefaultPostQueryOperations());
   }
 
   @AllowForSelf()
-  async getFollowedUsersSalesItems({ userAccountId }: UserAccountId): Promise<SalesItem[] | ErrorResponse> {
+  async getFollowedUsersSalesItems({ userAccountId }: UserAccountId): Promise<[SalesItem[], BackkError | null]> {
     const userAccountOrErrorResponse = await this.userAccountService.getUserAccountById({
       _id: userAccountId
     });
@@ -146,13 +146,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForEveryUser()
-  getSalesItem({ _id }: _Id): Promise<SalesItem | ErrorResponse> {
+  getSalesItem({ _id }: _Id): Promise<[SalesItem, BackkError | null]> {
     return this.dbManager.getEntityById(_id, SalesItem);
   }
 
   @AllowForSelf()
   @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
-  async updateSalesItem(arg: SalesItem): Promise<void | ErrorResponse> {
+  async updateSalesItem(arg: SalesItem): Promise<BackkError | null> {
     return this.dbManager.updateEntity(arg, SalesItem, [
       {
         isSuccessfulOrTrue: ({ state }) => state === 'forSale',
@@ -167,7 +167,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   updateSalesItemState(
     { _id, newState }: UpdateSalesItemStateArg,
     requiredCurrentState?: SalesItemState
-  ): Promise<void | ErrorResponse> {
+  ): Promise<BackkError | null> {
     return this.dbManager.updateEntity(
       { _id, state: newState },
       SalesItem,
@@ -183,7 +183,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @CronJob({ minutes: 0, hours: 2 })
   deleteOldUnsoldSalesItems({
     deletableUnsoldSalesItemMinAgeInMonths
-  }: DeleteOldUnsoldSalesItemsArg): Promise<void | ErrorResponse> {
+  }: DeleteOldUnsoldSalesItemsArg): Promise<BackkError | null> {
     const filters = this.dbManager.getFilters(
       {
         state: 'forSale',
@@ -205,7 +205,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  deleteSalesItem({ _id }: _IdAndUserAccountId): Promise<void | ErrorResponse> {
+  deleteSalesItem({ _id }: _IdAndUserAccountId): Promise<BackkError | null> {
     return this.dbManager.deleteEntityById(_id, SalesItem);
   }
 }

@@ -1,4 +1,4 @@
-import { ErrorResponse } from "../../types/ErrorResponse";
+import { BackkError } from "../../types/BackkError";
 import { BackkEntity } from "../../types/entities/BackkEntity";
 import { SubEntity } from "../../types/entities/SubEntity";
 
@@ -10,11 +10,11 @@ export interface ErrorCodeAndMessageAndStatus {
 
 export type PreHook<T extends BackkEntity | SubEntity> =
   | {
-      shouldExecutePreHook?: (entity: T) => boolean | Promise<boolean | ErrorResponse>;
+      shouldExecutePreHook?: (entity: T) => boolean | Promise<[boolean, BackkError | null]>;
       isSuccessfulOrTrue: (
         entity: T
-      ) => Promise<boolean | undefined | void | BackkEntity | ErrorResponse> | boolean;
+      ) => Promise<[BackkEntity,  BackkError | null]> | boolean;
       errorMessage?: ErrorCodeAndMessageAndStatus;
       shouldDisregardFailureWhenExecutingTests?: boolean;
     }
-  | ((entity: T) => Promise<boolean | undefined | void | BackkEntity | ErrorResponse> | boolean);
+  | ((entity: T) => Promise<[BackkEntity,  BackkError | null]> | boolean;

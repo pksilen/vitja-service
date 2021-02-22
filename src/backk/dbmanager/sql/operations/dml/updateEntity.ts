@@ -5,7 +5,7 @@ import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import getEntityById from '../dql/getEntityById';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
+import { BackkError } from '../../../../types/BackkError';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
@@ -36,7 +36,7 @@ export default async function updateEntity<T extends BackkEntity>(
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook,
   isRecursiveCall = false
-): Promise<void | ErrorResponse> {
+): Promise<BackkError | null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
@@ -49,7 +49,7 @@ export default async function updateEntity<T extends BackkEntity>(
     }
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    let currentEntityOrErrorResponse: T | ErrorResponse  = emptyError;
+    let currentEntityOrErrorResponse: [T, BackkError | null]  = emptyError;
 
     if (!isRecursiveCall) {
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);

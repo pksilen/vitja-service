@@ -1,14 +1,13 @@
 import { BackkEntity } from "../../types/entities/BackkEntity";
-import { SubEntity } from "../../types/entities/SubEntity";
-import { ErrorResponse } from "../../types/ErrorResponse";
+import { BackkError } from "../../types/BackkError";
 import { ErrorCodeAndMessageAndStatus } from "./PreHook";
 
 export type CreatePreHook =
   | {
-  shouldExecutePreHook?: () => boolean | Promise<boolean | ErrorResponse>;
+  shouldExecutePreHook?: () => boolean | Promise<[boolean, BackkError | null]>;
   isSuccessfulOrTrue: (
-  ) => Promise<boolean | undefined | void | BackkEntity | ErrorResponse> | boolean;
+  ) => Promise<boolean | null | BackkEntity | BackkError> | boolean;
   errorMessage?: ErrorCodeAndMessageAndStatus;
   shouldDisregardFailureWhenExecutingTests?: boolean;
 }
-  | (() => Promise<boolean | undefined | void | BackkEntity | ErrorResponse> | boolean);
+  | (() => Promise<boolean | null | BackkEntity | BackkError> | boolean);

@@ -14,7 +14,7 @@ import { AllowForTests } from '../../backk/decorators/service/function/AllowForT
 import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
 import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import { BackkError } from '../../backk/types/BackkError';
 import {
   DELETE_ORDER_NOT_ALLOWED,
   INVALID_ORDER_ITEM_STATE,
@@ -58,7 +58,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForTests()
-  deleteAllOrders(): Promise<void | ErrorResponse> {
+  deleteAllOrders(): Promise<BackkError | null> {
     return this.dbManager.deleteAllEntities(Order);
   }
 
@@ -73,7 +73,7 @@ export default class OrderServiceImpl extends OrderService {
   async placeOrder({
     shoppingCart: { userAccountId, salesItems },
     paymentGateway
-  }: PlaceOrderArg): Promise<Order | ErrorResponse> {
+  }: PlaceOrderArg): Promise<[Order, BackkError | null]> {
     return this.dbManager.createEntity(
       {
         userAccountId,
@@ -99,7 +99,7 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForSelf()
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   @ExpectReturnValueToContainInTests({ orderItems: [] })
-  deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): Promise<Order | ErrorResponse> {
+  deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): Promise<[Order, BackkError | null]> {
     return this.dbManager.removeSubEntityById(
       _id,
       'orderItems',
@@ -123,7 +123,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForTests()
-  addOrderItem({ orderId, salesItem, version }: AddOrderItemArg): Promise<Order | ErrorResponse> {
+  addOrderItem({ orderId, salesItem, version }: AddOrderItemArg): Promise<[Order, BackkError]> {
     return this.dbManager.addSubEntity(
       orderId,
       version,
@@ -140,14 +140,14 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
-  getOrder({ _id }: _IdAndUserAccountId): Promise<Order | ErrorResponse> {
+  getOrder({ _id }: _IdAndUserAccountId): Promise<[Order, BackkError | null]> {
     return this.dbManager.getEntityById(_id, Order);
   }
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update()
   @Errors([ORDER_ALREADY_PAID])
-  payOrder({ _id, ...paymentInfo }: PayOrderArg): Promise<void | ErrorResponse> {
+  payOrder({ _id, ...paymentInfo }: PayOrderArg): Promise<BackkError | null> {
     return this.dbManager.updateEntity(
       { _id, paymentInfo },
       Order,
@@ -176,7 +176,7 @@ export default class OrderServiceImpl extends OrderService {
     version,
     orderItemId,
     ...restOfArg
-  }: DeliverOrderItemArg): Promise<void | ErrorResponse> {
+  }: DeliverOrderItemArg): Promise<BackkError | null> {
     return this.dbManager.updateEntity(
       {
         version,
@@ -209,7 +209,7 @@ export default class OrderServiceImpl extends OrderService {
     version,
     orderItemId,
     newState
-  }: UpdateOrderItemStateArg): Promise<void | ErrorResponse> {
+  }: UpdateOrderItemStateArg): Promise<BackkError | null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: newState }] },
       Order,
@@ -250,17 +250,17 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Delete()
-  discardOrder({ _id }: _Id): Promise<void | ErrorResponse> {
+  discardOrder({ _id }: _Id): Promise<BackkError | null> {
     return this.deleteOrderById(_id);
   }
 
   @AllowForSelf()
-  deleteOrder({ _id }: _IdAndUserAccountId): Promise<void | ErrorResponse> {
+  deleteOrder({ _id }: _IdAndUserAccountId): Promise<BackkError | null> {
     return this.deleteOrderById(_id);
   }
 
   @CronJob({ minutes: 0, hourInterval: 1 })
-  deleteIncompleteOrders(): Promise<void | ErrorResponse> {
+  deleteIncompleteOrders(): Promise<BackkError | null> {
     const filters = this.dbManager.getFilters(
       {
         'paymentInfo.transactionId': null,
@@ -285,7 +285,7 @@ export default class OrderServiceImpl extends OrderService {
     salesItems: ShoppingCartOrOrderSalesItem[],
     newState: SalesItemState,
     currentState?: SalesItemState
-  ): Promise<void | ErrorResponse> {
+  ): Promise<BackkError | null> {
     return await executeForAll(salesItems, ({ _id }) =>
       this.salesItemService.updateSalesItemState(
         {

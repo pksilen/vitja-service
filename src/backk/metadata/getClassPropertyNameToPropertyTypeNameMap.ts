@@ -69,7 +69,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     if (isResponseValueType && validationMetadata.propertyName === 'errorMessage') {
       throw new Error(
         Class.name +
-          ' may not contain property errorMessage, because that property is allowed only in ErrorResponse'
+          ' may not contain property errorMessage, because that property is allowed only in BackkError'
       );
     }
 

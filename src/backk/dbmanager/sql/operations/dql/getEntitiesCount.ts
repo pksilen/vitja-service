@@ -1,6 +1,6 @@
 import SqlExpression from '../../expressions/SqlExpression';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
+import { BackkError } from '../../../../types/BackkError';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
@@ -14,7 +14,7 @@ export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object | undefined,
   EntityClass: new () => T
-): Promise<number | ErrorResponse> {
+): Promise<[number, BackkError | null]> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);

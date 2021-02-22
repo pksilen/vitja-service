@@ -1,5 +1,5 @@
 import { Name } from "../../../backk/types/Name";
-import { ErrorResponse } from "../../../backk/types/ErrorResponse";
+import { BackkError } from "../../../backk/types/BackkError";
 import createErrorResponseFromErrorMessageAndStatusCode
   from "../../../backk/errors/createErrorResponseFromErrorMessageAndStatusCode";
 import { HttpStatusCodes } from "../../../backk/constants/constants";
@@ -7,7 +7,7 @@ import tryGetValuesByXPathFromXmlFile from "../../../backk/file/tryGetValuesByXP
 
 let cities: Name[] = [];
 
-export default async function getCities(): Promise<Name[] | ErrorResponse> {
+export default async function getCities(): Promise<Name[] | BackkError> {
   if (cities.length === 0) {
     try {
       cities = tryGetValuesByXPathFromXmlFile(

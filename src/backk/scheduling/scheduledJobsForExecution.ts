@@ -4,12 +4,12 @@ import { createNamespace } from 'cls-hooked';
 import findAsyncSequential from '../utils/findAsyncSequential';
 import delay from '../utils/delay';
 import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
-import { ErrorResponse } from '../types/ErrorResponse';
+import { BackkError } from '../types/BackkError';
 import { logError } from '../observability/logging/log';
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import { scheduleCronJob } from "./scheduleCronJob";
 
-export let scheduledJobsOrErrorResponse: __Backk__JobScheduling[] | ErrorResponse | undefined;
+export let scheduledJobsOrErrorResponse: __Backk__JobScheduling[] | BackkError | undefined;
 
 export default async function scheduledJobsForExecution(controller: any | undefined, dbManager: AbstractDbManager) {
   if (!controller) {

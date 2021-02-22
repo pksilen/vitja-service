@@ -1,7 +1,7 @@
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import { BackkEntity } from '../types/entities/BackkEntity';
 import { SubEntity } from '../types/entities/SubEntity';
-import { ErrorResponse } from '../types/ErrorResponse';
+import { BackkError } from '../types/BackkError';
 import MongoDbQuery from './mongodb/MongoDbQuery';
 import SqlExpression from './sql/expressions/SqlExpression';
 
@@ -10,39 +10,39 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  addSubEntities<T extends BackkEntity, U extends object>(): Promise<ErrorResponse | T> {
+  addSubEntities<T extends BackkEntity, U extends object>(): Promise<BackkError | T> {
     throw new Error('Not implemented');
   }
 
-  addSubEntity<T extends BackkEntity, U extends SubEntity>(): Promise<ErrorResponse | T> {
+  addSubEntity<T extends BackkEntity, U extends SubEntity>(): Promise<BackkError | T> {
     throw new Error('Not implemented');
   }
 
-  createEntity<T>(): Promise<ErrorResponse | T> {
+  createEntity<T>(): Promise<BackkError | T> {
     throw new Error('Not implemented');
   }
 
-  deleteAllEntities<T>(): Promise<void | ErrorResponse> {
+  deleteAllEntities<T>(): Promise<BackkError | null> {
     throw new Error('Not implemented');
   }
 
-  deleteEntitiesByFilters<T extends object>(): Promise<void | ErrorResponse> {
+  deleteEntitiesByFilters<T extends object>(): Promise<BackkError | null> {
     throw new Error('Not implemented');
   }
 
-  deleteEntitiesWhere<T extends object>(): Promise<void | ErrorResponse> {
+  deleteEntitiesWhere<T extends object>(): Promise<BackkError | null> {
     throw new Error('Not implemented');
   }
 
-  deleteEntityById<T extends object>(): Promise<void | ErrorResponse> {
+  deleteEntityById<T extends object>(): Promise<BackkError | null> {
     throw new Error('Not implemented');
   }
 
-  executeInsideTransaction<T>(): Promise<ErrorResponse | T> {
+  executeInsideTransaction<T>(): Promise<BackkError | T> {
     throw new Error('Not implemented');
   }
 
-  getAllEntities<T>(): Promise<T[] | ErrorResponse> {
+  getAllEntities<T>(): Promise<[T[], BackkError | null]> {
     throw new Error('Not implemented');
   }
 
@@ -54,27 +54,27 @@ export default class NoOpDbManager extends AbstractDbManager {
     return '';
   }
 
-  getEntitiesByFilters<T>(): Promise<T[] | ErrorResponse> {
+  getEntitiesByFilters<T>(): Promise<[T[], BackkError | null]> {
     throw new Error('Not implemented');
   }
 
-  getEntitiesByIds<T>(): Promise<T[] | ErrorResponse> {
+  getEntitiesByIds<T>(): Promise<[T[], BackkError | null]> {
     throw new Error('Not implemented');
   }
 
-  getEntitiesCount<T>(): Promise<number | ErrorResponse> {
+  getEntitiesCount<T>(): Promise<[number,  BackkError | null> {
     throw new Error('Not implemented');
   }
 
-  getEntitiesWhere<T>(): Promise<T[] | ErrorResponse> {
+  getEntitiesWhere<T>(): Promise<[T[], BackkError | null]> {
     throw new Error('Not implemented');
   }
 
-  getEntityById<T>(): Promise<ErrorResponse | T> {
+  getEntityById<T>(): Promise<BackkError | T> {
     throw new Error('Not implemented');
   }
 
-  getEntityWhere<T>(): Promise<ErrorResponse | T> {
+  getEntityWhere<T>(): Promise<BackkError | T> {
     throw new Error('Not implemented');
   }
 
@@ -82,11 +82,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     return '';
   }
 
-  getSubEntities<T extends object, U extends object>(): Promise<U[] | ErrorResponse> {
+  getSubEntities<T extends object, U extends object>(): Promise<[U[], BackkError | null]> {
     throw new Error('Not implemented');
   }
 
-  getSubEntity<T extends object, U extends object>(): Promise<ErrorResponse | U> {
+  getSubEntity<T extends object, U extends object>(): Promise<BackkError | U> {
     throw new Error('Not implemented');
   }
 
@@ -102,11 +102,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     return Promise.resolve(false);
   }
 
-  removeSubEntities<T extends BackkEntity>(): Promise<T | ErrorResponse> {
+  removeSubEntities<T extends BackkEntity>(): Promise<[T, BackkError | null]> {
     throw new Error('Not implemented');
   }
 
-  removeSubEntityById<T extends BackkEntity>(): Promise<T | ErrorResponse> {
+  removeSubEntityById<T extends BackkEntity>(): Promise<[T, BackkError | null]> {
     throw new Error('Not implemented');
   }
 
@@ -130,11 +130,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  updateEntity<T extends BackkEntity>(): Promise<void | ErrorResponse> {
+  updateEntity<T extends BackkEntity>(): Promise<BackkError | null> {
     throw new Error('Not implemented');
   }
 
-  updateEntityWhere<T extends BackkEntity>(): Promise<void | ErrorResponse> {
+  updateEntityWhere<T extends BackkEntity>(): Promise<BackkError | null> {
     throw new Error('Not implemented');
   }
 
@@ -158,7 +158,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     return Promise.resolve(undefined);
   }
 
-  getEntityByFilters<T>(): Promise<ErrorResponse | T> {
+  getEntityByFilters<T>(): Promise<BackkError | T> {
     throw new Error('Not implemented');
   }
 

@@ -1,5 +1,5 @@
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { ErrorResponse } from "../../../../types/ErrorResponse";
+import { BackkError } from "../../../../types/BackkError";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
 import getClassPropertyNameToPropertyTypeNameMap
@@ -21,7 +21,7 @@ export default async function getEntityById<T>(
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
   isInternalCall = false
-): Promise<T | ErrorResponse> {
+): Promise<[T, BackkError | null]> {
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);

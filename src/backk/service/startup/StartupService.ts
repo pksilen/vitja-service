@@ -1,8 +1,8 @@
 import BaseService from "../BaseService";
-import { ErrorResponse } from "../../types/ErrorResponse";
+import { BackkError } from "../../types/BackkError";
 
 export default abstract class StartupService extends BaseService {
   static controller: any | undefined;
 
-  abstract initializeService(): Promise<void | ErrorResponse>;
+  abstract initializeService(): Promise<BackkError | null>;
 }

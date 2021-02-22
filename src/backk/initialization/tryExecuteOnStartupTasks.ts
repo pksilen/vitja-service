@@ -4,7 +4,7 @@ import forEachAsyncSequential from "../utils/forEachAsyncSequential";
 import serviceFunctionAnnotationContainer
   from "../decorators/service/function/serviceFunctionAnnotationContainer";
 import isErrorResponse from "../errors/isErrorResponse";
-import { ErrorResponse } from "../types/ErrorResponse";
+import { BackkError } from "../types/BackkError";
 import { createNamespace } from "cls-hooked";
 
 export default async function tryExecuteOnStartUpTasks(controller: any, dbManager: AbstractDbManager) {
@@ -23,7 +23,7 @@ export default async function tryExecuteOnStartUpTasks(controller: any, dbManage
             Object.getOwnPropertyNames(Object.getPrototypeOf(service)),
             async (functionName: string) => {
               if (serviceFunctionAnnotationContainer.hasOnStartUp(service.constructor, functionName)) {
-                const possibleErrorResponse: any | ErrorResponse = await service[functionName]();
+                const possibleErrorResponse: [any, BackkError | null] = await service[functionName]();
 
                 if (isErrorResponse(possibleErrorResponse)) {
                   throw new possibleErrorResponse();
@@ -33,7 +33,7 @@ export default async function tryExecuteOnStartUpTasks(controller: any, dbManage
           );
         });
       } catch (errorResponse) {
-        return errorResponse as ErrorResponse;
+        return errorResponse as BackkError;
       }
 
       return undefined;

@@ -1,5 +1,5 @@
 import { CompressionTypes } from "kafkajs";
-import { ErrorResponse } from "../../types/ErrorResponse";
+import { BackkError } from "../../types/BackkError";
 import { getNamespace } from "cls-hooked";
 import { CallOrSendTo } from "./sendToRemoteServiceInsideTransaction";
 import sendOneOrMoreToKafka, { SendAcknowledgementType } from "./kafka/sendOneOrMoreToKafka";
@@ -12,7 +12,7 @@ export interface SendToOptions {
   sendAcknowledgementType?: SendAcknowledgementType;
 }
 
-export async function sendOneOrMore(sends: CallOrSendTo[], isTransactional: boolean): Promise<void | ErrorResponse> {
+export async function sendOneOrMore(sends: CallOrSendTo[], isTransactional: boolean): Promise<BackkError | null> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
   if (clsNamespace?.get('isInsidePostHook')) {
     clsNamespace?.set('postHookRemoteServiceCallCount', clsNamespace?.get('postHookRemoteServiceCallCount') + 1);
@@ -40,7 +40,7 @@ export default async function sendToRemoteService(
   serviceFunctionArgument: object,
   responseUrl?: string,
   options?: SendToOptions
-): Promise<void | ErrorResponse> {
+): Promise<BackkError | null> {
   return await sendOneOrMore(
     [
       {

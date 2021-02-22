@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { ErrorResponse } from '../../backk/types/ErrorResponse';
+import { BackkError } from '../../backk/types/BackkError';
 import TagService from './TagService';
 import Tag from './entities/Tag';
 import TagName from './args/TagName';
@@ -24,7 +24,7 @@ export default class TagServiceImpl extends TagService {
   }
 
   @OnStartUp()
-  async initializeDatabase(): Promise<void | ErrorResponse> {
+  async initializeDatabase(): Promise<BackkError | null> {
     let tagTableVersion = await this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion);
 
     if (isErrorResponse(tagTableVersion, HttpStatusCodes.NOT_FOUND)) {
@@ -38,7 +38,7 @@ export default class TagServiceImpl extends TagService {
   }
 
   @OnStartUp()
-  async migrateDbFromVersion1To2(): Promise<void | ErrorResponse> {
+  async migrateDbFromVersion1To2(): Promise<BackkError | null> {
     const tagTableVersion1 = await this.dbManager.getEntityByFilters(
       { entityName: 'Tag', version: 1 },
       DbTableVersion
@@ -55,7 +55,7 @@ export default class TagServiceImpl extends TagService {
   }
 
   @AllowForTests()
-  deleteAllTags(): Promise<void | ErrorResponse> {
+  deleteAllTags(): Promise<BackkError | null> {
     return this.dbManager.executeInsideTransaction(async () => {
       return (
         (await this.dbManager.deleteAllEntities(SalesItem)) || (await this.dbManager.deleteAllEntities(Tag))
@@ -65,12 +65,12 @@ export default class TagServiceImpl extends TagService {
 
   @AllowForEveryUser()
   @NoCaptcha()
-  createTag({ name }: TagName): Promise<Tag | ErrorResponse> {
+  createTag({ name }: TagName): Promise<[Tag, BackkError | null]> {
     return this.dbManager.createEntity({ name }, Tag);
   }
 
   @AllowForEveryUser()
-  getTagsWhoseNameContains({ name }: TagName): Promise<Tag[] | ErrorResponse> {
+  getTagsWhoseNameContains({ name }: TagName): Promise<[Tag[], BackkError | null]> {
     const filters = this.dbManager.getFilters<Tag>({ name: new RegExp(name) }, [
       new SqlExpression('name LIKE :name', { name: `%${name}%` })
     ]);

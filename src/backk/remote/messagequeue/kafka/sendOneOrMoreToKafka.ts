@@ -7,7 +7,7 @@ import log, { Severity } from '../../../observability/logging/log';
 import { CanonicalCode } from '@opentelemetry/api';
 import createErrorResponseFromError from '../../../errors/createErrorResponseFromError';
 import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseRemoteServiceFunctionCallUrlParts';
-import { ErrorResponse } from '../../../types/ErrorResponse';
+import { BackkError } from '../../../types/BackkError';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
 import logCreator from './logCreator';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
@@ -24,7 +24,7 @@ export enum SendAcknowledgementType {
 export default async function sendOneOrMoreToKafka(
   sends: CallOrSendTo[],
   isTransactional: boolean
-): Promise<void | ErrorResponse> {
+): Promise<BackkError | null> {
   const { server, topic } = parseRemoteServiceFunctionCallUrlParts(sends[0].remoteServiceFunctionUrl);
 
   if (!kafkaServerToKafkaClientMap[server]) {

@@ -1,4 +1,4 @@
-import { ErrorResponse, errorResponseSymbol } from '../../types/ErrorResponse';
+import { BackkError, errorResponseSymbol } from '../../types/BackkError';
 import fetch from 'node-fetch';
 import log, { Severity } from '../../observability/logging/log';
 import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
@@ -22,7 +22,7 @@ export default async function callRemoteService(
   remoteServiceFunctionUrl: string,
   serviceFunctionArgument?: object,
   options?: HttpRequestOptions
-): Promise<object | ErrorResponse> {
+): Promise<objec[T, BackkError | null]> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
 

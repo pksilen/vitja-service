@@ -1,9 +1,9 @@
 import { registerDecorator, ValidationOptions } from "class-validator";
-import { ErrorResponse } from "../../types/ErrorResponse";
+import { BackkError } from "../../types/BackkError";
 import { Name } from "../../types/Name";
 
 export default function IsOneOf(
-  getPossibleValuesFunc: () => Promise<Name[] | ErrorResponse>,
+  getPossibleValuesFunc: () => Promise<[Name[], BackkError | null]>,
   serviceFunctionName: string,
   testValue: string,
   validationOptions?: ValidationOptions

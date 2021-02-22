@@ -1,4 +1,4 @@
-import { errorResponseSymbol } from "../types/ErrorResponse";
+import { errorResponseSymbol } from "../types/BackkError";
 
 const emptyError = {
     [errorResponseSymbol]: true as true,

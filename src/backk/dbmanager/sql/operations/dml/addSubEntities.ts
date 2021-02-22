@@ -1,7 +1,7 @@
 import { JSONPath } from 'jsonpath-plus';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { ErrorResponse } from '../../../../types/ErrorResponse';
+import { BackkError } from '../../../../types/BackkError';
 import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
 import { BackkEntity } from '../../../../types/entities/BackkEntity';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
@@ -37,7 +37,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook,
   postQueryOperations?: PostQueryOperations
-): Promise<T | ErrorResponse> {
+): Promise<[T, BackkError | null]> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   // noinspection AssignmentToFunctionParameterJS
