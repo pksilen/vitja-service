@@ -1,9 +1,10 @@
 import entityAnnotationContainer, {
-  EntityJoinSpec, ManyToManyRelationTableSpec
-} from "../../../../../decorators/entity/entityAnnotationContainer";
+  EntityJoinSpec,
+  ManyToManyRelationTableSpec
+} from '../../../../../decorators/entity/entityAnnotationContainer';
 import typePropertyAnnotationContainer from '../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import { doesClassPropertyContainCustomValidation } from "../../../../../validation/setClassPropertyValidationDecorators";
-import getSingularName from "../../../../../utils/getSingularName";
+import { doesClassPropertyContainCustomValidation } from '../../../../../validation/setClassPropertyValidationDecorators';
+import getSingularName from '../../../../../utils/getSingularName';
 
 export default function setSubEntityInfo(
   entityName: string,
@@ -22,10 +23,10 @@ export default function setSubEntityInfo(
     const manyToManyRelationTableSpec: ManyToManyRelationTableSpec = {
       subEntityName,
       entityFieldName: fieldName,
-      associationTableName: (entityName + '_' + getSingularName(fieldName)),
+      associationTableName: entityName + '_' + getSingularName(fieldName),
       entityForeignIdFieldName: tableName.charAt(0).toLowerCase() + tableName.slice(1) + 'Id',
       subEntityForeignIdFieldName: subEntityName.charAt(0).toLowerCase() + subEntityName.slice(1) + 'Id'
-    }
+    };
 
     entityAnnotationContainer.manyToManyRelationTableSpecs.push(manyToManyRelationTableSpec);
   } else {
@@ -43,7 +44,10 @@ export default function setSubEntityInfo(
 
     entityAnnotationContainer.entityNameToIsArrayMap[subEntityName] = isArrayType;
 
-    const isReadonly = doesClassPropertyContainCustomValidation(EntityClass, fieldName, 'isUndefined');
+    const isReadonly =
+      doesClassPropertyContainCustomValidation(EntityClass, fieldName, 'isUndefined') &&
+      typePropertyAnnotationContainer.isTypePropertyOneToMany(EntityClass, fieldName) &&
+      typePropertyAnnotationContainer.isTypePropertyExternalServiceEntity(EntityClass, fieldName);
 
     const entityJoinSpec: EntityJoinSpec = {
       entityFieldName: fieldName,

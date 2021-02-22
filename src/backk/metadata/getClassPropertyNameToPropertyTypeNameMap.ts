@@ -6,12 +6,12 @@ import typePropertyAnnotationContainer from '../decorators/typeproperty/typeProp
 
 const classNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 
+// noinspection FunctionWithMoreThanThreeNegationsJS
 export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   Class: new () => T,
   dbManager?: AbstractDbManager,
   isGeneration = false,
-  isResponseValueType: boolean | undefined = undefined,
-  isArgumentType: boolean | undefined = undefined
+  isResponseValueType: boolean | undefined = undefined
 ): { [key: string]: string } {
   if (!isGeneration && classNameToMetadataMap[Class.name]) {
     return classNameToMetadataMap[Class.name];
@@ -254,10 +254,58 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       if (!undefinedValidation && !arrayMinSizeValidationMetadata) {
         throw new Error(
           'Property ' +
-          Class.name +
-          '.' +
-          validationMetadata.propertyName +
-          ' has array type and must have @ArrayMinSize annotation'
+            Class.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' has array type and must have @ArrayMinSize annotation'
+        );
+      }
+
+      const isInstanceMetadata = validationMetadatas.find(
+        (otherValidationMetadata: ValidationMetadata) =>
+          otherValidationMetadata.propertyName === validationMetadata.propertyName &&
+          otherValidationMetadata.type === 'isInstance'
+      );
+
+      const isOneToMany = typePropertyAnnotationContainer.isTypePropertyOneToMany(
+        Class,
+        validationMetadata.propertyName
+      );
+
+      const isManyToMany = typePropertyAnnotationContainer.isTypePropertyManyToMany(
+        Class,
+        validationMetadata.propertyName
+      );
+
+      const isReferenceToExternalEntity = typePropertyAnnotationContainer.isTypePropertyExternalServiceEntity(
+        Class,
+        validationMetadata.propertyName
+      );
+
+      const readonlyValidation = validationMetadatas.find(
+        ({ propertyName, type, constraints }: ValidationMetadata) =>
+          propertyName === validationMetadata.propertyName &&
+          type === 'customValidation' &&
+          constraints?.[0] === 'isUndefined'
+      );
+
+      if (!isOneToMany && !isManyToMany) {
+        throw new Error(
+          'Property ' +
+            Class.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' must have @OneToMany(true/false) or @ManyToMany() annotation. If you want ManyToOne relationship, use these 3 annotations: @ArrayMinSize(1), @ArrayMaxSize(1) and @ManyToMany. If this relationship is a reference to external entity (ie. join to external table), use annotation: @OneToMany(true)'
+        );
+      }
+
+      if (isOneToMany && isReferenceToExternalEntity && !undefinedValidation) {
+        throw new Error(
+          'Property ' +
+            Class.name +
+            '.' +
+            validationMetadata.propertyName +
+            ' must be declared to readonly, because it is a reference to external entity and cannot be modified by this service'
         );
       }
     }

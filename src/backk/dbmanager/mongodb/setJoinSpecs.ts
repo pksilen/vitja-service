@@ -4,12 +4,16 @@ import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../utils/type/isEntityTypeName';
 import { doesClassPropertyContainCustomValidation } from '../../validation/setClassPropertyValidationDecorators';
 import entityAnnotationContainer, { EntityJoinSpec } from '../../decorators/entity/entityAnnotationContainer';
-import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
+import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 
 function setJoinSpec(entityName: string, EntityClass: Function, fieldName: string, subEntityName: string) {
   const isReadonly = doesClassPropertyContainCustomValidation(EntityClass, fieldName, 'isUndefined');
 
-  if (isReadonly && !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
+  if (
+    isReadonly &&
+    typePropertyAnnotationContainer.isTypePropertyOneToMany(EntityClass, fieldName) &&
+    typePropertyAnnotationContainer.isTypePropertyExternalServiceEntity(EntityClass, fieldName)
+  ) {
     const subEntityForeignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
 
     const entityJoinSpec: EntityJoinSpec = {

@@ -10,6 +10,8 @@ class TypePropertyAnnotationContainer {
   private readonly typePropertyNameToIsTransientMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsExternalIdMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsInternalMap: { [key: string]: boolean } = {};
+  private readonly typePropertyNameToIsOneToManyMap: { [key: string]: boolean } = {};
+  private readonly typePropertyNameToIsExternalServiceEntityMap: { [key: string]: boolean } = {};
 
   addDocumentationForTypeProperty(Type: Function, propertyName: string, docString: string) {
     this.typePropertyNameToDocStringMap[`${Type.name}${propertyName}`] = docString;
@@ -41,6 +43,11 @@ class TypePropertyAnnotationContainer {
 
   setTypePropertyAsManyToMany(Type: Function, propertyName: string) {
     this.typePropertyNameToIsManyToManyMap[`${Type.name}${propertyName}`] = true;
+  }
+
+  setTypePropertyAsOneToMany(Type: Function, propertyName: string, isExternalServiceEntity: boolean) {
+    this.typePropertyNameToIsOneToManyMap[`${Type.name}${propertyName}`] = true;
+    this.typePropertyNameToIsExternalServiceEntityMap[`${Type.name}${propertyName}`] = isExternalServiceEntity
   }
 
   setTypePropertyAsTransient(Type: Function, propertyName: string) {
@@ -148,6 +155,38 @@ class TypePropertyAnnotationContainer {
     while (proto !== Object.prototype) {
       if (this.typePropertyNameToIsManyToManyMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
         return this.typePropertyNameToIsManyToManyMap[`${proto.constructor.name}${propertyName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isTypePropertyOneToMany(Type: Function | undefined, propertyName: string) {
+    if (!Type) {
+      return false;
+    }
+
+    let proto = Object.getPrototypeOf(new (Type as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.typePropertyNameToIsOneToManyMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsOneToManyMap[`${proto.constructor.name}${propertyName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return false;
+  }
+
+  isTypePropertyExternalServiceEntity(Type: Function | undefined, propertyName: string) {
+    if (!Type) {
+      return false;
+    }
+
+    let proto = Object.getPrototypeOf(new (Type as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.typePropertyNameToIsExternalServiceEntityMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToIsExternalServiceEntityMap[`${proto.constructor.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }

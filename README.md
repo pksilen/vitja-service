@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- getUserAccount method: filter favoritesalesitems by state = forSale
 - Annotate: OneToMany, ManyToMany, External (must be readonly)
 - replace T | ErrorResponse with Promise<[T, BackkError]>
 - Split to multiple microservices

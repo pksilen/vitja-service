@@ -14,6 +14,7 @@ import FavoriteSalesItem from "./FavoriteSalesItem";
 import OwnSalesItem from "./OwnSalesItem";
 import FollowUser from "./FollowUser";
 import BaseUserAccount from "../../../../backk/types/useraccount/BaseUserAccount";
+import { OneToMany } from "../../../../backk/decorators/typeproperty/OneToMany";
 
 @Entity()
 export default class UserAccount extends BaseUserAccount {
@@ -41,6 +42,7 @@ export default class UserAccount extends BaseUserAccount {
 
   @ArrayMinSize(0)
   @ArrayMaxSize(10)
+  @OneToMany()
   @ShouldBeTrueFor<UserAccount>(
     ({ paymentMethods }) => paymentMethods.filter(({ isDefault }) => isDefault).length === 1,
     'There should be exactly one default payment method'
@@ -50,8 +52,10 @@ export default class UserAccount extends BaseUserAccount {
   @ManyToMany()
   public readonly favoriteSalesItems!: FavoriteSalesItem[];
 
+  @OneToMany(true)
   public readonly ownSalesItems!: OwnSalesItem[];
 
+  @OneToMany(true)
   public readonly orders!: Order[];
 
   @ManyToMany()
