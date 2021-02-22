@@ -29,7 +29,7 @@ import { BackkEntity } from "../../../../backk/types/entities/BackkEntity"
 
 import Entity from '../../../../backk/decorators/entity/Entity';
 @Entity('SalesItem')
-export default class FavoriteSalesItem {
+export default class OwnSalesItem {
   @IsUndefined({
     groups: ['__backk_create__']
   })
@@ -41,24 +41,29 @@ export default class FavoriteSalesItem {
   })
   public _id!: string;
 
+  @IsUndefined({
+    groups: ['__backk_create__', '__backk_update__']
+  })
+  @IsDate({
+    groups: ['__backk_none__']
+  })
+  public createdAtTimestamp!: Date;
+
   @MaxLength(Lengths._64)
   @IsAnyString()
-  public readonly title!: string;
+  public title!: string;
 
   @IsNumber({
     maxDecimalPlaces: 2
   })
   @MinMax(0, Values._1B)
-  public readonly price!: number;
+  public price!: number;
 
-  @IsNumber({
-    maxDecimalPlaces: 2
-  })
-  @MinMax(-1, Values._1B)
-  public readonly previousPrice!: number;
-
-  @MaxLength(Lengths._10M)
+  @MaxLength(Lengths._1M)
   @IsDataUri()
-  public readonly primaryImageDataUri!: string;
+  public readonly primaryImageThumbnailDataUri!: string;
+
+  @Index()
+  public readonly state!: SalesItemState;
 
 }

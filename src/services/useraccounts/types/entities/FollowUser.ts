@@ -3,7 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import Entity from "../../../../backk/decorators/entity/Entity";
-import PaymentMethod from "../entities/PaymentMethod";
+import PaymentMethod from "PaymentMethod";
 import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
 import Order from "../../../orders/types/entities/Order";
 import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
@@ -12,9 +12,9 @@ import IsOneOf from "../../../../backk/decorators/typeproperty/IsOneOf";
 import getCities from "../../validation/getCities";
 import IsStrongPassword from "../../../../backk/decorators/typeproperty/IsStrongPassword";
 import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
-import FavoriteSalesItem from "../entities/FavoriteSalesItem";
-import OwnSalesItem from "../entities/OwnSalesItem";
-import FollowUser from "../entities/FollowUser";
+import FavoriteSalesItem from "FavoriteSalesItem";
+import OwnSalesItem from "OwnSalesItem";
+import FollowUser from "FollowUser";
 import _Id from "../../../../backk/types/id/_Id";
 import MaxLengthAndMatches from "../../../../backk/decorators/typeproperty/MaxLengthAndMatches";
 import IsUndefined from "../../../../backk/decorators/typeproperty/IsUndefined";
@@ -27,8 +27,9 @@ import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/Shoul
 import { Transient } from "../../../../backk/decorators/typeproperty/Transient"
 import { BackkEntity } from "../../../../backk/types/entities/BackkEntity"
 
-
-export default class ChangeUserPasswordArg {
+import Entity from '../../../../backk/decorators/entity/Entity';
+@Entity('UserAccount')
+export default class FollowUser {
   @IsUndefined({
     groups: ['__backk_create__']
   })
@@ -40,20 +41,16 @@ export default class ChangeUserPasswordArg {
   })
   public _id!: string;
 
-  @Unique()
-  @IsEmail()
+  @MaxLength(Lengths._512)
+  @IsAnyString()
+  public displayName!: string;
 
-  /* private */
-  userName!: string;
+  @MaxLength(Lengths._256)
+  @IsOneOf(getCities, 'usersService.getCities', 'Tampere')
+  public city!: string;
 
-
-  /* Password doc goes here...*/
-  @IsStrongPassword()
-
-  /* private */
-  password!: string;
-
-  @IsStrongPassword()
-  currentPassword!: string;
+  @MaxLength(Lengths._10M)
+  @IsDataUri()
+  public imageDataUri!: string;
 
 }
