@@ -40,12 +40,12 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForTests()
-  deleteAllUsers(): Promise<void | ErrorResponse> {
+  deleteAllUserAccounts(): Promise<void | ErrorResponse> {
     return this.dbManager.deleteAllEntities(UserAccount);
   }
 
   @AllowForEveryUser()
-  async createUser(arg: UserAccount): Promise<UserAccountResponse | ErrorResponse> {
+  async createUserAccount(arg: UserAccount): Promise<UserAccountResponse | ErrorResponse> {
     const userOrErrorResponse = await this.dbManager.createEntity(
       { ...arg, commissionDiscountPercentage: 0 },
       UserAccount
@@ -55,7 +55,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  async getUser({ userName }: UserName): Promise<UserAccountResponse | ErrorResponse> {
+  async getUserAccount({ userName }: UserName): Promise<UserAccountResponse | ErrorResponse> {
     const defaultPostQueryOperations = new DefaultPostQueryOperations();
 
     const userOrErrorResponse = await this.dbManager.getEntityWhere('userName', userName, UserAccount, {
@@ -119,7 +119,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  updateUser(arg: UserAccount): Promise<void | ErrorResponse> {
+  updateUserAccount(arg: UserAccount): Promise<void | ErrorResponse> {
     return this.dbManager.updateEntity(arg, UserAccount);
   }
 
@@ -146,7 +146,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  deleteUser({ _id }: _Id): Promise<void | ErrorResponse> {
+  deleteUserAccount({ _id }: _Id): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, UserAccount);
   }
 

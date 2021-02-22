@@ -138,8 +138,8 @@ export default class SalesItemServiceImpl extends SalesItemService {
       (followedUser) => followedUser._id
     );
 
-    const filters = this.dbManager.getFilters(
-      [new MongoDbQuery<SalesItem>({ userAccountId: { $in: followedUserAccountIds } })],
+    const filters = this.dbManager.getFilters<SalesItem>(
+      [new MongoDbQuery({ userAccountId: { $in: followedUserAccountIds } })],
       [new SqlInExpression(userAccountId, followedUserAccountIds)]
     );
 

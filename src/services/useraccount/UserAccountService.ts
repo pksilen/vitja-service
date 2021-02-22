@@ -14,20 +14,20 @@ import UserName from "../../backk/types/useraccount/UserName";
  * - jaa
  * **/
 export default abstract class UserAccountService extends UserAccountBaseService {
-  abstract deleteAllUsers(): Promise<void | ErrorResponse>;
+  abstract deleteAllUserAccounts(): Promise<void | ErrorResponse>;
 
-  // createUser documentation goes here..
-  abstract createUser(arg: UserAccount): Promise<UserAccountResponse | ErrorResponse>;
+  // createUserAccount documentation goes here..
+  abstract createUserAccount(arg: UserAccount): Promise<UserAccountResponse | ErrorResponse>;
 
-  abstract getUser(arg: UserName): Promise<UserAccountResponse | ErrorResponse>;
+  abstract getUserAccount(arg: UserName): Promise<UserAccountResponse | ErrorResponse>;
   abstract getUserAccountById(arg: _Id): Promise<UserAccountResponse | ErrorResponse>;
   abstract addToFavoriteSalesItems(arg: _IdAndFavoriteSalesItem): Promise<UserAccount | ErrorResponse>;
   abstract removeFromFavoriteSalesItems(arg: _IdAndFavoriteSalesItem): Promise<UserAccount | ErrorResponse>;
   abstract followUser(arg: _IdAndFollowedUserId): Promise<UserAccount | ErrorResponse>;
   abstract unfollowUser(arg: _IdAndFollowedUserId): Promise<UserAccount | ErrorResponse>;
-  abstract updateUser(arg: UserAccount): Promise<void | ErrorResponse>;
+  abstract updateUserAccount(arg: UserAccount): Promise<void | ErrorResponse>;
   abstract changeUserPassword(arg: ChangeUserPasswordArg): Promise<void | ErrorResponse>;
-  abstract deleteUser(arg: _Id): Promise<void | ErrorResponse>;
+  abstract deleteUserAccount(arg: _Id): Promise<void | ErrorResponse>;
 
   abstract getCities(): Promise<Name[] | ErrorResponse>;
 }

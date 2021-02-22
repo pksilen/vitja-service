@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- getFollowedUsersSalesItems
+- dbManager.getFilters, mahdollisuus antaa ei-array parametri ja mongon FilterQuery<T>
 - getUserAccount method: filter favoritesalesitems by state = forSale
 - Annotate: OneToMany, ManyToMany, External (must be readonly)
 - replace T | ErrorResponse with Promise<[T, BackkError]>
