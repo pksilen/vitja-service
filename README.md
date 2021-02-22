@@ -3,7 +3,7 @@
 TODO:
 - BaseUserAccount
 - getFollowedUsersSalesItems
-- getUser method: filter favoritesalesitems by state = forSale
+- getUserAccount method: filter favoritesalesitems by state = forSale
 - .type file: Pick/Omit, report errors for wrong fieldNames and syntax error
 - Annotate: OneToMany, ManyToMany, External (must be readonly)
 - replace T | ErrorResponse with Promise<[T, BackkError]>

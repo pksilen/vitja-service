@@ -24,7 +24,7 @@
     - testName: state == sold
 
 - testTemplate:
-    serviceFunctionName: saleItemsService.getSalesItem
+    serviceFunctionName: salesItemService.getSalesItem
     response:
       tests:
         - pm.expect(response.state).to.eql('forSale');

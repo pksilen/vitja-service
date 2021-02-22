@@ -43,7 +43,7 @@
         category: Clothes
 
 - testTemplate:
-    serviceFunctionName: salesItemsService.getSalesItems
+    serviceFunctionName: salesItemService.getSalesItems
     argument:
       '{{argumentPropertyName1}}': '{{argumentPropertyValue1}}'
       '{{argumentPropertyName2}}': '{{argumentPropertyValue2}}'
