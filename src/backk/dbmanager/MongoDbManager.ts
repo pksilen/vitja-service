@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MongoClient, ObjectId } from 'mongodb';
+import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
 import SqlExpression from './sql/expressions/SqlExpression';
 import AbstractDbManager, { Field } from './AbstractDbManager';
 import { ErrorResponse } from '../types/ErrorResponse';
@@ -56,9 +56,9 @@ import getFieldOrdering from './mongodb/getFieldOrdering';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
 import log, { Severity } from '../observability/logging/log';
-import { CreatePreHook } from "./hooks/CreatePreHook";
-import tryExecuteCreatePreHooks from "./hooks/tryExecuteCreatePreHooks";
-import emptyError from "../errors/emptyError";
+import { CreatePreHook } from './hooks/CreatePreHook';
+import tryExecuteCreatePreHooks from './hooks/tryExecuteCreatePreHooks';
+import emptyError from '../errors/emptyError';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -94,10 +94,10 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   getFilters<T>(
-    mongoDbFilters: Array<MongoDbQuery<T>> | Partial<T> | object,
+    mongoDbFilters: Array<MongoDbQuery<T>> | FilterQuery<T> | Partial<T> | object,
     sqlFilters: SqlExpression[] | Partial<T> | object
   ): Array<MongoDbQuery<T> | SqlExpression> | Partial<T> | object {
-    return mongoDbFilters;
+    return Array.isArray(mongoDbFilters) ? mongoDbFilters : [new MongoDbQuery(mongoDbFilters)];
   }
 
   async tryExecute(

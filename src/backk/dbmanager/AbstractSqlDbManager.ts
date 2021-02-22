@@ -39,7 +39,7 @@ import { PostHook } from './hooks/PostHook';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
-import { CreatePreHook } from "./hooks/CreatePreHook";
+import { CreatePreHook } from './hooks/CreatePreHook';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -83,9 +83,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   getFilters<T>(
     mongoDbFilters: Array<MongoDbQuery<T>> | Partial<T> | object,
-    sqlFilters: SqlExpression[] | Partial<T> | object
+    sqlFilters: SqlExpression[] | SqlExpression | Partial<T> | object
   ): Array<MongoDbQuery<T> | SqlExpression> | Partial<T> | object {
-    return sqlFilters;
+    return sqlFilters instanceof SqlExpression ? [sqlFilters] : sqlFilters;
   }
 
   async isDbReady(): Promise<boolean> {
@@ -647,13 +647,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     postHook?: PostHook
   ): Promise<void | ErrorResponse> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
-    const response = await updateEntity(
-      this,
-      entity,
-      entityClass,
-      preHooks,
-      postHook
-    );
+    const response = await updateEntity(this, entity, entityClass, preHooks, postHook);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

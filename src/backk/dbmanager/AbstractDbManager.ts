@@ -17,6 +17,7 @@ import __Backk__JobScheduling from '../scheduling/entities/__Backk__JobSchedulin
 import MongoDbQuery from './mongodb/MongoDbQuery';
 import { PostHook } from './hooks/PostHook';
 import { CreatePreHook } from "./hooks/CreatePreHook";
+import { FilterQuery } from "mongodb";
 
 export interface Field {
   name: string;
@@ -60,8 +61,8 @@ export default abstract class AbstractDbManager {
   abstract getDbManagerType(): string;
   abstract getDbHost(): string;
   abstract getFilters<T>(
-    mongoDbFilters: Array<MongoDbQuery<T>> | Partial<T> | object,
-    sqlFilters: SqlExpression[] | Partial<T> | object
+    mongoDbFilters: Array<MongoDbQuery<T>> | FilterQuery<T> | Partial<T> | object,
+    sqlFilters: SqlExpression[] | SqlExpression | Partial<T> | object
   ): Array<MongoDbQuery<T> | SqlExpression> | Partial<T> | object;
 
   abstract getModifyColumnStatement(
