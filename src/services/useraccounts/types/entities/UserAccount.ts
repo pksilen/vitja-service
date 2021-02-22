@@ -14,13 +14,11 @@ import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
 import { Lengths } from "../../../../backk/constants/constants";
 import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/ShouldBeTrueFor";
 import FavoriteSalesItem from "./FavoriteSalesItem";
-import FollowedUser from "./FollowedUser";
-import FollowingUser from "./FollowingUser";
 import OwnSalesItem from "./OwnSalesItem";
+import FollowUser from './FollowUser';
 
 @Entity()
-export default class User extends _IdAndCaptcha {
-
+export default class UserAccount extends _IdAndCaptcha {
   @Unique()
   @IsEmail()
   /* private */ userName!: string;
@@ -57,7 +55,7 @@ export default class User extends _IdAndCaptcha {
 
   @ArrayMinSize(0)
   @ArrayMaxSize(10)
-  @ShouldBeTrueFor<User>(
+  @ShouldBeTrueFor<UserAccount>(
     ({ paymentMethods }) => paymentMethods.filter(({ isDefault }) => isDefault).length === 1,
     'There should be exactly one default payment method'
   )
@@ -71,8 +69,8 @@ export default class User extends _IdAndCaptcha {
   public readonly orders!: Order[];
 
   @ManyToMany()
-  public readonly followedUsers!: FollowedUser[];
+  public readonly followedUsers!: FollowUser[];
 
   @ManyToMany()
-  public readonly followingUsers!: FollowingUser[];
+  public readonly followingUsers!: FollowUser[];
 }

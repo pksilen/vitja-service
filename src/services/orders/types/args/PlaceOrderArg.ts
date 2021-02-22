@@ -4,7 +4,7 @@
 
 import { IsUrl, MaxLength } from 'class-validator';
 import { Lengths } from '../../../../backk/constants/constants';
-import ShoppingCart from '../../../shoppingcart/types/entities/ShoppingCart';
+import ShoppingCart from '../../../shoppingcarts/types/entities/ShoppingCart';
 import { PaymentGateway } from '../enum/PaymentGateway';
 
 export default class PlaceOrderArg {

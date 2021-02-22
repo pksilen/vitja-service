@@ -104,10 +104,12 @@ export default function parseTypescriptLinesForTypeName(
     if (node.type === 'ImportDeclaration') {
       if (node.source.value.startsWith('.')) {
         const relativeImportPathName = node.source.value;
+
         const importAbsolutePathName = path.resolve(
           path.dirname(typeFilePathName ?? ''),
           relativeImportPathName
         );
+
         const newRelativeImportPathName = path.relative(
           path.dirname(originatingTypeFilePathName),
           importAbsolutePathName

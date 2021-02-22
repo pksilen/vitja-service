@@ -10,10 +10,10 @@ import OrdersServiceImpl from "../services/orders/OrdersServiceImpl";
 import StartupServiceImpl from "../backk/service/startup/StartupServiceImpl";
 import SalesItemsService from "../services/salesitems/SalesItemsService";
 import SalesItemsServiceImpl from "../services/salesitems/SalesItemsServiceImpl";
-import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
-import ShoppingCartServiceImpl from "../services/shoppingcart/ShoppingCartServiceImpl";
-import UsersService from "../services/users/UsersService";
-import UsersServiceImpl from "../services/users/UsersServiceImpl";
+import ShoppingCartsService from "../services/shoppingcarts/ShoppingCartsService";
+import ShoppingCartsServiceImpl from "../services/shoppingcarts/ShoppingCartsServiceImpl";
+import UserAccountsService from "../services/useraccounts/UserAccountsService";
+import UserAccountsServiceImpl from "../services/useraccounts/UserAccountsServiceImpl";
 import { AppController } from "./app.controller";
 import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigService";
 import ResponseCacheConfigServiceImpl from "../services/responsecacheconfig/ResponseCacheConfigServiceImpl";
@@ -44,9 +44,9 @@ import { mySqlDbManager } from "../database/mySqlDatabaseManager";
     },
     { provide: SalesItemsService, useClass: SalesItemsServiceImpl },
     { provide: TagsService, useClass: TagsServiceImpl },
-    { provide: UsersService, useClass: UsersServiceImpl },
+    { provide: UserAccountsService, useClass: UserAccountsServiceImpl },
     { provide: OrdersService, useClass: OrdersServiceImpl },
-    { provide: ShoppingCartService, useClass: ShoppingCartServiceImpl }
+    { provide: ShoppingCartsService, useClass: ShoppingCartsServiceImpl }
   ]
 })
 export class AppModule {}

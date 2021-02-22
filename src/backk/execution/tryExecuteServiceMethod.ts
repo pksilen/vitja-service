@@ -7,7 +7,7 @@ import tryAuthorize from "../authorization/tryAuthorize";
 import BaseService from "../service/BaseService";
 import tryVerifyCaptchaToken from "../captcha/tryVerifyCaptchaToken";
 import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
-import UsersBaseService from "../users/UsersBaseService";
+import UserAccountsBaseService from "../service/useraccounts/UserAccountsBaseService";
 import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
 import tryValidateServiceFunctionArgument from "../validation/tryValidateServiceFunctionArgument";
 import tryValidateServiceFunctionResponse from "../validation/tryValidateServiceFunctionResponse";
@@ -206,7 +206,7 @@ export default async function tryExecuteServiceMethod(
       await tryVerifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
     }
 
-    const usersService = Object.values(controller).find((service) => service instanceof UsersBaseService);
+    const usersService = Object.values(controller).find((service) => service instanceof UserAccountsBaseService);
 
     userName = await tryAuthorize(
       controller[serviceName],
@@ -214,7 +214,7 @@ export default async function tryExecuteServiceMethod(
       serviceFunctionArgument,
       headers.Authorization,
       controller['authorizationService'],
-      usersService as UsersBaseService | undefined
+      usersService as UserAccountsBaseService | undefined
     );
 
     const dbManager = (controller[serviceName] as BaseService).getDbManager();
@@ -560,16 +560,16 @@ export default async function tryExecuteServiceMethod(
       throw errorOrErrorResponse;
     }
   } finally {
-    if (controller[serviceName] instanceof UsersBaseService || userName) {
+    if (controller[serviceName] instanceof UserAccountsBaseService || userName) {
       const auditLogEntry = createAuditLogEntry(
         userName ?? serviceFunctionArgument?.userName ?? '',
         headers['X-Forwarded-For'] ?? '',
         headers.Authorization,
-        controller[serviceName] instanceof UsersBaseService ? functionName : serviceFunctionName,
+        controller[serviceName] instanceof UserAccountsBaseService ? functionName : serviceFunctionName,
         storedError ? 'failure' : 'success',
         storedError?.getStatus(),
         storedError?.getResponse().errorMessage,
-        controller[serviceName] instanceof UsersBaseService ? serviceFunctionArgument : { _id: response._id }
+        controller[serviceName] instanceof UserAccountsBaseService ? serviceFunctionArgument : { _id: response._id }
       );
       await (controller?.auditLoggingService as AuditLoggingService).log(auditLogEntry);
     }

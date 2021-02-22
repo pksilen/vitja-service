@@ -1,8 +1,7 @@
 # Vitja service
 
 TODO:
-- UsersService ==> UserAccountsService
-- Following/FollowedUser ==> User, filter out extra properties
+- BaseUserAccount
 - getFollowedUsersSalesItems
 - getUser method: filter favoritesalesitems by state = forSale
 - .type file: Pick/Omit, report errors for wrong fieldNames and syntax error

@@ -24,7 +24,7 @@ import {
 } from './errors/ordersServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import executeForAll from '../../backk/utils/executeForAll';
-import ShoppingCartService from '../shoppingcart/ShoppingCartService';
+import ShoppingCartsService from '../shoppingcarts/ShoppingCartsService';
 import { SalesItemState } from '../salesitems/types/enums/SalesItemState';
 import { OrderState } from './types/enum/OrderState';
 import { Update } from '../../backk/decorators/service/function/Update';
@@ -44,7 +44,7 @@ import { CronJob } from '../../backk/decorators/service/function/CronJob';
 import dayjs from "dayjs";
 import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import ShoppingCartOrOrderSalesItem from "../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem";
+import ShoppingCartOrOrderSalesItem from "../shoppingcarts/types/entities/ShoppingCartOrOrderSalesItem";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -52,7 +52,7 @@ export default class OrdersServiceImpl extends OrdersService {
   constructor(
     dbManager: AbstractDbManager,
     private readonly salesItemsService: SalesItemsService,
-    private readonly shoppingCartService: ShoppingCartService
+    private readonly shoppingCartService: ShoppingCartsService
   ) {
     super(dbManager);
   }
@@ -123,13 +123,13 @@ export default class OrdersServiceImpl extends OrdersService {
   }
 
   @AllowForTests()
-  addOrderItem({ orderId, salesItems, version }: AddOrderItemArg): Promise<Order | ErrorResponse> {
+  addOrderItem({ orderId, salesItem, version }: AddOrderItemArg): Promise<Order | ErrorResponse> {
     return this.dbManager.addSubEntity(
       orderId,
       version,
       'orderItems',
       {
-        salesItems,
+        salesItems: [salesItem],
         state: 'toBeDelivered',
         trackingUrl: null,
         deliveryTimestamp: null

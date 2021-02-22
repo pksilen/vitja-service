@@ -5,7 +5,7 @@ import { OrderState } from "../enum/OrderState";
 import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/ShouldBeTrueFor";
 import { Lengths } from "../../../../backk/constants/constants";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
-import ShoppingCartOrOrderSalesItem from "../../../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem";
+import ShoppingCartOrOrderSalesItem from "../../../shoppingcarts/types/entities/ShoppingCartOrOrderSalesItem";
 
 @Entity()
 export default class OrderItem extends Id {

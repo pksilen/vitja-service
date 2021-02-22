@@ -16,8 +16,8 @@ import tryExecuteServiceMethod from "../backk/execution/tryExecuteServiceMethod"
 import StartupService from "../backk/service/startup/StartupService";
 import OrdersService from "../services/orders/OrdersService";
 import SalesItemsService from "../services/salesitems/SalesItemsService";
-import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
-import UsersService from "../services/users/UsersService";
+import ShoppingCartsService from "../services/shoppingcarts/ShoppingCartsService";
+import UserAccountsService from "../services/useraccounts/UserAccountsService";
 import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigService";
 import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
 import initializeController from "../backk/controller/initializeController";
@@ -36,10 +36,10 @@ export class AppController {
     private readonly responseCacheConfigService: ResponseCacheConfigService,
     private readonly auditLoggingService: AuditLoggingService,
     private readonly authorizationService: AuthorizationService,
-    private readonly usersService: UsersService,
+    private readonly usersService: UserAccountsService,
     private readonly tagsService: TagsService,
     private readonly salesItemsService: SalesItemsService,
-    private readonly shoppingCartService: ShoppingCartService,
+    private readonly shoppingCartsService: ShoppingCartsService,
     private readonly ordersService: OrdersService
   ) {
     appController = this;

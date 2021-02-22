@@ -7,6 +7,7 @@ import _ from 'lodash';
 import { getFileNamesRecursively } from '../../utils/file/getSrcFilePathNameForTypeName';
 import getTypeFilePathNameFor from '../../utils/file/getTypeFilePathNameFor';
 import parseTypescriptLinesForTypeName from '../parser/parseTypescriptLinesForTypeName';
+import mergeImports from "../utils/mergeImports";
 
 const promisifiedExec = util.promisify(exec);
 
@@ -51,6 +52,7 @@ function generateTypescriptFileFor(
 
         if (baseType.startsWith('Partial<')) {
           baseType = baseType.slice(8, -1);
+          // noinspection ReuseOfLocalVariableJS
           isBaseTypeOptional = true;
         }
 
@@ -63,6 +65,7 @@ function generateTypescriptFileFor(
         const omittedKeys = ommittedKeyParts.map((omittedKeyPart) => omittedKeyPart.trim().split(/["']/)[1]);
 
         const baseTypeFilePathName = getTypeFilePathNameFor(baseType);
+
         if (baseTypeFilePathName) {
           handledTypeFilePathNames.push(baseTypeFilePathName);
           generateTypescriptFileFor(baseTypeFilePathName, handledTypeFilePathNames, promisifiedExecs);
@@ -105,10 +108,12 @@ function generateTypescriptFileFor(
               .split(' as ')[0]
               .split(/["']/)[1];
           }
+
           return pickedKeyPart.trim().split(/["']/)[1];
         });
 
         const keyToNewKeyMap: { [key: string]: string[] } = {};
+
         pickedKeyParts.forEach((pickedKeyPart) => {
           if (pickedKeyPart.includes(' as ')) {
             let [key, newKey] = pickedKeyPart.trim().split(' as ');
@@ -146,6 +151,7 @@ function generateTypescriptFileFor(
         const spreadTypeFilePathName = getTypeFilePathNameFor(spreadType);
         let isBaseTypeOptional = false;
         let baseType = spreadType;
+
         if (baseType.startsWith('Partial<')) {
           baseType = baseType.slice(8, -1);
           isBaseTypeOptional = true;
@@ -185,6 +191,7 @@ function generateTypescriptFileFor(
   const classDecoratorNames: string[] = [];
   const classDecoratorArguments: string[] = [];
   const nodes = (ast as any).program.body;
+
   for (const node of nodes) {
     if (
       (node.type === 'ExportDefaultDeclaration' || node.type === 'ExportNamedDeclaration') &&
@@ -192,6 +199,7 @@ function generateTypescriptFileFor(
     ) {
       (node.declaration.decorators ?? []).forEach((decorator: any) => {
         classDecoratorNames.push(decorator.expression.callee.name);
+
         const argumentsStr = (decorator.expression.arguments ?? [])
           .map((argument: any) => argument.extra.raw)
           .join(', ');
@@ -214,12 +222,15 @@ function generateTypescriptFileFor(
     .join('\n');
 
   const outputCode = generate(ast as any).code;
+  outputImportCodeLines = _.uniq(outputImportCodeLines);
+  outputImportCodeLines = mergeImports(outputImportCodeLines);
+
   const outputFileHeaderLines = [
     '// This is an auto-generated file from the respective .type file',
     '// DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only',
     "// This file can be generated from the respective .type file by running npm script 'generateTypes'",
     '',
-    ..._.uniq(outputImportCodeLines),
+    ...outputImportCodeLines,
     ''
   ];
 
@@ -248,6 +259,7 @@ function generateTypescriptFileFor(
   );
 
   promisifiedExecs.push(organizeImportsPromise);
+
   organizeImportsPromise.then(() => {
     promisifiedExecs.push(
       promisifiedExec(process.cwd() + '/node_modules/.bin/prettier --write ' + outputFileName)

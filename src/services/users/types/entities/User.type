@@ -1,0 +1,4 @@
+@Entity('UserAccount')
+export default class User {
+  ...Pick<UserAccount, '_id' | 'displayName' | 'city' | 'imageDataUri' | 'ownSalesItems' | 'followedUsers' | 'followingUsers'>;
+}

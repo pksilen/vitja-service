@@ -3,7 +3,7 @@ import serviceAnnotationContainer from '../decorators/service/serviceAnnotationC
 import AuthorizationService from './AuthorizationService';
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
 import BaseService from '../service/BaseService';
-import UsersBaseService from '../users/UsersBaseService';
+import UserAccountsBaseService from '../service/useraccounts/UserAccountsBaseService';
 import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import { HttpStatusCodes } from '../constants/constants';
@@ -15,7 +15,7 @@ export default async function tryAuthorize(
   serviceFunctionArgument: any,
   authHeader: string | undefined,
   authorizationService: any,
-  usersService: UsersBaseService | undefined
+  usersService: UserAccountsBaseService | undefined
 ): Promise<void | string> {
   const ServiceClass = service.constructor;
 
@@ -70,7 +70,7 @@ export default async function tryAuthorize(
       }
 
       if (!userName && userId && usersService) {
-        const userOrErrorResponse = await usersService.getUserById(userId);
+        const userOrErrorResponse = await usersService.getUserAccountById(userId);
         if ('_id' in userOrErrorResponse) {
           userName = userOrErrorResponse.userName;
         }
