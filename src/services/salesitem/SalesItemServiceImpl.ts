@@ -29,11 +29,14 @@ import { CronJob } from '../../backk/decorators/service/function/CronJob';
 import DeleteOldUnsoldSalesItemsArg from './types/args/DeleteOldUnsoldSalesItemsArg';
 import dayjs from 'dayjs';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
+import UserAccountId from '../../backk/types/useraccount/UserAccountId';
+import UserAccountService from '../useraccount/UserAccountService';
+import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class SalesItemServiceImpl extends SalesItemService {
-  constructor(dbManager: AbstractDbManager) {
+  constructor(dbManager: AbstractDbManager, private readonly userAccountService: UserAccountService) {
     super(dbManager);
   }
 
@@ -118,6 +121,28 @@ export default class SalesItemServiceImpl extends SalesItemService {
   getSalesItemsByUserDefinedFilters({
     filters
   }: GetSalesItemsByUserDefinedFiltersArg): Promise<SalesItem[] | ErrorResponse> {
+    return this.dbManager.getEntitiesByFilters(filters, SalesItem, new DefaultPostQueryOperations());
+  }
+
+  @AllowForSelf()
+  async getFollowedUsersSalesItems({ userAccountId }: UserAccountId): Promise<SalesItem[] | ErrorResponse> {
+    const userAccountOrErrorResponse = await this.userAccountService.getUserAccountById({
+      _id: userAccountId
+    });
+
+    if ('errorMessage' in userAccountOrErrorResponse) {
+      return userAccountOrErrorResponse;
+    }
+
+    const followedUserAccountIds = userAccountOrErrorResponse.followedUsers.map(
+      (followedUser) => followedUser._id
+    );
+
+    const filters = this.dbManager.getFilters(
+      [new MongoDbQuery<SalesItem>({ userAccountId: { $in: followedUserAccountIds } })],
+      [new SqlInExpression(userAccountId, followedUserAccountIds)]
+    );
+
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, new DefaultPostQueryOperations());
   }
 

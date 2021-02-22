@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- .type file: Pick/Omit, report errors for wrong fieldNames and syntax error
 - getFollowedUsersSalesItems
 - getUserAccount method: filter favoritesalesitems by state = forSale
 - Annotate: OneToMany, ManyToMany, External (must be readonly)
