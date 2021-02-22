@@ -3,7 +3,7 @@ import _IdAndCreatedAtTimestamp from "./id/_IdAndCreatedAtTimestamp";
 import _IdAndCreatedAtTimestampAndLastModifiedTimestamp
   from "./id/_IdAndCreatedAtTimestampAndLastModifiedTimestamp";
 import _IdAndLastModifiedTimestamp from "./id/_IdAndLastModifiedTimestamp";
-import _IdAndUserId from "./id/_IdAndUserId";
+import _IdAndUserAccountId from "./id/_IdAndUserId";
 import _IdAndVersion from "./id/_IdAndVersion";
 import _IdAndVersionAndCreatedAtTimestamp from "./id/_IdAndVersionAndCreatedAtTimestamp";
 import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp
@@ -30,6 +30,7 @@ import _IdAndCaptchaAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp
 import OrFilter from "./userdefinedfilters/OrFilter";
 import { Name } from "./Name";
 import Version from "./Version";
+import BaseUserAccount from "./BaseUserAccount";
 
 const types = {
   _Id,
@@ -44,7 +45,7 @@ const types = {
   _IdAndCreatedAtTimestamp,
   _IdAndCreatedAtTimestampAndLastModifiedTimestamp,
   _IdAndLastModifiedTimestamp,
-  _IdAndUserId,
+  _IdAndUserAccountId,
   _IdAndVersion,
   _IdAndVersionAndCreatedAtTimestamp,
   _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp,
@@ -58,7 +59,8 @@ const types = {
   OrFilter,
   Captcha,
   Name,
-  Version
+  Version,
+  BaseUserAccount
 }
 
 export default types

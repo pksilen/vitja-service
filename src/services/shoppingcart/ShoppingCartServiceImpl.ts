@@ -7,7 +7,7 @@ import UserId from '../useraccount/types/args/UserId';
 import ShoppingCartService from './ShoppingCartsService';
 import ShoppingCart from './types/entities/ShoppingCart';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
+import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserId';
 import awaitOperationAndGetResultOfPredicate from '../../backk/utils/getErrorResponseOrResultOf';
 import { SALES_ITEM_ALREADY_SOLD, SHOPPING_CART_ALREADY_EXISTS } from './errors/shoppingCartServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
@@ -97,7 +97,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Delete()
   @NoAutoTest()
-  emptyShoppingCart({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
+  emptyShoppingCart({ _id }: _IdAndUserAccountId): Promise<void | ErrorResponse> {
     return this.deleteShoppingCart({ _id });
   }
 

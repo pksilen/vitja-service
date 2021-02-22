@@ -1,7 +1,7 @@
 import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
 import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
 import { SalesItem } from "./types/entities/SalesItem";
-import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
+import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserId";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import _Id from "../../backk/types/id/_Id";
 import CrudResourceService from "../../backk/service/crudresource/CrudResourceService";
@@ -27,5 +27,5 @@ export default abstract class SalesItemService extends CrudResourceService {
   ): Promise<void | ErrorResponse>;
 
   abstract deleteOldUnsoldSalesItems(arg: DeleteOldUnsoldSalesItemsArg): Promise<void | ErrorResponse>;
-  abstract deleteSalesItem(arg: _IdAndUserId): Promise<void | ErrorResponse>;
+  abstract deleteSalesItem(arg: _IdAndUserAccountId): Promise<void | ErrorResponse>;
 }

@@ -13,7 +13,7 @@ import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
 import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
 import { SalesItem } from "./types/entities/SalesItem";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
+import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserId";
 import _Id from "../../backk/types/id/_Id";
 import {
   INVALID_SALES_ITEM_STATE,
@@ -178,7 +178,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  deleteSalesItem({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
+  deleteSalesItem({ _id }: _IdAndUserAccountId): Promise<void | ErrorResponse> {
     return this.dbManager.deleteEntityById(_id, SalesItem);
   }
 }

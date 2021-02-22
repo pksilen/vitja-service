@@ -15,7 +15,7 @@ import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
 import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import _IdAndUserId from '../../backk/types/id/_IdAndUserId';
+import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserId';
 import {
   DELETE_ORDER_NOT_ALLOWED,
   INVALID_ORDER_ITEM_STATE,
@@ -140,7 +140,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
-  getOrder({ _id }: _IdAndUserId): Promise<Order | ErrorResponse> {
+  getOrder({ _id }: _IdAndUserAccountId): Promise<Order | ErrorResponse> {
     return this.dbManager.getEntityById(_id, Order);
   }
 
@@ -255,7 +255,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
-  deleteOrder({ _id }: _IdAndUserId): Promise<void | ErrorResponse> {
+  deleteOrder({ _id }: _IdAndUserAccountId): Promise<void | ErrorResponse> {
     return this.deleteOrderById(_id);
   }
 

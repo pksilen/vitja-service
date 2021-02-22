@@ -1,7 +1,7 @@
 import UserId from "../useraccount/types/args/UserId";
 import ShoppingCart from "./types/entities/ShoppingCart";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import _IdAndUserId from "../../backk/types/id/_IdAndUserId";
+import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserId";
 import _IdAndUserIdAndSalesItem from "./types/args/_IdAndUserIdAndSalesItem";
 import CrudResourceService from "../../backk/service/crudresource/CrudResourceService";
 import _Id from "../../backk/types/id/_Id";
@@ -12,6 +12,6 @@ export default abstract class ShoppingCartService extends CrudResourceService {
   abstract removeFromShoppingCart(arg: _IdAndUserIdAndSalesItem): Promise<ShoppingCart | ErrorResponse>;
   abstract addToShoppingCart(arg: _IdAndUserIdAndSalesItem): Promise<ShoppingCart | ErrorResponse>;
   abstract getShoppingCart(arg: UserId): Promise<ShoppingCart | ErrorResponse>;
-  abstract emptyShoppingCart(arg: _IdAndUserId): Promise<void | ErrorResponse>;
+  abstract emptyShoppingCart(arg: _IdAndUserAccountId): Promise<void | ErrorResponse>;
   abstract deleteShoppingCart(arg: _Id): Promise<void | ErrorResponse>;
 }

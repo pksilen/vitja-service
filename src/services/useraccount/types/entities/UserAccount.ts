@@ -1,37 +1,23 @@
-import { ArrayMaxSize, ArrayMinSize, IsEmail, IsPhoneNumber, MaxLength } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsPhoneNumber, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import PaymentMethod from "./PaymentMethod";
-import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
-import _IdAndCaptcha from "../../../../backk/types/id/_IdAndCaptcha";
 import Order from "../../../order/types/entities/Order";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
 import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
 import IsPostalCode from "../../../../backk/decorators/typeproperty/IsPostalCode";
 import IsOneOf from "../../../../backk/decorators/typeproperty/IsOneOf";
 import getCities from "../../validation/getCities";
-import IsStrongPassword from "../../../../backk/decorators/typeproperty/IsStrongPassword";
 import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
 import { Lengths } from "../../../../backk/constants/constants";
 import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/ShouldBeTrueFor";
 import FavoriteSalesItem from "./FavoriteSalesItem";
 import OwnSalesItem from "./OwnSalesItem";
-import FollowUser from './FollowUser';
+import FollowUser from "./FollowUser";
+import BaseUserAccount from "../../../../backk/types/BaseUserAccount";
 
 @Entity()
-export default class UserAccount extends _IdAndCaptcha {
-  @Unique()
-  @IsEmail()
-  /* private */ userName!: string;
-
-  @MaxLength(Lengths._512)
-  @IsAnyString()
-  public displayName!: string;
-
+export default class UserAccount extends BaseUserAccount {
   public isBusinessUser!: boolean;
-
-  /* Password doc goes here...*/
-  @IsStrongPassword()
-  /* private */ password!: string;
 
   @MaxLength(Lengths._512)
   @IsAnyString()

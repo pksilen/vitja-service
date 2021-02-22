@@ -4,8 +4,8 @@ import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatch
 import { BackkEntity } from "../entities/BackkEntity";
 
 // eslint-disable-next-line @typescript-eslint/class-name-casing
-export default class _IdAndUserId extends _Id implements BackkEntity {
+export default class _IdAndUserAccountId extends _Id implements BackkEntity {
   @IsString()
   @MaxLengthAndMatches(24, /^[a-f\d]+$/)
-  public userId!: string;
+  public userAccountId!: string;
 }
