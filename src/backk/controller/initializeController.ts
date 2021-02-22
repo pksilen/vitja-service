@@ -55,6 +55,7 @@ export default function initializeController(
       functionNameToReturnTypeNameMap,
       functionNameToDocumentationMap
     ] = parseServiceFunctionNameToArgAndReturnTypeNameMaps(
+      controller[serviceName].constructor,
       serviceName,
       getSrcFilePathNameForTypeName(
         serviceName.charAt(0).toUpperCase() + serviceName.slice(1),

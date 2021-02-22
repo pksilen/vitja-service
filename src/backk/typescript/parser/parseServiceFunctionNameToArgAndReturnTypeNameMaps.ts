@@ -1,8 +1,10 @@
 import { readFileSync } from 'fs';
 import { parseSync } from '@babel/core';
 import isValidFunctionArgumentTypeName from '../../utils/type/isValidFunctionArgumentTypeName';
+import serviceFunctionAnnotationContainer from '../../decorators/service/function/serviceFunctionAnnotationContainer';
 
 export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
+  ServiceClass: Function,
   serviceName: string,
   serviceFileName: string,
   remoteServiceRootDir = ''
@@ -43,8 +45,19 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
           const functionName = classBodyNode.key.name;
 
           if (classBodyNode.params.length >= 1) {
+            if (
+              classBodyNode.params.length > 1 &&
+              !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForServiceInternalUse(
+                ServiceClass,
+                functionName
+              )
+            ) {
+              throw new Error(serviceName + '.' + functionName + ': there can be only one input argument');
+            }
+
             const functionArgumentTypeNameStart = classBodyNode.params[0].typeAnnotation.loc.start;
             const functionArgumentTypeNameEnd = classBodyNode.params[0].typeAnnotation.loc.end;
+
             const functionArgumentTypeName = fileRows[functionArgumentTypeNameStart.line - 1].slice(
               functionArgumentTypeNameStart.column + 2,
               functionArgumentTypeNameEnd.column
@@ -61,6 +74,7 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
 
           const returnTypeNameStart = classBodyNode.returnType.typeAnnotation.loc.start;
           const returnTypeNameEnd = classBodyNode.returnType.typeAnnotation.loc.end;
+
           let returnTypeName = fileRows[returnTypeNameStart.line - 1].slice(
             returnTypeNameStart.column,
             returnTypeNameEnd.column
