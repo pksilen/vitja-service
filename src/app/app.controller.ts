@@ -14,15 +14,16 @@ import AuthorizationService from "../backk/authorization/AuthorizationService";
 import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
 import tryExecuteServiceMethod from "../backk/execution/tryExecuteServiceMethod";
 import StartupService from "../backk/service/startup/StartupService";
-import OrdersService from "../services/orders/OrdersService";
-import SalesItemsService from "../services/salesitems/SalesItemsService";
-import ShoppingCartsService from "../services/shoppingcarts/ShoppingCartsService";
-import UserAccountsService from "../services/useraccounts/UserAccountsService";
+import OrderService from "../services/order/OrderService";
+import SalesItemService from "../services/salesitem/SalesItemsService";
+import ShoppingCartService from "../services/shoppingcart/ShoppingCartsService";
+import UserAccountService from "../services/useraccount/UserAccountsService";
 import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigService";
 import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
 import initializeController from "../backk/controller/initializeController";
-import TagsService from "../services/tags/TagsService";
+import TagService from "../services/tag/TagsService";
 import AbstractDbManager from "../backk/dbmanager/AbstractDbManager";
+import UserService from "../services/user/UsersService";
 
 export let appController: any;
 
@@ -36,11 +37,12 @@ export class AppController {
     private readonly responseCacheConfigService: ResponseCacheConfigService,
     private readonly auditLoggingService: AuditLoggingService,
     private readonly authorizationService: AuthorizationService,
-    private readonly usersService: UserAccountsService,
-    private readonly tagsService: TagsService,
-    private readonly salesItemsService: SalesItemsService,
-    private readonly shoppingCartsService: ShoppingCartsService,
-    private readonly ordersService: OrdersService
+    private readonly userAccountService: UserAccountService,
+    private readonly userService: UserService,
+    private readonly tagService: TagService,
+    private readonly salesItemService: SalesItemService,
+    private readonly shoppingCartService: ShoppingCartService,
+    private readonly orderService: OrderService
   ) {
     appController = this;
     initializeController(appController, dbManager);

@@ -1,0 +1,140 @@
+- testTemplate:
+    serviceFunctionName: salesItemService.getSalesItem
+    response:
+      statusCode: 404
+    executeAfter: salesItemService.deleteOldUnsoldSalesItems
+  tests:
+    - testName: not found
+
+- testTemplate:
+    serviceFunctionName: salesItemService.createSalesItem
+    response:
+      tests:
+        - pm.collectionVariables.set('salesItemId', response._id)
+    executeAfter: salesItemService.deleteOldUnsoldSalesItems
+
+- testTemplate:
+    serviceFunctionName: salesItemService.createSalesItem
+    argument:
+      title: '{{title}}'
+      description: '{{description}}'
+      area: '{{area}}'
+      productDepartment: '{{category}}'
+      productCategory: '{{category}}'
+      productSubCategory: '{{category}}'
+      price: '{{price}}'
+    response:
+      tests:
+        - pm.collectionVariables.set("salesItemId", response._id)
+  tests:
+    - testName: price = 1
+      testProperties:
+        price: 1
+        title: firstTitle
+        description: firstDescription
+        area: Area1
+        category: Vehicles
+    - testName: price = 2
+      testProperties:
+        price: 2
+        title: secondTitle
+        description: secondDescription
+        area: Area2
+        category: Clothes
+
+- testTemplate:
+    serviceFunctionName: salesItemsService.getSalesItems
+    argument:
+      '{{argumentPropertyName1}}': '{{argumentPropertyValue1}}'
+      '{{argumentPropertyName2}}': '{{argumentPropertyValue2}}'
+      includeResponseFields: []
+    response:
+      tests:
+        - pm.expect(response[0].{{responsePropertyName}}).to.eql({{responsePropertyValue}});
+          pm.expect(response.length).to.eql({{responseLength}});
+  tests:
+    - testName: textFilter for title
+      testProperties:
+        argumentPropertyName1: textFilter
+        argumentPropertyValue1: secondTitle
+        responsePropertyName: title
+        responsePropertyValue: '"secondTitle"'
+        responseLength: 1
+
+    - testName: textFilter for description
+      testProperties:
+        argumentPropertyName1: textFilter
+        argumentPropertyValue1: secondDescription
+        responsePropertyName: description
+        responsePropertyValue: '"secondDescription"'
+        responseLength: 1
+
+    - testName: areas contains Area2
+      testProperties:
+        argumentPropertyName1: areas
+        argumentPropertyValue1:
+          - Area2
+        responsePropertyName: area
+        responsePropertyValue: '"Area2"'
+        responseLength: 1
+
+    - testName: productDepartments contains 'Clothes'
+      testProperties:
+        argumentPropertyName1: productDepartments
+        argumentPropertyValue1:
+          - Clothes
+        responsePropertyName: productDepartment
+        responsePropertyValue: '"Clothes"'
+        responseLength: 1
+
+    - testName: productCategories contains 'Clothes'
+      testProperties:
+        argumentPropertyName1: productCategories
+        argumentPropertyValue1:
+          - Clothes
+        responsePropertyName: productCategory
+        responsePropertyValue: '"Clothes"'
+        responseLength: 1
+
+    - testName: productSubCategories contains 'Clothes'
+      testProperties:
+        argumentPropertyName1: productSubCategories
+        argumentPropertyValue1:
+          - Clothes
+        responsePropertyName: productSubCategory
+        responsePropertyValue: '"Clothes"'
+        responseLength: 1
+
+    - testName: price is between minPrice and maxPrice
+      testProperties:
+        argumentPropertyName1: minPrice
+        argumentPropertyValue1: 2
+        argumentPropertyName2: maxPrice
+        argumentPropertyValue2: 2
+        responsePropertyName: price
+        responsePropertyValue: 2
+        responseLength: 1
+
+    - testName: sorting
+      testProperties:
+        argumentPropertyName1: sortBys
+        argumentPropertyValue1:
+          - fieldName: price
+            sortDirection: DESC
+        responsePropertyName: price
+        responsePropertyValue: 2
+        responseLength: 2
+
+    - testName: paging
+      testProperties:
+        argumentPropertyName1: paginations
+        argumentPropertyValue1:
+          - pageNumber: 2
+            pageSize: 1
+        argumentPropertyName2: sortBys
+        argumentPropertyValue2:
+          - fieldName: price
+            sortDirection: DESC
+        responsePropertyName: price
+        responsePropertyValue: 1
+        responseLength: 1

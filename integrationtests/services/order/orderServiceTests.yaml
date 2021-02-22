@@ -1,0 +1,33 @@
+- testTemplate:
+    serviceFunctionName: orderService.updateOrderItemState
+    argument:
+      newState: '{{newState}}'
+    executeAfter: orderService.updateOrderItemState
+  tests:
+    - testName: delivered
+      testProperties:
+        newState: delivered
+    - testName: returning
+      testProperties:
+        newState: returning
+    - testName: returned
+      testProperties:
+        newState: returned
+
+- testTemplate:
+    serviceFunctionName: salesItemService.getSalesItem
+    response:
+      tests:
+        - pm.expect(response.state).to.eql('sold');
+    executeAfter: orderService.placeOrder
+  tests:
+    - testName: state == sold
+
+- testTemplate:
+    serviceFunctionName: saleItemsService.getSalesItem
+    response:
+      tests:
+        - pm.expect(response.state).to.eql('forSale');
+    executeAfter: orderService.updateOrderItemState
+  tests:
+    - testName: state == forSale
