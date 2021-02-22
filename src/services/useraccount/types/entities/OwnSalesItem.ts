@@ -8,9 +8,9 @@ import Entity from '../../../../backk/decorators/entity/Entity';
 import Index from '../../../../backk/decorators/typeproperty';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
 import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
-import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId';
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
-import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
 import { SalesItemState } from '../../../salesitem/types/enums/SalesItemState';
 

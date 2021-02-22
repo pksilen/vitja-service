@@ -1,23 +1,22 @@
 import { ArrayMaxSize, ArrayMinSize, IsNumber, MaxLength } from "class-validator";
-import Entity from '../../../../backk/decorators/entity/Entity';
-import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp from '../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp';
-import { Area } from '../enums/Area';
-import { Department } from '../enums/Department';
-import { Category } from '../enums/Category';
-import { SalesItemState } from '../enums/SalesItemState';
-import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany';
-import Tag from '../../../tag/entities/Tag';
-import Index from '../../../../backk/decorators/typeproperty';
-import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
-import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
-import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
-import ArrayNotUnique from '../../../../backk/decorators/typeproperty/ArrayNotUnique';
+import Entity from "../../../../backk/decorators/entity/Entity";
+import { Area } from "../enums/Area";
+import { Department } from "../enums/Department";
+import { Category } from "../enums/Category";
+import { SalesItemState } from "../enums/SalesItemState";
+import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
+import Tag from "../../../tag/entities/Tag";
+import Index from "../../../../backk/decorators/typeproperty";
+import MinMax from "../../../../backk/decorators/typeproperty/MinMax";
+import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
+import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
+import ArrayNotUnique from "../../../../backk/decorators/typeproperty/ArrayNotUnique";
 import { Lengths, Values } from "../../../../backk/constants/constants";
+import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId
+  from "../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId";
 
 @Entity()
-export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp {
-  public userId!: string;
-
+export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId {
   @MaxLength(Lengths._64)
   @IsAnyString()
   public title!: string;
