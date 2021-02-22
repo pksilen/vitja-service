@@ -36,6 +36,14 @@ import _IdAndUserAccountId from "./id/_IdAndUserAccountId";
 import _IdAndCreatedAtTimestampAndUserAccountId from "./id/_IdAndCreatedAtTimestampAndUserAccountId";
 import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId
   from "./id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId";
+import _IdAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId
+  from "./id/_IdAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId";
+import _IdAndLastModifiedTimestampAndUserAccountId from "./id/_IdAndLastModifiedTimestampAndUserAccountId";
+import _IdAndVersionAndUserAccountId from "./id/_IdAndVersionAndUserAccountId";
+import _IdAndVersionAndCreatedAtTimestampAndUserAccountId
+  from "./id/_IdAndVersionAndCreatedAtTimestampAndUserAccountId";
+import _IdAndVersionAndLastModifiedTimestampAndUserAccountId
+  from "./id/_IdAndVersionAndLastModifiedTimestampAndUserAccountId";
 
 const types = {
   _Id,
@@ -69,7 +77,12 @@ const types = {
   UserName,
   UserAccountId,
   _IdAndCreatedAtTimestampAndUserAccountId,
-  _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId
+  _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId,
+  _IdAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId,
+  _IdAndLastModifiedTimestampAndUserAccountId,
+  _IdAndVersionAndUserAccountId,
+  _IdAndVersionAndCreatedAtTimestampAndUserAccountId,
+  _IdAndVersionAndLastModifiedTimestampAndUserAccountId
 }
 
 export default types

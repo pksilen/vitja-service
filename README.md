@@ -1,9 +1,9 @@
 # Vitja service
 
 TODO:
+- .type file: Pick/Omit, report errors for wrong fieldNames and syntax error
 - getFollowedUsersSalesItems
 - getUserAccount method: filter favoritesalesitems by state = forSale
-- .type file: Pick/Omit, report errors for wrong fieldNames and syntax error
 - Annotate: OneToMany, ManyToMany, External (must be readonly)
 - replace T | ErrorResponse with Promise<[T, BackkError]>
 - Split to multiple microservices
