@@ -3,6 +3,7 @@ import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata'
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import { MAX_INT_VALUE } from '../constants/constants';
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
+import isEntityTypeName from "../utils/type/isEntityTypeName";
 
 const classNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 
@@ -261,7 +262,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         );
       }
 
-      const isInstanceMetadata = validationMetadatas.find(
+      const instanceValidationMetadata = validationMetadatas.find(
         (otherValidationMetadata: ValidationMetadata) =>
           otherValidationMetadata.propertyName === validationMetadata.propertyName &&
           otherValidationMetadata.type === 'isInstance'
@@ -282,14 +283,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         validationMetadata.propertyName
       );
 
-      const readonlyValidation = validationMetadatas.find(
-        ({ propertyName, type, constraints }: ValidationMetadata) =>
-          propertyName === validationMetadata.propertyName &&
-          type === 'customValidation' &&
-          constraints?.[0] === 'isUndefined'
-      );
-
-      if (!isOneToMany && !isManyToMany) {
+      if (instanceValidationMetadata && !isOneToMany && !isManyToMany && isEntityTypeName(Class.name)) {
         throw new Error(
           'Property ' +
             Class.name +
@@ -299,7 +293,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         );
       }
 
-      if (isOneToMany && isReferenceToExternalEntity && !undefinedValidation) {
+      if (instanceValidationMetadata && isOneToMany && isReferenceToExternalEntity && !undefinedValidation && isEntityTypeName(Class.name)) {
         throw new Error(
           'Property ' +
             Class.name +

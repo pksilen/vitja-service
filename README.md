@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Annotate: OneToMany, ManyToMany, External (must be readonly)
 - replace T | ErrorResponse with Promise<[T, BackkError]>
 - Split to multiple microservices
   - Implement subentities as remote service queries

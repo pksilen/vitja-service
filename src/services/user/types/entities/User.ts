@@ -12,6 +12,7 @@ import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStri
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import { OneToMany } from '../../../../backk/decorators/typeproperty/OneToMany';
 import FollowUser from '../../../useraccount/types/entities/FollowUser';
 import OwnSalesItem from '../../../useraccount/types/entities/OwnSalesItem';
 import getCities from '../../../useraccount/validation/getCities';
@@ -41,6 +42,7 @@ export default class User {
   @IsDataUri()
   public imageDataUri!: string;
 
+  @OneToMany(true)
   public readonly ownSalesItems!: OwnSalesItem[];
 
   @ManyToMany()
