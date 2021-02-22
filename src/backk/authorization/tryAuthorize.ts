@@ -71,6 +71,7 @@ export default async function tryAuthorize(
 
       if (!userName && userId && usersService) {
         const userOrErrorResponse = await usersService.getUserAccountById(userId);
+
         if ('_id' in userOrErrorResponse) {
           userName = userOrErrorResponse.userName;
         }
