@@ -3,16 +3,13 @@ import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServic
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
 import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import UserId from '../useraccount/types/args/UserId';
-import ShoppingCartService from './ShoppingCartsService';
+import ShoppingCartService from './ShoppingCartService';
 import ShoppingCart from './types/entities/ShoppingCart';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserId';
 import awaitOperationAndGetResultOfPredicate from '../../backk/utils/getErrorResponseOrResultOf';
 import { SALES_ITEM_ALREADY_SOLD, SHOPPING_CART_ALREADY_EXISTS } from './errors/shoppingCartServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
-import _IdAndUserIdAndSalesItem from './types/args/_IdAndUserIdAndSalesItem';
-import SalesItemService from '../salesitem/SalesItemsService';
+import SalesItemService from '../salesitem/SalesItemService';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
 import { NoAutoTest } from '../../backk/decorators/service/function/NoAutoTest';
@@ -21,7 +18,10 @@ import { HttpStatusCodes } from '../../backk/constants/constants';
 import isErrorResponse from '../../backk/errors/isErrorResponse';
 import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
 import _Id from '../../backk/types/id/_Id';
-import ShoppingCartOrOrderSalesItem from "./types/entities/ShoppingCartOrOrderSalesItem";
+import ShoppingCartOrOrderSalesItem from './types/entities/ShoppingCartOrOrderSalesItem';
+import UserAccountId from '../../backk/types/useraccount/UserAccountId';
+import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
+import _IdAndUserAccountIdAndSalesItem from "./types/args/_IdAndUserAccountIdAndSalesItem";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -42,7 +42,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     return this.dbManager.createEntity(arg, ShoppingCart, {
       isSuccessfulOrTrue: () =>
         awaitOperationAndGetResultOfPredicate(
-          this.dbManager.getEntitiesCount({ userId: arg.userId }, ShoppingCart),
+          this.dbManager.getEntitiesCount({ userAccountId: arg.userAccountId }, ShoppingCart),
           (shoppingCartCount) => shoppingCartCount === 0
         ),
       errorMessage: SHOPPING_CART_ALREADY_EXISTS
@@ -54,7 +54,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   removeFromShoppingCart({
     _id,
     salesItem
-  }: _IdAndUserIdAndSalesItem): Promise<ShoppingCart | ErrorResponse> {
+  }: _IdAndUserAccountIdAndSalesItem): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItem._id, ShoppingCart, () =>
       this.salesItemService.updateSalesItemState({ _id: salesItem._id, newState: 'forSale' })
     );
@@ -62,7 +62,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Errors([SALES_ITEM_ALREADY_SOLD])
-  addToShoppingCart({ _id, salesItem }: _IdAndUserIdAndSalesItem): Promise<ShoppingCart | ErrorResponse> {
+  addToShoppingCart({ _id, salesItem }: _IdAndUserAccountIdAndSalesItem): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.addSubEntity(
       _id,
       'any',
@@ -82,12 +82,16 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  getShoppingCart({ userId }: UserId): Promise<ShoppingCart | ErrorResponse> {
+  getShoppingCart({ userAccountId }: UserAccountId): Promise<ShoppingCart | ErrorResponse> {
     return this.dbManager.executeInsideTransaction(async () => {
-      const shoppingCartOrErrorResponse = await this.dbManager.getEntityWhere('userId', userId, ShoppingCart);
+      const shoppingCartOrErrorResponse = await this.dbManager.getEntityWhere(
+        'userAccountId',
+        userAccountId,
+        ShoppingCart
+      );
 
       if (isErrorResponse(shoppingCartOrErrorResponse, HttpStatusCodes.NOT_FOUND)) {
-        return await this.dbManager.createEntity({ userId, salesItems: [] }, ShoppingCart);
+        return await this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
       }
 
       return shoppingCartOrErrorResponse;

@@ -8,24 +8,24 @@ import CaptchaVerifierServiceImpl from "../services/captchaverify/CatpchaVerifyS
 import OrderService from "../services/order/OrderService";
 import OrderServiceImpl from "../services/order/OrderServiceImpl";
 import StartupServiceImpl from "../backk/service/startup/StartupServiceImpl";
-import SalesItemService from "../services/salesitem/SalesItemsService";
-import SalesItemServiceImpl from "../services/salesitem/SalesItemsServiceImpl";
-import ShoppingCartService from "../services/shoppingcart/ShoppingCartsService";
-import ShoppingCartServiceImpl from "../services/shoppingcart/ShoppingCartsServiceImpl";
-import UserAccountService from "../services/useraccount/UserAccountsService";
-import UserAccountServiceImpl from "../services/useraccount/UserAccountsServiceImpl";
+import SalesItemService from "../services/salesitem/SalesItemService";
+import SalesItemServiceImpl from "../services/salesitem/SalesItemServiceImpl";
+import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
+import ShoppingCartServiceImpl from "../services/shoppingcart/ShoppingCartServiceImpl";
+import UserAccountService from "../services/useraccount/UserAccountService";
+import UserAccountServiceImpl from "../services/useraccount/UserAccountServiceImpl";
 import { AppController } from "./app.controller";
 import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigService";
 import ResponseCacheConfigServiceImpl from "../services/responsecacheconfig/ResponseCacheConfigServiceImpl";
 import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
 import AuditLoggingServiceImpl from "../services/auditlogging/AuditLoggingServiceImpl";
-import TagService from "../services/tag/TagsService";
-import TagServiceImpl from "../services/tag/TagsServiceImpl";
+import TagService from "../services/tag/TagService";
+import TagServiceImpl from "../services/tag/TagServiceImpl";
 import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
 import { mongoDbManager } from "../database/mongoDbManager";
 import { mySqlDbManager } from "../database/mySqlDatabaseManager";
-import UserService from "../services/user/UsersService";
-import UserServiceImpl from "../services/user/UsersServiceImpl";
+import UserService from "../services/user/UserService";
+import UserServiceImpl from "../services/user/UserServiceImpl";
 
 @Module({
   imports: [],

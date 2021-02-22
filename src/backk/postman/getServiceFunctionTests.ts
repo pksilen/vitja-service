@@ -14,11 +14,7 @@ export default function getServiceFunctionTests(
   sampleArg: object | undefined = undefined
 ): object | undefined {
   const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
-  const serviceEntityName =
-    serviceBaseName.charAt(serviceBaseName.length - 1) === 's'
-      ? serviceBaseName.slice(0, -1)
-      : serviceBaseName;
-
+  const serviceEntityName = serviceBaseName;
   const { baseTypeName, isArrayType } = getTypeInfoForTypeName(functionMetadata.returnValueType);
 
   const checkResponseCode = `pm.test("Status code is ${expectedResponseStatusCode}", function () {

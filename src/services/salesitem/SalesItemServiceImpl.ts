@@ -8,18 +8,17 @@ import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
 import SqlInExpression from "../../backk/dbmanager/sql/expressions/SqlInExpression";
-import SalesItemService from "./SalesItemsService";
+import SalesItemService from "./SalesItemService";
 import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
 import UpdateSalesItemStateArg from "./types/args/UpdateSalesItemStateArg";
 import { SalesItem } from "./types/entities/SalesItem";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
-import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserId";
 import _Id from "../../backk/types/id/_Id";
 import {
   INVALID_SALES_ITEM_STATE,
   MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
   SALES_ITEM_STATE_MUST_BE_FOR_SALE
-} from "./errors/salesItemsServiceErrors";
+} from "./errors/salesItemServiceErrors";
 import { Errors } from "../../backk/decorators/service/function/Errors";
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 import { SalesItemState } from "./types/enums/SalesItemState";
@@ -29,6 +28,7 @@ import awaitOperationAndGetResultOfPredicate from "../../backk/utils/getErrorRes
 import { CronJob } from "../../backk/decorators/service/function/CronJob";
 import DeleteOldUnsoldSalesItemsArg from "./types/args/DeleteOldUnsoldSalesItemsArg";
 import dayjs from "dayjs";
+import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])

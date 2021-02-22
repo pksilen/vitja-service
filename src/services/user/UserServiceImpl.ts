@@ -6,8 +6,8 @@ import _Id from "../../backk/types/id/_Id";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import GetUsersArg from ".//types/args/GetUsersArg";
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import UserService from "./UsersService";
 import User from "./types/entities/User";
+import UserService from "./UserService";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()

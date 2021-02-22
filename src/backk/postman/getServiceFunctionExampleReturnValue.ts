@@ -24,12 +24,8 @@ export default function getServiceFunctionExampleReturnValue(
   const sampleArg: { [key: string]: any } = {};
   const returnValueTypeProperties = serviceMetadata.types[returnValueTypeName];
   const types = serviceMetadata.types;
-
   const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
-  const serviceEntityName =
-    serviceBaseName.charAt(serviceBaseName.length - 1) === 's'
-      ? serviceBaseName.slice(0, -1)
-      : serviceBaseName;
+  const serviceEntityName = serviceBaseName;
 
   if (returnValueTypeProperties === undefined) {
     return undefined;

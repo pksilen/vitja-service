@@ -27,7 +27,6 @@ export default class ChangeUserPasswordArg {
   /* private */
   userName!: string;
 
-  /* Password doc goes here...*/
   @IsStrongPassword()
 
   /* private */

@@ -4,9 +4,7 @@ import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServic
 import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
 import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
 import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import UserName from "./types/args/UserName";
 import UserAccount from "./types/entities/UserAccount";
-import UserAccountService from "./UserAccountsService";
 import _Id from "../../backk/types/id/_Id";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
@@ -26,6 +24,8 @@ import FavoriteSalesItem from "./types/entities/FavoriteSalesItem";
 import _IdAndFavoriteSalesItem from "./types/args/_IdAndFavoriteSalesItem";
 import UserAccountResponse from "./types/responses/UserAccountResponse";
 import FollowUser from "./types/entities/FollowUser";
+import UserAccountService from "./UserAccountService";
+import UserName from "../../backk/types/useraccount/UserName";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()

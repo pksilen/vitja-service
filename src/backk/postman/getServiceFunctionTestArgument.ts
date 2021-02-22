@@ -31,12 +31,8 @@ export default function getServiceFunctionTestArgument(
   const sampleArg: { [key: string]: any } = {};
   const argTypeProperties = serviceMetadata.types[argTypeName];
   const types = serviceMetadata.types;
-
   const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
-  const serviceEntityName =
-    serviceBaseName.charAt(serviceBaseName.length - 1) === 's'
-      ? serviceBaseName.slice(0, -1)
-      : serviceBaseName;
+  const serviceEntityName = serviceBaseName;
 
   if (argTypeProperties === undefined) {
     return undefined;

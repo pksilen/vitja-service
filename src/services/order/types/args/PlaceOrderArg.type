@@ -1,4 +1,4 @@
-import ShoppingCart from "../../../shoppingcarts/types/entities/ShoppingCart";
+import ShoppingCart from "../../../shoppingcart/types/entities/ShoppingCart";
 import { IsUrl, MaxLength } from "class-validator";
 import { Lengths } from "../../../../backk/constants/constants";
 

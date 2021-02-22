@@ -4,7 +4,7 @@ import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServic
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
 import { AllowForUserRoles } from '../../backk/decorators/service/function/AllowForUserRoles';
 import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
-import SalesItemService from '../salesitem/SalesItemsService';
+import SalesItemService from '../salesitem/SalesItemService';
 import OrderService from './OrderService';
 import PlaceOrderArg from './types/args/PlaceOrderArg';
 import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
@@ -15,7 +15,6 @@ import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
 import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserId';
 import {
   DELETE_ORDER_NOT_ALLOWED,
   INVALID_ORDER_ITEM_STATE,
@@ -24,7 +23,7 @@ import {
 } from './errors/orderServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import executeForAll from '../../backk/utils/executeForAll';
-import ShoppingCartService from '../shoppingcart/ShoppingCartsService';
+import ShoppingCartService from '../shoppingcart/ShoppingCartService';
 import { SalesItemState } from '../salesitem/types/enums/SalesItemState';
 import { OrderState } from './types/enum/OrderState';
 import { Update } from '../../backk/decorators/service/function/Update';
@@ -45,13 +44,14 @@ import dayjs from "dayjs";
 import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
 import ShoppingCartOrOrderSalesItem from "../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem";
+import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class OrderServiceImpl extends OrderService {
   constructor(
     dbManager: AbstractDbManager,
-    private readonly salesItemsService: SalesItemService,
+    private readonly salesItemService: SalesItemService,
     private readonly shoppingCartService: ShoppingCartService
   ) {
     super(dbManager);
@@ -71,12 +71,12 @@ export default class OrderServiceImpl extends OrderService {
       OrderServiceImpl.getLocationHeaderUrl(paymentGateway, _id, uiRedirectUrl)
   })
   async placeOrder({
-    shoppingCart: { userId, salesItems },
+    shoppingCart: { userAccountId, salesItems },
     paymentGateway
   }: PlaceOrderArg): Promise<Order | ErrorResponse> {
     return this.dbManager.createEntity(
       {
-        userId,
+        userAccountId,
         orderItems: salesItems.map((salesItem, index) => ({
           id: index.toString(),
           state: 'toBeDelivered',
@@ -217,7 +217,7 @@ export default class OrderServiceImpl extends OrderService {
         {
           shouldExecutePreHook: () => newState === 'returned',
           isSuccessfulOrTrue: (order) =>
-            this.salesItemsService.updateSalesItemState({
+            this.salesItemService.updateSalesItemState({
               _id: JSONPath({
                 json: order,
                 path: `orderItems[?(@.id == '${orderItemId}')].salesItems[0]._id`
@@ -287,7 +287,7 @@ export default class OrderServiceImpl extends OrderService {
     currentState?: SalesItemState
   ): Promise<void | ErrorResponse> {
     return await executeForAll(salesItems, ({ _id }) =>
-      this.salesItemsService.updateSalesItemState(
+      this.salesItemService.updateSalesItemState(
         {
           _id,
           newState

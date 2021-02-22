@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 import { ErrorResponse } from '../../backk/types/ErrorResponse';
-import TagService from './TagsService';
+import TagService from './TagService';
 import Tag from './entities/Tag';
 import TagName from './args/TagName';
 import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';

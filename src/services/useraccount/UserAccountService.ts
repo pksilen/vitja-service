@@ -1,4 +1,3 @@
-import UserName from "./types/args/UserName";
 import { ErrorResponse } from "../../backk/types/ErrorResponse";
 import _Id from "../../backk/types/id/_Id";
 import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
@@ -8,6 +7,7 @@ import { Name } from "../../backk/types/Name";
 import UserAccountBaseService from "../../backk/service/useraccount/UserAccountBaseService";
 import _IdAndFavoriteSalesItem from "./types/args/_IdAndFavoriteSalesItem";
 import UserAccountResponse from "./types/responses/UserAccountResponse";
+import UserName from "../../backk/types/useraccount/UserName";
 
 /** Users service doc goes here
  * - jee

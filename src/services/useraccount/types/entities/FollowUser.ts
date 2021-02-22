@@ -31,7 +31,7 @@ export default class FollowUser {
   public displayName!: string;
 
   @MaxLength(Lengths._256)
-  @IsOneOf(getCities, 'usersService.getCities', 'Tampere')
+  @IsOneOf(getCities, 'userAccountsService.getCities', 'Tampere')
   public city!: string;
 
   @MaxLength(Lengths._10M)

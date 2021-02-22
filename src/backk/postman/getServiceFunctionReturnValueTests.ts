@@ -26,10 +26,7 @@ export default function getServiceFunctionReturnValueTests(
   const returnValueMetadata = serviceMetadata.types[returnValueTypeName];
   const types = serviceMetadata.types;
   const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
-  const serviceEntityName =
-    serviceBaseName.charAt(serviceBaseName.length - 1) === 's'
-      ? serviceBaseName.slice(0, -1)
-      : serviceBaseName;
+  const serviceEntityName = serviceBaseName;
 
   let javascriptLines =
     responsePath === '[0].' || responsePath === '.' ? ['const response = pm.response.json();'] : [];

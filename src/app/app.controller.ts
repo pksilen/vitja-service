@@ -15,15 +15,15 @@ import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
 import tryExecuteServiceMethod from "../backk/execution/tryExecuteServiceMethod";
 import StartupService from "../backk/service/startup/StartupService";
 import OrderService from "../services/order/OrderService";
-import SalesItemService from "../services/salesitem/SalesItemsService";
-import ShoppingCartService from "../services/shoppingcart/ShoppingCartsService";
-import UserAccountService from "../services/useraccount/UserAccountsService";
+import SalesItemService from "../services/salesitem/SalesItemService";
+import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
+import UserAccountService from "../services/useraccount/UserAccountService";
 import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigService";
 import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
 import initializeController from "../backk/controller/initializeController";
-import TagService from "../services/tag/TagsService";
+import TagService from "../services/tag/TagService";
 import AbstractDbManager from "../backk/dbmanager/AbstractDbManager";
-import UserService from "../services/user/UsersService";
+import UserService from "../services/user/UserService";
 
 export let appController: any;
 

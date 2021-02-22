@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- BaseUserAccount
 - getFollowedUsersSalesItems
 - getUserAccount method: filter favoritesalesitems by state = forSale
 - .type file: Pick/Omit, report errors for wrong fieldNames and syntax error
