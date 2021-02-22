@@ -7,7 +7,7 @@ import _ from 'lodash';
 import { getFileNamesRecursively } from '../../utils/file/getSrcFilePathNameForTypeName';
 import getTypeFilePathNameFor from '../../utils/file/getTypeFilePathNameFor';
 import parseTypescriptLinesForTypeName from '../parser/parseTypescriptLinesForTypeName';
-import mergeImports from "../utils/mergeImports";
+import mergeImports from '../utils/mergeImports';
 
 const promisifiedExec = util.promisify(exec);
 
@@ -23,8 +23,8 @@ function generateTypescriptFileFor(
 
   typeFileLines.forEach((typeFileLine) => {
     const trimmedTypeFileLine = typeFileLine.trim();
-    if (trimmedTypeFileLine.startsWith('...') && trimmedTypeFileLine.endsWith(';')) {
-      let spreadType = trimmedTypeFileLine.slice(3, -1);
+    if (trimmedTypeFileLine.startsWith('...')) {
+      let spreadType = trimmedTypeFileLine.slice(3, trimmedTypeFileLine.endsWith(';') ? -1 : undefined);
       let isBaseTypeOptional = false;
       let isReadonly = false;
       let isPublic = false;
@@ -63,7 +63,6 @@ function generateTypescriptFileFor(
           .split('|');
 
         const omittedKeys = ommittedKeyParts.map((omittedKeyPart) => omittedKeyPart.trim().split(/["']/)[1]);
-
         const baseTypeFilePathName = getTypeFilePathNameFor(baseType);
 
         if (baseTypeFilePathName) {
@@ -283,4 +282,7 @@ function generateTypescriptFileFor(
     });
 
   await Promise.all(promisifiedExecs);
-})();
+})().catch((error) => {
+  console.log(error);
+  process.exit(1);
+});

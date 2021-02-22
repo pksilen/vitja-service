@@ -1,9 +1,11 @@
-import _ from "lodash";
-import { parseSync } from "@babel/core";
-import generate from "@babel/generator";
-import { readFileSync } from "fs";
-import path from "path";
-import getSrcFilePathNameForTypeName, { hasSrcFilenameForTypeName } from "../../utils/file/getSrcFilePathNameForTypeName";
+import _ from 'lodash';
+import { parseSync } from '@babel/core';
+import generate from '@babel/generator';
+import { readFileSync } from 'fs';
+import path from 'path';
+import getSrcFilePathNameForTypeName, {
+  hasSrcFilenameForTypeName
+} from '../../utils/file/getSrcFilePathNameForTypeName';
 
 function getDeclarationsFor(typeName: string, originatingTypeFilePathName: string) {
   const typeFilePathName = getSrcFilePathNameForTypeName(typeName);
@@ -85,7 +87,7 @@ export default function parseTypescriptLinesForTypeName(
     typeFilePathName = getSrcFilePathNameForTypeName(typeName);
     fileContentsStr = readFileSync(typeFilePathName, { encoding: 'UTF-8' });
   } else {
-    throw new Error('Unsupported type: ' + typeName);
+    throw new Error('In type file: ' + originatingTypeFilePathName + ': Unsupported type: ' + typeName);
   }
 
   const ast = parseSync(fileContentsStr, {
@@ -99,6 +101,7 @@ export default function parseTypescriptLinesForTypeName(
   const nodes = (ast as any).program.body;
   let importLines: string[] = [];
   const finalClassPropertyDeclarations: any[] = [];
+  const classPropertyNames: string[] = [];
 
   for (const node of nodes) {
     if (node.type === 'ImportDeclaration') {
@@ -143,6 +146,8 @@ export default function parseTypescriptLinesForTypeName(
       classPropertyDeclarations.forEach((classBodyNode: any) => {
         if (classBodyNode.type === 'ClassProperty') {
           const propertyName = classBodyNode.key.name;
+          classPropertyNames.push(propertyName);
+
           if (keyType === 'omit' && keys.includes(propertyName)) {
             return;
           } else if (keyType === 'pick') {
@@ -192,6 +197,14 @@ export default function parseTypescriptLinesForTypeName(
       });
     }
   }
+
+  keys.forEach((key) => {
+    if (!classPropertyNames.some((classPropertyName) => classPropertyName === key)) {
+      throw new Error('In type file: ' +
+        originatingTypeFilePathName + ': key: ' + key + ' does not exists in type: ' + typeName
+      );
+    }
+  });
 
   return [importLines, finalClassPropertyDeclarations];
 }
