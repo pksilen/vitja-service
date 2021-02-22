@@ -2,32 +2,16 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import MaxLengthAndMatches from "../../../../backk/decorators/typeproperty/MaxLengthAndMatches";
-import IsUndefined from "../../../../backk/decorators/typeproperty/IsUndefined";
-import IsStringOrObjectId from "../../../../backk/decorators/typeproperty/IsStringOrObjectId"; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import { IsNumber, MaxLength } from 'class-validator';
+import { Lengths, Values } from '../../../../backk/constants/constants';
 import Entity from '../../../../backk/decorators/entity/Entity';
-import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp from '../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestamp';
-import Tag from '../../../tags/entities/Tag';
-import Index from '../../../../backk/decorators/typeproperty';
-import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
 import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
-import ArrayNotUnique from '../../../../backk/decorators/typeproperty/ArrayNotUnique';
-import _IdAndVersionAndCreatedAtTimestamp from "../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestamp";
-import _IdAndVersion from "../../../../backk/types/id/_IdAndVersion";
-import IsUndefined from "../../../../backk/decorators/typeproperty/IsUndefined"; // eslint-disable-next-line @typescript-eslint/class-name-casing
-import _Id from "../../../../backk/types/id/_Id";
-import IsIntegerStringOrAny from "../../../../backk/decorators/typeproperty/IsIntegerStringOrAny"; // eslint-disable-next-line @typescript-eslint/class-name-casing
-import { BackkEntity } from "../../../../backk/types/entities/BackkEntity"
-import { ArrayMaxSize, ArrayMinSize, IsNumber, MaxLength, IsDate, IsString } from "class-validator"
-import { Area } from "../../../salesitems/types/enums/Area"
-import { Department } from "../../../salesitems/types/enums/Department"
-import { Category } from "../../../salesitems/types/enums/Category"
-import { SalesItemState } from "../../../salesitems/types/enums/SalesItemState"
-import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany"
-import { Lengths, Values } from "../../../../backk/constants/constants"
+import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
 
-import Entity from '../../../../backk/decorators/entity/Entity';
 @Entity('SalesItem')
 export default class ShoppingCartOrOrderSalesItem {
   @IsUndefined({
@@ -60,5 +44,4 @@ export default class ShoppingCartOrOrderSalesItem {
   @MaxLength(Lengths._1M)
   @IsDataUri()
   public readonly primaryImageThumbnailDataUri!: string;
-
 }
