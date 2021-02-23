@@ -7,7 +7,7 @@ import { RecursivePartial } from '../types/RecursivePartial';
 import { PreHook } from './hooks/PreHook';
 import { BackkEntity } from '../types/entities/BackkEntity';
 import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
-import createErrorResponseFromError from '../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../errors/createBackkErrorFromError';
 import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
 import { SubEntity } from '../types/entities/SubEntity';
 import tryStartLocalTransactionIfNeeded from './sql/operations/transaction/tryStartLocalTransactionIfNeeded';
@@ -219,7 +219,7 @@ export default class MongoDbManager extends AbstractDbManager {
           failureDurationInSecs
         );
       }
-      result = createErrorResponseFromError(error);
+      result = createBackkErrorFromError(error);
     } finally {
       this.cleanupTransaction();
     }
@@ -309,7 +309,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -485,7 +485,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -532,7 +532,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -609,7 +609,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -690,7 +690,7 @@ export default class MongoDbManager extends AbstractDbManager {
           .countDocuments(matchExpression);
       });
     } catch (error) {
-      return createErrorResponseFromError(error);
+      return createBackkErrorFromError(error);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -750,7 +750,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -789,7 +789,7 @@ export default class MongoDbManager extends AbstractDbManager {
       const subItems = JSONPath({ json: itemOrErrorResponse, path: subEntityPath });
       return responseMode === 'first' ? subItems[0] : subItems;
     } catch (error) {
-      return createErrorResponseFromError(error);
+      return createBackkErrorFromError(error);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -835,7 +835,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -906,7 +906,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -978,7 +978,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -1124,7 +1124,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1165,7 +1165,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1204,7 +1204,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1239,7 +1239,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1298,7 +1298,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1351,7 +1351,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1401,7 +1401,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } catch (errorOrErrorResponse) {
       return isErrorResponse(errorOrErrorResponse)
         ? errorOrErrorResponse
-        : createErrorResponseFromError(errorOrErrorResponse);
+        : createBackkErrorFromError(errorOrErrorResponse);
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);

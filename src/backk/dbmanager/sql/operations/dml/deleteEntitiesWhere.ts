@@ -1,9 +1,7 @@
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import entityContainer, { EntityJoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { BackkError } from "../../../../types/BackkError";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
-import isErrorResponse from "../../../../errors/isErrorResponse";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
 import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
 import encrypt from "../../../../crypt/encrypt";
@@ -11,13 +9,14 @@ import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransa
 import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
 import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
 import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function deleteEntitiesWhere<T extends object>(
   dbManager: AbstractSqlDbManager,
   fieldName: string,
   fieldValue: T[keyof T] | string,
   EntityClass: new () => T
-): Promise<BackkError | null> {
+): PromiseOfErrorOr<null> {
   if (fieldName.includes('.')) {
     throw new Error('fieldName parameter may not contain dots, i.e. it cannot be a field path name');
   }
@@ -73,7 +72,7 @@ export default async function deleteEntitiesWhere<T extends object>(
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
-      : createErrorResponseFromError(errorOrErrorResponse);
+      : createBackkErrorFromError(errorOrErrorResponse);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

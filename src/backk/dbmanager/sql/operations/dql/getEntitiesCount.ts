@@ -1,7 +1,7 @@
 import SqlExpression from '../../expressions/SqlExpression';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { BackkError } from '../../../../types/BackkError';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
@@ -44,6 +44,6 @@ export default async function getEntitiesCount<T>(
 
     return dbManager.getResultRows(result)[0].count;
   } catch (error) {
-    return createErrorResponseFromError(error);
+    return createBackkErrorFromError(error);
   }
 }

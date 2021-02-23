@@ -4,7 +4,7 @@ import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseRemoteServi
 import { getNamespace } from 'cls-hooked';
 import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
 import log, { Severity } from '../../../observability/logging/log';
-import createErrorResponseFromError from '../../../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../../../errors/createBackkErrorFromError';
 import { BackkError } from '../../../types/BackkError';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
 
@@ -51,6 +51,6 @@ export default async function sendOneOrMoreToRedis(
     }
   } catch (error) {
     defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(remoteServiceUrl);
-    return createErrorResponseFromError(error);
+    return createBackkErrorFromError(error);
   }
 }

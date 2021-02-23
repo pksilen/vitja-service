@@ -5,7 +5,7 @@ import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
 import { CallOrSendTo } from '../sendToRemoteServiceInsideTransaction';
 import log, { Severity } from '../../../observability/logging/log';
 import { CanonicalCode } from '@opentelemetry/api';
-import createErrorResponseFromError from '../../../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../../../errors/createBackkErrorFromError';
 import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseRemoteServiceFunctionCallUrlParts';
 import { BackkError } from '../../../types/BackkError';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
@@ -140,7 +140,7 @@ export default async function sendOneOrMoreToKafka(
       message: error.message
     });
 
-    return createErrorResponseFromError(error);
+    return createBackkErrorFromError(error);
   } finally {
     try {
       await producer.disconnect();

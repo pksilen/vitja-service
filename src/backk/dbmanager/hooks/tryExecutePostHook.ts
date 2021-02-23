@@ -3,7 +3,7 @@ import { getNamespace } from 'cls-hooked';
 import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
 import { HttpStatusCodes } from '../../constants/constants';
 import { ErrorOr } from '../../types/PromiseOfErrorOr';
-import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../../errors/createBackkErrorFromError';
 
 export default async function tryExecutePostHook(postHook: PostHook, [, error]: ErrorOr<any>) {
   if (error) {

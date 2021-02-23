@@ -5,7 +5,7 @@ import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { BackkError } from "../../../../types/BackkError";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 import isUniqueField from "./utils/isUniqueField";
@@ -87,6 +87,6 @@ export default async function getEntitiesWhere<T>(
       dbManager.getTypes()
     );
   } catch (error) {
-    return createErrorResponseFromError(error);
+    return createBackkErrorFromError(error);
   }
 }

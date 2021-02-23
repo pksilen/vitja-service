@@ -2,7 +2,7 @@ import { JSONPath } from 'jsonpath-plus';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { BackkError } from '../../../../types/BackkError';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
 import { BackkEntity } from '../../../../types/entities/BackkEntity';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
@@ -192,7 +192,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
-      : createErrorResponseFromError(errorOrErrorResponse);
+      : createBackkErrorFromError(errorOrErrorResponse);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

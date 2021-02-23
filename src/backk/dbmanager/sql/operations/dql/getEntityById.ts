@@ -1,7 +1,7 @@
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { BackkError } from "../../../../types/BackkError";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import getClassPropertyNameToPropertyTypeNameMap
   from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
@@ -83,6 +83,6 @@ export default async function getEntityById<T>(
       dbManager.getTypes()
     )[0];
   } catch (error) {
-    return createErrorResponseFromError(error);
+    return createBackkErrorFromError(error);
   }
 }

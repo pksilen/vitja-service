@@ -6,7 +6,6 @@ import { PreHook } from "./hooks/PreHook";
 import { BackkEntity } from "../types/entities/BackkEntity";
 import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
 import { Injectable } from "@nestjs/common";
-import isErrorResponse from "../errors/isErrorResponse";
 import forEachAsyncParallel from "../utils/forEachAsyncParallel";
 import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
 import BaseService from "../service/BaseService";
@@ -25,8 +24,8 @@ export interface Field {
 
 @Injectable()
 export default abstract class AbstractDbManager {
+  private readonly services: BaseService[] = [];
   readonly schema: string;
-  private services: BaseService[] = [];
   readonly dbName?: string;
   protected firstDbOperationFailureTimeInMillis = 0;
 
@@ -113,7 +112,7 @@ export default abstract class AbstractDbManager {
       try {
         return await Promise.all(
           entities.map(async (entity, index) => {
-            const entityOrErrorResponse = await this.createEntity(
+            const [, error] = await this.createEntity(
               entity,
               EntityClass,
               preHooks,
@@ -121,19 +120,19 @@ export default abstract class AbstractDbManager {
               postQueryOperations
             );
 
-            if ('errorMessage' in entityOrErrorResponse && isErrorResponse(entityOrErrorResponse)) {
-              entityOrErrorResponse.errorMessage =
-                'BackkEntity ' + index + ': ' + entityOrErrorResponse.errorMessage;
-              throw entityOrErrorResponse;
+            if (error) {
+              error.message = 'Entity ' + index + ': ' + error.message;
+              throw error;
             }
           })
         );
-      } catch (errorResponse) {
-        return errorResponse;
+      } catch (error) {
+        return error;
       }
     });
   }
 
+  // noinspection OverlyComplexFunctionJS
   abstract addSubEntity<T extends BackkEntity, U extends SubEntity>(
     _id: string,
     versionOrLastModifiedTimestamp: string | 'any',
@@ -146,6 +145,7 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): PromiseOfErrorOr<T>;
 
+  // noinspection OverlyComplexFunctionJS
   abstract addSubEntities<T extends BackkEntity, U extends SubEntity>(
     _id: string,
     versionOrLastModifiedTimestamp: string | 'any',
@@ -198,7 +198,7 @@ export default abstract class AbstractDbManager {
     subEntityPath: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): PromiseOfErrorOr<[U[]>;
+  ): PromiseOfErrorOr<U[]>;
 
   abstract getEntitiesByIds<T>(
     _ids: string[],
@@ -218,7 +218,7 @@ export default abstract class AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): PromiseOfErrorOr<[T[]>;
+  ): PromiseOfErrorOr<T[]>;
 
   abstract updateEntity<T extends BackkEntity>(
     entity: RecursivePartial<T> & { _id: string },
@@ -235,20 +235,19 @@ export default abstract class AbstractDbManager {
     return this.executeInsideTransaction(async () => {
       try {
         return await forEachAsyncParallel(entities, async (entity, index) => {
-          const possibleErrorResponse = await this.updateEntity(
+          const [, error] = await this.updateEntity(
             entity,
             EntityClass,
             preHooks
           );
 
-          if (possibleErrorResponse) {
-            possibleErrorResponse.errorMessage =
-              'BackkEntity ' + index + ': ' + possibleErrorResponse.errorMessage;
-            throw possibleErrorResponse;
+          if (error) {
+            error.message = 'Entity ' + index + ': ' + error.message;
+            throw error;
           }
         });
-      } catch (errorResponse) {
-        return errorResponse;
+      } catch (error) {
+        return error;
       }
     });
   }
@@ -277,15 +276,15 @@ export default abstract class AbstractDbManager {
     return this.executeInsideTransaction(async () => {
       try {
         return await forEachAsyncParallel(_ids, async (_id, index) => {
-          const possibleErrorResponse = await this.deleteEntityById(_id, EntityClass, preHooks);
-          if (possibleErrorResponse) {
-            possibleErrorResponse.errorMessage =
-              'BackkEntity ' + index + ': ' + possibleErrorResponse.errorMessage;
-            throw possibleErrorResponse;
+          const [, error] = await this.deleteEntityById(_id, EntityClass, preHooks);
+
+          if (error) {
+            error.message = 'Entity ' + index + ': ' + error.message;
+            throw error;
           }
         });
-      } catch (errorResponse) {
-        return errorResponse;
+      } catch (error) {
+        return error;
       }
     });
   }
@@ -308,7 +307,7 @@ export default abstract class AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): PromiseOfErrorOr<[T>;
+  ): PromiseOfErrorOr<T>;
 
   abstract removeSubEntityById<T extends BackkEntity>(
     _id: string,

@@ -1,12 +1,11 @@
 import hashAndEncryptEntity from '../../../../crypt/hashAndEncryptEntity';
-import isErrorResponse from '../../../../errors/isErrorResponse';
 import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import getEntityById from '../dql/getEntityById';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
 import { BackkError } from '../../../../types/BackkError';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
 import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
@@ -28,6 +27,7 @@ import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createE
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 import emptyError from "../../../../errors/emptyError";
 import getSingularName from "../../../../utils/getSingularName";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function updateEntity<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
@@ -36,7 +36,7 @@ export default async function updateEntity<T extends BackkEntity>(
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook,
   isRecursiveCall = false
-): Promise<BackkError | null> {
+): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
@@ -326,7 +326,7 @@ export default async function updateEntity<T extends BackkEntity>(
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
-      : createErrorResponseFromError(errorOrErrorResponse);
+      : createBackkErrorFromError(errorOrErrorResponse);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

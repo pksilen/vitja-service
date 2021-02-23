@@ -10,7 +10,7 @@ import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount
 import isUniqueField from "./utils/isUniqueField";
 import SqlEquals from "../../expressions/SqlEquals";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import getTableName from "../../../utils/getTableName";
 import createErrorResponseFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
@@ -80,6 +80,6 @@ export default async function getEntityWhere<T>(
       dbManager.getTypes()
     )[0];
   } catch (error) {
-    return createErrorResponseFromError(error);
+    return createBackkErrorFromError(error);
   }
 }

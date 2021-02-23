@@ -2,7 +2,7 @@ import SqlExpression from "../../expressions/SqlExpression";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { BackkError } from "../../../../types/BackkError";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
@@ -10,13 +10,14 @@ import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedF
 import MongoDbQuery from "../../../mongodb/MongoDbQuery";
 import convertFilterObjectToSqlEquals from "./utils/convertFilterObjectToSqlEquals";
 import getTableName from "../../../utils/getTableName";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function getEntitiesByFilters<T>(
   dbManager: AbstractSqlDbManager,
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
-): Promise<[T[], BackkError | null]> {
+): PromiseOfErrorOr<T[]> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);
@@ -65,6 +66,6 @@ export default async function getEntitiesByFilters<T>(
       dbManager.getTypes()
     );
   } catch (error) {
-    return createErrorResponseFromError(error);
+    return createBackkErrorFromError(error);
   }
 }

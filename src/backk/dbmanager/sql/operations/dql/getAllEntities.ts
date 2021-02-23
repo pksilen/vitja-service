@@ -1,7 +1,7 @@
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { BackkError } from '../../../../types/BackkError';
 import transformRowsToObjects from './transformresults/transformRowsToObjects';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
@@ -53,6 +53,6 @@ export default async function getAllEntities<T>(
       dbManager.getTypes()
     );
   } catch (error) {
-    return createErrorResponseFromError(error);
+    return createBackkErrorFromError(error);
   }
 }

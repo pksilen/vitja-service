@@ -1,25 +1,24 @@
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import entityContainer, { EntityJoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { BackkError } from '../../../../types/BackkError';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import isErrorResponse from '../../../../errors/isErrorResponse';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import SqlExpression from '../../expressions/SqlExpression';
-import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
-import tryGetWhereClause from '../dql/clauses/tryGetWhereClause';
-import getFilterValues from '../dql/utils/getFilterValues';
-import MongoDbQuery from '../../../mongodb/MongoDbQuery';
-import convertFilterObjectToSqlEquals from '../dql/utils/convertFilterObjectToSqlEquals';
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import entityContainer, { EntityJoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import SqlExpression from "../../expressions/SqlExpression";
+import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
+import tryGetWhereClause from "../dql/clauses/tryGetWhereClause";
+import getFilterValues from "../dql/utils/getFilterValues";
+import MongoDbQuery from "../../../mongodb/MongoDbQuery";
+import convertFilterObjectToSqlEquals from "../dql/utils/convertFilterObjectToSqlEquals";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function deleteEntitiesByFilters<T extends object>(
   dbManager: AbstractSqlDbManager,
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
   EntityClass: new () => T
-): Promise<BackkError | null> {
+): PromiseOfErrorOr<null> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);
@@ -78,7 +77,7 @@ export default async function deleteEntitiesByFilters<T extends object>(
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
-      : createErrorResponseFromError(errorOrErrorResponse);
+      : createBackkErrorFromError(errorOrErrorResponse);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

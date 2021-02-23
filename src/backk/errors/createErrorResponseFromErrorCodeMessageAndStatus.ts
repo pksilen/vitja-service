@@ -1,12 +1,11 @@
 import { ErrorCodeAndMessageAndStatus } from '../dbmanager/hooks/PreHook';
-import createErrorResponseFromError from './createErrorResponseFromError';
+import createBackkErrorFromError from './createBackkErrorFromError';
 import { HttpStatusCodes } from '../constants/constants';
 
 export default function createErrorResponseFromErrorCodeMessageAndStatus(
-  errorCodeMessageAndStatus: ErrorCodeAndMessageAndStatus,
-  triggerHttpException = false
+  errorCodeMessageAndStatus: ErrorCodeAndMessageAndStatus
 ) {
-  return createErrorResponseFromError(
+  return createBackkErrorFromError(
     new Error(
       (errorCodeMessageAndStatus.statusCode ?? HttpStatusCodes.INTERNAL_SERVER_ERROR) +
         ':Error code ' +

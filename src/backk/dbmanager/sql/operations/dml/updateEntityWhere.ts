@@ -1,8 +1,6 @@
-import isErrorResponse from '../../../../errors/isErrorResponse';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import { RecursivePartial } from '../../../../types/RecursivePartial';
-import { BackkError } from '../../../../types/BackkError';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
 import { BackkEntity } from '../../../../types/entities/BackkEntity';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
@@ -13,6 +11,7 @@ import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import getEntityWhere from '../dql/getEntityWhere';
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function updateEntityWhere<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
@@ -22,7 +21,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook
-): Promise<BackkError | null> {
+): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
@@ -55,7 +54,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
-      : createErrorResponseFromError(errorOrErrorResponse);
+      : createBackkErrorFromError(errorOrErrorResponse);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

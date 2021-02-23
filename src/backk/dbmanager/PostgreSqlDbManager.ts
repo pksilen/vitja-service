@@ -3,7 +3,7 @@ import { Pool, types } from 'pg';
 import { pg } from 'yesql';
 
 export default class PostgreSqlDbManager extends AbstractSqlDbManager {
-  private pool: Pool;
+  private readonly pool: Pool;
 
   constructor(
     private readonly host: string,
@@ -15,6 +15,7 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   ) {
     super(schema);
 
+    // noinspection MagicNumberJS
     types.setTypeParser(20, 'text', parseInt);
 
     this.pool = new Pool({

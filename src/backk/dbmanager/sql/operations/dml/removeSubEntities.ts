@@ -5,7 +5,7 @@ import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import getEntityById from '../dql/getEntityById';
 import deleteEntityById from './deleteEntityById';
 import { BackkError } from '../../../../types/BackkError';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
 import { BackkEntity } from '../../../../types/entities/BackkEntity';
@@ -22,6 +22,7 @@ import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import getSingularName from "../../../../utils/getSingularName";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function removeSubEntities<T extends BackkEntity, U extends object>(
   dbManager: AbstractSqlDbManager,
@@ -31,7 +32,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook,
   postQueryOperations?: PostQueryOperations
-): Promise<[T, BackkError | null]> {
+): PromiseOfErrorOr<T> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
@@ -100,7 +101,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
-      : createErrorResponseFromError(errorOrErrorResponse);
+      : createBackkErrorFromError(errorOrErrorResponse);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

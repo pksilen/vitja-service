@@ -3,7 +3,7 @@ import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import isErrorResponse from "../../../../errors/isErrorResponse";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import { BackkError } from "../../../../types/BackkError";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import getClassPropertyNameToPropertyTypeNameMap
   from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
@@ -253,7 +253,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
 
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
-      : createErrorResponseFromError(errorOrErrorResponse);
+      : createBackkErrorFromError(errorOrErrorResponse);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

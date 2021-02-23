@@ -1,17 +1,17 @@
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import entityContainer, { EntityJoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { BackkError } from "../../../../types/BackkError";
-import createErrorResponseFromError from "../../../../errors/createErrorResponseFromError";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
 import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
 import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
 import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function deleteAllEntities<T>(
   dbManager: AbstractSqlDbManager,
   EntityClass: new () => T
-): Promise<BackkError | null> {
+): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
@@ -38,7 +38,7 @@ export default async function deleteAllEntities<T>(
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
   } catch (error) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return createErrorResponseFromError(error);
+    return createBackkErrorFromError(error);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

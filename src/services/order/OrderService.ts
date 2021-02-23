@@ -4,7 +4,6 @@ import Order from "./types/entities/Order";
 import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
 import AddOrderItemArg from "./types/args/AddOrderItemArg";
 import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
-import { BackkError } from "../../backk/types/BackkError";
 import CrudResourceService from "../../backk/service/crudresource/CrudResourceService";
 import _Id from "../../backk/types/id/_Id";
 import PayOrderArg from "./types/args/PayOrderArg";

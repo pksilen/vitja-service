@@ -1,7 +1,7 @@
 import { BackkError, errorResponseSymbol } from '../../types/BackkError';
 import fetch from 'node-fetch';
 import log, { Severity } from '../../observability/logging/log';
-import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
+import createBackkErrorFromError from '../../errors/createBackkErrorFromError';
 import isErrorResponse from '../../errors/isErrorResponse';
 import getRemoteResponseTestValue from './getRemoteResponseTestValue';
 import { getNamespace } from 'cls-hooked';
@@ -100,6 +100,6 @@ export default async function callRemoteService(
       remoteServiceFunctionCallUrl: remoteServiceFunctionUrl
     });
     defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(remoteServiceFunctionUrl);
-    return createErrorResponseFromError(error);
+    return createBackkErrorFromError(error);
   }
 }

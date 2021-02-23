@@ -13,7 +13,7 @@ import tryValidateServiceFunctionArgument from "../validation/tryValidateService
 import tryValidateServiceFunctionResponse from "../validation/tryValidateServiceFunctionResponse";
 import isErrorResponse from "../errors/isErrorResponse";
 import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
-import createErrorResponseFromError from "../errors/createErrorResponseFromError";
+import createBackkErrorFromError from "../errors/createBackkErrorFromError";
 import log, { Severity } from "../observability/logging/log";
 import serviceFunctionAnnotationContainer
   from "../decorators/service/function/serviceFunctionAnnotationContainer";
@@ -397,7 +397,7 @@ export default async function tryExecuteServiceMethod(
             );
           }
         } catch (error) {
-          response = createErrorResponseFromError(error);
+          response = createBackkErrorFromError(error);
         }
 
         return response;

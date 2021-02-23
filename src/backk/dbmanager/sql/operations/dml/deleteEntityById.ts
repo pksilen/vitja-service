@@ -1,22 +1,23 @@
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import entityContainer, { EntityJoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import getEntityById from '../dql/getEntityById';
-import { BackkError } from '../../../../types/BackkError';
-import createErrorResponseFromError from '../../../../errors/createErrorResponseFromError';
-import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { PreHook } from '../../../hooks/PreHook';
-import isErrorResponse from '../../../../errors/isErrorResponse';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../../../../errors/backkErrors';
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import entityContainer, { EntityJoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import getEntityById from "../dql/getEntityById";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { PreHook } from "../../../hooks/PreHook";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import { BackkEntity } from "../../../../types/entities/BackkEntity";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function deleteEntityById<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
@@ -24,7 +25,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook
-): Promise<BackkError | null> {
+): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
@@ -92,7 +93,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isErrorResponse(errorOrErrorResponse)
       ? errorOrErrorResponse
-      : createErrorResponseFromError(errorOrErrorResponse);
+      : createBackkErrorFromError(errorOrErrorResponse);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

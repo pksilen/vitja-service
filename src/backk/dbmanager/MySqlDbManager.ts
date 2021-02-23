@@ -108,8 +108,7 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
     schema: string,
     tableName: string,
     columnName: string,
-    columnType: string,
-    isUnique: boolean
+    columnType: string
   ): string {
     return `ALTER TABLE ${schema?.toLowerCase()}.${tableName.toLowerCase()} MODIFY COLUMN ${columnName.toLowerCase()} ${columnType}`;
   }
