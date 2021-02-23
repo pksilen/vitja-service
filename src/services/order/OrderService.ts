@@ -9,17 +9,18 @@ import CrudResourceService from "../../backk/service/crudresource/CrudResourceSe
 import _Id from "../../backk/types/id/_Id";
 import PayOrderArg from "./types/args/PayOrderArg";
 import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
+import { ErrorOr } from "../../backk/types/ErrorOr";
 
 export default abstract class OrderService extends CrudResourceService {
-  abstract deleteAllOrders(): Promise<BackkError | null>;
-  abstract placeOrder(arg: PlaceOrderArg): Promise<[Order, BackkError | null]>;
-  abstract deleteOrderItem(arg: DeleteOrderItemArg): Promise<[Order, BackkError | null]>;
-  abstract addOrderItem(arg: AddOrderItemArg): Promise<[Order, BackkError | null]>;
-  abstract getOrder(arg: _IdAndUserAccountId): Promise<[Order, BackkError | null]>;
-  abstract payOrder(arg: PayOrderArg):Promise<BackkError | null>;
-  abstract deliverOrderItem(arg: DeliverOrderItemArg): Promise<BackkError | null>;
-  abstract updateOrderItemState(arg: UpdateOrderItemStateArg): Promise<BackkError | null>;
-  abstract discardOrder(arg: _Id): Promise<BackkError | null>;
-  abstract deleteOrder(arg: _IdAndUserAccountId): Promise<BackkError | null>;
-  abstract deleteIncompleteOrders(): Promise<BackkError | null>;
+  abstract deleteAllOrders(): ErrorOr<null>;
+  abstract placeOrder(arg: PlaceOrderArg): ErrorOr<Order>;
+  abstract deleteOrderItem(arg: DeleteOrderItemArg): ErrorOr<Order>;
+  abstract addOrderItem(arg: AddOrderItemArg): ErrorOr<Order>;
+  abstract getOrder(arg: _IdAndUserAccountId): ErrorOr<Order>;
+  abstract payOrder(arg: PayOrderArg):ErrorOr<null>;
+  abstract deliverOrderItem(arg: DeliverOrderItemArg): ErrorOr<null>;
+  abstract updateOrderItemState(arg: UpdateOrderItemStateArg): ErrorOr<null>;
+  abstract discardOrder(arg: _Id): ErrorOr<null>;
+  abstract deleteOrder(arg: _IdAndUserAccountId): ErrorOr<null>;
+  abstract deleteIncompleteOrders(): ErrorOr<null>;
 }

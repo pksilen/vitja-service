@@ -63,7 +63,13 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
               functionArgumentTypeNameEnd.column
             );
 
-            if (!isValidFunctionArgumentTypeName(functionArgumentTypeName, remoteServiceRootDir)) {
+            if (
+              !isValidFunctionArgumentTypeName(functionArgumentTypeName, remoteServiceRootDir) &&
+              !serviceFunctionAnnotationContainer.isServiceFunctionAllowedForServiceInternalUse(
+                ServiceClass,
+                functionName
+              )
+            ) {
               throw new Error(
                 serviceName + '.' + functionName + ': input argument type must be a user-defined class type'
               );

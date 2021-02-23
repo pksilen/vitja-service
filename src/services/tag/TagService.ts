@@ -1,4 +1,3 @@
-import { BackkError } from "../../backk/types/BackkError";
 import Tag from "./entities/Tag";
 import TagName from "./args/TagName";
 import CrudResourceService from "../../backk/service/crudresource/CrudResourceService";

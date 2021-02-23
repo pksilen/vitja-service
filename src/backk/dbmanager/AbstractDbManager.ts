@@ -1,21 +1,20 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { getNamespace, Namespace } from 'cls-hooked';
-import SqlExpression from './sql/expressions/SqlExpression';
-import { RecursivePartial } from '../types/RecursivePartial';
-import { BackkError } from '../types/BackkError';
-import { PreHook } from './hooks/PreHook';
-import { BackkEntity } from '../types/entities/BackkEntity';
-import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
-import { Injectable } from '@nestjs/common';
-import isErrorResponse from '../errors/isErrorResponse';
-import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
-import BaseService from '../service/BaseService';
-import { SubEntity } from '../types/entities/SubEntity';
-import __Backk__CronJobScheduling from '../scheduling/entities/__Backk__CronJobScheduling';
-import __Backk__JobScheduling from '../scheduling/entities/__Backk__JobScheduling';
-import MongoDbQuery from './mongodb/MongoDbQuery';
-import { PostHook } from './hooks/PostHook';
+import { getNamespace, Namespace } from "cls-hooked";
+import SqlExpression from "./sql/expressions/SqlExpression";
+import { RecursivePartial } from "../types/RecursivePartial";
+import { PreHook } from "./hooks/PreHook";
+import { BackkEntity } from "../types/entities/BackkEntity";
+import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
+import { Injectable } from "@nestjs/common";
+import isErrorResponse from "../errors/isErrorResponse";
+import forEachAsyncParallel from "../utils/forEachAsyncParallel";
+import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
+import BaseService from "../service/BaseService";
+import { SubEntity } from "../types/entities/SubEntity";
+import __Backk__CronJobScheduling from "../scheduling/entities/__Backk__CronJobScheduling";
+import __Backk__JobScheduling from "../scheduling/entities/__Backk__JobScheduling";
+import MongoDbQuery from "./mongodb/MongoDbQuery";
+import { PostHook } from "./hooks/PostHook";
 import { CreatePreHook } from "./hooks/CreatePreHook";
 import { FilterQuery } from "mongodb";
 import { ErrorOr } from "../types/ErrorOr";
@@ -93,8 +92,8 @@ export default abstract class AbstractDbManager {
   abstract tryBeginTransaction(): Promise<void>;
   abstract cleanupTransaction(): void;
   abstract executeInsideTransaction<T>(
-    executable: () => Promise<[T, BackkError | null]>
-  ): Promise<[T, BackkError | null]>;
+    executable: () => ErrorOr<T>
+  ): ErrorOr<T>;
 
   abstract createEntity<T extends BackkEntity>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
@@ -109,7 +108,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     preHooks?: CreatePreHook | CreatePreHook[],
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T[], BackkError | null]> {
+  ): ErrorOr<T[]> {
     return this.executeInsideTransaction(async () => {
       try {
         return await Promise.all(
@@ -157,12 +156,12 @@ export default abstract class AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]>;
+  ): ErrorOr<T>;
 
   abstract getAllEntities<T>(
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T[], BackkError | null]>;
+  ): ErrorOr<T[]>;
 
   abstract getEntitiesByFilters<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
@@ -179,7 +178,7 @@ export default abstract class AbstractDbManager {
   abstract getEntitiesCount<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object | undefined,
     EntityClass: new () => T
-  ): Promise<[number,  BackkError | null]>;
+  ): ErrorOr<number>;
 
   abstract getEntityById<T>(
     _id: string,
@@ -192,47 +191,47 @@ export default abstract class AbstractDbManager {
     subEntityPath: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[U, BackkError | null]>;
+  ): ErrorOr<U>;
 
   abstract getSubEntities<T extends object, U extends object>(
     _id: string,
     subEntityPath: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[U[], BackkError | null]>;
+  ): ErrorOr<[U[]>;
 
   abstract getEntitiesByIds<T>(
     _ids: string[],
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): Promise<[T[], BackkError | null]>;
+  ): ErrorOr<T[]>;
 
   abstract getEntityWhere<T>(
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]>;
+  ): ErrorOr<T>;
 
   abstract getEntitiesWhere<T>(
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): Promise<[T[], BackkError | null]>;
+  ): ErrorOr<[T[]>;
 
   abstract updateEntity<T extends BackkEntity>(
     entity: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
-  ): Promise<BackkError | null>;
+  ): ErrorOr<null>;
 
   updateEntities<T extends BackkEntity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[]
-  ): Promise<BackkError | null> {
+  ): ErrorOr<null> {
     return this.executeInsideTransaction(async () => {
       try {
         return await forEachAsyncParallel(entities, async (entity, index) => {
@@ -261,20 +260,20 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
-  ): Promise<BackkError | null>;
+  ): ErrorOr<null>;
 
   abstract deleteEntityById<T extends BackkEntity>(
     _id: string,
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
-  ): Promise<BackkError | null>;
+  ): ErrorOr<null>;
 
   deleteEntitiesByIds<T extends BackkEntity>(
     _ids: string[],
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[]
-  ): Promise<BackkError | null> {
+  ): ErrorOr<null> {
     return this.executeInsideTransaction(async () => {
       try {
         return await forEachAsyncParallel(_ids, async (_id, index) => {
@@ -295,12 +294,12 @@ export default abstract class AbstractDbManager {
     fieldName: string,
     fieldValue: any,
     EntityClass: new () => T
-  ): Promise<BackkError | null>;
+  ): ErrorOr<null>;
 
   abstract deleteEntitiesByFilters<T extends BackkEntity>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T
-  ): Promise<BackkError | null>;
+  ): ErrorOr<null>;
 
   abstract removeSubEntities<T extends BackkEntity>(
     _id: string,
@@ -309,7 +308,7 @@ export default abstract class AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]>;
+  ): ErrorOr<[T>;
 
   abstract removeSubEntityById<T extends BackkEntity>(
     _id: string,
@@ -321,5 +320,5 @@ export default abstract class AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): ErrorOr<T>;
 
-  abstract deleteAllEntities<T>(EntityClass: new () => T): Promise<BackkError | null>;
+  abstract deleteAllEntities<T>(EntityClass: new () => T): ErrorOr<null>;
 }

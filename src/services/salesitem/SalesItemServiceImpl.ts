@@ -10,7 +10,7 @@ import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
 import SalesItemService from './SalesItemService';
 import GetSalesItemsArg from './types/args/GetSalesItemsArg';
-import UpdateSalesItemStateArg from './types/args/UpdateSalesItemStateArg';
+import _IdAndSalesItemState from './types/args/_IdAndSalesItemState';
 import { SalesItem } from './types/entities/SalesItem';
 import { BackkError } from '../../backk/types/BackkError';
 import _Id from '../../backk/types/id/_Id';
@@ -31,7 +31,6 @@ import dayjs from 'dayjs';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import UserAccountId from '../../backk/types/useraccount/UserAccountId';
 import UserAccountService from '../useraccount/UserAccountService';
-import UserAccount from '../useraccount/types/entities/UserAccount';
 import { ErrorOr } from '../../backk/types/ErrorOr';
 
 @Injectable()
@@ -42,14 +41,14 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForTests()
-  deleteAllSalesItems(): Promise<BackkError | null> {
+  deleteAllSalesItems(): ErrorOr<null> {
     return this.dbManager.deleteAllEntities(SalesItem);
   }
 
   @NoCaptcha()
   @AllowForSelf()
   @Errors([MAXIMUM_SALES_ITEM_COUNT_EXCEEDED])
-  async createSalesItem(arg: SalesItem): Promise<[SalesItem, BackkError | null]> {
+  async createSalesItem(arg: SalesItem): ErrorOr<SalesItem> {
     return this.dbManager.createEntity(
       {
         ...arg,
@@ -81,7 +80,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     minPrice,
     maxPrice,
     ...postQueryOperations
-  }: GetSalesItemsArg): Promise<[SalesItem[], BackkError | null]> {
+  }: GetSalesItemsArg): ErrorOr<SalesItem[]> {
     const filters = this.dbManager.getFilters<SalesItem>(
       {
         state: 'forSale' as SalesItemState,
@@ -119,9 +118,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForEveryUser()
-  getSalesItemsByUserDefinedFilters({
-    filters
-  }: GetSalesItemsByUserDefinedFiltersArg): Promise<[SalesItem[], BackkError | null]> {
+  getSalesItemsByUserDefinedFilters({ filters }: GetSalesItemsByUserDefinedFiltersArg): ErrorOr<SalesItem[]> {
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, new DefaultPostQueryOperations());
   }
 
@@ -144,13 +141,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForEveryUser()
-  getSalesItem({ _id }: _Id): Promise<[SalesItem, BackkError | null]> {
+  getSalesItem({ _id }: _Id): ErrorOr<SalesItem> {
     return this.dbManager.getEntityById(_id, SalesItem);
   }
 
   @AllowForSelf()
   @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
-  async updateSalesItem(arg: SalesItem): Promise<BackkError | null> {
+  async updateSalesItem(arg: SalesItem): ErrorOr<null> {
     return this.dbManager.updateEntity(arg, SalesItem, [
       {
         isSuccessfulOrTrue: ({ state }) => state === 'forSale',
@@ -163,9 +160,9 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForServiceInternalUse()
   @Errors([INVALID_SALES_ITEM_STATE])
   updateSalesItemState(
-    { _id, newState }: UpdateSalesItemStateArg,
+    { _id, newState }: _IdAndSalesItemState,
     requiredCurrentState?: SalesItemState
-  ): Promise<BackkError | null> {
+  ): ErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, state: newState },
       SalesItem,
@@ -181,7 +178,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @CronJob({ minutes: 0, hours: 2 })
   deleteOldUnsoldSalesItems({
     deletableUnsoldSalesItemMinAgeInMonths
-  }: DeleteOldUnsoldSalesItemsArg): Promise<BackkError | null> {
+  }: DeleteOldUnsoldSalesItemsArg): ErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {
         state: 'forSale',
@@ -203,7 +200,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  deleteSalesItem({ _id }: _IdAndUserAccountId): Promise<BackkError | null> {
+  deleteSalesItem({ _id }: _IdAndUserAccountId): ErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, SalesItem);
   }
 }
