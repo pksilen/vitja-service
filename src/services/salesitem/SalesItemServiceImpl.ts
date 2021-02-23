@@ -31,7 +31,7 @@ import dayjs from 'dayjs';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import UserAccountId from '../../backk/types/useraccount/UserAccountId';
 import UserAccountService from '../useraccount/UserAccountService';
-import { ErrorOr } from '../../backk/types/ErrorOr';
+import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -41,14 +41,14 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForTests()
-  deleteAllSalesItems(): ErrorOr<null> {
+  deleteAllSalesItems(): PromiseOfErrorOr<null> {
     return this.dbManager.deleteAllEntities(SalesItem);
   }
 
   @NoCaptcha()
   @AllowForSelf()
   @Errors([MAXIMUM_SALES_ITEM_COUNT_EXCEEDED])
-  async createSalesItem(arg: SalesItem): ErrorOr<SalesItem> {
+  async createSalesItem(arg: SalesItem): PromiseOfErrorOr<SalesItem> {
     return this.dbManager.createEntity(
       {
         ...arg,
@@ -80,7 +80,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     minPrice,
     maxPrice,
     ...postQueryOperations
-  }: GetSalesItemsArg): ErrorOr<SalesItem[]> {
+  }: GetSalesItemsArg): PromiseOfErrorOr<SalesItem[]> {
     const filters = this.dbManager.getFilters<SalesItem>(
       {
         state: 'forSale' as SalesItemState,
@@ -118,12 +118,12 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForEveryUser()
-  getSalesItemsByUserDefinedFilters({ filters }: GetSalesItemsByUserDefinedFiltersArg): ErrorOr<SalesItem[]> {
+  getSalesItemsByUserDefinedFilters({ filters }: GetSalesItemsByUserDefinedFiltersArg): PromiseOfErrorOr<SalesItem[]> {
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, new DefaultPostQueryOperations());
   }
 
   @AllowForSelf()
-  async getFollowedUsersSalesItems({ userAccountId }: UserAccountId): ErrorOr<SalesItem[]> {
+  async getFollowedUsersSalesItems({ userAccountId }: UserAccountId): PromiseOfErrorOr<SalesItem[]> {
     const [userAccount, error] = await this.userAccountService.getUserAccountById({
       _id: userAccountId
     });
@@ -141,13 +141,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForEveryUser()
-  getSalesItem({ _id }: _Id): ErrorOr<SalesItem> {
+  getSalesItem({ _id }: _Id): PromiseOfErrorOr<SalesItem> {
     return this.dbManager.getEntityById(_id, SalesItem);
   }
 
   @AllowForSelf()
   @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
-  async updateSalesItem(arg: SalesItem): ErrorOr<null> {
+  async updateSalesItem(arg: SalesItem): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(arg, SalesItem, [
       {
         isSuccessfulOrTrue: ({ state }) => state === 'forSale',
@@ -162,7 +162,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   updateSalesItemState(
     { _id, newState }: _IdAndSalesItemState,
     requiredCurrentState?: SalesItemState
-  ): ErrorOr<null> {
+  ): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, state: newState },
       SalesItem,
@@ -178,7 +178,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @CronJob({ minutes: 0, hours: 2 })
   deleteOldUnsoldSalesItems({
     deletableUnsoldSalesItemMinAgeInMonths
-  }: DeleteOldUnsoldSalesItemsArg): ErrorOr<null> {
+  }: DeleteOldUnsoldSalesItemsArg): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {
         state: 'forSale',
@@ -200,7 +200,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  deleteSalesItem({ _id }: _IdAndUserAccountId): ErrorOr<null> {
+  deleteSalesItem({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, SalesItem);
   }
 }

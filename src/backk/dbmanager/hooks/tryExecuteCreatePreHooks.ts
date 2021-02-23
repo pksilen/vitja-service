@@ -10,13 +10,16 @@ export default async function tryExecuteCreatePreHooks(preHooks: CreatePreHook |
 
     try {
       if (typeof preHook === 'object' && preHook.shouldExecutePreHook) {
-        const ifResult = await preHook.shouldExecutePreHook();
+        const shouldExecuteResult = await preHook.shouldExecutePreHook();
 
-        if (typeof ifResult === 'object' && 'errorMessage' in ifResult) {
-          throw ifResult;
+        if (typeof shouldExecuteResult === 'object' && shouldExecuteResult[1]) {
+          throw shouldExecuteResult[1];
         }
 
-        if (ifResult) {
+        if (
+          shouldExecuteResult === true ||
+          (typeof shouldExecuteResult === 'object' && shouldExecuteResult[0])
+        ) {
           hookCallResult = await hookFunc();
         }
       } else {
@@ -28,48 +31,43 @@ export default async function tryExecuteCreatePreHooks(preHooks: CreatePreHook |
       );
     }
 
-    if (hookCallResult !== undefined) {
-      if (typeof hookCallResult === 'object' && '_id' in hookCallResult) {
-        return;
+    if (typeof hookCallResult === 'object' && hookCallResult[1]) {
+      if (typeof preHook === 'object') {
+        if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
+          return;
+        }
       }
+      throw hookCallResult[1];
+    } else if (hookCallResult === false) {
+      if (typeof preHook === 'object') {
+        if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
+          return;
+        }
 
-      if (typeof hookCallResult === 'object' && 'errorMessage' in hookCallResult) {
-        throw hookCallResult;
-      } else if (hookCallResult === false) {
-        if (typeof preHook === 'object') {
-          if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
-            return;
-          }
+        let errorMessage = 'Pre-hook evaluated to false without specific error message';
 
-          let errorMessage = 'Unspecified pre-hook error';
-
-          if (preHook.errorMessage) {
-            errorMessage =
-              'Error code ' + preHook.errorMessage.errorCode + ':' + preHook.errorMessage.errorMessage;
-          }
-
-          throw new Error(
-            createErrorMessageWithStatusCode(
-              errorMessage,
-              preHook.errorMessage?.statusCode ?? HttpStatusCodes.BAD_REQUEST
-            )
-          );
+        if (preHook.errorMessage) {
+          errorMessage =
+            'Error code ' + preHook.errorMessage.errorCode + ':' + preHook.errorMessage.errorMessage;
         }
 
         throw new Error(
           createErrorMessageWithStatusCode(
-            'Pre-hook evaluated to false without specific error message',
-            HttpStatusCodes.BAD_REQUEST
+            errorMessage,
+            preHook.errorMessage?.statusCode ?? HttpStatusCodes.BAD_REQUEST
           )
         );
-      } else if (
-        typeof preHook === 'object' &&
-        process.env.NODE_ENV === 'development' &&
-        hookCallResult === true &&
-        preHook.shouldDisregardFailureWhenExecutingTests
-      ) {
-        throw new Error('Invalid hook result (=true) when disregardFailureInTest is true');
       }
+    } else if (
+      (process.env.NODE_ENV === 'development' &&
+        typeof preHook === 'object' &&
+        preHook.shouldDisregardFailureWhenExecutingTests &&
+        hookCallResult === true) ||
+      (typeof hookCallResult === 'object' && hookCallResult[0])
+    ) {
+      throw new Error(
+        'Invalid successful hook call result when shouldDisregardFailureWhenExecutingTests was set to true'
+      );
     }
   });
 }

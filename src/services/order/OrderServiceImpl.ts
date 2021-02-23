@@ -45,7 +45,7 @@ import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
 import ShoppingCartOrOrderSalesItem from "../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem";
 import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
-import { ErrorOr } from "../../backk/types/ErrorOr";
+import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -59,7 +59,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForTests()
-  deleteAllOrders(): ErrorOr<null> {
+  deleteAllOrders(): PromiseOfErrorOr<null> {
     return this.dbManager.deleteAllEntities(Order);
   }
 
@@ -74,7 +74,7 @@ export default class OrderServiceImpl extends OrderService {
   async placeOrder({
     shoppingCart: { userAccountId, salesItems },
     paymentGateway
-  }: PlaceOrderArg): ErrorOr<Order> {
+  }: PlaceOrderArg): PromiseOfErrorOr<Order> {
     return this.dbManager.createEntity(
       {
         userAccountId,
@@ -100,7 +100,7 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForSelf()
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   @ExpectReturnValueToContainInTests({ orderItems: [] })
-  deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): ErrorOr<Order> {
+  deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<Order> {
     return this.dbManager.removeSubEntityById(
       _id,
       'orderItems',
@@ -124,7 +124,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForTests()
-  addOrderItem({ orderId, salesItem, version }: AddOrderItemArg): ErrorOr<Order> {
+  addOrderItem({ orderId, salesItem, version }: AddOrderItemArg): PromiseOfErrorOr<Order> {
     return this.dbManager.addSubEntity(
       orderId,
       version,
@@ -141,14 +141,14 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
-  getOrder({ _id }: _IdAndUserAccountId): ErrorOr<Order> {
+  getOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<Order> {
     return this.dbManager.getEntityById(_id, Order);
   }
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update()
   @Errors([ORDER_ALREADY_PAID])
-  payOrder({ _id, ...paymentInfo }: PayOrderArg): ErrorOr<null> {
+  payOrder({ _id, ...paymentInfo }: PayOrderArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, paymentInfo },
       Order,
@@ -177,7 +177,7 @@ export default class OrderServiceImpl extends OrderService {
     version,
     orderItemId,
     ...restOfArg
-  }: DeliverOrderItemArg): ErrorOr<null> {
+  }: DeliverOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       {
         version,
@@ -210,7 +210,7 @@ export default class OrderServiceImpl extends OrderService {
     version,
     orderItemId,
     newState
-  }: UpdateOrderItemStateArg): ErrorOr<null> {
+  }: UpdateOrderItemStateArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: newState }] },
       Order,
@@ -251,17 +251,17 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Delete()
-  discardOrder({ _id }: _Id): ErrorOr<null> {
+  discardOrder({ _id }: _Id): PromiseOfErrorOr<null> {
     return this.deleteOrderById(_id);
   }
 
   @AllowForSelf()
-  deleteOrder({ _id }: _IdAndUserAccountId): ErrorOr<null> {
+  deleteOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
     return this.deleteOrderById(_id);
   }
 
   @CronJob({ minutes: 0, hourInterval: 1 })
-  deleteIncompleteOrders(): ErrorOr<null> {
+  deleteIncompleteOrders(): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {
         'paymentInfo.transactionId': null,
@@ -286,7 +286,7 @@ export default class OrderServiceImpl extends OrderService {
     salesItems: ShoppingCartOrOrderSalesItem[],
     newState: SalesItemState,
     currentState?: SalesItemState
-  ): ErrorOr<null> {
+  ): PromiseOfErrorOr<null> {
     return await executeForAll(salesItems, ({ _id }) =>
       this.salesItemService.updateSalesItemState(
         {
@@ -352,7 +352,7 @@ export default class OrderServiceImpl extends OrderService {
     }
   }
 
-  private deleteOrderById(_id: string): ErrorOr<null> {
+  private deleteOrderById(_id: string): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, Order, [
       {
         isSuccessfulOrTrue: (order) =>

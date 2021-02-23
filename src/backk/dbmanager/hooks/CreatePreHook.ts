@@ -1,13 +1,12 @@
 import { BackkEntity } from "../../types/entities/BackkEntity";
-import { BackkError } from "../../types/BackkError";
 import { ErrorCodeAndMessageAndStatus } from "./PreHook";
+import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
 
 export type CreatePreHook =
   | {
-  shouldExecutePreHook?: () => boolean | Promise<[boolean, BackkError | null]>;
-  isSuccessfulOrTrue: (
-  ) => Promise<boolean | null | BackkEntity | BackkError> | boolean;
-  errorMessage?: ErrorCodeAndMessageAndStatus;
-  shouldDisregardFailureWhenExecutingTests?: boolean;
-}
-  | (() => Promise<boolean | null | BackkEntity | BackkError> | boolean);
+      shouldExecutePreHook?: () => boolean | PromiseOfErrorOr<boolean>;
+      isSuccessfulOrTrue: () => PromiseOfErrorOr<boolean | BackkEntity | null> | boolean;
+      errorMessage?: ErrorCodeAndMessageAndStatus;
+      shouldDisregardFailureWhenExecutingTests?: boolean;
+    }
+  | (() => PromiseOfErrorOr<boolean | BackkEntity> | boolean);

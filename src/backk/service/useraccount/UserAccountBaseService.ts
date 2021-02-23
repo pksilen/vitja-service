@@ -2,7 +2,7 @@ import _Id from "../../types/id/_Id";
 import CrudResourceService from "../crudresource/CrudResourceService";
 import { AllowForServiceInternalUse } from "../../decorators/service/function/AllowForServiceInternalUse";
 import BaseUserAccount from "../../types/useraccount/BaseUserAccount";
-import { ErrorOr } from "../../types/ErrorOr";
+import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
 
 export default class UserAccountBaseService extends CrudResourceService {
   isUsersService(): boolean {
@@ -11,7 +11,7 @@ export default class UserAccountBaseService extends CrudResourceService {
 
   @AllowForServiceInternalUse()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getUserAccountById(id: _Id): ErrorOr<BaseUserAccount> {
+  getUserAccountById(id: _Id): PromiseOfErrorOr<BaseUserAccount> {
     throw new Error('Not implemented')
   }
 }

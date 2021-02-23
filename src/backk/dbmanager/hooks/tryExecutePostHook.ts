@@ -1,45 +1,37 @@
-import { BackkError } from "../../types/BackkError";
-import isErrorResponse from "../../errors/isErrorResponse";
-import { PostHook } from "./PostHook";
-import { getNamespace } from "cls-hooked";
-import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
-import { HttpStatusCodes } from "../../constants/constants";
+import { PostHook } from './PostHook';
+import { getNamespace } from 'cls-hooked';
+import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
+import { HttpStatusCodes } from '../../constants/constants';
+import { ErrorOr } from '../../types/PromiseOfErrorOr';
+import createErrorResponseFromError from '../../errors/createErrorResponseFromError';
 
-export default async function tryExecutePostHook(
-  postHook: PostHook,
-  responseOrErrorResponse?: [any,  BackkError | null]
-) {
-  if (
-    typeof responseOrErrorResponse === 'object' &&
-    'errorMessage' in responseOrErrorResponse &&
-    isErrorResponse(responseOrErrorResponse)
-  ) {
-    throw responseOrErrorResponse;
+export default async function tryExecutePostHook(postHook: PostHook, [, error]: ErrorOr<any>) {
+  if (error) {
+    throw error;
   }
 
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('isInsidePostHook', true);
   const postHookFunc = typeof postHook === 'function' ? postHook : postHook.isSuccessful;
-  let hookCallResult;
+  let hookCallError;
 
   try {
     if (typeof postHook === 'object' && postHook.shouldExecutePostHook) {
       if (postHook.shouldExecutePostHook()) {
-        hookCallResult = await postHookFunc();
+        [, hookCallError] = await postHookFunc();
       }
     } else {
-      hookCallResult = await postHookFunc();
+      [, hookCallError] = await postHookFunc();
     }
-  } catch(error) {
-    createErrorMessageWithStatusCode(
-      error.errorMessage,
-      HttpStatusCodes.INTERNAL_SERVER_ERROR
-    )
+  } catch (error) {
+    throw new Error(
+      createErrorMessageWithStatusCode(error.errorMessage, HttpStatusCodes.INTERNAL_SERVER_ERROR)
+    );
   }
 
   clsNamespace?.set('isInsidePostHook', false);
 
-  if (typeof hookCallResult === 'object' && 'errorMessage' in hookCallResult) {
-    throw hookCallResult;
+  if (hookCallError) {
+    throw hookCallError;
   }
 }

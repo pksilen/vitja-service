@@ -5,14 +5,14 @@ import _Id from '../../backk/types/id/_Id';
 import UserAccountId from '../../backk/types/useraccount/UserAccountId';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import _IdAndUserAccountIdAndSalesItem from './types/args/_IdAndUserAccountIdAndSalesItem';
-import { ErrorOr } from '../../backk/types/ErrorOr';
+import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 
 export default abstract class ShoppingCartService extends CrudResourceService {
-  abstract deleteAllShoppingCarts(): ErrorOr<null>;
-  abstract createShoppingCart(arg: ShoppingCart): ErrorOr<ShoppingCart>;
-  abstract removeFromShoppingCart(arg: _IdAndUserAccountIdAndSalesItem): ErrorOr<ShoppingCart>;
-  abstract addToShoppingCart(arg: _IdAndUserAccountIdAndSalesItem): ErrorOr<ShoppingCart>;
-  abstract getShoppingCart(arg: UserAccountId): ErrorOr<ShoppingCart>;
-  abstract emptyShoppingCart(arg: _IdAndUserAccountId): ErrorOr<null>;
-  abstract deleteShoppingCart(arg: _Id): ErrorOr<null>;
+  abstract deleteAllShoppingCarts(): PromiseOfErrorOr<null>;
+  abstract createShoppingCart(arg: ShoppingCart): PromiseOfErrorOr<ShoppingCart>;
+  abstract removeFromShoppingCart(arg: _IdAndUserAccountIdAndSalesItem): PromiseOfErrorOr<ShoppingCart>;
+  abstract addToShoppingCart(arg: _IdAndUserAccountIdAndSalesItem): PromiseOfErrorOr<ShoppingCart>;
+  abstract getShoppingCart(arg: UserAccountId): PromiseOfErrorOr<ShoppingCart>;
+  abstract emptyShoppingCart(arg: _IdAndUserAccountId): PromiseOfErrorOr<null>;
+  abstract deleteShoppingCart(arg: _Id): PromiseOfErrorOr<null>;
 }

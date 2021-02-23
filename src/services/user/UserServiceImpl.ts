@@ -7,7 +7,7 @@ import GetUsersArg from ".//types/args/GetUsersArg";
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
 import User from "./types/entities/User";
 import UserService from "./UserService";
-import { ErrorOr } from "../../backk/types/ErrorOr";
+import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -17,7 +17,7 @@ export default class UserServiceImpl extends UserService {
   }
 
   @AllowForEveryUser()
-  getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): ErrorOr<User[]> {
+  getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): PromiseOfErrorOr<User[]> {
     const filters = this.dbManager.getFilters<User>(
       {
         displayName: new RegExp(displayNameFilter)
@@ -36,7 +36,7 @@ export default class UserServiceImpl extends UserService {
   }
 
   @AllowForEveryUser()
-  getUser({ _id }: _Id): ErrorOr<User> {
+  getUser({ _id }: _Id): PromiseOfErrorOr<User> {
     return this.dbManager.getEntityById(_id, User);
   }
 }

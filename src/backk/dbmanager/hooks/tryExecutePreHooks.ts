@@ -1,67 +1,66 @@
-import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
-import { BackkError } from "../../types/BackkError";
-import { PreHook } from "./PreHook";
-import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
-import { HttpStatusCodes } from "../../constants/constants";
-import { BackkEntity } from "../../types/entities/BackkEntity";
-import { SubEntity } from "../../types/entities/SubEntity";
+import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
+import { PreHook } from './PreHook';
+import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
+import { HttpStatusCodes } from '../../constants/constants';
+import { BackkEntity } from '../../types/entities/BackkEntity';
+import { SubEntity } from '../../types/entities/SubEntity';
+import { ErrorOr } from '../../types/PromiseOfErrorOr';
 
 export default async function tryExecutePreHooks<T extends BackkEntity | SubEntity>(
   preHooks: PreHook<T> | PreHook<T>[],
-  currentEntityOrErrorResponse: [T, BackkError | null]
+  [currentEntity, error]: ErrorOr<T>
 ) {
-  if (
-    typeof currentEntityOrErrorResponse === 'object' &&
-    'errorMessage' in currentEntityOrErrorResponse
-  ) {
-    throw currentEntityOrErrorResponse;
+  if (error || currentEntity === null) {
+    throw error;
   }
 
-  await forEachAsyncSequential(Array.isArray(preHooks) ? preHooks : [preHooks], async (preHook: PreHook<T>) => {
-    const hookFunc = typeof preHook === 'function' ? preHook : preHook.isSuccessfulOrTrue;
-    let hookCallResult;
+  await forEachAsyncSequential(
+    Array.isArray(preHooks) ? preHooks : [preHooks],
+    async (preHook: PreHook<T>) => {
+      const hookFunc = typeof preHook === 'function' ? preHook : preHook.isSuccessfulOrTrue;
+      let hookCallResult;
 
-    try {
-      if (typeof preHook === 'object' && preHook.shouldExecutePreHook) {
-        const ifResult = await preHook.shouldExecutePreHook(currentEntityOrErrorResponse);
+      try {
+        if (typeof preHook === 'object' && preHook.shouldExecutePreHook) {
+          const shouldExecuteResult = await preHook.shouldExecutePreHook(currentEntity);
 
-        if (typeof ifResult === 'object' && 'errorMessage' in ifResult) {
-          throw ifResult;
+          if (typeof shouldExecuteResult === 'object' && shouldExecuteResult[1]) {
+            throw shouldExecuteResult[1];
+          }
+
+          if (
+            shouldExecuteResult === true ||
+            (typeof shouldExecuteResult === 'object' && shouldExecuteResult[0])
+          ) {
+            hookCallResult = await hookFunc(currentEntity);
+          }
+        } else {
+          hookCallResult = await hookFunc(currentEntity);
         }
+      } catch (error) {
+        throw new Error(
+          createErrorMessageWithStatusCode(error.errorMessage, HttpStatusCodes.INTERNAL_SERVER_ERROR)
+        );
+      }
 
-        if (ifResult) {
-          hookCallResult = await hookFunc(currentEntityOrErrorResponse);
+      if (typeof hookCallResult === 'object' && hookCallResult[1]) {
+        if (typeof preHook === 'object') {
+          if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
+            return;
+          }
         }
-      } else {
-        hookCallResult = await hookFunc(currentEntityOrErrorResponse);
-      }
-    } catch (error) {
-      throw new Error(
-        createErrorMessageWithStatusCode(error.errorMessage, HttpStatusCodes.INTERNAL_SERVER_ERROR)
-      );
-    }
-
-    if (hookCallResult !== undefined) {
-      if (typeof hookCallResult === 'object' && '_id' in hookCallResult) {
-        return;
-      }
-
-      if (typeof hookCallResult === 'object' && 'errorMessage' in hookCallResult) {
-        throw hookCallResult;
+        throw hookCallResult[1];
       } else if (hookCallResult === false) {
         if (typeof preHook === 'object') {
           if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
             return;
           }
 
-          let errorMessage = 'Unspecified pre-hook error';
+          let errorMessage = 'Pre-hook evaluated to false without specific error message';
 
           if (preHook.errorMessage) {
             errorMessage =
-              'Error code ' +
-              preHook.errorMessage.errorCode +
-              ':' +
-              preHook.errorMessage.errorMessage;
+              'Error code ' + preHook.errorMessage.errorCode + ':' + preHook.errorMessage.errorMessage;
           }
 
           throw new Error(
@@ -71,21 +70,17 @@ export default async function tryExecutePreHooks<T extends BackkEntity | SubEnti
             )
           );
         }
-
-        throw new Error(
-          createErrorMessageWithStatusCode(
-            'Pre-hook evaluated to false without specific error message',
-            HttpStatusCodes.BAD_REQUEST
-          )
-        );
       } else if (
-        typeof preHook === 'object' &&
-        process.env.NODE_ENV === 'development' &&
-        hookCallResult === true &&
-        preHook.shouldDisregardFailureWhenExecutingTests
+        (process.env.NODE_ENV === 'development' &&
+          typeof preHook === 'object' &&
+          preHook.shouldDisregardFailureWhenExecutingTests &&
+          hookCallResult === true) ||
+        (typeof hookCallResult === 'object' && hookCallResult[0])
       ) {
-        throw new Error('Invalid hook result (=true) when disregardFailureInTest is true');
+        throw new Error(
+          'Invalid successful hook call result when shouldDisregardFailureWhenExecutingTests was set to true'
+        );
       }
     }
-  });
+  );
 }

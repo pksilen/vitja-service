@@ -26,7 +26,7 @@ import UserAccountService from "./UserAccountService";
 import UserName from "../../backk/types/useraccount/UserName";
 import MongoDbQuery from "../../backk/dbmanager/mongodb/MongoDbQuery";
 import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
-import { ErrorOr } from "../../backk/types/ErrorOr";
+import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -36,22 +36,22 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @OnStartUp()
-  preloadCities(): ErrorOr<Name[]> {
+  preloadCities(): PromiseOfErrorOr<Name[]> {
     return getCities();
   }
 
   @AllowForTests()
-  deleteAllUserAccounts(): ErrorOr<null> {
+  deleteAllUserAccounts(): PromiseOfErrorOr<null> {
     return this.dbManager.deleteAllEntities(UserAccount);
   }
 
   @AllowForEveryUser()
-  createUserAccount(arg: UserAccount): ErrorOr<UserAccount> {
+  createUserAccount(arg: UserAccount): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.createEntity({ ...arg, commissionDiscountPercentage: 0 }, UserAccount);
   }
 
   @AllowForSelf()
-  getUserAccount({ userName }: UserName): ErrorOr<UserAccount> {
+  getUserAccount({ userName }: UserName): PromiseOfErrorOr<UserAccount> {
     const filters = this.dbManager.getFilters<UserAccount>(
       [new MongoDbQuery({ userName }), new MongoDbQuery({ state: 'forSale' }, 'favoriteSalesItems')],
       [new SqlEquals({ userName }), new SqlEquals({ state: 'forSale' }, 'favoriteSalesItems')]
@@ -67,12 +67,12 @@ export default class UserAccountServiceImpl extends UserAccountService {
     return this.dbManager.getEntityByFilters(filters, UserAccount, postQueryOperations);
   }
 
-  getUserAccountById({ _id }: _Id): ErrorOr<UserAccount> {
+  getUserAccountById({ _id }: _Id): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.getEntityById(_id, UserAccount);
   }
 
   @AllowForSelf()
-  addToFavoriteSalesItems({ _id, favoriteSalesItem }: _IdAndFavoriteSalesItem): ErrorOr<UserAccount> {
+  addToFavoriteSalesItems({ _id, favoriteSalesItem }: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
       'any',
@@ -84,13 +84,13 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  removeFromFavoriteSalesItems({ _id, favoriteSalesItem }: _IdAndFavoriteSalesItem): ErrorOr<UserAccount> {
+  removeFromFavoriteSalesItems({ _id, favoriteSalesItem }: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', favoriteSalesItem._id, UserAccount);
   }
 
   @AllowForSelf()
   @Update()
-  followUser({ _id, version, followedUserAccountId }: _IdAndFollowedUserAccountId): ErrorOr<UserAccount> {
+  followUser({ _id, version, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
       version,
@@ -106,14 +106,14 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update()
   @ExpectReturnValueToContainInTests({ followedUsers: [] })
-  unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): ErrorOr<UserAccount> {
+  unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, [
       () => this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount)
     ]);
   }
 
   @AllowForSelf()
-  updateUserAccount(arg: UserAccount): ErrorOr<null> {
+  updateUserAccount(arg: UserAccount): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(arg, UserAccount);
   }
 
@@ -124,7 +124,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
     currentPassword,
     password,
     userName
-  }: ChangeUserPasswordArg): ErrorOr<null> {
+  }: ChangeUserPasswordArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, password }, UserAccount, [
       {
         isSuccessfulOrTrue: (currentEntity) => currentEntity.userName === userName,
@@ -140,13 +140,13 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  deleteUserAccount({ _id }: _Id): ErrorOr<null> {
+  deleteUserAccount({ _id }: _Id): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, UserAccount);
   }
 
   @AllowForEveryUser()
   @Metadata()
-  getCities(): ErrorOr<Name[]> {
+  getCities(): PromiseOfErrorOr<Name[]> {
     return Promise.resolve(getCities());
   }
 }

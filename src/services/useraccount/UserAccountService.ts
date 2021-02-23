@@ -6,27 +6,27 @@ import { Name } from "../../backk/types/Name";
 import UserAccountBaseService from "../../backk/service/useraccount/UserAccountBaseService";
 import _IdAndFavoriteSalesItem from "./types/args/_IdAndFavoriteSalesItem";
 import UserName from "../../backk/types/useraccount/UserName";
-import { ErrorOr } from "../../backk/types/ErrorOr";
+import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 
 /** Users service doc goes here
  * - jee
  * - jaa
  * **/
 export default abstract class UserAccountService extends UserAccountBaseService {
-  abstract deleteAllUserAccounts(): ErrorOr<null>;
+  abstract deleteAllUserAccounts(): PromiseOfErrorOr<null>;
 
   // createUserAccount documentation goes here..
-  abstract createUserAccount(arg: UserAccount): ErrorOr<UserAccount>;
+  abstract createUserAccount(arg: UserAccount): PromiseOfErrorOr<UserAccount>;
 
-  abstract getUserAccount(arg: UserName): ErrorOr<UserAccount>;
-  abstract getUserAccountById(arg: _Id): ErrorOr<UserAccount>;
-  abstract addToFavoriteSalesItems(arg: _IdAndFavoriteSalesItem): ErrorOr<UserAccount>;
-  abstract removeFromFavoriteSalesItems(arg: _IdAndFavoriteSalesItem): ErrorOr<UserAccount>;
-  abstract followUser(arg: _IdAndFollowedUserAccountId): ErrorOr<UserAccount>;
-  abstract unfollowUser(arg: _IdAndFollowedUserAccountId): ErrorOr<UserAccount>;
-  abstract updateUserAccount(arg: UserAccount): ErrorOr<null>;
-  abstract changeUserPassword(arg: ChangeUserPasswordArg): ErrorOr<null>;
-  abstract deleteUserAccount(arg: _Id): ErrorOr<null>;
+  abstract getUserAccount(arg: UserName): PromiseOfErrorOr<UserAccount>;
+  abstract getUserAccountById(arg: _Id): PromiseOfErrorOr<UserAccount>;
+  abstract addToFavoriteSalesItems(arg: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount>;
+  abstract removeFromFavoriteSalesItems(arg: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount>;
+  abstract followUser(arg: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount>;
+  abstract unfollowUser(arg: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount>;
+  abstract updateUserAccount(arg: UserAccount): PromiseOfErrorOr<null>;
+  abstract changeUserPassword(arg: ChangeUserPasswordArg): PromiseOfErrorOr<null>;
+  abstract deleteUserAccount(arg: _Id): PromiseOfErrorOr<null>;
 
-  abstract getCities(): ErrorOr<Name[]>;
+  abstract getCities(): PromiseOfErrorOr<Name[]>;
 }
