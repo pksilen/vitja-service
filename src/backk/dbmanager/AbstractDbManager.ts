@@ -18,6 +18,7 @@ import MongoDbQuery from './mongodb/MongoDbQuery';
 import { PostHook } from './hooks/PostHook';
 import { CreatePreHook } from "./hooks/CreatePreHook";
 import { FilterQuery } from "mongodb";
+import { ErrorOr } from "../types/ErrorOr";
 
 export interface Field {
   name: string;
@@ -101,7 +102,7 @@ export default abstract class AbstractDbManager {
     preHooks?: CreatePreHook | CreatePreHook[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]>;
+  ): ErrorOr<T>;
 
   async createEntities<T extends BackkEntity>(
     entities: Array<Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>>,
@@ -144,7 +145,7 @@ export default abstract class AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]>;
+  ): ErrorOr<T>;
 
   abstract addSubEntities<T extends BackkEntity, U extends SubEntity>(
     _id: string,
@@ -167,13 +168,13 @@ export default abstract class AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): Promise<[T[], BackkError | null]>;
+  ): ErrorOr<T[]>;
 
   abstract getEntityByFilters<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]>;
+  ): ErrorOr<T>;
 
   abstract getEntitiesCount<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object | undefined,
@@ -184,7 +185,7 @@ export default abstract class AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]>;
+  ): ErrorOr<T>;
 
   abstract getSubEntity<T extends object, U extends object>(
     _id: string,
@@ -318,7 +319,7 @@ export default abstract class AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]>;
+  ): ErrorOr<T>;
 
   abstract deleteAllEntities<T>(EntityClass: new () => T): Promise<BackkError | null>;
 }

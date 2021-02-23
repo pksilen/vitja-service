@@ -2,6 +2,7 @@
 
 TODO:
 - replace T | ErrorResponse with Promise<[T, BackkError]>
+- Implement getFollowerUsersSalesItems to use userService function to getFollowingUsers
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

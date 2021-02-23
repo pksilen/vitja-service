@@ -11,8 +11,7 @@ const classNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   Class: new () => T,
   dbManager?: AbstractDbManager,
-  isGeneration = false,
-  isResponseValueType: boolean | undefined = undefined
+  isGeneration = false
 ): { [key: string]: string } {
   if (!isGeneration && classNameToMetadataMap[Class.name]) {
     return classNameToMetadataMap[Class.name];
@@ -64,13 +63,6 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
 
     if (hasDifferentDbManagerGroup) {
       return;
-    }
-
-    if (isResponseValueType && validationMetadata.propertyName === 'errorMessage') {
-      throw new Error(
-        Class.name +
-          ' may not contain property errorMessage, because that property is allowed only in BackkError'
-      );
     }
 
     if (

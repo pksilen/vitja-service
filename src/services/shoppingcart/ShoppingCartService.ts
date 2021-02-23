@@ -8,14 +8,17 @@ import _IdAndUserAccountIdAndSalesItem from './types/args/_IdAndUserAccountIdAnd
 
 export default abstract class ShoppingCartService extends CrudResourceService {
   abstract deleteAllShoppingCarts(): Promise<BackkError | null>;
-  abstract createShoppingCart(arg: ShoppingCart): Promise<ShoppingCar[T, BackkError | null]>;
+  abstract createShoppingCart(arg: ShoppingCart): Promise<[ShoppingCart, BackkError | null]>;
 
   abstract removeFromShoppingCart(
     arg: _IdAndUserAccountIdAndSalesItem
-  ): Promise<ShoppingCar[T, BackkError | null]>;
+  ): Promise<[ShoppingCart, BackkError | null]>;
 
-  abstract addToShoppingCart(arg: _IdAndUserAccountIdAndSalesItem): Promise<ShoppingCar[T, BackkError | null]>;
-  abstract getShoppingCart(arg: UserAccountId): Promise<ShoppingCar[T, BackkError | null]>;
+  abstract addToShoppingCart(
+    arg: _IdAndUserAccountIdAndSalesItem
+  ): Promise<[ShoppingCart, BackkError | null]>;
+
+  abstract getShoppingCart(arg: UserAccountId): Promise<[ShoppingCart, BackkError | null]>;
   abstract emptyShoppingCart(arg: _IdAndUserAccountId): Promise<BackkError | null>;
   abstract deleteShoppingCart(arg: _Id): Promise<BackkError | null>;
 }

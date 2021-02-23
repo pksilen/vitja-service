@@ -1,13 +1,13 @@
 import { Name } from "../../../backk/types/Name";
-import { BackkError } from "../../../backk/types/BackkError";
 import createErrorResponseFromErrorMessageAndStatusCode
   from "../../../backk/errors/createErrorResponseFromErrorMessageAndStatusCode";
 import { HttpStatusCodes } from "../../../backk/constants/constants";
 import tryGetValuesByXPathFromXmlFile from "../../../backk/file/tryGetValuesByXPathFromXmlFile";
+import { ErrorOr } from "../../../backk/types/ErrorOr";
 
 let cities: Name[] = [];
 
-export default async function getCities(): Promise<Name[] | BackkError> {
+export default async function getCities(): ErrorOr<Name[]> {
   if (cities.length === 0) {
     try {
       cities = tryGetValuesByXPathFromXmlFile(

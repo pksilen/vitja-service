@@ -6,13 +6,12 @@ import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSe
 import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import UserAccount from "./types/entities/UserAccount";
 import _Id from "../../backk/types/id/_Id";
-import { BackkError } from "../../backk/types/BackkError";
 import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
 import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/userAccountServiceErrors";
 import { Errors } from "../../backk/decorators/service/function/Errors";
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 import { Update } from "../../backk/decorators/service/function/Update";
-import _IdAndFollowedUserId from "./types/args/_IdAndFollowedUserId";
+import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
 import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
 import { Name } from "../../backk/types/Name";
 import getCities from "./validation/getCities";
@@ -22,12 +21,12 @@ import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/De
 import SortBy from "../../backk/types/postqueryoperations/SortBy";
 import FavoriteSalesItem from "./types/entities/FavoriteSalesItem";
 import _IdAndFavoriteSalesItem from "./types/args/_IdAndFavoriteSalesItem";
-import UserAccountResponse from "./types/responses/UserAccountResponse";
 import FollowUser from "./types/entities/FollowUser";
 import UserAccountService from "./UserAccountService";
 import UserName from "../../backk/types/useraccount/UserName";
 import MongoDbQuery from "../../backk/dbmanager/mongodb/MongoDbQuery";
 import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
+import { ErrorOr } from "../../backk/types/ErrorOr";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -37,32 +36,24 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @OnStartUp()
-  preloadCities(): Promise<Name[] | BackkError> {
+  preloadCities(): ErrorOr<Name[]> {
     return getCities();
   }
 
   @AllowForTests()
-  deleteAllUserAccounts(): Promise<BackkError | null> {
+  deleteAllUserAccounts(): ErrorOr<null> {
     return this.dbManager.deleteAllEntities(UserAccount);
   }
 
   @AllowForEveryUser()
-  async createUserAccount(arg: UserAccount): Promise<UserAccountResponse | BackkError> {
-    const userOrErrorResponse = await this.dbManager.createEntity(
-      { ...arg, commissionDiscountPercentage: 0 },
-      UserAccount
-    );
-
-    return UserAccountServiceImpl.getUserResponse(userOrErrorResponse);
+  createUserAccount(arg: UserAccount): ErrorOr<UserAccount> {
+    return this.dbManager.createEntity({ ...arg, commissionDiscountPercentage: 0 }, UserAccount);
   }
 
   @AllowForSelf()
-  async getUserAccount({ userName }: UserName): Promise<UserAccountResponse | BackkError> {
+  getUserAccount({ userName }: UserName): ErrorOr<UserAccount> {
     const filters = this.dbManager.getFilters<UserAccount>(
-      [
-        new MongoDbQuery({ userName }),
-        new MongoDbQuery({ state: 'forSale' }, 'favoriteSalesItems')
-      ],
+      [new MongoDbQuery({ userName }), new MongoDbQuery({ state: 'forSale' }, 'favoriteSalesItems')],
       [new SqlEquals({ userName }), new SqlEquals({ state: 'forSale' }, 'favoriteSalesItems')]
     );
 
@@ -73,25 +64,15 @@ export default class UserAccountServiceImpl extends UserAccountService {
       sortBys: [...defaultPostQueryOperations.sortBys, new SortBy('paymentMethods', 'isDefault', 'ASC')]
     };
 
-    const userOrErrorResponse = await this.dbManager.getEntityByFilters(
-      filters,
-      UserAccount,
-      postQueryOperations
-    );
-
-    return UserAccountServiceImpl.getUserResponse(userOrErrorResponse);
+    return this.dbManager.getEntityByFilters(filters, UserAccount, postQueryOperations);
   }
 
-  async getUserAccountById({ _id }: _Id): Promise<UserAccountResponse | BackkError> {
-    const userOrErrorResponse = await this.dbManager.getEntityById(_id, UserAccount);
-    return UserAccountServiceImpl.getUserResponse(userOrErrorResponse);
+  getUserAccountById({ _id }: _Id): ErrorOr<UserAccount> {
+    return this.dbManager.getEntityById(_id, UserAccount);
   }
 
   @AllowForSelf()
-  addToFavoriteSalesItems({
-    _id,
-    favoriteSalesItem
-  }: _IdAndFavoriteSalesItem): Promise<UserAccoun[T, BackkError | null]> {
+  addToFavoriteSalesItems({ _id, favoriteSalesItem }: _IdAndFavoriteSalesItem): ErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
       'any',
@@ -103,39 +84,36 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  removeFromFavoriteSalesItems({
-    _id,
-    favoriteSalesItem
-  }: _IdAndFavoriteSalesItem): Promise<UserAccoun[T, BackkError | null]> {
+  removeFromFavoriteSalesItems({ _id, favoriteSalesItem }: _IdAndFavoriteSalesItem): ErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', favoriteSalesItem._id, UserAccount);
   }
 
   @AllowForSelf()
   @Update()
-  followUser({ _id, version, followedUserId }: _IdAndFollowedUserId): Promise<UserAccoun[T, BackkError | null]> {
+  followUser({ _id, version, followedUserAccountId }: _IdAndFollowedUserAccountId): ErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
       version,
       'followedUsers',
-      { _id: followedUserId },
+      { _id: followedUserAccountId },
       UserAccount,
       FollowUser,
       () =>
-        this.dbManager.addSubEntity(followedUserId, 'any', 'followingUsers', { _id }, UserAccount, FollowUser)
+        this.dbManager.addSubEntity(followedUserAccountId, 'any', 'followingUsers', { _id }, UserAccount, FollowUser)
     );
   }
 
   @AllowForSelf()
   @Update()
   @ExpectReturnValueToContainInTests({ followedUsers: [] })
-  unfollowUser({ _id, followedUserId }: _IdAndFollowedUserId): Promise<UserAccoun[T, BackkError | null]> {
-    return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserId, UserAccount, [
-      () => this.dbManager.removeSubEntityById(followedUserId, 'followingUsers', _id, UserAccount)
+  unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): ErrorOr<UserAccount> {
+    return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, [
+      () => this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount)
     ]);
   }
 
   @AllowForSelf()
-  updateUserAccount(arg: UserAccount): Promise<BackkError | null> {
+  updateUserAccount(arg: UserAccount): ErrorOr<null> {
     return this.dbManager.updateEntity(arg, UserAccount);
   }
 
@@ -146,7 +124,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
     currentPassword,
     password,
     userName
-  }: ChangeUserPasswordArg): Promise<BackkError | null> {
+  }: ChangeUserPasswordArg): ErrorOr<null> {
     return this.dbManager.updateEntity({ _id, password }, UserAccount, [
       {
         isSuccessfulOrTrue: (currentEntity) => currentEntity.userName === userName,
@@ -162,24 +140,13 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  deleteUserAccount({ _id }: _Id): Promise<BackkError | null> {
+  deleteUserAccount({ _id }: _Id): ErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, UserAccount);
   }
 
   @AllowForEveryUser()
   @Metadata()
-  getCities(): Promise<Name[] | BackkError> {
+  getCities(): ErrorOr<Name[]> {
     return Promise.resolve(getCities());
-  }
-
-  private static getUserResponse(
-    userOrErrorResponse: UserAccoun[T, BackkError | null]
-  ): UserAccountResponse | BackkError {
-    return 'errorMessage' in userOrErrorResponse
-      ? userOrErrorResponse
-      : {
-          ...userOrErrorResponse,
-          extraInfo: 'Some extra info'
-        };
   }
 }

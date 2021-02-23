@@ -123,7 +123,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForTests()
-  addOrderItem({ orderId, salesItem, version }: AddOrderItemArg): Promise<[Order, BackkError]> {
+  addOrderItem({ orderId, salesItem, version }: AddOrderItemArg): Promise<[Order, BackkError | null]> {
     return this.dbManager.addSubEntity(
       orderId,
       version,

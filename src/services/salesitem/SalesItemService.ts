@@ -9,6 +9,7 @@ import { SalesItemState } from "./types/enums/SalesItemState";
 import DeleteOldUnsoldSalesItemsArg from "./types/args/DeleteOldUnsoldSalesItemsArg";
 import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
 import UserAccountId from "../../backk/types/useraccount/UserAccountId";
+import { ErrorOr } from "../../backk/types/ErrorOr";
 
 export default abstract class SalesItemService extends CrudResourceService {
   abstract deleteAllSalesItems(): Promise<BackkError | null>;
@@ -19,7 +20,7 @@ export default abstract class SalesItemService extends CrudResourceService {
     arg: GetSalesItemsByUserDefinedFiltersArg
   ): Promise<[SalesItem[], BackkError | null]>;
 
-  abstract getFollowedUsersSalesItems(arg: UserAccountId): Promise<[SalesItem[], BackkError | null]>;
+  abstract getFollowedUsersSalesItems(arg: UserAccountId): ErrorOr<SalesItem[]>;
   abstract getSalesItem(arg: _Id): Promise<[SalesItem, BackkError | null]>;
   abstract updateSalesItem(arg: SalesItem): Promise<BackkError | null>;
 

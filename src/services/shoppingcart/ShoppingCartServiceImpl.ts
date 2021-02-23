@@ -38,7 +38,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @NoCaptcha()
   @AllowForSelf()
   @Errors([SHOPPING_CART_ALREADY_EXISTS])
-  async createShoppingCart(arg: ShoppingCart): Promise<ShoppingCar[T, BackkError | null]> {
+  async createShoppingCart(arg: ShoppingCart): Promise<[ShoppingCart, BackkError | null]> {
     return this.dbManager.createEntity(arg, ShoppingCart, {
       isSuccessfulOrTrue: () =>
         awaitOperationAndGetResultOfPredicate(
@@ -54,7 +54,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   removeFromShoppingCart({
     _id,
     salesItem
-  }: _IdAndUserAccountIdAndSalesItem): Promise<ShoppingCar[T, BackkError | null]> {
+  }: _IdAndUserAccountIdAndSalesItem): Promise<[ShoppingCart, BackkError | null]> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItem._id, ShoppingCart, () =>
       this.salesItemService.updateSalesItemState({ _id: salesItem._id, newState: 'forSale' })
     );
@@ -62,7 +62,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Errors([SALES_ITEM_ALREADY_SOLD])
-  addToShoppingCart({ _id, salesItem }: _IdAndUserAccountIdAndSalesItem): Promise<ShoppingCar[T, BackkError | null]> {
+  addToShoppingCart({ _id, salesItem }: _IdAndUserAccountIdAndSalesItem): Promise<[ShoppingCart, BackkError | null]> {
     return this.dbManager.addSubEntity(
       _id,
       'any',
@@ -82,7 +82,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  getShoppingCart({ userAccountId }: UserAccountId): Promise<ShoppingCar[T, BackkError | null]> {
+  getShoppingCart({ userAccountId }: UserAccountId): Promise<[ShoppingCart, BackkError | null]> {
     return this.dbManager.executeInsideTransaction(async () => {
       const shoppingCartOrErrorResponse = await this.dbManager.getEntityWhere(
         'userAccountId',
