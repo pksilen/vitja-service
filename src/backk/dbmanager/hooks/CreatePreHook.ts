@@ -5,8 +5,8 @@ import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
 export type CreatePreHook =
   | {
       shouldExecutePreHook?: () => boolean | PromiseOfErrorOr<boolean>;
-      isSuccessfulOrTrue: () => PromiseOfErrorOr<boolean | BackkEntity | null> | boolean;
+      isSuccessfulOrTrue: () => PromiseOfErrorOr<boolean | BackkEntity | null> | Promise<boolean> | boolean;
       errorMessage?: ErrorCodeAndMessageAndStatus;
       shouldDisregardFailureWhenExecutingTests?: boolean;
     }
-  | (() => PromiseOfErrorOr<boolean | BackkEntity> | boolean);
+  | (() => PromiseOfErrorOr<boolean | BackkEntity> | Promise<boolean> | boolean);

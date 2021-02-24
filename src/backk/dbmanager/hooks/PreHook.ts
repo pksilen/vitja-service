@@ -12,8 +12,8 @@ export interface ErrorCodeAndMessageAndStatus {
 export type PreHook<T extends BackkEntity | SubEntity> =
   | {
       shouldExecutePreHook?: (entity: T) => boolean | PromiseOfErrorOr<boolean>;
-      isSuccessfulOrTrue: (entity: T) => PromiseOfErrorOr<boolean | BackkEntity | null> | boolean;
+      isSuccessfulOrTrue: (entity: T) => PromiseOfErrorOr<boolean | BackkEntity | null> | Promise<boolean> | boolean;
       errorMessage?: ErrorCodeAndMessageAndStatus;
       shouldDisregardFailureWhenExecutingTests?: boolean;
     }
-  | ((entity: T) => PromiseOfErrorOr<boolean | BackkEntity | null> | boolean);
+  | ((entity: T) => PromiseOfErrorOr<boolean | BackkEntity | null> | Promise<boolean> | boolean);
