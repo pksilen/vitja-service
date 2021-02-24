@@ -112,7 +112,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       );
 
       let isUpdate = false;
-      const isVoidFunction = getTypeInfoForTypeName(functionMetadata.returnValueType).isVoid;
+      const isVoidFunction = getTypeInfoForTypeName(functionMetadata.returnValueType).isNull;
 
       if (
         isUpdateFunction(

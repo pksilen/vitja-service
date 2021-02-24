@@ -1,27 +1,11 @@
 // noinspection OverlyComplexFunctionJS,FunctionTooLongJS
 export default function getTypeInfoForTypeName(typeName: string) {
   let canBeError = false;
-  let error = '';
 
-  if (typeName === 'BackError | null' || typeName === 'null | BackError') {
+  if (typeName.startsWith( 'PromiseOfErrorOr<')) {
     canBeError = true;
     // noinspection AssignmentToFunctionParameterJS
-    typeName = 'void';
-  }
-
-  if (typeName.startsWith('[') && typeName.endsWith(']')) {
-    // noinspection AssignmentToFunctionParameterJS
-    typeName = typeName.slice(1, -1);
-    const typeNameParts = typeName.split(',');
-    // noinspection AssignmentToFunctionParameterJS
-    typeName = typeNameParts[0].trim();
-    const errorTypeName = typeNameParts[1]?.trim();
-
-    if (errorTypeName !== 'BackError | null' && errorTypeName === 'null | BackError') {
-      error = 'return type must be tuple of successful return value and possible BackError, e.g. [MyEntity, BackkError | null]'
-    }
-
-    canBeError = true;
+    typeName = typeName.slice(17, -1);
   }
 
   const isOptionalType = typeName.startsWith('?');
@@ -70,12 +54,11 @@ export default function getTypeInfoForTypeName(typeName: string) {
 
   return {
     baseTypeName: typeName,
-    isVoid: typeName === 'void',
+    isNull: typeName === 'null',
     canBeError,
     defaultValueStr,
     isArrayType,
     isNullableType,
-    isOptionalType,
-    error
+    isOptionalType
   };
 }

@@ -50,13 +50,7 @@ export default function generateTypesForServices<T>(controller: T, remoteService
         const returnValueTypeName: string = (controller as any)[`${serviceName}__BackkTypes__`]
           .functionNameToReturnTypeNameMap[functionName];
 
-        const { baseTypeName, error } = getTypeInfoForTypeName(returnValueTypeName);
-
-        if (error) {
-          throw new Error(
-            serviceName + '.' + functionName + ': ' + error
-          );
-        }
+        const { baseTypeName } = getTypeInfoForTypeName(returnValueTypeName);
 
         if (baseTypeName !== 'void' && !(controller as any)[serviceName].Types[baseTypeName]) {
           const FunctionReturnValueClass = generateClassFromSrcFile(baseTypeName, remoteServiceRootDir);

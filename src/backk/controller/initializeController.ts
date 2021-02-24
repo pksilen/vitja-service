@@ -7,7 +7,7 @@ import setClassPropertyValidationDecorators from '../validation/setClassProperty
 import setNestedTypeValidationDecorators from '../validation/setNestedTypeValidationDecorators';
 import writeTestsPostmanCollectionExportFile from '../postman/writeTestsPostmanCollectionExportFile';
 import writeApiPostmanCollectionExportFile from '../postman/writeApiPostmanCollectionExportFile';
-import generateTypesForServices from '../metadata/generateTypesForService';
+import generateTypesForServices from '../metadata/generateTypesForServices';
 import getNestedClasses from '../metadata/getNestedClasses';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import log, { Severity } from '../observability/logging/log';
