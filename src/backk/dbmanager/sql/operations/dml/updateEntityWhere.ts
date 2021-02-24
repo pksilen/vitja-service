@@ -12,6 +12,7 @@ import getEntityWhere from '../dql/getEntityWhere';
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import isBackkError from "../../../../errors/isBackkError";
 
 export default async function updateEntityWhere<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
@@ -29,32 +30,31 @@ export default async function updateEntityWhere<T extends BackkEntity>(
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
-    const currentEntityOrErrorResponse = await getEntityWhere(
+    // eslint-disable-next-line prefer-const
+    let [currentEntity, error] = await getEntityWhere(
       dbManager,
       fieldPathName,
       fieldValue,
       EntityClass
     );
 
-    await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
+    await tryExecutePreHooks(preHooks ?? [], [currentEntity, error]);
 
-    const possibleErrorResponse = await dbManager.updateEntity(
-      { _id: (currentEntityOrErrorResponse as T)._id, ...entity },
+     [, error] = await dbManager.updateEntity(
+      { _id: currentEntity._id, ...entity },
       EntityClass,
       []
     );
 
     if (postHook) {
-      await tryExecutePostHook(postHook);
+      await tryExecutePostHook(postHook, [null, null]);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return possibleErrorResponse;
-  } catch (errorOrErrorResponse) {
+    return [null, error];
+  } catch (errorOrBackkError) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return isErrorResponse(errorOrErrorResponse)
-      ? errorOrErrorResponse
-      : createBackkErrorFromError(errorOrErrorResponse);
+    return isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
