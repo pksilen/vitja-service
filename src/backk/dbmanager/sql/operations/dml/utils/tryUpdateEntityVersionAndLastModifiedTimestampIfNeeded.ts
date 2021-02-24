@@ -1,27 +1,27 @@
-import { BackkError } from "../../../../../types/BackkError";
-import AbstractDbManager from "../../../../AbstractDbManager";
-import { BackkEntity } from "../../../../../types/entities/BackkEntity";
+import AbstractDbManager from '../../../../AbstractDbManager';
+import { BackkEntity } from '../../../../../types/entities/BackkEntity';
+import { ErrorOr } from '../../../../../types/PromiseOfErrorOr';
 
 export default async function tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded<T extends BackkEntity>(
   dbManager: AbstractDbManager,
-  currentEntityOrErrorResponse: [T, BackkError | null],
+  [currentEntity, error]: ErrorOr<T>,
   EntityClass: new () => T
 ) {
-  if ('errorMessage' in currentEntityOrErrorResponse) {
+  if (error || currentEntity === null) {
     return;
   }
 
-  if ('version' in currentEntityOrErrorResponse || 'lastModifiedTimestamp' in currentEntityOrErrorResponse) {
-    const possibleErrorResponse = await dbManager.updateEntity(
+  if ('version' in currentEntity || 'lastModifiedTimestamp' in currentEntity) {
+    const [, error] = await dbManager.updateEntity(
       {
-        _id: currentEntityOrErrorResponse._id
+        _id: currentEntity._id
       } as any,
       EntityClass,
       []
     );
 
-    if (possibleErrorResponse) {
-      throw possibleErrorResponse;
+    if (error) {
+      throw error;
     }
   }
 }

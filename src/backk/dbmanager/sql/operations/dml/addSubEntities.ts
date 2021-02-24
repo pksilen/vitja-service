@@ -7,7 +7,6 @@ import { BackkEntity } from '../../../../types/entities/BackkEntity';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import { PreHook } from '../../../hooks/PreHook';
-import isErrorResponse from '../../../../errors/isErrorResponse';
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
@@ -25,6 +24,8 @@ import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 import getSingularName from '../../../../utils/getSingularName';
+import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import isBackkError from '../../../../errors/isBackkError';
 
 export default async function addSubEntities<T extends BackkEntity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -37,7 +38,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook,
   postQueryOperations?: PostQueryOperations
-): Promise<[T, BackkError | null]> {
+): PromiseOfErrorOr<T> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   // noinspection AssignmentToFunctionParameterJS
@@ -78,11 +79,13 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
     }
 
     await tryExecutePreHooks(finalPreHooks ?? [], currentEntityOrErrorResponse);
+
     await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(
       dbManager,
       currentEntityOrErrorResponse,
       EntityClass
     );
+
     const maxSubItemId = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath }).reduce(
       (maxSubItemId: number, subItem: any) => {
         const subItemId = parseInt(subItem.id);
@@ -134,13 +137,11 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
           parentEntityClassAndPropertyNameForSubEntity[1]
         )
       ) {
-        const subEntityOrErrorResponse = await dbManager.getEntityById(
-          newSubEntity._id ?? '',
-          SubEntityClass
-        );
-        if ('errorMessage' in subEntityOrErrorResponse) {
+        const [subEntity, error] = await dbManager.getEntityById(newSubEntity._id ?? '', SubEntityClass);
+
+        if (error || subEntity === null) {
           // noinspection ExceptionCaughtLocallyJS
-          throw subEntityOrErrorResponse;
+          throw error;
         }
 
         const associationTable = `${EntityClass.name}_${getSingularName(
@@ -155,12 +156,12 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
           `INSERT INTO ${dbManager.schema.toLowerCase()}.${associationTable.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}) VALUES (${dbManager.getValuePlaceholder(
             1
           )}, ${dbManager.getValuePlaceholder(2)})`,
-          [(currentEntityOrErrorResponse as any)._id, subEntityOrErrorResponse._id]
+          [(currentEntityOrErrorResponse as any)._id, subEntity._id]
         );
       } else {
         const foreignIdFieldName = entityAnnotationContainer.getForeignIdFieldName(SubEntityClass.name);
 
-        const subEntityOrErrorResponse = await dbManager.createEntity(
+        const [, error] = await dbManager.createEntity(
           {
             ...newSubEntity,
             [foreignIdFieldName]: (currentEntityOrErrorResponse as any)._id,
@@ -173,9 +174,9 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
           false
         );
 
-        if ('errorMessage' in subEntityOrErrorResponse && isErrorResponse(subEntityOrErrorResponse)) {
+        if (error) {
           // noinspection ExceptionCaughtLocallyJS
-          throw subEntityOrErrorResponse;
+          throw error;
         }
       }
     });
@@ -188,11 +189,9 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return response;
-  } catch (errorOrErrorResponse) {
+  } catch (errorOrBackkError) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return isErrorResponse(errorOrErrorResponse)
-      ? errorOrErrorResponse
-      : createBackkErrorFromError(errorOrErrorResponse);
+    return isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
