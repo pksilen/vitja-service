@@ -23,7 +23,6 @@ import { AllowForTests } from '../../backk/decorators/service/function/AllowForT
 import { SalesItemState } from './types/enums/SalesItemState';
 import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
 import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
-import awaitOperationAndGetResultOfPredicate from '../../backk/utils/getErrorResponseOrResultOf';
 import { CronJob } from '../../backk/decorators/service/function/CronJob';
 import DeleteOldUnsoldSalesItemsArg from './types/args/DeleteOldUnsoldSalesItemsArg';
 import dayjs from 'dayjs';
@@ -36,7 +35,7 @@ import UserAccount from '../useraccount/types/entities/UserAccount';
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class SalesItemServiceImpl extends SalesItemService {
-  constructor(dbManager: AbstractDbManager, private readonly userAccountService: UserAccountService) {
+  constructor(dbManager: AbstractDbManager) {
     super(dbManager);
   }
 
@@ -57,12 +56,12 @@ export default class SalesItemServiceImpl extends SalesItemService {
       },
       SalesItem,
       {
-        isSuccessfulOrTrue:  async () => {
+        isSuccessfulOrTrue: async () => {
           const [usersSellableSalesItemCount] = await this.dbManager.getEntitiesCount(
             { userAccountId: arg.userAccountId, state: 'forSale' },
             SalesItem
           );
-          
+
           return usersSellableSalesItemCount ? usersSellableSalesItemCount < 100 : false;
         },
         errorMessage: MAXIMUM_SALES_ITEM_COUNT_EXCEEDED
