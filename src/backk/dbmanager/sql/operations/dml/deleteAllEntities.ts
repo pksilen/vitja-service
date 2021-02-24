@@ -36,9 +36,10 @@ export default async function deleteAllEntities<T>(
     ]);
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
+    return [null, null];
   } catch (error) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return createBackkErrorFromError(error);
+    return [null, createBackkErrorFromError(error)];
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
