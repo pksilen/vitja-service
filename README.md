@@ -8,6 +8,7 @@ TODO:
 - Implement UpdateEntityWhere with UpdateEntityByFilters For Sql and Mongo
 - Implemented version/lastModifiedTimestamp to use filters, not prehooks
 - implement currententity query before prehooks checkking to select for update (locking)
+- Correct scheduling Job/Cronjob functions for prehooks
 
 - Split to multiple microservices
   - Implement subentities as remote service queries

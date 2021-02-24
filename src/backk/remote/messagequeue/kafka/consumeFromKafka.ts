@@ -8,7 +8,7 @@ import forEachAsyncParallel from '../../../utils/forEachAsyncParallel';
 import { HttpStatusCodes } from '../../../constants/constants';
 import sendToRemoteService from '../sendToRemoteService';
 import getNamespacedServiceName from '../../../utils/getServiceNamespace';
-import Response from '../../../execution/Response';
+import BackkResponse from '../../../execution/BackkResponse';
 import delay from '../../../utils/delay';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
 import logCreator from './logCreator';
@@ -169,7 +169,7 @@ export default async function consumeFromKafka(
           const valueStr = value?.toString();
           const serviceFunctionArgument = valueStr ? JSON.parse(valueStr) : null;
 
-          const response = new Response();
+          const response = new BackkResponse();
           await tryExecuteServiceMethod(
             controller,
             serviceFunctionName,

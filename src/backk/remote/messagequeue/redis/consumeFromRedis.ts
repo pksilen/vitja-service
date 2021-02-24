@@ -6,7 +6,7 @@ import sendToRemoteService from '../sendToRemoteService';
 import log, { Severity } from '../../../observability/logging/log';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
 import getNamespacedServiceName from '../../../utils/getServiceNamespace';
-import Response from '../../../execution/Response';
+import BackkResponse from '../../../execution/BackkResponse';
 import delay from '../../../utils/delay';
 
 export default async function consumeFromRedis(
@@ -34,7 +34,7 @@ export default async function consumeFromRedis(
       log(Severity.DEBUG, 'Redis: consume request from queue', '', { broker: server, topic });
       const { serviceFunctionName, serviceFunctionArgument, headers } = JSON.parse(request);
 
-      const response = new Response();
+      const response = new BackkResponse();
       await tryExecuteServiceMethod(
         controller,
         serviceFunctionName,

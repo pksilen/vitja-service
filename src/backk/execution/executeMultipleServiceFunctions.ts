@@ -3,7 +3,7 @@ import tryExecuteServiceMethod, { ExecuteServiceFunctionOptions } from './tryExe
 import forEachAsyncParallel from '../utils/forEachAsyncParallel';
 import { ServiceFunctionCall } from './ServiceFunctionCall';
 import { ServiceFunctionCallResponse } from './ServiceFunctionCallResponse';
-import Response from './Response';
+import BackkResponse from './BackkResponse';
 import forEachAsyncSequential from '../utils/forEachAsyncSequential';
 import { createNamespace } from 'cls-hooked';
 import BaseService from '../service/BaseService';
@@ -39,7 +39,7 @@ async function executeMultiple<T>(
         return;
       }
 
-      const response = new Response();
+      const response = new BackkResponse();
 
       let renderedServiceFunctionArgument = serviceFunctionArgument;
       if ((options?.shouldAllowTemplatesInMultipleServiceFunctionExecution && !isConcurrent) ?? false) {

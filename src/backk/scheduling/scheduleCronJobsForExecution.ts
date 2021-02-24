@@ -8,9 +8,10 @@ import findAsyncSequential from '../utils/findAsyncSequential';
 import delay from '../utils/delay';
 import { createNamespace } from 'cls-hooked';
 import { logError } from '../observability/logging/log';
-import isErrorResponse from '../errors/isErrorResponse';
 import tryExecuteServiceMethod from '../execution/tryExecuteServiceMethod';
 import findServiceFunctionArgumentType from '../metadata/findServiceFunctionArgumentType';
+import BackkResponse from '../execution/BackkResponse';
+import { HttpStatusCodes } from '../constants/constants';
 
 const cronJobs: { [key: string]: CronJob } = {};
 
@@ -26,15 +27,16 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
           await delay(retryIntervalInSecs * 1000);
           const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
           const clsNamespace2 = createNamespace('serviceFunctionExecution');
-          return await clsNamespace.runAndReturn(async () => {
-            return await clsNamespace2.runAndReturn(async () => {
+          return clsNamespace.runAndReturn(async () => {
+            return clsNamespace2.runAndReturn(async () => {
               try {
                 await dbManager.tryReserveDbConnectionFromPool();
                 clsNamespace.set('connection', true);
-                const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
+
+                const [, error] = await dbManager.executeInsideTransaction(async () => {
                   clsNamespace.set('globalTransaction', true);
 
-                  const possibleErrorResponse = await dbManager.updateEntityWhere(
+                  const [, error] = await dbManager.updateEntityWhere(
                     'serviceFunctionName',
                     serviceFunctionName,
                     { lastScheduledTimestamp: new Date(), nextScheduledTimestamp: interval.next().toDate() },
@@ -52,22 +54,27 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
 
                   const serviceFunctionArgument = ServiceFunctionArgType ? new ServiceFunctionArgType() : {};
 
-                  return (
-                    possibleErrorResponse ||
-                    (await tryExecuteServiceMethod(
-                      controller,
-                      serviceFunctionName,
-                      serviceFunctionArgument,
-                      {},
-                      undefined,
-                      undefined,
-                      false
-                    ))
+                  if (error) {
+                    return [null, error];
+                  }
+
+                  const response = new BackkResponse();
+
+                  await tryExecuteServiceMethod(
+                    controller,
+                    serviceFunctionName,
+                    serviceFunctionArgument,
+                    {},
+                    response,
+                    undefined,
+                    false
                   );
+
+                  return [null, response.getErrorResponse()];
                 });
 
                 clsNamespace.set('globalTransaction', true);
-                return !isErrorResponse(possibleErrorResponse);
+                return !error;
               } catch (error) {
                 logError(error);
                 return false;

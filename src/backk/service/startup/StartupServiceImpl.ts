@@ -1,13 +1,12 @@
-import { Injectable } from "@nestjs/common";
-import AbstractDbManager from "../../dbmanager/AbstractDbManager";
-import StartupService from "./StartupService";
-import createBackkErrorFromErrorMessageAndStatusCode
-  from "../../errors/createBackkErrorFromErrorMessageAndStatusCode";
-import initializeDatabase, { isDbInitialized } from "../../dbmanager/sql/operations/ddl/initializeDatabase";
-import { HttpStatusCodes } from "../../constants/constants";
-import { AllowForClusterInternalUse } from "../../decorators/service/function/AllowForClusterInternalUse";
-import scheduledJobsForExecution, { scheduledJobsOrErrorResponse } from "../../scheduling/scheduledJobsForExecution";
-import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
+import { Injectable } from '@nestjs/common';
+import AbstractDbManager from '../../dbmanager/AbstractDbManager';
+import StartupService from './StartupService';
+import createBackkErrorFromErrorMessageAndStatusCode from '../../errors/createBackkErrorFromErrorMessageAndStatusCode';
+import initializeDatabase, { isDbInitialized } from '../../dbmanager/sql/operations/ddl/initializeDatabase';
+import { HttpStatusCodes } from '../../constants/constants';
+import { AllowForClusterInternalUse } from '../../decorators/service/function/AllowForClusterInternalUse';
+import scheduleJobsForExecution, { scheduledJobs } from '../../scheduling/scheduleJobsForExecution';
+import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
 
 @Injectable()
 export default class StartupServiceImpl extends StartupService {
@@ -15,6 +14,7 @@ export default class StartupServiceImpl extends StartupService {
     super(dbManager);
   }
 
+  // noinspection FunctionWithMoreThanThreeNegationsJS
   @AllowForClusterInternalUse()
   async initializeService(): PromiseOfErrorOr<null> {
     if (
@@ -29,9 +29,8 @@ export default class StartupServiceImpl extends StartupService {
         )
       ];
     } else if (
-      scheduledJobsOrErrorResponse &&
-      'errorMessage' in scheduledJobsOrErrorResponse &&
-      !(await scheduledJobsForExecution(StartupService.controller, this.dbManager))
+      !scheduledJobs &&
+      !(await scheduleJobsForExecution(StartupService.controller, this.dbManager))
     ) {
       return [
         null,
