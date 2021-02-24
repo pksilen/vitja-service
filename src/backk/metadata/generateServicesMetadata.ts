@@ -35,16 +35,7 @@ export default function generateServicesMetadata<T>(
 
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(
         (accumulatedTypes, [typeName, Class]: [string, any]) => {
-          const isResponseValueType = Object.values(
-            (controller as any)[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap
-          ).includes(typeName);
-
-          const typeObject = getClassPropertyNameToPropertyTypeNameMap(
-            Class,
-            dbManager,
-            true,
-            isResponseValueType
-          );
+          const typeObject = getClassPropertyNameToPropertyTypeNameMap(Class, dbManager, true);
 
           return { ...accumulatedTypes, [typeName]: typeObject };
         },

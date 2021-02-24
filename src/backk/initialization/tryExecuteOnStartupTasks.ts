@@ -3,16 +3,14 @@ import BaseService from "../service/BaseService";
 import forEachAsyncSequential from "../utils/forEachAsyncSequential";
 import serviceFunctionAnnotationContainer
   from "../decorators/service/function/serviceFunctionAnnotationContainer";
-import isErrorResponse from "../errors/isErrorResponse";
-import { BackkError } from "../types/BackkError";
 import { createNamespace } from "cls-hooked";
 
 export default async function tryExecuteOnStartUpTasks(controller: any, dbManager: AbstractDbManager) {
   const clsNamespace = createNamespace('serviceFunctionExecution');
-  const possibleErrorResponse = await clsNamespace.runAndReturn(async () => {
+  const [, error] = await clsNamespace.runAndReturn(async () => {
     await dbManager.tryReserveDbConnectionFromPool();
 
-    const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
+    const [, error]= await dbManager.executeInsideTransaction(async () => {
       const serviceNameToServiceEntries = Object.entries(controller).filter(
         ([, service]: [string, any]) => service instanceof BaseService
       );
@@ -23,27 +21,27 @@ export default async function tryExecuteOnStartUpTasks(controller: any, dbManage
             Object.getOwnPropertyNames(Object.getPrototypeOf(service)),
             async (functionName: string) => {
               if (serviceFunctionAnnotationContainer.hasOnStartUp(service.constructor, functionName)) {
-                const possibleErrorResponse: [any, BackkError | null] = await service[functionName]();
+                const [, error] = await service[functionName]();
 
-                if (isErrorResponse(possibleErrorResponse)) {
-                  throw new possibleErrorResponse();
+                if (error) {
+                  throw error;
                 }
               }
             }
           );
         });
-      } catch (errorResponse) {
-        return errorResponse as BackkError;
+      } catch (error) {
+        return [null, error];
       }
 
-      return undefined;
+      return [null, null];
     });
 
     dbManager.tryReleaseDbConnectionBackToPool();
-    return possibleErrorResponse;
+    return [null, error];
   });
 
-  if (possibleErrorResponse) {
-    throw new Error(possibleErrorResponse.errorMessage);
+  if (error) {
+    throw new Error(error.message);
   }
 }

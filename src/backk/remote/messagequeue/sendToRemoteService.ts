@@ -1,22 +1,25 @@
-import { CompressionTypes } from "kafkajs";
-import { BackkError } from "../../types/BackkError";
-import { getNamespace } from "cls-hooked";
-import { CallOrSendTo } from "./sendToRemoteServiceInsideTransaction";
-import sendOneOrMoreToKafka, { SendAcknowledgementType } from "./kafka/sendOneOrMoreToKafka";
-import sendOneOrMoreToRedis from "./redis/sendOneOrMoreToRedis";
-import parseRemoteServiceFunctionCallUrlParts from "../utils/parseRemoteServiceFunctionCallUrlParts";
-import { validateServiceFunctionArguments } from "../utils/validateServiceFunctionArguments";
-import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
+import { CompressionTypes } from 'kafkajs';
+import { BackkError } from '../../types/BackkError';
+import { getNamespace } from 'cls-hooked';
+import { CallOrSendTo } from './sendToRemoteServiceInsideTransaction';
+import sendOneOrMoreToKafka, { SendAcknowledgementType } from './kafka/sendOneOrMoreToKafka';
+import sendOneOrMoreToRedis from './redis/sendOneOrMoreToRedis';
+import parseRemoteServiceFunctionCallUrlParts from '../utils/parseRemoteServiceFunctionCallUrlParts';
+import { validateServiceFunctionArguments } from '../utils/validateServiceFunctionArguments';
+import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
 
 export interface SendToOptions {
   compressionType?: CompressionTypes;
   sendAcknowledgementType?: SendAcknowledgementType;
 }
 
-export function sendOneOrMore(sends: CallOrSendTo[], isTransactional: boolean): PromiseOfErrorOr<null> {
+export async function sendOneOrMore(sends: CallOrSendTo[], isTransactional: boolean): PromiseOfErrorOr<null> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
   if (clsNamespace?.get('isInsidePostHook')) {
-    clsNamespace?.set('postHookRemoteServiceCallCount', clsNamespace?.get('postHookRemoteServiceCallCount') + 1);
+    clsNamespace?.set(
+      'postHookRemoteServiceCallCount',
+      clsNamespace?.get('postHookRemoteServiceCallCount') + 1
+    );
   } else {
     clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
   }
@@ -42,7 +45,7 @@ export default async function sendToRemoteService(
   responseUrl?: string,
   options?: SendToOptions
 ): PromiseOfErrorOr<null> {
-  return await sendOneOrMore(
+  return sendOneOrMore(
     [
       {
         remoteServiceFunctionUrl,
