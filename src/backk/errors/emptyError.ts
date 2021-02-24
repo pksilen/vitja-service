@@ -1,9 +1,9 @@
-import { backkErrorSymbol } from "../types/BackkError";
+import { BackkError, backkErrorSymbol } from "../types/BackkError";
 
-const emptyError = {
+const emptyError: BackkError = {
     [backkErrorSymbol]: true,
     statusCode: 500,
-    errorMessage: 'Empty error'
+    message: 'Empty error'
 }
 
 export default emptyError;

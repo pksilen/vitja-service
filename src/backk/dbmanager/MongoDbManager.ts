@@ -1,65 +1,66 @@
-import { Injectable } from '@nestjs/common';
-import { FilterQuery, MongoClient, ObjectId } from 'mongodb';
-import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field } from './AbstractDbManager';
-import { BackkError } from '../types/BackkError';
-import { RecursivePartial } from '../types/RecursivePartial';
-import { PreHook } from './hooks/PreHook';
-import { BackkEntity } from '../types/entities/BackkEntity';
-import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
-import createBackkErrorFromError from '../errors/createBackkErrorFromError';
-import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
-import { SubEntity } from '../types/entities/SubEntity';
-import tryStartLocalTransactionIfNeeded from './sql/operations/transaction/tryStartLocalTransactionIfNeeded';
-import tryExecutePreHooks from './hooks/tryExecutePreHooks';
-import hashAndEncryptEntity from '../crypt/hashAndEncryptEntity';
-import cleanupLocalTransactionIfNeeded from './sql/operations/transaction/cleanupLocalTransactionIfNeeded';
-import { getNamespace } from 'cls-hooked';
-import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
-import createInternalServerError from '../errors/createInternalServerError';
-import getClassPropertyNameToPropertyTypeNameMap from '../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
-import isEntityTypeName from '../utils/type/isEntityTypeName';
-import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
-import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import forEachAsyncSequential from '../utils/forEachAsyncSequential';
-import startDbOperation from './utils/startDbOperation';
-import recordDbOperationDuration from './utils/recordDbOperationDuration';
-import { JSONPath } from 'jsonpath-plus';
-import findParentEntityAndPropertyNameForSubEntity from '../metadata/findParentEntityAndPropertyNameForSubEntity';
-import { getFromContainer, MetadataStorage } from 'class-validator';
-import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import performPostQueryOperations from './mongodb/performPostQueryOperations';
-import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
-import tryFetchAndAssignSubEntitiesForManyToManyRelationships from './mongodb/tryFetchAndAssignSubEntitiesForManyToManyRelationships';
-import decryptEntities from '../crypt/decryptEntities';
-import updateDbLocalTransactionCount from './sql/operations/dql/utils/updateDbLocalTransactionCount';
-import shouldUseRandomInitializationVector from '../crypt/shouldUseRandomInitializationVector';
-import shouldEncryptValue from '../crypt/shouldEncryptValue';
-import encrypt from '../crypt/encrypt';
-import removePrivateProperties from './mongodb/removePrivateProperties';
-import replaceIdStringsWithObjectIds from './mongodb/replaceIdStringsWithObjectIds';
-import removeSubEntities from './mongodb/removeSubEntities';
-import getJoinPipelines from './mongodb/getJoinPipelines';
-import convertUserDefinedFiltersToMatchExpression from './mongodb/convertUserDefinedFiltersToMatchExpression';
-import isUniqueField from './sql/operations/dql/utils/isUniqueField';
-import MongoDbQuery from './mongodb/MongoDbQuery';
-import getRootOperations from './mongodb/getRootOperations';
-import convertMongoDbQueriesToMatchExpression from './mongodb/convertMongoDbQueriesToMatchExpression';
-import paginateSubEntities from './mongodb/paginateSubEntities';
-import convertFilterObjectToMongoDbQueries from './mongodb/convertFilterObjectToMongoDbQueries';
-import { PostHook } from './hooks/PostHook';
-import tryExecutePostHook from './hooks/tryExecutePostHook';
-import getTableName from './utils/getTableName';
-import getFieldOrdering from './mongodb/getFieldOrdering';
-import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../errors/backkErrors';
-import log, { Severity } from '../observability/logging/log';
-import { CreatePreHook } from './hooks/CreatePreHook';
-import tryExecuteCreatePreHooks from './hooks/tryExecuteCreatePreHooks';
-import emptyError from '../errors/emptyError';
-import { ErrorOr, PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
-import isBackkError from '../errors/isBackkError';
+import { Injectable } from "@nestjs/common";
+import { FilterQuery, MongoClient, ObjectId } from "mongodb";
+import SqlExpression from "./sql/expressions/SqlExpression";
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import { RecursivePartial } from "../types/RecursivePartial";
+import { PreHook } from "./hooks/PreHook";
+import { BackkEntity } from "../types/entities/BackkEntity";
+import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
+import createBackkErrorFromError from "../errors/createBackkErrorFromError";
+import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
+import { SubEntity } from "../types/entities/SubEntity";
+import tryStartLocalTransactionIfNeeded from "./sql/operations/transaction/tryStartLocalTransactionIfNeeded";
+import tryExecutePreHooks from "./hooks/tryExecutePreHooks";
+import hashAndEncryptEntity from "../crypt/hashAndEncryptEntity";
+import cleanupLocalTransactionIfNeeded from "./sql/operations/transaction/cleanupLocalTransactionIfNeeded";
+import { getNamespace } from "cls-hooked";
+import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
+import createInternalServerError from "../errors/createInternalServerError";
+import getClassPropertyNameToPropertyTypeNameMap from "../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import typePropertyAnnotationContainer from "../decorators/typeproperty/typePropertyAnnotationContainer";
+import isEntityTypeName from "../utils/type/isEntityTypeName";
+import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import forEachAsyncParallel from "../utils/forEachAsyncParallel";
+import forEachAsyncSequential from "../utils/forEachAsyncSequential";
+import startDbOperation from "./utils/startDbOperation";
+import recordDbOperationDuration from "./utils/recordDbOperationDuration";
+import { JSONPath } from "jsonpath-plus";
+import findParentEntityAndPropertyNameForSubEntity
+  from "../metadata/findParentEntityAndPropertyNameForSubEntity";
+import { getFromContainer, MetadataStorage } from "class-validator";
+import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
+import performPostQueryOperations from "./mongodb/performPostQueryOperations";
+import DefaultPostQueryOperations from "../types/postqueryoperations/DefaultPostQueryOperations";
+import tryFetchAndAssignSubEntitiesForManyToManyRelationships
+  from "./mongodb/tryFetchAndAssignSubEntitiesForManyToManyRelationships";
+import decryptEntities from "../crypt/decryptEntities";
+import updateDbLocalTransactionCount from "./sql/operations/dql/utils/updateDbLocalTransactionCount";
+import shouldUseRandomInitializationVector from "../crypt/shouldUseRandomInitializationVector";
+import shouldEncryptValue from "../crypt/shouldEncryptValue";
+import encrypt from "../crypt/encrypt";
+import removePrivateProperties from "./mongodb/removePrivateProperties";
+import replaceIdStringsWithObjectIds from "./mongodb/replaceIdStringsWithObjectIds";
+import removeSubEntities from "./mongodb/removeSubEntities";
+import getJoinPipelines from "./mongodb/getJoinPipelines";
+import convertUserDefinedFiltersToMatchExpression from "./mongodb/convertUserDefinedFiltersToMatchExpression";
+import isUniqueField from "./sql/operations/dql/utils/isUniqueField";
+import MongoDbQuery from "./mongodb/MongoDbQuery";
+import getRootOperations from "./mongodb/getRootOperations";
+import convertMongoDbQueriesToMatchExpression from "./mongodb/convertMongoDbQueriesToMatchExpression";
+import paginateSubEntities from "./mongodb/paginateSubEntities";
+import convertFilterObjectToMongoDbQueries from "./mongodb/convertFilterObjectToMongoDbQueries";
+import { PostHook } from "./hooks/PostHook";
+import tryExecutePostHook from "./hooks/tryExecutePostHook";
+import getTableName from "./utils/getTableName";
+import getFieldOrdering from "./mongodb/getFieldOrdering";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../errors/backkErrors";
+import log, { Severity } from "../observability/logging/log";
+import { CreatePreHook } from "./hooks/CreatePreHook";
+import tryExecuteCreatePreHooks from "./hooks/tryExecuteCreatePreHooks";
+import { ErrorOr, PromiseOfErrorOr } from "../types/PromiseOfErrorOr";
+import isBackkError from "../errors/isBackkError";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -245,7 +246,7 @@ export default class MongoDbManager extends AbstractDbManager {
       await hashAndEncryptEntity(entity, EntityClass, Types);
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
-      return await this.tryExecute<T>(shouldUseTransaction, async (client) => {
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
         const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
 
         Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]) => {
@@ -280,12 +281,12 @@ export default class MongoDbManager extends AbstractDbManager {
             .insertOne(entity);
         } catch (error) {
           if (error.message.startsWith('E11000 duplicate key error')) {
-            return createBackkErrorFromErrorCodeMessageAndStatus({
+            return [null, createBackkErrorFromErrorCodeMessageAndStatus({
               ...BACKK_ERRORS.DUPLICATE_ENTITY,
               errorMessage: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(
                 1
               )}`
-            });
+            })];
           }
 
           throw error;
@@ -715,7 +716,7 @@ export default class MongoDbManager extends AbstractDbManager {
         postQueryOperations?.includeResponseFields?.length === 1 &&
         postQueryOperations.includeResponseFields[0] === '_id'
       ) {
-        return { _id } as any;
+        return [({ _id } as unknown) as T, null];
       }
 
       return await this.tryExecute(false, async (client) => {
@@ -723,7 +724,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const cursor = client
           .db(this.dbName)
-          .collection(getTableName(EntityClass.name))
+          .collection<T>(getTableName(EntityClass.name))
           .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
           .match({ _id: new ObjectId(_id) });
 
@@ -731,10 +732,13 @@ export default class MongoDbManager extends AbstractDbManager {
         const rows = await cursor.toArray();
 
         if (rows.length === 0) {
-          return createBackkErrorFromErrorCodeMessageAndStatus({
-            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-            errorMessage: `${EntityClass.name} with _id: ${_id} not found`
-          });
+          return [
+            null,
+            createBackkErrorFromErrorCodeMessageAndStatus({
+              ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+              errorMessage: `${EntityClass.name} with _id: ${_id} not found`
+            })
+          ];
         }
 
         await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
@@ -749,12 +753,12 @@ export default class MongoDbManager extends AbstractDbManager {
         paginateSubEntities(rows, postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes(), isInternalCall);
         decryptEntities(rows, EntityClass, this.getTypes(), false);
-        return rows[0];
+        return [rows[0], null];
       });
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -765,11 +769,18 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntityPath: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[U, BackkError | null]> {
+  ): PromiseOfErrorOr<U> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntity');
-    const response = await this.getSubEntities(_id, subEntityPath, EntityClass, postQueryOperations, 'first');
+    const [response, error] = await this.getSubEntities<T, U>(
+      _id,
+      subEntityPath,
+      EntityClass,
+      postQueryOperations,
+      'first'
+    );
+
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-    return response;
+    return [response ? response[0] : null, error];
   }
 
   async getSubEntities<T extends object, U extends object>(
@@ -778,22 +789,18 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations,
     responseMode: 'first' | 'all' = 'all'
-  ): Promise<[any, BackkError | null]> {
+  ): PromiseOfErrorOr<U[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntities');
     updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
 
     try {
-      const itemOrErrorResponse = await this.getEntityById(_id, EntityClass, postQueryOperations);
-      if ('errorMessage' in itemOrErrorResponse) {
-        return itemOrErrorResponse;
-      }
-
-      const subItems = JSONPath({ json: itemOrErrorResponse, path: subEntityPath });
-      return responseMode === 'first' ? subItems[0] : subItems;
+      const [entity, error] = await this.getEntityById(_id, EntityClass, postQueryOperations);
+      const subItems = JSONPath({ json: entity, path: subEntityPath });
+      return responseMode === 'first' ? [[subItems?.[0]], error] : [subItems, error];
     } catch (error) {
-      return createBackkErrorFromError(error);
+      return [null, createBackkErrorFromError(error)];
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -803,18 +810,18 @@ export default class MongoDbManager extends AbstractDbManager {
     _ids: string[],
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): Promise<[T[], BackkError | null]> {
+  ): PromiseOfErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByIds');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
 
     try {
-      return await this.tryExecute(false, async (client) => {
+      const entities = await this.tryExecute(false, async (client) => {
         const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
 
         const cursor = client
           .db(this.dbName)
-          .collection(getTableName(EntityClass.name))
+          .collection<T>(getTableName(EntityClass.name))
           .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
           .match({ _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } });
 
@@ -836,10 +843,12 @@ export default class MongoDbManager extends AbstractDbManager {
         decryptEntities(rows, EntityClass, this.getTypes(), false);
         return rows;
       });
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+
+      return [entities, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -850,7 +859,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]> {
+  ): PromiseOfErrorOr<T> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
     }
@@ -902,15 +911,18 @@ export default class MongoDbManager extends AbstractDbManager {
       });
 
       return entities.length === 0
-        ? createBackkErrorFromErrorCodeMessageAndStatus({
-            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-            errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
-          })
-        : entities[0];
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+        ? [
+            null,
+            createBackkErrorFromErrorCodeMessageAndStatus({
+              ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+              errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
+            })
+          ]
+        : [entities[0], null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -921,7 +933,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): Promise<[T[], BackkError | null]> {
+  ): PromiseOfErrorOr<T[]> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
     }
@@ -974,15 +986,18 @@ export default class MongoDbManager extends AbstractDbManager {
       });
 
       return entities.length === 0
-        ? createBackkErrorFromErrorCodeMessageAndStatus({
-            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-            errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
-          })
-        : entities;
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+        ? [
+            null,
+            createBackkErrorFromErrorCodeMessageAndStatus({
+              ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+              errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
+            })
+          ]
+        : [entities, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     }
@@ -995,7 +1010,7 @@ export default class MongoDbManager extends AbstractDbManager {
     postHook?: PostHook,
     isRecursiveCall = false,
     isInternalCall = false
-  ): Promise<BackkError | null> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
 
     // noinspection AssignmentToFunctionParameterJS
@@ -1010,23 +1025,19 @@ export default class MongoDbManager extends AbstractDbManager {
       if (!isRecursiveCall) {
         await hashAndEncryptEntity(restOfEntity, EntityClass as any, Types);
       }
-
-      await this.tryExecute(shouldUseTransaction, async (client) => {
-        let currentEntityOrErrorResponse: [T, BackkError | null] = emptyError;
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
+        let currentEntity: T | null = null;
+        let error = null;
 
         if (!isRecursiveCall && preHooks) {
-          currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
+          [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true);
         }
 
         let eTagCheckPreHook: PreHook<T>;
         let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
-        if (!isInternalCall && typeof currentEntityOrErrorResponse === 'object') {
-          if (
-            'version' in currentEntityOrErrorResponse &&
-            restOfEntity.version &&
-            restOfEntity.version !== 'any'
-          ) {
+        if (!isInternalCall && currentEntity) {
+          if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
             eTagCheckPreHook = {
               isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
               errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
@@ -1034,7 +1045,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
           } else if (
-            'lastModifiedTimestamp' in currentEntityOrErrorResponse &&
+            'lastModifiedTimestamp' in currentEntity &&
             (restOfEntity as any).lastModifiedTimestamp &&
             (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
           ) {
@@ -1049,7 +1060,7 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         if (!isRecursiveCall) {
-          await tryExecutePreHooks(finalPreHooks, currentEntityOrErrorResponse);
+          await tryExecutePreHooks(finalPreHooks, [currentEntity, error]);
         }
 
         const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
@@ -1071,7 +1082,7 @@ export default class MongoDbManager extends AbstractDbManager {
                 (restOfEntity as any)[fieldName] = newSubEntities.map((subEntity: any) => subEntity._id);
               }
             } else {
-              const currentSubEntities = (currentEntityOrErrorResponse as any)[fieldName];
+              const currentSubEntities = (currentEntity as any)[fieldName];
 
               if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
                 (restOfEntity as any)[fieldName] = currentSubEntities.map(
@@ -1098,10 +1109,7 @@ export default class MongoDbManager extends AbstractDbManager {
           } else if (fieldName !== '_id') {
             if (fieldName === 'version') {
               (restOfEntity as any)[fieldName] = (
-                parseInt(
-                  (currentEntityOrErrorResponse as any)?.version ?? (restOfEntity as any).version,
-                  10
-                ) + 1
+                parseInt(currentEntity?.version ?? (restOfEntity as any).version, 10) + 1
               ).toString();
             } else if (fieldName === 'lastModifiedTimestamp') {
               (restOfEntity as any)[fieldName] = new Date();
@@ -1115,20 +1123,25 @@ export default class MongoDbManager extends AbstractDbManager {
           .updateOne({ _id: new ObjectId(_id) }, { $set: restOfEntity });
 
         if (updateOperationResult.matchedCount !== 1) {
-          return createBackkErrorFromErrorCodeMessageAndStatus({
-            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-            errorMessage: EntityClass.name + ' with id: ' + _id + ' not found'
-          });
+          return [
+            null,
+            createBackkErrorFromErrorCodeMessageAndStatus({
+              ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+              errorMessage: EntityClass.name + ' with id: ' + _id + ' not found'
+            })
+          ];
         }
 
         if (!isRecursiveCall && postHook) {
-          await tryExecutePostHook(postHook);
+          await tryExecutePostHook(postHook, [null, null]);
         }
+
+        return [null, null];
       });
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1142,7 +1155,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
-  ): Promise<BackkError | null> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1151,25 +1164,22 @@ export default class MongoDbManager extends AbstractDbManager {
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
-      return await this.tryExecute(shouldUseTransaction, async () => {
-        const currentEntityOrErrorResponse = await this.getEntityWhere(
-          fieldPathName,
-          fieldValue,
-          EntityClass
-        );
+      await this.tryExecute(shouldUseTransaction, async () => {
+        const [currentEntity, error] = await this.getEntityWhere(fieldPathName, fieldValue, EntityClass);
 
-        await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
-
-        await this.updateEntity({ _id: (currentEntityOrErrorResponse as T)._id, ...entity }, EntityClass, []);
+        await tryExecutePreHooks(preHooks ?? [], [currentEntity, error]);
+        await this.updateEntity({ _id: (currentEntity as T)._id, ...entity }, EntityClass, []);
 
         if (postHook) {
-          await tryExecutePostHook(postHook);
+          await tryExecutePostHook(postHook, [null, null]);
         }
       });
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+
+      return [null, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1181,7 +1191,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook
-  ): Promise<BackkError | null> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1190,7 +1200,7 @@ export default class MongoDbManager extends AbstractDbManager {
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
-      return await this.tryExecute(shouldUseTransaction, async (client) => {
+      await this.tryExecute(shouldUseTransaction, async (client) => {
         if (preHooks) {
           const entityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true);
           await tryExecutePreHooks(preHooks, entityOrErrorResponse);
@@ -1202,13 +1212,15 @@ export default class MongoDbManager extends AbstractDbManager {
           .deleteOne({ _id: new ObjectId(_id) });
 
         if (postHook) {
-          await tryExecutePostHook(postHook);
+          await tryExecutePostHook(postHook, [null, null]);
         }
       });
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+
+      return [null, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1217,9 +1229,9 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async deleteEntitiesWhere<T extends object>(
     fieldName: string,
-    fieldValue: any,
+    fieldValue: T[keyof T] | string,
     EntityClass: new () => T
-  ): Promise<BackkError | null> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesWhere');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1240,10 +1252,12 @@ export default class MongoDbManager extends AbstractDbManager {
           .collection(EntityClass.name.toLowerCase())
           .deleteOne({ [fieldName]: fieldValue });
       });
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+
+      return [null, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1253,7 +1267,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async deleteEntitiesByFilters<T extends object>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T
-  ): Promise<BackkError | null> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1299,10 +1313,12 @@ export default class MongoDbManager extends AbstractDbManager {
           .collection(EntityClass.name.toLowerCase())
           .deleteMany(matchExpression);
       });
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+
+      return [null, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1316,7 +1332,7 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]> {
+  ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1347,15 +1363,15 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         if (postHook) {
-          await tryExecutePostHook(postHook);
+          await tryExecutePostHook(postHook, [null, null]);
         }
 
         return response;
       });
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1370,7 +1386,7 @@ export default class MongoDbManager extends AbstractDbManager {
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook,
     postQueryOperations?: PostQueryOperations
-  ): Promise<[T, BackkError | null]> {
+  ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
 
@@ -1387,7 +1403,7 @@ export default class MongoDbManager extends AbstractDbManager {
     return response;
   }
 
-  async deleteAllEntities<T>(EntityClass: new () => T): Promise<BackkError | null> {
+  async deleteAllEntities<T>(EntityClass: new () => T): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteAllEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1402,10 +1418,12 @@ export default class MongoDbManager extends AbstractDbManager {
           .collection(EntityClass.name.toLowerCase())
           .deleteMany({});
       });
-    } catch (errorOrErrorResponse) {
-      return isErrorResponse(errorOrErrorResponse)
-        ? errorOrErrorResponse
-        : createBackkErrorFromError(errorOrErrorResponse);
+
+      return [null, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
     } finally {
       cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
       recordDbOperationDuration(this, dbOperationStartTimeInMillis);
