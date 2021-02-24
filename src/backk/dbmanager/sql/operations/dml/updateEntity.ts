@@ -1,33 +1,35 @@
-import hashAndEncryptEntity from '../../../../crypt/hashAndEncryptEntity';
-import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import getEntityById from '../dql/getEntityById';
-import { RecursivePartial } from '../../../../types/RecursivePartial';
-import { BackkError } from '../../../../types/BackkError';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { PreHook } from '../../../hooks/PreHook';
-import { BackkEntity } from '../../../../types/entities/BackkEntity';
-import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
-import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import getSubEntitiesByAction from './utils/getSubEntitiesByAction';
-import deleteEntityById from './deleteEntityById';
-import createEntity from './createEntity';
-import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import emptyError from "../../../../errors/emptyError";
+import hashAndEncryptEntity from "../../../../crypt/hashAndEncryptEntity";
+import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import getEntityById from "../dql/getEntityById";
+import { RecursivePartial } from "../../../../types/RecursivePartial";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { PreHook } from "../../../hooks/PreHook";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
+import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import getSubEntitiesByAction from "./utils/getSubEntitiesByAction";
+import deleteEntityById from "./deleteEntityById";
+import createEntity from "./createEntity";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import getSingularName from "../../../../utils/getSingularName";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import isBackkError from "../../../../errors/isBackkError";
 
 export default async function updateEntity<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
@@ -49,7 +51,7 @@ export default async function updateEntity<T extends BackkEntity>(
     }
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    let currentEntityOrErrorResponse: [T, BackkError | null]  = emptyError;
+    let currentEntityOrErrorResponse: any;
 
     if (!isRecursiveCall) {
       currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
@@ -174,7 +176,7 @@ export default async function updateEntity<T extends BackkEntity>(
                     [parseInt(_id ?? id, 10), subEntity._id]
                   );
                 } else {
-                  const createdEntityOrErrorResponse = await createEntity(
+                  const [, error] = await createEntity(
                     dbManager,
                     subEntity,
                     SubEntityClass,
@@ -184,8 +186,9 @@ export default async function updateEntity<T extends BackkEntity>(
                     false,
                     false
                   );
-                  if (isErrorResponse(createdEntityOrErrorResponse)) {
-                    throw createdEntityOrErrorResponse;
+
+                  if (error) {
+                    throw error;
                   }
                 }
               })
@@ -315,18 +318,18 @@ export default async function updateEntity<T extends BackkEntity>(
     await Promise.all(promises);
 
     if (postHook) {
-      await tryExecutePostHook(postHook);
+      await tryExecutePostHook(postHook, [null, null]);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-  } catch (errorOrErrorResponse) {
+    return [null, null];
+  } catch (errorOrBackkError) {
     if (isRecursiveCall) {
-      throw errorOrErrorResponse;
+      throw errorOrBackkError;
     }
+
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return isErrorResponse(errorOrErrorResponse)
-      ? errorOrErrorResponse
-      : createBackkErrorFromError(errorOrErrorResponse);
+    return isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
