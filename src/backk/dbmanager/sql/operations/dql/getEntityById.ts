@@ -1,5 +1,4 @@
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { BackkError } from "../../../../types/BackkError";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import getClassPropertyNameToPropertyTypeNameMap
@@ -14,6 +13,7 @@ import createBackkErrorFromErrorCodeMessageAndStatus
 import createErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function getEntityById<T>(
   dbManager: AbstractSqlDbManager,
@@ -21,7 +21,7 @@ export default async function getEntityById<T>(
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
   isInternalCall = false
-): Promise<[T, BackkError | null]> {
+): PromiseOfErrorOr<T> {
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
@@ -70,19 +70,21 @@ export default async function getEntityById<T>(
     const result = await dbManager.tryExecuteQuery(selectStatement, [numericId]);
 
     if (dbManager.getResultRows(result).length === 0) {
-      return createBackkErrorFromErrorCodeMessageAndStatus({
+      return [null, createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.ENTITY_NOT_FOUND,
         errorMessage: `${EntityClass.name} with _id: ${_id} not found`
-      });
+      })];
     }
 
-    return transformRowsToObjects(
+    const entity = transformRowsToObjects(
       dbManager.getResultRows(result),
       EntityClass,
       finalPostQueryOperations,
       dbManager.getTypes()
     )[0];
+
+    return [entity, null];
   } catch (error) {
-    return createBackkErrorFromError(error);
+    return [null, createBackkErrorFromError(error)];
   }
 }
