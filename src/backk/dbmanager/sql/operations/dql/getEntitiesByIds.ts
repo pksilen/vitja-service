@@ -1,5 +1,4 @@
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { BackkError } from "../../../../types/BackkError";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
