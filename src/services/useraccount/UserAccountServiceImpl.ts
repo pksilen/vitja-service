@@ -37,7 +37,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @OnStartUp()
   preloadCities(): PromiseOfErrorOr<Name[]> {
-    return getCities();
+    return Promise.resolve(getCities());
   }
 
   @AllowForTests()
@@ -72,7 +72,10 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  addToFavoriteSalesItems({ _id, favoriteSalesItem }: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount> {
+  addToFavoriteSalesItems({
+    _id,
+    favoriteSalesItem
+  }: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
       'any',
@@ -84,13 +87,20 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  removeFromFavoriteSalesItems({ _id, favoriteSalesItem }: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount> {
+  removeFromFavoriteSalesItems({
+    _id,
+    favoriteSalesItem
+  }: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', favoriteSalesItem._id, UserAccount);
   }
 
   @AllowForSelf()
   @Update()
-  followUser({ _id, version, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount> {
+  followUser({
+    _id,
+    version,
+    followedUserAccountId
+  }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
       version,
@@ -99,7 +109,14 @@ export default class UserAccountServiceImpl extends UserAccountService {
       UserAccount,
       FollowUser,
       () =>
-        this.dbManager.addSubEntity(followedUserAccountId, 'any', 'followingUsers', { _id }, UserAccount, FollowUser)
+        this.dbManager.addSubEntity(
+          followedUserAccountId,
+          'any',
+          'followingUsers',
+          { _id },
+          UserAccount,
+          FollowUser
+        )
     );
   }
 
@@ -131,8 +148,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
         errorMessage: USER_NAME_CANNOT_BE_CHANGED
       },
       {
-        isSuccessfulOrTrue: async ({ password: hashedPassword }) =>
-          await argon2.verify(hashedPassword, currentPassword),
+        isSuccessfulOrTrue: ({ password: hashedPassword }) => argon2.verify(hashedPassword, currentPassword),
         errorMessage: INVALID_CURRENT_PASSWORD,
         shouldDisregardFailureWhenExecutingTests: true
       }

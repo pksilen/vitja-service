@@ -1,9 +1,9 @@
-import { registerDecorator, ValidationOptions } from "class-validator";
-import { BackkError } from "../../types/BackkError";
-import { Name } from "../../types/Name";
+import { registerDecorator, ValidationOptions } from 'class-validator';
+import { Name } from '../../types/Name';
+import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
 
 export default function IsOneOf(
-  getPossibleValuesFunc: () => Promise<[Name[], BackkError | null]>,
+  getPossibleValuesFunc: () => PromiseOfErrorOr<Name[]>,
   serviceFunctionName: string,
   testValue: string,
   validationOptions?: ValidationOptions
@@ -17,12 +17,11 @@ export default function IsOneOf(
       options: validationOptions,
       validator: {
         async validate(value: any) {
-          const possibleValuesOrErrorResponse = await getPossibleValuesFunc();
-          if ('errorMessage' in possibleValuesOrErrorResponse) {
-            return false;
-          }
+          const [possibleValues] = await getPossibleValuesFunc();
 
-          return possibleValuesOrErrorResponse.some((possibleValue) => value === possibleValue.name);
+          return possibleValues
+            ? possibleValues.some((possibleValue) => value === possibleValue.name)
+            : false;
         },
         defaultMessage: () =>
           propertyName + ' must be one from the result of service function call: ' + serviceFunctionName

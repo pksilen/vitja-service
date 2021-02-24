@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import AbstractDbManager from '../../dbmanager/AbstractDbManager';
 import StartupService from './StartupService';
 import { BackkError } from '../../types/BackkError';
-import createErrorResponseFromErrorMessageAndStatusCode from '../../errors/createErrorResponseFromErrorMessageAndStatusCode';
+import createBackkErrorFromErrorMessageAndStatusCode from '../../errors/createBackkErrorFromErrorMessageAndStatusCode';
 import initializeDatabase, { isDbInitialized } from '../../dbmanager/sql/operations/ddl/initializeDatabase';
 import { HttpStatusCodes } from '../../constants/constants';
 import { AllowForClusterInternalUse } from '../../decorators/service/function/AllowForClusterInternalUse';
 import scheduledJobsForExecution, {
   scheduledJobsOrErrorResponse
 } from '../../scheduling/scheduledJobsForExecution';
+import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
 
 @Injectable()
 export default class StartupServiceImpl extends StartupService {
@@ -17,26 +18,32 @@ export default class StartupServiceImpl extends StartupService {
   }
 
   @AllowForClusterInternalUse()
-  async initializeService(): Promise<BackkError | null> {
+  async initializeService(): PromiseOfErrorOr<null> {
     if (
       !(await isDbInitialized(this.dbManager)) &&
       !(await initializeDatabase(StartupService.controller, this.dbManager))
     ) {
-      return createErrorResponseFromErrorMessageAndStatusCode(
-        'Service not initialized (database)',
-        HttpStatusCodes.SERVICE_UNAVAILABLE
-      );
+      return [
+        null,
+        createBackkErrorFromErrorMessageAndStatusCode(
+          'Service not initialized (database)',
+          HttpStatusCodes.SERVICE_UNAVAILABLE
+        )
+      ];
     } else if (
       scheduledJobsOrErrorResponse &&
       'errorMessage' in scheduledJobsOrErrorResponse &&
       !(await scheduledJobsForExecution(StartupService.controller, this.dbManager))
     ) {
-      return createErrorResponseFromErrorMessageAndStatusCode(
-        'Service not initialized (jobs)',
-        HttpStatusCodes.SERVICE_UNAVAILABLE
-      );
+      return [
+        null,
+        createBackkErrorFromErrorMessageAndStatusCode(
+          'Service not initialized (jobs)',
+          HttpStatusCodes.SERVICE_UNAVAILABLE
+        )
+      ];
     }
 
-    return;
+    return [null, null];
   }
 }
