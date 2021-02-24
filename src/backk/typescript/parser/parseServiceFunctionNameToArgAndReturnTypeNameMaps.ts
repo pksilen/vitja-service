@@ -81,14 +81,10 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
           const returnTypeNameStart = classBodyNode.returnType.typeAnnotation.loc.start;
           const returnTypeNameEnd = classBodyNode.returnType.typeAnnotation.loc.end;
 
-          let returnTypeName = fileRows[returnTypeNameStart.line - 1].slice(
+          const returnTypeName = fileRows[returnTypeNameStart.line - 1].slice(
             returnTypeNameStart.column,
             returnTypeNameEnd.column
           );
-
-          if (returnTypeName.startsWith('Promise')) {
-            returnTypeName = returnTypeName.slice(8, -1);
-          }
 
           functionNameToFunctionReturnValueTypeNameMap[functionName] = returnTypeName;
           functionNameToDocumentationMap[functionName] = classBodyNode.leadingComments?.[0].value;

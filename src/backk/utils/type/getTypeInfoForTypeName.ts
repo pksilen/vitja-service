@@ -2,7 +2,7 @@
 export default function getTypeInfoForTypeName(typeName: string) {
   let canBeError = false;
 
-  if (typeName.startsWith( 'PromiseOfErrorOr<')) {
+  if (typeName.startsWith('PromiseOfErrorOr<')) {
     canBeError = true;
     // noinspection AssignmentToFunctionParameterJS
     typeName = typeName.slice(17, -1);

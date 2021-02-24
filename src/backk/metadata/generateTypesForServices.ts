@@ -52,13 +52,13 @@ export default function generateTypesForServices<T>(controller: T, remoteService
 
         const { baseTypeName } = getTypeInfoForTypeName(returnValueTypeName);
 
-        if (baseTypeName !== 'void' && !(controller as any)[serviceName].Types[baseTypeName]) {
+        if (baseTypeName !== 'null' && !(controller as any)[serviceName].Types[baseTypeName]) {
           const FunctionReturnValueClass = generateClassFromSrcFile(baseTypeName, remoteServiceRootDir);
           (controller as any)[serviceName].Types[baseTypeName] = FunctionReturnValueClass;
           (controller as any)[serviceName].PublicTypes[baseTypeName] = FunctionReturnValueClass;
         }
 
-        if (baseTypeName !== 'void') {
+        if (baseTypeName !== 'null') {
           let proto = Object.getPrototypeOf(
             new ((controller as any)[serviceName].Types[baseTypeName] as new () => any)()
           );

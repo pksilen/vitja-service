@@ -56,7 +56,7 @@ export default function getServiceFunctionTests(
     };
   }
 
-  const serviceFunctionReturnValueTests = baseTypeName === 'void' ? [] : getServiceFunctionReturnValueTests(
+  const serviceFunctionReturnValueTests = baseTypeName === 'null' ? [] : getServiceFunctionReturnValueTests(
     serviceTypes,
     baseTypeName,
     serviceMetadata,
@@ -73,7 +73,7 @@ export default function getServiceFunctionTests(
     script: {
       id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
       exec:
-        baseTypeName === 'void' || expectedResponseStatusCode !== 200
+        baseTypeName === 'null' || expectedResponseStatusCode !== 200
           ? [checkResponseCode]
           : [checkResponseCode, ...serviceFunctionReturnValueTests]
     }
