@@ -13,9 +13,9 @@ import { SalesItem } from '../salesitem/types/entities/SalesItem';
 import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
 import DbTableVersion from '../../backk/dbmanager/version/DbTableVersion';
 import { HttpStatusCodes } from '../../backk/constants/constants';
-import isErrorResponse from '../../backk/errors/isErrorResponse';
 import tryGetSeparatedValuesFromTextFile from '../../backk/file/tryGetSeparatedValuesFromTextFile';
 import executeForAll from '../../backk/utils/executeForAll';
+import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 
 @Injectable()
 export default class TagServiceImpl extends TagService {
@@ -24,31 +24,31 @@ export default class TagServiceImpl extends TagService {
   }
 
   @OnStartUp()
-  async initializeDatabase(): Promise<BackkError | null> {
-    let tagTableVersion = await this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion);
+  async initializeDatabase(): PromiseOfErrorOr<null> {
+    let [, error] = await this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion);
 
-    if (isErrorResponse(tagTableVersion, HttpStatusCodes.NOT_FOUND)) {
-      tagTableVersion = await this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, () => {
+    if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
+      [, error] = await this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, () => {
         const tags = tryGetSeparatedValuesFromTextFile('resources/tags1.txt');
         return executeForAll(tags, (tag) => this.createTag({ name: tag }));
       });
     }
 
-    return 'errorMessage' in tagTableVersion ? tagTableVersion : undefined;
+    return [null, error];
   }
 
   @OnStartUp()
-  async migrateDbFromVersion1To2(): Promise<BackkError | null> {
-    const tagTableVersion1 = await this.dbManager.getEntityByFilters(
+  async migrateDbFromVersion1To2(): PromiseOfErrorOr<null> {
+    const [tagDbTableVersion1, error] = await this.dbManager.getEntityByFilters(
       { entityName: 'Tag', version: 1 },
       DbTableVersion
     );
 
-    if ('errorMessage' in tagTableVersion1) {
-      return isErrorResponse(tagTableVersion1, HttpStatusCodes.NOT_FOUND) ? undefined : tagTableVersion1;
+    if (!tagDbTableVersion1) {
+      return [null, error?.statusCode === HttpStatusCodes.NOT_FOUND ? null : error];
     }
 
-    return this.dbManager.updateEntity(tagTableVersion1, DbTableVersion, () => {
+    return this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, () => {
       const tags = tryGetSeparatedValuesFromTextFile('resources/tags2.txt');
       return executeForAll(tags, (tag) => this.createTag({ name: tag }));
     });
@@ -65,7 +65,7 @@ export default class TagServiceImpl extends TagService {
 
   @AllowForEveryUser()
   @NoCaptcha()
-  createTag({ name }: TagName): Promise<[Tag, BackkError | null]> {
+  createTag({ name }: TagName): PromiseOfErrorOr<Tag> {
     return this.dbManager.createEntity({ name }, Tag);
   }
 

@@ -3,7 +3,7 @@ import { BackkError } from "../types/BackkError";
 
 export default async function executeForAll<T, U>(
   values: T[],
-  func: (value: T) => PromiseOfErrorOr<null>
+  func: (value: T) => PromiseOfErrorOr<U | null>
 ): PromiseOfErrorOr<null> {
   const finalValues = Array.isArray(values) ? values : [values];
 
