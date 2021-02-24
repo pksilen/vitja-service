@@ -1,34 +1,32 @@
-import { HttpException } from "@nestjs/common";
-import { plainToClass } from "class-transformer";
-import { createNamespace, getNamespace } from "cls-hooked";
-import _ from "lodash";
-import Redis from "ioredis";
-import tryAuthorize from "../authorization/tryAuthorize";
-import BaseService from "../service/BaseService";
-import tryVerifyCaptchaToken from "../captcha/tryVerifyCaptchaToken";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
-import UserAccountBaseService from "../service/useraccount/UserAccountBaseService";
-import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
-import tryValidateServiceFunctionArgument from "../validation/tryValidateServiceFunctionArgument";
-import tryValidateServiceFunctionResponse from "../validation/tryValidateServiceFunctionResponse";
-import isErrorResponse from "../errors/isErrorResponse";
-import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
-import createBackkErrorFromError from "../errors/createBackkErrorFromError";
-import log, { Severity } from "../observability/logging/log";
-import serviceFunctionAnnotationContainer
-  from "../decorators/service/function/serviceFunctionAnnotationContainer";
-import { HttpStatusCodes, MAX_INT_VALUE } from "../constants/constants";
-import getNamespacedServiceName from "../utils/getServiceNamespace";
-import AuditLoggingService from "../observability/logging/audit/AuditLoggingService";
-import createAuditLogEntry from "../observability/logging/audit/createAuditLogEntry";
-import executeMultipleServiceFunctions from "./executeMultipleServiceFunctions";
-import tryScheduleJobExecution from "../scheduling/tryScheduleJobExecution";
-import isExecuteMultipleRequest from "./isExecuteMultipleRequest";
-import createErrorFromErrorCodeMessageAndStatus from "../errors/createErrorFromErrorCodeMessageAndStatus";
-import { BackkError } from "../types/BackkError";
-import createBackkErrorFromErrorCodeMessageAndStatus
-  from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS } from "../errors/backkErrors";
+import { HttpException } from '@nestjs/common';
+import { plainToClass } from 'class-transformer';
+import { createNamespace, getNamespace } from 'cls-hooked';
+import _ from 'lodash';
+import Redis from 'ioredis';
+import tryAuthorize from '../authorization/tryAuthorize';
+import BaseService from '../service/BaseService';
+import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import UserAccountBaseService from '../service/useraccount/UserAccountBaseService';
+import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
+import tryValidateServiceFunctionArgument from '../validation/tryValidateServiceFunctionArgument';
+import tryValidateServiceFunctionResponse from '../validation/tryValidateServiceFunctionResponse';
+import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
+import createBackkErrorFromError from '../errors/createBackkErrorFromError';
+import log, { Severity } from '../observability/logging/log';
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import { HttpStatusCodes, MAX_INT_VALUE } from '../constants/constants';
+import getNamespacedServiceName from '../utils/getServiceNamespace';
+import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
+import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
+import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
+import tryScheduleJobExecution from '../scheduling/tryScheduleJobExecution';
+import isExecuteMultipleRequest from './isExecuteMultipleRequest';
+import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BackkError } from '../types/BackkError';
+import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../errors/backkErrors';
+import emptyError from "../errors/emptyError";
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -206,7 +204,9 @@ export default async function tryExecuteServiceMethod(
       await tryVerifyCaptchaToken(controller, serviceFunctionArgument.captchaToken);
     }
 
-    const usersService = Object.values(controller).find((service) => service instanceof UserAccountBaseService);
+    const usersService = Object.values(controller).find(
+      (service) => service instanceof UserAccountBaseService
+    );
 
     userName = await tryAuthorize(
       controller[serviceName],
@@ -261,9 +261,7 @@ export default async function tryExecuteServiceMethod(
       });
 
       if (!instantiatedServiceFunctionArgument) {
-        throw createBackkErrorFromErrorCodeMessageAndStatus(
-          BACKK_ERRORS.MISSING_SERVICE_FUNCTION_ARGUMENT
-        );
+        throw createBackkErrorFromErrorCodeMessageAndStatus(BACKK_ERRORS.MISSING_SERVICE_FUNCTION_ARGUMENT);
       }
 
       await tryValidateServiceFunctionArgument(
@@ -318,6 +316,7 @@ export default async function tryExecuteServiceMethod(
     }
 
     let ttl;
+    let backkError = emptyError;
 
     if (!response) {
       const clsNamespace = shouldCreateClsNamespace
@@ -330,7 +329,6 @@ export default async function tryExecuteServiceMethod(
         clsNamespace.set('remoteServiceCallCount', 0);
         clsNamespace.set('postHookRemoteServiceCallCount', 0);
         clsNamespace.set('dbManagerOperationAfterRemoteServiceCall', false);
-        let response;
 
         // noinspection ExceptionCaughtLocallyJS
         try {
@@ -338,7 +336,7 @@ export default async function tryExecuteServiceMethod(
             await dbManager.tryReserveDbConnectionFromPool();
           }
 
-          response = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
+          [response, backkError] = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
 
           if (dbManager) {
             dbManager.tryReleaseDbConnectionBackToPool();
@@ -397,20 +395,20 @@ export default async function tryExecuteServiceMethod(
             );
           }
         } catch (error) {
-          response = createBackkErrorFromError(error);
+          backkError = createBackkErrorFromError(error);
         }
 
-        return response;
+        return [response, backkError];
       });
 
-      if (isErrorResponse(response)) {
-        if (response.statusCode >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {
+      if (backkError) {
+        if (backkError.statusCode >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {
           defaultServiceMetrics.incrementHttp5xxErrorsByOne();
-        } else if (response.statusCode >= HttpStatusCodes.CLIENT_ERRORS_START) {
+        } else if (backkError.statusCode >= HttpStatusCodes.CLIENT_ERRORS_START) {
           defaultServiceMetrics.incrementHttpClientErrorCounter(serviceFunctionName);
         }
         // noinspection ExceptionCaughtLocallyJS
-        throw new HttpException(response, response.statusCode);
+        throw new HttpException(backkError, backkError.statusCode);
       }
 
       if (response !== undefined) {
@@ -481,7 +479,7 @@ export default async function tryExecuteServiceMethod(
 
         if (response.version) {
           if (response.version === headers['If-None-Match']) {
-            response = undefined;
+            response = null;
             resp?.status(HttpStatusCodes.NOT_MODIFIED);
           }
 
@@ -569,7 +567,9 @@ export default async function tryExecuteServiceMethod(
         storedError ? 'failure' : 'success',
         storedError?.getStatus(),
         storedError?.getResponse().errorMessage,
-        controller[serviceName] instanceof UserAccountBaseService ? serviceFunctionArgument : { _id: response._id }
+        controller[serviceName] instanceof UserAccountBaseService
+          ? serviceFunctionArgument
+          : { _id: response._id }
       );
       await (controller?.auditLoggingService as AuditLoggingService).log(auditLogEntry);
     }
