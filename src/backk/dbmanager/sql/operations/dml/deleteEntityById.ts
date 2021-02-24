@@ -18,6 +18,7 @@ import createErrorFromErrorCodeMessageAndStatus
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import { BackkEntity } from "../../../../types/entities/BackkEntity";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import isBackkError from "../../../../errors/isBackkError";
 
 export default async function deleteEntityById<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
@@ -85,15 +86,14 @@ export default async function deleteEntityById<T extends BackkEntity>(
     ]);
 
     if (postHook) {
-      await tryExecutePostHook(postHook);
+      await tryExecutePostHook(postHook, [null, null]);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-  } catch (errorOrErrorResponse) {
+    return [null, null];
+  } catch (errorOrBackkError) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return isErrorResponse(errorOrErrorResponse)
-      ? errorOrErrorResponse
-      : createBackkErrorFromError(errorOrErrorResponse);
+    return isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
