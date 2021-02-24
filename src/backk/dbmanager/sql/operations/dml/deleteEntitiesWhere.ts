@@ -10,6 +10,7 @@ import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTran
 import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
 import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import isBackkError from "../../../../errors/isBackkError";
 
 export default async function deleteEntitiesWhere<T extends object>(
   dbManager: AbstractSqlDbManager,
@@ -68,11 +69,10 @@ export default async function deleteEntitiesWhere<T extends object>(
     ]);
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-  } catch (errorOrErrorResponse) {
+    return [null, null];
+  } catch (errorOrBackkError) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return isErrorResponse(errorOrErrorResponse)
-      ? errorOrErrorResponse
-      : createBackkErrorFromError(errorOrErrorResponse);
+    return isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError);
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
