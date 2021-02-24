@@ -1,19 +1,18 @@
-import shouldUseRandomInitializationVector from "../../../../crypt/shouldUseRandomInitializationVector";
-import shouldEncryptValue from "../../../../crypt/shouldEncryptValue";
-import encrypt from "../../../../crypt/encrypt";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { BackkError } from "../../../../types/BackkError";
-import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
-import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
-import isUniqueField from "./utils/isUniqueField";
-import SqlEquals from "../../expressions/SqlEquals";
-import getTableName from "../../../utils/getTableName";
-import createBackkErrorFromErrorCodeMessageAndStatus
-  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import shouldUseRandomInitializationVector from '../../../../crypt/shouldUseRandomInitializationVector';
+import shouldEncryptValue from '../../../../crypt/shouldEncryptValue';
+import encrypt from '../../../../crypt/encrypt';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import transformRowsToObjects from './transformresults/transformRowsToObjects';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
+import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import isUniqueField from './utils/isUniqueField';
+import SqlEquals from '../../expressions/SqlEquals';
+import getTableName from '../../../utils/getTableName';
+import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
+import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
 
 export default async function getEntitiesWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -21,7 +20,7 @@ export default async function getEntitiesWhere<T>(
   fieldValue: any,
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
-): Promise<[T[], BackkError | null]> {
+): PromiseOfErrorOr<T[]> {
   if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {
     throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
   }
@@ -74,19 +73,24 @@ export default async function getEntitiesWhere<T>(
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     if (dbManager.getResultRows(result).length === 0) {
-      return createBackkErrorFromErrorCodeMessageAndStatus({
-        ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-        errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
-      });
+      return [
+        null,
+        createBackkErrorFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+          errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
+        })
+      ];
     }
 
-    return transformRowsToObjects(
+    const entities = transformRowsToObjects(
       dbManager.getResultRows(result),
       EntityClass,
       postQueryOperations,
       dbManager.getTypes()
     );
+
+    return [entities, null];
   } catch (error) {
-    return createBackkErrorFromError(error);
+    return [null, createBackkErrorFromError(error)];
   }
 }
