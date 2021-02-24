@@ -12,8 +12,8 @@ import SqlEquals from "../../expressions/SqlEquals";
 import transformRowsToObjects from "./transformresults/transformRowsToObjects";
 import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import getTableName from "../../../utils/getTableName";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 
 export default async function getEntityWhere<T>(
@@ -67,7 +67,7 @@ export default async function getEntityWhere<T>(
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     if (dbManager.getResultRows(result).length === 0) {
-      return createErrorResponseFromErrorCodeMessageAndStatus({
+      return createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.ENTITY_NOT_FOUND,
         errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
       });

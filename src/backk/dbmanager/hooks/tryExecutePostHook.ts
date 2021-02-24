@@ -1,9 +1,8 @@
-import { PostHook } from './PostHook';
-import { getNamespace } from 'cls-hooked';
-import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
-import { HttpStatusCodes } from '../../constants/constants';
-import { ErrorOr } from '../../types/PromiseOfErrorOr';
-import createBackkErrorFromError from '../../errors/createBackkErrorFromError';
+import { PostHook } from "./PostHook";
+import { getNamespace } from "cls-hooked";
+import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
+import { HttpStatusCodes } from "../../constants/constants";
+import { ErrorOr } from "../../types/PromiseOfErrorOr";
 
 export default async function tryExecutePostHook(postHook: PostHook, [, error]: ErrorOr<any>) {
   if (error) {

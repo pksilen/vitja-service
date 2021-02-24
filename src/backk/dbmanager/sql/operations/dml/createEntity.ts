@@ -22,8 +22,8 @@ import { PostHook } from "../../../hooks/PostHook";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 import { BackkEntity } from "../../../../types/entities/BackkEntity";
 import { SubEntity } from "../../../../types/entities/SubEntity";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import createErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
@@ -245,7 +245,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
 
     if ('message' in errorOrErrorResponse && dbManager.isDuplicateEntityError(errorOrErrorResponse)) {
-      return createErrorResponseFromErrorCodeMessageAndStatus({
+      return createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.DUPLICATE_ENTITY,
         errorMessage: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(1)}`
       });

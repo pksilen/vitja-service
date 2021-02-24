@@ -2,7 +2,13 @@
 
 TODO:
 - replace T | ErrorResponse with Promise<[T, BackkError]>
-- Implement getFollowerUsersSalesItems to use userService function to getFollowingUsers
+- Implement getFollowerUsersSalesItems to use getEntityWithJoin(SalesItem, User)
+- Implement check updateEntity affected rows for Sql and MongoDb
+- UpdateEntityByFilters for Sql and mongo, check affected rows count
+- Implement UpdateEntityWhere with UpdateEntityByFilters For Sql and Mongo
+- Implemented version/lastModifiedTimestamp to use filters, not prehooks
+- implement currententity query before prehooks checkking to select for update (locking)
+
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

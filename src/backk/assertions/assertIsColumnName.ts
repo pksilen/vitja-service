@@ -1,10 +1,10 @@
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../errors/backkErrors";
 
 export default function assertIsColumnName(propertyName: string, columnName: string) {
   if (columnName.match(/^[a-zA-Z_][a-zA-Z0-9_.]*$/) == null) {
-    throw createErrorResponseFromErrorCodeMessageAndStatus({
+    throw createBackkErrorFromErrorCodeMessageAndStatus({
       ...BACKK_ERRORS.INVALID_ARGUMENT,
       errorMessage:
         BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +

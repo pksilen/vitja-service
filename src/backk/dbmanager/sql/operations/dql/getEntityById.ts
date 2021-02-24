@@ -9,8 +9,8 @@ import DefaultPostQueryOperations from "../../../../types/postqueryoperations/De
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 import getTableName from "../../../utils/getTableName";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import createErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
@@ -70,7 +70,7 @@ export default async function getEntityById<T>(
     const result = await dbManager.tryExecuteQuery(selectStatement, [numericId]);
 
     if (dbManager.getResultRows(result).length === 0) {
-      return createErrorResponseFromErrorCodeMessageAndStatus({
+      return createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.ENTITY_NOT_FOUND,
         errorMessage: `${EntityClass.name} with _id: ${_id} not found`
       });

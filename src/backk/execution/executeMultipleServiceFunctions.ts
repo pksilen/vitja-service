@@ -12,7 +12,7 @@ import { HttpStatusCodes } from '../constants/constants';
 import { BackkError } from '../types/BackkError';
 import isErrorResponse from '../errors/isErrorResponse';
 import callRemoteService from '../remote/http/callRemoteService';
-import createErrorResponseFromErrorCodeMessageAndStatus from '../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
 
@@ -53,7 +53,7 @@ async function executeMultiple<T>(
       if (localOrRemoteServiceFunctionName.includes('/')) {
         if (isTransactional) {
           response.send(
-            createErrorResponseFromErrorCodeMessageAndStatus(
+            createBackkErrorFromErrorCodeMessageAndStatus(
               BACKK_ERRORS.REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED_INSIDE_TRANSACTION
             )
           );
@@ -61,7 +61,7 @@ async function executeMultiple<T>(
           response.status(HttpStatusCodes.BAD_REQUEST);
         } else if (!options?.allowedServiceFunctionsRegExpForRemoteServiceCalls) {
           response.send(
-            createErrorResponseFromErrorCodeMessageAndStatus(
+            createBackkErrorFromErrorCodeMessageAndStatus(
               BACKK_ERRORS.ALLOWED_REMOTE_SERVICE_FUNCTIONS_REGEXP_PATTERN_NOT_DEFINED
             )
           );
@@ -71,7 +71,7 @@ async function executeMultiple<T>(
           !localOrRemoteServiceFunctionName.match(options.allowedServiceFunctionsRegExpForRemoteServiceCalls)
         ) {
           response.send(
-            createErrorResponseFromErrorCodeMessageAndStatus(
+            createBackkErrorFromErrorCodeMessageAndStatus(
               BACKK_ERRORS.REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED
             )
           );

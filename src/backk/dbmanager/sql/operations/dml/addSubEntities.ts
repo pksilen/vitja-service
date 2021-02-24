@@ -22,7 +22,7 @@ import { SubEntity } from '../../../../types/entities/SubEntity';
 import getEntityById from '../dql/getEntityById';
 import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import createErrorResponseFromErrorCodeMessageAndStatus from '../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus';
+import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 import getSingularName from '../../../../utils/getSingularName';
 
@@ -114,7 +114,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
         maxSubItemId + newSubEntities.length >= foundArrayMaxSizeValidation.constraints[0]
       ) {
         // noinspection ExceptionCaughtLocallyJS
-        throw createErrorResponseFromErrorCodeMessageAndStatus({
+        throw createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED,
           errorMessage:
             parentEntityClassAndPropertyNameForSubEntity[0].name +

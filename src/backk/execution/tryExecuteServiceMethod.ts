@@ -26,8 +26,8 @@ import tryScheduleJobExecution from "../scheduling/tryScheduleJobExecution";
 import isExecuteMultipleRequest from "./isExecuteMultipleRequest";
 import createErrorFromErrorCodeMessageAndStatus from "../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BackkError } from "../types/BackkError";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../errors/backkErrors";
 
 export interface ExecuteServiceFunctionOptions {
@@ -65,7 +65,7 @@ export default async function tryExecuteServiceMethod(
           Object.keys(serviceFunctionArgument).length >
           options?.maxServiceFunctionCountInMultipleServiceFunctionExecution
         ) {
-          throw createErrorResponseFromErrorCodeMessageAndStatus({
+          throw createBackkErrorFromErrorCodeMessageAndStatus({
             ...BACKK_ERRORS.INVALID_ARGUMENT,
             errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + 'too many service functions called'
           });
@@ -140,7 +140,7 @@ export default async function tryExecuteServiceMethod(
         // noinspection AssignmentToFunctionParameterJS
         serviceFunctionArgument = JSON.parse(serviceFunctionArgument);
       } catch (error) {
-        throw createErrorResponseFromErrorCodeMessageAndStatus({
+        throw createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.INVALID_ARGUMENT,
           errorMessage:
             BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +
@@ -154,7 +154,7 @@ export default async function tryExecuteServiceMethod(
         resp?.send(controller.publicServicesMetadata);
         return;
       } else {
-        throw createErrorResponseFromErrorCodeMessageAndStatus({
+        throw createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.UNKNOWN_SERVICE,
           errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE.errorMessage + serviceName
         });
@@ -172,7 +172,7 @@ export default async function tryExecuteServiceMethod(
     }
 
     if (!controller[serviceName]) {
-      throw createErrorResponseFromErrorCodeMessageAndStatus({
+      throw createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.UNKNOWN_SERVICE,
         errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE.errorMessage + serviceName
       });
@@ -182,7 +182,7 @@ export default async function tryExecuteServiceMethod(
       controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName];
 
     if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
-      throw createErrorResponseFromErrorCodeMessageAndStatus({
+      throw createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.UNKNOWN_SERVICE_FUNCTION,
         errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE_FUNCTION.errorMessage + serviceFunctionName
       });
@@ -196,7 +196,7 @@ export default async function tryExecuteServiceMethod(
       Array.isArray(serviceFunctionArgument) ||
       (serviceFunctionArgumentTypeName && serviceFunctionArgument === null)
     ) {
-      throw createErrorResponseFromErrorCodeMessageAndStatus({
+      throw createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.INVALID_ARGUMENT,
         errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + 'argument must be a JSON object'
       });
@@ -261,7 +261,7 @@ export default async function tryExecuteServiceMethod(
       });
 
       if (!instantiatedServiceFunctionArgument) {
-        throw createErrorResponseFromErrorCodeMessageAndStatus(
+        throw createBackkErrorFromErrorCodeMessageAndStatus(
           BACKK_ERRORS.MISSING_SERVICE_FUNCTION_ARGUMENT
         );
       }

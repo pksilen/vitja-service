@@ -6,8 +6,8 @@ import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQ
 import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
 import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
 import getTableName from "../../../utils/getTableName";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 
 export default async function getEntitiesByIds<T>(
@@ -31,7 +31,7 @@ export default async function getEntitiesByIds<T>(
       const numericId = parseInt(id, 10);
 
       if (isNaN(numericId)) {
-        throw createErrorResponseFromErrorCodeMessageAndStatus({
+        throw createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.INVALID_ARGUMENT,
           errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + ' all _ids must be numeric values'
         });
@@ -58,7 +58,7 @@ export default async function getEntitiesByIds<T>(
     const result = await dbManager.tryExecuteQuery(selectStatement, numericIds);
 
     if (dbManager.getResultRows(result).length === 0) {
-      return createErrorResponseFromErrorCodeMessageAndStatus({
+      return createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.ENTITY_NOT_FOUND,
         errorMessage: `${EntityClass.name}s with _ids: ${_ids.join(', ')} not found`
       });

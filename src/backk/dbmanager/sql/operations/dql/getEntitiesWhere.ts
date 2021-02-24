@@ -11,8 +11,8 @@ import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount
 import isUniqueField from "./utils/isUniqueField";
 import SqlEquals from "../../expressions/SqlEquals";
 import getTableName from "../../../utils/getTableName";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 
 export default async function getEntitiesWhere<T>(
@@ -74,7 +74,7 @@ export default async function getEntitiesWhere<T>(
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     if (dbManager.getResultRows(result).length === 0) {
-      return createErrorResponseFromErrorCodeMessageAndStatus({
+      return createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.ENTITY_NOT_FOUND,
         errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
       });

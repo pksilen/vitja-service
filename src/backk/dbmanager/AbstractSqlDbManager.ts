@@ -33,8 +33,8 @@ import deleteEntitiesByFilters from "./sql/operations/dml/deleteEntitiesByFilter
 import MongoDbQuery from "./mongodb/MongoDbQuery";
 import { PostHook } from "./hooks/PostHook";
 import DefaultPostQueryOperations from "../types/postqueryoperations/DefaultPostQueryOperations";
-import createErrorResponseFromErrorCodeMessageAndStatus
-  from "../errors/createErrorResponseFromErrorCodeMessageAndStatus";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../errors/backkErrors";
 import { CreatePreHook } from "./hooks/CreatePreHook";
 import { PromiseOfErrorOr } from "../types/PromiseOfErrorOr";
@@ -534,7 +534,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     if (response?.length === 0) {
       return [
         null,
-        createErrorResponseFromErrorCodeMessageAndStatus({
+        createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.ENTITY_NOT_FOUND,
           errorMessage: EntityClass.name + ' with given filter(s) not found'
         })

@@ -2,7 +2,7 @@ import { ErrorCodeAndMessageAndStatus } from '../dbmanager/hooks/PreHook';
 import createBackkErrorFromError from './createBackkErrorFromError';
 import { HttpStatusCodes } from '../constants/constants';
 
-export default function createErrorResponseFromErrorCodeMessageAndStatus(
+export default function createBackkErrorFromErrorCodeMessageAndStatus(
   errorCodeMessageAndStatus: ErrorCodeAndMessageAndStatus
 ) {
   return createBackkErrorFromError(
