@@ -9,13 +9,14 @@ import getTableName from "../../../utils/getTableName";
 import createBackkErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
   _ids: string[],
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
-): Promise<[T[], BackkError | null]> {
+): PromiseOfErrorOr<T[]> {
   try {
     updateDbLocalTransactionCount(dbManager);
 
@@ -58,19 +59,21 @@ export default async function getEntitiesByIds<T>(
     const result = await dbManager.tryExecuteQuery(selectStatement, numericIds);
 
     if (dbManager.getResultRows(result).length === 0) {
-      return createBackkErrorFromErrorCodeMessageAndStatus({
+      return [null, createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.ENTITY_NOT_FOUND,
         errorMessage: `${EntityClass.name}s with _ids: ${_ids.join(', ')} not found`
-      });
+      })];
     }
 
-    return transformRowsToObjects(
+    const entities = transformRowsToObjects(
       dbManager.getResultRows(result),
       EntityClass,
       postQueryOperations,
       dbManager.getTypes()
     );
+
+    return [entities, null];
   } catch (error) {
-    return createBackkErrorFromError(error);
+    return [null, createBackkErrorFromError(error)];
   }
 }
