@@ -1,15 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import AbstractDbManager from '../../dbmanager/AbstractDbManager';
-import StartupService from './StartupService';
-import { BackkError } from '../../types/BackkError';
-import createBackkErrorFromErrorMessageAndStatusCode from '../../errors/createBackkErrorFromErrorMessageAndStatusCode';
-import initializeDatabase, { isDbInitialized } from '../../dbmanager/sql/operations/ddl/initializeDatabase';
-import { HttpStatusCodes } from '../../constants/constants';
-import { AllowForClusterInternalUse } from '../../decorators/service/function/AllowForClusterInternalUse';
-import scheduledJobsForExecution, {
-  scheduledJobsOrErrorResponse
-} from '../../scheduling/scheduledJobsForExecution';
-import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
+import { Injectable } from "@nestjs/common";
+import AbstractDbManager from "../../dbmanager/AbstractDbManager";
+import StartupService from "./StartupService";
+import createBackkErrorFromErrorMessageAndStatusCode
+  from "../../errors/createBackkErrorFromErrorMessageAndStatusCode";
+import initializeDatabase, { isDbInitialized } from "../../dbmanager/sql/operations/ddl/initializeDatabase";
+import { HttpStatusCodes } from "../../constants/constants";
+import { AllowForClusterInternalUse } from "../../decorators/service/function/AllowForClusterInternalUse";
+import scheduledJobsForExecution, { scheduledJobsOrErrorResponse } from "../../scheduling/scheduledJobsForExecution";
+import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
 
 @Injectable()
 export default class StartupServiceImpl extends StartupService {

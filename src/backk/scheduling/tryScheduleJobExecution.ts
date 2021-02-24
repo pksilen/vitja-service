@@ -13,6 +13,7 @@ import JobScheduling from './entities/JobScheduling';
 import { scheduleCronJob } from './scheduleCronJob';
 import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
+import emptyError from '../errors/emptyError';
 
 export default async function tryScheduleJobExecution(
   controller: any,
@@ -73,12 +74,14 @@ export default async function tryScheduleJobExecution(
   // TODO check that seconds are zero, because 1 min granularity only allowed
   const dbManager = (controller[serviceName] as BaseService).getDbManager();
   // eslint-disable-next-line @typescript-eslint/camelcase
-  let entityOrErrorResponse: __Backk__JobScheduling | BackkError | undefined;
+  let entity: __Backk__JobScheduling | null = null;
+  let error: BackkError | null = emptyError;
   const clsNamespace = createNamespace('serviceFunctionExecution');
+
   await clsNamespace.runAndReturn(async () => {
     await dbManager.tryReserveDbConnectionFromPool();
 
-    entityOrErrorResponse = await dbManager.createEntity(
+    [entity, error] = await dbManager.createEntity(
       {
         serviceFunctionName,
         retryIntervalsInSecs: retryIntervalsInSecsStr,
@@ -91,25 +94,23 @@ export default async function tryScheduleJobExecution(
     dbManager.tryReleaseDbConnectionBackToPool();
   });
 
-  if (entityOrErrorResponse && 'errorMessage' in entityOrErrorResponse) {
-    throw entityOrErrorResponse;
+  if (error) {
+    throw error;
   }
 
-  if (entityOrErrorResponse) {
-    const jobId = (entityOrErrorResponse as any)._id;
+  const jobId = (entity as any)._id;
 
-    await scheduleCronJob(
-      scheduledExecutionTimestampAsDate,
-      retryIntervalsInSecs,
-      dbManager,
-      jobId,
-      controller,
-      serviceFunctionName,
-      { ...serviceFunctionArgument, jobId }
-    );
+  await scheduleCronJob(
+    scheduledExecutionTimestampAsDate,
+    retryIntervalsInSecs,
+    dbManager,
+    jobId,
+    controller,
+    serviceFunctionName,
+    { ...serviceFunctionArgument, jobId }
+  );
 
-    resp?.send({
-      jobId
-    });
-  }
+  resp?.send({
+    jobId
+  });
 }
