@@ -1,4 +1,4 @@
 export interface ServiceFunctionCallResponse {
   statusCode: number;
-  response: object | void;
+  response: object | null | void;
 }

@@ -3,13 +3,13 @@ import { BackkError, backkErrorSymbol } from '../types/BackkError';
 
 export default class BackkResponse {
   private statusCode: number = HttpStatusCodes.INTERNAL_SERVER_ERROR;
-  private response = {};
+  private response: object | null = {};
 
   status(statusCode: number) {
     this.statusCode = statusCode;
   }
 
-  send(response: object) {
+  send(response: object | null) {
     this.response = response;
   }
 
@@ -17,7 +17,7 @@ export default class BackkResponse {
     return this.statusCode;
   }
 
-  getResponse(): object {
+  getResponse(): object | null {
     return this.response;
   }
 

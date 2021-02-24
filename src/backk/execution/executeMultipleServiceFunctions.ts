@@ -10,7 +10,6 @@ import BaseService from '../service/BaseService';
 import isValidServiceFunctionName from './isValidServiceFunctionName';
 import { HttpStatusCodes } from '../constants/constants';
 import { BackkError } from '../types/BackkError';
-import isErrorResponse from '../errors/isErrorResponse';
 import callRemoteService from '../remote/http/callRemoteService';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
@@ -27,7 +26,7 @@ async function executeMultiple<T>(
   isTransactional = false
 ) {
   const forEachFunc = isConcurrent ? forEachAsyncParallel : forEachAsyncSequential;
-  let possibleErrorResponse: BackkError | undefined;
+  let possibleErrorResponse: BackkError | null = null;
 
   await forEachFunc(
     Object.entries(serviceFunctionArgument),
@@ -47,6 +46,7 @@ async function executeMultiple<T>(
           JSON.stringify(serviceFunctionArgument),
           serviceFunctionCallIdToResponseMap
         );
+
         renderedServiceFunctionArgument = JSON.parse(renderedServiceFunctionArgument);
       }
 
@@ -75,21 +75,17 @@ async function executeMultiple<T>(
               BACKK_ERRORS.REMOTE_SERVICE_FUNCTION_CALL_NOT_ALLOWED
             )
           );
+
           response.status(HttpStatusCodes.BAD_REQUEST);
         } else {
           const [serviceHost, serviceFunctionName] = localOrRemoteServiceFunctionName.split('/');
 
-          const remoteServiceCallResponse = await callRemoteService(
+          const [remoteResponse, error] = await callRemoteService(
             `http://${serviceHost}.svc.cluster.local/${serviceFunctionName}`
           );
 
-          response.send(remoteServiceCallResponse);
-
-          response.status(
-            'errorMessage' in remoteServiceCallResponse
-              ? remoteServiceCallResponse.statusCode
-              : HttpStatusCodes.SUCCESS
-          );
+          response.send(remoteResponse);
+          response.status(error ? error.statusCode : HttpStatusCodes.SUCCESS);
         }
       } else {
         await tryExecuteServiceMethod(
@@ -108,8 +104,8 @@ async function executeMultiple<T>(
         response: response.getResponse()
       };
 
-      if (isErrorResponse(response.getResponse())) {
-        possibleErrorResponse = response.getResponse() as BackkError;
+      if (response.getErrorResponse()) {
+        possibleErrorResponse = response.getErrorResponse();
       }
 
       statusCodes.push(response.getStatusCode());
@@ -161,7 +157,8 @@ export default async function executeMultipleServiceFunctions(
       if (shouldExecuteInsideTransaction) {
         await dbManager.executeInsideTransaction(async () => {
           clsNamespace.set('globalTransaction', true);
-          const response = await executeMultiple(
+
+          await executeMultiple(
             isConcurrent,
             serviceFunctionCalls,
             controller,
@@ -171,11 +168,13 @@ export default async function executeMultipleServiceFunctions(
             statusCodes,
             true
           );
+
           clsNamespace.set('globalTransaction', false);
-          return response;
+          return [null, null];
         });
       } else {
         clsNamespace.set('globalTransaction', true);
+
         await executeMultiple(
           isConcurrent,
           serviceFunctionCalls,
@@ -185,6 +184,7 @@ export default async function executeMultipleServiceFunctions(
           serviceFunctionCallIdToResponseMap,
           statusCodes
         );
+
         clsNamespace.set('globalTransaction', false);
       }
 

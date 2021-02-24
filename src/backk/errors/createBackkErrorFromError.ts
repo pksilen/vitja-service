@@ -1,4 +1,4 @@
-import { BackkError } from '../types/BackkError';
+import { BackkError, backkErrorSymbol } from "../types/BackkError";
 import log, { Severity } from '../observability/logging/log';
 import { HttpStatusCodes } from '../constants/constants';
 
@@ -23,6 +23,7 @@ export default function createBackkErrorFromError(error: Error): BackkError {
   log(Severity.DEBUG, message, error.stack ?? '', { errorCode, statusCode });
 
   return {
+    [backkErrorSymbol]: true,
     statusCode,
     errorCode,
     message,

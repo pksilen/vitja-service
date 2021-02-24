@@ -217,7 +217,7 @@ export default abstract class AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations,
-    joins?: (new () =>T)[]
+    joins?: JoinSpec[]
   ): PromiseOfErrorOr<T>;
 
   abstract getEntitiesWhere<T>(
@@ -225,7 +225,7 @@ export default abstract class AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations,
-    joins?: (new () =>T)[]
+    joins?: JoinSpec[]
   ): PromiseOfErrorOr<T[]>;
 
   abstract updateEntity<T extends BackkEntity>(
