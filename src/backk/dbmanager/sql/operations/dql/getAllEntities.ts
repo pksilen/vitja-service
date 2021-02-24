@@ -8,12 +8,13 @@ import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount
 import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
 import Pagination from '../../../../types/postqueryoperations/Pagination';
 import getTableName from "../../../utils/getTableName";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function getAllEntities<T>(
   dbManager: AbstractSqlDbManager,
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations
-): Promise<[T[], BackkError | null]> {
+): PromiseOfErrorOr<T[]> {
   updateDbLocalTransactionCount(dbManager);
 
   // noinspection AssignmentToFunctionParameterJS
@@ -46,13 +47,15 @@ export default async function getAllEntities<T>(
 
     const result = await dbManager.tryExecuteQuery(selectStatement);
 
-    return transformRowsToObjects(
+    const entities = transformRowsToObjects(
       dbManager.getResultRows(result),
       EntityClass,
       finalPostQueryOperations,
       dbManager.getTypes()
     );
+
+    return [entities, null];
   } catch (error) {
-    return createBackkErrorFromError(error);
+    return [null, createBackkErrorFromError(error)];
   }
 }
