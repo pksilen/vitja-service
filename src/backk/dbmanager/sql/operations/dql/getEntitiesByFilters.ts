@@ -1,16 +1,15 @@
-import SqlExpression from "../../expressions/SqlExpression";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { BackkError } from "../../../../types/BackkError";
-import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
-import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
-import MongoDbQuery from "../../../mongodb/MongoDbQuery";
-import convertFilterObjectToSqlEquals from "./utils/convertFilterObjectToSqlEquals";
-import getTableName from "../../../utils/getTableName";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import SqlExpression from '../../expressions/SqlExpression';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import transformRowsToObjects from './transformresults/transformRowsToObjects';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
+import MongoDbQuery from '../../../mongodb/MongoDbQuery';
+import convertFilterObjectToSqlEquals from './utils/convertFilterObjectToSqlEquals';
+import getTableName from '../../../utils/getTableName';
+import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
 
 export default async function getEntitiesByFilters<T>(
   dbManager: AbstractSqlDbManager,
@@ -21,8 +20,7 @@ export default async function getEntitiesByFilters<T>(
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);
-  }
-  else if (filters.find((filter) => filter instanceof MongoDbQuery)) {
+  } else if (filters.find((filter) => filter instanceof MongoDbQuery)) {
     throw new Error('filters must be an array of SqlExpressions and/or UserDefinedFilters');
   }
 
@@ -56,16 +54,17 @@ export default async function getEntitiesByFilters<T>(
       .filter((sqlPart) => sqlPart)
       .join(' ');
 
-
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
-    return transformRowsToObjects(
+    const entities = transformRowsToObjects(
       dbManager.getResultRows(result),
       EntityClass,
       postQueryOperations,
       dbManager.getTypes()
     );
+
+    return [entities, null];
   } catch (error) {
-    return createBackkErrorFromError(error);
+    return [null, createBackkErrorFromError(error)];
   }
 }
