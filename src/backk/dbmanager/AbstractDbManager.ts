@@ -17,6 +17,7 @@ import { PostHook } from "./hooks/PostHook";
 import { CreatePreHook } from "./hooks/CreatePreHook";
 import { FilterQuery } from "mongodb";
 import { PromiseOfErrorOr } from "../types/PromiseOfErrorOr";
+import { JoinSpec } from "./types/JoinSpec";
 
 export interface Field {
   name: string;
@@ -160,19 +161,22 @@ export default abstract class AbstractDbManager {
 
   abstract getAllEntities<T>(
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    postQueryOperations?: PostQueryOperations,
+    joins?: JoinSpec[]
   ): PromiseOfErrorOr<T[]>;
 
   abstract getEntitiesByFilters<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
-    postQueryOperations: PostQueryOperations
+    postQueryOperations: PostQueryOperations,
+    joins?: JoinSpec[]
   ): PromiseOfErrorOr<T[]>;
 
   abstract getEntityByFilters<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    postQueryOperations?: PostQueryOperations,
+    joins?: JoinSpec[]
   ): PromiseOfErrorOr<T>;
 
   abstract getEntitiesCount<T>(
@@ -183,7 +187,8 @@ export default abstract class AbstractDbManager {
   abstract getEntityById<T>(
     _id: string,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    postQueryOperations?: PostQueryOperations,
+    joins?: JoinSpec[]
   ): PromiseOfErrorOr<T>;
 
   abstract getSubEntity<T extends object, U extends object>(
@@ -203,21 +208,24 @@ export default abstract class AbstractDbManager {
   abstract getEntitiesByIds<T>(
     _ids: string[],
     EntityClass: new () => T,
-    postQueryOperations: PostQueryOperations
+    postQueryOperations: PostQueryOperations,
+    joins?: JoinSpec[]
   ): PromiseOfErrorOr<T[]>;
 
   abstract getEntityWhere<T>(
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    postQueryOperations?: PostQueryOperations,
+    joins?: (new () =>T)[]
   ): PromiseOfErrorOr<T>;
 
   abstract getEntitiesWhere<T>(
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
-    postQueryOperations: PostQueryOperations
+    postQueryOperations: PostQueryOperations,
+    joins?: (new () =>T)[]
   ): PromiseOfErrorOr<T[]>;
 
   abstract updateEntity<T extends BackkEntity>(

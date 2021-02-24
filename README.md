@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- replace T | ErrorResponse with Promise<[T, BackkError]>
+
 - Implement getFollowerUsersSalesItems to use getEntityWithJoin(SalesItem, User)
 - Implement check updateEntity affected rows for Sql and MongoDb
 - UpdateEntityByFilters for Sql and mongo, check affected rows count
