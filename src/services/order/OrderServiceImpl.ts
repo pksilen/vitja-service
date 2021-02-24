@@ -1,45 +1,44 @@
-import { Injectable } from '@nestjs/common';
-import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import { AllowForUserRoles } from '../../backk/decorators/service/function/AllowForUserRoles';
-import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
-import SalesItemService from '../salesitem/SalesItemService';
-import OrderService from './OrderService';
-import PlaceOrderArg from './types/args/PlaceOrderArg';
-import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
-import Order from './types/entities/Order';
-import OrderItem from './types/entities/OrderItem';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
-import AddOrderItemArg from './types/args/AddOrderItemArg';
-import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
-import { BackkError } from '../../backk/types/BackkError';
+import { Injectable } from "@nestjs/common";
+import AbstractDbManager from "src/backk/dbmanager/AbstractDbManager";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import { AllowForUserRoles } from "../../backk/decorators/service/function/AllowForUserRoles";
+import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
+import SalesItemService from "../salesitem/SalesItemService";
+import OrderService from "./OrderService";
+import PlaceOrderArg from "./types/args/PlaceOrderArg";
+import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
+import Order from "./types/entities/Order";
+import OrderItem from "./types/entities/OrderItem";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
+import AddOrderItemArg from "./types/args/AddOrderItemArg";
+import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
 import {
   DELETE_ORDER_NOT_ALLOWED,
   INVALID_ORDER_ITEM_STATE,
   ORDER_ALREADY_PAID,
   ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
-} from './errors/orderServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
-import executeForAll from '../../backk/utils/executeForAll';
-import ShoppingCartService from '../shoppingcart/ShoppingCartService';
-import { SalesItemState } from '../salesitem/types/enums/SalesItemState';
-import { OrderState } from './types/enum/OrderState';
-import { Update } from '../../backk/decorators/service/function/Update';
-import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
-import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
-import { Create } from '../../backk/decorators/service/function/Create';
-import { HttpStatusCodes } from '../../backk/constants/constants';
-import { ResponseStatusCode } from '../../backk/decorators/service/function/ResponseStatusCode';
-import { ResponseHeaders } from '../../backk/decorators/service/function/ResponseHeaders';
-import getServiceName from '../../backk/utils/getServiceName';
-import { PaymentGateway } from './types/enum/PaymentGateway';
-import _Id from '../../backk/types/id/_Id';
-import { Delete } from '../../backk/decorators/service/function/Delete';
-import PayOrderArg from './types/args/PayOrderArg';
-import { JSONPath } from 'jsonpath-plus';
-import { CronJob } from '../../backk/decorators/service/function/CronJob';
+} from "./errors/orderServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
+import executeForAll from "../../backk/utils/executeForAll";
+import ShoppingCartService from "../shoppingcart/ShoppingCartService";
+import { SalesItemState } from "../salesitem/types/enums/SalesItemState";
+import { OrderState } from "./types/enum/OrderState";
+import { Update } from "../../backk/decorators/service/function/Update";
+import sendToRemoteService from "../../backk/remote/messagequeue/sendToRemoteService";
+import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
+import { Create } from "../../backk/decorators/service/function/Create";
+import { HttpStatusCodes } from "../../backk/constants/constants";
+import { ResponseStatusCode } from "../../backk/decorators/service/function/ResponseStatusCode";
+import { ResponseHeaders } from "../../backk/decorators/service/function/ResponseHeaders";
+import getServiceName from "../../backk/utils/getServiceName";
+import { PaymentGateway } from "./types/enum/PaymentGateway";
+import _Id from "../../backk/types/id/_Id";
+import { Delete } from "../../backk/decorators/service/function/Delete";
+import PayOrderArg from "./types/args/PayOrderArg";
+import { JSONPath } from "jsonpath-plus";
+import { CronJob } from "../../backk/decorators/service/function/CronJob";
 import dayjs from "dayjs";
 import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
@@ -287,7 +286,7 @@ export default class OrderServiceImpl extends OrderService {
     newState: SalesItemState,
     currentState?: SalesItemState
   ): PromiseOfErrorOr<null> {
-    return await executeForAll(salesItems, ({ _id }) =>
+    return executeForAll(salesItems, ({ _id }) =>
       this.salesItemService.updateSalesItemState(
         {
           _id,

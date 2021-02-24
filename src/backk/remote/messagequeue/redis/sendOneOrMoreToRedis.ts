@@ -1,17 +1,17 @@
-import Redis from 'ioredis';
-import { CallOrSendTo } from '../sendToRemoteServiceInsideTransaction';
-import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseRemoteServiceFunctionCallUrlParts';
-import { getNamespace } from 'cls-hooked';
-import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
-import log, { Severity } from '../../../observability/logging/log';
-import createBackkErrorFromError from '../../../errors/createBackkErrorFromError';
-import { BackkError } from '../../../types/BackkError';
-import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
+import Redis from "ioredis";
+import { CallOrSendTo } from "../sendToRemoteServiceInsideTransaction";
+import parseRemoteServiceFunctionCallUrlParts from "../../utils/parseRemoteServiceFunctionCallUrlParts";
+import { getNamespace } from "cls-hooked";
+import forEachAsyncSequential from "../../../utils/forEachAsyncSequential";
+import log, { Severity } from "../../../observability/logging/log";
+import createBackkErrorFromError from "../../../errors/createBackkErrorFromError";
+import defaultServiceMetrics from "../../../observability/metrics/defaultServiceMetrics";
+import { PromiseOfErrorOr } from "../../../types/PromiseOfErrorOr";
 
 export default async function sendOneOrMoreToRedis(
   sends: CallOrSendTo[],
   isTransactional: boolean
-): Promise<BackkError | null> {
+): PromiseOfErrorOr<null> {
   const remoteServiceUrl = sends[0].remoteServiceFunctionUrl;
   const { server, topic } = parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl);
   const redis = new Redis(server);
@@ -49,8 +49,10 @@ export default async function sendOneOrMoreToRedis(
     if (isTransactional) {
       await redis.exec();
     }
+
+    return [null, null];
   } catch (error) {
     defaultServiceMetrics.incrementRemoteServiceCallErrorCountByOne(remoteServiceUrl);
-    return createBackkErrorFromError(error);
+    return [null, createBackkErrorFromError(error)];
   }
 }

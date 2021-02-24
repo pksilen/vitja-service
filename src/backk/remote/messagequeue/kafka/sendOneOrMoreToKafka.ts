@@ -1,17 +1,17 @@
-import { CompressionTypes, Kafka, Producer, Transaction } from 'kafkajs';
-import { getNamespace } from 'cls-hooked';
-import tracerProvider from '../../../observability/distributedtracinig/tracerProvider';
-import forEachAsyncSequential from '../../../utils/forEachAsyncSequential';
-import { CallOrSendTo } from '../sendToRemoteServiceInsideTransaction';
-import log, { Severity } from '../../../observability/logging/log';
-import { CanonicalCode } from '@opentelemetry/api';
-import createBackkErrorFromError from '../../../errors/createBackkErrorFromError';
-import parseRemoteServiceFunctionCallUrlParts from '../../utils/parseRemoteServiceFunctionCallUrlParts';
-import { BackkError } from '../../../types/BackkError';
-import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
-import logCreator from './logCreator';
-import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
-import getNamespacedServiceName from '../../../utils/getServiceNamespace';
+import { CompressionTypes, Kafka, Producer, Transaction } from "kafkajs";
+import { getNamespace } from "cls-hooked";
+import tracerProvider from "../../../observability/distributedtracinig/tracerProvider";
+import forEachAsyncSequential from "../../../utils/forEachAsyncSequential";
+import { CallOrSendTo } from "../sendToRemoteServiceInsideTransaction";
+import log, { Severity } from "../../../observability/logging/log";
+import { CanonicalCode } from "@opentelemetry/api";
+import createBackkErrorFromError from "../../../errors/createBackkErrorFromError";
+import parseRemoteServiceFunctionCallUrlParts from "../../utils/parseRemoteServiceFunctionCallUrlParts";
+import minimumLoggingSeverityToKafkaLoggingLevelMap from "./minimumLoggingSeverityToKafkaLoggingLevelMap";
+import logCreator from "./logCreator";
+import defaultServiceMetrics from "../../../observability/metrics/defaultServiceMetrics";
+import getNamespacedServiceName from "../../../utils/getServiceNamespace";
+import { PromiseOfErrorOr } from "../../../types/PromiseOfErrorOr";
 
 const kafkaServerToKafkaClientMap: { [key: string]: Kafka } = {};
 
@@ -24,7 +24,7 @@ export enum SendAcknowledgementType {
 export default async function sendOneOrMoreToKafka(
   sends: CallOrSendTo[],
   isTransactional: boolean
-): Promise<BackkError | null> {
+): PromiseOfErrorOr<null> {
   const { server, topic } = parseRemoteServiceFunctionCallUrlParts(sends[0].remoteServiceFunctionUrl);
 
   if (!kafkaServerToKafkaClientMap[server]) {
@@ -121,12 +121,16 @@ export default async function sendOneOrMoreToKafka(
     );
 
     await transaction?.commit();
+
     transactionSpan?.setStatus({
       code: CanonicalCode.OK
     });
+
     producerConnectSpan?.setStatus({
       code: CanonicalCode.OK
     });
+
+    return [null, null];
   } catch (error) {
     await transaction?.abort();
 
@@ -140,7 +144,7 @@ export default async function sendOneOrMoreToKafka(
       message: error.message
     });
 
-    return createBackkErrorFromError(error);
+    return [null, createBackkErrorFromError(error)];
   } finally {
     try {
       await producer.disconnect();
