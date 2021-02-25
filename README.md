@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Implement JoinSpec in SQL and Mongo
 - Implement check updateEntity affected rows for Sql and MongoDb
 - UpdateEntityByFilters for Sql and mongo, check affected rows count
 - RemoveSubEntitiy/tiesByFilters: e.g. orderItemId and orderItem.state === 'toBeDelivered'

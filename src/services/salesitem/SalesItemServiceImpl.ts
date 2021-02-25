@@ -1,40 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
-import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
-import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
-import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
-import SalesItemService from './SalesItemService';
-import GetSalesItemsArg from './types/args/GetSalesItemsArg';
-import _IdAndSalesItemState from './types/args/_IdAndSalesItemState';
-import { SalesItem } from './types/entities/SalesItem';
-import _Id from '../../backk/types/id/_Id';
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
+import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
+import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
+import SqlInExpression from "../../backk/dbmanager/sql/expressions/SqlInExpression";
+import SalesItemService from "./SalesItemService";
+import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
+import _IdAndSalesItemState from "./types/args/_IdAndSalesItemState";
+import { SalesItem } from "./types/entities/SalesItem";
+import _Id from "../../backk/types/id/_Id";
 import {
   INVALID_SALES_ITEM_STATE,
   MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
   SALES_ITEM_STATE_MUST_BE_FOR_SALE
-} from './errors/salesItemServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { SalesItemState } from './types/enums/SalesItemState';
-import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
-import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
-import { CronJob } from '../../backk/decorators/service/function/CronJob';
-import DeleteOldUnsoldSalesItemsArg from './types/args/DeleteOldUnsoldSalesItemsArg';
-import dayjs from 'dayjs';
-import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
-import UserAccountId from '../../backk/types/useraccount/UserAccountId';
-import UserAccountService from '../useraccount/UserAccountService';
-import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
-import UserAccount from '../useraccount/types/entities/UserAccount';
+} from "./errors/salesItemServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { SalesItemState } from "./types/enums/SalesItemState";
+import GetSalesItemsByUserDefinedFiltersArg from "./types/args/GetSalesItemsByUserDefinedFiltersArg";
+import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
+import { CronJob } from "../../backk/decorators/service/function/CronJob";
+import DeleteOldUnsoldSalesItemsArg from "./types/args/DeleteOldUnsoldSalesItemsArg";
+import dayjs from "dayjs";
+import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
+import UserAccountId from "../../backk/types/useraccount/UserAccountId";
+import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import User from "../user/types/entities/User";
+import FollowedUserSalesItem from "./types/responses/FollowedUserSalesItem";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class SalesItemServiceImpl extends SalesItemService {
+  private static readonly DEFAULT_FIELDS = ['_id', 'title', 'price', 'previousPrice', 'primaryImageDataUri'];
+
   constructor(dbManager: AbstractDbManager) {
     super(dbManager);
   }
@@ -113,7 +115,10 @@ export default class SalesItemServiceImpl extends SalesItemService {
       ]
     );
 
-    return this.dbManager.getEntitiesByFilters(filters, SalesItem, postQueryOperations);
+    return this.dbManager.getEntitiesByFilters(filters, SalesItem, {
+      ...postQueryOperations,
+      includeResponseFields: SalesItemServiceImpl.DEFAULT_FIELDS
+    });
   }
 
   @AllowForEveryUser()
@@ -124,10 +129,42 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  async getFollowedUsersSalesItems({ userAccountId }: UserAccountId): PromiseOfErrorOr<SalesItem[]> {
-    return this.dbManager.getAllEntities(SalesItem, new DefaultPostQueryOperations(), [
-      { EntityClass: UserAccount, _id: userAccountId }
-    ]);
+  async getFollowedUsersSalesItems({
+    userAccountId
+  }: UserAccountId): PromiseOfErrorOr<FollowedUserSalesItem[]> {
+    const [user, error] = await this.dbManager.getEntityByFilters(
+      { _id: userAccountId, 'followedUsers.ownSalesItems.state': 'forSale' },
+      User,
+      {
+        ...new DefaultPostQueryOperations(),
+        sortBys: [
+          {
+            subEntityPath: 'followedUsers.ownSalesItems',
+            fieldName: 'lastModifiedAtTimestamp',
+            sortDirection: 'DESC'
+          }
+        ],
+        includeResponseFields: [
+          'followedUsers._id',
+          'followedUsers.displayName',
+          ...SalesItemServiceImpl.DEFAULT_FIELDS.map(
+            (defaultField) => `followedUsers.ownSalesItems.${defaultField}`
+          )
+        ]
+      }
+    );
+
+    const followedUserSalesItems = user?.followedUsers
+      .map((followedUser) =>
+        followedUser.ownSalesItems.map((ownSalesItem) => ({
+          ...ownSalesItem,
+          userAccountId: followedUser._id,
+          displayName: followedUser.displayName
+        }))
+      )
+      .flat();
+
+    return [followedUserSalesItems, error];
   }
 
   @AllowForEveryUser()

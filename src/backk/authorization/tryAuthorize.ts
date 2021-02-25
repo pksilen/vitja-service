@@ -56,6 +56,7 @@ export default async function tryAuthorize(
       serviceFunctionArgument
     ) {
       let userName = serviceFunctionArgument.userName;
+
       const userId =
         serviceFunctionArgument.userId ||
         (service.isUsersService() ? serviceFunctionArgument._id : undefined);
@@ -70,7 +71,7 @@ export default async function tryAuthorize(
       }
 
       if (!userName && userId && usersService) {
-        const [userAccount] = await usersService.getUserAccountById(userId);
+        const [userAccount] = await usersService.getUserNameById(userId);
 
         if (userAccount) {
           userName = userAccount.userName;

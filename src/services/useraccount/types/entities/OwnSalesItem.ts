@@ -45,6 +45,16 @@ export default class OwnSalesItem {
   @MinMax(0, Values._1B)
   public price!: number;
 
+  @IsNumber({
+    maxDecimalPlaces: 2
+  })
+  @MinMax(-1, Values._1B)
+  public readonly previousPrice!: number;
+
+  @MaxLength(Lengths._10M)
+  @IsDataUri()
+  public primaryImageDataUri!: string;
+
   @MaxLength(Lengths._1M)
   @IsDataUri()
   public readonly primaryImageThumbnailDataUri!: string;

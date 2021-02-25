@@ -4,7 +4,7 @@ import UserAccount from "./types/entities/UserAccount";
 import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
 import { Name } from "../../backk/types/Name";
 import UserAccountBaseService from "../../backk/service/useraccount/UserAccountBaseService";
-import _IdAndFavoriteSalesItem from "./types/args/_IdAndFavoriteSalesItem";
+import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
 import UserName from "../../backk/types/useraccount/UserName";
 import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 
@@ -19,9 +19,9 @@ export default abstract class UserAccountService extends UserAccountBaseService 
   abstract createUserAccount(arg: UserAccount): PromiseOfErrorOr<UserAccount>;
 
   abstract getUserAccount(arg: UserName): PromiseOfErrorOr<UserAccount>;
-  abstract getUserAccountById(arg: _Id): PromiseOfErrorOr<UserAccount>;
-  abstract addToFavoriteSalesItems(arg: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount>;
-  abstract removeFromFavoriteSalesItems(arg: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount>;
+  abstract getUserNameById(arg: _Id): PromiseOfErrorOr<UserName>;
+  abstract addToFavoriteSalesItems(arg: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount>;
+  abstract removeFromFavoriteSalesItems(arg: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount>;
   abstract followUser(arg: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount>;
   abstract unfollowUser(arg: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount>;
   abstract updateUserAccount(arg: UserAccount): PromiseOfErrorOr<null>;

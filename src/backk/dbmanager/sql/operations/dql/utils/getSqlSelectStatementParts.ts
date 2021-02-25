@@ -8,6 +8,7 @@ import getFilterValues from './getFilterValues';
 import tryGetSortClause from '../clauses/tryGetOrderByClause';
 import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
 import getPaginationClause from '../clauses/getPaginationClause';
+import { JoinSpec } from "../../../../types/JoinSpec";
 
 export default function getSqlSelectStatementParts<T>(
   dbManager: AbstractSqlDbManager,
@@ -18,8 +19,8 @@ export default function getSqlSelectStatementParts<T>(
 ) {
   const Types = dbManager.getTypes();
   const columns = tryGetProjection(dbManager, projection, EntityClass, Types, isInternalCall);
-
   const outerSortBys: string[] = [];
+
   const joinClauses = getJoinClauses(
     dbManager,
     '',

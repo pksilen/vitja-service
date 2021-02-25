@@ -1,0 +1,4 @@
+export default class FollowedUserSalesItem {
+   ...Pick<SalesItem, '_id' | 'title' | 'price' | 'previousPrice' | 'primaryImageDataUri'
+   ...Pick<UserAccount, '_id' as 'userAccountId' | 'displayName'>
+}

@@ -4,7 +4,6 @@
 
 import { IsNumber, MaxLength } from 'class-validator';
 import { Lengths, Values } from '../../../../backk/constants/constants';
-import Entity from '../../../../backk/decorators/entity/Entity';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
 import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId';
@@ -12,8 +11,7 @@ import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
 
-@Entity('SalesItem')
-export default class FavoriteSalesItem {
+export default class FollowedUserSalesItem {
   @IsUndefined({
     groups: ['__backk_create__']
   })
@@ -44,4 +42,19 @@ export default class FavoriteSalesItem {
   @MaxLength(Lengths._10M)
   @IsDataUri()
   public primaryImageDataUri!: string;
+
+  @IsUndefined({
+    groups: ['__backk_create__']
+  })
+  @IsStringOrObjectId({
+    groups: ['__backk_update__']
+  })
+  @MaxLengthAndMatches(24, /^[a-f\d]{1,24}$/, {
+    groups: ['__backk_update__']
+  })
+  public userAccountId!: string;
+
+  @MaxLength(Lengths._512)
+  @IsAnyString()
+  public displayName!: string;
 }

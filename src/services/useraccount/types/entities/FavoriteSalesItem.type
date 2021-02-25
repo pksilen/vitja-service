@@ -2,7 +2,5 @@ import Entity from '../../../../backk/decorators/entity/Entity';
 
 @Entity('SalesItem')
 export default class FavoriteSalesItem {
-  ...Pick<SalesItem, '_id'>;
-  ...Readonly<Pick<SalesItem, 'primaryImageDataUri' | 'title' | 'price' | 'previousPrice'>>;
+  ...Pick<SalesItem, '_id' | 'primaryImageDataUri' | 'title' | 'price' | 'previousPrice'>
 }
-

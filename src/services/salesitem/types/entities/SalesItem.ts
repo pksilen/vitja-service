@@ -27,7 +27,7 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
 
   @ManyToMany()
   @ArrayMinSize(0)
-  @ArrayMaxSize(25)
+  @ArrayMaxSize(Values._25)
   public tags!: Tag[];
 
   public area!: Area;

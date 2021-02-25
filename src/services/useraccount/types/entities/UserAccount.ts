@@ -10,11 +10,12 @@ import getCities from "../../validation/getCities";
 import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
 import { Lengths } from "../../../../backk/constants/constants";
 import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/ShouldBeTrueFor";
-import FavoriteSalesItem from "./FavoriteSalesItem";
-import OwnSalesItem from "./OwnSalesItem";
 import FollowUser from "./FollowUser";
 import BaseUserAccount from "../../../../backk/types/useraccount/BaseUserAccount";
 import { OneToMany } from "../../../../backk/decorators/typeproperty/OneToMany";
+import { SalesItem } from "../../../salesitem/types/entities/SalesItem";
+import FavoriteSalesItem from "./FavoriteSalesItem";
+import OwnSalesItem from "./OwnSalesItem";
 
 @Entity()
 export default class UserAccount extends BaseUserAccount {

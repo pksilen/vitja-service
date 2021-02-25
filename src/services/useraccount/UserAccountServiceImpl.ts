@@ -1,36 +1,46 @@
-import { Injectable } from "@nestjs/common";
-import * as argon2 from "argon2";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import UserAccount from "./types/entities/UserAccount";
-import _Id from "../../backk/types/id/_Id";
-import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
-import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/userAccountServiceErrors";
-import { Errors } from "../../backk/decorators/service/function/Errors";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import { Update } from "../../backk/decorators/service/function/Update";
-import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
-import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
-import { Name } from "../../backk/types/Name";
-import getCities from "./validation/getCities";
-import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
-import { Metadata } from "../../backk/decorators/service/function/Metadata";
-import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
-import SortBy from "../../backk/types/postqueryoperations/SortBy";
-import FavoriteSalesItem from "./types/entities/FavoriteSalesItem";
-import _IdAndFavoriteSalesItem from "./types/args/_IdAndFavoriteSalesItem";
-import FollowUser from "./types/entities/FollowUser";
-import UserAccountService from "./UserAccountService";
-import UserName from "../../backk/types/useraccount/UserName";
-import MongoDbQuery from "../../backk/dbmanager/mongodb/MongoDbQuery";
-import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
-import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import { Injectable } from '@nestjs/common';
+import * as argon2 from 'argon2';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import UserAccount from './types/entities/UserAccount';
+import _Id from '../../backk/types/id/_Id';
+import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
+import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from './errors/userAccountServiceErrors';
+import { Errors } from '../../backk/decorators/service/function/Errors';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import { Update } from '../../backk/decorators/service/function/Update';
+import _IdAndFollowedUserAccountId from './types/args/_IdAndFollowedUserAccountId';
+import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
+import { Name } from '../../backk/types/Name';
+import getCities from './validation/getCities';
+import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
+import { Metadata } from '../../backk/decorators/service/function/Metadata';
+import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
+import SortBy from '../../backk/types/postqueryoperations/SortBy';
+import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
+import FollowUser from './types/entities/FollowUser';
+import UserAccountService from './UserAccountService';
+import UserName from '../../backk/types/useraccount/UserName';
+import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
+import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
+import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import { SalesItem } from '../salesitem/types/entities/SalesItem';
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
 export default class UserAccountServiceImpl extends UserAccountService {
+  private readonly postQueryOperations = {
+    ...new DefaultPostQueryOperations(),
+    excludeResponseFields: [
+      'ownSalesItems.primaryDataImageUri',
+      'followedUsers.ownSalesItems',
+      'followingUsers.ownSalesItems'
+    ],
+    sortBys: [...new DefaultPostQueryOperations().sortBys, new SortBy('paymentMethods', 'isDefault', 'DESC')]
+  };
+
   constructor(dbManager: AbstractDbManager) {
     super(dbManager);
   }
@@ -57,41 +67,34 @@ export default class UserAccountServiceImpl extends UserAccountService {
       [new SqlEquals({ userName }), new SqlEquals({ state: 'forSale' }, 'favoriteSalesItems')]
     );
 
-    const defaultPostQueryOperations = new DefaultPostQueryOperations();
-
-    const postQueryOperations = {
-      ...defaultPostQueryOperations,
-      sortBys: [...defaultPostQueryOperations.sortBys, new SortBy('paymentMethods', 'isDefault', 'ASC')]
-    };
-
-    return this.dbManager.getEntityByFilters(filters, UserAccount, postQueryOperations);
+    return this.dbManager.getEntityByFilters(filters, UserAccount, this.postQueryOperations);
   }
 
-  getUserAccountById({ _id }: _Id): PromiseOfErrorOr<UserAccount> {
-    return this.dbManager.getEntityById(_id, UserAccount);
+  getUserNameById({ _id }: _Id): PromiseOfErrorOr<UserName> {
+    return this.dbManager.getEntityById(_id, UserAccount, {
+      ...new DefaultPostQueryOperations(),
+      includeResponseFields: ['userName']
+    });
   }
 
   @AllowForSelf()
-  addToFavoriteSalesItems({
-    _id,
-    favoriteSalesItem
-  }: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount> {
+  addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
       'any',
       'favoriteSalesItems',
-      favoriteSalesItem,
+      { _id: salesItemId },
       UserAccount,
-      FavoriteSalesItem
+      SalesItem,
+      { postQueryOperations: this.postQueryOperations }
     );
   }
 
   @AllowForSelf()
-  removeFromFavoriteSalesItems({
-    _id,
-    favoriteSalesItem
-  }: _IdAndFavoriteSalesItem): PromiseOfErrorOr<UserAccount> {
-    return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', favoriteSalesItem._id, UserAccount);
+  removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
+    return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount, {
+      postQueryOperations: this.postQueryOperations
+    });
   }
 
   @AllowForSelf()
@@ -108,15 +111,18 @@ export default class UserAccountServiceImpl extends UserAccountService {
       { _id: followedUserAccountId },
       UserAccount,
       FollowUser,
-      () =>
-        this.dbManager.addSubEntity(
-          followedUserAccountId,
-          'any',
-          'followingUsers',
-          { _id },
-          UserAccount,
-          FollowUser
-        )
+      {
+        preHooks: () =>
+          this.dbManager.addSubEntity(
+            followedUserAccountId,
+            'any',
+            'followingUsers',
+            { _id },
+            UserAccount,
+            FollowUser
+          ),
+        postQueryOperations: this.postQueryOperations
+      }
     );
   }
 
@@ -124,9 +130,11 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update()
   @ExpectReturnValueToContainInTests({ followedUsers: [] })
   unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount> {
-    return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, [
-      () => this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount)
-    ]);
+    return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, {
+      preHooks: () =>
+        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount),
+      postQueryOperations: this.postQueryOperations
+    });
   }
 
   @AllowForSelf()

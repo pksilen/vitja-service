@@ -11,6 +11,8 @@ import IsOneOf from '../../../../backk/decorators/typeproperty/IsOneOf';
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import { OneToMany } from '../../../../backk/decorators/typeproperty/OneToMany';
+import { SalesItem } from '../../../salesitem/types/entities/SalesItem';
 import getCities from '../../validation/getCities';
 
 @Entity('UserAccount')
@@ -37,4 +39,7 @@ export default class FollowUser {
   @MaxLength(Lengths._10M)
   @IsDataUri()
   public imageDataUri!: string;
+
+  @OneToMany(true)
+  public readonly ownSalesItems!: SalesItem[];
 }

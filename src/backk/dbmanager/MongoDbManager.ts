@@ -58,7 +58,6 @@ import { CreatePreHook } from './hooks/CreatePreHook';
 import tryExecuteCreatePreHooks from './hooks/tryExecuteCreatePreHooks';
 import { ErrorOr, PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 import isBackkError from '../errors/isBackkError';
-import { JoinSpec } from './types/JoinSpec';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -494,8 +493,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getAllEntities<T>(
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations,
-    joins?: JoinSpec[]
+    postQueryOperations?: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getAllEntities');
     // noinspection AssignmentToFunctionParameterJS
@@ -544,8 +542,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async getEntitiesByFilters<T>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
-    postQueryOperations: PostQueryOperations,
-    joins?: JoinSpec[]
+    postQueryOperations: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
     let matchExpression: any;
     let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
@@ -624,8 +621,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async getEntityByFilters<T>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations,
-    joins?: JoinSpec[]
+    postQueryOperations?: PostQueryOperations
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
 
@@ -710,7 +706,6 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations,
-    joins?: JoinSpec[],
     isInternalCall = false
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
@@ -815,8 +810,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async getEntitiesByIds<T>(
     _ids: string[],
     EntityClass: new () => T,
-    postQueryOperations: PostQueryOperations,
-    joins?: JoinSpec[]
+    postQueryOperations: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByIds');
     // noinspection AssignmentToFunctionParameterJS
@@ -865,8 +859,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations,
-    joins?: JoinSpec[]
+    postQueryOperations?: PostQueryOperations
   ): PromiseOfErrorOr<T> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
@@ -940,8 +933,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
-    postQueryOperations: PostQueryOperations,
-    joins?: JoinSpec[]
+    postQueryOperations: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
