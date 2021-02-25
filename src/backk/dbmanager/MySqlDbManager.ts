@@ -116,4 +116,8 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
   isDuplicateEntityError(error: Error): boolean {
     return error.message.startsWith('Duplicate entry');
   }
+
+  getAffectedRows(result: any): number {
+    return result.affectedRows;
+  }
 }

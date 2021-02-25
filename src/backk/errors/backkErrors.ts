@@ -4,13 +4,13 @@ export const BACKK_ERRORS = {
   ENTITY_VERSION_MISMATCH: {
     errorCode: '1',
     errorMessage:
-      'BackkEntity version conflict. BackkEntity was updated before this request, please re-fetch the entity and try update again',
+      'Entity version conflict. Entity was updated before this request, please re-fetch the entity and try update again',
     statusCode: HttpStatusCodes.CONFLICT
   },
   ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH: {
     errorCode: '2',
     errorMessage:
-      'BackkEntity lastModifiedTimestamp conflict. BackkEntity was updated before this request, please re-fetch the entity and try update again',
+      'Entity lastModifiedTimestamp conflict. Entity was updated before this request, please re-fetch the entity and try update again',
     statusCode: HttpStatusCodes.CONFLICT
   },
   DUPLICATE_ENTITY: {

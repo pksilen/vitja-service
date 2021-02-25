@@ -58,6 +58,8 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   abstract getResultRows(result: any): any[];
 
+  abstract getAffectedRows(result: any): number;
+
   abstract getResultFields(result: any): any[];
 
   abstract getValuePlaceholder(index: number): string;

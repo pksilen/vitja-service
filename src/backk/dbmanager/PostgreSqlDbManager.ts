@@ -107,4 +107,8 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   isDuplicateEntityError(error: Error): boolean {
     return error.message.startsWith('duplicate key');
   }
+
+  getAffectedRows(result: any): number {
+    return result.rowCount;
+  }
 }

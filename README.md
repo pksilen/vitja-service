@@ -1,13 +1,7 @@
 # Vitja service
 
 TODO:
-- Implement check updateEntity affected rows for Sql and MongoDb
-- UpdateEntityByFilters for Sql and mongo, check affected rows count
-- RemoveSubEntitiy/tiesByFilters: e.g. orderItemId and orderItem.state === 'toBeDelivered'
-- Implement UpdateEntityWhere with UpdateEntityByFilters For Sql and Mongo
-- Implemented version/lastModifiedTimestamp to use filters, not prehooks
-- implement currententity query before prehooks checkking to select for update (locking)
-- Correct scheduling Job/Cronjob functions for prehooks
+- MongoDb updates, add/remove subitems, to use findOneAndUpdate before getEntityById
 
 - Split to multiple microservices
   - Implement subentities as remote service queries
