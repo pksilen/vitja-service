@@ -1,9 +1,10 @@
 import { BackkEntity } from "../../types/entities/BackkEntity";
 import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
+import { SubEntity } from "../../types/entities/SubEntity";
 
-export type PostHook =
+export type PostHook<T extends BackkEntity | SubEntity> =
   | {
       shouldExecutePostHook: () => boolean;
-      isSuccessful: () => PromiseOfErrorOr<BackkEntity | null>;
+      isSuccessful: (entity: T | null) => PromiseOfErrorOr<BackkEntity | null>;
     }
-  | (() => PromiseOfErrorOr<BackkEntity | null>);
+  | ((entity: T | null) => PromiseOfErrorOr<BackkEntity | null>);

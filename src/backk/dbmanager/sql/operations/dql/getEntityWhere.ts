@@ -18,7 +18,8 @@ export default async function getEntityWhere<T>(
   fieldPathName: string,
   fieldValue: any,
   EntityClass: new () => T,
-  postQueryOperations?: PostQueryOperations
+  postQueryOperations?: PostQueryOperations,
+  isSelectForUpdate = false
 ): PromiseOfErrorOr<T> {
   if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {
     throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
@@ -56,7 +57,8 @@ export default async function getEntityWhere<T>(
       rootWhereClause,
       `LIMIT 1) AS ${tableAlias}`,
       joinClauses,
-      outerSortClause
+      outerSortClause,
+      isSelectForUpdate ? 'FOR UPDATE' : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- select for update for postgres and postgres
 - MongoDb updates, add/remove subitems, to use findOneAndUpdate before getEntityById
 
 - Split to multiple microservices

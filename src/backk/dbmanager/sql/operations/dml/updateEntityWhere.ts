@@ -21,7 +21,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
   entity: RecursivePartial<T>,
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],
-  postHook?: PostHook
+  postHook?: PostHook<T>
 ): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
@@ -35,7 +35,9 @@ export default async function updateEntityWhere<T extends BackkEntity>(
       dbManager,
       fieldPathName,
       fieldValue,
-      EntityClass
+      EntityClass,
+      undefined,
+      true
     );
 
     await tryExecutePreHooks(preHooks ?? [], [currentEntity, error]);

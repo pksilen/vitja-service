@@ -35,7 +35,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
   entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
   EntityClass: new () => T,
   preHooks?: CreatePreHook | CreatePreHook[],
-  postHook?: PostHook,
+  postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false,
   shouldReturnItem = true

@@ -97,7 +97,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     options?: {
       preHooks?: CreatePreHook | CreatePreHook[];
-      postHook?: PostHook;
+      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<T>;
@@ -140,7 +140,7 @@ export default abstract class AbstractDbManager {
     SubEntityClass: new () => U,
     options?: {
       preHooks?: PreHook<T> | PreHook<T>[];
-      postHook?: PostHook;
+      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<T>;
@@ -155,7 +155,7 @@ export default abstract class AbstractDbManager {
     SubEntityClass: new () => U,
     options?: {
       preHooks?: PreHook<T> | PreHook<T>[];
-      postHook?: PostHook;
+      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<T>;
@@ -226,7 +226,7 @@ export default abstract class AbstractDbManager {
     entity: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook
+    postHook?: PostHook<T>
   ): PromiseOfErrorOr<null>;
 
   updateEntities<T extends BackkEntity>(
@@ -256,14 +256,14 @@ export default abstract class AbstractDbManager {
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook
+    postHook?: PostHook<T>
   ): PromiseOfErrorOr<null>;
 
   abstract deleteEntityById<T extends BackkEntity>(
     _id: string,
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook
+    postHook?: PostHook<T>
   ): PromiseOfErrorOr<null>;
 
   deleteEntitiesByIds<T extends BackkEntity>(
@@ -304,7 +304,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     options?: {
       preHooks?: PreHook<T> | PreHook<T>[];
-      postHook?: PostHook;
+      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<T>;
@@ -316,7 +316,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     options?: {
       preHooks?: PreHook<T> | PreHook<T>[];
-      postHook?: PostHook;
+      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<T>;

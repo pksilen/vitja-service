@@ -231,7 +231,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     options?: {
       preHooks?: CreatePreHook | CreatePreHook[];
-      postHook?: PostHook;
+      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     },
     isInternalCall = false
@@ -326,7 +326,7 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntityClass: new () => U,
     options?: {
       preHooks?: PreHook<T> | PreHook<T>[];
-      postHook?: PostHook;
+      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<T> {
@@ -355,7 +355,7 @@ export default class MongoDbManager extends AbstractDbManager {
     SubEntityClass: new () => U,
     options?: {
       preHooks?: PreHook<T> | PreHook<T>[];
-      postHook?: PostHook;
+      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<T> {
@@ -1016,7 +1016,7 @@ export default class MongoDbManager extends AbstractDbManager {
     { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook,
+    postHook?: PostHook<T>,
     isRecursiveCall = false,
     isInternalCall = false
   ): PromiseOfErrorOr<null> {
@@ -1163,7 +1163,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook
+    postHook?: PostHook<T>
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
     // noinspection AssignmentToFunctionParameterJS
@@ -1199,7 +1199,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook
+    postHook?: PostHook<T>
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
     // noinspection AssignmentToFunctionParameterJS
@@ -1345,7 +1345,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     options?: {
       preHooks?: PreHook<T> | PreHook<T>[];
-      postHook?: PostHook;
+      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<T> {
@@ -1385,7 +1385,7 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         if (options?.postHook) {
-          await tryExecutePostHook(options?.postHook, [null, null]);
+          await tryExecutePostHook(options.postHook, [null, null]);
         }
 
         return response;
@@ -1407,7 +1407,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     options?: {
       preHooks?: PreHook<T> | PreHook<T>[];
-      postHook?: PostHook;
+      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<T> {

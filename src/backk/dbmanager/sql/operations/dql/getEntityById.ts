@@ -20,6 +20,7 @@ export default async function getEntityById<T>(
   _id: string,
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
+  isSelectForUpdate = false,
   isInternalCall = false
 ): PromiseOfErrorOr<T> {
   updateDbLocalTransactionCount(dbManager);
@@ -62,7 +63,8 @@ export default async function getEntityById<T>(
       `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName}`,
       `WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(1)} LIMIT 1) AS ${tableAlias}`,
       joinClauses,
-      outerSortClause
+      outerSortClause,
+      isSelectForUpdate ? 'FOR UPDATE' : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

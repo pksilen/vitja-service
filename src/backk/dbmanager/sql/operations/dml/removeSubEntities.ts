@@ -32,7 +32,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
   subEntitiesJsonPath: string,
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],
-  postHook?: PostHook,
+  postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
 ): PromiseOfErrorOr<T> {
   // noinspection AssignmentToFunctionParameterJS

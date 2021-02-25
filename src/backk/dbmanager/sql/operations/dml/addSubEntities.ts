@@ -39,7 +39,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
   EntityClass: new () => T,
   SubEntityClass: new () => U,
   preHooks?: PreHook<T> | PreHook<T>[],
-  postHook?: PostHook,
+  postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
 ): PromiseOfErrorOr<T> {
   // noinspection AssignmentToFunctionParameterJS

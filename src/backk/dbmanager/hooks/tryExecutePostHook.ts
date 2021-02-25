@@ -3,8 +3,10 @@ import { getNamespace } from "cls-hooked";
 import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
 import { HttpStatusCodes } from "../../constants/constants";
 import { ErrorOr } from "../../types/ErrorOr";
+import { BackkEntity } from "../../types/entities/BackkEntity";
+import { SubEntity } from "../../types/entities/SubEntity";
 
-export default async function tryExecutePostHook(postHook: PostHook, [, error]: ErrorOr<any>) {
+export default async function tryExecutePostHook<T extends BackkEntity | SubEntity>(postHook: PostHook<T>, [entity, error]: ErrorOr<T>) {
   if (error) {
     throw error;
   }
@@ -17,10 +19,10 @@ export default async function tryExecutePostHook(postHook: PostHook, [, error]: 
   try {
     if (typeof postHook === 'object' && postHook.shouldExecutePostHook) {
       if (postHook.shouldExecutePostHook()) {
-        [, hookCallError] = await postHookFunc();
+        [, hookCallError] = await postHookFunc(entity ?? null);
       }
     } else {
-      [, hookCallError] = await postHookFunc();
+      [, hookCallError] = await postHookFunc(entity ?? null);
     }
   } catch (error) {
     throw new Error(

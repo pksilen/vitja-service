@@ -25,7 +25,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
   _id: string,
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],
-  postHook?: PostHook
+  postHook?: PostHook<T>
 ): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);

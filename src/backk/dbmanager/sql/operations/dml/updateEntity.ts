@@ -1,40 +1,42 @@
-import hashAndEncryptEntity from '../../../../crypt/hashAndEncryptEntity';
-import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import getEntityById from '../dql/getEntityById';
-import { RecursivePartial } from '../../../../types/RecursivePartial';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { PreHook } from '../../../hooks/PreHook';
-import { BackkEntity } from '../../../../types/entities/BackkEntity';
-import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
-import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import getSubEntitiesByAction from './utils/getSubEntitiesByAction';
-import deleteEntityById from './deleteEntityById';
-import createEntity from './createEntity';
-import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import getSingularName from '../../../../utils/getSingularName';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
-import isBackkError from '../../../../errors/isBackkError';
-import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
+import hashAndEncryptEntity from "../../../../crypt/hashAndEncryptEntity";
+import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import getEntityById from "../dql/getEntityById";
+import { RecursivePartial } from "../../../../types/RecursivePartial";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { PreHook } from "../../../hooks/PreHook";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
+import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import getSubEntitiesByAction from "./utils/getSubEntitiesByAction";
+import deleteEntityById from "./deleteEntityById";
+import createEntity from "./createEntity";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import getSingularName from "../../../../utils/getSingularName";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import isBackkError from "../../../../errors/isBackkError";
 
 export default async function updateEntity<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
   { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],
-  postHook?: PostHook,
+  postHook?: PostHook<T>,
   isRecursiveCall = false
 ): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
@@ -112,6 +114,7 @@ export default async function updateEntity<T extends BackkEntity>(
         const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
         const foreignIdFieldName =
           EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
+
         const idFieldName = _id === undefined ? 'id' : '_id';
         let subEntityOrEntities = (restOfEntity as any)[fieldName];
         const SubEntityClass = (Types as any)[baseTypeName];
@@ -216,7 +219,7 @@ export default async function updateEntity<T extends BackkEntity>(
         } else if (isEntityTypeName(baseTypeName) && subEntityOrEntities !== null) {
           subEntityOrEntities[foreignIdFieldName] = _id;
 
-          const possibleErrorResponse = await updateEntity(
+          const [, error] = await updateEntity(
             dbManager,
             subEntityOrEntities,
             (Types as any)[baseTypeName],
@@ -225,8 +228,8 @@ export default async function updateEntity<T extends BackkEntity>(
             true
           );
 
-          if (possibleErrorResponse) {
-            throw possibleErrorResponse;
+          if (error) {
+            throw error;
           }
         } else if (isArrayType) {
           const numericId = parseInt(_id, 10);
