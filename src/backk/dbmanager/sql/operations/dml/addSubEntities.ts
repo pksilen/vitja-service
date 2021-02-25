@@ -56,6 +56,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
       _id,
       EntityClass,
       postQueryOperations,
+      true,
       true
     );
 

@@ -54,7 +54,7 @@ export default async function updateEntity<T extends BackkEntity>(
     let currentEntityOrErrorResponse: any;
 
     if (!isRecursiveCall) {
-      currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true);
+      currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true, true);
     }
 
     let eTagCheckPreHook: PreHook<T>;
@@ -268,7 +268,7 @@ export default async function updateEntity<T extends BackkEntity>(
         } else if (fieldName !== '_id' && fieldName !== 'id') {
           if (fieldName === 'version') {
             columns.push(fieldName);
-            values.push((parseInt((currentEntityOrErrorResponse as any).version, 10) + 1).toString());
+            values.push((parseInt((currentEntityOrErrorResponse).version, 10) + 1).toString());
           } else if (fieldName === 'lastModifiedTimestamp') {
             columns.push(fieldName);
             values.push(new Date());
@@ -311,7 +311,7 @@ export default async function updateEntity<T extends BackkEntity>(
         sqlStatement += ` WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(columns.length + 1)}`;
       }
 
-      const result = dbManager.tryExecuteQuery(
+      const result = await dbManager.tryExecuteQuery(
         sqlStatement,
         numericId === undefined ? values : [...values, numericId]
       );

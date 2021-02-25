@@ -41,7 +41,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, undefined, true);
+    const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, undefined, true, true);
     await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
 
     await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(
