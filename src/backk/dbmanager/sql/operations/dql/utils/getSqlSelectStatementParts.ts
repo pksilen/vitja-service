@@ -1,14 +1,13 @@
-import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
-import { PostQueryOperations } from '../../../../../types/postqueryoperations/PostQueryOperations';
-import SqlExpression from '../../../expressions/SqlExpression';
-import tryGetProjection from '../clauses/tryGetProjection';
-import getJoinClauses from '../clauses/getJoinClauses';
-import tryGetWhereClause from '../clauses/tryGetWhereClause';
-import getFilterValues from './getFilterValues';
-import tryGetSortClause from '../clauses/tryGetOrderByClause';
-import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
-import getPaginationClause from '../clauses/getPaginationClause';
-import { JoinSpec } from "../../../../types/JoinSpec";
+import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
+import { PostQueryOperations } from "../../../../../types/postqueryoperations/PostQueryOperations";
+import SqlExpression from "../../../expressions/SqlExpression";
+import tryGetProjection from "../clauses/tryGetProjection";
+import getJoinClauses from "../clauses/getJoinClauses";
+import tryGetWhereClause from "../clauses/tryGetWhereClause";
+import getFilterValues from "./getFilterValues";
+import tryGetSortClause from "../clauses/tryGetOrderByClause";
+import UserDefinedFilter from "../../../../../types/userdefinedfilters/UserDefinedFilter";
+import getPaginationClause from "../clauses/getPaginationClause";
 
 export default function getSqlSelectStatementParts<T>(
   dbManager: AbstractSqlDbManager,

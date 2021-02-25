@@ -1,29 +1,32 @@
-import hashAndEncryptEntity from '../../../../crypt/hashAndEncryptEntity';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { BackkError } from '../../../../types/BackkError';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
-import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import { BackkEntity } from '../../../../types/entities/BackkEntity';
-import { SubEntity } from '../../../../types/entities/SubEntity';
-import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
-import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import tryExecuteCreatePreHooks from '../../../hooks/tryExecuteCreatePreHooks';
-import { CreatePreHook } from '../../../hooks/CreatePreHook';
-import getSingularName from '../../../../utils/getSingularName';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import hashAndEncryptEntity from "../../../../crypt/hashAndEncryptEntity";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
+import { SubEntity } from "../../../../types/entities/SubEntity";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import tryExecuteCreatePreHooks from "../../../hooks/tryExecuteCreatePreHooks";
+import { CreatePreHook } from "../../../hooks/CreatePreHook";
+import getSingularName from "../../../../utils/getSingularName";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 
 export default async function createEntity<T extends BackkEntity | SubEntity>(
@@ -163,7 +166,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
                 }
               }
 
-              const [, error]: [any, BackkError | null] = await createEntity(
+              const [, error] = await createEntity(
                 dbManager,
                 subEntity,
                 SubEntityClass,

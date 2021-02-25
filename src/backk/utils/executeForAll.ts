@@ -1,5 +1,5 @@
-import { PromiseOfErrorOr } from "../types/PromiseOfErrorOr";
-import { BackkError } from "../types/BackkError";
+import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
+import { BackkError } from '../types/BackkError';
 
 export default async function executeForAll<T, U>(
   values: T[],
@@ -8,7 +8,7 @@ export default async function executeForAll<T, U>(
   const finalValues = Array.isArray(values) ? values : [values];
 
   const possibleError = await finalValues.reduce(
-    async (possibleErrorPromise: Promise<BackkError | null>, value) => {
+    async (possibleErrorPromise: Promise<BackkError | null | undefined>, value) => {
       const possibleError = await possibleErrorPromise;
 
       if (possibleError) {

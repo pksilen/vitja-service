@@ -14,7 +14,6 @@ import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
 import SortBy from "../../../../../types/postqueryoperations/SortBy";
 import Pagination from "../../../../../types/postqueryoperations/Pagination";
 import getSingularName from "../../../../../utils/getSingularName";
-import { JoinSpec } from "../../../../types/JoinSpec";
 
 // noinspection OverlyComplexFunctionJS
 export default function getJoinClauses(

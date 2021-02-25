@@ -92,7 +92,7 @@ export default class OrderServiceImpl extends OrderService {
         }
       },
       Order,
-      () => this.updateSalesItemStates(salesItems, 'sold', 'forSale')
+      { preHooks: () => this.updateSalesItemStates(salesItems, 'sold', 'forSale') }
     );
   }
 
@@ -100,18 +100,14 @@ export default class OrderServiceImpl extends OrderService {
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   @ExpectReturnValueToContainInTests({ orderItems: [] })
   deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<Order> {
-    return this.dbManager.removeSubEntityById(
-      _id,
-      'orderItems',
-      orderItemId,
-      Order,
-      {
+    return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
+      preHooks: {
         isSuccessfulOrTrue: (order) =>
           JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
           'toBeDelivered',
         errorMessage: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
       },
-      () =>
+      postHook: () =>
         sendToRemoteService(
           `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
           {
@@ -119,7 +115,7 @@ export default class OrderServiceImpl extends OrderService {
             orderItemId
           }
         )
-    );
+    });
   }
 
   @AllowForTests()

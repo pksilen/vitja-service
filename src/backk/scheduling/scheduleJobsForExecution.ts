@@ -8,7 +8,7 @@ import { logError } from "../observability/logging/log";
 import forEachAsyncParallel from "../utils/forEachAsyncParallel";
 import { scheduleCronJob } from "./scheduleCronJob";
 
-export let scheduledJobs: __Backk__JobScheduling[] | null = null;
+export let scheduledJobs: __Backk__JobScheduling[] | null | undefined = null;
 
 export default async function scheduleJobsForExecution(
   controller: any | undefined,

@@ -4,13 +4,13 @@ import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWit
 import { HttpStatusCodes } from '../../constants/constants';
 import { BackkEntity } from '../../types/entities/BackkEntity';
 import { SubEntity } from '../../types/entities/SubEntity';
-import { ErrorOr } from '../../types/PromiseOfErrorOr';
+import { ErrorOr } from "../../types/ErrorOr";
 
 export default async function tryExecutePreHooks<T extends BackkEntity | SubEntity>(
   preHooks: PreHook<T> | PreHook<T>[],
   [currentEntity, error]: ErrorOr<T>
 ) {
-  if (error || currentEntity === null) {
+  if (error || !currentEntity) {
     throw error;
   }
 

@@ -1,20 +1,20 @@
-import { Injectable } from "@nestjs/common";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import TagService from "./TagService";
-import Tag from "./entities/Tag";
-import TagName from "./args/TagName";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
-import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
-import { SalesItem } from "../salesitem/types/entities/SalesItem";
-import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
-import DbTableVersion from "../../backk/dbmanager/version/DbTableVersion";
-import { HttpStatusCodes } from "../../backk/constants/constants";
-import tryGetSeparatedValuesFromTextFile from "../../backk/file/tryGetSeparatedValuesFromTextFile";
-import executeForAll from "../../backk/utils/executeForAll";
-import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import { Injectable } from '@nestjs/common';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import TagService from './TagService';
+import Tag from './entities/Tag';
+import TagName from './args/TagName';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
+import { SalesItem } from '../salesitem/types/entities/SalesItem';
+import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
+import DbTableVersion from '../../backk/dbmanager/version/DbTableVersion';
+import { HttpStatusCodes } from '../../backk/constants/constants';
+import tryGetSeparatedValuesFromTextFile from '../../backk/file/tryGetSeparatedValuesFromTextFile';
+import executeForAll from '../../backk/utils/executeForAll';
+import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 
 @Injectable()
 export default class TagServiceImpl extends TagService {
@@ -27,9 +27,11 @@ export default class TagServiceImpl extends TagService {
     let [, error] = await this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion);
 
     if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
-      [, error] = await this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, () => {
-        const tags = tryGetSeparatedValuesFromTextFile('resources/tags1.txt');
-        return executeForAll(tags, (tag) => this.createTag({ name: tag }));
+      [, error] = await this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, {
+        preHooks: () => {
+          const tags = tryGetSeparatedValuesFromTextFile('resources/tags1.txt');
+          return executeForAll(tags, (tag) => this.createTag({ name: tag }));
+        }
       });
     }
 

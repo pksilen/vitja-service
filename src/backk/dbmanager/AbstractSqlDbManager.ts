@@ -1,43 +1,42 @@
-import { Injectable } from "@nestjs/common";
-import SqlExpression from "./sql/expressions/SqlExpression";
-import AbstractDbManager, { Field } from "./AbstractDbManager";
-import createEntity from "./sql/operations/dml/createEntity";
-import getEntitiesByFilters from "./sql/operations/dql/getEntitiesByFilters";
-import getEntitiesCount from "./sql/operations/dql/getEntitiesCount";
-import getEntityById from "./sql/operations/dql/getEntityById";
-import getEntityWhere from "./sql/operations/dql/getEntityWhere";
-import getEntitiesWhere from "./sql/operations/dql/getEntitiesWhere";
-import updateEntity from "./sql/operations/dml/updateEntity";
-import deleteEntityById from "./sql/operations/dml/deleteEntityById";
-import removeSubEntities from "./sql/operations/dml/removeSubEntities";
-import deleteAllEntities from "./sql/operations/dml/deleteAllEntities";
-import getEntitiesByIds from "./sql/operations/dql/getEntitiesByIds";
-import { RecursivePartial } from "../types/RecursivePartial";
-import { PreHook } from "./hooks/PreHook";
-import { BackkEntity } from "../types/entities/BackkEntity";
-import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
-import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
-import createBackkErrorFromError from "../errors/createBackkErrorFromError";
-import log, { Severity } from "../observability/logging/log";
-import addSubEntities from "./sql/operations/dml/addSubEntities";
-import getSubEntities from "./sql/operations/dql/getSubEntities";
-import startDbOperation from "./utils/startDbOperation";
-import recordDbOperationDuration from "./utils/recordDbOperationDuration";
-import deleteEntitiesWhere from "./sql/operations/dml/deleteEntitiesWhere";
-import { getNamespace } from "cls-hooked";
-import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
-import updateEntityWhere from "./sql/operations/dml/updateEntityWhere";
-import getAllEntities from "./sql/operations/dql/getAllEntities";
-import { SubEntity } from "../types/entities/SubEntity";
-import deleteEntitiesByFilters from "./sql/operations/dml/deleteEntitiesByFilters";
-import MongoDbQuery from "./mongodb/MongoDbQuery";
-import { PostHook } from "./hooks/PostHook";
-import DefaultPostQueryOperations from "../types/postqueryoperations/DefaultPostQueryOperations";
-import createBackkErrorFromErrorCodeMessageAndStatus
-  from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS } from "../errors/backkErrors";
-import { CreatePreHook } from "./hooks/CreatePreHook";
-import { PromiseOfErrorOr } from "../types/PromiseOfErrorOr";
+import { Injectable } from '@nestjs/common';
+import SqlExpression from './sql/expressions/SqlExpression';
+import AbstractDbManager, { Field } from './AbstractDbManager';
+import createEntity from './sql/operations/dml/createEntity';
+import getEntitiesByFilters from './sql/operations/dql/getEntitiesByFilters';
+import getEntitiesCount from './sql/operations/dql/getEntitiesCount';
+import getEntityById from './sql/operations/dql/getEntityById';
+import getEntityWhere from './sql/operations/dql/getEntityWhere';
+import getEntitiesWhere from './sql/operations/dql/getEntitiesWhere';
+import updateEntity from './sql/operations/dml/updateEntity';
+import deleteEntityById from './sql/operations/dml/deleteEntityById';
+import removeSubEntities from './sql/operations/dml/removeSubEntities';
+import deleteAllEntities from './sql/operations/dml/deleteAllEntities';
+import getEntitiesByIds from './sql/operations/dql/getEntitiesByIds';
+import { RecursivePartial } from '../types/RecursivePartial';
+import { PreHook } from './hooks/PreHook';
+import { BackkEntity } from '../types/entities/BackkEntity';
+import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
+import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
+import createBackkErrorFromError from '../errors/createBackkErrorFromError';
+import log, { Severity } from '../observability/logging/log';
+import addSubEntities from './sql/operations/dml/addSubEntities';
+import getSubEntities from './sql/operations/dql/getSubEntities';
+import startDbOperation from './utils/startDbOperation';
+import recordDbOperationDuration from './utils/recordDbOperationDuration';
+import deleteEntitiesWhere from './sql/operations/dml/deleteEntitiesWhere';
+import { getNamespace } from 'cls-hooked';
+import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
+import updateEntityWhere from './sql/operations/dml/updateEntityWhere';
+import getAllEntities from './sql/operations/dql/getAllEntities';
+import { SubEntity } from '../types/entities/SubEntity';
+import deleteEntitiesByFilters from './sql/operations/dml/deleteEntitiesByFilters';
+import MongoDbQuery from './mongodb/MongoDbQuery';
+import { PostHook } from './hooks/PostHook';
+import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
+import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../errors/backkErrors';
+import { CreatePreHook } from './hooks/CreatePreHook';
+import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -410,9 +409,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async createEntity<T extends BackkEntity | SubEntity>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
-    preHooks?: CreatePreHook | CreatePreHook[],
-    postHook?: PostHook,
-    postQueryOperations?: PostQueryOperations,
+    options?: {
+      preHooks?: CreatePreHook | CreatePreHook[];
+      postHook?: PostHook;
+      postQueryOperations?: PostQueryOperations;
+    },
     shouldReturnItem = true
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'createEntity');
@@ -421,9 +422,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       this,
       entity,
       entityClass,
-      preHooks,
-      postHook,
-      postQueryOperations,
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations,
       false,
       shouldReturnItem
     );
@@ -440,9 +441,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
     subEntityClass: new () => U,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[],
+      postHook?: PostHook,
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
 
@@ -454,9 +457,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       [newSubEntity],
       entityClass,
       subEntityClass,
-      preHooks,
-      postHook,
-      postQueryOperations
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
     );
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -471,9 +474,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     entityClass: new () => T,
     subEntityClass: new () => U,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook,
-    postQueryOperations?: PostQueryOperations
+    options: {
+      preHooks?: PreHook<T> | PreHook<T>[],
+      postHook?: PostHook,
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
 
@@ -485,9 +490,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       newSubEntities,
       entityClass,
       subEntityClass,
-      preHooks,
-      postHook,
-      postQueryOperations
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
     );
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -593,7 +598,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): PromiseOfErrorOr<U[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntities');
-    const response = await getSubEntities<T, U>(this, _id, subEntityPath, entityClass, postQueryOperations, 'all');
+    const response = await getSubEntities<T, U>(
+      this,
+      _id,
+      subEntityPath,
+      entityClass,
+      postQueryOperations,
+      'all'
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -714,9 +726,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     _id: string,
     subEntitiesJsonPath: string,
     entityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[],
+      postHook?: PostHook,
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
 
@@ -725,9 +739,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       _id,
       subEntitiesJsonPath,
       entityClass,
-      preHooks,
-      postHook,
-      postQueryOperations
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
     );
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -739,9 +753,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     subEntitiesJsonPath: string,
     subEntityId: string,
     entityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook,
-    postQueryOperations?: PostQueryOperations
+    options: {
+      preHooks?: PreHook<T> | PreHook<T>[],
+      postHook?: PostHook,
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
@@ -750,9 +766,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       _id,
       subEntityJsonPath,
       entityClass,
-      preHooks,
-      postHook,
-      postQueryOperations
+      options
     );
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);

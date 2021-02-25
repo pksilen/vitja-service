@@ -56,8 +56,9 @@ import { BACKK_ERRORS } from '../errors/backkErrors';
 import log, { Severity } from '../observability/logging/log';
 import { CreatePreHook } from './hooks/CreatePreHook';
 import tryExecuteCreatePreHooks from './hooks/tryExecuteCreatePreHooks';
-import { ErrorOr, PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
+import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 import isBackkError from '../errors/isBackkError';
+import { ErrorOr } from "../types/ErrorOr";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -228,9 +229,11 @@ export default class MongoDbManager extends AbstractDbManager {
   async createEntity<T extends BackkEntity>(
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     EntityClass: new () => T,
-    preHooks?: CreatePreHook | CreatePreHook[],
-    postHook?: PostHook,
-    postQueryOperations?: PostQueryOperations,
+    options?: {
+      preHooks?: CreatePreHook | CreatePreHook[];
+      postHook?: PostHook;
+      postQueryOperations?: PostQueryOperations;
+    },
     isInternalCall = false
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'createEntity');
@@ -268,7 +271,7 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
-        await tryExecuteCreatePreHooks(preHooks ?? []);
+        await tryExecuteCreatePreHooks(options?.preHooks ?? []);
         let createEntityResult;
 
         try {
@@ -296,10 +299,10 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const response = isInternalCall
           ? ([{ _id } as T, null] as [T, null])
-          : await this.getEntityById(_id, EntityClass, postQueryOperations);
+          : await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
 
-        if (postHook) {
-          await tryExecutePostHook(postHook, response);
+        if (options?.postHook) {
+          await tryExecutePostHook(options?.postHook, response);
         }
 
         return response;
@@ -321,9 +324,11 @@ export default class MongoDbManager extends AbstractDbManager {
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
     subEntityClass: new () => U,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
 
@@ -334,9 +339,7 @@ export default class MongoDbManager extends AbstractDbManager {
       [newSubEntity],
       entityClass,
       subEntityClass,
-      preHooks,
-      postHook,
-      postQueryOperations
+      options
     );
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -350,9 +353,11 @@ export default class MongoDbManager extends AbstractDbManager {
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: new () => T,
     SubEntityClass: new () => U,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
     // noinspection AssignmentToFunctionParameterJS
@@ -368,13 +373,16 @@ export default class MongoDbManager extends AbstractDbManager {
         const currentEntityOrErrorResponse = await this.getEntityById(
           _id,
           EntityClass,
-          postQueryOperations,
-          undefined,
+          options?.postQueryOperations,
           true
         );
 
         let eTagCheckPreHook: PreHook<T>;
-        let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
+        let finalPreHooks = Array.isArray(options?.preHooks)
+          ? options?.preHooks ?? []
+          : options?.preHooks
+          ? [options?.preHooks]
+          : [];
 
         if (versionOrLastModifiedTimestamp !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
           if (
@@ -473,10 +481,10 @@ export default class MongoDbManager extends AbstractDbManager {
           true
         );
 
-        const response = await this.getEntityById(_id, EntityClass, postQueryOperations);
+        const response = await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
 
-        if (postHook) {
-          await tryExecutePostHook(postHook, response);
+        if (options?.postHook) {
+          await tryExecutePostHook(options?.postHook, response);
         }
 
         return response;
@@ -708,7 +716,7 @@ export default class MongoDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations,
     isInternalCall = false
   ): PromiseOfErrorOr<T> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
 
@@ -798,7 +806,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
     try {
       const [entity, error] = await this.getEntityById(_id, EntityClass, postQueryOperations);
-      const subItems = JSONPath({ json: entity, path: subEntityPath });
+      const subItems = JSONPath({ json: entity ?? null, path: subEntityPath });
       return responseMode === 'first' ? [[subItems?.[0]], error] : [subItems, error];
     } catch (error) {
       return [null, createBackkErrorFromError(error)];
@@ -1027,11 +1035,11 @@ export default class MongoDbManager extends AbstractDbManager {
         await hashAndEncryptEntity(restOfEntity, EntityClass as any, Types);
       }
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        let currentEntity: T | null = null;
+        let currentEntity: T | null  | undefined = null;
         let error = null;
 
         if (!isRecursiveCall && preHooks) {
-          [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, undefined, true);
+          [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true);
         }
 
         let eTagCheckPreHook: PreHook<T>;
@@ -1207,7 +1215,6 @@ export default class MongoDbManager extends AbstractDbManager {
             _id,
             EntityClass,
             undefined,
-            undefined,
             true
           );
           await tryExecutePreHooks(preHooks, entityOrErrorResponse);
@@ -1336,9 +1343,11 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     subEntitiesJsonPath: string,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
     // noinspection AssignmentToFunctionParameterJS
@@ -1353,10 +1362,10 @@ export default class MongoDbManager extends AbstractDbManager {
           _id,
           EntityClass,
           undefined,
-          undefined,
           true
         );
-        await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
+
+        await tryExecutePreHooks(options?.preHooks ?? [], currentEntityOrErrorResponse);
         const subEntities = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });
         let response = currentEntityOrErrorResponse;
 
@@ -1372,11 +1381,11 @@ export default class MongoDbManager extends AbstractDbManager {
             true
           );
 
-          response = await this.getEntityById(_id, EntityClass, postQueryOperations);
+          response = await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
         }
 
-        if (postHook) {
-          await tryExecutePostHook(postHook, [null, null]);
+        if (options?.postHook) {
+          await tryExecutePostHook(options?.postHook, [null, null]);
         }
 
         return response;
@@ -1396,21 +1405,16 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntitiesJsonPath: string,
     subEntityId: string,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
 
-    const response = await this.removeSubEntities(
-      _id,
-      subEntityPath,
-      EntityClass,
-      preHooks,
-      postHook,
-      postQueryOperations
-    );
+    const response = await this.removeSubEntities(_id, subEntityPath, EntityClass, options);
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;

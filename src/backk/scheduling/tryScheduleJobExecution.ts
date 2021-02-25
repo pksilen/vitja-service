@@ -74,8 +74,8 @@ export default async function tryScheduleJobExecution(
   // TODO check that seconds are zero, because 1 min granularity only allowed
   const dbManager = (controller[serviceName] as BaseService).getDbManager();
   // eslint-disable-next-line @typescript-eslint/camelcase
-  let entity: __Backk__JobScheduling | null = null;
-  let error: BackkError | null = emptyError;
+  let entity: __Backk__JobScheduling | null | undefined = null;
+  let error: BackkError | null | undefined = emptyError;
   const clsNamespace = createNamespace('serviceFunctionExecution');
 
   await clsNamespace.runAndReturn(async () => {

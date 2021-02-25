@@ -1,13 +1,13 @@
 import AbstractDbManager from '../../../../AbstractDbManager';
 import { BackkEntity } from '../../../../../types/entities/BackkEntity';
-import { ErrorOr } from '../../../../../types/PromiseOfErrorOr';
+import { ErrorOr } from "../../../../../types/ErrorOr";
 
 export default async function tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded<T extends BackkEntity>(
   dbManager: AbstractDbManager,
   [currentEntity, error]: ErrorOr<T>,
   EntityClass: new () => T
 ) {
-  if (error || currentEntity === null) {
+  if (error || !currentEntity) {
     return;
   }
 
