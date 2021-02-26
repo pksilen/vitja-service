@@ -13,7 +13,6 @@ import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/Shoul
 import FollowUser from "./FollowUser";
 import BaseUserAccount from "../../../../backk/types/useraccount/BaseUserAccount";
 import { OneToMany } from "../../../../backk/decorators/typeproperty/OneToMany";
-import { SalesItem } from "../../../salesitem/types/entities/SalesItem";
 import FavoriteSalesItem from "./FavoriteSalesItem";
 import OwnSalesItem from "./OwnSalesItem";
 

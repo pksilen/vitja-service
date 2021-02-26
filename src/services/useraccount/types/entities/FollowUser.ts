@@ -3,6 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { MaxLength } from 'class-validator';
+import OwnSalesItem from 'OwnSalesItem';
 import { Lengths } from '../../../../backk/constants/constants';
 import Entity from '../../../../backk/decorators/entity/Entity';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
@@ -12,7 +13,6 @@ import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStri
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { OneToMany } from '../../../../backk/decorators/typeproperty/OneToMany';
-import { SalesItem } from '../../../salesitem/types/entities/SalesItem';
 import getCities from '../../validation/getCities';
 
 @Entity('UserAccount')
@@ -41,5 +41,5 @@ export default class FollowUser {
   public imageDataUri!: string;
 
   @OneToMany(true)
-  public readonly ownSalesItems!: SalesItem[];
+  public readonly ownSalesItems!: OwnSalesItem[];
 }

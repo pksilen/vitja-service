@@ -7,6 +7,7 @@ import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStri
 import IsStrongPassword from '../../../../backk/decorators/typeproperty/IsStrongPassword';
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import { Private } from '../../../../backk/decorators/typeproperty/Private';
 import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 
 export default class ChangeUserPasswordArg {
@@ -23,13 +24,11 @@ export default class ChangeUserPasswordArg {
 
   @Unique()
   @IsEmail()
-
-  /* private */
+  @Private()
   userName!: string;
 
   @IsStrongPassword()
-
-  /* private */
+  @Private()
   password!: string;
 
   @IsStrongPassword()

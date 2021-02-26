@@ -4,11 +4,12 @@ import { IsEmail, MaxLength } from 'class-validator';
 import { Lengths } from '../../constants/constants';
 import IsAnyString from '../../decorators/typeproperty/IsAnyString';
 import IsStrongPassword from '../../decorators/typeproperty/IsStrongPassword';
+import { Private } from "../../decorators/typeproperty/Private";
 
 export default class BaseUserAccount extends _IdAndCaptcha {
   @Unique()
   @IsEmail()
-  /* private */
+  @Private()
   userName!: string;
 
   @MaxLength(Lengths._512)
@@ -16,6 +17,6 @@ export default class BaseUserAccount extends _IdAndCaptcha {
   public displayName!: string;
 
   @IsStrongPassword()
-  /* private */
+  @Private()
   password!: string;
 }
