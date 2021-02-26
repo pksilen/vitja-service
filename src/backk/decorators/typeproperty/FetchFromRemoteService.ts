@@ -1,16 +1,19 @@
 import typeAnnotationContainer from './typePropertyAnnotationContainer';
+import { HttpRequestOptions } from "../../remote/http/callRemoteService";
 
 export function FetchFromRemoteService<T, U>(
-  remoteServiceUrl: string,
-  remoteServiceCallArgumentBuilder: (arg: T, response: U) => { [key: string]: any }
+  remoteServiceFunctionUrl: string,
+  buildRemoteServiceFunctionArgument: (arg: T, response: U) => { [key: string]: any },
+  options?: HttpRequestOptions
 ) {
   // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, propertyName: string) {
     typeAnnotationContainer.setTypePropertyAsFetchedFromRemoteService(
       object.constructor,
       propertyName,
-      remoteServiceUrl,
-      remoteServiceCallArgumentBuilder
+      remoteServiceFunctionUrl,
+      buildRemoteServiceFunctionArgument,
+      options
     );
   };
 }

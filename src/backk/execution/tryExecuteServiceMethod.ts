@@ -26,7 +26,8 @@ import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromE
 import { BackkError } from '../types/BackkError';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
-import emptyError from "../errors/emptyError";
+import emptyError from '../errors/emptyError';
+import fetchFromRemoteServices from './fetchFromRemoteServices';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -336,7 +337,9 @@ export default async function tryExecuteServiceMethod(
             await dbManager.tryReserveDbConnectionFromPool();
           }
 
-          [response, backkError] = await controller[serviceName][functionName](instantiatedServiceFunctionArgument);
+          [response, backkError] = await controller[serviceName][functionName](
+            instantiatedServiceFunctionArgument
+          );
 
           if (dbManager) {
             dbManager.tryReleaseDbConnectionBackToPool();
@@ -417,6 +420,12 @@ export default async function tryExecuteServiceMethod(
         ).baseTypeName;
 
         const ServiceFunctionReturnType = controller[serviceName]['Types'][serviceFunctionBaseReturnTypeName];
+
+        await fetchFromRemoteServices(
+          ServiceFunctionReturnType,
+          instantiatedServiceFunctionArgument,
+          response
+        );
 
         if (Array.isArray(response) && response.length > 0 && typeof response[0] === 'object') {
           await tryValidateServiceFunctionResponse(
