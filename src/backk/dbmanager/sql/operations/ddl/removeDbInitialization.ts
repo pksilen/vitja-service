@@ -1,7 +1,8 @@
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import AbstractDbManager from '../../../AbstractDbManager';
 
-let intervalId: NodeJS.Timeout | undefined = undefined;
+let intervalId: NodeJS.Timeout | undefined = undefined; // NOSONAR
+const RETRY_INTERVAL = 15000;
 
 export default async function removeDbInitialization(dbManager: AbstractDbManager) {
   if (process.env.NODE_ENV === 'development') {
@@ -14,13 +15,12 @@ export default async function removeDbInitialization(dbManager: AbstractDbManage
 
     try {
       await dbManager.tryExecuteSqlWithoutCls(removeAppVersionSql);
-      return true;
     } catch (error) {
       if (intervalId !== undefined) {
         clearInterval(intervalId);
       }
 
-      intervalId = setInterval(() => removeDbInitialization(dbManager), 15000);
+      intervalId = setInterval(() => removeDbInitialization(dbManager), RETRY_INTERVAL);
     }
   }
 }

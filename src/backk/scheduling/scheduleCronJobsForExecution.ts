@@ -12,6 +12,7 @@ import { logError } from "../observability/logging/log";
 import tryExecuteServiceMethod from "../execution/tryExecuteServiceMethod";
 import findServiceFunctionArgumentType from "../metadata/findServiceFunctionArgumentType";
 import BackkResponse from "../execution/BackkResponse";
+import { Values } from "../constants/constants";
 
 const cronJobs: { [key: string]: CronJob } = {};
 
@@ -43,7 +44,7 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
                     __Backk__CronJobScheduling,
                     {
                       isSuccessfulOrTrue: ({ nextScheduledTimestamp }) =>
-                        Math.abs(Date.now() - nextScheduledTimestamp.valueOf()) < 500
+                        Math.abs(Date.now() - nextScheduledTimestamp.valueOf()) < Values._500
                     }
                   );
 

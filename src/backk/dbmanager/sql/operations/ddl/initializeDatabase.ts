@@ -16,6 +16,7 @@ import shouldInitializeDb from './shouldInitializeDb';
 import removeDbInitialization from './removeDbInitialization';
 import setDbInitialized from './setDbInitialized';
 import { createNamespace } from "cls-hooked";
+import removeDbInitializationWhenPendingTooLong from "./removeDbInitializationWhenPendingTooLong";
 
 let isMongoDBInitialized = false;
 
@@ -29,6 +30,9 @@ export async function isDbInitialized(dbManager: AbstractDbManager) {
   }
 
   if (dbManager instanceof AbstractSqlDbManager) {
+
+    removeDbInitializationWhenPendingTooLong(dbManager);
+
     const getAppVersionInitializationStatusSql = `SELECT * ${dbManager.schema.toLowerCase()}.__backk_db_initialization WHERE isinitialized = 1 AND appversion = ${
       process.env.npm_package_version
     }`;
@@ -69,19 +73,19 @@ export default async function initializeDatabase(
         await forEachAsyncSequential(
           Object.entries(entityAnnotationContainer.entityNameToClassMap),
           async ([entityName, entityClass]: [any, any]) =>
-            await tryAlterOrCreateTable(dbManager, entityName, entityClass, dbManager.schema)
+            tryAlterOrCreateTable(dbManager, entityName, entityClass, dbManager.schema)
         );
 
         await forEachAsyncSequential(
           Object.entries(entityAnnotationContainer.indexNameToIndexFieldsMap),
           async ([indexName, indexFields]: [any, any]) =>
-            await tryCreateIndex(dbManager, indexName, dbManager.schema, indexFields)
+            tryCreateIndex(dbManager, indexName, dbManager.schema, indexFields)
         );
 
         await forEachAsyncSequential(
           Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
           async ([indexName, indexFields]: [any, any]) =>
-            await tryCreateUniqueIndex(dbManager, indexName, dbManager.schema, indexFields)
+            tryCreateUniqueIndex(dbManager, indexName, dbManager.schema, indexFields)
         );
 
         await forEachAsyncSequential(
@@ -181,19 +185,19 @@ export default async function initializeDatabase(
       await forEachAsyncSequential(
         Object.entries(entityAnnotationContainer.indexNameToIndexFieldsMap),
         async ([indexName, indexFields]: [any, any]) =>
-          await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields)
+          tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields)
       );
 
       await forEachAsyncSequential(
         Object.entries(entityAnnotationContainer.indexNameToUniqueIndexFieldsMap),
         async ([indexName, indexFields]: [any, any]) =>
-          await tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields, true)
+          tryCreateMongoDbIndex(dbManager, indexName, dbManager.schema, indexFields, true)
       );
 
       await forEachAsyncSequential(
         Object.entries(entityAnnotationContainer.entityNameToClassMap),
         async ([, EntityClass]: [any, any]) =>
-          await tryCreateMongoDbIndexesForUniqueFields(dbManager, EntityClass)
+          tryCreateMongoDbIndexesForUniqueFields(dbManager, EntityClass)
       );
 
       Object.entries(entityAnnotationContainer.entityNameToClassMap).forEach(([entityName, entityClass]) =>

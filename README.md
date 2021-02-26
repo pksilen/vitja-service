@@ -1,8 +1,9 @@
 # Vitja service
 
 TODO:
-- MongoDb updates, add/remove subitems, deletes to use findOneAndUpdate before getEntityById
-
+- select For Update: jobs/cronjobs
+  - initializeDb
+    
 - Split to multiple microservices
   - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

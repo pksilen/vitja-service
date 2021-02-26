@@ -5,9 +5,9 @@ export default async function shouldInitializeDb(dbManager: AbstractSqlDbManager
     return true;
   }
 
-  const addAppVersionSql = `INSERT INTO ${dbManager.schema.toLowerCase()}.__backk_db_initialization (appVersion, isInitialized) VALUES ("${
+  const addAppVersionSql = `INSERT INTO ${dbManager.schema.toLowerCase()}.__backk_db_initialization (appVersion, isInitialized, createdattimestamp) VALUES ("${
     process.env.npm_package_version
-  }", 0)`;
+  }", 0, current_timestamp)`;
 
   try {
     await dbManager.tryExecuteSqlWithoutCls(addAppVersionSql);

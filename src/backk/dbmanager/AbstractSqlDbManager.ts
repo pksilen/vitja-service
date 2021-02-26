@@ -98,7 +98,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       return true;
     } catch (error) {
       try {
-        const createTableStatement = `CREATE TABLE IF NOT EXISTS ${this.schema.toLowerCase()}.__backk_db_initialization (appversion VARCHAR(64) PRIMARY KEY NOT NULL UNIQUE, isinitialized TINYINT)`;
+        const createTableStatement = `CREATE TABLE IF NOT EXISTS ${this.schema.toLowerCase()}.__backk_db_initialization (appversion VARCHAR(64) PRIMARY KEY NOT NULL UNIQUE, isinitialized TINYINT, createdattimestamp ${this.getTimestampType()})`;
         await this.tryExecuteSqlWithoutCls(createTableStatement);
         return true;
       } catch (error) {
@@ -627,10 +627,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldPathName: string,
     fieldValue: any,
     entityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    postQueryOperations?: PostQueryOperations,
+    isSelectForUpdate = false
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
-    const response = await getEntityWhere(this, fieldPathName, fieldValue, entityClass, postQueryOperations);
+    const response = await getEntityWhere(this, fieldPathName, fieldValue, entityClass, postQueryOperations, isSelectForUpdate);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
