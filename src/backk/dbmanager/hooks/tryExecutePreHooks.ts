@@ -4,7 +4,7 @@ import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWit
 import { HttpStatusCodes } from '../../constants/constants';
 import { BackkEntity } from '../../types/entities/BackkEntity';
 import { SubEntity } from '../../types/entities/SubEntity';
-import { ErrorOr } from "../../types/ErrorOr";
+import { ErrorOr } from '../../types/ErrorOr';
 
 export default async function tryExecutePreHooks<T extends BackkEntity | SubEntity>(
   preHooks: PreHook<T> | PreHook<T>[],
@@ -43,14 +43,20 @@ export default async function tryExecutePreHooks<T extends BackkEntity | SubEnti
         );
       }
 
-      if (typeof hookCallResult === 'object' && hookCallResult[1]) {
-        if (typeof preHook === 'object') {
-          if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
-            return;
-          }
+      if (Array.isArray(hookCallResult) && hookCallResult[1]) {
+        if (
+          process.env.NODE_ENV === 'development' &&
+          typeof preHook === 'object' &&
+          preHook.shouldDisregardFailureWhenExecutingTests
+        ) {
+          return;
         }
+
         throw hookCallResult[1];
-      } else if (hookCallResult === false) {
+      } else if (
+        hookCallResult === false ||
+        (typeof hookCallResult === 'object' && hookCallResult !== null)
+      ) {
         if (typeof preHook === 'object') {
           if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
             return;
@@ -71,11 +77,9 @@ export default async function tryExecutePreHooks<T extends BackkEntity | SubEnti
           );
         }
       } else if (
-        (process.env.NODE_ENV === 'development' &&
-          typeof preHook === 'object' &&
-          preHook.shouldDisregardFailureWhenExecutingTests &&
-          hookCallResult === true) ||
-        (typeof hookCallResult === 'object' && hookCallResult[0])
+        process.env.NODE_ENV === 'development' &&
+        typeof preHook === 'object' &&
+        preHook.shouldDisregardFailureWhenExecutingTests
       ) {
         throw new Error(
           'Invalid successful hook call result when shouldDisregardFailureWhenExecutingTests was set to true'

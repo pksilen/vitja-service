@@ -31,8 +31,7 @@ import { SalesItem } from '../salesitem/types/entities/SalesItem';
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
 export default class UserAccountServiceImpl extends UserAccountService {
-  private readonly postQueryOperations = {
-    ...new DefaultPostQueryOperations(),
+  private readonly defaultPostQueryOperations = {
     excludeResponseFields: [
       'ownSalesItems.primaryDataImageUri',
       'followedUsers.ownSalesItems',
@@ -67,12 +66,11 @@ export default class UserAccountServiceImpl extends UserAccountService {
       [new SqlEquals({ userName }), new SqlEquals({ state: 'forSale' }, 'favoriteSalesItems')]
     );
 
-    return this.dbManager.getEntityByFilters(filters, UserAccount, this.postQueryOperations);
+    return this.dbManager.getEntityByFilters(filters, UserAccount, this.defaultPostQueryOperations);
   }
 
   getUserNameById({ _id }: _Id): PromiseOfErrorOr<UserName> {
     return this.dbManager.getEntityById(_id, UserAccount, {
-      ...new DefaultPostQueryOperations(),
       includeResponseFields: ['userName']
     });
   }
@@ -86,14 +84,14 @@ export default class UserAccountServiceImpl extends UserAccountService {
       { _id: salesItemId },
       UserAccount,
       SalesItem,
-      { postQueryOperations: this.postQueryOperations }
+      { postQueryOperations: this.defaultPostQueryOperations }
     );
   }
 
   @AllowForSelf()
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount, {
-      postQueryOperations: this.postQueryOperations
+      postQueryOperations: this.defaultPostQueryOperations
     });
   }
 
@@ -121,7 +119,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
             UserAccount,
             FollowUser
           ),
-        postQueryOperations: this.postQueryOperations
+        postQueryOperations: this.defaultPostQueryOperations
       }
     );
   }
@@ -133,7 +131,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
     return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, {
       preHooks: () =>
         this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount),
-      postQueryOperations: this.postQueryOperations
+      postQueryOperations: this.defaultPostQueryOperations
     });
   }
 

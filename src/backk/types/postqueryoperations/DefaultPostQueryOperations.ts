@@ -46,5 +46,5 @@ export default class DefaultPostQueryOperations implements PostQueryOperations {
   @IsArray()
   @ArrayMinSize(0)
   @ArrayMaxSize(Values._25)
-  paginations: Pagination[] = [new Pagination('*', 1, 50)];
+  paginations: Pagination[] = [new Pagination('*', 1, Values._50)];
 }

@@ -1,7 +1,7 @@
-import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
-import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
-import { HttpStatusCodes } from "../../constants/constants";
-import { CreatePreHook } from "./CreatePreHook";
+import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
+import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
+import { HttpStatusCodes } from '../../constants/constants';
+import { CreatePreHook } from './CreatePreHook';
 
 export default async function tryExecuteCreatePreHooks(preHooks: CreatePreHook | CreatePreHook[]) {
   await forEachAsyncSequential(Array.isArray(preHooks) ? preHooks : [preHooks], async (preHook) => {
@@ -31,14 +31,17 @@ export default async function tryExecuteCreatePreHooks(preHooks: CreatePreHook |
       );
     }
 
-    if (typeof hookCallResult === 'object' && hookCallResult[1]) {
-      if (typeof preHook === 'object') {
-        if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
-          return;
-        }
+    if (Array.isArray(hookCallResult) && hookCallResult[1]) {
+      if (
+        process.env.NODE_ENV === 'development' &&
+        typeof preHook === 'object' &&
+        preHook.shouldDisregardFailureWhenExecutingTests
+      ) {
+        return;
       }
+
       throw hookCallResult[1];
-    } else if (hookCallResult === false) {
+    } else if (hookCallResult === false || (typeof hookCallResult === 'object' && hookCallResult !== null)) {
       if (typeof preHook === 'object') {
         if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
           return;
@@ -59,11 +62,9 @@ export default async function tryExecuteCreatePreHooks(preHooks: CreatePreHook |
         );
       }
     } else if (
-      (process.env.NODE_ENV === 'development' &&
-        typeof preHook === 'object' &&
-        preHook.shouldDisregardFailureWhenExecutingTests &&
-        hookCallResult === true) ||
-      (typeof hookCallResult === 'object' && hookCallResult[0])
+      process.env.NODE_ENV === 'development' &&
+      typeof preHook === 'object' &&
+      preHook.shouldDisregardFailureWhenExecutingTests
     ) {
       throw new Error(
         'Invalid successful hook call result when shouldDisregardFailureWhenExecutingTests was set to true'

@@ -1,13 +1,13 @@
-import { Injectable } from "@nestjs/common";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import _Id from "../../backk/types/id/_Id";
-import GetUsersArg from ".//types/args/GetUsersArg";
-import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import User from "./types/entities/User";
-import UserService from "./UserService";
-import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import { Injectable } from '@nestjs/common';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import _Id from '../../backk/types/id/_Id';
+import GetUsersArg from './/types/args/GetUsersArg';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import User from './types/entities/User';
+import UserService from './UserService';
+import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()

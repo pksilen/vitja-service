@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import AbstractDbManager from 'src/backk/dbmanager/AbstractDbManager';
 import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
 import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
 import { AllowForUserRoles } from '../../backk/decorators/service/function/AllowForUserRoles';
@@ -45,6 +44,7 @@ import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -107,14 +107,7 @@ export default class OrderServiceImpl extends OrderService {
           'toBeDelivered',
         errorMessage: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
       },
-      postHook: () =>
-        sendToRemoteService(
-          `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
-          {
-            orderId: _id,
-            orderItemId
-          }
-        )
+      postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
     });
   }
 
@@ -232,14 +225,7 @@ export default class OrderServiceImpl extends OrderService {
       ],
       {
         shouldExecutePostHook: () => newState === 'returned',
-        isSuccessful: () =>
-          sendToRemoteService(
-            `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
-            {
-              orderId: _id,
-              orderItemId
-            }
-          )
+        isSuccessful: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
       }
     );
   }
@@ -288,6 +274,16 @@ export default class OrderServiceImpl extends OrderService {
         },
         currentState
       )
+    );
+  }
+
+  private static refundOrderItem(orderId: string, orderItemId: string): PromiseOfErrorOr<null> {
+    return sendToRemoteService(
+      `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
+      {
+        orderId,
+        orderItemId
+      }
     );
   }
 

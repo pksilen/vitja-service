@@ -3,6 +3,7 @@
 TODO:
 - PostQueryOperations
 - MongoDb updates, add/remove subitems, to use findOneAndUpdate before getEntityById
+- Remove updateEntity check of update result, if getEntitiyById is first always called
 
 - Split to multiple microservices
   - Implement subentities as remote service queries
