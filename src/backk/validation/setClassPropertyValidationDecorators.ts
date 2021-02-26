@@ -132,19 +132,17 @@ export default function setClassPropertyValidationDecorators(
           if (
             isPrivateProperty &&
             entityAnnotationContainer.isEntity(Class) &&
-            classBodyNode.key.leadingComments?.[0].value.trim() !== 'private'
+            !typePropertyAnnotationContainer.isTypePropertyPrivate(Class, propertyName)
           ) {
             throw new Error(
               Class.name +
                 '.' +
                 propertyName +
-                " is a private property and must be preceded by a comment: /* private */. Or if the property should be public, denote it with a 'public' keyword"
+                " is a private property and it must be decorated with @Private() annotation. Or if the property should be public, denote it with a 'public' keyword"
             );
           }
 
           if (isPrivateProperty && entityAnnotationContainer.isEntity(Class)) {
-            typePropertyAnnotationContainer.setTypePropertyAsPrivate(Class, propertyName);
-
             const validationMetadataArgs: ValidationMetadataArgs = {
               type: ValidationTypes.CUSTOM_VALIDATION,
               target: Class,
