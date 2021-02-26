@@ -1,3 +1,8 @@
+export type RemoteServiceFetchSpec = {
+  remoteServiceUrl: string;
+  remoteServiceCallArgumentBuilder: (arg: any, response: any) => { [key: string]: any };
+};
+
 class TypePropertyAnnotationContainer {
   private readonly typePropertyNameToDocStringMap: { [key: string]: string } = {};
   private readonly typePropertyNameToIsUniqueMap: { [key: string]: boolean } = {};
@@ -12,6 +17,7 @@ class TypePropertyAnnotationContainer {
   private readonly typePropertyNameToIsInternalMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsOneToManyMap: { [key: string]: boolean } = {};
   private readonly typePropertyNameToIsExternalServiceEntityMap: { [key: string]: boolean } = {};
+  private readonly typePropertyNameToRemoteServiceFetchSpecMap: { [key: string]: RemoteServiceFetchSpec } = {};
 
   addDocumentationForTypeProperty(Type: Function, propertyName: string, docString: string) {
     this.typePropertyNameToDocStringMap[`${Type.name}${propertyName}`] = docString;
@@ -47,7 +53,9 @@ class TypePropertyAnnotationContainer {
 
   setTypePropertyAsOneToMany(Type: Function, propertyName: string, isExternalServiceEntity: boolean) {
     this.typePropertyNameToIsOneToManyMap[`${Type.name}${propertyName}`] = true;
-    this.typePropertyNameToIsExternalServiceEntityMap[`${Type.name}${propertyName}`] = isExternalServiceEntity
+    this.typePropertyNameToIsExternalServiceEntityMap[
+      `${Type.name}${propertyName}`
+    ] = isExternalServiceEntity;
   }
 
   setTypePropertyAsTransient(Type: Function, propertyName: string) {
@@ -60,6 +68,18 @@ class TypePropertyAnnotationContainer {
 
   setTypePropertyAsInternal(Type: Function, propertyName: string) {
     this.typePropertyNameToIsInternalMap[`${Type.name}${propertyName}`] = true;
+  }
+
+  setTypePropertyAsFetchedFromRemoteService(
+    Type: Function,
+    propertyName: string,
+    remoteServiceUrl: string,
+    remoteServiceCallArgumentBuilder: (arg: any, response: any) => { [key: string]: any }
+  ) {
+    this.typePropertyNameToRemoteServiceFetchSpecMap[`${Type.name}${propertyName}`] = {
+      remoteServiceUrl,
+      remoteServiceCallArgumentBuilder
+    };
   }
 
   getDocumentationForTypeProperty(Type: Function, propertyName: string) {
@@ -125,7 +145,9 @@ class TypePropertyAnnotationContainer {
   isTypePropertyNotEncrypted(Type: Function, propertyName: string) {
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.typePropertyNameToIsNotEncryptedMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
+      if (
+        this.typePropertyNameToIsNotEncryptedMap[`${proto.constructor.name}${propertyName}`] !== undefined
+      ) {
         return this.typePropertyNameToIsNotEncryptedMap[`${proto.constructor.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
@@ -185,7 +207,10 @@ class TypePropertyAnnotationContainer {
 
     let proto = Object.getPrototypeOf(new (Type as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.typePropertyNameToIsExternalServiceEntityMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
+      if (
+        this.typePropertyNameToIsExternalServiceEntityMap[`${proto.constructor.name}${propertyName}`] !==
+        undefined
+      ) {
         return this.typePropertyNameToIsExternalServiceEntityMap[`${proto.constructor.name}${propertyName}`];
       }
       proto = Object.getPrototypeOf(proto);
@@ -228,6 +253,18 @@ class TypePropertyAnnotationContainer {
     }
 
     return false;
+  }
+
+  getTypePropertyRemoteServiceFetchSpec(Type: Function, propertyName: string) {
+    let proto = Object.getPrototypeOf(new (Type as new () => any)());
+    while (proto !== Object.prototype) {
+      if (this.typePropertyNameToRemoteServiceFetchSpecMap[`${proto.constructor.name}${propertyName}`] !== undefined) {
+        return this.typePropertyNameToRemoteServiceFetchSpecMap[`${proto.constructor.name}${propertyName}`];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return undefined;
   }
 }
 

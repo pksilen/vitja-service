@@ -12,7 +12,7 @@ import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStri
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
-import { SalesItemState } from '../../../salesitem/types/enums/SalesItemState';
+import { SalesItemState } from '../enums/SalesItemState';
 
 @Entity('SalesItem')
 export default class OwnSalesItem {

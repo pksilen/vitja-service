@@ -13,8 +13,8 @@ import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/Shoul
 import FollowUser from "./FollowUser";
 import BaseUserAccount from "../../../../backk/types/useraccount/BaseUserAccount";
 import { OneToMany } from "../../../../backk/decorators/typeproperty/OneToMany";
-import FavoriteSalesItem from "./FavoriteSalesItem";
-import OwnSalesItem from "./OwnSalesItem";
+import FavoriteSalesItem from "../../../salesitem/types/entities/FavoriteSalesItem";
+import OwnSalesItem from "../../../salesitem/types/entities/OwnSalesItem";
 
 @Entity()
 export default class UserAccount extends BaseUserAccount {

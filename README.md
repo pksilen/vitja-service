@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO:
+- Implement subentities as remote service queries
 - Split to multiple microservices
-  - Implement subentities as remote service queries
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:
    http-kubernetes-mysql,

@@ -33,10 +33,14 @@ function getDeclarationsFor(typeName: string, originatingTypeFilePathName: strin
           relativeImportPathName
         );
 
-        const newRelativeImportPathName = path.relative(
+        let newRelativeImportPathName = path.relative(
           path.dirname(originatingTypeFilePathName),
           importAbsolutePathName
         );
+
+        if (!newRelativeImportPathName.startsWith('.')) {
+          newRelativeImportPathName = './' + newRelativeImportPathName;
+        }
 
         if (newRelativeImportPathName !== relativeImportPathName) {
           node.source.value = newRelativeImportPathName;

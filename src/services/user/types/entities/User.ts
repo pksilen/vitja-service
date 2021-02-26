@@ -13,8 +13,8 @@ import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { OneToMany } from '../../../../backk/decorators/typeproperty/OneToMany';
+import OwnSalesItem from '../../../salesitem/types/entities/OwnSalesItem';
 import FollowUser from '../../../useraccount/types/entities/FollowUser';
-import OwnSalesItem from '../../../useraccount/types/entities/OwnSalesItem';
 import getCities from '../../../useraccount/validation/getCities';
 
 @Entity('UserAccount')
