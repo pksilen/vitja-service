@@ -1,5 +1,5 @@
 import SortBy from "./SortBy";
 
 export interface SortBys {
-  sortBys: SortBy[];
+  sortBys?: SortBy[];
 }

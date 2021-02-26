@@ -4,6 +4,7 @@ import decryptEntities from "../../../../../crypt/decryptEntities";
 import createResultMaps from "./createResultMaps";
 import removeSingleSubEntitiesWithNullProperties from "./removeSingleSubEntitiesWithNullProperties";
 import { PostQueryOperations } from "../../../../../types/postqueryoperations/PostQueryOperations";
+import Pagination from "../../../../../types/postqueryoperations/Pagination";
 
 const parsedRowProcessingBatchSize = parseInt(process.env.ROW_PROCESSING_BATCH_SIZE ?? '500', 10)
 const ROW_PROCESSING_BATCH_SIZE = isNaN(parsedRowProcessingBatchSize) ? 500 : parsedRowProcessingBatchSize;
@@ -59,7 +60,13 @@ export default function transformRowsToObjects<T>(
     mappedRows = getMappedRows(rows, resultMaps, EntityClass, Types);
   }
 
+  if (!paginations) {
+    // noinspection AssignmentToFunctionParameterJS
+    paginations = [new Pagination('*', 1, 50)];
+  }
+
   let rootPagination = paginations.find(pagination => pagination.subEntityPath === '');
+
   if (!rootPagination) {
     rootPagination = paginations.find(pagination => pagination.subEntityPath === '*');
   }

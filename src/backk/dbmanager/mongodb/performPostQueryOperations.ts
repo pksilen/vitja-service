@@ -3,6 +3,8 @@ import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOp
 import getProjection from './getProjection';
 import getRootProjection from './getRootProjection';
 import getRootOperations from './getRootOperations';
+import SortBy from "../../types/postqueryoperations/SortBy";
+import Pagination from "../../types/postqueryoperations/Pagination";
 
 export default function performPostQueryOperations<T>(
   cursor: Cursor<T> | AggregationCursor<T>,
@@ -12,30 +14,41 @@ export default function performPostQueryOperations<T>(
 ) {
   const projection = getProjection(EntityClass, postQueryOperations);
   const rootProjection = getRootProjection(projection, EntityClass, Types);
+
   if (Object.keys(rootProjection).length > 0) {
     cursor.project(rootProjection);
   }
 
-  if (postQueryOperations?.sortBys) {
-    const rootSortBys = getRootOperations(postQueryOperations.sortBys, EntityClass, Types);
+  let sortBys = postQueryOperations?.sortBys;
 
-    if (rootSortBys.length > 0) {
-      const sorting = rootSortBys.reduce(
-        (accumulatedSortObj, { fieldName, sortDirection }) => ({
-          ...accumulatedSortObj,
-          [fieldName]: sortDirection === 'ASC' ? 1 : -1
-        }),
-        {}
-      );
-
-      cursor.sort(sorting);
-    }
+  if (!sortBys) {
+    sortBys = [new SortBy('*', '_id', 'ASC'), new SortBy('*', 'id', 'ASC')];
   }
 
-  let rootPagination = postQueryOperations?.paginations.find((pagination) => !pagination.subEntityPath);
+  const rootSortBys = getRootOperations(sortBys, EntityClass, Types);
+
+  if (rootSortBys.length > 0) {
+    const sorting = rootSortBys.reduce(
+      (accumulatedSortObj, { fieldName, sortDirection }) => ({
+        ...accumulatedSortObj,
+        [fieldName]: sortDirection === 'ASC' ? 1 : -1
+      }),
+      {}
+    );
+
+    cursor.sort(sorting);
+  }
+
+  let paginations = postQueryOperations?.paginations;
+
+  if (!paginations) {
+    paginations = [new Pagination('*', 1, 50)];
+  }
+
+  let rootPagination = paginations.find((pagination) => !pagination.subEntityPath);
 
   if (!rootPagination) {
-    rootPagination = postQueryOperations?.paginations.find((pagination) => pagination.subEntityPath === '*');
+    rootPagination = paginations.find((pagination) => pagination.subEntityPath === '*');
   }
 
   if (rootPagination) {
