@@ -302,8 +302,6 @@ export default async function updateEntity<T extends BackkEntity>(
       }
     }
 
-    await Promise.all(promises);
-
     if (setStatements) {
       let sqlStatement = `UPDATE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} SET ${setStatements}`;
 
@@ -311,18 +309,13 @@ export default async function updateEntity<T extends BackkEntity>(
         sqlStatement += ` WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(columns.length + 1)}`;
       }
 
-      const result = await dbManager.tryExecuteQuery(
+      promises.push(dbManager.tryExecuteQuery(
         sqlStatement,
         numericId === undefined ? values : [...values, numericId]
-      );
-
-      if (dbManager.getAffectedRows(result) !== 1) {
-        throw createErrorFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-          errorMessage: EntityClass.name + ' with id: ' + _id + ' not found'
-        });
-      }
+      ));
     }
+
+    await Promise.all(promises);
 
     if (postHook) {
       await tryExecutePostHook(postHook, [null, null]);
