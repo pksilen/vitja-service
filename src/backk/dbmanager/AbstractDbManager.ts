@@ -212,7 +212,8 @@ export default abstract class AbstractDbManager {
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    postQueryOperations?: PostQueryOperations,
+    isSelectForUpdate?: boolean
   ): PromiseOfErrorOr<T>;
 
   abstract getEntitiesWhere<T>(

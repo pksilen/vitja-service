@@ -58,7 +58,7 @@ import { CreatePreHook } from './hooks/CreatePreHook';
 import tryExecuteCreatePreHooks from './hooks/tryExecuteCreatePreHooks';
 import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 import isBackkError from '../errors/isBackkError';
-import { ErrorOr } from "../types/ErrorOr";
+import { ErrorOr } from '../types/ErrorOr';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -374,6 +374,7 @@ export default class MongoDbManager extends AbstractDbManager {
           _id,
           EntityClass,
           options?.postQueryOperations,
+          true,
           true
         );
 
@@ -714,6 +715,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations,
+    isSelectForUpdate = false,
     isInternalCall = false
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
@@ -729,6 +731,13 @@ export default class MongoDbManager extends AbstractDbManager {
       }
 
       return await this.tryExecute(false, async (client) => {
+        if (isSelectForUpdate) {
+          await client
+            .db(this.dbName)
+            .collection(EntityClass.name.toLowerCase())
+            .findOneAndUpdate({ _id: new ObjectId(_id) }, { $set: { _backkLock: new ObjectId() } });
+        }
+
         const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
 
         const cursor = client
@@ -867,7 +876,8 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    postQueryOperations?: PostQueryOperations,
+    isSelectForUpdate = false
   ): PromiseOfErrorOr<T> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
@@ -893,6 +903,13 @@ export default class MongoDbManager extends AbstractDbManager {
 
     try {
       const entities = await this.tryExecute(false, async (client) => {
+        if (isSelectForUpdate) {
+          await client
+            .db(this.dbName)
+            .collection(EntityClass.name.toLowerCase())
+            .findOneAndUpdate(matchExpression, { $set: { _backkLock: new ObjectId() } });
+        }
+
         const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
 
         const cursor = client
@@ -1035,11 +1052,11 @@ export default class MongoDbManager extends AbstractDbManager {
         await hashAndEncryptEntity(restOfEntity, EntityClass as any, Types);
       }
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        let currentEntity: T | null  | undefined = null;
+        let currentEntity: T | null | undefined = null;
         let error = null;
 
         if (!isRecursiveCall && preHooks) {
-          [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true);
+          [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
         }
 
         let eTagCheckPreHook: PreHook<T>;
@@ -1174,7 +1191,13 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       await this.tryExecute(shouldUseTransaction, async () => {
-        const [currentEntity, error] = await this.getEntityWhere(fieldPathName, fieldValue, EntityClass);
+        const [currentEntity, error] = await this.getEntityWhere(
+          fieldPathName,
+          fieldValue,
+          EntityClass,
+          undefined,
+          true
+        );
 
         await tryExecutePreHooks(preHooks ?? [], [currentEntity, error]);
         await this.updateEntity({ _id: (currentEntity as T)._id, ...entity }, EntityClass, []);
@@ -1211,12 +1234,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
         if (preHooks) {
-          const entityOrErrorResponse = await this.getEntityById(
-            _id,
-            EntityClass,
-            undefined,
-            true
-          );
+          const entityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true, true);
           await tryExecutePreHooks(preHooks, entityOrErrorResponse);
         }
 
@@ -1358,12 +1376,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async () => {
-        const currentEntityOrErrorResponse = await this.getEntityById(
-          _id,
-          EntityClass,
-          undefined,
-          true
-        );
+        const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true, true);
 
         await tryExecutePreHooks(options?.preHooks ?? [], currentEntityOrErrorResponse);
         const subEntities = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });

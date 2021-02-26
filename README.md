@@ -1,8 +1,7 @@
 # Vitja service
 
 TODO:
-- Remove updateEntity check of update result, if getEntitiyById is first always called
-- MongoDb updates, add/remove subitems, to use findOneAndUpdate before getEntityById
+- MongoDb updates, add/remove subitems, deletes to use findOneAndUpdate before getEntityById
 
 - Split to multiple microservices
   - Implement subentities as remote service queries
