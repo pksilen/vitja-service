@@ -425,9 +425,9 @@ export default function setClassPropertyValidationDecorators(
               ) {
                 throw new Error(
                   Class.name +
-                    '.' +
-                    propertyName +
-                    ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
+                  '.' +
+                  propertyName +
+                  ' must have either @ArrayUnique() or @ArrayNotUnique() annotation'
                 );
               }
 
@@ -437,11 +437,20 @@ export default function setClassPropertyValidationDecorators(
             } else {
               throw new Error(
                 'Type: ' +
-                  baseTypeName +
-                  ' not found in ' +
-                  serviceName.charAt(0).toUpperCase() +
-                  serviceName.slice(1) +
-                  '.Types'
+                baseTypeName +
+                ' not found in ' +
+                serviceName.charAt(0).toUpperCase() +
+                serviceName.slice(1) +
+                '.Types'
+              );
+            }
+          } else if (baseTypeName === 'any') {
+            if (!typePropertyAnnotationContainer.getTypePropertyRemoteServiceFetchSpec(Class, propertyName)) {
+              throw new Error(
+                Class.name +
+                '.' +
+                propertyName +
+                " type 'any' allowed only with @FetchFromRemoteService() annotation present"
               );
             }
           } else if (baseTypeName !== 'any') {
@@ -508,6 +517,17 @@ export default function setClassPropertyValidationDecorators(
             });
 
             constraints = [enumValues];
+          }
+
+          if (typePropertyAnnotationContainer.getTypePropertyRemoteServiceFetchSpec(Class, propertyName)) {
+            if (!classBodyNode.readonly) {
+              throw new Error(
+                Class.name +
+                '.' +
+                propertyName +
+                ' must be a readonly property when property decorated with @FetchFromRemoteService() annotation'
+              );
+            }
           }
 
           if (validationType && !doesPropertyContainValidation(Class, propertyName, validationType)) {

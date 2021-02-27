@@ -421,12 +421,22 @@ export default async function tryExecuteServiceMethod(
 
         const ServiceFunctionReturnType = controller[serviceName]['Types'][serviceFunctionBaseReturnTypeName];
 
-        await fetchFromRemoteServices(
+        const backkError = await fetchFromRemoteServices(
           ServiceFunctionReturnType,
           instantiatedServiceFunctionArgument,
           response,
           controller[serviceName]['Types']
         );
+
+        if (backkError) {
+          if (backkError.statusCode >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {
+            defaultServiceMetrics.incrementHttp5xxErrorsByOne();
+          } else if (backkError.statusCode >= HttpStatusCodes.CLIENT_ERRORS_START) {
+            defaultServiceMetrics.incrementHttpClientErrorCounter(serviceFunctionName);
+          }
+          // noinspection ExceptionCaughtLocallyJS
+          throw new HttpException(backkError, backkError.statusCode);
+        }
 
         if (Array.isArray(response) && response.length > 0 && typeof response[0] === 'object') {
           await tryValidateServiceFunctionResponse(
