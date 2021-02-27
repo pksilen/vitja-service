@@ -424,7 +424,8 @@ export default async function tryExecuteServiceMethod(
         await fetchFromRemoteServices(
           ServiceFunctionReturnType,
           instantiatedServiceFunctionArgument,
-          response
+          response,
+          controller[serviceName]['Types']
         );
 
         if (Array.isArray(response) && response.length > 0 && typeof response[0] === 'object') {
