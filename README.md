@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Automatic function service.getDefaultPostQueryOperations
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:

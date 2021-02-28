@@ -1,50 +1,35 @@
-import { Injectable } from '@nestjs/common';
-import * as argon2 from 'argon2';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import UserAccount from './types/entities/UserAccount';
-import _Id from '../../backk/types/id/_Id';
-import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
-import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from './errors/userAccountServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { Update } from '../../backk/decorators/service/function/Update';
-import _IdAndFollowedUserAccountId from './types/args/_IdAndFollowedUserAccountId';
-import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
-import { Name } from '../../backk/types/Name';
-import getCities from './validation/getCities';
-import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
-import { Metadata } from '../../backk/decorators/service/function/Metadata';
-import DefaultPostQueryOperations from '../../backk/types/postqueryoperations/DefaultPostQueryOperations';
-import SortBy from '../../backk/types/postqueryoperations/SortBy';
-import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
-import FollowUser from './types/entities/FollowUser';
-import UserAccountService from './UserAccountService';
-import UserName from '../../backk/types/useraccount/UserName';
-import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
-import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
-import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
-import { SalesItem } from '../salesitem/types/entities/SalesItem';
-import GetUserAccountArg from './types/args/GetUserAccountArg';
+import { Injectable } from "@nestjs/common";
+import * as argon2 from "argon2";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import UserAccount from "./types/entities/UserAccount";
+import _Id from "../../backk/types/id/_Id";
+import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
+import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/userAccountServiceErrors";
+import { Errors } from "../../backk/decorators/service/function/Errors";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { Update } from "../../backk/decorators/service/function/Update";
+import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
+import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
+import { Name } from "../../backk/types/Name";
+import getCities from "./validation/getCities";
+import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
+import { Metadata } from "../../backk/decorators/service/function/Metadata";
+import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
+import FollowUser from "./types/entities/FollowUser";
+import UserAccountService from "./UserAccountService";
+import UserName from "../../backk/types/useraccount/UserName";
+import MongoDbQuery from "../../backk/dbmanager/mongodb/MongoDbQuery";
+import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
+import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import { SalesItem } from "../salesitem/types/entities/SalesItem";
+import GetUserAccountArg from "./types/args/GetUserAccountArg";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
 export default class UserAccountServiceImpl extends UserAccountService {
-  private readonly defaultPostQueryOperations = {
-    excludeResponseFields: [
-      'ownSalesItems.primaryDataImageUri',
-      'followedUsers.ownSalesItems',
-      'followingUsers.ownSalesItems'
-    ],
-    sortBys: [
-      ...new DefaultPostQueryOperations().sortBys,
-      new SortBy('paymentMethods', 'isDefault', 'DESC'),
-      new SortBy('ownSalesItems', 'state', 'ASC')
-    ]
-  };
-
   constructor(dbManager: AbstractDbManager) {
     super(dbManager);
   }
@@ -71,10 +56,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
       [new SqlEquals({ userName }), new SqlEquals({ state: 'forSale' }, 'favoriteSalesItems')]
     );
 
-    return this.dbManager.getEntityByFilters(filters, UserAccount, {
-      ...this.defaultPostQueryOperations,
-      ...postQueryOperations
-    });
+    return this.dbManager.getEntityByFilters(filters, UserAccount, postQueryOperations);
   }
 
   getUserNameById({ _id }: _Id): PromiseOfErrorOr<UserName> {
