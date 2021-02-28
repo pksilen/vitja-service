@@ -27,6 +27,7 @@ import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
 import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { SalesItem } from '../salesitem/types/entities/SalesItem';
+import GetUserAccountArg from './types/args/GetUserAccountArg';
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -37,7 +38,11 @@ export default class UserAccountServiceImpl extends UserAccountService {
       'followedUsers.ownSalesItems',
       'followingUsers.ownSalesItems'
     ],
-    sortBys: [...new DefaultPostQueryOperations().sortBys, new SortBy('paymentMethods', 'isDefault', 'DESC')]
+    sortBys: [
+      ...new DefaultPostQueryOperations().sortBys,
+      new SortBy('paymentMethods', 'isDefault', 'DESC'),
+      new SortBy('ownSalesItems', 'state', 'ASC')
+    ]
   };
 
   constructor(dbManager: AbstractDbManager) {
@@ -60,13 +65,16 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  getUserAccount({ userName }: UserName): PromiseOfErrorOr<UserAccount> {
+  getUserAccount({ userName, ...postQueryOperations }: GetUserAccountArg): PromiseOfErrorOr<UserAccount> {
     const filters = this.dbManager.getFilters<UserAccount>(
       [new MongoDbQuery({ userName }), new MongoDbQuery({ state: 'forSale' }, 'favoriteSalesItems')],
       [new SqlEquals({ userName }), new SqlEquals({ state: 'forSale' }, 'favoriteSalesItems')]
     );
 
-    return this.dbManager.getEntityByFilters(filters, UserAccount, this.defaultPostQueryOperations);
+    return this.dbManager.getEntityByFilters(filters, UserAccount, {
+      ...this.defaultPostQueryOperations,
+      ...postQueryOperations
+    });
   }
 
   getUserNameById({ _id }: _Id): PromiseOfErrorOr<UserName> {

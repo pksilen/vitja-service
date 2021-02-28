@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- Implement subentities as remote service queries
+- Automatic function service.getDefaultPostQueryOperations
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:

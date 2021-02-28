@@ -7,6 +7,7 @@ import UserAccountBaseService from "../../backk/service/useraccount/UserAccountB
 import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
 import UserName from "../../backk/types/useraccount/UserName";
 import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import GetUserAccountArg from "./types/args/GetUserAccountArg";
 
 /** Users service doc goes here
  * - jee
@@ -18,7 +19,7 @@ export default abstract class UserAccountService extends UserAccountBaseService 
   // createUserAccount documentation goes here..
   abstract createUserAccount(arg: UserAccount): PromiseOfErrorOr<UserAccount>;
 
-  abstract getUserAccount(arg: UserName): PromiseOfErrorOr<UserAccount>;
+  abstract getUserAccount(arg: GetUserAccountArg): PromiseOfErrorOr<UserAccount>;
   abstract getUserNameById(arg: _Id): PromiseOfErrorOr<UserName>;
   abstract addToFavoriteSalesItems(arg: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount>;
   abstract removeFromFavoriteSalesItems(arg: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount>;
