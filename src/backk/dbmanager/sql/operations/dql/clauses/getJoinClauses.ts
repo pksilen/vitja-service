@@ -136,7 +136,7 @@ export default function getJoinClauses(
         if (
           !shouldIncludeField(
             '_id',
-            subEntityPath ? subEntityPath + '.' + logicalSubEntityTableName : subEntityPath,
+            subEntityPath ? subEntityPath + '.' + logicalSubEntityTableName : logicalSubEntityTableName,
             projection
           )
         ) {
@@ -160,7 +160,6 @@ export default function getJoinClauses(
 
         const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
         const paginationClause = getPaginationClause(joinEntityPath, paginations);
-
         const whereClausePart =
           '_id = ' +
           dbManager.schema +
