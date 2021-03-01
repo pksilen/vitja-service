@@ -10,5 +10,5 @@ export default class _IdAndFollowedUserAccountId extends _IdAndVersionAndDefault
   )
   userAccountId!: string;
 
-  includeResponseFields = ['followedUsers']
+  includeResponseFields: string[] = ['followedUsers']
 }
