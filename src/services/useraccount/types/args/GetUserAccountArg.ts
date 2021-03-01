@@ -5,13 +5,13 @@ import DefaultPostQueryOperations
 import SortBy from "../../../../backk/types/postqueryoperations/SortBy";
 
 export default class GetUserAccountArg extends UserNameAndDefaultPostQueryOperations {
-  excludeResponseFields = [
+  excludeResponseFields: string[] = [
     'ownSalesItems.primaryDataImageUri',
     'followedUsers.ownSalesItems',
     'followingUsers.ownSalesItems'
   ];
 
-  sortBys = [
+  sortBys: SortBy[] = [
     ...new DefaultPostQueryOperations().sortBys,
     new SortBy('paymentMethods', 'isDefault', 'DESC'),
     new SortBy('ownSalesItems', 'state', 'ASC')

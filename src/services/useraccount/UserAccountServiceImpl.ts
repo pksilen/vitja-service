@@ -11,7 +11,7 @@ import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/
 import { Errors } from "../../backk/decorators/service/function/Errors";
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 import { Update } from "../../backk/decorators/service/function/Update";
-import _IdAndUserAccountId from "./types/args/_IdAndUserAccountId";
+import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
 import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
 import { Name } from "../../backk/types/Name";
 import getCities from "./validation/getCities";
@@ -100,7 +100,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
     version,
     userAccountId,
     ...postQueryOperations
-  }: _IdAndUserAccountId): PromiseOfErrorOr<UserAccount> {
+  }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
       version,
@@ -126,7 +126,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update()
   @ExpectReturnValueToContainInTests({ followedUsers: [] })
-  unfollowUser({ _id, userAccountId, version, ...postQueryOperations }: _IdAndUserAccountId): PromiseOfErrorOr<UserAccount> {
+  unfollowUser({ _id, userAccountId, version, ...postQueryOperations }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'followedUsers', userAccountId, UserAccount, {
       preHooks: () =>
         this.dbManager.removeSubEntityById(userAccountId, 'followingUsers', _id, UserAccount),
