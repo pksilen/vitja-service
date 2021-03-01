@@ -17,7 +17,6 @@ import { Name } from "../../backk/types/Name";
 import getCities from "./validation/getCities";
 import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
 import { Metadata } from "../../backk/decorators/service/function/Metadata";
-import FollowUser from "./types/entities/FollowUser";
 import UserAccountService from "./UserAccountService";
 import UserName from "../../backk/types/useraccount/UserName";
 import MongoDbQuery from "../../backk/dbmanager/mongodb/MongoDbQuery";
@@ -26,6 +25,8 @@ import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 import { SalesItem } from "../salesitem/types/entities/SalesItem";
 import GetUserAccountArg from "./types/args/GetUserAccountArg";
 import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
+import FollowedUser from "./types/entities/FollowedUser";
+import FollowingUser from "./types/entities/FollowingUser";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -107,7 +108,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
       'followedUsers',
       { _id: userAccountId },
       UserAccount,
-      FollowUser,
+      FollowedUser,
       {
         preHooks: () =>
           this.dbManager.addSubEntity(
@@ -116,7 +117,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
             'followingUsers',
             { _id },
             UserAccount,
-            FollowUser
+            FollowingUser
           ),
         postQueryOperations
       }

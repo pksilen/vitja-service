@@ -10,11 +10,12 @@ import getCities from "../../validation/getCities";
 import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
 import { Lengths } from "../../../../backk/constants/constants";
 import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/ShouldBeTrueFor";
-import FollowUser from "./FollowUser";
 import BaseUserAccount from "../../../../backk/types/useraccount/BaseUserAccount";
 import { OneToMany } from "../../../../backk/decorators/typeproperty/OneToMany";
 import FavoriteSalesItem from "../../../salesitem/types/entities/FavoriteSalesItem";
 import OwnSalesItem from "../../../salesitem/types/entities/OwnSalesItem";
+import FollowedUser from "./FollowedUser";
+import FollowingUser from "./FollowingUser";
 
 @Entity()
 export default class UserAccount extends BaseUserAccount {
@@ -59,8 +60,8 @@ export default class UserAccount extends BaseUserAccount {
   public readonly orders!: Order[];
 
   @ManyToMany()
-  public readonly followedUsers!: FollowUser[];
+  public readonly followedUsers!: FollowedUser[];
 
   @ManyToMany()
-  public readonly followingUsers!: FollowUser[];
+  public readonly followingUsers!: FollowingUser[];
 }

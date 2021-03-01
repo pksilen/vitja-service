@@ -10,15 +10,13 @@ import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
 import IsOneOf from '../../../../backk/decorators/typeproperty/IsOneOf';
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
-import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { OneToMany } from '../../../../backk/decorators/typeproperty/OneToMany';
 import OwnSalesItem from '../../../salesitem/types/entities/OwnSalesItem';
-import getCities from '../../../useraccount/validation/getCities';
-import FollowedUser from "../../../useraccount/types/entities/FollowedUser";
+import getCities from '../../validation/getCities';
 
 @Entity('UserAccount')
-export default class User {
+export default class FollowedUser {
   @IsUndefined({
     groups: ['__backk_create__']
   })
@@ -44,11 +42,5 @@ export default class User {
   public imageDataUri!: string;
 
   @OneToMany(true)
-  public readonly ownSalesItems!: OwnSalesItem[];
-
-  @ManyToMany()
-  public readonly followedUsers!: FollowedUser[];
-
-  @ManyToMany()
-  public readonly followingUsers!: FollowingUser[];
+  public readonly salesItems!: OwnSalesItem[];
 }

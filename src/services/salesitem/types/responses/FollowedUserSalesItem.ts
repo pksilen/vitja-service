@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsNumber, MaxLength } from 'class-validator';
+import { IsNumber, IsString, MaxLength } from 'class-validator';
 import { Lengths, Values } from '../../../../backk/constants/constants';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
 import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
@@ -54,6 +54,7 @@ export default class FollowedUserSalesItem {
   })
   public userAccountId!: string;
 
+  @IsString()
   @MaxLength(Lengths._512)
   @IsAnyString()
   public displayName!: string;

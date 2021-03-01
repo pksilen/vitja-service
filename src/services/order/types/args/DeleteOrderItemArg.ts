@@ -3,6 +3,7 @@
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
 import { IsString, MaxLength } from 'class-validator';
+import { Values } from '../../../../backk/constants/constants';
 import IsIntegerStringOrAny from '../../../../backk/decorators/typeproperty/IsIntegerStringOrAny'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
@@ -40,6 +41,6 @@ export default class DeleteOrderItemArg {
 
   @Unique()
   @IsStringOrObjectId()
-  @MaxLengthAndMatches(24, /^[a-f\d]{1,24}$/)
+  @MaxLengthAndMatches(Values._24, /^[a-f\d]{1,24}$/)
   userAccountId!: string;
 }

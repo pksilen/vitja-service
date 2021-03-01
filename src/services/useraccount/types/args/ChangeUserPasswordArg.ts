@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsEmail } from 'class-validator';
+import { IsEmail, IsString, MaxLength } from 'class-validator';
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsStrongPassword from '../../../../backk/decorators/typeproperty/IsStrongPassword';
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
@@ -23,10 +23,13 @@ export default class ChangeUserPasswordArg {
   public _id!: string;
 
   @Unique()
+  @IsString()
+  @MaxLength(320)
   @IsEmail()
   @Private()
   userName!: string;
 
+  @IsString()
   @IsStrongPassword()
   @Private()
   password!: string;

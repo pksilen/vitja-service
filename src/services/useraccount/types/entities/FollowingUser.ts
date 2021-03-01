@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { MaxLength } from 'class-validator';
+import { IsString, MaxLength } from 'class-validator';
 import { Lengths } from '../../../../backk/constants/constants';
 import Entity from '../../../../backk/decorators/entity/Entity';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
@@ -11,12 +11,10 @@ import IsOneOf from '../../../../backk/decorators/typeproperty/IsOneOf';
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
-import { OneToMany } from '../../../../backk/decorators/typeproperty/OneToMany';
-import OwnSalesItem from '../../../salesitem/types/entities/OwnSalesItem';
 import getCities from '../../validation/getCities';
 
 @Entity('UserAccount')
-export default class FollowUser {
+export default class FollowingUser {
   @IsUndefined({
     groups: ['__backk_create__']
   })
@@ -28,6 +26,7 @@ export default class FollowUser {
   })
   public _id!: string;
 
+  @IsString()
   @MaxLength(Lengths._512)
   @IsAnyString()
   public displayName!: string;
@@ -39,7 +38,4 @@ export default class FollowUser {
   @MaxLength(Lengths._10M)
   @IsDataUri()
   public imageDataUri!: string;
-
-  @OneToMany(true)
-  public readonly ownSalesItems!: OwnSalesItem[];
 }
