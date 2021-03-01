@@ -17,6 +17,9 @@ import { Values } from "../constants/constants";
 const cronJobs: { [key: string]: CronJob } = {};
 
 export default function scheduleCronJobsForExecution(controller: any, dbManager: AbstractDbManager) {
+  const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
+  const clsNamespace2 = createNamespace('serviceFunctionExecution');
+
   Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()).forEach(
     ([serviceFunctionName, cronSchedule]) => {
       const job = new CronJob(cronSchedule, async () => {
@@ -26,8 +29,6 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
         const interval = parser.parseExpression(cronSchedule);
         await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
           await delay(retryIntervalInSecs * 1000);
-          const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
-          const clsNamespace2 = createNamespace('serviceFunctionExecution');
           return clsNamespace.runAndReturn(async () => {
             return clsNamespace2.runAndReturn(async () => {
               try {
@@ -48,17 +49,16 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
                     }
                   );
 
+                  if (error) {
+                    return [null, error];
+                  }
+
                   const ServiceFunctionArgType = findServiceFunctionArgumentType(
                     controller,
                     serviceFunctionName
                   );
 
                   const serviceFunctionArgument = ServiceFunctionArgType ? new ServiceFunctionArgType() : {};
-
-                  if (error) {
-                    return [null, error];
-                  }
-
                   const response = new BackkResponse();
 
                   await tryExecuteServiceMethod(
