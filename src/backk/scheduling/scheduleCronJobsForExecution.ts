@@ -26,6 +26,7 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
         const retryIntervalsInSecs = serviceFunctionAnnotationContainer.getServiceFunctionNameToRetryIntervalsInSecsMap()[
           serviceFunctionName
         ];
+
         const interval = parser.parseExpression(cronSchedule);
         await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
           await delay(retryIntervalInSecs * 1000);

@@ -142,7 +142,11 @@ export default async function initializeDatabase(
 
         await forEachAsyncSequential(
           entityAnnotationContainer.manyToManyRelationTableSpecs,
-          async ({ associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
+          async ({ entityName, associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
+            if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
+             return;
+            }
+
             try {
               await dbManager.tryExecuteSqlWithoutCls(
                 `SELECT * FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} LIMIT 1`,

@@ -21,6 +21,7 @@ export default function setSubEntityInfo(
 
   if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
     const manyToManyRelationTableSpec: ManyToManyRelationTableSpec = {
+      entityName,
       subEntityName,
       entityFieldName: fieldName,
       associationTableName: entityName + '_' + getSingularName(fieldName),
