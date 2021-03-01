@@ -1,19 +1,18 @@
-import entityAnnotationContainer from "../../../../../decorators/entity/entityAnnotationContainer";
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import { Projection } from "../../../../../types/postqueryoperations/Projection";
-import shouldIncludeField from "../utils/columns/shouldIncludeField";
-import getTypeInfoForTypeName from "../../../../../utils/type/getTypeInfoForTypeName";
-import isEntityTypeName from "../../../../../utils/type/isEntityTypeName";
-import tryGetWhereClause from "./tryGetWhereClause";
-import tryGetSortClause from "./tryGetOrderByClause";
-import getPaginationClause from "./getPaginationClause";
-import SqlExpression from "../../../expressions/SqlExpression";
-import UserDefinedFilter from "../../../../../types/userdefinedfilters/UserDefinedFilter";
-import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
-import SortBy from "../../../../../types/postqueryoperations/SortBy";
-import Pagination from "../../../../../types/postqueryoperations/Pagination";
-import getSingularName from "../../../../../utils/getSingularName";
+import entityAnnotationContainer from '../../../../../decorators/entity/entityAnnotationContainer';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import { Projection } from '../../../../../types/postqueryoperations/Projection';
+import shouldIncludeField from '../utils/columns/shouldIncludeField';
+import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../../utils/type/isEntityTypeName';
+import tryGetWhereClause from './tryGetWhereClause';
+import tryGetSortClause from './tryGetOrderByClause';
+import getPaginationClause from './getPaginationClause';
+import SqlExpression from '../../../expressions/SqlExpression';
+import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
+import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
+import SortBy from '../../../../../types/postqueryoperations/SortBy';
+import Pagination from '../../../../../types/postqueryoperations/Pagination';
+import getSingularName from '../../../../../utils/getSingularName';
 
 // noinspection OverlyComplexFunctionJS
 export default function getJoinClauses(
@@ -30,81 +29,84 @@ export default function getJoinClauses(
   let joinClauses = '';
 
   if (entityAnnotationContainer.entityNameToJoinsMap[EntityClass.name]) {
-    const joinClauseParts = entityAnnotationContainer.entityNameToJoinsMap[EntityClass.name].map((joinSpec) => {
-      const joinEntityPath = subEntityPath
-        ? subEntityPath + '.' + joinSpec.entityFieldName
-        : joinSpec.entityFieldName;
+    const joinClauseParts = entityAnnotationContainer.entityNameToJoinsMap[EntityClass.name].map(
+      (joinSpec) => {
+        const joinEntityPath = subEntityPath
+          ? subEntityPath + '.' + joinSpec.entityFieldName
+          : joinSpec.entityFieldName;
 
-      if (!shouldIncludeField('id', joinEntityPath, projection)) {
-        return '';
+        if (!shouldIncludeField('id', joinEntityPath, projection)) {
+          return '';
+        }
+
+        let logicalSubEntityTableName = joinSpec.subEntityTableName;
+        let physicalSubEntityTableName = logicalSubEntityTableName;
+
+        if (entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName]) {
+          physicalSubEntityTableName =
+            entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName];
+        }
+
+        // noinspection ReuseOfLocalVariableJS
+        logicalSubEntityTableName = getSingularName(joinSpec.entityFieldName);
+
+        const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
+        const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
+        const joinTableAlias = dbManager.schema + '_' + logicalSubEntityTableName;
+
+        const outerSortBys = tryGetSortClause(
+          dbManager,
+          joinEntityPath,
+          sortBys,
+          EntityClass,
+          Types,
+          joinTableAlias
+        );
+
+        if (outerSortBys) {
+          resultOuterSortBys.push(outerSortBys);
+        }
+
+        const paginationClause = getPaginationClause(joinEntityPath, paginations);
+        const whereClausePart =
+          joinSpec.subEntityForeignIdFieldName.toLowerCase() +
+          ' = ' +
+          dbManager.schema +
+          '_' +
+          EntityClass.name.toLowerCase() +
+          '.' +
+          joinSpec.entityIdFieldName.toLowerCase();
+
+        let joinClausePart = 'LEFT JOIN LATERAL (SELECT * FROM ';
+        joinClausePart += dbManager.schema + '.' + physicalSubEntityTableName.toLowerCase();
+
+        joinClausePart +=
+          (whereClause ? ' ' + whereClause + ' AND ' + whereClausePart : ' WHERE ' + whereClausePart) +
+          (sortClause ? ' ' + sortClause : '') +
+          (paginationClause ? ' ' + paginationClause : '') +
+          ') AS ' +
+          dbManager.schema +
+          '_' +
+          logicalSubEntityTableName.toLowerCase();
+
+        joinClausePart += ' ON ';
+
+        joinClausePart +=
+          dbManager.schema +
+          '_' +
+          EntityClass.name.toLowerCase() +
+          '.' +
+          joinSpec.entityIdFieldName.toLowerCase() +
+          ' = ' +
+          dbManager.schema +
+          '_' +
+          logicalSubEntityTableName.toLowerCase() +
+          '.' +
+          joinSpec.subEntityForeignIdFieldName.toLowerCase();
+
+        return joinClausePart;
       }
-
-      let logicalSubEntityTableName = joinSpec.subEntityTableName;
-      let physicalSubEntityTableName = logicalSubEntityTableName;
-
-      if (entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName]) {
-        physicalSubEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName];
-      }
-
-      // noinspection ReuseOfLocalVariableJS
-      logicalSubEntityTableName = getSingularName(joinSpec.entityFieldName)
-
-      const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
-      const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
-      const joinTableAlias = dbManager.schema + '_' + logicalSubEntityTableName;
-
-      const outerSortBys = tryGetSortClause(
-        dbManager,
-        joinEntityPath,
-        sortBys,
-        EntityClass,
-        Types,
-        joinTableAlias
-      );
-
-      if (outerSortBys) {
-        resultOuterSortBys.push(outerSortBys);
-      }
-
-      const paginationClause = getPaginationClause(joinEntityPath, paginations);
-      const whereClausePart =
-        joinSpec.subEntityForeignIdFieldName.toLowerCase() +
-        ' = ' +
-        dbManager.schema +
-        '_' +
-        EntityClass.name.toLowerCase() +
-        '.' +
-        joinSpec.entityIdFieldName.toLowerCase();
-
-      let joinClausePart = 'LEFT JOIN LATERAL (SELECT * FROM ';
-      joinClausePart += dbManager.schema + '.' + physicalSubEntityTableName.toLowerCase();
-
-      joinClausePart +=
-        (whereClause ? ' ' + whereClause + ' AND ' + whereClausePart : ' WHERE ' + whereClausePart) +
-        (sortClause ? ' ' + sortClause : '') +
-        (paginationClause ? ' ' + paginationClause : '') +
-        ') AS ' +
-        dbManager.schema +
-        '_' +
-        logicalSubEntityTableName.toLowerCase();
-
-      joinClausePart += ' ON ';
-
-      joinClausePart +=
-        dbManager.schema +
-        '_' +
-        EntityClass.name.toLowerCase() +
-        '.' +
-        joinSpec.entityIdFieldName.toLowerCase() +
-        ' = ' +
-        dbManager.schema +
-        '_' +
-        logicalSubEntityTableName.toLowerCase() +
-        '.' +
-        joinSpec.subEntityForeignIdFieldName.toLowerCase();
-
-      return joinClausePart;
-    });
+    );
 
     joinClauses = joinClauseParts.filter((joinClausePart) => joinClausePart).join(' ');
   }
@@ -112,19 +114,32 @@ export default function getJoinClauses(
   const joinClauseParts = entityAnnotationContainer.manyToManyRelationTableSpecs
     .filter(({ associationTableName }) => associationTableName.startsWith(EntityClass.name + '_'))
     .map(
-      ({ entityFieldName, associationTableName, entityForeignIdFieldName, subEntityName, subEntityForeignIdFieldName }) => {
+      ({
+        entityFieldName,
+        associationTableName,
+        entityForeignIdFieldName,
+        subEntityName,
+        subEntityForeignIdFieldName
+      }) => {
         const joinEntityPath = subEntityPath ? subEntityPath + '.' + entityFieldName : entityFieldName;
         let logicalSubEntityTableName = subEntityName;
         let physicalSubEntityTableName = logicalSubEntityTableName;
 
         if (entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName]) {
-          physicalSubEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName];
+          physicalSubEntityTableName =
+            entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName];
         }
 
         // noinspection ReuseOfLocalVariableJS
         logicalSubEntityTableName = associationTableName.split('_')[1];
-
-        if (!shouldIncludeField('_id', subEntityPath + '.' + logicalSubEntityTableName, projection)) {
+        
+        if (
+          !shouldIncludeField(
+            '_id',
+            subEntityPath ? subEntityPath + '.' + logicalSubEntityTableName : subEntityPath,
+            projection
+          )
+        ) {
           return '';
         }
 

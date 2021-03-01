@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- make nested getFields ja getJoins to namespace by entitypath
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:
