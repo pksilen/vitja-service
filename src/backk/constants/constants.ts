@@ -45,6 +45,7 @@ export class Lengths {
 }
 
 export class Values {
+  static readonly _24 = 24;
   static readonly _25 = 25;
   static readonly _50 = 50;
   static readonly _500 = 500;

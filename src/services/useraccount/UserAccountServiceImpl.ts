@@ -11,13 +11,12 @@ import { INVALID_CURRENT_PASSWORD, USER_NAME_CANNOT_BE_CHANGED } from "./errors/
 import { Errors } from "../../backk/decorators/service/function/Errors";
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 import { Update } from "../../backk/decorators/service/function/Update";
-import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
+import _IdAndUserAccountId from "./types/args/_IdAndUserAccountId";
 import { ExpectReturnValueToContainInTests } from "../../backk/decorators/service/function/ExpectReturnValueToContainInTests";
 import { Name } from "../../backk/types/Name";
 import getCities from "./validation/getCities";
 import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
 import { Metadata } from "../../backk/decorators/service/function/Metadata";
-import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
 import FollowUser from "./types/entities/FollowUser";
 import UserAccountService from "./UserAccountService";
 import UserName from "../../backk/types/useraccount/UserName";
@@ -26,6 +25,7 @@ import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
 import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 import { SalesItem } from "../salesitem/types/entities/SalesItem";
 import GetUserAccountArg from "./types/args/GetUserAccountArg";
+import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -66,7 +66,11 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
+  addToFavoriteSalesItems({
+    _id,
+    salesItemId,
+    ...postQueryOperations
+  }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
       'any',
@@ -74,14 +78,18 @@ export default class UserAccountServiceImpl extends UserAccountService {
       { _id: salesItemId },
       UserAccount,
       SalesItem,
-      { postQueryOperations: this.defaultPostQueryOperations }
+      { postQueryOperations }
     );
   }
 
   @AllowForSelf()
-  removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
+  removeFromFavoriteSalesItems({
+    _id,
+    salesItemId,
+    ...postQueryOperations
+  }: RemoveFromFavoriteSalesItemsArg): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount, {
-      postQueryOperations: this.defaultPostQueryOperations
+      postQueryOperations
     });
   }
 
@@ -90,26 +98,27 @@ export default class UserAccountServiceImpl extends UserAccountService {
   followUser({
     _id,
     version,
-    followedUserAccountId
-  }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount> {
+    userAccountId,
+    ...postQueryOperations
+  }: _IdAndUserAccountId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
       version,
       'followedUsers',
-      { _id: followedUserAccountId },
+      { _id: userAccountId },
       UserAccount,
       FollowUser,
       {
         preHooks: () =>
           this.dbManager.addSubEntity(
-            followedUserAccountId,
+            userAccountId,
             'any',
             'followingUsers',
             { _id },
             UserAccount,
             FollowUser
           ),
-        postQueryOperations: this.defaultPostQueryOperations
+        postQueryOperations
       }
     );
   }
@@ -117,11 +126,11 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update()
   @ExpectReturnValueToContainInTests({ followedUsers: [] })
-  unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<UserAccount> {
-    return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, {
+  unfollowUser({ _id, userAccountId, version, ...postQueryOperations }: _IdAndUserAccountId): PromiseOfErrorOr<UserAccount> {
+    return this.dbManager.removeSubEntityById(_id, 'followedUsers', userAccountId, UserAccount, {
       preHooks: () =>
-        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount),
-      postQueryOperations: this.defaultPostQueryOperations
+        this.dbManager.removeSubEntityById(userAccountId, 'followingUsers', _id, UserAccount),
+      postQueryOperations
     });
   }
 
