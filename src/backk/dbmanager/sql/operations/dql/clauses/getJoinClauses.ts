@@ -132,11 +132,11 @@ export default function getJoinClauses(
 
         // noinspection ReuseOfLocalVariableJS
         logicalSubEntityTableName = associationTableName.split('_')[1];
-        
+
         if (
           !shouldIncludeField(
             '_id',
-            subEntityPath ? subEntityPath + '.' + logicalSubEntityTableName : logicalSubEntityTableName,
+            subEntityPath ? subEntityPath + '.' + entityFieldName : entityFieldName,
             projection
           )
         ) {

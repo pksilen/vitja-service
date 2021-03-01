@@ -1,4 +1,4 @@
-import { Projection } from "../../../../../../types/postqueryoperations/Projection";
+import { Projection } from '../../../../../../types/postqueryoperations/Projection';
 
 export default function shouldIncludeField(
   fieldName: string,
@@ -6,7 +6,7 @@ export default function shouldIncludeField(
   { includeResponseFields, excludeResponseFields }: Projection
 ): boolean {
   let shouldIncludeField = true;
-  const fullFieldPath = fieldPath + fieldName;
+  const fullFieldPath = fieldPath.endsWith('.') || !fieldPath ? fieldPath + fieldName : fieldPath + '.' + fieldName;
 
   if (includeResponseFields && includeResponseFields.length > 0) {
     shouldIncludeField = !!includeResponseFields.find((includeResponseField) =>
