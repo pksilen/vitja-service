@@ -30,8 +30,8 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
         const interval = parser.parseExpression(cronSchedule);
         await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
           await delay(retryIntervalInSecs * 1000);
-          return clsNamespace.runAndReturn(async () => {
-            return clsNamespace2.runAndReturn(async () => {
+          return await clsNamespace.runAndReturn(async () => {
+            return await clsNamespace2.runAndReturn(async () => {
               try {
                 await dbManager.tryReserveDbConnectionFromPool();
                 clsNamespace.set('connection', true);

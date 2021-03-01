@@ -16,7 +16,7 @@ export default class StartupServiceImpl extends StartupService {
 
   // noinspection FunctionWithMoreThanThreeNegationsJS
   @AllowForClusterInternalUse()
-  async initializeService(): PromiseOfErrorOr<null> {
+  async startupService(): PromiseOfErrorOr<null> {
     if (
       !(await isDbInitialized(this.dbManager)) &&
       !(await initializeDatabase(StartupService.controller, this.dbManager))

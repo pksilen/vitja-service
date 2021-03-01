@@ -162,7 +162,7 @@ export default async function tryExecuteServiceMethod(
       resp?.send();
       return;
     } else if (
-      (serviceFunctionName === 'readinessCheckService.initializeService' ||
+      (serviceFunctionName === 'readinessCheckService.startupService' ||
         serviceFunctionName === 'startupService.startupService') &&
       (!controller[serviceName] || !controller[serviceName][functionName])
     ) {
@@ -324,7 +324,7 @@ export default async function tryExecuteServiceMethod(
         ? createNamespace('serviceFunctionExecution')
         : getNamespace('serviceFunctionExecution')!;
 
-      response = await clsNamespace.runAndReturn(async () => {
+      [response, backkError] = await clsNamespace.runAndReturn(async () => {
         clsNamespace.set('authHeader', headers.Authorization);
         clsNamespace.set('dbLocalTransactionCount', 0);
         clsNamespace.set('remoteServiceCallCount', 0);
@@ -401,7 +401,7 @@ export default async function tryExecuteServiceMethod(
           backkError = createBackkErrorFromError(error);
         }
 
-        return [response, backkError];
+        return [response ? response : undefined, backkError];
       });
 
       if (backkError) {
@@ -414,7 +414,7 @@ export default async function tryExecuteServiceMethod(
         throw new HttpException(backkError, backkError.statusCode);
       }
 
-      if (response !== undefined) {
+      if (response) {
         const serviceFunctionBaseReturnTypeName = getTypeInfoForTypeName(
           controller[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap[functionName]
         ).baseTypeName;
