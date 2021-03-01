@@ -9,6 +9,7 @@ import { Private } from "../../decorators/typeproperty/Private";
 export default class BaseUserAccount extends _IdAndCaptcha {
   @Unique()
   @IsString()
+  @MaxLength(320)
   @IsEmail()
   @Private()
   userName!: string;
