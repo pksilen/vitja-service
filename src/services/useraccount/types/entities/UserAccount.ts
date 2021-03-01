@@ -19,6 +19,7 @@ import FollowingUser from "./FollowingUser";
 
 @Entity()
 export default class UserAccount extends BaseUserAccount {
+  /* this is property documentation */
   public isBusinessUser!: boolean;
 
   @MaxLength(Lengths._512)

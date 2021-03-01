@@ -14,8 +14,9 @@ import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { OneToMany } from '../../../../backk/decorators/typeproperty/OneToMany';
 import OwnSalesItem from '../../../salesitem/types/entities/OwnSalesItem';
+import FollowedUser from '../../../useraccount/types/entities/FollowedUser';
+import FollowingUser from '../../../useraccount/types/entities/FollowingUser';
 import getCities from '../../../useraccount/validation/getCities';
-import FollowedUser from "../../../useraccount/types/entities/FollowedUser";
 
 @Entity('UserAccount')
 export default class User {
