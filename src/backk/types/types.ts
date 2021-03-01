@@ -44,6 +44,11 @@ import _IdAndVersionAndCreatedAtTimestampAndUserAccountId
   from "./id/_IdAndVersionAndCreatedAtTimestampAndUserAccountId";
 import _IdAndVersionAndLastModifiedTimestampAndUserAccountId
   from "./id/_IdAndVersionAndLastModifiedTimestampAndUserAccountId";
+import _IdAndDefaultPostQueryOperations from "./postqueryoperations/_IdAndDefaultPostQueryOperations";
+import _IdAndVersionAndDefaultPostQueryOperations
+  from "./postqueryoperations/_IdAndVersionAndDefaultPostQueryOperations";
+import UserNameAndDefaultPostQueryOperations
+  from "./postqueryoperations/UserNameAndDefaultPostQueryOperations";
 
 const types = {
   _Id,
@@ -82,7 +87,10 @@ const types = {
   _IdAndLastModifiedTimestampAndUserAccountId,
   _IdAndVersionAndUserAccountId,
   _IdAndVersionAndCreatedAtTimestampAndUserAccountId,
-  _IdAndVersionAndLastModifiedTimestampAndUserAccountId
+  _IdAndVersionAndLastModifiedTimestampAndUserAccountId,
+  _IdAndDefaultPostQueryOperations,
+  _IdAndVersionAndDefaultPostQueryOperations,
+  UserNameAndDefaultPostQueryOperations
 }
 
 export default types

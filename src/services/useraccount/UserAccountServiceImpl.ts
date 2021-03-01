@@ -87,7 +87,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
     _id,
     salesItemId,
     ...postQueryOperations
-  }: RemoveFromFavoriteSalesItemsArg): PromiseOfErrorOr<UserAccount> {
+  }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount, {
       postQueryOperations
     });

@@ -40,6 +40,10 @@ export default function getNestedClasses(
       ) {
         for (const classBodyNode of node.declaration.body.body) {
           if (classBodyNode.type === 'ClassProperty') {
+            if (!classBodyNode.typeAnnotation) {
+            throw new Error(className + '.' + classBodyNode.key.name + ' is missing type annotation')
+            }
+
             const propertyTypeNameStart = classBodyNode.typeAnnotation.loc.start;
             const propertyTypeNameEnd = classBodyNode.typeAnnotation.loc.end;
             const propertyTypeName = fileRows[propertyTypeNameStart.line - 1].slice(

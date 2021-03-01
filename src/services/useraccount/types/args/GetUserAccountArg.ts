@@ -1,5 +1,5 @@
 import UserNameAndDefaultPostQueryOperations
-  from "../../../../backk/types/useraccount/UserNameAndDefaultPostQueryOperations";
+  from "../../../../backk/types/postqueryoperations/UserNameAndDefaultPostQueryOperations";
 import DefaultPostQueryOperations
   from "../../../../backk/types/postqueryoperations/DefaultPostQueryOperations";
 import SortBy from "../../../../backk/types/postqueryoperations/SortBy";

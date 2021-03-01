@@ -8,8 +8,6 @@ import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
 import UserName from '../../backk/types/useraccount/UserName';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import GetUserAccountArg from './types/args/GetUserAccountArg';
-import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
-import RemoveFromFavoriteSalesItemsArg from "./types/args/RemoveFromFavoriteSalesItemsArg";
 
 /** Users service doc goes here
  * - jee

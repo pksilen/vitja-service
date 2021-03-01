@@ -1,4 +1,4 @@
-import DefaultPostQueryOperations from "../postqueryoperations/DefaultPostQueryOperations";
+import DefaultPostQueryOperations from "./DefaultPostQueryOperations";
 import { IsEmail } from "class-validator";
 
 export default class UserNameAndDefaultPostQueryOperations extends DefaultPostQueryOperations {
