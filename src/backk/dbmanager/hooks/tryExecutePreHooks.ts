@@ -1,19 +1,14 @@
-import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
-import { PreHook } from './PreHook';
-import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
-import { HttpStatusCodes } from '../../constants/constants';
-import { BackkEntity } from '../../types/entities/BackkEntity';
-import { SubEntity } from '../../types/entities/SubEntity';
-import { ErrorOr } from '../../types/ErrorOr';
+import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
+import { PreHook } from "./PreHook";
+import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
+import { HttpStatusCodes } from "../../constants/constants";
+import { BackkEntity } from "../../types/entities/BackkEntity";
+import { SubEntity } from "../../types/entities/SubEntity";
 
 export default async function tryExecutePreHooks<T extends BackkEntity | SubEntity>(
   preHooks: PreHook<T> | PreHook<T>[],
-  [currentEntity, error]: ErrorOr<T>
+  currentEntity: T
 ) {
-  if (error || !currentEntity) {
-    throw error;
-  }
-
   await forEachAsyncSequential(
     Array.isArray(preHooks) ? preHooks : [preHooks],
     async (preHook: PreHook<T>) => {

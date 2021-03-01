@@ -1,36 +1,34 @@
-import hashAndEncryptEntity from "../../../../crypt/hashAndEncryptEntity";
-import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import getEntityById from "../dql/getEntityById";
-import { RecursivePartial } from "../../../../types/RecursivePartial";
-import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
-import { PreHook } from "../../../hooks/PreHook";
-import { BackkEntity } from "../../../../types/entities/BackkEntity";
-import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
-import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
-import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
-import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
-import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
-import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import getSubEntitiesByAction from "./utils/getSubEntitiesByAction";
-import deleteEntityById from "./deleteEntityById";
-import createEntity from "./createEntity";
-import typePropertyAnnotationContainer
-  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
-import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
-import { PostHook } from "../../../hooks/PostHook";
-import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
-import createErrorFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS } from "../../../../errors/backkErrors";
-import getSingularName from "../../../../utils/getSingularName";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
-import isBackkError from "../../../../errors/isBackkError";
+import hashAndEncryptEntity from '../../../../crypt/hashAndEncryptEntity';
+import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import getEntityById from '../dql/getEntityById';
+import { RecursivePartial } from '../../../../types/RecursivePartial';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
+import { PreHook } from '../../../hooks/PreHook';
+import { BackkEntity } from '../../../../types/entities/BackkEntity';
+import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import getSubEntitiesByAction from './utils/getSubEntitiesByAction';
+import deleteEntityById from './deleteEntityById';
+import createEntity from './createEntity';
+import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
+import { PostHook } from '../../../hooks/PostHook';
+import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
+import getSingularName from '../../../../utils/getSingularName';
+import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import isBackkError from '../../../../errors/isBackkError';
 
+// noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function updateEntity<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
   { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
@@ -51,44 +49,43 @@ export default async function updateEntity<T extends BackkEntity>(
     }
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    let currentEntityOrErrorResponse: any;
+    let currentEntity: T | null | undefined;
+    let error;
 
     if (!isRecursiveCall) {
-      currentEntityOrErrorResponse = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true, true);
+      [currentEntity, error] = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true, true);
+    }
+
+    if (!currentEntity) {
+      throw error;
     }
 
     let eTagCheckPreHook: PreHook<T>;
     let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
-    if (typeof currentEntityOrErrorResponse === 'object') {
-      if (
-        'version' in currentEntityOrErrorResponse &&
-        restOfEntity.version &&
-        restOfEntity.version !== 'any'
-      ) {
-        eTagCheckPreHook = {
-          isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
-          errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
-        };
+    if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
+      eTagCheckPreHook = {
+        isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
+        errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
+      };
 
-        finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-      } else if (
-        'lastModifiedTimestamp' in currentEntityOrErrorResponse &&
-        (restOfEntity as any).lastModifiedTimestamp &&
-        (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
-      ) {
-        eTagCheckPreHook = {
-          isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
-            lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
-          errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
-        };
+      finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
+    } else if (
+      'lastModifiedTimestamp' in currentEntity &&
+      restOfEntity.lastModifiedTimestamp &&
+      (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
+    ) {
+      eTagCheckPreHook = {
+        isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
+          lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
+        errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
+      };
 
-        finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-      }
+      finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
     }
 
     if (!isRecursiveCall) {
-      await tryExecutePreHooks(finalPreHooks, currentEntityOrErrorResponse);
+      await tryExecutePreHooks(finalPreHooks, currentEntity);
     }
 
     const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
@@ -126,7 +123,7 @@ export default async function updateEntity<T extends BackkEntity>(
           if (finalAllowAdditionAndRemovalForSubEntities === 'all') {
             const { subEntitiesToDelete, subEntitiesToAdd, subEntitiesToUpdate } = getSubEntitiesByAction(
               subEntityOrEntities,
-              (currentEntityOrErrorResponse as any)[fieldName]
+              (currentEntity as any)[fieldName]
             );
 
             promises.push(
@@ -266,9 +263,9 @@ export default async function updateEntity<T extends BackkEntity>(
             })
           );
         } else if (fieldName !== '_id' && fieldName !== 'id') {
-          if (fieldName === 'version') {
+          if (fieldName === 'version' && currentEntity?.version) {
             columns.push(fieldName);
-            values.push((parseInt((currentEntityOrErrorResponse).version, 10) + 1).toString());
+            values.push((parseInt(currentEntity.version, 10) + 1).toString());
           } else if (fieldName === 'lastModifiedTimestamp') {
             columns.push(fieldName);
             values.push(new Date());
@@ -309,16 +306,15 @@ export default async function updateEntity<T extends BackkEntity>(
         sqlStatement += ` WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(columns.length + 1)}`;
       }
 
-      promises.push(dbManager.tryExecuteQuery(
-        sqlStatement,
-        numericId === undefined ? values : [...values, numericId]
-      ));
+      promises.push(
+        dbManager.tryExecuteQuery(sqlStatement, numericId === undefined ? values : [...values, numericId])
+      );
     }
 
     await Promise.all(promises);
 
     if (postHook) {
-      await tryExecutePostHook(postHook, [null, null]);
+      await tryExecutePostHook(postHook, null);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

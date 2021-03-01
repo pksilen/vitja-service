@@ -248,7 +248,6 @@ export default class MongoDbManager extends AbstractDbManager {
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
         const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
-
         Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]) => {
           if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
             delete (entity as any)[fieldName];
@@ -262,12 +261,14 @@ export default class MongoDbManager extends AbstractDbManager {
             } else if (fieldName === 'lastModifiedTimestamp' || fieldName === 'createdAtTimestamp') {
               (entity as any)[fieldName] = new Date();
             }
-          } else if (isArrayType && isEntityTypeName(baseTypeName)) {
-            if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-              (entity as any)[fieldName] = ((entity as any)[fieldName] ?? []).map(
-                (subEntity: any) => subEntity._id
-              );
-            }
+          } else if (
+            isArrayType &&
+            isEntityTypeName(baseTypeName) &&
+            typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)
+          ) {
+            (entity as any)[fieldName] = ((entity as any)[fieldName] ?? []).map(
+              (subEntity: any) => subEntity._id
+            );
           }
         });
 
@@ -297,15 +298,15 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const _id = createEntityResult?.insertedId.toHexString();
 
-        const response = isInternalCall
+        const [createdEntity, error] = isInternalCall
           ? ([{ _id } as T, null] as [T, null])
           : await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
 
         if (options?.postHook) {
-          await tryExecutePostHook(options?.postHook, response);
+          await tryExecutePostHook(options?.postHook, createdEntity);
         }
 
-        return response;
+        return [createdEntity, error];
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
@@ -370,13 +371,17 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        const currentEntityOrErrorResponse = await this.getEntityById(
+        let [currentEntity, error] = await this.getEntityById(
           _id,
           EntityClass,
           options?.postQueryOperations,
           true,
           true
         );
+
+        if (!currentEntity) {
+          return [null, error];
+        }
 
         let eTagCheckPreHook: PreHook<T>;
         let finalPreHooks = Array.isArray(options?.preHooks)
@@ -385,18 +390,15 @@ export default class MongoDbManager extends AbstractDbManager {
           ? [options?.preHooks]
           : [];
 
-        if (versionOrLastModifiedTimestamp !== 'any' && typeof currentEntityOrErrorResponse === 'object') {
-          if (
-            'version' in currentEntityOrErrorResponse &&
-            !isNaN(parseInt(versionOrLastModifiedTimestamp, 10))
-          ) {
+        if (versionOrLastModifiedTimestamp !== 'any') {
+          if ('version' in currentEntity && !isNaN(parseInt(versionOrLastModifiedTimestamp, 10))) {
             eTagCheckPreHook = {
               isSuccessfulOrTrue: ({ version }) => version === versionOrLastModifiedTimestamp,
               errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
             };
 
             finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-          } else if ('lastModifiedTimestamp' in currentEntityOrErrorResponse) {
+          } else if ('lastModifiedTimestamp' in currentEntity) {
             eTagCheckPreHook = {
               isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
                 lastModifiedTimestamp === new Date(versionOrLastModifiedTimestamp),
@@ -407,15 +409,14 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         }
 
-        await tryExecutePreHooks(finalPreHooks, currentEntityOrErrorResponse);
+        await tryExecutePreHooks(finalPreHooks, currentEntity);
 
         const [parentEntity] = JSONPath({
-          json: currentEntityOrErrorResponse,
+          json: currentEntity,
           path: subEntitiesJsonPath + '^'
         });
 
-        const [subEntities] = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });
-
+        const [subEntities] = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
         const maxSubItemId = subEntities.reduce((maxSubItemId: number, subEntity: any) => {
           const subItemId = parseInt(subEntity.id, 10);
           return subItemId > maxSubItemId ? subItemId : maxSubItemId;
@@ -474,7 +475,7 @@ export default class MongoDbManager extends AbstractDbManager {
         });
 
         await this.updateEntity(
-          currentEntityOrErrorResponse as any,
+          currentEntity as any,
           EntityClass,
           undefined,
           undefined,
@@ -482,13 +483,13 @@ export default class MongoDbManager extends AbstractDbManager {
           true
         );
 
-        const response = await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
+        [currentEntity, error] = await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
 
         if (options?.postHook) {
-          await tryExecutePostHook(options?.postHook, response);
+          await tryExecutePostHook(options?.postHook, currentEntity);
         }
 
-        return response;
+        return [currentEntity, error];
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
@@ -1059,6 +1060,10 @@ export default class MongoDbManager extends AbstractDbManager {
           [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
         }
 
+        if (!currentEntity) {
+          return [null, error];
+        }
+
         let eTagCheckPreHook: PreHook<T>;
         let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
@@ -1086,7 +1091,7 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         if (!isRecursiveCall) {
-          await tryExecutePreHooks(finalPreHooks, [currentEntity, error]);
+          await tryExecutePreHooks(finalPreHooks, currentEntity);
         }
 
         const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
@@ -1159,7 +1164,7 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         if (!isRecursiveCall && postHook) {
-          await tryExecutePostHook(postHook, [null, null]);
+          await tryExecutePostHook(postHook, null);
         }
 
         return [null, null];
@@ -1199,11 +1204,15 @@ export default class MongoDbManager extends AbstractDbManager {
           true
         );
 
-        await tryExecutePreHooks(preHooks ?? [], [currentEntity, error]);
-        await this.updateEntity({ _id: (currentEntity as T)._id, ...entity }, EntityClass, []);
+        if (!currentEntity) {
+          return [null, error];
+        }
+
+        await tryExecutePreHooks(preHooks ?? [], currentEntity);
+        await this.updateEntity({ _id: currentEntity._id, ...entity }, EntityClass, []);
 
         if (postHook) {
-          await tryExecutePostHook(postHook, [null, null]);
+          await tryExecutePostHook(postHook, null);
         }
       });
 
@@ -1234,8 +1243,12 @@ export default class MongoDbManager extends AbstractDbManager {
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
         if (preHooks) {
-          const entityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true, true);
-          await tryExecutePreHooks(preHooks, entityOrErrorResponse);
+          const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+          if (!currentEntity) {
+            return [null, error]
+          }
+
+          await tryExecutePreHooks(preHooks, currentEntity);
         }
 
         await client
@@ -1244,7 +1257,7 @@ export default class MongoDbManager extends AbstractDbManager {
           .deleteOne({ _id: new ObjectId(_id) });
 
         if (postHook) {
-          await tryExecutePostHook(postHook, [null, null]);
+          await tryExecutePostHook(postHook, null);
         }
       });
 
@@ -1376,32 +1389,27 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async () => {
-        const currentEntityOrErrorResponse = await this.getEntityById(_id, EntityClass, undefined, true, true);
+        let [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+        if (!currentEntity) {
+          throw error;
+        }
 
-        await tryExecutePreHooks(options?.preHooks ?? [], currentEntityOrErrorResponse);
-        const subEntities = JSONPath({ json: currentEntityOrErrorResponse, path: subEntitiesJsonPath });
-        let response = currentEntityOrErrorResponse;
+        await tryExecutePreHooks(options?.preHooks ?? [], currentEntity);
+        const subEntities = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
 
         if (subEntities.length > 0) {
-          removeSubEntities(currentEntityOrErrorResponse, subEntities);
+          removeSubEntities(currentEntity, subEntities);
 
-          await this.updateEntity(
-            currentEntityOrErrorResponse as any,
-            EntityClass,
-            undefined,
-            undefined,
-            false,
-            true
-          );
+          await this.updateEntity(currentEntity as any, EntityClass, undefined, undefined, false, true);
 
-          response = await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
+          [currentEntity, error] = await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
         }
 
-        if (options?.postHook) {
-          await tryExecutePostHook(options.postHook, [null, null]);
+        if (options?.postHook && currentEntity) {
+          await tryExecutePostHook(options.postHook, currentEntity);
         }
 
-        return response;
+        return [currentEntity, error];
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)

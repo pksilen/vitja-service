@@ -35,8 +35,12 @@ export default async function deleteEntityById<T extends BackkEntity>(
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     if (preHooks) {
-      const itemOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, undefined, true, true);
-      await tryExecutePreHooks(preHooks, itemOrErrorResponse);
+      const [currentEntity, error] = await getEntityById(dbManager, _id, EntityClass, undefined, true, true);
+      if (!currentEntity) {
+        throw error;
+      }
+
+      await tryExecutePreHooks(preHooks, currentEntity);
     }
 
     const typeMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
@@ -86,7 +90,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
     ]);
 
     if (postHook) {
-      await tryExecutePostHook(postHook, [null, null]);
+      await tryExecutePostHook(postHook, null);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

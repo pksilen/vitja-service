@@ -217,17 +217,17 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
       }
     );
 
-    const response =
+    const [createdEntity, error] =
       isRecursiveCall || !shouldReturnItem
         ? [({ _id } as T), null] as [T, null]
         : await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
 
     if (!isRecursiveCall && postHook) {
-      await tryExecutePostHook(postHook, response);
+      await tryExecutePostHook(postHook, createdEntity);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return response;
+    return [createdEntity, error];
   } catch (errorOrBackkError) {
     if (isRecursiveCall) {
       throw errorOrBackkError;

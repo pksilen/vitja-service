@@ -1,16 +1,14 @@
-import { PostHook } from "./PostHook";
-import { getNamespace } from "cls-hooked";
-import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
-import { HttpStatusCodes } from "../../constants/constants";
-import { ErrorOr } from "../../types/ErrorOr";
-import { BackkEntity } from "../../types/entities/BackkEntity";
-import { SubEntity } from "../../types/entities/SubEntity";
+import { PostHook } from './PostHook';
+import { getNamespace } from 'cls-hooked';
+import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
+import { HttpStatusCodes } from '../../constants/constants';
+import { BackkEntity } from '../../types/entities/BackkEntity';
+import { SubEntity } from '../../types/entities/SubEntity';
 
-export default async function tryExecutePostHook<T extends BackkEntity | SubEntity>(postHook: PostHook<T>, [entity, error]: ErrorOr<T>) {
-  if (error) {
-    throw error;
-  }
-
+export default async function tryExecutePostHook<T extends BackkEntity | SubEntity>(
+  postHook: PostHook<T>,
+  entity: T | null | undefined
+) {
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('isInsidePostHook', true);
   const postHookFunc = typeof postHook === 'function' ? postHook : postHook.isSuccessful;

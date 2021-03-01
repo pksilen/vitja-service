@@ -41,16 +41,20 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    const currentEntityOrErrorResponse = await getEntityById(dbManager, _id, EntityClass, undefined, true, true);
-    await tryExecutePreHooks(preHooks ?? [], currentEntityOrErrorResponse);
+    let [currentEntity, error] = await getEntityById(dbManager, _id, EntityClass, undefined, true, true);
+    if (!currentEntity) {
+      throw error;
+    }
+
+    await tryExecutePreHooks(preHooks ?? [], currentEntity);
 
     await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(
       dbManager,
-      currentEntityOrErrorResponse,
+      currentEntity,
       EntityClass
     );
 
-    const currentEntityInstance = plainToClass(EntityClass, currentEntityOrErrorResponse);
+    const currentEntityInstance = plainToClass(EntityClass, currentEntity);
     const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesJsonPath });
 
     await forEachAsyncParallel(subEntities, async (subEntity: any) => {
@@ -91,14 +95,14 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
       }
     });
 
-    const response = await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
+    [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
 
     if (postHook) {
-      await tryExecutePostHook(postHook, [null, null]);
+      await tryExecutePostHook(postHook, currentEntity);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return response;
+    return [currentEntity, error];
   } catch (errorOrBackkError) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError);

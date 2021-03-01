@@ -40,7 +40,11 @@ export default async function updateEntityWhere<T extends BackkEntity>(
       true
     );
 
-    await tryExecutePreHooks(preHooks ?? [], [currentEntity, error]);
+    if (!currentEntity) {
+      throw error;
+    }
+
+    await tryExecutePreHooks(preHooks ?? [], currentEntity);
 
      [, error] = await dbManager.updateEntity(
       { _id: currentEntity?._id ?? '', ...entity },
@@ -49,7 +53,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
     );
 
     if (postHook) {
-      await tryExecutePostHook(postHook, [null, null]);
+      await tryExecutePostHook(postHook, null);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
