@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- disallow underscore in entity names
+- disallow underscore in entity names which are not defined in types.ts (Backk types)
 - make nested getFields ja getJoins to namespace by entitypath
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

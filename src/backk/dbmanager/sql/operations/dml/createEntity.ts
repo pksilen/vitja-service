@@ -122,7 +122,6 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
       ? dbManager.getReturningIdClause()
       : '';
 
-    console.log(values);
     sqlStatement = `INSERT INTO ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`;
     const result = await dbManager.tryExecuteQuery(sqlStatement, values);
     const _id = dbManager.getInsertId(result)?.toString();

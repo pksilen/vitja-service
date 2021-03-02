@@ -58,7 +58,8 @@ export default class TagServiceImpl extends TagService {
   @AllowForTests()
   deleteAllTags(): PromiseOfErrorOr<null> {
     return this.dbManager.executeInsideTransaction(async () => {
-      return (await this.dbManager.deleteAllEntities(SalesItem)) || this.dbManager.deleteAllEntities(Tag);
+      const [, error] = await this.dbManager.deleteAllEntities(SalesItem);
+      return error ? [null, error] : this.dbManager.deleteAllEntities(Tag);
     });
   }
 
