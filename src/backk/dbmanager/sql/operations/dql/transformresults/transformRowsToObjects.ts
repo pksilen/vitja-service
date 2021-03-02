@@ -24,7 +24,6 @@ function getMappedRows(
     EntityClass.name.toLowerCase() + '_'
   );
 
-  console.log(mappedRows);
   transformNonEntityArrays(mappedRows, EntityClass, Types);
   decryptEntities(mappedRows, EntityClass, Types);
   removeSingleSubEntitiesWithNullProperties(mappedRows);

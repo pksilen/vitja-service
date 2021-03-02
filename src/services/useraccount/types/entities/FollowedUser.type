@@ -2,5 +2,5 @@ import Entity from '../../../../backk/decorators/entity/Entity';
 
 @Entity('UserAccount')
 export default class FollowedUser {
-  ...Pick<UserAccount, '_id' | 'displayName' | 'city' | 'imageDataUri' | 'ownSalesItems' as 'salesItems'>;
+  ...Pick<UserAccount, '_id' | 'displayName' | 'city' | 'imageDataUri' | 'ownSalesItems'>;
 }

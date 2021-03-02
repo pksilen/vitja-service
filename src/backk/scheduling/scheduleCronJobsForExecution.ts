@@ -12,7 +12,7 @@ import { logError } from "../observability/logging/log";
 import tryExecuteServiceMethod from "../execution/tryExecuteServiceMethod";
 import findServiceFunctionArgumentType from "../metadata/findServiceFunctionArgumentType";
 import BackkResponse from "../execution/BackkResponse";
-import { Values } from "../constants/constants";
+import { HttpStatusCodes, Values } from "../constants/constants";
 
 const cronJobs: { [key: string]: CronJob } = {};
 
@@ -29,6 +29,7 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
 
         await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
           await delay(retryIntervalInSecs * 1000);
+
           return clsNamespace.runAndReturn(async () => {
             return clsNamespace2.runAndReturn(async () => {
               try {
@@ -48,6 +49,10 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
                         Math.abs(Date.now() - nextScheduledTimestamp.valueOf()) < Values._500
                     }
                   );
+
+                  if (error?.statusCode === HttpStatusCodes.BAD_REQUEST) {
+                    return [null, null];
+                  }
 
                   if (error) {
                     return [null, error];

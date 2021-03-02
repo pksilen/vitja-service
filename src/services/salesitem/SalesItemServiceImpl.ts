@@ -137,12 +137,12 @@ export default class SalesItemServiceImpl extends SalesItemService {
     userAccountId
   }: UserAccountId): PromiseOfErrorOr<FollowedUserSalesItem[]> {
     const [user, error] = await this.dbManager.getEntityByFilters(
-      { _id: userAccountId, 'followedUsers.salesItems.state': 'forSale' },
+      { _id: userAccountId, 'followedUsers.ownSalesItems.state': 'forSale' },
       User,
       {
         sortBys: [
           {
-            subEntityPath: 'followedUsers.salesItems',
+            subEntityPath: 'followedUsers.ownSalesItems',
             fieldName: 'lastModifiedAtTimestamp',
             sortDirection: 'DESC'
           }
@@ -151,7 +151,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
           'followedUsers._id',
           'followedUsers.displayName',
           ...SalesItemServiceImpl.DEFAULT_SALES_ITEM_FIELDS.map(
-            (defaultSalesItemField) => `followedUsers.salesItems.${defaultSalesItemField}`
+            (defaultSalesItemField) => `followedUsers.ownSalesItems.${defaultSalesItemField}`
           )
         ]
       }
