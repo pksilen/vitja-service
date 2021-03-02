@@ -28,7 +28,7 @@ import FollowedUser from './types/entities/FollowedUser';
 import FollowingUser from './types/entities/FollowingUser';
 import FollowUserArg from './types/args/FollowUserArg';
 import UnfollowUserArg from './types/args/UnfollowUserArg';
-import { TestAfter } from "../../backk/decorators/service/function/TestAfter";
+import { TestAfter } from '../../backk/decorators/service/function/TestAfter';
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -50,7 +50,15 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForEveryUser()
   createUserAccount(arg: UserAccount): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.createEntity({ ...arg, commissionDiscountPercentage: 0 }, UserAccount, {
-      postQueryOperations: { excludeResponseFields: ['favoriteSalesItems', 'ownSalesItems', 'orders', 'followedUsers', 'followingUsers'] }
+      postQueryOperations: {
+        excludeResponseFields: [
+          'favoriteSalesItems',
+          'ownSalesItems',
+          'orders',
+          'followedUsers',
+          'followingUsers'
+        ]
+      }
     });
   }
 
@@ -123,7 +131,10 @@ export default class UserAccountServiceImpl extends UserAccountService {
             'followingUsers',
             { _id },
             UserAccount,
-            FollowingUser
+            FollowingUser,
+            {
+              postQueryOperations
+            }
           ),
         postQueryOperations
       }
@@ -140,7 +151,9 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }: UnfollowUserArg): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, {
       preHooks: () =>
-        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount),
+        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount, {
+          postQueryOperations
+        }),
       postQueryOperations
     });
   }

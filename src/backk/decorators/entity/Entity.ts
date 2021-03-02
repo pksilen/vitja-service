@@ -7,7 +7,11 @@ export default function Entity(
 ) {
   return function(EntityClass: Function) {
     const foundInternalEntityClass = Object.values(types).find((type) => type === EntityClass);
-    if (!foundInternalEntityClass && !EntityClass.name.startsWith('__Backk' )&& !EntityClass.name.match(/^[a-zA-Z][a-zA-Z0-9]*$/)) {
+    if (
+      !foundInternalEntityClass &&
+      !EntityClass.name.startsWith('__Backk') &&
+      !EntityClass.name.match(/^[a-zA-Z][a-zA-Z0-9]*$/)
+    ) {
       throw new Error(
         EntityClass.name + ': entity class name must match regular expression: /^[a-zA-Z][a-zA-Z0-9]*$/'
       );
