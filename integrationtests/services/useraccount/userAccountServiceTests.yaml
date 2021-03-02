@@ -9,3 +9,11 @@
   tests:
     - testName: followed user
 
+- testTemplate:
+    serviceFunctionName: salesItemService.createSalesItem
+    response:
+      tests:
+        - pm.collectionVariables.set('salesItemId', response._id)
+    executeBefore: userAccountService.addToFavoriteSalesItems
+
+

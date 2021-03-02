@@ -102,6 +102,10 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
             } else if (fieldName === 'lastModifiedTimestamp' || fieldName === 'createdAtTimestamp') {
               values.push(new Date());
             } else {
+              if ((entity as any)[fieldName] === undefined) {
+                throw new Error(EntityClass.name + '.' + fieldName + ' is undefined. Provide a value for that field.')
+              }
+
               values.push((entity as any)[fieldName]);
             }
           }
@@ -118,6 +122,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
       ? dbManager.getReturningIdClause()
       : '';
 
+    console.log(values);
     sqlStatement = `INSERT INTO ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`;
     const result = await dbManager.tryExecuteQuery(sqlStatement, values);
     const _id = dbManager.getInsertId(result)?.toString();

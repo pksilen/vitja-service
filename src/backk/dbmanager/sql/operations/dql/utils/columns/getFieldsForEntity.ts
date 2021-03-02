@@ -5,7 +5,8 @@ import shouldIncludeField from './shouldIncludeField';
 import getTypeInfoForTypeName from '../../../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../../../utils/type/isEntityTypeName';
 import AbstractSqlDbManager from '../../../../../AbstractSqlDbManager';
-import getSingularName from "../../../../../../utils/getSingularName";
+import getSingularName from '../../../../../../utils/getSingularName';
+import { doesClassPropertyContainCustomValidation } from '../../../../../../validation/setClassPropertyValidationDecorators';
 
 export default function getFieldsForEntity(
   dbManager: AbstractSqlDbManager,
@@ -26,7 +27,8 @@ export default function getFieldsForEntity(
       if (
         (!isInternalCall &&
           typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, entityPropertyName)) ||
-        typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, entityPropertyName)
+        (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, entityPropertyName) &&
+          !doesClassPropertyContainCustomValidation(EntityClass, entityPropertyName, 'isUndefined'))
       ) {
         return;
       }

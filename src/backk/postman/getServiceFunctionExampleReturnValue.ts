@@ -5,7 +5,10 @@ import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import isEnumTypeName from '../utils/type/isEnumTypeName';
 import parseEnumValuesFromSrcFile from '../typescript/parser/parseEnumValuesFromSrcFile';
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
-import { getClassPropertyCustomValidationTestValue } from '../validation/setClassPropertyValidationDecorators';
+import {
+  doesClassPropertyContainCustomValidation,
+  getClassPropertyCustomValidationTestValue
+} from '../validation/setClassPropertyValidationDecorators';
 import getCustomValidationConstraint from '../validation/getCustomValidationConstraint';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 import getSampleStringValue from './getSampleStringValue';
@@ -38,7 +41,15 @@ export default function getServiceFunctionExampleReturnValue(
         serviceTypes[returnValueTypeName],
         propertyName
       ) ||
-      typePropertyAnnotationContainer.isTypePropertyTransient(serviceTypes[returnValueTypeName], propertyName)
+      (typePropertyAnnotationContainer.isTypePropertyTransient(
+        serviceTypes[returnValueTypeName],
+        propertyName
+      ) &&
+        !doesClassPropertyContainCustomValidation(
+          serviceTypes[returnValueTypeName],
+          propertyName,
+          'isUndefined'
+        ))
     ) {
       return;
     }

@@ -63,8 +63,8 @@ export default function getSampleStringValue(
 
   if (dataUriValidation) {
     sampleStringValue = isUpdate
-      ? 'data:text/plain;base64,XYZsbG8sIFdvcmxkIQ=='
-      : 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==';
+      ? 'data:image/png;base64,XYZsbG8sIFdvcmxkIQ=='
+      : 'data:image/png;base64,SGVsbG8sIFdvcmxkIQ==';
   }
 
   const dateStringValidation = getPropertyValidationOfType(Class, propertyName, 'isDateString');
