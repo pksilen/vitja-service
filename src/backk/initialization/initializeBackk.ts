@@ -6,10 +6,10 @@ import reloadLoggingConfigOnChange from "../configuration/reloadLoggingConfigOnC
 import log, { Severity } from "../observability/logging/log";
 import scheduleCronJobsForExecution from "../scheduling/scheduleCronJobsForExecution";
 import scheduleJobsForExecution from "../scheduling/scheduleJobsForExecution";
-import StartupService from "../service/startup/StartupService";
+import StartupCheckService from "../service/startup/StartupCheckService";
 
 export default async function initializeBackk(controller: any, dbManager: AbstractDbManager) {
-  StartupService.controller = controller;
+  StartupCheckService.controller = controller;
   logEnvironment();
   defaultSystemAndNodeJsMetrics.startCollectingMetrics();
   await initializeDatabase(controller, dbManager);

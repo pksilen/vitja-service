@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import AbstractDbManager from '../../dbmanager/AbstractDbManager';
-import StartupService from './StartupService';
+import StartupCheckService from './StartupCheckService';
 import createBackkErrorFromErrorMessageAndStatusCode from '../../errors/createBackkErrorFromErrorMessageAndStatusCode';
 import initializeDatabase, { isDbInitialized } from '../../dbmanager/sql/operations/ddl/initializeDatabase';
 import { HttpStatusCodes } from '../../constants/constants';
@@ -9,7 +9,7 @@ import scheduleJobsForExecution, { scheduledJobs } from '../../scheduling/schedu
 import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
 
 @Injectable()
-export default class StartupServiceImpl extends StartupService {
+export default class StartupCheckServiceImpl extends StartupCheckService {
   constructor(dbManager: AbstractDbManager) {
     super(dbManager);
   }
@@ -19,7 +19,7 @@ export default class StartupServiceImpl extends StartupService {
   async isServiceStarted(): PromiseOfErrorOr<null> {
     if (
       !(await isDbInitialized(this.dbManager)) &&
-      !(await initializeDatabase(StartupService.controller, this.dbManager))
+      !(await initializeDatabase(StartupCheckService.controller, this.dbManager))
     ) {
       return [
         null,
@@ -30,7 +30,7 @@ export default class StartupServiceImpl extends StartupService {
       ];
     } else if (
       !scheduledJobs &&
-      !(await scheduleJobsForExecution(StartupService.controller, this.dbManager))
+      !(await scheduleJobsForExecution(StartupCheckService.controller, this.dbManager))
     ) {
       return [
         null,

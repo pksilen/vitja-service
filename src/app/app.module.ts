@@ -3,11 +3,11 @@ import AuthorizationService from "../backk/authorization/AuthorizationService";
 import DefaultJwtAuthorizationServiceImpl from "../backk/authorization/DefaultJwtAuthorizationServiceImpl";
 import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
 import AbstractDbManager from "../backk/dbmanager/AbstractDbManager";
-import StartupService from "../backk/service/startup/StartupService";
+import StartupCheckService from "../backk/service/startup/StartupCheckService";
 import CaptchaVerifierServiceImpl from "../services/captchaverify/CatpchaVerifyServiceImpl";
 import OrderService from "../services/order/OrderService";
 import OrderServiceImpl from "../services/order/OrderServiceImpl";
-import StartupServiceImpl from "../backk/service/startup/StartupServiceImpl";
+import StartupCheckServiceImpl from "../backk/service/startup/StartupCheckServiceImpl";
 import SalesItemService from "../services/salesitem/SalesItemService";
 import SalesItemServiceImpl from "../services/salesitem/SalesItemServiceImpl";
 import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
@@ -34,7 +34,7 @@ import UserServiceImpl from "../services/user/UserServiceImpl";
     { provide: AbstractDbManager, useValue: mySqlDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
-    { provide: StartupService, useClass: StartupServiceImpl },
+    { provide: StartupCheckService, useClass: StartupCheckServiceImpl },
     { provide: CaptchaVerifyService, useClass: CaptchaVerifierServiceImpl },
     {
       provide: AuthorizationService,
