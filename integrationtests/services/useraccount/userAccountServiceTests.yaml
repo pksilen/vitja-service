@@ -4,7 +4,7 @@
       userName: test2@test.com
     response:
       tests:
-        - pm.collectionVariables.set('userAccountId', response._id)
+        - pm.collectionVariables.set('followedUserAccountId', response._id)
     executeAfter: userAccountService.getUserAccount
   tests:
     - testName: followed user

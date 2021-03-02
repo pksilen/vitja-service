@@ -132,12 +132,12 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @ExpectReturnValueToContainInTests({ followedUsers: [] })
   unfollowUser({
     _id,
-    unfollowedUserAccountId,
+    followedUserAccountId,
     ...postQueryOperations
   }: UnfollowUserArg): PromiseOfErrorOr<UserAccount> {
-    return this.dbManager.removeSubEntityById(_id, 'followedUsers', unfollowedUserAccountId, UserAccount, {
+    return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, {
       preHooks: () =>
-        this.dbManager.removeSubEntityById(unfollowedUserAccountId, 'followingUsers', _id, UserAccount),
+        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount),
       postQueryOperations
     });
   }
