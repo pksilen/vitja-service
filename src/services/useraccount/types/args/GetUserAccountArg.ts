@@ -6,8 +6,8 @@ import SortBy from "../../../../backk/types/postqueryoperations/SortBy";
 
 export default class GetUserAccountArg extends UserNameAndDefaultPostQueryOperations {
   excludeResponseFields: string[] = [
-    'ownSalesItems.primaryDataImageUri',
-    'followedUsers.salesItems'
+    'ownSalesItems.primaryImageDataUri',
+    'followedUsers.ownSalesItems'
   ];
 
   sortBys: SortBy[] = [

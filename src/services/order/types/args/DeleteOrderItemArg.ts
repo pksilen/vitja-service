@@ -2,20 +2,14 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import _IdAndVersion from "../../../../backk/types/id/_IdAndVersion"; // eslint-disable-next-line @typescript-eslint/class-name-casing
-import _Id from "../../../../backk/types/id/_Id";
-import IsUndefined from "../../../../backk/decorators/typeproperty/IsUndefined";
-import IsIntegerStringOrAny from "../../../../backk/decorators/typeproperty/IsIntegerStringOrAny"; // eslint-disable-next-line @typescript-eslint/class-name-casing
-import MaxLengthAndMatches from "../../../../backk/decorators/typeproperty/MaxLengthAndMatches";
-import IsStringOrObjectId from "../../../../backk/decorators/typeproperty/IsStringOrObjectId"; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import { IsString, MaxLength } from 'class-validator';
+import { Values } from '../../../../backk/constants/constants';
+import IsIntegerStringOrAny from '../../../../backk/decorators/typeproperty/IsIntegerStringOrAny'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 // eslint-disable-next-line @typescript-eslint/class-name-casing
-import { Unique } from "../../../../backk/decorators/typeproperty/Unique";
-import IsStringOrObjectId from "../../../../backk/decorators/typeproperty/IsStringOrObjectId";
-import { IsString, MaxLength } from "class-validator"
-import { BackkEntity } from "../../../../backk/types/entities/BackkEntity"
-import { Values } from "../../../../backk/constants/constants"
-
-import _IdAndOrderItemId from './_IdAndOrderItemId';
+import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 
 export default class DeleteOrderItemArg {
   @IsUndefined({
@@ -49,5 +43,4 @@ export default class DeleteOrderItemArg {
   @IsStringOrObjectId()
   @MaxLengthAndMatches(Values._24, /^[a-f\d]{1,24}$/)
   userAccountId!: string;
-
 }

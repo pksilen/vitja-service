@@ -159,8 +159,8 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
     const followedUserSalesItems = user?.followedUsers
       .map((followedUser) =>
-        followedUser.salesItems.map((salesItem) => ({
-          ...salesItem,
+        followedUser.ownSalesItems.map((ownSalesItem) => ({
+          ...ownSalesItem,
           userAccountId: followedUser._id,
           displayName: followedUser.displayName
         }))

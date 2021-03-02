@@ -158,12 +158,12 @@ export default async function tryExecuteServiceMethod(
           errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE.errorMessage + serviceName
         });
       }
-    } else if (serviceFunctionName === 'livenessCheckService.isAlive') {
+    } else if (serviceFunctionName === 'livenessCheckService.isServiceAlive') {
       resp?.send();
       return;
     } else if (
-      (serviceFunctionName === 'readinessCheckService.startupService' ||
-        serviceFunctionName === 'startupService.startupService') &&
+      (serviceFunctionName === 'readinessCheckService.isServiceReady' ||
+        serviceFunctionName === 'startupCheckService.isServiceStarted') &&
       (!controller[serviceName] || !controller[serviceName][functionName])
     ) {
       resp?.send();

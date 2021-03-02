@@ -4,5 +4,5 @@ import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
 export default abstract class StartupService extends BaseService {
   static controller: any | undefined;
 
-  abstract startupService(): PromiseOfErrorOr<null>;
+  abstract isServiceStarted(): PromiseOfErrorOr<null>;
 }
