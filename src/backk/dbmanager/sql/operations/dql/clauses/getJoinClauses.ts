@@ -47,8 +47,10 @@ export default function getJoinClauses(
             entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName];
         }
 
-        // noinspection ReuseOfLocalVariableJS
-        logicalSubEntityTableName = getSingularName(joinSpec.entityFieldName);
+        if (!logicalSubEntityTableName.includes('_')) {
+          // noinspection ReuseOfLocalVariableJS
+          logicalSubEntityTableName = getSingularName(joinSpec.entityFieldName);
+        }
 
         const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
         const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
