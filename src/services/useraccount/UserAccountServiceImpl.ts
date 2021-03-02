@@ -28,6 +28,7 @@ import FollowedUser from './types/entities/FollowedUser';
 import FollowingUser from './types/entities/FollowingUser';
 import FollowUserArg from './types/args/FollowUserArg';
 import UnfollowUserArg from './types/args/UnfollowUserArg';
+import { TestAfter } from "../../backk/decorators/service/function/TestAfter";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -70,6 +71,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
+  @TestAfter('salesItemService.createSalesItem')
   addToFavoriteSalesItems({
     _id,
     salesItemId,
@@ -87,6 +89,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
+  @TestAfter('salesItemService.createSalesItem')
   removeFromFavoriteSalesItems({
     _id,
     salesItemId,
