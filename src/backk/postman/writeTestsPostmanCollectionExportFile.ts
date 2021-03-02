@@ -34,6 +34,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
   tryValidateIntegrationTests(writtenTests, servicesMetadata);
 
+  const executeAfterTests: { executeAfter: string; item: object }[] = [];
+  const executeBeforeTests: { executeBefore: string; item: object }[] = [];
+
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
     let updateCount = 0;
 
@@ -56,6 +59,13 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
+
+      executeBeforeTests
+        .filter(
+          ({ executeBefore }) =>
+            executeBefore === serviceMetadata.serviceName + '.' + functionMetadata.functionName
+        )
+        .forEach((test) => items.push(test.item));
 
       if (
         serviceFunctionAnnotationContainer.hasNoAutoTests(
@@ -146,15 +156,37 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         updateCount
       );
 
-      items.push(
-        createPostmanCollectionItem(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          serviceMetadata,
-          functionMetadata,
-          sampleArg,
-          tests
-        )
+      const item = createPostmanCollectionItem(
+        (controller as any)[serviceMetadata.serviceName].constructor,
+        serviceMetadata,
+        functionMetadata,
+        sampleArg,
+        tests
       );
+
+      const executeBefore = serviceFunctionAnnotationContainer.getTestBefore(
+        (controller as any)[serviceMetadata.serviceName].constructor,
+        functionMetadata.functionName
+      );
+
+      const executeAfter = serviceFunctionAnnotationContainer.getTestAfter(
+        (controller as any)[serviceMetadata.serviceName].constructor,
+        functionMetadata.functionName
+      );
+
+      if (executeBefore) {
+        executeBeforeTests.push({
+          executeBefore,
+          item
+        });
+      } else if (executeAfter) {
+        executeAfterTests.push({
+          executeAfter,
+          item
+        });
+      } else {
+        items.push(item);
+      }
 
       if (isUpdate && isVoidFunction && lastGetFunctionMetadata) {
         const foundCustomTest = writtenTests.find(
@@ -253,6 +285,13 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
+
+      executeAfterTests
+        .filter(
+          ({ executeAfter }) =>
+            executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
+        )
+        .forEach((test) => items.push(test.item));
 
       if (index === serviceMetadata.functions.length - 1) {
         writtenTests
