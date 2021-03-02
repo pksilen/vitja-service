@@ -17,21 +17,20 @@ import { Values } from "../constants/constants";
 const cronJobs: { [key: string]: CronJob } = {};
 
 export default function scheduleCronJobsForExecution(controller: any, dbManager: AbstractDbManager) {
-  const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
-  const clsNamespace2 = createNamespace('serviceFunctionExecution');
-
   Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()).forEach(
     ([serviceFunctionName, cronSchedule]) => {
       const job = new CronJob(cronSchedule, async () => {
         const retryIntervalsInSecs = serviceFunctionAnnotationContainer.getServiceFunctionNameToRetryIntervalsInSecsMap()[
           serviceFunctionName
         ];
-
+        const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
+        const clsNamespace2 = createNamespace('serviceFunctionExecution');
         const interval = parser.parseExpression(cronSchedule);
+
         await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
           await delay(retryIntervalInSecs * 1000);
-          return await clsNamespace.runAndReturn(async () => {
-            return await clsNamespace2.runAndReturn(async () => {
+          return clsNamespace.runAndReturn(async () => {
+            return clsNamespace2.runAndReturn(async () => {
               try {
                 await dbManager.tryReserveDbConnectionFromPool();
                 clsNamespace.set('connection', true);

@@ -191,7 +191,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
     return [currentEntity, error];
   } catch (errorOrBackkError) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError);
+    return [null, isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError)];
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

@@ -242,7 +242,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
       })];
     }
 
-    return isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError);
+    return [null, isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError)];
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

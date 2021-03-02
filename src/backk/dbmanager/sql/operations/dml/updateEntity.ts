@@ -325,7 +325,7 @@ export default async function updateEntity<T extends BackkEntity>(
     }
 
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError);
+    return [null, isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError)];
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

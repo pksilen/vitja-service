@@ -241,7 +241,7 @@ export default class OrderServiceImpl extends OrderService {
     return this.deleteOrderById(_id);
   }
 
-  @CronJob({ minutes: 0, hourInterval: 1 })
+  @CronJob({ minuteInterval: 1 })
   deleteIncompleteOrders(): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {

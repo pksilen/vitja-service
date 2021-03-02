@@ -18,6 +18,7 @@ export default async function deleteAllEntities<T>(
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
+
     await Promise.all([
       forEachAsyncParallel(
         Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),

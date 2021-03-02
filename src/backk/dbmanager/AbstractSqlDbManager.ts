@@ -672,18 +672,18 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldPathName: string,
     fieldValue: any,
     entity: RecursivePartial<T>,
-    entityClass: new () => T,
+    EntityClass: new () => T,
     preHooks?: PreHook<T> | PreHook<T>[],
     postHook?: PostHook<T>
   ): PromiseOfErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntitiesBy');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
 
     const response = await updateEntityWhere(
       this,
       fieldPathName,
       fieldValue,
       entity,
-      entityClass,
+      EntityClass,
       preHooks,
       postHook
     );
