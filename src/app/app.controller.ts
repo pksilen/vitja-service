@@ -33,7 +33,7 @@ export class AppController {
   constructor(
     dbManager: AbstractDbManager,
     private readonly captchaVerifyService: CaptchaVerifyService,
-    private readonly startupService: StartupCheckService,
+    private readonly startupCheckService: StartupCheckService,
     private readonly responseCacheConfigService: ResponseCacheConfigService,
     private readonly auditLoggingService: AuditLoggingService,
     private readonly authorizationService: AuthorizationService,
