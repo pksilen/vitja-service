@@ -1,10 +1,9 @@
-import tryGetProjection from "./tryGetProjection";
-import assertIsSortDirection from "../../../../../assertions/assertIsSortDirection";
-import SortBy from "../../../../../types/postqueryoperations/SortBy";
-import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
-import createErrorFromErrorCodeMessageAndStatus
-  from "../../../../../errors/createErrorFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS } from "../../../../../errors/backkErrors";
+import tryGetProjection from './tryGetProjection';
+import assertIsSortDirection from '../../../../../assertions/assertIsSortDirection';
+import SortBy from '../../../../../types/postqueryoperations/SortBy';
+import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
+import createErrorFromErrorCodeMessageAndStatus from '../../../../../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../../errors/backkErrors';
 
 export default function tryGetOrderByClause<T>(
   dbManager: AbstractSqlDbManager,
@@ -38,16 +37,22 @@ export default function tryGetOrderByClause<T>(
         if (sortBy.subEntityPath !== '*') {
           throw createErrorFromErrorCodeMessageAndStatus({
             ...BACKK_ERRORS.INVALID_ARGUMENT,
-            errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + 'invalid sort field: ' + sortBy.fieldName
+            errorMessage:
+              BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + 'invalid sort field: ' + sortBy.fieldName
           });
         }
       }
 
       if (projection) {
         if (tableAlias) {
-          return tableAlias.toLowerCase() + '.' + sortBy.fieldName + ' ' + sortBy.sortDirection;
+          return (
+            tableAlias.toLowerCase() +
+            '.' +
+            sortBy.fieldName +
+            (sortBy.sortDirection === 'DESC' ? ' ' + sortBy.sortDirection : '')
+          );
         } else {
-          return sortBy.fieldName + ' ' + sortBy.sortDirection;
+          return sortBy.fieldName + (sortBy.sortDirection === 'DESC' ? ' ' + sortBy.sortDirection : '');
         }
       }
 

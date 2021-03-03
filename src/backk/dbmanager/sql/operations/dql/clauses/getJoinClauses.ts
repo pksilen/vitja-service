@@ -74,7 +74,7 @@ export default function getJoinClauses(
           ' = ' +
           dbManager.schema +
           '_' +
-          EntityClass.name.toLowerCase() +
+          tableAliasPath +
           '.' +
           joinSpec.entityIdFieldName.toLowerCase();
 
@@ -95,7 +95,7 @@ export default function getJoinClauses(
         joinClausePart +=
           dbManager.schema +
           '_' +
-          EntityClass.name.toLowerCase() +
+          tableAliasPath +
           '.' +
           joinSpec.entityIdFieldName.toLowerCase() +
           ' = ' +
