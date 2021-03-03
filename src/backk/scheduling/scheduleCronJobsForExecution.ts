@@ -19,7 +19,7 @@ const cronJobs: { [key: string]: CronJob } = {};
 export default function scheduleCronJobsForExecution(controller: any, dbManager: AbstractDbManager) {
   const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
   const clsNamespace2 = createNamespace('serviceFunctionExecution');
-  
+
   Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()).forEach(
     ([serviceFunctionName, cronSchedule]) => {
       const job = new CronJob(cronSchedule, async () => {

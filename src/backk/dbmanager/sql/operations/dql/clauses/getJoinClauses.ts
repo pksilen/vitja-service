@@ -49,7 +49,7 @@ export default function getJoinClauses(
         }
 
         // noinspection ReuseOfLocalVariableJS
-        logicalSubEntityTableName = tableAliasPath + joinSpec.entityFieldName.toLowerCase();
+        logicalSubEntityTableName = tableAliasPath + '_' + joinSpec.entityFieldName.toLowerCase();
 
         const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
         const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
@@ -132,7 +132,7 @@ export default function getJoinClauses(
         }
 
         // noinspection ReuseOfLocalVariableJS
-        logicalSubEntityTableName = tableAliasPath + entityFieldName.toLowerCase();
+        logicalSubEntityTableName = tableAliasPath + '_' + entityFieldName.toLowerCase();
 
         if (
           !shouldIncludeField(
@@ -232,7 +232,7 @@ export default function getJoinClauses(
         (Types as any)[baseTypeName],
         Types,
         resultOuterSortBys,
-        tableAliasPath + '.' + fieldName.toLowerCase()
+        tableAliasPath + '_' + fieldName.toLowerCase()
       );
 
       if (subJoinClauses) {

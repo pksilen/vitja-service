@@ -43,7 +43,7 @@ export default function getFieldsForEntity(
           projection,
           fieldPath + entityPropertyName + '.',
           isInternalCall,
-          tableAlias + '.' + entityPropertyName.toLowerCase()
+          tableAlias + '_' + entityPropertyName.toLowerCase()
         );
       } else if (isArrayType) {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
