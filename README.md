@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- make internal getentitybyid to get with defaultpostqueryoperations
-
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:

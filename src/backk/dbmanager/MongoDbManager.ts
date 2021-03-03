@@ -374,7 +374,7 @@ export default class MongoDbManager extends AbstractDbManager {
         let [currentEntity, error] = await this.getEntityById(
           _id,
           EntityClass,
-          options?.postQueryOperations,
+          undefined,
           true,
           true
         );
