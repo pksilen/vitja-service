@@ -15,7 +15,7 @@ export default function getFieldsForEntity(
   projection: Projection,
   fieldPath: string,
   isInternalCall = false,
-  tableAlias = EntityClass.name
+  tableAlias = EntityClass.name.toLowerCase()
 ) {
   const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(
     EntityClass as any
@@ -43,7 +43,7 @@ export default function getFieldsForEntity(
           projection,
           fieldPath + entityPropertyName + '.',
           isInternalCall,
-          tableAlias + '.' + entityPropertyName
+          tableAlias + '.' + entityPropertyName.toLowerCase()
         );
       } else if (isArrayType) {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {

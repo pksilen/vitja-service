@@ -1,18 +1,18 @@
-import entityAnnotationContainer from '../../../../../decorators/entity/entityAnnotationContainer';
-import getClassPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import { Projection } from '../../../../../types/postqueryoperations/Projection';
-import shouldIncludeField from '../utils/columns/shouldIncludeField';
-import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
-import isEntityTypeName from '../../../../../utils/type/isEntityTypeName';
-import tryGetWhereClause from './tryGetWhereClause';
-import tryGetSortClause from './tryGetOrderByClause';
-import getPaginationClause from './getPaginationClause';
-import SqlExpression from '../../../expressions/SqlExpression';
-import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
-import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
-import SortBy from '../../../../../types/postqueryoperations/SortBy';
-import Pagination from '../../../../../types/postqueryoperations/Pagination';
-import getSingularName from '../../../../../utils/getSingularName';
+import entityAnnotationContainer from "../../../../../decorators/entity/entityAnnotationContainer";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import { Projection } from "../../../../../types/postqueryoperations/Projection";
+import shouldIncludeField from "../utils/columns/shouldIncludeField";
+import getTypeInfoForTypeName from "../../../../../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from "../../../../../utils/type/isEntityTypeName";
+import tryGetWhereClause from "./tryGetWhereClause";
+import tryGetSortClause from "./tryGetOrderByClause";
+import getPaginationClause from "./getPaginationClause";
+import SqlExpression from "../../../expressions/SqlExpression";
+import UserDefinedFilter from "../../../../../types/userdefinedfilters/UserDefinedFilter";
+import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
+import SortBy from "../../../../../types/postqueryoperations/SortBy";
+import Pagination from "../../../../../types/postqueryoperations/Pagination";
 
 // noinspection OverlyComplexFunctionJS
 export default function getJoinClauses(
@@ -24,7 +24,8 @@ export default function getJoinClauses(
   paginations: Pagination[],
   EntityClass: new () => any,
   Types: object,
-  resultOuterSortBys: string[]
+  resultOuterSortBys: string[],
+  tableAliasPath = EntityClass.name.toLowerCase()
 ) {
   let joinClauses = '';
 
@@ -48,9 +49,7 @@ export default function getJoinClauses(
         }
 
         // noinspection ReuseOfLocalVariableJS
-        logicalSubEntityTableName = subEntityPath
-          ? subEntityPath.replace('.', '_').toLowerCase() + joinSpec.entityFieldName.toLowerCase()
-          : joinSpec.entityFieldName.toLowerCase();
+        logicalSubEntityTableName = tableAliasPath + joinSpec.entityFieldName.toLowerCase();
 
         const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
         const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
@@ -133,9 +132,7 @@ export default function getJoinClauses(
         }
 
         // noinspection ReuseOfLocalVariableJS
-        logicalSubEntityTableName = subEntityPath
-          ? subEntityPath.replace('.', '_').toLowerCase() + entityFieldName.toLowerCase()
-          : entityFieldName.toLowerCase();
+        logicalSubEntityTableName = tableAliasPath + entityFieldName.toLowerCase();
 
         if (
           !shouldIncludeField(
@@ -234,7 +231,8 @@ export default function getJoinClauses(
         paginations,
         (Types as any)[baseTypeName],
         Types,
-        resultOuterSortBys
+        resultOuterSortBys,
+        tableAliasPath + '.' + fieldName.toLowerCase()
       );
 
       if (subJoinClauses) {
