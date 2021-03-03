@@ -5,7 +5,6 @@ import createResultMaps from "./createResultMaps";
 import removeSingleSubEntitiesWithNullProperties from "./removeSingleSubEntitiesWithNullProperties";
 import { PostQueryOperations } from "../../../../../types/postqueryoperations/PostQueryOperations";
 import Pagination from "../../../../../types/postqueryoperations/Pagination";
-import * as util from "util";
 
 const parsedRowProcessingBatchSize = parseInt(process.env.ROW_PROCESSING_BATCH_SIZE ?? '500', 10)
 const ROW_PROCESSING_BATCH_SIZE = isNaN(parsedRowProcessingBatchSize) ? 500 : parsedRowProcessingBatchSize;
@@ -39,7 +38,6 @@ export default function transformRowsToObjects<T>(
 ) {
   const resultMaps = createResultMaps(EntityClass, Types, { includeResponseFields, excludeResponseFields });
   let mappedRows: any[] = [];
-  console.log(util.inspect(resultMaps, { depth: null, showHidden: false}));
 
   if (rows.length > ROW_PROCESSING_BATCH_SIZE) {
     Array(Math.round(rows.length / ROW_PROCESSING_BATCH_SIZE))

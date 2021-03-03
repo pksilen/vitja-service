@@ -48,7 +48,6 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
-    console.log(EntityClass.name, postQueryOperations);
     let [currentEntity, error] = await getEntityById(
       dbManager,
       _id,
