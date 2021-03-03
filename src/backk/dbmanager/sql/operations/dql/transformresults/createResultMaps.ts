@@ -42,7 +42,8 @@ function updateResultMaps(
         resultMap.collections.push({
           name: fieldName,
           mapId: relationEntityName + 'Map',
-          columnPrefix: relationEntityName.toLowerCase() + '_'
+          // columnPrefix: relationEntityName.toLowerCase() + '_'
+          columnPrefix: (fieldPath + fieldName).replace('.', '_').toLowerCase() + '_'
         });
 
         updateResultMaps(
@@ -62,7 +63,8 @@ function updateResultMaps(
         resultMap.associations.push({
           name: fieldName,
           mapId: relationEntityName + 'Map',
-          columnPrefix: relationEntityName.toLowerCase() + '_'
+          // columnPrefix: relationEntityName.toLowerCase() + '_'
+          columnPrefix: (fieldPath + fieldName).replace('.', '_').toLowerCase() + '_'
         });
 
         updateResultMaps(
@@ -82,7 +84,8 @@ function updateResultMaps(
         resultMap.collections.push({
           name: fieldName,
           mapId: relationEntityName + 'Map',
-          columnPrefix: relationEntityName.toLowerCase() + '_'
+          // columnPrefix: relationEntityName.toLowerCase() + '_'
+          columnPrefix: (fieldPath + fieldName).replace('.', '_').toLowerCase() + '_'
         });
 
         updateResultMaps(

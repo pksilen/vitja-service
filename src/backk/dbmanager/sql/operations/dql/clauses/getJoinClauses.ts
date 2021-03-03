@@ -47,10 +47,10 @@ export default function getJoinClauses(
             entityAnnotationContainer.entityNameToTableNameMap[logicalSubEntityTableName];
         }
 
-        if (!logicalSubEntityTableName.includes('_')) {
-          // noinspection ReuseOfLocalVariableJS
-          logicalSubEntityTableName = getSingularName(joinSpec.entityFieldName);
-        }
+        // noinspection ReuseOfLocalVariableJS
+        logicalSubEntityTableName = subEntityPath
+          ? subEntityPath.replace('.', '_').toLowerCase() + joinSpec.entityFieldName.toLowerCase()
+          : joinSpec.entityFieldName.toLowerCase();
 
         const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
         const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
@@ -133,7 +133,9 @@ export default function getJoinClauses(
         }
 
         // noinspection ReuseOfLocalVariableJS
-        logicalSubEntityTableName = associationTableName.split('_')[1];
+        logicalSubEntityTableName = subEntityPath
+          ? subEntityPath.replace('.', '_').toLowerCase() + entityFieldName.toLowerCase()
+          : entityFieldName.toLowerCase();
 
         if (
           !shouldIncludeField(
@@ -146,7 +148,7 @@ export default function getJoinClauses(
         }
 
         const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
-        const joinTableAlias = dbManager.schema + '_' + logicalSubEntityTableName.toLowerCase();
+        const joinTableAlias = dbManager.schema + '_' + logicalSubEntityTableName;
         const outerSortBys = tryGetSortClause(
           dbManager,
           joinEntityPath,

@@ -5,7 +5,6 @@ import shouldIncludeField from './shouldIncludeField';
 import getTypeInfoForTypeName from '../../../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../../../utils/type/isEntityTypeName';
 import AbstractSqlDbManager from '../../../../../AbstractSqlDbManager';
-import getSingularName from '../../../../../../utils/getSingularName';
 import { doesClassPropertyContainCustomValidation } from '../../../../../../validation/setClassPropertyValidationDecorators';
 
 export default function getFieldsForEntity(
@@ -16,7 +15,7 @@ export default function getFieldsForEntity(
   projection: Projection,
   fieldPath: string,
   isInternalCall = false,
-  tableName?: string
+  tableAlias = EntityClass.name
 ) {
   const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(
     EntityClass as any
@@ -44,34 +43,28 @@ export default function getFieldsForEntity(
           projection,
           fieldPath + entityPropertyName + '.',
           isInternalCall,
-          getSingularName(entityPropertyName)
+          tableAlias + '.' + entityPropertyName
         );
       } else if (isArrayType) {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
-          const relationEntityName = (EntityClass.name + '_' + entityPropertyName.slice(0, -1)).toLowerCase();
-
           const idFieldName = (
             EntityClass.name.charAt(0).toLowerCase() +
             EntityClass.name.slice(1) +
             'Id'
           ).toLowerCase();
 
-          fields.push(
-            `${dbManager.schema}_${relationEntityName}.${idFieldName} AS ${relationEntityName}_${idFieldName}`
-          );
+          fields.push(`${dbManager.schema}_${tableAlias}.${idFieldName} AS ${tableAlias}_${idFieldName}`);
 
           const singularFieldName = entityPropertyName.slice(0, -1).toLowerCase();
 
           fields.push(
-            `${dbManager.schema}_${relationEntityName}.${singularFieldName} AS ${relationEntityName}_${singularFieldName}`
+            `${dbManager.schema}_${tableAlias}.${singularFieldName} AS ${tableAlias}_${singularFieldName}`
           );
 
-          fields.push(`${dbManager.schema}_${relationEntityName}.id AS ${relationEntityName}_id`);
+          fields.push(`${dbManager.schema}_${tableAlias}.id AS ${tableAlias}_id`);
         }
       } else {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
-          const finalTableName = tableName?.toLowerCase() ?? EntityClass.name.toLowerCase();
-
           if (
             entityPropertyName === '_id' ||
             entityPropertyName === 'id' ||
@@ -80,13 +73,13 @@ export default function getFieldsForEntity(
             fields.push(
               `CAST(${
                 dbManager.schema
-              }_${finalTableName}.${entityPropertyName.toLowerCase()} AS ${dbManager.getIdColumnCastType()}) AS ${finalTableName}_${entityPropertyName.toLowerCase()}`
+              }_${tableAlias}.${entityPropertyName.toLowerCase()} AS ${dbManager.getIdColumnCastType()}) AS ${tableAlias}_${entityPropertyName.toLowerCase()}`
             );
           } else {
             fields.push(
               `${
                 dbManager.schema
-              }_${finalTableName}.${entityPropertyName.toLowerCase()} AS ${finalTableName}_${entityPropertyName.toLowerCase()}`
+              }_${tableAlias}.${entityPropertyName.toLowerCase()} AS ${tableAlias}_${entityPropertyName.toLowerCase()}`
             );
           }
         }

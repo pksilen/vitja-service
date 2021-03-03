@@ -131,10 +131,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
             'followingUsers',
             { _id },
             UserAccount,
-            FollowingUser,
-            {
-              postQueryOperations
-            }
+            FollowingUser
           ),
         postQueryOperations
       }
@@ -151,9 +148,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }: UnfollowUserArg): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, {
       preHooks: () =>
-        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount, {
-          postQueryOperations
-        }),
+        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount, ),
       postQueryOperations
     });
   }
