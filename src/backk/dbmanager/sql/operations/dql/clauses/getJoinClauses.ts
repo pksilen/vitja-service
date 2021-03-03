@@ -175,7 +175,7 @@ export default function getJoinClauses(
         joinClausePart +=
           dbManager.schema +
           '_' +
-          EntityClass.name.toLowerCase() +
+          tableAliasPath +
           '._id' +
           ' = ' +
           dbManager.schema +
