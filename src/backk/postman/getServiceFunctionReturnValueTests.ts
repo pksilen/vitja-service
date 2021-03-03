@@ -97,6 +97,7 @@ export default function getServiceFunctionReturnValueTests(
       propertyName,
       ValidationTypes.MIN_DATE
     );
+
     const maxDate = getValidationConstraint(
       serviceTypes[returnValueTypeName],
       propertyName,
@@ -126,6 +127,10 @@ export default function getServiceFunctionReturnValueTests(
         expectedValue = "'" + testValue + "'";
       } else {
         expectedValue = testValue;
+      }
+
+      if (typeof testValue === 'boolean') {
+        isBooleanValue = true;
       }
     } else if (propertyName === '_id') {
       if (isRecursive) {
