@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- make nested getFields ja getJoins to namespace by entitypath, 
-  change also to AS field name and then joinjs
 - make internal getentitybyid to get with defaultpostqueryoperations
 
 - Split to multiple microservices

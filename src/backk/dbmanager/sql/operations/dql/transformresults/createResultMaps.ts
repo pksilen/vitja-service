@@ -11,7 +11,8 @@ function updateResultMaps(
   projection: Projection,
   fieldPath: string,
   suppliedEntityMetadata: { [key: string]: string } = {},
-  ParentEntityClass?: Function
+  ParentEntityClass?: Function,
+  tablePath?: string
 ) {
   const entityMetadata =
     typeof entityClassOrName === 'function'
@@ -19,6 +20,11 @@ function updateResultMaps(
       : suppliedEntityMetadata;
 
   const entityName = typeof entityClassOrName === 'function' ? entityClassOrName.name : entityClassOrName;
+  if (!tablePath) {
+    // noinspection AssignmentToFunctionParameterJS
+    tablePath = entityName.toLowerCase();
+  }
+
   let idFieldName = 'id';
   if (entityMetadata._id) {
     idFieldName = '_id';
@@ -43,7 +49,7 @@ function updateResultMaps(
           name: fieldName,
           mapId: relationEntityName + 'Map',
           // columnPrefix: relationEntityName.toLowerCase() + '_'
-          columnPrefix: (fieldPath + fieldName).replace('.', '_').toLowerCase() + '_'
+          columnPrefix: tablePath + '_' + fieldName.toLowerCase() + '_'
         });
 
         updateResultMaps(
@@ -53,7 +59,8 @@ function updateResultMaps(
           projection,
           fieldPath + fieldName + '.',
           {},
-          entityClassOrName as Function
+          entityClassOrName as Function,
+          tablePath + '_' + fieldName.toLowerCase()
         );
       }
     } else if (isEntityTypeName(baseTypeName)) {
@@ -63,8 +70,7 @@ function updateResultMaps(
         resultMap.associations.push({
           name: fieldName,
           mapId: relationEntityName + 'Map',
-          // columnPrefix: relationEntityName.toLowerCase() + '_'
-          columnPrefix: (fieldPath + fieldName).replace('.', '_').toLowerCase() + '_'
+          columnPrefix: tablePath + '_' + fieldName.toLowerCase() + '_'
         });
 
         updateResultMaps(
@@ -74,7 +80,8 @@ function updateResultMaps(
           projection,
           fieldPath + fieldName + '.',
           {},
-          entityClassOrName as Function
+          entityClassOrName as Function,
+          tablePath + '_' + fieldName.toLowerCase()
         );
       }
     } else if (isArrayType) {
@@ -84,8 +91,7 @@ function updateResultMaps(
         resultMap.collections.push({
           name: fieldName,
           mapId: relationEntityName + 'Map',
-          // columnPrefix: relationEntityName.toLowerCase() + '_'
-          columnPrefix: (fieldPath + fieldName).replace('.', '_').toLowerCase() + '_'
+          columnPrefix: tablePath + '_' + fieldName.toLowerCase() + '_'
         });
 
         updateResultMaps(
@@ -98,7 +104,8 @@ function updateResultMaps(
             id: 'integer',
             [fieldName.slice(0, -1)]: 'integer'
           },
-          entityClassOrName as Function
+          entityClassOrName as Function,
+          tablePath + '_' + fieldName.toLowerCase()
         );
       }
     } else {

@@ -6,7 +6,7 @@ import getValidationErrors from './getValidationErrors';
 import { HttpStatusCodes } from '../constants/constants';
 import log, { Severity } from "../observability/logging/log";
 
-export default async function tryValidateServiceFunctionResponse(
+export default async function tryValidateServiceFunctionReturnValue(
   returnValue: object,
   ReturnValueType: new () => any,
   serviceFunctionName: string

@@ -10,7 +10,7 @@ import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import UserAccountBaseService from '../service/useraccount/UserAccountBaseService';
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import tryValidateServiceFunctionArgument from '../validation/tryValidateServiceFunctionArgument';
-import tryValidateServiceFunctionResponse from '../validation/tryValidateServiceFunctionResponse';
+import tryValidateServiceFunctionReturnValue from '../validation/tryValidateServiceFunctionReturnValue';
 import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
 import createBackkErrorFromError from '../errors/createBackkErrorFromError';
 import log, { Severity } from '../observability/logging/log';
@@ -439,13 +439,13 @@ export default async function tryExecuteServiceMethod(
         }
 
         if (Array.isArray(response) && response.length > 0 && typeof response[0] === 'object') {
-          await tryValidateServiceFunctionResponse(
+          await tryValidateServiceFunctionReturnValue(
             response[0],
             ServiceFunctionReturnType,
             serviceFunctionName
           );
         } else if (typeof response === 'object') {
-          await tryValidateServiceFunctionResponse(response, ServiceFunctionReturnType, serviceFunctionName);
+          await tryValidateServiceFunctionReturnValue(response, ServiceFunctionReturnType, serviceFunctionName);
         }
 
         if (
