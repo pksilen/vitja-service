@@ -37,7 +37,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
-): PromiseOfErrorOr<T> {
+): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   // noinspection AssignmentToFunctionParameterJS
@@ -46,11 +46,11 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    let [currentEntity, error] = await getEntityById(
+    const [currentEntity, error] = await getEntityById(
       dbManager,
       _id,
       EntityClass,
- undefined,
+      postQueryOperations,
       true,
       true
     );
@@ -155,17 +155,18 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
       }
     });
 
-    [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
-
     if (postHook) {
-      await tryExecutePostHook(postHook, currentEntity);
+      await tryExecutePostHook(postHook, null);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return [currentEntity, error];
+    return [null, null];
   } catch (errorOrBackkError) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return [null, isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError)];
+    return [
+      null,
+      isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError)
+    ];
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }

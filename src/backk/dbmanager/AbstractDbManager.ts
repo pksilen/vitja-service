@@ -143,7 +143,7 @@ export default abstract class AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<T>;
+  ): PromiseOfErrorOr<null>;
 
   // noinspection OverlyComplexFunctionJS
   abstract addSubEntities<T extends BackkEntity, U extends SubEntity>(
@@ -157,7 +157,7 @@ export default abstract class AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<T>;
+  ): PromiseOfErrorOr<null>;
 
   abstract getAllEntities<T>(
     EntityClass: new () => T,
@@ -307,7 +307,7 @@ export default abstract class AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<T>;
+  ): PromiseOfErrorOr<null>;
 
   abstract removeSubEntityById<T extends BackkEntity>(
     _id: string,
@@ -319,7 +319,7 @@ export default abstract class AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<T>;
+  ): PromiseOfErrorOr<null>;
 
   abstract deleteAllEntities<T>(EntityClass: new () => T): PromiseOfErrorOr<null>;
 }

@@ -2,7 +2,6 @@
 
 TODO:
 - Add/Removesubentities return null
-- AddSubEntites using service functions, remove postQueryoperations
 - Add to update/delete methods: postQueryOperations
 - Add custom tests for add/remove subentities
 

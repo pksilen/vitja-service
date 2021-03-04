@@ -447,7 +447,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>,
       postQueryOperations?: PostQueryOperations
     }
-  ): PromiseOfErrorOr<T> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
 
     const response = await addSubEntities(
@@ -478,7 +478,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>,
       postQueryOperations?: PostQueryOperations
     }
-  ): PromiseOfErrorOr<T> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
 
     const response = await addSubEntities(
@@ -730,7 +730,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>,
       postQueryOperations?: PostQueryOperations
     }
-  ): PromiseOfErrorOr<T> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
 
     const response = await removeSubEntities(
@@ -757,7 +757,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>,
       postQueryOperations?: PostQueryOperations
     }
-  ): PromiseOfErrorOr<T> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
 

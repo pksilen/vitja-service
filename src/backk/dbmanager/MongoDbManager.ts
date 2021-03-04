@@ -329,7 +329,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<T> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
 
     const response = this.addSubEntities(
@@ -356,7 +356,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<T> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -368,7 +368,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        let [currentEntity, error] = await this.getEntityById(
+        const [currentEntity, error] = await this.getEntityById(
           _id,
           EntityClass,
           undefined,
@@ -453,13 +453,11 @@ export default class MongoDbManager extends AbstractDbManager {
           true
         );
 
-        [currentEntity, error] = await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
-
         if (options?.postHook) {
-          await tryExecutePostHook(options?.postHook, currentEntity);
+          await tryExecutePostHook(options?.postHook, null);
         }
 
-        return [currentEntity, error];
+        return [null, null];
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
@@ -1349,7 +1347,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<T> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1359,7 +1357,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async () => {
-        let [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+        const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
         if (!currentEntity) {
           throw error;
         }
@@ -1369,17 +1367,14 @@ export default class MongoDbManager extends AbstractDbManager {
 
         if (subEntities.length > 0) {
           removeSubEntities(currentEntity, subEntities);
-
           await this.updateEntity(currentEntity as any, EntityClass, undefined, undefined, false, true);
-
-          [currentEntity, error] = await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
         }
 
-        if (options?.postHook && currentEntity) {
-          await tryExecutePostHook(options.postHook, currentEntity);
+        if (options?.postHook) {
+          await tryExecutePostHook(options.postHook, null);
         }
 
-        return [currentEntity, error];
+        return [null, null];
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
@@ -1401,7 +1396,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<T> {
+  ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
 

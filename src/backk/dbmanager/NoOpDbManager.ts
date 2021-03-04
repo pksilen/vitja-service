@@ -10,11 +10,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  addSubEntities<T extends BackkEntity, U extends object>(): PromiseOfErrorOr<T> {
+  addSubEntities<T extends BackkEntity, U extends object>(): PromiseOfErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  addSubEntity<T extends BackkEntity, U extends SubEntity>(): PromiseOfErrorOr<T> {
+  addSubEntity<T extends BackkEntity, U extends SubEntity>(): PromiseOfErrorOr<null> {
     throw new Error('Not implemented');
   }
 
@@ -102,11 +102,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     return Promise.resolve(false);
   }
 
-  removeSubEntities<T extends BackkEntity>(): PromiseOfErrorOr<T> {
+  removeSubEntities<T extends BackkEntity>(): PromiseOfErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  removeSubEntityById<T extends BackkEntity>(): PromiseOfErrorOr<T> {
+  removeSubEntityById<T extends BackkEntity>(): PromiseOfErrorOr<null> {
     throw new Error('Not implemented');
   }
 
