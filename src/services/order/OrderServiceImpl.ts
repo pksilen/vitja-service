@@ -112,10 +112,9 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForTests()
-  addOrderItem({ orderId, salesItem, version }: AddOrderItemArg): PromiseOfErrorOr<Order> {
+  addOrderItem({ orderId, salesItem }: AddOrderItemArg): PromiseOfErrorOr<Order> {
     return this.dbManager.addSubEntity(
       orderId,
-      version,
       'orderItems',
       {
         salesItems: [salesItem],

@@ -134,7 +134,6 @@ export default abstract class AbstractDbManager {
   // noinspection OverlyComplexFunctionJS
   abstract addSubEntity<T extends BackkEntity, U extends SubEntity>(
     _id: string,
-    versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     EntityClass: new () => T,
@@ -149,7 +148,6 @@ export default abstract class AbstractDbManager {
   // noinspection OverlyComplexFunctionJS
   abstract addSubEntities<T extends BackkEntity, U extends SubEntity>(
     _id: string,
-    versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: new () => T,

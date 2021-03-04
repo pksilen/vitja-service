@@ -320,7 +320,6 @@ export default class MongoDbManager extends AbstractDbManager {
 
   addSubEntity<T extends BackkEntity, U extends SubEntity>(
     _id: string,
-    versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
@@ -335,7 +334,6 @@ export default class MongoDbManager extends AbstractDbManager {
 
     const response = this.addSubEntities(
       _id,
-      versionOrLastModifiedTimestamp,
       subEntitiesJsonPath,
       [newSubEntity],
       entityClass,
@@ -349,7 +347,6 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async addSubEntities<T extends BackkEntity, U extends SubEntity>(
     _id: string,
-    versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: new () => T,
@@ -383,34 +380,7 @@ export default class MongoDbManager extends AbstractDbManager {
           return [null, error];
         }
 
-        let eTagCheckPreHook: PreHook<T>;
-        let finalPreHooks = Array.isArray(options?.preHooks)
-          ? options?.preHooks ?? []
-          : options?.preHooks
-          ? [options?.preHooks]
-          : [];
-
-        if (versionOrLastModifiedTimestamp !== 'any') {
-          if ('version' in currentEntity && !isNaN(parseInt(versionOrLastModifiedTimestamp, 10))) {
-            eTagCheckPreHook = {
-              isSuccessfulOrTrue: ({ version }) => version === versionOrLastModifiedTimestamp,
-              errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
-            };
-
-            finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-          } else if ('lastModifiedTimestamp' in currentEntity) {
-            eTagCheckPreHook = {
-              isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
-                lastModifiedTimestamp === new Date(versionOrLastModifiedTimestamp),
-              errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
-            };
-
-            finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-          }
-        }
-
-        await tryExecutePreHooks(finalPreHooks, currentEntity);
-
+        await tryExecutePreHooks(options?.preHooks ?? [], currentEntity);
         const [parentEntity] = JSONPath({
           json: currentEntity,
           path: subEntitiesJsonPath + '^'

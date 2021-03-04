@@ -68,7 +68,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   addToShoppingCart({ _id, salesItem }: _IdAndUserAccountIdAndSalesItem): PromiseOfErrorOr<ShoppingCart> {
     return this.dbManager.addSubEntity(
       _id,
-      'any',
       'salesItems',
       salesItem,
       ShoppingCart,

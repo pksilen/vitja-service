@@ -1,7 +1,6 @@
-import Version from "../../../../backk/types/Version";
 import ShoppingCartOrOrderSalesItem from "../../../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem";
 
-export default class AddOrderItemArg extends Version {
+export default class AddOrderItemArg  {
   orderId!: string;
   salesItem!: ShoppingCartOrOrderSalesItem;
 }

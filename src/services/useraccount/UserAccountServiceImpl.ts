@@ -80,45 +80,27 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @TestAfter('salesItemService.createSalesItem')
-  addToFavoriteSalesItems({
-    _id,
-    salesItemId,
-    ...postQueryOperations
-  }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
+  addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
-      'any',
       'favoriteSalesItems',
       { _id: salesItemId },
       UserAccount,
-      SalesItem,
-      { postQueryOperations }
+      SalesItem
     );
   }
 
   @AllowForSelf()
   @TestAfter('salesItemService.createSalesItem')
-  removeFromFavoriteSalesItems({
-    _id,
-    salesItemId,
-    ...postQueryOperations
-  }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
-    return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount, {
-      postQueryOperations
-    });
+  removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount> {
+    return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount);
   }
 
   @AllowForSelf()
   @Update()
-  followUser({
-    _id,
-    version,
-    followedUserAccountId,
-    ...postQueryOperations
-  }: FollowUserArg): PromiseOfErrorOr<UserAccount> {
+  followUser({ _id, followedUserAccountId }: FollowUserArg): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.addSubEntity(
       _id,
-      version,
       'followedUsers',
       { _id: followedUserAccountId },
       UserAccount,
@@ -127,13 +109,11 @@ export default class UserAccountServiceImpl extends UserAccountService {
         preHooks: () =>
           this.dbManager.addSubEntity(
             followedUserAccountId,
-            'any',
             'followingUsers',
             { _id },
             UserAccount,
             FollowingUser
-          ),
-        postQueryOperations
+          )
       }
     );
   }
@@ -141,15 +121,10 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update()
   @ExpectReturnValueToContainInTests({ followedUsers: [] })
-  unfollowUser({
-    _id,
-    followedUserAccountId,
-    ...postQueryOperations
-  }: UnfollowUserArg): PromiseOfErrorOr<UserAccount> {
+  unfollowUser({ _id, followedUserAccountId }: UnfollowUserArg): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, {
       preHooks: () =>
-        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount, ),
-      postQueryOperations
+        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount)
     });
   }
 

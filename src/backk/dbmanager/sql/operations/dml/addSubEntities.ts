@@ -30,7 +30,6 @@ import isBackkError from '../../../../errors/isBackkError';
 export default async function addSubEntities<T extends BackkEntity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
-  versionOrLastModifiedTimestamp: string | 'any',
   subEntitiesJsonPath: string,
   newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
@@ -47,7 +46,6 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-
     let [currentEntity, error] = await getEntityById(
       dbManager,
       _id,
@@ -61,32 +59,8 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
       throw error;
     }
 
-    let eTagCheckPreHook: PreHook<T>;
-    let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
-
-    if (versionOrLastModifiedTimestamp !== 'any') {
-      if ('version' in currentEntity && !isNaN(parseInt(versionOrLastModifiedTimestamp, 10))) {
-        eTagCheckPreHook = {
-          isSuccessfulOrTrue: ({ version }) => version === versionOrLastModifiedTimestamp,
-          errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
-        };
-
-        finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-      } else if ('lastModifiedTimestamp' in currentEntity) {
-        eTagCheckPreHook = {
-          isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
-            lastModifiedTimestamp?.getTime() === new Date(versionOrLastModifiedTimestamp).getTime(),
-          errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
-        };
-
-        finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-      }
-    }
-
-    await tryExecutePreHooks(finalPreHooks ?? [], currentEntity);
-
+    await tryExecutePreHooks(preHooks ?? [], currentEntity);
     await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntity, EntityClass);
-
     const maxSubItemId = JSONPath({ json: currentEntity, path: subEntitiesJsonPath }).reduce(
       (maxSubItemId: number, subItem: any) => {
         const subItemId = parseInt(subItem.id);

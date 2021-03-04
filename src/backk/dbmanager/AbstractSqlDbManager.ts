@@ -438,7 +438,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   // noinspection OverlyComplexFunctionJS
   async addSubEntity<T extends BackkEntity, U extends SubEntity>(
     _id: string,
-    versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     entityClass: new () => T,
@@ -454,7 +453,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     const response = await addSubEntities(
       this,
       _id,
-      versionOrLastModifiedTimestamp,
       subEntitiesJsonPath,
       [newSubEntity],
       entityClass,
@@ -471,7 +469,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   // noinspection OverlyComplexFunctionJS
   async addSubEntities<T extends BackkEntity, U extends SubEntity>(
     _id: string,
-    versionOrLastModifiedTimestamp: string | 'any',
     subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     entityClass: new () => T,
@@ -487,7 +484,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     const response = await addSubEntities(
       this,
       _id,
-      versionOrLastModifiedTimestamp,
       subEntitiesJsonPath,
       newSubEntities,
       entityClass,
