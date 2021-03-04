@@ -26,7 +26,6 @@ import { SalesItemState } from '../salesitem/types/enums/SalesItemState';
 import { OrderState } from './types/enum/OrderState';
 import { Update } from '../../backk/decorators/service/function/Update';
 import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
-import { ExpectReturnValueToContainInTests } from '../../backk/decorators/service/function/ExpectReturnValueToContainInTests';
 import { Create } from '../../backk/decorators/service/function/Create';
 import { HttpStatusCodes } from '../../backk/constants/constants';
 import { ResponseStatusCode } from '../../backk/decorators/service/function/ResponseStatusCode';
@@ -98,8 +97,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
-  @ExpectReturnValueToContainInTests({ orderItems: [] })
-  deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<Order> {
+  deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: {
         isSuccessfulOrTrue: (order) =>
@@ -112,12 +110,12 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForTests()
-  addOrderItem({ orderId, salesItem }: AddOrderItemArg): PromiseOfErrorOr<Order> {
+  addOrderItem({ orderId, salesItemId }: AddOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       orderId,
       'orderItems',
       {
-        salesItems: [salesItem],
+        salesItems: [{ _id: salesItemId }],
         state: 'toBeDelivered',
         trackingUrl: null,
         deliveryTimestamp: null
@@ -136,24 +134,22 @@ export default class OrderServiceImpl extends OrderService {
   @Update()
   @Errors([ORDER_ALREADY_PAID])
   payOrder({ _id, ...paymentInfo }: PayOrderArg): PromiseOfErrorOr<null> {
-    return this.dbManager.updateEntity(
-      { _id, paymentInfo },
-      Order,
-      [
+    return this.dbManager.updateEntity({ _id, paymentInfo }, Order, {
+      preHooks: [
         () => this.shoppingCartService.deleteShoppingCart({ _id }),
         {
           isSuccessfulOrTrue: ({ paymentInfo }) => paymentInfo.transactionId === null,
           errorMessage: ORDER_ALREADY_PAID
         }
       ],
-      () =>
+      postHook: () =>
         sendToRemoteService(
           `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
           {
             orderId: _id
           }
         )
-    );
+    });
   }
 
   @Update()
@@ -173,20 +169,22 @@ export default class OrderServiceImpl extends OrderService {
       },
       Order,
       {
-        isSuccessfulOrTrue: (order) =>
-          JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
-          'toBeDelivered',
-        errorMessage: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
-      },
-      () =>
-        sendToRemoteService(
-          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderItemDeliveryNotification`,
-          {
-            orderId: _id,
-            orderItemId,
-            ...restOfArg
-          }
-        )
+        preHooks: {
+          isSuccessfulOrTrue: (order) =>
+            JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
+            'toBeDelivered',
+          errorMessage: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+        },
+        postHook: () =>
+          sendToRemoteService(
+            `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderItemDeliveryNotification`,
+            {
+              orderId: _id,
+              orderItemId,
+              ...restOfArg
+            }
+          )
+      }
     );
   }
 
@@ -201,30 +199,32 @@ export default class OrderServiceImpl extends OrderService {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: newState }] },
       Order,
-      [
-        {
-          shouldExecutePreHook: () => newState === 'returned',
-          isSuccessfulOrTrue: (order) =>
-            this.salesItemService.updateSalesItemState({
-              _id: JSONPath({
-                json: order,
-                path: `orderItems[?(@.id == '${orderItemId}')].salesItems[0]._id`
-              })[0],
-              newState: 'forSale'
-            })
-        },
-        {
-          isSuccessfulOrTrue: (order) =>
-            JSONPath({
-              json: order,
-              path: `orderItems[?(@.id == '${orderItemId}')].state`
-            })[0] === OrderServiceImpl.getValidPreviousOrderStateFor(newState),
-          errorMessage: INVALID_ORDER_ITEM_STATE
-        }
-      ],
       {
-        shouldExecutePostHook: () => newState === 'returned',
-        isSuccessful: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
+        preHooks: [
+          {
+            shouldExecutePreHook: () => newState === 'returned',
+            isSuccessfulOrTrue: (order) =>
+              this.salesItemService.updateSalesItemState({
+                _id: JSONPath({
+                  json: order,
+                  path: `orderItems[?(@.id == '${orderItemId}')].salesItems[0]._id`
+                })[0],
+                newState: 'forSale'
+              })
+          },
+          {
+            isSuccessfulOrTrue: (order) =>
+              JSONPath({
+                json: order,
+                path: `orderItems[?(@.id == '${orderItemId}')].state`
+              })[0] === OrderServiceImpl.getValidPreviousOrderStateFor(newState),
+            errorMessage: INVALID_ORDER_ITEM_STATE
+          }
+        ],
+        postHook: {
+          shouldExecutePostHook: () => newState === 'returned',
+          isSuccessful: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
+        }
       }
     );
   }
@@ -341,15 +341,17 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   private deleteOrderById(_id: string): PromiseOfErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id, Order, [
-      {
-        isSuccessfulOrTrue: (order) =>
-          JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
-        errorMessage: DELETE_ORDER_NOT_ALLOWED,
-        shouldDisregardFailureWhenExecutingTests: true
-      },
-      (order) =>
-        this.updateSalesItemStates(JSONPath({ json: order, path: 'orderItems[*].salesItems' }), 'forSale')
-    ]);
+    return this.dbManager.deleteEntityById(_id, Order, {
+      preHooks: [
+        {
+          isSuccessfulOrTrue: (order) =>
+            JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
+          errorMessage: DELETE_ORDER_NOT_ALLOWED,
+          shouldDisregardFailureWhenExecutingTests: true
+        },
+        (order) =>
+          this.updateSalesItemStates(JSONPath({ json: order, path: 'orderItems[*].salesItems' }), 'forSale')
+      ]
+    });
   }
 }

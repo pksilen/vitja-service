@@ -50,8 +50,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
 
      [, error] = await dbManager.updateEntity(
       { _id: currentEntity?._id ?? '', ...entity },
-      EntityClass,
-      []
+      EntityClass
     );
 
     if (postHook) {

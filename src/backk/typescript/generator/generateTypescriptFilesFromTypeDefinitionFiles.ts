@@ -88,9 +88,9 @@ function generateTypescriptFileFor(
           .split(',')[0]
           .trim();
 
-        let isBaseTypeOptional = false;
         if (baseType.startsWith('Partial<')) {
           baseType = baseType.slice(8, -1);
+          // noinspection ReuseOfLocalVariableJS
           isBaseTypeOptional = true;
         }
 

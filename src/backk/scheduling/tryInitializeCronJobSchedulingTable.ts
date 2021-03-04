@@ -44,8 +44,7 @@ export default async function tryInitializeCronJobSchedulingTable(dbManager: Abs
                 lastScheduledTimestamp: new Date(120000),
                 nextScheduledTimestamp: interval.next().toDate()
               },
-              __Backk__CronJobScheduling,
-              []
+              __Backk__CronJobScheduling
             );
           }
 

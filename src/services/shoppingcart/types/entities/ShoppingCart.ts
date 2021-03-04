@@ -9,5 +9,5 @@ export default class ShoppingCart extends _IdAndUserAccountId {
   @ManyToMany()
   @ArrayMinSize(0)
   @ArrayMaxSize(50)
-  public salesItems!: ShoppingCartOrOrderSalesItem[];
+  public readonly salesItems!: ShoppingCartOrOrderSalesItem[];
 }

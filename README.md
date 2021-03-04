@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Add to update/delete methods: postQueryOperations
 - Add custom tests for add/remove subentities
 
 - Split to multiple microservices

@@ -438,7 +438,7 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
-        await this.updateEntity(currentEntity as any, EntityClass, undefined, undefined, false, true);
+        await this.updateEntity(currentEntity as any, EntityClass, undefined, false, true);
 
         if (options?.postHook) {
           await tryExecutePostHook(options?.postHook, null);
@@ -1180,7 +1180,7 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         await tryExecutePreHooks(options?.preHooks ?? [], currentEntity);
-        await this.updateEntity({ _id: currentEntity._id, ...entity }, EntityClass, []);
+        await this.updateEntity({ _id: currentEntity._id, ...entity }, EntityClass);
 
         if (options?.postHook) {
           await tryExecutePostHook(options.postHook, null);
@@ -1380,7 +1380,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         if (subEntities.length > 0) {
           removeSubEntities(currentEntity, subEntities);
-          await this.updateEntity(currentEntity as any, EntityClass, undefined, undefined, false, true);
+          await this.updateEntity(currentEntity as any, EntityClass, undefined,  false, true);
         }
 
         if (options?.postHook) {

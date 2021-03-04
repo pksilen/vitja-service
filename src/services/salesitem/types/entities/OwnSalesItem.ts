@@ -12,6 +12,7 @@ import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStri
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
+import { Transient } from '../../../../backk/decorators/typeproperty/Transient';
 import { SalesItemState } from '../enums/SalesItemState';
 
 @Entity('SalesItem')
@@ -57,6 +58,7 @@ export default class OwnSalesItem {
 
   @MaxLength(Lengths._1M)
   @IsDataUri()
+  @Transient()
   public readonly primaryImageThumbnailDataUri!: string;
 
   @Index()

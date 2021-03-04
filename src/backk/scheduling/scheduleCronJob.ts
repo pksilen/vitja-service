@@ -1,12 +1,12 @@
-import AbstractDbManager from "../dbmanager/AbstractDbManager";
-import { CronJob } from "cron";
-import findAsyncSequential from "../utils/findAsyncSequential";
-import delay from "../utils/delay";
-import { createNamespace } from "cls-hooked";
+import AbstractDbManager from '../dbmanager/AbstractDbManager';
+import { CronJob } from 'cron';
+import findAsyncSequential from '../utils/findAsyncSequential';
+import delay from '../utils/delay';
+import { createNamespace } from 'cls-hooked';
 // eslint-disable-next-line @typescript-eslint/camelcase
-import __Backk__JobScheduling from "./entities/__Backk__JobScheduling";
-import tryExecuteServiceMethod from "../execution/tryExecuteServiceMethod";
-import { logError } from "../observability/logging/log";
+import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
+import tryExecuteServiceMethod from '../execution/tryExecuteServiceMethod';
+import { logError } from '../observability/logging/log';
 
 const scheduledJobs: { [key: string]: CronJob } = {};
 
@@ -25,20 +25,20 @@ export async function scheduleCronJob(
       const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
       const clsNamespace2 = createNamespace('serviceFunctionExecution');
       return clsNamespace.runAndReturn(async () => {
-        return  clsNamespace2.runAndReturn(async () => {
+        return clsNamespace2.runAndReturn(async () => {
           try {
             await dbManager.tryReserveDbConnectionFromPool();
             clsNamespace.set('connection', true);
             const possibleErrorResponse = await dbManager.executeInsideTransaction(async () => {
               clsNamespace.set('globalTransaction', true);
 
-              const possibleErrorResponse = await dbManager.deleteEntityById(jobId, __Backk__JobScheduling,
-                 (jobScheduling) => !!jobScheduling
-              );
+              const possibleErrorResponse = await dbManager.deleteEntityById(jobId, __Backk__JobScheduling, {
+                preHooks: (jobScheduling) => !!jobScheduling
+              });
 
               return (
                 possibleErrorResponse ||
-                (tryExecuteServiceMethod(
+                tryExecuteServiceMethod(
                   controller,
                   serviceFunctionName,
                   serviceFunctionArgument ?? {},
@@ -46,7 +46,7 @@ export async function scheduleCronJob(
                   undefined,
                   undefined,
                   false
-                ))
+                )
               );
             });
             clsNamespace.set('globalTransaction', true);

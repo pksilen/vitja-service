@@ -11,8 +11,7 @@ export default async function tryUpdateEntityVersionAndLastModifiedTimestampIfNe
       {
         _id: currentEntity._id
       } as any,
-      EntityClass,
-      []
+      EntityClass
     );
 
     if (error) {

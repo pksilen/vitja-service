@@ -11,6 +11,7 @@ import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStri
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
+import { Transient } from '../../../../backk/decorators/typeproperty/Transient';
 
 @Entity('SalesItem')
 export default class ShoppingCartOrOrderSalesItem {
@@ -27,21 +28,22 @@ export default class ShoppingCartOrOrderSalesItem {
 
   @MaxLength(Lengths._64)
   @IsAnyString()
-  public readonly title!: string;
+  public title?: string;
 
   @IsNumber({
     maxDecimalPlaces: 2
   })
   @MinMax(0, Values._1B)
-  public readonly price!: number;
+  public price?: number;
 
   @IsNumber({
     maxDecimalPlaces: 2
   })
   @MinMax(0, Values._1B)
-  public readonly shippingCost!: number;
+  public shippingCost?: number;
 
   @MaxLength(Lengths._1M)
   @IsDataUri()
-  public readonly primaryImageThumbnailDataUri!: string;
+  @Transient()
+  public readonly primaryImageThumbnailDataUri?: string;
 }
