@@ -20,12 +20,12 @@ export default abstract class UserAccountService extends UserAccountBaseService 
   // createUserAccount documentation goes here..
   abstract createUserAccount(arg: UserAccount): PromiseOfErrorOr<UserAccount>;
 
+  abstract followUser(arg: FollowUserArg): PromiseOfErrorOr<null>;
+  abstract unfollowUser(arg: UnfollowUserArg): PromiseOfErrorOr<null>;
+  abstract addToFavoriteSalesItems(arg: _IdAndSalesItemId): PromiseOfErrorOr<null>;
+  abstract removeFromFavoriteSalesItems(arg: _IdAndSalesItemId): PromiseOfErrorOr<null>;
   abstract getUserAccount(arg: GetUserAccountArg): PromiseOfErrorOr<UserAccount>;
   abstract getUserNameById(arg: _Id): PromiseOfErrorOr<UserName>;
-  abstract addToFavoriteSalesItems(arg: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount>;
-  abstract removeFromFavoriteSalesItems(arg: _IdAndSalesItemId): PromiseOfErrorOr<UserAccount>;
-  abstract followUser(arg: FollowUserArg): PromiseOfErrorOr<UserAccount>;
-  abstract unfollowUser(arg: UnfollowUserArg): PromiseOfErrorOr<UserAccount>;
   abstract updateUserAccount(arg: UserAccount): PromiseOfErrorOr<null>;
   abstract changeUserPassword(arg: ChangeUserPasswordArg): PromiseOfErrorOr<null>;
   abstract deleteUserAccount(arg: _Id): PromiseOfErrorOr<null>;
