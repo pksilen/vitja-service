@@ -59,6 +59,7 @@ export default abstract class AbstractDbManager {
   abstract getVarCharType(maxLength: number): string;
   abstract getDbManagerType(): string;
   abstract getDbHost(): string;
+  abstract shouldConvertTinyIntegersToBooleans(): boolean;
   abstract getFilters<T>(
     mongoDbFilters: Array<MongoDbQuery<T>> | FilterQuery<T> | Partial<T> | object,
     sqlFilters: SqlExpression[] | SqlExpression | Partial<T> | object

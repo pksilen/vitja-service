@@ -1477,4 +1477,8 @@ export default class MongoDbManager extends AbstractDbManager {
       await this.mongoClient.connect();
     }
   }
+
+  shouldConvertTinyIntegersToBooleans(): boolean {
+    return false;
+  }
 }

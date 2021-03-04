@@ -111,4 +111,8 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   getAffectedRows(result: any): number {
     return result.rowCount;
   }
+
+  shouldConvertTinyIntegersToBooleans(): boolean {
+    return false;
+  }
 }

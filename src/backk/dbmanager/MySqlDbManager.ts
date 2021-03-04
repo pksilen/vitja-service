@@ -120,4 +120,8 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
   getAffectedRows(result: any): number {
     return result.affectedRows;
   }
+
+  shouldConvertTinyIntegersToBooleans(): boolean {
+    return true;
+  }
 }

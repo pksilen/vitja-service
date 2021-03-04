@@ -7,7 +7,6 @@ import { PostQueryOperations } from '../../../../../types/postqueryoperations/Po
 import Pagination from '../../../../../types/postqueryoperations/Pagination';
 import convertTinyIntegersToBooleans from './convertTinyIntegersToBooleans';
 import AbstractDbManager from '../../../../AbstractDbManager';
-import MySqlDbManager from "../../../../MySqlDbManager";
 
 const parsedRowProcessingBatchSize = parseInt(process.env.ROW_PROCESSING_BATCH_SIZE ?? '500', 10);
 const ROW_PROCESSING_BATCH_SIZE = isNaN(parsedRowProcessingBatchSize) ? 500 : parsedRowProcessingBatchSize;
@@ -30,7 +29,7 @@ function getMappedRows(
   const Types = dbManager.getTypes();
   transformNonEntityArrays(mappedRows, EntityClass, Types);
 
-  if (dbManager instanceof MySqlDbManager) {
+  if (dbManager.shouldConvertTinyIntegersToBooleans()) {
     convertTinyIntegersToBooleans(mappedRows, EntityClass, Types);
   }
 

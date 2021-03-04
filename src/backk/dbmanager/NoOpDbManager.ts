@@ -169,4 +169,8 @@ export default class NoOpDbManager extends AbstractDbManager {
   getFilters<T>(): Array<MongoDbQuery<T> | SqlExpression> | Partial<T> | object {
     throw new Error('Not implemented');
   }
+
+  shouldConvertTinyIntegersToBooleans(): boolean {
+    return false;
+  }
 }
