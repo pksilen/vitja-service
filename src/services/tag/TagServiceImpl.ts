@@ -49,9 +49,11 @@ export default class TagServiceImpl extends TagService {
       return [null, error?.statusCode === HttpStatusCodes.NOT_FOUND ? null : error];
     }
 
-    return this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, () => {
-      const tags = tryGetSeparatedValuesFromTextFile('resources/tags2.txt');
-      return executeForAll(tags, (tag) => this.createTag({ name: tag }));
+    return this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, {
+      preHooks: () => {
+        const tags = tryGetSeparatedValuesFromTextFile('resources/tags2.txt');
+        return executeForAll(tags, (tag) => this.createTag({ name: tag }));
+      }
     });
   }
 

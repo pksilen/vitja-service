@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Add/Removesubentities return null
 - Add to update/delete methods: postQueryOperations
 - Add custom tests for add/remove subentities
 

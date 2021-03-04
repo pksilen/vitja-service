@@ -368,13 +368,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        const [currentEntity, error] = await this.getEntityById(
-          _id,
-          EntityClass,
-          undefined,
-          true,
-          true
-        );
+        const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
 
         if (!currentEntity) {
           return [null, error];
@@ -444,14 +438,7 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
-        await this.updateEntity(
-          currentEntity as any,
-          EntityClass,
-          undefined,
-          undefined,
-          false,
-          true
-        );
+        await this.updateEntity(currentEntity as any, EntityClass, undefined, undefined, false, true);
 
         if (options?.postHook) {
           await tryExecutePostHook(options?.postHook, null);
@@ -1001,8 +988,11 @@ export default class MongoDbManager extends AbstractDbManager {
   async updateEntity<T extends BackkEntity>(
     { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook<T>,
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    },
     isRecursiveCall = false,
     isInternalCall = false
   ): PromiseOfErrorOr<null> {
@@ -1024,8 +1014,14 @@ export default class MongoDbManager extends AbstractDbManager {
         let currentEntity: T | null | undefined = null;
         let error = null;
 
-        if (!isRecursiveCall && preHooks) {
-          [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+        if (!isRecursiveCall && options?.preHooks) {
+          [currentEntity, error] = await this.getEntityById(
+            _id,
+            EntityClass,
+            options?.postQueryOperations,
+            true,
+            true
+          );
         }
 
         if (!currentEntity) {
@@ -1033,7 +1029,11 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         let eTagCheckPreHook: PreHook<T>;
-        let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
+        let finalPreHooks = Array.isArray(options?.preHooks)
+          ? options?.preHooks ?? []
+          : options?.preHooks
+          ? [options?.preHooks]
+          : [];
 
         if (!isInternalCall && currentEntity) {
           if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
@@ -1131,8 +1131,8 @@ export default class MongoDbManager extends AbstractDbManager {
           ];
         }
 
-        if (!isRecursiveCall && postHook) {
-          await tryExecutePostHook(postHook, null);
+        if (!isRecursiveCall && options?.postHook) {
+          await tryExecutePostHook(options.postHook, null);
         }
 
         return [null, null];
@@ -1152,8 +1152,11 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: T[keyof T],
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook<T>
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
     // noinspection AssignmentToFunctionParameterJS
@@ -1168,7 +1171,7 @@ export default class MongoDbManager extends AbstractDbManager {
           fieldPathName,
           fieldValue,
           EntityClass,
-          undefined,
+          options?.postQueryOperations,
           true
         );
 
@@ -1176,11 +1179,11 @@ export default class MongoDbManager extends AbstractDbManager {
           return [null, error];
         }
 
-        await tryExecutePreHooks(preHooks ?? [], currentEntity);
+        await tryExecutePreHooks(options?.preHooks ?? [], currentEntity);
         await this.updateEntity({ _id: currentEntity._id, ...entity }, EntityClass, []);
 
-        if (postHook) {
-          await tryExecutePostHook(postHook, null);
+        if (options?.postHook) {
+          await tryExecutePostHook(options.postHook, null);
         }
       });
 
@@ -1198,8 +1201,11 @@ export default class MongoDbManager extends AbstractDbManager {
   async deleteEntityById<T extends BackkEntity>(
     _id: string,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook<T>
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
     // noinspection AssignmentToFunctionParameterJS
@@ -1210,13 +1216,20 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
-        if (preHooks) {
-          const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+        if (options?.preHooks) {
+          const [currentEntity, error] = await this.getEntityById(
+            _id,
+            EntityClass,
+            options?.postQueryOperations,
+            true,
+            true
+          );
+
           if (!currentEntity) {
-            return [null, error]
+            return [null, error];
           }
 
-          await tryExecutePreHooks(preHooks, currentEntity);
+          await tryExecutePreHooks(options?.preHooks, currentEntity);
         }
 
         await client
@@ -1224,8 +1237,8 @@ export default class MongoDbManager extends AbstractDbManager {
           .collection(EntityClass.name.toLowerCase())
           .deleteOne({ _id: new ObjectId(_id) });
 
-        if (postHook) {
-          await tryExecutePostHook(postHook, null);
+        if (options?.postHook) {
+          await tryExecutePostHook(options?.postHook, null);
         }
       });
 

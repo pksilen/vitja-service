@@ -225,19 +225,21 @@ export default abstract class AbstractDbManager {
   abstract updateEntity<T extends BackkEntity>(
     entity: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook<T>
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseOfErrorOr<null>;
 
   updateEntities<T extends BackkEntity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
-    EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[]
+    EntityClass: new () => T
   ): PromiseOfErrorOr<null> {
     return this.executeInsideTransaction(async () => {
       try {
         return await forEachAsyncParallel(entities, async (entity, index) => {
-          const [, error] = await this.updateEntity(entity, EntityClass, preHooks);
+          const [, error] = await this.updateEntity(entity, EntityClass);
 
           if (error) {
             error.message = 'Entity ' + index + ': ' + error.message;
@@ -255,26 +257,31 @@ export default abstract class AbstractDbManager {
     fieldValue: any,
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook<T>
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[],
+      postHook?: PostHook<T>,
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseOfErrorOr<null>;
 
   abstract deleteEntityById<T extends BackkEntity>(
     _id: string,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook<T>
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[],
+      postHook?: PostHook<T>,
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseOfErrorOr<null>;
 
   deleteEntitiesByIds<T extends BackkEntity>(
     _ids: string[],
-    EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[]
+    EntityClass: new () => T
   ): PromiseOfErrorOr<null> {
     return this.executeInsideTransaction(async () => {
       try {
         return await forEachAsyncParallel(_ids, async (_id, index) => {
-          const [, error] = await this.deleteEntityById(_id, EntityClass, preHooks);
+          const [, error] = await this.deleteEntityById(_id, EntityClass);
 
           if (error) {
             error.message = 'Entity ' + index + ': ' + error.message;

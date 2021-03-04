@@ -27,6 +27,7 @@ import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 import getSingularName from '../../../../utils/getSingularName';
 import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
 import isBackkError from '../../../../errors/isBackkError';
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
 // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function updateEntity<T extends BackkEntity>(
@@ -35,6 +36,7 @@ export default async function updateEntity<T extends BackkEntity>(
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook<T>,
+  postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false
 ): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
@@ -204,6 +206,7 @@ export default async function updateEntity<T extends BackkEntity>(
                   SubEntityClass,
                   undefined,
                   undefined,
+                  undefined,
                   true
                 );
 
@@ -220,6 +223,7 @@ export default async function updateEntity<T extends BackkEntity>(
             dbManager,
             subEntityOrEntities,
             (Types as any)[baseTypeName],
+            undefined,
             undefined,
             undefined,
             true

@@ -13,6 +13,7 @@ import { PostHook } from '../../../hooks/PostHook';
 import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 
 export default async function updateEntityWhere<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
@@ -21,7 +22,8 @@ export default async function updateEntityWhere<T extends BackkEntity>(
   entity: RecursivePartial<T>,
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],
-  postHook?: PostHook<T>
+  postHook?: PostHook<T>,
+  postQueryOperations?: PostQueryOperations
 ): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
@@ -36,7 +38,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
       fieldPathName,
       fieldValue,
       EntityClass,
-      undefined,
+      postQueryOperations,
       true
     );
 

@@ -187,13 +187,15 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
   async updateSalesItem(arg: SalesItem): PromiseOfErrorOr<null> {
-    return this.dbManager.updateEntity(arg, SalesItem, [
-      {
-        isSuccessfulOrTrue: ({ state }) => state === 'forSale',
-        errorMessage: SALES_ITEM_STATE_MUST_BE_FOR_SALE
-      },
-      ({ _id, price }) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem, [])
-    ]);
+    return this.dbManager.updateEntity(arg, SalesItem, {
+      preHooks: [
+        {
+          isSuccessfulOrTrue: ({ state }) => state === 'forSale',
+          errorMessage: SALES_ITEM_STATE_MUST_BE_FOR_SALE
+        },
+        ({ _id, price }) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem)
+      ]
+    });
   }
 
   @AllowForServiceInternalUse()
@@ -202,16 +204,14 @@ export default class SalesItemServiceImpl extends SalesItemService {
     { _id, newState }: _IdAndSalesItemState,
     requiredCurrentState?: SalesItemState
   ): PromiseOfErrorOr<null> {
-    return this.dbManager.updateEntity(
-      { _id, state: newState },
-      SalesItem,
-      requiredCurrentState
+    return this.dbManager.updateEntity({ _id, state: newState }, SalesItem, {
+      preHooks: requiredCurrentState
         ? {
             isSuccessfulOrTrue: ({ state }) => state === requiredCurrentState,
             errorMessage: INVALID_SALES_ITEM_STATE
           }
         : undefined
-    );
+    });
   }
 
   @CronJob({ minutes: 0, hours: 2 })

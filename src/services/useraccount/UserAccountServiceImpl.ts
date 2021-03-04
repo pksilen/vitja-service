@@ -141,17 +141,20 @@ export default class UserAccountServiceImpl extends UserAccountService {
     password,
     userName
   }: ChangeUserPasswordArg): PromiseOfErrorOr<null> {
-    return this.dbManager.updateEntity({ _id, password }, UserAccount, [
-      {
-        isSuccessfulOrTrue: (currentEntity) => currentEntity.userName === userName,
-        errorMessage: USER_NAME_CANNOT_BE_CHANGED
-      },
-      {
-        isSuccessfulOrTrue: ({ password: hashedPassword }) => argon2.verify(hashedPassword, currentPassword),
-        errorMessage: INVALID_CURRENT_PASSWORD,
-        shouldDisregardFailureWhenExecutingTests: true
-      }
-    ]);
+    return this.dbManager.updateEntity({ _id, password }, UserAccount, {
+      preHooks: [
+        {
+          isSuccessfulOrTrue: (currentEntity) => currentEntity.userName === userName,
+          errorMessage: USER_NAME_CANNOT_BE_CHANGED
+        },
+        {
+          isSuccessfulOrTrue: ({ password: hashedPassword }) =>
+            argon2.verify(hashedPassword, currentPassword),
+          errorMessage: INVALID_CURRENT_PASSWORD,
+          shouldDisregardFailureWhenExecutingTests: true
+        }
+      ]
+    });
   }
 
   @AllowForSelf()

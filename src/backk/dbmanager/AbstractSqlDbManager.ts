@@ -443,9 +443,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     subEntityClass: new () => U,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[],
-      postHook?: PostHook<T>,
-      postQueryOperations?: PostQueryOperations
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
@@ -474,9 +474,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     subEntityClass: new () => U,
     options: {
-      preHooks?: PreHook<T> | PreHook<T>[],
-      postHook?: PostHook<T>,
-      postQueryOperations?: PostQueryOperations
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
@@ -627,7 +627,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     isSelectForUpdate = false
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
-    const response = await getEntityWhere(this, fieldPathName, fieldValue, entityClass, postQueryOperations, isSelectForUpdate);
+    const response = await getEntityWhere(
+      this,
+      fieldPathName,
+      fieldValue,
+      entityClass,
+      postQueryOperations,
+      isSelectForUpdate
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -655,11 +662,21 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async updateEntity<T extends BackkEntity>(
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook<T>
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
-    const response = await updateEntity(this, entity, entityClass, preHooks, postHook);
+    const response = await updateEntity(
+      this,
+      entity,
+      entityClass,
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -669,8 +686,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldValue: any,
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook<T>
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
 
@@ -680,8 +700,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       fieldValue,
       entity,
       EntityClass,
-      preHooks,
-      postHook
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
     );
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -691,11 +712,21 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async deleteEntityById<T extends BackkEntity>(
     _id: string,
     EntityClass: new () => T,
-    preHooks?: PreHook<T> | PreHook<T>[],
-    postHook?: PostHook<T>
+    options?: {
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
-    const response = await deleteEntityById(this, _id, EntityClass, preHooks, postHook);
+    const response = await deleteEntityById(
+      this,
+      _id,
+      EntityClass,
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -726,9 +757,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     subEntitiesJsonPath: string,
     entityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[],
-      postHook?: PostHook<T>,
-      postQueryOperations?: PostQueryOperations
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
@@ -753,20 +784,15 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     subEntityId: string,
     entityClass: new () => T,
     options: {
-      preHooks?: PreHook<T> | PreHook<T>[],
-      postHook?: PostHook<T>,
-      postQueryOperations?: PostQueryOperations
+      preHooks?: PreHook<T> | PreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
 
-    const response = await this.removeSubEntities(
-      _id,
-      subEntityJsonPath,
-      entityClass,
-      options
-    );
+    const response = await this.removeSubEntities(_id, subEntityJsonPath, entityClass, options);
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
