@@ -1,6 +1,13 @@
 # Vitja service
 
 TODO:
+- PromiseOfErrorOr T extends BackkEntity | Subentity | null | undefined
+- AddSubEntities, remove version
+- Add/Removesubentities return null
+- AddSubEntites using service functions, remove postQueryoperations
+- Add to update/delete methods: postQueryOperations
+- Add custom tests for add/remove subentities
+
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:

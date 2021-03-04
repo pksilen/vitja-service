@@ -82,7 +82,7 @@ export default async function getEntityById<T>(
       dbManager.getResultRows(result),
       EntityClass,
       finalPostQueryOperations,
-      dbManager.getTypes()
+      dbManager
     )[0];
 
     return [entity, null];

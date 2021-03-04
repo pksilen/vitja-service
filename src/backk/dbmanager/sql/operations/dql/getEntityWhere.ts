@@ -76,7 +76,7 @@ export default async function getEntityWhere<T>(
       dbManager.getResultRows(result),
       EntityClass,
       finalPostQueryOperations,
-      dbManager.getTypes()
+      dbManager
     )[0];
 
     return [entity, null];

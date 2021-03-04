@@ -50,7 +50,7 @@ export default async function getAllEntities<T>(
       dbManager.getResultRows(result),
       EntityClass,
       finalPostQueryOperations,
-      dbManager.getTypes()
+      dbManager
     );
 
     return [entities, null];

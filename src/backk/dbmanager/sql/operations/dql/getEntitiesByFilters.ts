@@ -60,7 +60,7 @@ export default async function getEntitiesByFilters<T>(
       dbManager.getResultRows(result),
       EntityClass,
       postQueryOperations,
-      dbManager.getTypes()
+      dbManager
     );
 
     return [entities, null];

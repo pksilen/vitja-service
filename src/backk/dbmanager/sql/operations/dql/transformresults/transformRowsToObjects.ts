@@ -1,19 +1,22 @@
-import joinjs from "join-js";
-import transformNonEntityArrays from "./transformNonEntityArrays";
-import decryptEntities from "../../../../../crypt/decryptEntities";
-import createResultMaps from "./createResultMaps";
-import removeSingleSubEntitiesWithNullProperties from "./removeSingleSubEntitiesWithNullProperties";
-import { PostQueryOperations } from "../../../../../types/postqueryoperations/PostQueryOperations";
-import Pagination from "../../../../../types/postqueryoperations/Pagination";
+import joinjs from 'join-js';
+import transformNonEntityArrays from './transformNonEntityArrays';
+import decryptEntities from '../../../../../crypt/decryptEntities';
+import createResultMaps from './createResultMaps';
+import removeSingleSubEntitiesWithNullProperties from './removeSingleSubEntitiesWithNullProperties';
+import { PostQueryOperations } from '../../../../../types/postqueryoperations/PostQueryOperations';
+import Pagination from '../../../../../types/postqueryoperations/Pagination';
+import convertTinyIntegersToBooleans from './convertTinyIntegersToBooleans';
+import AbstractDbManager from '../../../../AbstractDbManager';
+import MySqlDbManager from "../../../../MySqlDbManager";
 
-const parsedRowProcessingBatchSize = parseInt(process.env.ROW_PROCESSING_BATCH_SIZE ?? '500', 10)
+const parsedRowProcessingBatchSize = parseInt(process.env.ROW_PROCESSING_BATCH_SIZE ?? '500', 10);
 const ROW_PROCESSING_BATCH_SIZE = isNaN(parsedRowProcessingBatchSize) ? 500 : parsedRowProcessingBatchSize;
 
 function getMappedRows(
   rows: any[],
   resultMaps: any[],
   EntityClass: new () => any,
-  Types: object,
+  dbManager: AbstractDbManager,
   startIndex?: number,
   endIndex?: number
 ) {
@@ -24,7 +27,13 @@ function getMappedRows(
     EntityClass.name.toLowerCase() + '_'
   );
 
+  const Types = dbManager.getTypes();
   transformNonEntityArrays(mappedRows, EntityClass, Types);
+
+  if (dbManager instanceof MySqlDbManager) {
+    convertTinyIntegersToBooleans(mappedRows, EntityClass, Types);
+  }
+
   decryptEntities(mappedRows, EntityClass, Types);
   removeSingleSubEntitiesWithNullProperties(mappedRows);
   return mappedRows;
@@ -34,9 +43,13 @@ export default function transformRowsToObjects<T>(
   rows: any[],
   EntityClass: { new (): T },
   { paginations, includeResponseFields, excludeResponseFields }: PostQueryOperations,
-  Types: object
+  dbManager: AbstractDbManager
 ) {
-  const resultMaps = createResultMaps(EntityClass, Types, { includeResponseFields, excludeResponseFields });
+  const resultMaps = createResultMaps(EntityClass, dbManager.getTypes(), {
+    includeResponseFields,
+    excludeResponseFields
+  });
+
   let mappedRows: any[] = [];
 
   if (rows.length > ROW_PROCESSING_BATCH_SIZE) {
@@ -49,7 +62,7 @@ export default function transformRowsToObjects<T>(
               rows,
               resultMaps,
               EntityClass,
-              Types,
+              dbManager,
               index * ROW_PROCESSING_BATCH_SIZE,
               (index + 1) * ROW_PROCESSING_BATCH_SIZE
             )
@@ -57,7 +70,7 @@ export default function transformRowsToObjects<T>(
         });
       });
   } else {
-    mappedRows = getMappedRows(rows, resultMaps, EntityClass, Types);
+    mappedRows = getMappedRows(rows, resultMaps, EntityClass, dbManager);
   }
 
   if (!paginations) {
@@ -65,10 +78,10 @@ export default function transformRowsToObjects<T>(
     paginations = [new Pagination('*', 1, 50)];
   }
 
-  let rootPagination = paginations.find(pagination => pagination.subEntityPath === '');
+  let rootPagination = paginations.find((pagination) => pagination.subEntityPath === '');
 
   if (!rootPagination) {
-    rootPagination = paginations.find(pagination => pagination.subEntityPath === '*');
+    rootPagination = paginations.find((pagination) => pagination.subEntityPath === '*');
   }
 
   if (rootPagination && mappedRows.length > rootPagination.pageSize) {
