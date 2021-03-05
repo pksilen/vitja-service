@@ -10,6 +10,7 @@ import getSampleStringValue from './getSampleStringValue';
 import { ValidationTypes } from 'class-validator';
 import { getClassPropertyCustomValidationTestValue } from '../validation/setClassPropertyValidationDecorators';
 
+// noinspection OverlyComplexFunctionJS
 export default function getServiceFunctionReturnValueTests(
   serviceTypes: { [key: string]: Function },
   returnValueTypeName: string,
@@ -25,8 +26,7 @@ export default function getServiceFunctionReturnValueTests(
 ): string[] {
   const returnValueMetadata = serviceMetadata.types[returnValueTypeName];
   const types = serviceMetadata.types;
-  const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
-  const serviceEntityName = serviceBaseName;
+  const serviceEntityName = serviceMetadata.serviceName.split('Service')[0];
 
   let javascriptLines =
     responsePath === '[0].' || responsePath === '.' ? ['const response = pm.response.json();'] : [];
@@ -116,6 +116,7 @@ export default function getServiceFunctionReturnValueTests(
       propertyName
     );
 
+    // noinspection IfStatementWithTooManyBranchesJS
     if (expectAnyTestValue !== undefined) {
       allowAnyValue = true;
     } else if (testValue !== undefined) {

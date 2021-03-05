@@ -1,10 +1,10 @@
 import _Id from "../../types/id/_Id";
-import CrudResourceService from "../crudresource/CrudResourceService";
+import CrudEntityService from "../crudentity/CrudEntityService";
 import { AllowForServiceInternalUse } from "../../decorators/service/function/AllowForServiceInternalUse";
 import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
 import UserName from "../../types/useraccount/UserName";
 
-export default class UserAccountBaseService extends CrudResourceService {
+export default class UserAccountBaseService extends CrudEntityService {
   isUsersService(): boolean {
     return true;
   }

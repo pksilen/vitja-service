@@ -3,7 +3,6 @@ import serviceFunctionAnnotationContainer from '../../../decorators/service/func
 export default function isDeleteFunction(ServiceClass: Function, functionName: string) {
   return (
     functionName.startsWith('delete') ||
-    functionName.startsWith('remove') ||
     functionName.startsWith('erase') ||
     functionName.startsWith('destroy') ||
     serviceFunctionAnnotationContainer.isDeleteServiceFunction(ServiceClass, functionName)

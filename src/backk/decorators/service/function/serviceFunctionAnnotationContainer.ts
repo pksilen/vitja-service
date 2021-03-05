@@ -21,6 +21,9 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap: {
     [key: string]: { [key: string]: any };
   } = {};
+  private readonly serviceFunctionNameToExpectedEntityFieldPathNameToFieldValueMapMap: {
+    [key: string]: { [key: string]: any };
+  } = {};
   private readonly serviceFunctionNameToOnStartUpMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsCreateFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsMetadataFunctionMap: { [key: string]: boolean } = {};
@@ -145,6 +148,16 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap[
       `${serviceClass.name}${functionName}`
     ] = fieldPathNameToFieldValueMap;
+  }
+
+  expectServiceFunctionEntityToContainInTests(
+    serviceClass: Function,
+    functionName: string,
+    fieldPathNameToFieldValueMap: { [key: string]: string }
+  ) {
+    this.serviceFunctionNameToExpectedEntityFieldPathNameToFieldValueMapMap[
+      `${serviceClass.name}${functionName}`
+      ] = fieldPathNameToFieldValueMap;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -448,6 +461,27 @@ class ServiceFunctionAnnotationContainer {
         return this.serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap[
           `${proto.constructor.name}${functionName}`
         ];
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    return undefined;
+  }
+
+  getExpectedEntityFieldPathNameToFieldValueMapForTests(
+    serviceClass: Function,
+    functionName: string
+  ): { [key: string]: any } | undefined {
+    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
+    while (proto !== Object.prototype) {
+      if (
+        this.serviceFunctionNameToExpectedEntityFieldPathNameToFieldValueMapMap[
+          `${proto.constructor.name}${functionName}`
+          ] !== undefined
+      ) {
+        return this.serviceFunctionNameToExpectedEntityFieldPathNameToFieldValueMapMap[
+          `${proto.constructor.name}${functionName}`
+          ];
       }
       proto = Object.getPrototypeOf(proto);
     }

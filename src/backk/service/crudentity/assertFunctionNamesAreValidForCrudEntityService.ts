@@ -5,7 +5,7 @@ import isDeleteFunction from './utils/isDeleteFunction';
 import serviceFunctionAnnotationContainer
   from "../../decorators/service/function/serviceFunctionAnnotationContainer";
 
-export default function assertFunctionNamesAreValidForCrudResourceService(
+export default function assertFunctionNamesAreValidForCrudEntityService(
   ServiceClass: Function,
   functionNames: string[]
 ) {
@@ -24,10 +24,10 @@ export default function assertFunctionNamesAreValidForCrudResourceService(
           functionName +
           `\n
       Follow CrudResourceService naming conventions:
-      - Create function names must start with create, add or insert
+      - Create function names must start with create or insert
       - Read function names must start with get, read, find, fetch, retrieve, obtain
       - Update function names must start with update, modify, change, patch
-      - Delete function names must start with delete, remove, erase, destroy
+      - Delete function names must start with delete, erase, destroy
       Alternatively, annotate functions with one of following: @Create(), @Read(), @Update(), @Delete()
       `
       );

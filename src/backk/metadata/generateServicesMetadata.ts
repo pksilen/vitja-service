@@ -7,8 +7,8 @@ import { FunctionMetadata } from './types/FunctionMetadata';
 import getValidationMetadata from './getValidationMetadata';
 import getTypeDocumentation from './getTypeDocumentation';
 import getTypePropertyModifiers from './getTypePropertyModifiers';
-import CrudResourceService from '../service/crudresource/CrudResourceService';
-import assertFunctionNamesAreValidForCrudResourceService from '../service/crudresource/assertFunctionNamesAreValidForCrudResourceService';
+import CrudEntityService from '../service/crudentity/CrudEntityService';
+import assertFunctionNamesAreValidForCrudEntityService from '../service/crudentity/assertFunctionNamesAreValidForCrudEntityService';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 
@@ -29,8 +29,8 @@ export default function generateServicesMetadata<T>(
         (controller as any)[`${serviceName}__BackkTypes__`].functionNameToReturnTypeNameMap
       );
 
-      if (service instanceof CrudResourceService) {
-        assertFunctionNamesAreValidForCrudResourceService(ServiceClass, functionNames);
+      if (service instanceof CrudEntityService) {
+        assertFunctionNamesAreValidForCrudEntityService(ServiceClass, functionNames);
       }
 
       const typesMetadata = Object.entries((controller as any)[serviceName].Types ?? {}).reduce(

@@ -3,7 +3,7 @@ import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromE
 import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
 import getValidationErrors from "./getValidationErrors";
 import { HttpStatusCodes } from "../constants/constants";
-import isCreateFunction from "../service/crudresource/utils/isCreateFunction";
+import isCreateFunction from "../service/crudentity/utils/isCreateFunction";
 import AbstractDbManager from "../dbmanager/AbstractDbManager";
 import { BACKK_ERRORS } from "../errors/backkErrors";
 

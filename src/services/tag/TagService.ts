@@ -1,9 +1,9 @@
 import Tag from "./entities/Tag";
 import TagName from "./args/TagName";
-import CrudResourceService from "../../backk/service/crudresource/CrudResourceService";
+import CrudEntityService from "../../backk/service/crudentity/CrudEntityService";
 import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 
-export default abstract class TagService extends CrudResourceService {
+export default abstract class TagService extends CrudEntityService {
   abstract initializeDatabase(): PromiseOfErrorOr<null>;
   abstract migrateDbFromVersion1To2(): PromiseOfErrorOr<null>;
   abstract deleteAllTags(): PromiseOfErrorOr<null>;
