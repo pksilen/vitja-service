@@ -71,6 +71,9 @@ export default function getServiceFunctionReturnValueTests(
 
     if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPathName]) {
       testValue = JSON.stringify(expectedResponseFieldPathNameToFieldValueMapInTests[fieldPathName]);
+      if (testValue.startsWith('pm.collectionVariables.get(')) {
+        testValue = JSON.parse(testValue);
+      }
       isTestValueJson = true;
       isOptionalType = false;
     }
