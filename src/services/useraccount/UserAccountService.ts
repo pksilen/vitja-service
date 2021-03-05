@@ -7,8 +7,7 @@ import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
 import UserName from "../../backk/types/useraccount/UserName";
 import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 import GetUserAccountArg from "./types/args/GetUserAccountArg";
-import FollowUserArg from "./types/args/FollowUserArg";
-import UnfollowUserArg from "./types/args/UnfollowUserArg";
+import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
 
 /** Users service doc goes here
  * - jee
@@ -22,8 +21,8 @@ export default abstract class UserAccountService extends UserAccountBaseService 
 
   abstract getUserNameById(arg: _Id): PromiseOfErrorOr<UserName>;
   abstract getUserAccount(arg: GetUserAccountArg): PromiseOfErrorOr<UserAccount>;
-  abstract followUser(arg: FollowUserArg): PromiseOfErrorOr<null>;
-  abstract unfollowUser(arg: UnfollowUserArg): PromiseOfErrorOr<null>;
+  abstract followUser(arg: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null>;
+  abstract unfollowUser(arg: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null>;
   abstract addToFavoriteSalesItems(arg: _IdAndSalesItemId): PromiseOfErrorOr<null>;
   abstract removeFromFavoriteSalesItems(arg: _IdAndSalesItemId): PromiseOfErrorOr<null>;
   abstract updateUserAccount(arg: UserAccount): PromiseOfErrorOr<null>;

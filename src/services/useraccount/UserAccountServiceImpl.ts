@@ -23,12 +23,11 @@ import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { SalesItem } from '../salesitem/types/entities/SalesItem';
 import GetUserAccountArg from './types/args/GetUserAccountArg';
 import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
-import FollowUserArg from './types/args/FollowUserArg';
-import UnfollowUserArg from './types/args/UnfollowUserArg';
+import _IdAndFollowedUserAccountId from './types/args/_IdAndFollowedUserAccountId';
 import { TestAfter } from '../../backk/decorators/service/function/TestAfter';
 import { ExpectAfterThisOperationEntityToContainInTests } from '../../backk/decorators/service/function/ExpectAfterThisOperationEntityToContainInTests';
-import FollowedUserAccount from "./types/entities/FollowedUserAccount";
-import FollowingUserAccount from "./types/entities/FollowingUserAccount";
+import FollowedUserAccount from './types/entities/FollowedUserAccount';
+import FollowingUserAccount from './types/entities/FollowingUserAccount';
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -55,8 +54,8 @@ export default class UserAccountServiceImpl extends UserAccountService {
           'favoriteSalesItems',
           'ownSalesItems',
           'orders',
-          'followedUsers',
-          'followingUsers'
+          'followedUserAccounts',
+          'followingUserAccounts'
         ]
       }
     });
@@ -81,7 +80,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update()
   @ExpectAfterThisOperationEntityToContainInTests({ 'followedUserAccounts._id': '{{followedUserAccountId}}' })
-  followUser({ _id, followedUserAccountId }: FollowUserArg): PromiseOfErrorOr<null> {
+  followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
       'followedUserAccounts',
@@ -103,18 +102,24 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update()
-  @ExpectAfterThisOperationEntityToContainInTests({followedUserAccounts: []})
-  unfollowUser({ _id, followedUserAccountId }: UnfollowUserArg): PromiseOfErrorOr<null> {
-    return this.dbManager.removeSubEntityById(_id, 'followedUserAccounts', followedUserAccountId, UserAccount, {
-      preHooks: () =>
-        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUserAccounts', _id, UserAccount)
-    });
+  @ExpectAfterThisOperationEntityToContainInTests({ followedUserAccounts: [] })
+  unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
+    return this.dbManager.removeSubEntityById(
+      _id,
+      'followedUserAccounts',
+      followedUserAccountId,
+      UserAccount,
+      {
+        preHooks: () =>
+          this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUserAccounts', _id, UserAccount)
+      }
+    );
   }
 
   @AllowForSelf()
   @Update()
   @TestAfter('salesItemService.createSalesItem')
-  @ExpectAfterThisOperationEntityToContainInTests({'favoriteSalesItems._id': '{{salesItemId}}'})
+  @ExpectAfterThisOperationEntityToContainInTests({ 'favoriteSalesItems._id': '{{salesItemId}}' })
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
@@ -128,7 +133,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update()
   @TestAfter('salesItemService.createSalesItem')
-  @ExpectAfterThisOperationEntityToContainInTests({favoriteSalesItems: []})
+  @ExpectAfterThisOperationEntityToContainInTests({ favoriteSalesItems: [] })
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount);
   }

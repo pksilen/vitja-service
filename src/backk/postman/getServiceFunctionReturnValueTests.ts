@@ -44,10 +44,6 @@ export default function getServiceFunctionReturnValueTests(
     let isTestValueJson = false;
     const fieldPathName = fieldPath ? fieldPath + '.' + propertyName : propertyName;
 
-    if (expectedResponseFieldPathNameToFieldValueMapInTests) {
-      console.log(fieldPathName)
-    }
-    
     if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPathName]) {
       testValue = JSON.stringify(
         expectedResponseFieldPathNameToFieldValueMapInTests[fieldPathName]
