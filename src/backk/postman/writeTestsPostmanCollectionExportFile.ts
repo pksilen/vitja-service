@@ -222,7 +222,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             true,
             HttpStatusCodes.SUCCESS,
             finalExpectedFieldPathNameToFieldValueMapInTests,
-            sampleArg
+            Object.keys(finalExpectedFieldPathNameToFieldValueMapInTests).length > 0 ? undefined: sampleArg
           );
 
           const getFunctionSampleArg = getServiceFunctionTestArgument(

@@ -1,6 +1,8 @@
 # Vitja service
 
 TODO:
+-Custom test for error scenarios
+
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:

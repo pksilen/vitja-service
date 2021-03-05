@@ -40,28 +40,38 @@ export default function getServiceFunctionReturnValueTests(
       return;
     }
 
-    let testValue;
-    let isTestValueJson = false;
-    const fieldPathName = fieldPath ? fieldPath + '.' + propertyName : propertyName;
-
-    if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPathName]) {
-      testValue = JSON.stringify(
-        expectedResponseFieldPathNameToFieldValueMapInTests[fieldPathName]
-      );
-
-      isTestValueJson = true;
-    }
-
     // eslint-disable-next-line prefer-const
     let { baseTypeName, isArrayType, isNullableType, isOptionalType } = getTypeInfoForTypeName(
       propertyTypeName
     );
 
-    if (testValue === undefined && !types[baseTypeName] && sampleArg && (sampleArg as any)[propertyName] === undefined) {
+    isOptionalType = isOptionalType || isOptional;
+
+    let testValue;
+    let isTestValueJson = false;
+    const fieldPathName = fieldPath ? fieldPath + '.' + propertyName : propertyName;
+
+    if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPathName]) {
+      testValue = JSON.stringify(expectedResponseFieldPathNameToFieldValueMapInTests[fieldPathName]);
+
+      isTestValueJson = true;
+      isOptionalType = false;
+    }
+
+    if (expectedResponseFieldPathNameToFieldValueMapInTests) {
+      if (
+        Object.keys(expectedResponseFieldPathNameToFieldValueMapInTests).find((expectedFieldPathName) =>
+          expectedFieldPathName.startsWith(fieldPathName)
+        )
+      ) {
+        isOptionalType = false;
+      }
+    }
+
+    if (sampleArg && (sampleArg as any)[propertyName] === undefined) {
       return;
     }
 
-    isOptionalType = isOptionalType || isOptional;
     let expectedValue: any;
     let allowAnyValue;
     testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
@@ -206,11 +216,16 @@ export default function getServiceFunctionReturnValueTests(
         fieldPath ? fieldPath + '.' + propertyName : propertyName
       );
 
-      javascriptLines.push(
-        `if (response${responsePath}${propertyName} !== undefined && (response${responsePath}${propertyName}.length === undefined || response${responsePath}${propertyName}.length > 0)) {`
-      );
-      javascriptLines = javascriptLines.concat(returnValueTests);
-      javascriptLines.push('}');
+      if (isOptionalType) {
+        javascriptLines = javascriptLines.concat(returnValueTests);
+      } else {
+        javascriptLines.push(
+          `if (response${responsePath}${propertyName} !== undefined && (response${responsePath}${propertyName}.length === undefined || response${responsePath}${propertyName}.length > 0)) {`
+        );
+        javascriptLines = javascriptLines.concat(returnValueTests);
+        javascriptLines.push('}');
+      }
+      
       return javascriptLines;
     }
 
