@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- @AddSubEntity(), @RemoveSubEntity(), should require @expectEntityinTests()
 -Custom test for error scenarios
 
 - Split to multiple microservices

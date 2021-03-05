@@ -47,15 +47,7 @@ export default function getServiceFunctionReturnValueTests(
 
     isOptionalType = isOptionalType || isOptional;
 
-    let testValue;
-    let isTestValueJson = false;
     const fieldPathName = fieldPath ? fieldPath + '.' + propertyName : propertyName;
-
-    if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPathName]) {
-      testValue = JSON.stringify(expectedResponseFieldPathNameToFieldValueMapInTests[fieldPathName]);
-      isTestValueJson = true;
-      isOptionalType = false;
-    }
 
     if (expectedResponseFieldPathNameToFieldValueMapInTests) {
       if (
@@ -71,9 +63,17 @@ export default function getServiceFunctionReturnValueTests(
       return;
     }
 
+    let testValue;
+    let isTestValueJson = false;
     let expectedValue: any;
     let allowAnyValue;
     testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
+
+    if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPathName]) {
+      testValue = JSON.stringify(expectedResponseFieldPathNameToFieldValueMapInTests[fieldPathName]);
+      isTestValueJson = true;
+      isOptionalType = false;
+    }
 
     const customValidationTestValue = getClassPropertyCustomValidationTestValue(
       serviceTypes[returnValueTypeName],
