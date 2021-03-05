@@ -53,7 +53,6 @@ export default function getServiceFunctionReturnValueTests(
 
     if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPathName]) {
       testValue = JSON.stringify(expectedResponseFieldPathNameToFieldValueMapInTests[fieldPathName]);
-
       isTestValueJson = true;
       isOptionalType = false;
     }
@@ -217,15 +216,15 @@ export default function getServiceFunctionReturnValueTests(
       );
 
       if (isOptionalType) {
-        javascriptLines = javascriptLines.concat(returnValueTests);
-      } else {
         javascriptLines.push(
           `if (response${responsePath}${propertyName} !== undefined && (response${responsePath}${propertyName}.length === undefined || response${responsePath}${propertyName}.length > 0)) {`
         );
         javascriptLines = javascriptLines.concat(returnValueTests);
         javascriptLines.push('}');
+      } else {
+        javascriptLines = javascriptLines.concat(returnValueTests);
       }
-      
+
       return javascriptLines;
     }
 
