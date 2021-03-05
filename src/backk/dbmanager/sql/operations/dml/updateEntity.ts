@@ -27,8 +27,8 @@ import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 import getSingularName from '../../../../utils/getSingularName';
 import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
 import isBackkError from '../../../../errors/isBackkError';
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import { BackkError } from "../../../../types/BackkError";
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import { BackkError } from '../../../../types/BackkError';
 
 // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function updateEntity<T extends BackkEntity>(
@@ -56,38 +56,43 @@ export default async function updateEntity<T extends BackkEntity>(
     let error: BackkError | null | undefined;
 
     if (!isRecursiveCall) {
-      [currentEntity, error] = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true, true);
-    }
+      [currentEntity, error] = await getEntityById(
+        dbManager,
+        _id ?? id,
+        EntityClass,
+        postQueryOperations,
+        true,
+        true
+      );
 
-    if (!currentEntity) {
-      throw error;
-    }
+      if (!currentEntity) {
+        throw error;
+      }
 
-    let eTagCheckPreHook: PreHook<T>;
-    let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
+      let eTagCheckPreHook: PreHook<T>;
+      let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
-    if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
-      eTagCheckPreHook = {
-        isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
-        errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
-      };
+      if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
+        eTagCheckPreHook = {
+          isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
+          errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
+        };
 
-      finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-    } else if (
-      'lastModifiedTimestamp' in currentEntity &&
-      restOfEntity.lastModifiedTimestamp &&
-      (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
-    ) {
-      eTagCheckPreHook = {
-        isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
-          lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
-        errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
-      };
+        finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
+      } else if (
+        'lastModifiedTimestamp' in currentEntity &&
+        restOfEntity.lastModifiedTimestamp &&
+        (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
+      ) {
+        eTagCheckPreHook = {
+          isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
+            lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
+          errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
+        };
 
-      finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-    }
+        finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
+      }
 
-    if (!isRecursiveCall) {
       await tryExecutePreHooks(finalPreHooks, currentEntity);
     }
 
@@ -149,11 +154,7 @@ export default async function updateEntity<T extends BackkEntity>(
                     [parseInt(_id ?? id, 10), subEntity._id]
                   );
                 } else {
-                  const [, error] = await deleteEntityById(
-                    dbManager,
-                    subEntity.id,
-                    SubEntityClass
-                  );
+                  const [, error] = await deleteEntityById(dbManager, subEntity.id, SubEntityClass);
 
                   if (error) {
                     throw error;
@@ -333,7 +334,10 @@ export default async function updateEntity<T extends BackkEntity>(
     }
 
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return [null, isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError)];
+    return [
+      null,
+      isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError)
+    ];
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
