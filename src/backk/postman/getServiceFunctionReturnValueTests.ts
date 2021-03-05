@@ -52,14 +52,14 @@ export default function getServiceFunctionReturnValueTests(
       isTestValueJson = true;
     }
 
-    if (testValue === undefined && sampleArg && (sampleArg as any)[propertyName] === undefined) {
-      return;
-    }
-
     // eslint-disable-next-line prefer-const
     let { baseTypeName, isArrayType, isNullableType, isOptionalType } = getTypeInfoForTypeName(
       propertyTypeName
     );
+
+    if (testValue === undefined && !types[baseTypeName] && sampleArg && (sampleArg as any)[propertyName] === undefined) {
+      return;
+    }
 
     isOptionalType = isOptionalType || isOptional;
     let expectedValue: any;
