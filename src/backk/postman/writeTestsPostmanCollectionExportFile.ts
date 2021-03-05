@@ -214,15 +214,17 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             ...(expectedEntityFieldPathNameToFieldValueMapInTests ?? {})
           };
 
+          const expectedFieldPathNameCount = Object.keys(finalExpectedFieldPathNameToFieldValueMapInTests).length;
+
           const getFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
             serviceMetadata,
             lastGetFunctionMetadata,
-            true,
+            expectedFieldPathNameCount <= 0,
             HttpStatusCodes.SUCCESS,
             finalExpectedFieldPathNameToFieldValueMapInTests,
-            Object.keys(finalExpectedFieldPathNameToFieldValueMapInTests).length > 0 ? undefined: sampleArg
+            expectedFieldPathNameCount > 0 ? undefined: sampleArg
           );
 
           const getFunctionSampleArg = getServiceFunctionTestArgument(
