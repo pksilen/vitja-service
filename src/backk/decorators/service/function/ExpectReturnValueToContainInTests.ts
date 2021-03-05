@@ -7,7 +7,7 @@ export function ExpectReturnValueToContainInTests(fieldPathNameToFieldValueMap: 
 
       if (typeof fieldValue === 'string' && fieldValue.startsWith('{{') && fieldValue.endsWith('}}')) {
         const idFieldName = fieldValue.slice(2, -2).trim();
-        finalFieldValue = `pm.collectionVariables.get(${idFieldName})`;
+        finalFieldValue = `pm.collectionVariables.get('${idFieldName}')`;
       }
 
       return {
