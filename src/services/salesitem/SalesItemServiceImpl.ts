@@ -145,32 +145,32 @@ export default class SalesItemServiceImpl extends SalesItemService {
     userAccountId
   }: UserAccountId): PromiseOfErrorOr<FollowedUserSalesItem[]> {
     const [user, error] = await this.dbManager.getEntityByFilters(
-      { _id: userAccountId, 'followedUsers.ownSalesItems.state': 'forSale' },
+      { _id: userAccountId, 'followedUserAccounts.ownSalesItems.state': 'forSale' },
       User,
       {
         sortBys: [
           {
-            subEntityPath: 'followedUsers.ownSalesItems',
+            subEntityPath: 'followedUserAccounts.ownSalesItems',
             fieldName: 'lastModifiedAtTimestamp',
             sortDirection: 'DESC'
           }
         ],
         includeResponseFields: [
-          'followedUsers._id',
-          'followedUsers.displayName',
+          'followedUserAccounts._id',
+          'followedUserAccounts.displayName',
           ...SalesItemServiceImpl.DEFAULT_SALES_ITEM_FIELDS.map(
-            (defaultSalesItemField) => `followedUsers.ownSalesItems.${defaultSalesItemField}`
+            (defaultSalesItemField) => `followedUserAccounts.ownSalesItems.${defaultSalesItemField}`
           )
         ]
       }
     );
 
-    const followedUserSalesItems = user?.followedUsers
-      .map((followedUser) =>
-        followedUser.ownSalesItems.map((ownSalesItem) => ({
+    const followedUserSalesItems = user?.followedUserAccounts
+      .map((followedUserAccount) =>
+        followedUserAccount.ownSalesItems.map((ownSalesItem) => ({
           ...ownSalesItem,
-          userAccountId: followedUser._id,
-          displayName: followedUser.displayName
+          userAccountId: followedUserAccount._id,
+          displayName: followedUserAccount.displayName
         }))
       )
       .flat();

@@ -14,7 +14,7 @@ import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLe
 import getCities from '../../validation/getCities';
 
 @Entity('UserAccount')
-export default class FollowingUser {
+export default class FollowingUserAccount {
   @IsUndefined({
     groups: ['__backk_create__']
   })

@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- Add custom tests for add/remove subentities
-
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:

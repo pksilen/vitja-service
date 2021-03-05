@@ -23,12 +23,12 @@ import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { SalesItem } from '../salesitem/types/entities/SalesItem';
 import GetUserAccountArg from './types/args/GetUserAccountArg';
 import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
-import FollowedUser from './types/entities/FollowedUser';
-import FollowingUser from './types/entities/FollowingUser';
 import FollowUserArg from './types/args/FollowUserArg';
 import UnfollowUserArg from './types/args/UnfollowUserArg';
 import { TestAfter } from '../../backk/decorators/service/function/TestAfter';
 import { ExpectAfterThisOperationEntityToContainInTests } from '../../backk/decorators/service/function/ExpectAfterThisOperationEntityToContainInTests';
+import FollowedUserAccount from "./types/entities/FollowedUserAccount";
+import FollowingUserAccount from "./types/entities/FollowingUserAccount";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -80,22 +80,22 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update()
-  @ExpectAfterThisOperationEntityToContainInTests({ 'followedUsers._id': '{{followedUserAccountId}}' })
+  @ExpectAfterThisOperationEntityToContainInTests({ 'followedUserAccounts._id': '{{followedUserAccountId}}' })
   followUser({ _id, followedUserAccountId }: FollowUserArg): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
-      'followedUsers',
+      'followedUserAccounts',
       { _id: followedUserAccountId },
       UserAccount,
-      FollowedUser,
+      FollowedUserAccount,
       {
         preHooks: () =>
           this.dbManager.addSubEntity(
             followedUserAccountId,
-            'followingUsers',
+            'followingUserAccounts',
             { _id },
             UserAccount,
-            FollowingUser
+            FollowingUserAccount
           )
       }
     );
@@ -105,9 +105,9 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update()
   @ExpectAfterThisOperationEntityToContainInTests({followedUsers: []})
   unfollowUser({ _id, followedUserAccountId }: UnfollowUserArg): PromiseOfErrorOr<null> {
-    return this.dbManager.removeSubEntityById(_id, 'followedUsers', followedUserAccountId, UserAccount, {
+    return this.dbManager.removeSubEntityById(_id, 'followedUserAccounts', followedUserAccountId, UserAccount, {
       preHooks: () =>
-        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUsers', _id, UserAccount)
+        this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUserAccounts', _id, UserAccount)
     });
   }
 

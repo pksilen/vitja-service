@@ -14,8 +14,8 @@ import BaseUserAccount from "../../../../backk/types/useraccount/BaseUserAccount
 import { OneToMany } from "../../../../backk/decorators/typeproperty/OneToMany";
 import FavoriteSalesItem from "../../../salesitem/types/entities/FavoriteSalesItem";
 import OwnSalesItem from "../../../salesitem/types/entities/OwnSalesItem";
-import FollowedUser from "./FollowedUser";
-import FollowingUser from "./FollowingUser";
+import FollowedUserAccount from "./FollowedUserAccount";
+import FollowingUserAccount from "./FollowingUserAccount";
 
 @Entity()
 export default class UserAccount extends BaseUserAccount {
@@ -61,8 +61,8 @@ export default class UserAccount extends BaseUserAccount {
   public readonly orders!: Order[];
 
   @ManyToMany()
-  public readonly followedUsers!: FollowedUser[];
+  public readonly followedUserAccounts!: FollowedUserAccount[];
 
   @ManyToMany()
-  public readonly followingUsers!: FollowingUser[];
+  public readonly followingUserAccounts!: FollowingUserAccount[];
 }

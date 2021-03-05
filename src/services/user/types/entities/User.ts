@@ -14,8 +14,8 @@ import { ManyToMany } from '../../../../backk/decorators/typeproperty/ManyToMany
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import { OneToMany } from '../../../../backk/decorators/typeproperty/OneToMany';
 import OwnSalesItem from '../../../salesitem/types/entities/OwnSalesItem';
-import FollowedUser from '../../../useraccount/types/entities/FollowedUser';
-import FollowingUser from '../../../useraccount/types/entities/FollowingUser';
+import FollowedUserAccount from '../../../useraccount/types/entities/FollowedUserAccount';
+import FollowingUserAccount from '../../../useraccount/types/entities/FollowingUserAccount';
 import getCities from '../../../useraccount/validation/getCities';
 
 @Entity('UserAccount')
@@ -48,8 +48,8 @@ export default class User {
   public readonly ownSalesItems!: OwnSalesItem[];
 
   @ManyToMany()
-  public readonly followedUsers!: FollowedUser[];
+  public readonly followedUserAccounts!: FollowedUserAccount[];
 
   @ManyToMany()
-  public readonly followingUsers!: FollowingUser[];
+  public readonly followingUserAccounts!: FollowingUserAccount[];
 }

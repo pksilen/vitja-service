@@ -16,7 +16,7 @@ import OwnSalesItem from '../../../salesitem/types/entities/OwnSalesItem';
 import getCities from '../../validation/getCities';
 
 @Entity('UserAccount')
-export default class FollowedUser {
+export default class FollowedUserAccount {
   @IsUndefined({
     groups: ['__backk_create__']
   })

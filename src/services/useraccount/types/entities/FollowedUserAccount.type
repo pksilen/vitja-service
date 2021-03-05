@@ -1,6 +1,6 @@
 import Entity from '../../../../backk/decorators/entity/Entity';
 
 @Entity('UserAccount')
-export default class FollowedUser {
+export default class FollowedUserAccount {
   ...Pick<UserAccount, '_id' | 'displayName' | 'city' | 'imageDataUri' | 'ownSalesItems'>;
 }

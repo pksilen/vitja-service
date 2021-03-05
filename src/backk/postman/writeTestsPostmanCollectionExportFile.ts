@@ -17,7 +17,7 @@ import isUpdateFunction from '../service/crudentity/utils/isUpdateFunction';
 import isDeleteFunction from '../service/crudentity/utils/isDeleteFunction';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import tryValidateIntegrationTests from './tryValidateIntegrationTests';
-import { HttpStatusCodes } from "../constants/constants";
+import { HttpStatusCodes } from '../constants/constants';
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -212,7 +212,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           const finalExpectedFieldPathNameToFieldValueMapInTests = {
             ...(expectedResponseFieldPathNameToFieldValueMapInTests ?? {}),
             ...(expectedEntityFieldPathNameToFieldValueMapInTests ?? {})
-          }
+          };
 
           const getFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
@@ -221,7 +221,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             lastGetFunctionMetadata,
             true,
             HttpStatusCodes.SUCCESS,
-            expectedResponseFieldPathNameToFieldValueMapInTests,
+            finalExpectedFieldPathNameToFieldValueMapInTests,
             sampleArg
           );
 
@@ -236,15 +236,27 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             sampleArg
           );
 
-          items.push(
-            createPostmanCollectionItem(
-              (controller as any)[serviceMetadata.serviceName].constructor,
-              serviceMetadata,
-              lastGetFunctionMetadata,
-              getFunctionSampleArg,
-              getFunctionTests
-            )
+          const item = createPostmanCollectionItem(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            serviceMetadata,
+            lastGetFunctionMetadata,
+            getFunctionSampleArg,
+            getFunctionTests
           );
+
+          if (executeBefore) {
+            executeBeforeTests.push({
+              executeBefore,
+              item
+            });
+          } else if (executeAfter) {
+            executeAfterTests.push({
+              executeAfter,
+              item
+            });
+          } else {
+            items.push(item);
+          }
         }
       }
 

@@ -200,7 +200,7 @@ export default function getServiceFunctionReturnValueTests(
           serviceTypes[returnValueTypeName],
           propertyName
         ),
-        fieldPath + propertyName + '.'
+        fieldPath ? fieldPath + '.' + propertyName : propertyName
       );
 
       javascriptLines.push(
