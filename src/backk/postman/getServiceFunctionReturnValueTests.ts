@@ -40,7 +40,18 @@ export default function getServiceFunctionReturnValueTests(
       return;
     }
 
-    if (sampleArg && (sampleArg as any)[propertyName] === undefined) {
+    let testValue;
+    let isTestValueJson = false;
+
+    if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPath + propertyName]) {
+      testValue = JSON.stringify(
+        expectedResponseFieldPathNameToFieldValueMapInTests[fieldPath + propertyName]
+      );
+
+      isTestValueJson = true;
+    }
+
+    if (testValue === undefined && sampleArg && (sampleArg as any)[propertyName] === undefined) {
       return;
     }
 
@@ -52,8 +63,7 @@ export default function getServiceFunctionReturnValueTests(
     isOptionalType = isOptionalType || isOptional;
     let expectedValue: any;
     let allowAnyValue;
-    let testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
-    let isTestValueJson = false;
+    testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
 
     const customValidationTestValue = getClassPropertyCustomValidationTestValue(
       serviceTypes[returnValueTypeName],
@@ -62,14 +72,6 @@ export default function getServiceFunctionReturnValueTests(
 
     if (customValidationTestValue) {
       testValue = customValidationTestValue;
-    }
-
-    if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPath + propertyName]) {
-      testValue = JSON.stringify(
-        expectedResponseFieldPathNameToFieldValueMapInTests[fieldPath + propertyName]
-      );
-
-      isTestValueJson = true;
     }
 
     const expectAnyTestValue = testValueContainer.getExpectAnyTestValue(
