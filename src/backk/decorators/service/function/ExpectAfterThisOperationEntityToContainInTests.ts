@@ -3,12 +3,29 @@ import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationConta
 export function ExpectAfterThisOperationEntityToContainInTests(fieldPathNameToFieldValueMap: {
   [key: string]: any;
 }) {
+  const finalFieldPathNameToFieldValueMap = Object.entries(fieldPathNameToFieldValueMap).reduce(
+    (finalFieldPathNameToFieldValueMap, [fieldPathName, fieldValue]) => {
+      let finalFieldValue = fieldValue;
+
+      if (typeof fieldValue === 'string' && fieldValue.startsWith('{{') && fieldValue.endsWith('}}')) {
+        const idFieldName = fieldValue.slice(2, -2).trim();
+        finalFieldValue = `pm.collectionVariables.get(${idFieldName})`;
+      }
+
+      return {
+        ...finalFieldPathNameToFieldValueMap,
+        [fieldPathName]: finalFieldValue
+      };
+    },
+    {}
+  );
+
   // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, functionName: string) {
     serviceFunctionAnnotationContainer.expectServiceFunctionEntityToContainInTests(
       object.constructor,
       functionName,
-      fieldPathNameToFieldValueMap
+      finalFieldPathNameToFieldValueMap
     );
   };
 }
