@@ -103,7 +103,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update()
-  @ExpectAfterThisOperationEntityToContainInTests({followedUsers: []})
+  @ExpectAfterThisOperationEntityToContainInTests({followedUserAccounts: []})
   unfollowUser({ _id, followedUserAccountId }: UnfollowUserArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'followedUserAccounts', followedUserAccountId, UserAccount, {
       preHooks: () =>
