@@ -8,6 +8,10 @@ export default function getSetCollectionVariableStatements(
   types: { [key: string]: Function },
   responsePath: string
 ) {
+  if (typeName === 'null') {
+    return [];
+  }
+
   const typeMetadata = serviceMetadata.types[typeName];
   let collectionVariableSetStatements: string[] = [];
 

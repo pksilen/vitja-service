@@ -96,6 +96,11 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
+  getOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<Order> {
+    return this.dbManager.getEntityById(_id, Order);
+  }
+
+  @AllowForSelf()
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
@@ -110,6 +115,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForTests()
+  @Update()
   addOrderItem({ orderId, salesItemId }: AddOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       orderId,
@@ -123,11 +129,6 @@ export default class OrderServiceImpl extends OrderService {
       Order,
       OrderItem
     );
-  }
-
-  @AllowForSelf()
-  getOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<Order> {
-    return this.dbManager.getEntityById(_id, Order);
   }
 
   @AllowForUserRoles(['vitjaPaymentGateway'])

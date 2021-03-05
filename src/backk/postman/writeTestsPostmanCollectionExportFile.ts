@@ -113,6 +113,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       }
 
       const tests = getServiceFunctionTests(
+        (controller as any)[serviceMetadata.serviceName].constructor,
         (controller as any)[serviceMetadata.serviceName].Types,
         serviceMetadata,
         functionMetadata,
@@ -203,6 +204,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           );
 
           const getFunctionTests = getServiceFunctionTests(
+            (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
             serviceMetadata,
             lastGetFunctionMetadata,
@@ -249,6 +251,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         );
 
         const getFunctionTests = getServiceFunctionTests(
+          (controller as any)[serviceMetadata.serviceName].constructor,
           (controller as any)[serviceMetadata.serviceName].Types,
           serviceMetadata,
           lastGetFunctionMetadata,

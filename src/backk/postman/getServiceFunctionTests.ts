@@ -1,31 +1,29 @@
-import getSetCollectionVariableStatements from './getSetCollectionVariablesStatements';
+import getSetCollectionVariableStatements from './getSetCollectionVariableStatements';
 import getServiceFunctionReturnValueTests from './getServiceFunctionReturnValueTests';
 import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
 import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import { HttpStatusCodes } from '../constants/constants';
+import isCreateFunction from '../service/crudresource/utils/isCreateFunction';
 
 export default function getServiceFunctionTests(
+  ServiceClass: Function,
   serviceTypes: { [key: string]: Function },
   serviceMetadata: ServiceMetadata,
   functionMetadata: FunctionMetadata,
   isUpdate: boolean,
-  expectedResponseStatusCode = 200,
-  expectedResponseFieldPathNameToFieldValueMapInTests: {[key: string]: any } | undefined = undefined,
+  expectedResponseStatusCode = HttpStatusCodes.SUCCESS,
+  expectedResponseFieldPathNameToFieldValueMapInTests: { [key: string]: any } | undefined = undefined,
   sampleArg: object | undefined = undefined
 ): object | undefined {
-  const serviceBaseName = serviceMetadata.serviceName.split('Service')[0];
-  const serviceEntityName = serviceBaseName;
+  const serviceEntityName = serviceMetadata.serviceName.split('Service')[0];
   const { baseTypeName, isArrayType } = getTypeInfoForTypeName(functionMetadata.returnValueType);
 
   const checkResponseCode = `pm.test("Status code is ${expectedResponseStatusCode}", function () {
   pm.response.to.have.status(${expectedResponseStatusCode});
 });`;
 
-  if (
-    functionMetadata.functionName.startsWith('create') ||
-    functionMetadata.functionName.startsWith('add') ||
-    functionMetadata.functionName.startsWith('insert')
-  ) {
+  if (isCreateFunction(ServiceClass, functionMetadata.functionName)) {
     return {
       id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
       listen: 'test',
@@ -56,16 +54,19 @@ export default function getServiceFunctionTests(
     };
   }
 
-  const serviceFunctionReturnValueTests = baseTypeName === 'null' ? [] : getServiceFunctionReturnValueTests(
-    serviceTypes,
-    baseTypeName,
-    serviceMetadata,
-    isArrayType ? '[0].' : '.',
-    true,
-    isUpdate,
-    sampleArg,
-    expectedResponseFieldPathNameToFieldValueMapInTests
-  );
+  const serviceFunctionReturnValueTests =
+    baseTypeName === 'null'
+      ? []
+      : getServiceFunctionReturnValueTests(
+          serviceTypes,
+          baseTypeName,
+          serviceMetadata,
+          isArrayType ? '[0].' : '.',
+          true,
+          isUpdate,
+          sampleArg,
+          expectedResponseFieldPathNameToFieldValueMapInTests
+        );
 
   return {
     id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
@@ -73,7 +74,7 @@ export default function getServiceFunctionTests(
     script: {
       id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
       exec:
-        baseTypeName === 'null' || expectedResponseStatusCode !== 200
+        baseTypeName === 'null' || expectedResponseStatusCode !== HttpStatusCodes.SUCCESS
           ? [checkResponseCode]
           : [checkResponseCode, ...serviceFunctionReturnValueTests]
     }

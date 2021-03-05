@@ -61,6 +61,22 @@ export default class UserAccountServiceImpl extends UserAccountService {
     });
   }
 
+  getUserNameById({ _id }: _Id): PromiseOfErrorOr<UserName> {
+    return this.dbManager.getEntityById(_id, UserAccount, {
+      includeResponseFields: ['userName']
+    });
+  }
+
+  @AllowForSelf()
+  getUserAccount({ userName, ...postQueryOperations }: GetUserAccountArg): PromiseOfErrorOr<UserAccount> {
+    const filters = this.dbManager.getFilters<UserAccount>(
+      [new MongoDbQuery({ userName }), new MongoDbQuery({ state: 'forSale' }, 'favoriteSalesItems')],
+      [new SqlEquals({ userName }), new SqlEquals({ state: 'forSale' }, 'favoriteSalesItems')]
+    );
+
+    return this.dbManager.getEntityByFilters(filters, UserAccount, postQueryOperations);
+  }
+
   @AllowForSelf()
   @Update()
   followUser({ _id, followedUserAccountId }: FollowUserArg): PromiseOfErrorOr<null> {
@@ -93,6 +109,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
+  @Update()
   @TestAfter('salesItemService.createSalesItem')
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
@@ -108,22 +125,6 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @TestAfter('salesItemService.createSalesItem')
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount);
-  }
-
-  @AllowForSelf()
-  getUserAccount({ userName, ...postQueryOperations }: GetUserAccountArg): PromiseOfErrorOr<UserAccount> {
-    const filters = this.dbManager.getFilters<UserAccount>(
-      [new MongoDbQuery({ userName }), new MongoDbQuery({ state: 'forSale' }, 'favoriteSalesItems')],
-      [new SqlEquals({ userName }), new SqlEquals({ state: 'forSale' }, 'favoriteSalesItems')]
-    );
-
-    return this.dbManager.getEntityByFilters(filters, UserAccount, postQueryOperations);
-  }
-
-  getUserNameById({ _id }: _Id): PromiseOfErrorOr<UserName> {
-    return this.dbManager.getEntityById(_id, UserAccount, {
-      includeResponseFields: ['userName']
-    });
   }
 
   @AllowForSelf()

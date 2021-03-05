@@ -19,6 +19,7 @@ import UserAccountId from '../../backk/types/useraccount/UserAccountId';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import _IdAndUserAccountIdAndSalesItemId from './types/args/_IdAndUserAccountIdAndSalesItemId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import { Update } from "../../backk/decorators/service/function/Update";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -52,6 +53,24 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
+  getShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<ShoppingCart> {
+    return this.dbManager.executeInsideTransaction(async () => {
+      const [shoppingCart, error] = await this.dbManager.getEntityWhere(
+        'userAccountId',
+        userAccountId,
+        ShoppingCart
+      );
+
+      if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
+        return this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
+      }
+
+      return [shoppingCart, error];
+    });
+  }
+
+  @AllowForSelf()
+  @Update()
   @Errors([SALES_ITEM_ALREADY_SOLD])
   addToShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
@@ -76,23 +95,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   removeFromShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {
       preHooks: () => this.salesItemService.updateSalesItemState({ _id: salesItemId, newState: 'forSale' })
-    });
-  }
-
-  @AllowForSelf()
-  getShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<ShoppingCart> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      const [shoppingCart, error] = await this.dbManager.getEntityWhere(
-        'userAccountId',
-        userAccountId,
-        ShoppingCart
-      );
-
-      if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
-        return this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
-      }
-
-      return [shoppingCart, error];
     });
   }
 

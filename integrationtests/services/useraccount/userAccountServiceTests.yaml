@@ -5,7 +5,7 @@
     response:
       tests:
         - pm.collectionVariables.set('followedUserAccountId', response._id)
-    executeAfter: userAccountService.getUserAccount
+    executeAfter: userAccountService.createUserAccount
   tests:
     - testName: followed user
 
