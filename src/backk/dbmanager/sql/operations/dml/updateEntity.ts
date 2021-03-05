@@ -28,6 +28,7 @@ import getSingularName from '../../../../utils/getSingularName';
 import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
 import isBackkError from '../../../../errors/isBackkError';
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import { BackkError } from "../../../../types/BackkError";
 
 // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function updateEntity<T extends BackkEntity>(
@@ -52,7 +53,7 @@ export default async function updateEntity<T extends BackkEntity>(
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     let currentEntity: T | null | undefined;
-    let error;
+    let error: BackkError | null | undefined;
 
     if (!isRecursiveCall) {
       [currentEntity, error] = await getEntityById(dbManager, _id ?? id, EntityClass, undefined, true, true);
@@ -95,6 +96,7 @@ export default async function updateEntity<T extends BackkEntity>(
     const values: any = [];
     const promises: Array<Promise<any>> = [];
 
+    // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
     await forEachAsyncSequential(
       Object.entries(entityMetadata),
       async ([fieldName, fieldTypeName]: [any, any]) => {
@@ -147,13 +149,14 @@ export default async function updateEntity<T extends BackkEntity>(
                     [parseInt(_id ?? id, 10), subEntity._id]
                   );
                 } else {
-                  const possibleErrorResponse = await deleteEntityById(
+                  const [, error] = await deleteEntityById(
                     dbManager,
                     subEntity.id,
                     SubEntityClass
                   );
-                  if (possibleErrorResponse) {
-                    throw possibleErrorResponse;
+
+                  if (error) {
+                    throw error;
                   }
                 }
               })
@@ -167,7 +170,7 @@ export default async function updateEntity<T extends BackkEntity>(
                     entityForeignIdFieldName,
                     subEntityForeignIdFieldName
                   } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
-                  dbManager.tryExecuteSql(
+                  await dbManager.tryExecuteSql(
                     `INSERT INTO ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}) VALUES (${dbManager.getValuePlaceholder(
                       1
                     )}, ${dbManager.getValuePlaceholder(2)})`,
@@ -200,7 +203,8 @@ export default async function updateEntity<T extends BackkEntity>(
             promises.push(
               forEachAsyncParallel(subEntityOrEntities, async (subEntity: any) => {
                 subEntity[foreignIdFieldName] = _id;
-                const possibleErrorResponse = await updateEntity(
+
+                const [, error] = await updateEntity(
                   dbManager,
                   subEntity,
                   SubEntityClass,
@@ -210,8 +214,8 @@ export default async function updateEntity<T extends BackkEntity>(
                   true
                 );
 
-                if (possibleErrorResponse) {
-                  throw possibleErrorResponse;
+                if (error) {
+                  throw error;
                 }
               })
             );
