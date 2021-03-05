@@ -17,6 +17,7 @@ import isUpdateFunction from '../service/crudentity/utils/isUpdateFunction';
 import isDeleteFunction from '../service/crudentity/utils/isDeleteFunction';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import tryValidateIntegrationTests from './tryValidateIntegrationTests';
+import { HttpStatusCodes } from "../constants/constants";
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -203,13 +204,23 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             lastGetFunctionMetadata.functionName
           );
 
+          const expectedEntityFieldPathNameToFieldValueMapInTests = serviceFunctionAnnotationContainer.getExpectedEntityFieldPathNameToFieldValueMapForTests(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            functionMetadata.functionName
+          );
+
+          const finalExpectedFieldPathNameToFieldValueMapInTests = {
+            ...(expectedResponseFieldPathNameToFieldValueMapInTests ?? {}),
+            ...(expectedEntityFieldPathNameToFieldValueMapInTests ?? {})
+          }
+
           const getFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
             serviceMetadata,
             lastGetFunctionMetadata,
             true,
-            200,
+            HttpStatusCodes.SUCCESS,
             expectedResponseFieldPathNameToFieldValueMapInTests,
             sampleArg
           );
@@ -256,7 +267,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           serviceMetadata,
           lastGetFunctionMetadata,
           false,
-          404,
+          HttpStatusCodes.NOT_FOUND,
           expectedResponseFieldPathNameToFieldValueMapInTests
         );
 
