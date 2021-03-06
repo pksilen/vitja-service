@@ -10,9 +10,9 @@ import IsUndefined from "../../decorators/typeproperty/IsUndefined";
 export default class BaseUserAccount extends _IdAndCaptcha {
   @IsUndefined({ groups: ['__backk_update__'] })
   @Unique()
-  @IsString()
-  @MaxLength(320)
-  @IsEmail()
+  @IsString({ groups: ['__backk_create__'] })
+  @MaxLength(320, { groups: ['__backk_create__'] })
+  @IsEmail(undefined, { groups: ['__backk_create__'] })
   @Private()
   userName!: string;
 
@@ -22,8 +22,8 @@ export default class BaseUserAccount extends _IdAndCaptcha {
   public displayName!: string;
 
   @IsUndefined({ groups: ['__backk_update__'] })
-  @IsString()
-  @IsStrongPassword()
+  @IsString({ groups: ['__backk_create__'] })
+  @IsStrongPassword({ groups: ['__backk_create__'] })
   @Private()
   password!: string;
 }
