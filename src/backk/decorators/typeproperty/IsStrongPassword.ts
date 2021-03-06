@@ -2,6 +2,7 @@ import { registerDecorator, ValidationArguments, ValidationOptions } from "class
 import RE2 from "re2";
 import hasAtMostRepeatingOrConsecutiveCharacters
   from "../../validation/hasAtMostRepeatingOrConsecutiveCharacters";
+import { Lengths } from "../../constants/constants";
 
 export default function IsStrongPassword(validationOptions?: ValidationOptions) {
   return function(object: Record<string, any>, propertyName: string) {
@@ -13,7 +14,7 @@ export default function IsStrongPassword(validationOptions?: ValidationOptions) 
       options: validationOptions,
       validator: {
         validate(value: any, args: ValidationArguments) {
-          if (value.length > 512 || value.length < 8) {
+          if (value.length > Lengths._512 || value.length < 8) {
             return false;
           }
 

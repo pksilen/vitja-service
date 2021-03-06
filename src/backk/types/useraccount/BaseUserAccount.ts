@@ -6,13 +6,14 @@ import IsAnyString from "../../decorators/typeproperty/IsAnyString";
 import IsStrongPassword from "../../decorators/typeproperty/IsStrongPassword";
 import { Private } from "../../decorators/typeproperty/Private";
 import IsUndefined from "../../decorators/typeproperty/IsUndefined";
+import MaxLengthAndMatches from "../../decorators/typeproperty/MaxLengthAndMatches";
 
 export default class BaseUserAccount extends _IdAndCaptcha {
   @IsUndefined({ groups: ['__backk_update__'] })
   @Unique()
-  @IsString({ groups: ['__backk_create__'] })
-  @MaxLength(320, { groups: ['__backk_create__'] })
-  @IsEmail(undefined, { groups: ['__backk_create__'] })
+  @IsString()
+  @MaxLengthAndMatches(320 , /.*/)
+  @IsEmail( )
   @Private()
   userName!: string;
 

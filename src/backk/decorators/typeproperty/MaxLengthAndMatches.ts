@@ -1,5 +1,5 @@
-import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
-import RE2 from 're2';
+import { registerDecorator, ValidationOptions } from "class-validator";
+import RE2 from "re2";
 
 export default function MaxLengthAndMatches(
   maxLength: number,
@@ -16,6 +16,10 @@ export default function MaxLengthAndMatches(
       options: validationOptions,
       validator: {
         validate(value: any) {
+          if (value === undefined && String(regexp) === String(/.*/)) {
+            return true;
+          }
+
           if (isIncludeOrExcludeResponseFieldsProperty && value.includes('{')) {
             // noinspection AssignmentToFunctionParameterJS
             maxLength = 65536
