@@ -3,7 +3,7 @@ import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata'
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import { MAX_INT_VALUE } from '../constants/constants';
 import typePropertyAnnotationContainer from '../decorators/typeproperty/typePropertyAnnotationContainer';
-import isEntityTypeName from "../utils/type/isEntityTypeName";
+import isEntityTypeName from '../utils/type/isEntityTypeName';
 
 const classNameToMetadataMap: { [key: string]: { [key: string]: string } } = {};
 
@@ -105,7 +105,16 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
           constraints?.[0] === 'isUndefined'
       );
 
-      if (undefinedValidation?.groups?.[0] === '__backk_create__' && !undefinedValidation.groups?.[1]) {
+      if (undefinedValidation?.groups?.[0] === '__backk_update__' && !undefinedValidation.groups?.[1]) {
+        if (!validationMetadata.groups?.includes('__backk_create__')) {
+          validationMetadata.groups = validationMetadata.groups?.concat('__backk_create__') ?? [
+            '__backk_create__'
+          ];
+        }
+      } else if (
+        undefinedValidation?.groups?.[0] === '__backk_create__' &&
+        !undefinedValidation.groups?.[1]
+      ) {
         if (!validationMetadata.groups?.includes('__backk_update__')) {
           validationMetadata.groups = validationMetadata.groups?.concat('__backk_update__') ?? [
             '__backk_update__'
@@ -285,7 +294,13 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         );
       }
 
-      if (instanceValidationMetadata && isOneToMany && isReferenceToExternalEntity && !undefinedValidation && isEntityTypeName(Class.name)) {
+      if (
+        instanceValidationMetadata &&
+        isOneToMany &&
+        isReferenceToExternalEntity &&
+        !undefinedValidation &&
+        isEntityTypeName(Class.name)
+      ) {
         throw new Error(
           'Property ' +
             Class.name +
