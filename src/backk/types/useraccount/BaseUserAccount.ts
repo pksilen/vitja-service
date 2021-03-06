@@ -23,8 +23,8 @@ export default class BaseUserAccount extends _IdAndCaptcha {
   public displayName!: string;
 
   @IsUndefined({ groups: ['__backk_update__'] })
-  @IsString({ groups: ['__backk_create__'] })
-  @IsStrongPassword({ groups: ['__backk_create__'] })
+  @IsString()
+  @IsStrongPassword()
   @Private()
   password!: string;
 }
