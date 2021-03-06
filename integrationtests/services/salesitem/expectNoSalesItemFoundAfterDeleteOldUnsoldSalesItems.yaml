@@ -1,0 +1,7 @@
+- testTemplate:
+    serviceFunctionName: salesItemService.getSalesItem
+    response:
+      statusCode: 404
+    executeAfter: salesItemService.deleteOldUnsoldSalesItems
+  tests:
+    - testName: expect no sales items found

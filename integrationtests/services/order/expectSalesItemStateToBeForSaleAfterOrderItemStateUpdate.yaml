@@ -1,0 +1,8 @@
+- testTemplate:
+    serviceFunctionName: salesItemService.getSalesItem
+    response:
+      tests:
+        - pm.expect(response.state).to.eql('forSale');
+    executeAfter: orderService.updateOrderItemState
+  tests:
+    - testName: expect sales item state to be for sale

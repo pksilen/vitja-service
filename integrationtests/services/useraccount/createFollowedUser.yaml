@@ -1,4 +1,6 @@
-- testTemplate:
+- tests:
+  - testName: create followed user
+  testTemplate:
     serviceFunctionName: userAccountService.createUserAccount
     argument:
       userName: test2@test.com
@@ -6,8 +8,8 @@
       tests:
         - pm.collectionVariables.set('followedUserAccountId', response._id)
     executeAfter: userAccountService.createUserAccount
-  tests:
-    - testName: followed user
+
+
 
 
 

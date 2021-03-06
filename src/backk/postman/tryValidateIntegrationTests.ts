@@ -39,8 +39,7 @@ export default function tryValidateIntegrationTests(
     if (foundInvalidResponseKey) {
       throw new Error("Integration tests: Invalid key '" + foundInvalidResponseKey + "' in testTemplate.response");
     }
-
-
+    
     if (integrationTest.tests) {
       integrationTest.tests.forEach((test: any) => {
         const foundInvalidKey = Object.keys(test).find(

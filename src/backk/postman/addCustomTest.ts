@@ -73,9 +73,9 @@ export default function addCustomTest(
       }
     });
 
-    instantiatedWrittenTest.testTemplate.testTemplateName =
-      instantiatedWrittenTest.testTemplate.serviceFunctionName +
-      (test.testName ? ' (' + test.testName + ')' : '');
+    instantiatedWrittenTest.testTemplate.testTemplateName = test.testName
+      ? test.testName
+      : instantiatedWrittenTest.testTemplate.serviceFunctionName;
 
     items.push(createPostmanCollectionItemFromCustomTest(instantiatedWrittenTest));
   });

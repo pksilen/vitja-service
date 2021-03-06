@@ -1,48 +1,4 @@
 - testTemplate:
-    serviceFunctionName: salesItemService.getSalesItem
-    response:
-      statusCode: 404
-    executeAfter: salesItemService.deleteOldUnsoldSalesItems
-  tests:
-    - testName: not found
-
-- testTemplate:
-    serviceFunctionName: salesItemService.createSalesItem
-    response:
-      tests:
-        - pm.collectionVariables.set('salesItemId', response._id)
-    executeAfter: salesItemService.deleteOldUnsoldSalesItems
-
-- testTemplate:
-    serviceFunctionName: salesItemService.createSalesItem
-    argument:
-      title: '{{title}}'
-      description: '{{description}}'
-      area: '{{area}}'
-      productDepartment: '{{category}}'
-      productCategory: '{{category}}'
-      productSubCategory: '{{category}}'
-      price: '{{price}}'
-    response:
-      tests:
-        - pm.collectionVariables.set("salesItemId", response._id)
-  tests:
-    - testName: price = 1
-      testProperties:
-        price: 1
-        title: firstTitle
-        description: firstDescription
-        area: Area1
-        category: Vehicles
-    - testName: price = 2
-      testProperties:
-        price: 2
-        title: secondTitle
-        description: secondDescription
-        area: Area2
-        category: Clothes
-
-- testTemplate:
     serviceFunctionName: salesItemService.getSalesItems
     argument:
       '{{argumentPropertyName1}}': '{{argumentPropertyValue1}}'
@@ -53,7 +9,7 @@
         - pm.expect(response[0].{{responsePropertyName}}).to.eql({{responsePropertyValue}});
           pm.expect(response.length).to.eql({{responseLength}});
   tests:
-    - testName: textFilter for title
+    - testName: get sales items with textFilter for title
       testProperties:
         argumentPropertyName1: textFilter
         argumentPropertyValue1: secondTitle
@@ -61,7 +17,7 @@
         responsePropertyValue: '"secondTitle"'
         responseLength: 1
 
-    - testName: textFilter for description
+    - testName: get sales items with textFilter for description
       testProperties:
         argumentPropertyName1: textFilter
         argumentPropertyValue1: secondDescription
@@ -69,7 +25,7 @@
         responsePropertyValue: '"secondDescription"'
         responseLength: 1
 
-    - testName: areas contains Area2
+    - testName: get sales items where areas contains Area2
       testProperties:
         argumentPropertyName1: areas
         argumentPropertyValue1:
@@ -78,7 +34,7 @@
         responsePropertyValue: '"Area2"'
         responseLength: 1
 
-    - testName: productDepartments contains 'Clothes'
+    - testName: get sales items where productDepartments contains 'Clothes'
       testProperties:
         argumentPropertyName1: productDepartments
         argumentPropertyValue1:
@@ -87,7 +43,7 @@
         responsePropertyValue: '"Clothes"'
         responseLength: 1
 
-    - testName: productCategories contains 'Clothes'
+    - testName: get sales items where productCategories contains 'Clothes'
       testProperties:
         argumentPropertyName1: productCategories
         argumentPropertyValue1:
@@ -96,7 +52,7 @@
         responsePropertyValue: '"Clothes"'
         responseLength: 1
 
-    - testName: productSubCategories contains 'Clothes'
+    - testName: get sales items where productSubCategories contains 'Clothes'
       testProperties:
         argumentPropertyName1: productSubCategories
         argumentPropertyValue1:
@@ -105,7 +61,7 @@
         responsePropertyValue: '"Clothes"'
         responseLength: 1
 
-    - testName: price is between minPrice and maxPrice
+    - testName: get sales items where price is between minPrice and maxPrice
       testProperties:
         argumentPropertyName1: minPrice
         argumentPropertyValue1: 2
@@ -115,7 +71,7 @@
         responsePropertyValue: 2
         responseLength: 1
 
-    - testName: sorting
+    - testName: get sales items sorted
       testProperties:
         argumentPropertyName1: sortBys
         argumentPropertyValue1:
@@ -125,7 +81,7 @@
         responsePropertyValue: 2
         responseLength: 2
 
-    - testName: paging
+    - testName: get sales items paginated
       testProperties:
         argumentPropertyName1: paginations
         argumentPropertyValue1:
