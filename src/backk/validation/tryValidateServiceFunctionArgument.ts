@@ -1,11 +1,11 @@
-import { validateOrReject, ValidationError } from "class-validator";
-import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
-import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
-import getValidationErrors from "./getValidationErrors";
-import { HttpStatusCodes } from "../constants/constants";
-import isCreateFunction from "../service/crudentity/utils/isCreateFunction";
-import AbstractDbManager from "../dbmanager/AbstractDbManager";
-import { BACKK_ERRORS } from "../errors/backkErrors";
+import { validateOrReject, ValidationError } from 'class-validator';
+import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
+import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
+import getValidationErrors from './getValidationErrors';
+import { HttpStatusCodes } from '../constants/constants';
+import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
+import AbstractDbManager from '../dbmanager/AbstractDbManager';
+import { BACKK_ERRORS } from '../errors/backkErrors';
 
 function filterOutManyToManyIdErrors(validationErrors: ValidationError[]) {
   validationErrors.forEach((validationError) => {
@@ -44,7 +44,12 @@ export default async function tryValidateServiceFunctionArgument(
 ): Promise<void> {
   try {
     await validateOrReject(serviceFunctionArgument, {
-      groups: ['__backk_firstRound__', ...(dbManager ? [dbManager.getDbManagerType()] : [])]
+      groups: [
+        '__backk_firstRound__',
+        ...(dbManager ? [dbManager.getDbManagerType()] : []),
+        ...(isCreateFunction(ServiceClass, functionName) ? ['__backk_firstRoundWhencreate__'] : []),
+        ...(isCreateFunction(ServiceClass, functionName) ? [] : ['__backk_firstRoundWhenUpdate__'])
+      ]
     });
 
     await validateOrReject(serviceFunctionArgument, {
