@@ -1010,11 +1010,15 @@ export default class MongoDbManager extends AbstractDbManager {
       if (!isRecursiveCall) {
         await hashAndEncryptEntity(restOfEntity, EntityClass as any, Types);
       }
+
       return await this.tryExecute(shouldUseTransaction, async (client) => {
         let currentEntity: T | null | undefined = null;
         let error = null;
 
-        if (!isRecursiveCall && options?.preHooks) {
+        if (
+          !isRecursiveCall &&
+          (options?.preHooks || restOfEntity.version || (restOfEntity as any).lastModifiedTimestamp)
+        ) {
           [currentEntity, error] = await this.getEntityById(
             _id,
             EntityClass,
@@ -1022,43 +1026,41 @@ export default class MongoDbManager extends AbstractDbManager {
             true,
             true
           );
-        }
 
-        if (!currentEntity) {
-          return [null, error];
-        }
-
-        let eTagCheckPreHook: PreHook<T>;
-        let finalPreHooks = Array.isArray(options?.preHooks)
-          ? options?.preHooks ?? []
-          : options?.preHooks
-          ? [options?.preHooks]
-          : [];
-
-        if (!isInternalCall && currentEntity) {
-          if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
-            eTagCheckPreHook = {
-              isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
-              errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
-            };
-
-            finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
-          } else if (
-            'lastModifiedTimestamp' in currentEntity &&
-            (restOfEntity as any).lastModifiedTimestamp &&
-            (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
-          ) {
-            eTagCheckPreHook = {
-              isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
-                lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
-              errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
-            };
-
-            finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
+          if (!currentEntity) {
+            return [null, error];
           }
-        }
 
-        if (!isRecursiveCall) {
+          let eTagCheckPreHook: PreHook<T>;
+          let finalPreHooks = Array.isArray(options?.preHooks)
+            ? options?.preHooks ?? []
+            : options?.preHooks
+            ? [options?.preHooks]
+            : [];
+
+          if (!isInternalCall && currentEntity) {
+            if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
+              eTagCheckPreHook = {
+                isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
+                errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
+              };
+
+              finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
+            } else if (
+              'lastModifiedTimestamp' in currentEntity &&
+              (restOfEntity as any).lastModifiedTimestamp &&
+              (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
+            ) {
+              eTagCheckPreHook = {
+                isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
+                  lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
+                errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
+              };
+
+              finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
+            }
+          }
+
           await tryExecutePreHooks(finalPreHooks, currentEntity);
         }
 
@@ -1380,7 +1382,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         if (subEntities.length > 0) {
           removeSubEntities(currentEntity, subEntities);
-          await this.updateEntity(currentEntity as any, EntityClass, undefined,  false, true);
+          await this.updateEntity(currentEntity as any, EntityClass, undefined, false, true);
         }
 
         if (options?.postHook) {

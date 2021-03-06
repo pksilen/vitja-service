@@ -1,8 +1,8 @@
 # Vitja service
 
 TODO:
-- @AddSubEntity(), @RemoveSubEntity(), should require @expectEntityinTests()
--Custom test for error scenarios
+- if update method starts with add/remove, isUpdate false and sampleArg undefined
+- Custom test for error scenarios
 
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
