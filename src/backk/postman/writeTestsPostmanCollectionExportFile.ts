@@ -214,7 +214,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             ...(expectedEntityFieldPathNameToFieldValueMapInTests ?? {})
           };
 
-          const expectedFieldPathNameCount = Object.keys(finalExpectedFieldPathNameToFieldValueMapInTests).length;
+          const expectedFieldPathNameCount = Object.keys(finalExpectedFieldPathNameToFieldValueMapInTests)
+            .length;
 
           const getFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
@@ -224,7 +225,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             expectedFieldPathNameCount <= 0,
             HttpStatusCodes.SUCCESS,
             finalExpectedFieldPathNameToFieldValueMapInTests,
-            expectedFieldPathNameCount > 0 ? undefined: sampleArg
+            expectedFieldPathNameCount > 0 ? undefined : sampleArg
           );
 
           const getFunctionSampleArg = getServiceFunctionTestArgument(
@@ -267,7 +268,11 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           (controller as any)[serviceMetadata.serviceName].constructor,
           functionMetadata.functionName
         ) &&
-        index === serviceMetadata.functions.length - 1 &&
+        (index === serviceMetadata.functions.length - 1 ||
+          !isDeleteFunction(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            serviceMetadata.functions[index + 1].functionName
+          )) &&
         lastGetFunctionMetadata
       ) {
         const expectedResponseFieldPathNameToFieldValueMapInTests = serviceFunctionAnnotationContainer.getExpectedResponseValueFieldPathNameToFieldValueMapForTests(

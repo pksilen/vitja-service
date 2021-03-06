@@ -1,13 +1,13 @@
-import _Id from "../../backk/types/id/_Id";
-import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
-import UserAccount from "./types/entities/UserAccount";
-import { Name } from "../../backk/types/Name";
-import UserAccountBaseService from "../../backk/service/useraccount/UserAccountBaseService";
-import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
-import UserName from "../../backk/types/useraccount/UserName";
-import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
-import GetUserAccountArg from "./types/args/GetUserAccountArg";
-import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
+import _Id from '../../backk/types/id/_Id';
+import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
+import UserAccount from './types/entities/UserAccount';
+import { Name } from '../../backk/types/Name';
+import UserAccountBaseService from '../../backk/service/useraccount/UserAccountBaseService';
+import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
+import UserName from '../../backk/types/useraccount/UserName';
+import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import GetUserAccountArg from './types/args/GetUserAccountArg';
+import _IdAndFollowedUserAccountId from './types/args/_IdAndFollowedUserAccountId';
 
 /** Users service doc goes here
  * - jee
