@@ -2,7 +2,7 @@
 
 TODO:
 - Is update method of type add/remove subentity
-- Custom test for error scenarios
+- get functions after delete, should be named as expect no <entity> to found
 
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

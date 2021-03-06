@@ -13,3 +13,12 @@
     - testName: update order item state to returned
       testProperties:
         newState: returned
+
+- testTemplate:
+    serviceFunctionName: salesItemService.getSalesItem
+    response:
+      tests:
+        - pm.expect(response.state).to.eql('forSale');
+    executeAfter: orderService.updateOrderItemState
+  tests:
+    - testName: expect sales item state to be for sale after being returned
