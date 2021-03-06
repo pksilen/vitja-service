@@ -20,7 +20,7 @@ export const BACKK_ERRORS = {
   },
   ENTITY_NOT_FOUND: {
     errorCode: '4',
-    errorMessage: 'BackkEntity not found',
+    errorMessage: 'Entity not found',
     statusCode: HttpStatusCodes.NOT_FOUND
   },
   INVALID_ARGUMENT: {
