@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- if update method starts with add/remove, isUpdate false and sampleArg undefined
+- Is update method of type add/remove subentity
 - Custom test for error scenarios
 
 - Split to multiple microservices
