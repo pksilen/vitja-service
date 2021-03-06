@@ -47,7 +47,7 @@ export default async function tryValidateServiceFunctionArgument(
       groups: [
         '__backk_firstRound__',
         ...(dbManager ? [dbManager.getDbManagerType()] : []),
-        ...(isCreateFunction(ServiceClass, functionName) ? ['__backk_firstRoundWhencreate__'] : []),
+        ...(isCreateFunction(ServiceClass, functionName) ? ['__backk_firstRoundWhenCreate__'] : []),
         ...(isCreateFunction(ServiceClass, functionName) ? [] : ['__backk_firstRoundWhenUpdate__'])
       ]
     });

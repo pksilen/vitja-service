@@ -79,20 +79,25 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         validationMetadata.type === 'nestedValidation') &&
       !validationMetadata.groups?.includes('__backk_none__')
     ) {
-      if (validationMetadata.type === 'maxLength' ||
-        validationMetadata.type === 'length' && undefinedValidation && undefinedValidation?.groups?.[0] === '__backk_update__') {
+      if (
+        (validationMetadata.type === 'maxLength' || validationMetadata.type === 'length') &&
+        undefinedValidation &&
+        undefinedValidation?.groups?.[0] === '__backk_update__'
+      ) {
         if (!validationMetadata.groups?.includes('__backk_firstRoundWhenCreate__')) {
           validationMetadata.groups = validationMetadata.groups?.concat('__backk_firstRoundWhenCreate__') ?? [
             '__backk_firstRoundWhenCreate__'
           ];
         }
-        else if (validationMetadata.type === 'maxLength' ||
-          validationMetadata.type === 'length' && undefinedValidation && undefinedValidation?.groups?.[0] === '__backk_create__') {
-          if (!validationMetadata.groups?.includes('__backk_firstRoundWhenUpdate__')) {
-            validationMetadata.groups = validationMetadata.groups?.concat('__backk_firstRoundWhenUpdate__') ?? [
-              '__backk_firstRoundWhenUpdate__'
-            ];
-          }
+      } else if (
+        (validationMetadata.type === 'maxLength' || validationMetadata.type === 'length') &&
+        undefinedValidation &&
+        undefinedValidation?.groups?.[0] === '__backk_create__'
+      ) {
+        if (!validationMetadata.groups?.includes('__backk_firstRoundWhenUpdate__')) {
+          validationMetadata.groups = validationMetadata.groups?.concat('__backk_firstRoundWhenUpdate__') ?? [
+            '__backk_firstRoundWhenUpdate__'
+          ];
         }
       } else {
         if (!validationMetadata.groups?.includes('__backk_firstRound__')) {
@@ -122,7 +127,6 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       validationMetadata.type !== 'customValidation' ||
       (validationMetadata.type === 'customValidation' && validationMetadata.constraints[0] !== 'isUndefined')
     ) {
-
       if (undefinedValidation?.groups?.[0] === '__backk_update__' && !undefinedValidation.groups?.[1]) {
         if (!validationMetadata.groups?.includes('__backk_create__')) {
           validationMetadata.groups = validationMetadata.groups?.concat('__backk_create__') ?? [
