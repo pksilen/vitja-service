@@ -9,7 +9,7 @@
         - pm.expect(response[0].{{responsePropertyName}}).to.eql({{responsePropertyValue}});
           pm.expect(response.length).to.eql({{responseLength}});
   tests:
-    - testName: get sales items with textFilter for title
+    - testName: get sales items for textFilter = 'secondTitle'
       testProperties:
         argumentPropertyName1: textFilter
         argumentPropertyValue1: secondTitle
@@ -17,7 +17,7 @@
         responsePropertyValue: '"secondTitle"'
         responseLength: 1
 
-    - testName: get sales items with textFilter for description
+    - testName: get sales items for textFilter = 'secondDescription'
       testProperties:
         argumentPropertyName1: textFilter
         argumentPropertyValue1: secondDescription

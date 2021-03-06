@@ -5,3 +5,10 @@
     executeAfter: salesItemService.deleteOldUnsoldSalesItems
   tests:
     - testName: expect no sales items found
+
+- testTemplate:
+    serviceFunctionName: salesItemService.createSalesItem
+    response:
+      tests:
+        - pm.collectionVariables.set('salesItemId', response._id)
+    executeAfter: salesItemService.deleteOldUnsoldSalesItems
