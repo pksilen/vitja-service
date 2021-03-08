@@ -5,7 +5,10 @@ import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import ShoppingCartService from './ShoppingCartService';
 import ShoppingCart from './types/entities/ShoppingCart';
-import { SALES_ITEM_ALREADY_SOLD, SHOPPING_CART_ALREADY_EXISTS } from './errors/shoppingCartServiceErrors';
+import {
+  SALES_ITEM_RESERVED_OR_ALREADY_SOLD,
+  SHOPPING_CART_ALREADY_EXISTS
+} from './errors/shoppingCartServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import SalesItemService from '../salesitem/SalesItemService';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
@@ -72,7 +75,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @Errors([SALES_ITEM_ALREADY_SOLD])
+  @Errors([SALES_ITEM_RESERVED_OR_ALREADY_SOLD])
   @TestEntityAfterThisOperation('expect shopping cart to contain a sales item', {
     'salesItems._id': '{{salesItemId}}'
   })
@@ -85,11 +88,9 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       ShoppingCartOrOrderSalesItem,
       {
         preHooks: {
-          isSuccessfulOrTrue: async () => {
-            const [currentSalesItem] = await this.salesItemService.getSalesItem({ _id: salesItemId });
-            return currentSalesItem?.state === 'forSale';
-          },
-          errorMessage: SALES_ITEM_ALREADY_SOLD
+          isSuccessfulOrTrue: async () =>
+            this.salesItemService.updateSalesItemState({ _id: salesItemId, newState: 'reserved' }),
+          errorMessage: SALES_ITEM_RESERVED_OR_ALREADY_SOLD
         }
       }
     );
@@ -113,6 +114,8 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForServiceInternalUse()
   deleteShoppingCart({ _id }: _Id): PromiseOfErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id, ShoppingCart);
+    return this.dbManager.deleteEntityById(_id, ShoppingCart, {
+      preHooks: ({ salesItems }) => this.salesItemService.updateSalesItemStates(salesItems, 'forSale')
+    });
   }
 }

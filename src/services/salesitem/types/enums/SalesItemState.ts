@@ -1,1 +1,1 @@
-export type SalesItemState = 'forSale' | 'sold';
+export type SalesItemState = 'forSale' | 'reserved' | 'sold';

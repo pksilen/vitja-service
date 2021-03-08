@@ -31,6 +31,8 @@ import UserAccountId from '../../backk/types/useraccount/UserAccountId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import User from '../user/types/entities/User';
 import FollowedUserSalesItem from './types/responses/FollowedUserSalesItem';
+import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
+import executeForAll from '../../backk/utils/executeForAll';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -196,6 +198,19 @@ export default class SalesItemServiceImpl extends SalesItemService {
         ({ _id, price }) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem)
       ]
     });
+  }
+
+  @AllowForServiceInternalUse()
+  updateSalesItemStates(
+    salesItems: ShoppingCartOrOrderSalesItem[],
+    newState: SalesItemState
+  ): PromiseOfErrorOr<null> {
+    return executeForAll(salesItems, ({ _id }) =>
+      this.updateSalesItemState({
+        _id,
+        newState
+      })
+    );
   }
 
   @AllowForServiceInternalUse()

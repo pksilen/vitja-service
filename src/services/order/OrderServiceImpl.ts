@@ -20,9 +20,7 @@ import {
   ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
 } from './errors/orderServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
-import executeForAll from '../../backk/utils/executeForAll';
 import ShoppingCartService from '../shoppingcart/ShoppingCartService';
-import { SalesItemState } from '../salesitem/types/enums/SalesItemState';
 import { OrderState } from './types/enum/OrderState';
 import { Update } from '../../backk/decorators/service/function/Update';
 import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
@@ -40,7 +38,6 @@ import { CronJob } from '../../backk/decorators/service/function/CronJob';
 import dayjs from 'dayjs';
 import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
 import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
-import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
@@ -92,7 +89,7 @@ export default class OrderServiceImpl extends OrderService {
         }
       },
       Order,
-      { preHooks: () => this.updateSalesItemStates(salesItems, 'sold', 'forSale') }
+      { preHooks: () => this.salesItemService.updateSalesItemStates(salesItems, 'sold') }
     );
   }
 
@@ -118,7 +115,9 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForTests()
   @Update('addOrRemoveSubEntities')
-  @TestEntityAfterThisOperation('expect order to contain an order item',{ 'orderItems.salesItems._id': '{{salesItemId}}' })
+  @TestEntityAfterThisOperation('expect order to contain an order item', {
+    'orderItems.salesItems._id': '{{salesItemId}}'
+  })
   addOrderItem({ orderId, salesItemId }: AddOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       orderId,
@@ -264,22 +263,6 @@ export default class OrderServiceImpl extends OrderService {
     return this.dbManager.deleteEntitiesByFilters(filters, Order);
   }
 
-  private async updateSalesItemStates(
-    salesItems: ShoppingCartOrOrderSalesItem[],
-    newState: SalesItemState,
-    currentState?: SalesItemState
-  ): PromiseOfErrorOr<null> {
-    return executeForAll(salesItems, ({ _id }) =>
-      this.salesItemService.updateSalesItemState(
-        {
-          _id,
-          newState
-        },
-        currentState
-      )
-    );
-  }
-
   private static refundOrderItem(orderId: string, orderItemId: string): PromiseOfErrorOr<null> {
     return sendToRemoteService(
       `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
@@ -354,7 +337,10 @@ export default class OrderServiceImpl extends OrderService {
           shouldDisregardFailureWhenExecutingTests: true
         },
         (order) =>
-          this.updateSalesItemStates(JSONPath({ json: order, path: 'orderItems[*].salesItems' }), 'forSale')
+          this.salesItemService.updateSalesItemStates(
+            JSONPath({ json: order, path: 'orderItems[*].salesItems' }),
+            'forSale'
+          )
       ]
     });
   }
