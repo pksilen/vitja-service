@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- shopping cart add/remove item set sales item to reserved/forsale state
 - Regularly remove expired items from shopping carts
 - if multiple delete functions, execute create entity before next delete method
 

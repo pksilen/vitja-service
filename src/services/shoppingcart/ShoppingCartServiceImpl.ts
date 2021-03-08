@@ -88,8 +88,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       ShoppingCartOrOrderSalesItem,
       {
         preHooks: {
-          isSuccessfulOrTrue: async () =>
-            this.salesItemService.updateSalesItemState({ _id: salesItemId, newState: 'reserved' }),
+          isSuccessfulOrTrue: async () => this.salesItemService.updateSalesItemState(salesItemId, 'reserved'),
           errorMessage: SALES_ITEM_RESERVED_OR_ALREADY_SOLD
         }
       }
@@ -101,7 +100,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @TestEntityAfterThisOperation('expect empty shopping cart', { salesItems: [] })
   removeFromShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {
-      preHooks: () => this.salesItemService.updateSalesItemState({ _id: salesItemId, newState: 'forSale' })
+      preHooks: () => this.salesItemService.updateSalesItemState(salesItemId, 'forSale')
     });
   }
 

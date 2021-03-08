@@ -10,7 +10,6 @@ import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
 import SalesItemService from './SalesItemService';
 import GetSalesItemsArg from './types/args/GetSalesItemsArg';
-import _IdAndSalesItemState from './types/args/_IdAndSalesItemState';
 import { SalesItem } from './types/entities/SalesItem';
 import _Id from '../../backk/types/id/_Id';
 import {
@@ -205,18 +204,14 @@ export default class SalesItemServiceImpl extends SalesItemService {
     salesItems: ShoppingCartOrOrderSalesItem[],
     newState: SalesItemState
   ): PromiseOfErrorOr<null> {
-    return executeForAll(salesItems, ({ _id }) =>
-      this.updateSalesItemState({
-        _id,
-        newState
-      })
-    );
+    return executeForAll(salesItems, ({ _id }) => this.updateSalesItemState(_id, newState));
   }
 
   @AllowForServiceInternalUse()
   @Errors([INVALID_SALES_ITEM_STATE])
   updateSalesItemState(
-    { _id, newState }: _IdAndSalesItemState,
+    _id: string,
+    newState: SalesItemState,
     requiredCurrentState?: SalesItemState
   ): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, state: newState }, SalesItem, {

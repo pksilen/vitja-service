@@ -55,6 +55,15 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
               throw new Error(serviceName + '.' + functionName + ': there can be only one input argument');
             }
 
+            if (
+              serviceFunctionAnnotationContainer.isServiceFunctionAllowedForServiceInternalUse(
+                ServiceClass,
+                functionName
+              )
+            ) {
+             continue;
+            }
+
             const functionArgumentTypeNameStart = classBodyNode.params[0].typeAnnotation.loc.start;
             const functionArgumentTypeNameEnd = classBodyNode.params[0].typeAnnotation.loc.end;
 

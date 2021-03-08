@@ -207,13 +207,13 @@ export default class OrderServiceImpl extends OrderService {
           {
             shouldExecutePreHook: () => newState === 'returned',
             isSuccessfulOrTrue: (order) =>
-              this.salesItemService.updateSalesItemState({
-                _id: JSONPath({
+              this.salesItemService.updateSalesItemState(
+                JSONPath({
                   json: order,
                   path: `orderItems[?(@.id == '${orderItemId}')].salesItems[0]._id`
                 })[0],
-                newState: 'forSale'
-              })
+                'forSale'
+              )
           },
           {
             isSuccessfulOrTrue: (order) =>
