@@ -14,9 +14,8 @@ import { SalesItem } from './types/entities/SalesItem';
 import _Id from '../../backk/types/id/_Id';
 import {
   INVALID_SALES_ITEM_STATE,
-  MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
-  SALES_ITEM_STATE_MUST_BE_FOR_SALE
-} from './errors/salesItemServiceErrors';
+  MAXIMUM_SALES_ITEM_COUNT_EXCEEDED, SALES_ITEM_UPDATE_FAILED_DUE_TO_STATE_NOT_FOR_SALE
+} from "./errors/salesItemServiceErrors";
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 import { SalesItemState } from './types/enums/SalesItemState';
@@ -186,13 +185,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  @Errors([SALES_ITEM_STATE_MUST_BE_FOR_SALE])
+  @Errors([SALES_ITEM_UPDATE_FAILED_DUE_TO_STATE_NOT_FOR_SALE])
   async updateSalesItem(arg: SalesItem): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(arg, SalesItem, {
       preHooks: [
         {
           isSuccessfulOrTrue: ({ state }) => state === 'forSale',
-          errorMessage: SALES_ITEM_STATE_MUST_BE_FOR_SALE
+          errorMessage: SALES_ITEM_UPDATE_FAILED_DUE_TO_STATE_NOT_FOR_SALE
         },
         ({ _id, price }) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem)
       ]

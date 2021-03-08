@@ -24,6 +24,7 @@ import _IdAndUserAccountIdAndSalesItemId from './types/args/_IdAndUserAccountIdA
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { Update } from '../../backk/decorators/service/function/Update';
 import { TestEntityAfterThisOperation } from '../../backk/decorators/service/function/TestEntityAfterThisOperation';
+import { CronJob } from '../../backk/decorators/service/function/CronJob';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
