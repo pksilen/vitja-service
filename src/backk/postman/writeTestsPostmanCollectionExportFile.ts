@@ -125,6 +125,23 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       let isUpdate = false;
       const isVoidFunction = getTypeInfoForTypeName(functionMetadata.returnValueType).isNull;
+      const updateType = serviceFunctionAnnotationContainer.getUpdateTypeForServiceFunction((controller as any)[serviceMetadata.serviceName].constructor,
+        functionMetadata.functionName
+      );
+
+      if (
+        isUpdateFunction(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        ) && updateType === 'addOrRemoveSubEntities' && !serviceFunctionAnnotationContainer.getTestSpec(
+        (controller as any)[serviceMetadata.serviceName].constructor,
+        functionMetadata.functionName
+        )) {
+        throw new Error(
+          'There must be a test specified using @TestEntityAfterThisOperation annotation for service function: ' +
+          serviceMetadata.serviceName
+        );
+      }
 
       if (
         isUpdateFunction(

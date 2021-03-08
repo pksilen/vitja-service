@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- @Test(name, expectAfterOperationEntityToContain)
 - if add/removesubentity type update method, require @Test annotation
 - shopping cart add/remove item set sales item to reserved/forsale state
 - Regularly remove expired items from shopping carts
