@@ -299,7 +299,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           true
         );
 
-        const itemName = serviceMetadata.serviceName.split('Service')[0];
+        const itemName = _.startCase(serviceMetadata.serviceName.split('Service')[0]).toLowerCase();
 
         items.push(
           createPostmanCollectionItem(
