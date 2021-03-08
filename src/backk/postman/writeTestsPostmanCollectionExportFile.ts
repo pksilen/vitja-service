@@ -299,13 +299,16 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           true
         );
 
+        const itemName = serviceMetadata.serviceName.split('Service')[0];
+
         items.push(
           createPostmanCollectionItem(
             (controller as any)[serviceMetadata.serviceName].constructor,
             serviceMetadata,
             lastGetFunctionMetadata,
             getFunctionSampleArg,
-            getFunctionTests
+            getFunctionTests,
+            `expect ${itemName} not found`
           )
         );
       }

@@ -71,7 +71,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  @Update()
+  @Update('addOrRemoveSubEntities')
   @Errors([SALES_ITEM_ALREADY_SOLD])
   @ExpectAfterThisOperationEntityToContainInTests({ 'salesItems._id': '{{salesItemId}}' })
   addToShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
@@ -94,7 +94,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  @Update()
+  @Update('addOrRemoveSubEntities')
   @ExpectAfterThisOperationEntityToContainInTests({salesItems: []})
   removeFromShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {

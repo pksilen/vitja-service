@@ -1,6 +1,6 @@
-import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
-import { FunctionMetadata } from "../metadata/types/FunctionMetadata";
-import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
+import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
+import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 
 function getNestedTypeNames(typeMetadata: object, types: any, nestedTypeNames: string[]) {
   Object.values(typeMetadata ?? {}).forEach((typeName) => {
@@ -18,6 +18,7 @@ export default function createPostmanCollectionItem(
   functionMetadata: FunctionMetadata,
   sampleArg: object | undefined,
   tests?: object,
+  itemName?: string,
   sampleResponse?: object,
   isArrayResponse: boolean = false
 ) {
@@ -88,7 +89,7 @@ export default function createPostmanCollectionItem(
   );
 
   const postmanCollectionItem = {
-    name: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+    name: itemName ?? serviceMetadata.serviceName + '.' + functionMetadata.functionName,
     request: {
       description: {
         content:

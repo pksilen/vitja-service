@@ -22,6 +22,9 @@ export default class ChangeUserPasswordArg {
   })
   public _id!: string;
 
+  @IsUndefined({
+    groups: ['__backk_update__']
+  })
   @Unique()
   @IsString()
   @MaxLength(320)
@@ -29,6 +32,9 @@ export default class ChangeUserPasswordArg {
   @Private()
   userName!: string;
 
+  @IsUndefined({
+    groups: ['__backk_update__']
+  })
   @IsString()
   @IsStrongPassword()
   @Private()

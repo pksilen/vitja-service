@@ -1,5 +1,6 @@
 import { ErrorCodeAndMessageAndStatus } from '../../../dbmanager/hooks/PreHook';
 import { HttpHeaders } from './ResponseHeaders';
+import { UpdateType } from "./Update";
 
 class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
@@ -15,7 +16,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToIsNotDistributedTransactionalMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToCronScheduleMap: { [key: string]: string } = {};
   private readonly serviceFunctionNameToRetryIntervalsInSecsMap: { [key: string]: number[] } = {};
-  private readonly serviceFunctionNameToIsUpdateFunctionMap: { [key: string]: boolean } = {};
+  private readonly serviceFunctionNameToUpdateTypeMap: { [key: string]: UpdateType } = {};
   private readonly serviceFunctionNameToResponseHeadersMap: { [key: string]: HttpHeaders<any, any> } = {};
   private readonly serviceFunctionNameToHasNoAutoTestMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap: {
@@ -100,8 +101,8 @@ class ServiceFunctionAnnotationContainer {
     ] = retryIntervalsInSecs;
   }
 
-  addUpdateAnnotation(serviceClass: Function, functionName: string) {
-    this.serviceFunctionNameToIsUpdateFunctionMap[`${serviceClass.name}${functionName}`] = true;
+  addUpdateAnnotation(serviceClass: Function, functionName: string, updateType: UpdateType) {
+    this.serviceFunctionNameToUpdateTypeMap[`${serviceClass.name}${functionName}`] = updateType;
   }
 
   addResponseHeadersForServiceFunction<T extends object, U extends any>(
@@ -336,19 +337,19 @@ class ServiceFunctionAnnotationContainer {
     return false;
   }
 
-  isUpdateServiceFunction(serviceClass: Function, functionName: string) {
+  getUpdateTypeForServiceFunction(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToIsUpdateFunctionMap[`${proto.constructor.name}${functionName}`] !==
+        this.serviceFunctionNameToUpdateTypeMap[`${proto.constructor.name}${functionName}`] !==
         undefined
       ) {
-        return true;
+        return  this.serviceFunctionNameToUpdateTypeMap[`${proto.constructor.name}${functionName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
 
-    return false;
+    return undefined;
   }
 
   isCreateServiceFunction(serviceClass: Function, functionName: string) {

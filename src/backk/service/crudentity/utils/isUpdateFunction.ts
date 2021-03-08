@@ -7,6 +7,6 @@ export default function isUpdateFunction(ServiceClass: Function, functionName: s
     functionName.startsWith('modify') ||
     functionName.startsWith('change') ||
     functionName.startsWith('patch') ||
-    serviceFunctionAnnotationContainer.isUpdateServiceFunction(ServiceClass, functionName)
+    serviceFunctionAnnotationContainer.getUpdateTypeForServiceFunction(ServiceClass, functionName)
   );
 }

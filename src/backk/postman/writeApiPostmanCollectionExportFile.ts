@@ -52,6 +52,7 @@ export default function writeApiPostmanCollectionExportFile<T>(
           functionMetadata,
           sampleArg,
           undefined,
+          undefined,
           exampleReturnValue,
           isArrayType
         )

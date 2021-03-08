@@ -78,7 +78,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  @Update()
+  @Update('addOrRemoveSubEntities')
   @ExpectAfterThisOperationEntityToContainInTests({ 'followedUserAccounts._id': '{{followedUserAccountId}}' })
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
@@ -101,7 +101,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  @Update()
+  @Update('addOrRemoveSubEntities')
   @ExpectAfterThisOperationEntityToContainInTests({ followedUserAccounts: [] })
   unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(
@@ -117,7 +117,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  @Update()
+  @Update('addOrRemoveSubEntities')
   @TestAfter('salesItemService.createSalesItem')
   @ExpectAfterThisOperationEntityToContainInTests({ 'favoriteSalesItems._id': '{{salesItemId}}' })
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
@@ -131,7 +131,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  @Update()
+  @Update('addOrRemoveSubEntities')
   @TestAfter('salesItemService.createSalesItem')
   @ExpectAfterThisOperationEntityToContainInTests({ favoriteSalesItems: [] })
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {

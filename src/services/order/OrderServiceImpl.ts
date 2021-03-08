@@ -117,7 +117,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForTests()
-  @Update()
+  @Update('addOrRemoveSubEntities')
   @ExpectAfterThisOperationEntityToContainInTests({ 'orderItems.salesItems._id': '{{salesItemId}}' })
   addOrderItem({ orderId, salesItemId }: AddOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
@@ -135,7 +135,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
-  @Update()
+  @Update('update')
   @Errors([ORDER_ALREADY_PAID])
   payOrder({ _id, ...paymentInfo }: PayOrderArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, paymentInfo }, Order, {
@@ -156,7 +156,7 @@ export default class OrderServiceImpl extends OrderService {
     });
   }
 
-  @Update()
+  @Update('update')
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   async deliverOrderItem({
