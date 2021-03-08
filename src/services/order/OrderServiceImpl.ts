@@ -44,7 +44,7 @@ import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/Shoppin
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import { ExpectAfterThisOperationEntityToContainInTests } from '../../backk/decorators/service/function/ExpectAfterThisOperationEntityToContainInTests';
+import { TestEntityAfterThisOperation } from '../../backk/decorators/service/function/TestEntityAfterThisOperation';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -103,7 +103,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
-  @ExpectAfterThisOperationEntityToContainInTests({ orderItems: [] })
+  @TestEntityAfterThisOperation('expect no order items', { orderItems: [] })
   deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: {
@@ -118,7 +118,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForTests()
   @Update('addOrRemoveSubEntities')
-  @ExpectAfterThisOperationEntityToContainInTests({ 'orderItems.salesItems._id': '{{salesItemId}}' })
+  @TestEntityAfterThisOperation('expect order to contain an order item',{ 'orderItems.salesItems._id': '{{salesItemId}}' })
   addOrderItem({ orderId, salesItemId }: AddOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       orderId,

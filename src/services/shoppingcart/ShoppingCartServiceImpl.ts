@@ -20,7 +20,7 @@ import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import _IdAndUserAccountIdAndSalesItemId from './types/args/_IdAndUserAccountIdAndSalesItemId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { Update } from '../../backk/decorators/service/function/Update';
-import { ExpectAfterThisOperationEntityToContainInTests } from '../../backk/decorators/service/function/ExpectAfterThisOperationEntityToContainInTests';
+import { TestEntityAfterThisOperation } from '../../backk/decorators/service/function/TestEntityAfterThisOperation';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -73,7 +73,9 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @Errors([SALES_ITEM_ALREADY_SOLD])
-  @ExpectAfterThisOperationEntityToContainInTests({ 'salesItems._id': '{{salesItemId}}' })
+  @TestEntityAfterThisOperation('expect shopping cart to contain a sales item', {
+    'salesItems._id': '{{salesItemId}}'
+  })
   addToShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
@@ -95,7 +97,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @ExpectAfterThisOperationEntityToContainInTests({salesItems: []})
+  @TestEntityAfterThisOperation('expect empty shopping cart', { salesItems: [] })
   removeFromShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {
       preHooks: () => this.salesItemService.updateSalesItemState({ _id: salesItemId, newState: 'forSale' })

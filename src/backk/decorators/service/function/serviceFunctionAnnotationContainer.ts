@@ -1,6 +1,7 @@
 import { ErrorCodeAndMessageAndStatus } from '../../../dbmanager/hooks/PreHook';
 import { HttpHeaders } from './ResponseHeaders';
 import { UpdateType } from "./Update";
+import { TestSpec } from "./TestEntityAfterThisOperation";
 
 class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
@@ -22,8 +23,8 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap: {
     [key: string]: { [key: string]: any };
   } = {};
-  private readonly serviceFunctionNameToExpectedEntityFieldPathNameToFieldValueMapMap: {
-    [key: string]: { [key: string]: any };
+  private readonly serviceFunctionNameToTestSpecMap: {
+    [key: string]: TestSpec;
   } = {};
   private readonly serviceFunctionNameToOnStartUpMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsCreateFunctionMap: { [key: string]: boolean } = {};
@@ -154,11 +155,12 @@ class ServiceFunctionAnnotationContainer {
   expectServiceFunctionEntityToContainInTests(
     serviceClass: Function,
     functionName: string,
+    testName: string,
     fieldPathNameToFieldValueMap: { [key: string]: string }
   ) {
-    this.serviceFunctionNameToExpectedEntityFieldPathNameToFieldValueMapMap[
+    this.serviceFunctionNameToTestSpecMap[
       `${serviceClass.name}${functionName}`
-      ] = fieldPathNameToFieldValueMap;
+      ] = { testName, fieldPathNameToFieldValueMap };
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -469,18 +471,18 @@ class ServiceFunctionAnnotationContainer {
     return undefined;
   }
 
-  getExpectedEntityFieldPathNameToFieldValueMapForTests(
+  getTestSpec(
     serviceClass: Function,
     functionName: string
-  ): { [key: string]: any } | undefined {
+  ): TestSpec | undefined {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (
-        this.serviceFunctionNameToExpectedEntityFieldPathNameToFieldValueMapMap[
+        this.serviceFunctionNameToTestSpecMap[
           `${proto.constructor.name}${functionName}`
           ] !== undefined
       ) {
-        return this.serviceFunctionNameToExpectedEntityFieldPathNameToFieldValueMapMap[
+        return this.serviceFunctionNameToTestSpecMap[
           `${proto.constructor.name}${functionName}`
           ];
       }

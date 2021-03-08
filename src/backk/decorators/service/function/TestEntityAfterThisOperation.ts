@@ -1,8 +1,20 @@
 import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationContainer';
 
-export function ExpectAfterThisOperationEntityToContainInTests(fieldPathNameToFieldValueMap: {
+export type TestSpec = {
+  testName: string,
+  fieldPathNameToFieldValueMap: {
+    [key: string]: any;
+  };
+}
+
+export type FieldPathNameToFieldValueMap = {
   [key: string]: any;
-}) {
+};
+
+export function TestEntityAfterThisOperation(
+  testName: string,
+  fieldPathNameToFieldValueMap: FieldPathNameToFieldValueMap
+) {
   const finalFieldPathNameToFieldValueMap = Object.entries(fieldPathNameToFieldValueMap).reduce(
     (finalFieldPathNameToFieldValueMap, [fieldPathName, fieldValue]) => {
       let finalFieldValue = fieldValue;
@@ -25,7 +37,8 @@ export function ExpectAfterThisOperationEntityToContainInTests(fieldPathNameToFi
     serviceFunctionAnnotationContainer.expectServiceFunctionEntityToContainInTests(
       object.constructor,
       functionName,
-      finalFieldPathNameToFieldValueMap
+      testName,
+      fieldPathNameToFieldValueMap
     );
   };
 }
