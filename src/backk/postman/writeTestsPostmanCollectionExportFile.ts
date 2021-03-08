@@ -308,7 +308,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             lastGetFunctionMetadata,
             getFunctionSampleArg,
             getFunctionTests,
-            `expect ${itemName} not found`
+            `expect ${itemName} not to be found`
           )
         );
       }
