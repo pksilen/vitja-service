@@ -8,6 +8,7 @@ import UserName from '../../backk/types/useraccount/UserName';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import GetUserAccountArg from './types/args/GetUserAccountArg';
 import _IdAndFollowedUserAccountId from './types/args/_IdAndFollowedUserAccountId';
+import { ErrorDefinition } from "../../backk/types/ErrorDefinition";
 
 /** Users service doc goes here
  * - jee

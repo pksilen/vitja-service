@@ -1,3 +1,3 @@
-import BaseService from '../BaseService';
+import BaseService from "../BaseService";
 
 export default class CrudEntityService extends BaseService {}

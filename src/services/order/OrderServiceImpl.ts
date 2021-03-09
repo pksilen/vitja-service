@@ -13,13 +13,6 @@ import { AllowForTests } from '../../backk/decorators/service/function/AllowForT
 import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
 import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
-import {
-  DELETE_ORDER_NOT_ALLOWED,
-  INVALID_ORDER_ITEM_STATE,
-  ORDER_ALREADY_PAID,
-  ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
-} from './errors/orderServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
 import ShoppingCartService from '../shoppingcart/ShoppingCartService';
 import { OrderState } from './types/enum/OrderState';
 import { Update } from '../../backk/decorators/service/function/Update';
@@ -42,6 +35,7 @@ import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { TestEntityAfterThisOperation } from '../../backk/decorators/service/function/TestEntityAfterThisOperation';
+import { orderServiceErrors } from "./errors/orderServiceErrors";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -51,7 +45,7 @@ export default class OrderServiceImpl extends OrderService {
     private readonly salesItemService: SalesItemService,
     private readonly shoppingCartService: ShoppingCartService
   ) {
-    super(dbManager);
+    super(orderServiceErrors, dbManager);
   }
 
   @AllowForTests()
@@ -99,7 +93,6 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
-  @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
   @TestEntityAfterThisOperation('expect no order items', { orderItems: [] })
   deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
@@ -107,7 +100,7 @@ export default class OrderServiceImpl extends OrderService {
         isSuccessfulOrTrue: (order) =>
           JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
           'toBeDelivered',
-        errorMessage: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+        errorMessage: orderServiceErrors.cannotDeleteOrderItemWhichIsAlreadyDelivered
       },
       postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
     });
@@ -135,14 +128,13 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update('update')
-  @Errors([ORDER_ALREADY_PAID])
   payOrder({ _id, ...paymentInfo }: PayOrderArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, paymentInfo }, Order, {
       preHooks: [
         () => this.shoppingCartService.deleteShoppingCart({ _id }),
         {
           isSuccessfulOrTrue: ({ paymentInfo }) => paymentInfo.transactionId === null,
-          errorMessage: ORDER_ALREADY_PAID
+          errorMessage: orderServiceErrors.orderAlreadyPaid
         }
       ],
       postHook: () =>
@@ -155,9 +147,8 @@ export default class OrderServiceImpl extends OrderService {
     });
   }
 
-  @Update('update')
   @AllowForUserRoles(['vitjaLogisticsPartner'])
-  @Errors([ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED])
+  @Update('update')
   async deliverOrderItem({
     _id,
     version,
@@ -176,7 +167,7 @@ export default class OrderServiceImpl extends OrderService {
           isSuccessfulOrTrue: (order) =>
             JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
             'toBeDelivered',
-          errorMessage: ORDER_ITEM_STATE_MUST_BE_TO_BE_DELIVERED
+          errorMessage: orderServiceErrors.cannotDeliverOrderWhichIsAlreadyDelivered
         },
         postHook: () =>
           sendToRemoteService(
@@ -192,7 +183,6 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
-  @Errors([INVALID_ORDER_ITEM_STATE])
   async updateOrderItemState({
     _id,
     version,
@@ -221,7 +211,7 @@ export default class OrderServiceImpl extends OrderService {
                 json: order,
                 path: `orderItems[?(@.id == '${orderItemId}')].state`
               })[0] === OrderServiceImpl.getValidPreviousOrderStateFor(newState),
-            errorMessage: INVALID_ORDER_ITEM_STATE
+            errorMessage: orderServiceErrors.cannotUpdateOrderItemStateDueToInvalidCurrentState
           }
         ],
         postHook: {
@@ -331,9 +321,9 @@ export default class OrderServiceImpl extends OrderService {
     return this.dbManager.deleteEntityById(_id, Order, {
       preHooks: [
         {
-          isSuccessfulOrTrue: (order) =>
+          isSuccessfulOrTrue: (order) => 
             JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
-          errorMessage: DELETE_ORDER_NOT_ALLOWED,
+          errorMessage: orderServiceErrors.deleteOrderNotAllowed,
           shouldDisregardFailureWhenExecutingTests: true
         },
         (order) =>

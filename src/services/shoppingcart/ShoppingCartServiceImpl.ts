@@ -5,11 +5,6 @@ import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import ShoppingCartService from './ShoppingCartService';
 import ShoppingCart from './types/entities/ShoppingCart';
-import {
-  SALES_ITEM_RESERVED_OR_ALREADY_SOLD,
-  SHOPPING_CART_ALREADY_EXISTS
-} from './errors/shoppingCartServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
 import SalesItemService from '../salesitem/SalesItemService';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 import { NoAutoTest } from '../../backk/decorators/service/function/NoAutoTest';
@@ -24,13 +19,13 @@ import _IdAndUserAccountIdAndSalesItemId from './types/args/_IdAndUserAccountIdA
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { Update } from '../../backk/decorators/service/function/Update';
 import { TestEntityAfterThisOperation } from '../../backk/decorators/service/function/TestEntityAfterThisOperation';
-import { CronJob } from '../../backk/decorators/service/function/CronJob';
+import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class ShoppingCartServiceImpl extends ShoppingCartService {
   constructor(dbManager: AbstractDbManager, private readonly salesItemService: SalesItemService) {
-    super(dbManager);
+    super(shoppingCartServiceErrors, dbManager);
   }
 
   @AllowForTests()
@@ -40,7 +35,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @NoCaptcha()
   @AllowForSelf()
-  @Errors([SHOPPING_CART_ALREADY_EXISTS])
   async createShoppingCart(arg: ShoppingCart): PromiseOfErrorOr<ShoppingCart> {
     return this.dbManager.createEntity(arg, ShoppingCart, {
       preHooks: {
@@ -52,7 +46,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
           return shoppingCartCount === 0;
         },
-        errorMessage: SHOPPING_CART_ALREADY_EXISTS
+        errorMessage: shoppingCartServiceErrors.shoppingCartAlreadyExists
       }
     });
   }
@@ -76,7 +70,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @Errors([SALES_ITEM_RESERVED_OR_ALREADY_SOLD])
   @TestEntityAfterThisOperation('expect shopping cart to contain a sales item', {
     'salesItems._id': '{{salesItemId}}'
   })
@@ -89,8 +82,9 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       ShoppingCartOrOrderSalesItem,
       {
         preHooks: {
-          isSuccessfulOrTrue: async () => this.salesItemService.updateSalesItemState(salesItemId, 'reserved'),
-          errorMessage: SALES_ITEM_RESERVED_OR_ALREADY_SOLD
+          isSuccessfulOrTrue: async () =>
+            this.salesItemService.updateSalesItemState(salesItemId, 'reserved', 'forSale'),
+          errorMessage: shoppingCartServiceErrors.salesItemReservedOrSold
         }
       }
     );

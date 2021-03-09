@@ -1,11 +1,12 @@
-import { Service } from './Service';
-import AbstractDbManager from '../dbmanager/AbstractDbManager';
+import { Service } from "./Service";
+import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import { ErrorDefinitions } from "../types/ErrorDefinition";
 
 export default class BaseService implements Service {
   readonly Types: object;
   readonly PublicTypes: object;
 
-  constructor(protected readonly dbManager: AbstractDbManager) {
+  constructor(protected readonly errors: ErrorDefinitions, protected readonly dbManager: AbstractDbManager) {
     this.Types = {};
     this.PublicTypes = {};
     if (dbManager) {

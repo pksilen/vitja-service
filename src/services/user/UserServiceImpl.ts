@@ -13,7 +13,7 @@ import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 @Injectable()
 export default class UserServiceImpl extends UserService {
   constructor(dbManager: AbstractDbManager) {
-    super(dbManager);
+    super({}, dbManager);
   }
 
   @AllowForEveryUser()

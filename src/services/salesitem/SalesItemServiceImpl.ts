@@ -12,12 +12,6 @@ import SalesItemService from './SalesItemService';
 import GetSalesItemsArg from './types/args/GetSalesItemsArg';
 import { SalesItem } from './types/entities/SalesItem';
 import _Id from '../../backk/types/id/_Id';
-import {
-  INVALID_SALES_ITEM_STATE,
-  MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
-  SALES_ITEM_UPDATE_FAILED_DUE_TO_STATE_NOT_FOR_SALE
-} from './errors/salesItemServiceErrors';
-import { Errors } from '../../backk/decorators/service/function/Errors';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 import { SalesItemState } from './types/enums/SalesItemState';
 import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
@@ -33,6 +27,7 @@ import FollowedUserSalesItem from './types/responses/FollowedUserSalesItem';
 import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
 import executeForAll from '../../backk/utils/executeForAll';
 import ChangeExpiredReservedSalesItemsStateToForSaleArg from './types/args/ChangeExpiredReservedSalesItemsStateToForSaleArg';
+import { salesItemServiceErrors } from "./errors/salesItemServiceErrors";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -46,7 +41,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   ];
 
   constructor(dbManager: AbstractDbManager) {
-    super(dbManager);
+    super(salesItemServiceErrors, dbManager);
   }
 
   @AllowForTests()
@@ -56,7 +51,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @NoCaptcha()
   @AllowForSelf()
-  @Errors([MAXIMUM_SALES_ITEM_COUNT_EXCEEDED])
   async createSalesItem(arg: SalesItem): PromiseOfErrorOr<SalesItem> {
     const [salesItem, error] = await this.dbManager.createEntity(
       {
@@ -77,7 +71,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
               ? usersSellableSalesItemCount < 100
               : error;
           },
-          errorMessage: MAXIMUM_SALES_ITEM_COUNT_EXCEEDED
+          errorMessage: salesItemServiceErrors.maximumSalesItemCountPerUserExceeded
         }
       }
     );
@@ -187,13 +181,12 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  @Errors([SALES_ITEM_UPDATE_FAILED_DUE_TO_STATE_NOT_FOR_SALE])
   async updateSalesItem(arg: SalesItem): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(arg, SalesItem, {
       preHooks: [
         {
           isSuccessfulOrTrue: ({ state }) => state === 'forSale',
-          errorMessage: SALES_ITEM_UPDATE_FAILED_DUE_TO_STATE_NOT_FOR_SALE
+          errorMessage: salesItemServiceErrors.updateFailedBecauseSalesItemStateIsNotForSale
         },
         ({ _id, price }) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem)
       ]
@@ -209,7 +202,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForServiceInternalUse()
-  @Errors([INVALID_SALES_ITEM_STATE])
   updateSalesItemState(
     _id: string,
     newState: SalesItemState,
@@ -219,7 +211,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       preHooks: requiredCurrentState
         ? {
             isSuccessfulOrTrue: ({ state }) => state === requiredCurrentState,
-            errorMessage: INVALID_SALES_ITEM_STATE
+            errorMessage: salesItemServiceErrors.invalidSalesItemState
           }
         : undefined
     });

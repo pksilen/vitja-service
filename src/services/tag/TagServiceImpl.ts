@@ -19,7 +19,7 @@ import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 @Injectable()
 export default class TagServiceImpl extends TagService {
   constructor(dbManager: AbstractDbManager) {
-    super(dbManager);
+    super({}, dbManager);
   }
 
   @OnStartUp()

@@ -11,7 +11,7 @@ import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
 @Injectable()
 export default class StartupCheckServiceImpl extends StartupCheckService {
   constructor(dbManager: AbstractDbManager) {
-    super(dbManager);
+    super({}, dbManager);
   }
 
   // noinspection FunctionWithMoreThanThreeNegationsJS
