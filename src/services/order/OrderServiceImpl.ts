@@ -321,7 +321,7 @@ export default class OrderServiceImpl extends OrderService {
     return this.dbManager.deleteEntityById(_id, Order, {
       preHooks: [
         {
-          isSuccessfulOrTrue: (order) => 
+          isSuccessfulOrTrue: (order) =>
             JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
           errorMessage: orderServiceErrors.deleteOrderNotAllowed,
           shouldDisregardFailureWhenExecutingTests: true

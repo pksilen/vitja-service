@@ -6,7 +6,7 @@ export default class BaseService implements Service {
   readonly Types: object;
   readonly PublicTypes: object;
 
-  constructor(protected readonly errors: ErrorDefinitions, protected readonly dbManager: AbstractDbManager) {
+  constructor(private readonly errors: ErrorDefinitions, protected readonly dbManager: AbstractDbManager) {
     this.Types = {};
     this.PublicTypes = {};
     if (dbManager) {

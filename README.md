@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- give errors object in service constructor or noErrors object
 - if multiple delete functions, execute create entity before next delete method
 
 - Split to multiple microservices

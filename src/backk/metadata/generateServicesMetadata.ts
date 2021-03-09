@@ -1,5 +1,4 @@
 import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
 import BaseService from '../service/BaseService';
 import { ServiceMetadata } from './types/ServiceMetadata';
 import getClassPropertyNameToPropertyTypeNameMap from './getClassPropertyNameToPropertyTypeNameMap';
@@ -11,12 +10,15 @@ import CrudEntityService from '../service/crudentity/CrudEntityService';
 import assertFunctionNamesAreValidForCrudEntityService from '../service/crudentity/assertFunctionNamesAreValidForCrudEntityService';
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
+import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
+import { ErrorDefinitions } from "../types/ErrorDefinition";
 
 export default function generateServicesMetadata<T>(
   controller: T,
   dbManager: AbstractDbManager,
   remoteServiceRootDir = ''
 ): ServiceMetadata[] {
+  // noinspection FunctionWithMoreThanThreeNegationsJS
   return Object.entries(controller)
     .filter(
       ([serviceName, service]: [string, any]) =>
@@ -50,6 +52,7 @@ export default function generateServicesMetadata<T>(
         {}
       );
 
+      // noinspection FunctionWithMoreThanThreeNegationsJS
       const functions: FunctionMetadata[] = functionNames
         .filter(
           (functionName) =>
@@ -88,7 +91,7 @@ export default function generateServicesMetadata<T>(
             .functionNameToParamTypeNameMap[functionName];
 
           if (
-            (functionName.startsWith('create') || functionName.startsWith('insert')) &&
+            isCreateFunction(service.constructor, functionName) &&
             functionArgumentTypeName &&
             !(typesMetadata as any)[functionArgumentTypeName].captchaToken &&
             !serviceFunctionAnnotationContainer.hasNoCaptchaAnnotationForServiceFunction(
@@ -100,12 +103,17 @@ export default function generateServicesMetadata<T>(
               serviceName +
                 '.' +
                 functionName +
-                ': argument type must implement Captcha or service function must be annotated with NoCaptcha annotation'
+                ': argument type must implement Captcha or service function must be annotated with @NoCaptcha() annotation'
             );
           }
 
           const returnValueTypeName: string = (controller as any)[`${serviceName}__BackkTypes__`]
             .functionNameToReturnTypeNameMap[functionName];
+
+          const functionStr = service[functionName].toString();
+          const errors = Object.entries(service.errors as ErrorDefinitions)
+            .filter(([errorName]) => functionStr.includes(errorName))
+            .map(([, errorDefinition]) => errorDefinition);
 
           return {
             functionName,
@@ -113,11 +121,7 @@ export default function generateServicesMetadata<T>(
               .functionNameToDocumentationMap[functionName],
             argType: functionArgumentTypeName,
             returnValueType: returnValueTypeName,
-            errors:
-              serviceFunctionAnnotationContainer.getErrorsForServiceFunction(
-                service.constructor,
-                functionName
-              ) ?? []
+            errors
           };
         });
 
