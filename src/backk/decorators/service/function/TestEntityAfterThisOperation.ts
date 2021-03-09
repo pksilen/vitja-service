@@ -38,7 +38,7 @@ export function TestEntityAfterThisOperation(
       object.constructor,
       functionName,
       testName,
-      fieldPathNameToFieldValueMap
+      finalFieldPathNameToFieldValueMap
     );
   };
 }
