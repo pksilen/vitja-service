@@ -14,8 +14,9 @@ import { SalesItem } from './types/entities/SalesItem';
 import _Id from '../../backk/types/id/_Id';
 import {
   INVALID_SALES_ITEM_STATE,
-  MAXIMUM_SALES_ITEM_COUNT_EXCEEDED, SALES_ITEM_UPDATE_FAILED_DUE_TO_STATE_NOT_FOR_SALE
-} from "./errors/salesItemServiceErrors";
+  MAXIMUM_SALES_ITEM_COUNT_EXCEEDED,
+  SALES_ITEM_UPDATE_FAILED_DUE_TO_STATE_NOT_FOR_SALE
+} from './errors/salesItemServiceErrors';
 import { Errors } from '../../backk/decorators/service/function/Errors';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 import { SalesItemState } from './types/enums/SalesItemState';
@@ -31,6 +32,7 @@ import User from '../user/types/entities/User';
 import FollowedUserSalesItem from './types/responses/FollowedUserSalesItem';
 import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
 import executeForAll from '../../backk/utils/executeForAll';
+import ChangeExpiredReservedSalesItemsStateToForSaleArg from './types/args/ChangeExpiredReservedSalesItemsStateToForSaleArg';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -221,6 +223,30 @@ export default class SalesItemServiceImpl extends SalesItemService {
           }
         : undefined
     });
+  }
+
+  @CronJob({ minuteInterval: 1 })
+  changeExpiredReservedSalesItemsStateToForSale({
+    maxSalesItemReservationDurationInMinutes
+  }: ChangeExpiredReservedSalesItemsStateToForSaleArg): PromiseOfErrorOr<null> {
+    const filters = this.dbManager.getFilters(
+      {
+        state: 'reserved',
+        lastModifiedTimestamp: {
+          $lte: dayjs()
+            .subtract(maxSalesItemReservationDurationInMinutes, 'minutes')
+            .toDate()
+        }
+      },
+      [
+        new SqlEquals({ state: 'reserved' }),
+        new SqlExpression(
+          `lastmodifiedtimestamp <= current_timestamp - INTERVAL '${maxSalesItemReservationDurationInMinutes}' minute`
+        )
+      ]
+    );
+
+    return this.dbManager.deleteEntitiesByFilters(filters, SalesItem);
   }
 
   @CronJob({ minutes: 0, hours: 2 })

@@ -1,15 +1,16 @@
-import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
-import { SalesItem } from "./types/entities/SalesItem";
-import _Id from "../../backk/types/id/_Id";
-import CrudEntityService from "../../backk/service/crudentity/CrudEntityService";
-import GetSalesItemsByUserDefinedFiltersArg from "./types/args/GetSalesItemsByUserDefinedFiltersArg";
-import { SalesItemState } from "./types/enums/SalesItemState";
-import DeleteOldUnsoldSalesItemsArg from "./types/args/DeleteOldUnsoldSalesItemsArg";
-import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
-import UserAccountId from "../../backk/types/useraccount/UserAccountId";
-import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
-import FollowedUserSalesItem from "./types/responses/FollowedUserSalesItem";
-import ShoppingCartOrOrderSalesItem from "../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem";
+import GetSalesItemsArg from './types/args/GetSalesItemsArg';
+import { SalesItem } from './types/entities/SalesItem';
+import _Id from '../../backk/types/id/_Id';
+import CrudEntityService from '../../backk/service/crudentity/CrudEntityService';
+import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
+import { SalesItemState } from './types/enums/SalesItemState';
+import DeleteOldUnsoldSalesItemsArg from './types/args/DeleteOldUnsoldSalesItemsArg';
+import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
+import UserAccountId from '../../backk/types/useraccount/UserAccountId';
+import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import FollowedUserSalesItem from './types/responses/FollowedUserSalesItem';
+import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
+import ChangeExpiredReservedSalesItemsStateToForSaleArg from './types/args/ChangeExpiredReservedSalesItemsStateToForSaleArg';
 
 export default abstract class SalesItemService extends CrudEntityService {
   abstract deleteAllSalesItems(): PromiseOfErrorOr<null>;
@@ -33,6 +34,10 @@ export default abstract class SalesItemService extends CrudEntityService {
     _id: string,
     salesItemState: SalesItemState,
     requiredCurrentState?: SalesItemState
+  ): PromiseOfErrorOr<null>;
+
+  abstract changeExpiredReservedSalesItemsStateToForSale(
+    arg: ChangeExpiredReservedSalesItemsStateToForSaleArg
   ): PromiseOfErrorOr<null>;
 
   abstract deleteOldUnsoldSalesItems(arg: DeleteOldUnsoldSalesItemsArg): PromiseOfErrorOr<null>;
