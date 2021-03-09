@@ -1,5 +1,5 @@
 - tests:
-  - testName: create followed user
+  - testName: create followed user's account
   testTemplate:
     serviceFunctionName: userAccountService.createUserAccount
     argument:
