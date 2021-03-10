@@ -1,11 +1,12 @@
-import { Projection } from '../../../../../../types/postqueryoperations/Projection';
-import getClassPropertyNameToPropertyTypeNameMap from '../../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import typePropertyAnnotationContainer from '../../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import shouldIncludeField from './shouldIncludeField';
-import getTypeInfoForTypeName from '../../../../../../utils/type/getTypeInfoForTypeName';
-import isEntityTypeName from '../../../../../../utils/type/isEntityTypeName';
-import AbstractSqlDbManager from '../../../../../AbstractSqlDbManager';
-import entityAnnotationContainer from '../../../../../../decorators/entity/entityAnnotationContainer';
+import { Projection } from "../../../../../../types/postqueryoperations/Projection";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import typePropertyAnnotationContainer
+  from "../../../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import shouldIncludeField from "./shouldIncludeField";
+import getTypeInfoForTypeName from "../../../../../../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from "../../../../../../utils/type/isEntityTypeName";
+import AbstractSqlDbManager from "../../../../../AbstractSqlDbManager";
 
 export default function getFieldsForEntity(
   dbManager: AbstractSqlDbManager,
@@ -52,15 +53,17 @@ export default function getFieldsForEntity(
             'Id'
           ).toLowerCase();
 
-          fields.push(`${dbManager.schema}_${tableAlias}.${idFieldName} AS ${tableAlias}_${idFieldName}`);
+          const relationEntityName = (tableAlias + '_' + entityPropertyName).toLowerCase();
+
+          fields.push(`${dbManager.schema}_${relationEntityName}.${idFieldName} AS ${tableAlias}_${idFieldName}`);
 
           const singularFieldName = entityPropertyName.slice(0, -1).toLowerCase();
 
           fields.push(
-            `${dbManager.schema}_${tableAlias}.${singularFieldName} AS ${tableAlias}_${singularFieldName}`
+            `${dbManager.schema}_${relationEntityName}.${singularFieldName} AS ${tableAlias}_${singularFieldName}`
           );
 
-          fields.push(`${dbManager.schema}_${tableAlias}.id AS ${tableAlias}_id`);
+          fields.push(`${dbManager.schema}_${relationEntityName}.id AS ${tableAlias}_id`);
         }
       } else {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
