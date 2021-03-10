@@ -55,15 +55,15 @@ export default function getFieldsForEntity(
 
           const relationEntityName = (tableAlias + '_' + entityPropertyName).toLowerCase();
 
-          fields.push(`${dbManager.schema}_${relationEntityName}.${idFieldName} AS ${tableAlias}_${idFieldName}`);
+          fields.push(`${dbManager.schema}_${relationEntityName}.${idFieldName} AS ${relationEntityName}_${idFieldName}`);
 
           const singularFieldName = entityPropertyName.slice(0, -1).toLowerCase();
 
           fields.push(
-            `${dbManager.schema}_${relationEntityName}.${singularFieldName} AS ${tableAlias}_${singularFieldName}`
+            `${dbManager.schema}_${relationEntityName}.${singularFieldName} AS ${relationEntityName}_${singularFieldName}`
           );
 
-          fields.push(`${dbManager.schema}_${relationEntityName}.id AS ${tableAlias}_id`);
+          fields.push(`${dbManager.schema}_${relationEntityName}.id AS ${relationEntityName}_id`);
         }
       } else {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {

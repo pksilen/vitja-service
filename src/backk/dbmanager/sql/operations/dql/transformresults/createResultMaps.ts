@@ -86,12 +86,12 @@ function updateResultMaps(
       }
     } else if (isArrayType) {
       if (shouldIncludeField(fieldName, fieldPath, projection)) {
-        const relationEntityName = entityName + '_' + fieldName.slice(0, -1);
+        const relationEntityName = tablePath + '_' + fieldName.toLowerCase();
 
         resultMap.collections.push({
           name: fieldName,
           mapId: relationEntityName + 'Map',
-          columnPrefix: tablePath + '_' + fieldName.toLowerCase() + '_'
+          columnPrefix: relationEntityName + '_'
         });
 
         updateResultMaps(
