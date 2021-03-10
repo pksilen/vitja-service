@@ -112,7 +112,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       [
         new SqlEquals({ state: 'forSale' }),
         new SqlExpression('title LIKE :textFilter OR description LIKE :textFilter', {
-          textFilter: `%${textFilter}%`
+          textFilter: textFilter ? `%${textFilter}%` : undefined
         }),
         new SqlInExpression('area', areas),
         new SqlInExpression('productDepartment', productDepartments),
