@@ -1,18 +1,17 @@
-import entityAnnotationContainer from "../../../../../decorators/entity/entityAnnotationContainer";
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import { Projection } from "../../../../../types/postqueryoperations/Projection";
-import shouldIncludeField from "../utils/columns/shouldIncludeField";
-import getTypeInfoForTypeName from "../../../../../utils/type/getTypeInfoForTypeName";
-import isEntityTypeName from "../../../../../utils/type/isEntityTypeName";
-import tryGetWhereClause from "./tryGetWhereClause";
-import tryGetSortClause from "./tryGetOrderByClause";
-import getPaginationClause from "./getPaginationClause";
-import SqlExpression from "../../../expressions/SqlExpression";
-import UserDefinedFilter from "../../../../../types/userdefinedfilters/UserDefinedFilter";
-import AbstractSqlDbManager from "../../../../AbstractSqlDbManager";
-import SortBy from "../../../../../types/postqueryoperations/SortBy";
-import Pagination from "../../../../../types/postqueryoperations/Pagination";
+import entityAnnotationContainer from '../../../../../decorators/entity/entityAnnotationContainer';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import { Projection } from '../../../../../types/postqueryoperations/Projection';
+import shouldIncludeField from '../utils/columns/shouldIncludeField';
+import getTypeInfoForTypeName from '../../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../../utils/type/isEntityTypeName';
+import tryGetWhereClause from './tryGetWhereClause';
+import tryGetSortClause from './tryGetOrderByClause';
+import getPaginationClause from './getPaginationClause';
+import SqlExpression from '../../../expressions/SqlExpression';
+import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefinedFilter';
+import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
+import SortBy from '../../../../../types/postqueryoperations/SortBy';
+import Pagination from '../../../../../types/postqueryoperations/Pagination';
 
 // noinspection OverlyComplexFunctionJS
 export default function getJoinClauses(

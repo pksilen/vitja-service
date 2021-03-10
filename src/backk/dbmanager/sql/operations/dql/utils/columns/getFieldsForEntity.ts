@@ -5,7 +5,7 @@ import shouldIncludeField from './shouldIncludeField';
 import getTypeInfoForTypeName from '../../../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../../../utils/type/isEntityTypeName';
 import AbstractSqlDbManager from '../../../../../AbstractSqlDbManager';
-import { doesClassPropertyContainCustomValidation } from '../../../../../../validation/setClassPropertyValidationDecorators';
+import entityAnnotationContainer from '../../../../../../decorators/entity/entityAnnotationContainer';
 
 export default function getFieldsForEntity(
   dbManager: AbstractSqlDbManager,
