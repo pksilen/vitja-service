@@ -33,7 +33,7 @@ export default async function getEntitiesByIds<T>(
       if (isNaN(numericId)) {
         throw createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.INVALID_ARGUMENT,
-          errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + ' all _ids must be numeric values'
+          message: BACKK_ERRORS.INVALID_ARGUMENT.message + ' all _ids must be numeric values'
         });
       }
 
@@ -60,7 +60,7 @@ export default async function getEntitiesByIds<T>(
     if (dbManager.getResultRows(result).length === 0) {
       return [null, createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-        errorMessage: `${EntityClass.name}s with _ids: ${_ids.join(', ')} not found`
+        message: `${EntityClass.name}s with _ids: ${_ids.join(', ')} not found`
       })];
     }
 

@@ -84,7 +84,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
         preHooks: {
           isSuccessfulOrTrue: async () =>
             this.salesItemService.updateSalesItemState(salesItemId, 'reserved', 'forSale'),
-          errorMessage: shoppingCartServiceErrors.salesItemReservedOrSold
+          error: shoppingCartServiceErrors.salesItemReservedOrSold
         }
       }
     );

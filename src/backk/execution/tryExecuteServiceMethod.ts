@@ -66,7 +66,7 @@ export default async function tryExecuteServiceMethod(
         ) {
           throw createBackkErrorFromErrorCodeMessageAndStatus({
             ...BACKK_ERRORS.INVALID_ARGUMENT,
-            errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + 'too many service functions called'
+            message: BACKK_ERRORS.INVALID_ARGUMENT.message + 'too many service functions called'
           });
         }
       } else {
@@ -141,8 +141,8 @@ export default async function tryExecuteServiceMethod(
       } catch (error) {
         throw createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.INVALID_ARGUMENT,
-          errorMessage:
-            BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +
+          message:
+            BACKK_ERRORS.INVALID_ARGUMENT.message +
             'argument not valid or too long. Argument must be a URI encoded JSON string'
         });
       }
@@ -155,7 +155,7 @@ export default async function tryExecuteServiceMethod(
       } else {
         throw createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.UNKNOWN_SERVICE,
-          errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE.errorMessage + serviceName
+          message: BACKK_ERRORS.UNKNOWN_SERVICE.message + serviceName
         });
       }
     } else if (serviceFunctionName === 'livenessCheckService.isServiceAlive') {
@@ -173,7 +173,7 @@ export default async function tryExecuteServiceMethod(
     if (!controller[serviceName]) {
       throw createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.UNKNOWN_SERVICE,
-        errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE.errorMessage + serviceName
+        message: BACKK_ERRORS.UNKNOWN_SERVICE.message + serviceName
       });
     }
 
@@ -183,7 +183,7 @@ export default async function tryExecuteServiceMethod(
     if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
       throw createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.UNKNOWN_SERVICE_FUNCTION,
-        errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE_FUNCTION.errorMessage + serviceFunctionName
+        message: BACKK_ERRORS.UNKNOWN_SERVICE_FUNCTION.message + serviceFunctionName
       });
     }
 
@@ -197,7 +197,7 @@ export default async function tryExecuteServiceMethod(
     ) {
       throw createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.INVALID_ARGUMENT,
-        errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + 'argument must be a JSON object'
+        message: BACKK_ERRORS.INVALID_ARGUMENT.message + 'argument must be a JSON object'
       });
     }
 

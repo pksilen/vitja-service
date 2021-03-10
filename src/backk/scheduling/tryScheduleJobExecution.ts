@@ -30,7 +30,7 @@ export default async function tryScheduleJobExecution(
     });
   } catch (validationErrors) {
     const errorMessage =
-      `Error code ${BACKK_ERRORS.INVALID_ARGUMENT.errorCode}:${BACKK_ERRORS.INVALID_ARGUMENT.errorMessage}:` +
+      `Error code ${BACKK_ERRORS.INVALID_ARGUMENT.errorCode}:${BACKK_ERRORS.INVALID_ARGUMENT.message}:` +
       getValidationErrors(validationErrors);
     createErrorFromErrorMessageAndThrowError(
       createErrorMessageWithStatusCode(errorMessage, HttpStatusCodes.BAD_REQUEST)
@@ -54,7 +54,7 @@ export default async function tryScheduleJobExecution(
   if (!controller[serviceName]) {
     throw createErrorFromErrorCodeMessageAndStatus({
       ...BACKK_ERRORS.UNKNOWN_SERVICE,
-      errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE.errorMessage + serviceName
+      message: BACKK_ERRORS.UNKNOWN_SERVICE.message + serviceName
     });
   }
 
@@ -64,7 +64,7 @@ export default async function tryScheduleJobExecution(
   if (!controller[serviceName][functionName] || !serviceFunctionResponseValueTypeName) {
     throw createErrorFromErrorCodeMessageAndStatus({
       ...BACKK_ERRORS.UNKNOWN_SERVICE_FUNCTION,
-      errorMessage: BACKK_ERRORS.UNKNOWN_SERVICE_FUNCTION.errorMessage + serviceFunctionName
+      message: BACKK_ERRORS.UNKNOWN_SERVICE_FUNCTION.message + serviceFunctionName
     });
   }
 

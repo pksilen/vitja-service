@@ -19,7 +19,7 @@ export default function getPaginationClause(subEntityPath: string, paginations: 
   if (!pagination && subEntityPath === '') {
     throw createErrorFromErrorCodeMessageAndStatus({
       ...BACKK_ERRORS.INVALID_ARGUMENT,
-      errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + "missing pagination for root entity (subEntityPath: '')"
+      message: BACKK_ERRORS.INVALID_ARGUMENT.message + "missing pagination for root entity (subEntityPath: '')"
     });
   }
 

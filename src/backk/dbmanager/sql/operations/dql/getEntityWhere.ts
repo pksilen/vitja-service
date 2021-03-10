@@ -68,7 +68,7 @@ export default async function getEntityWhere<T>(
     if (dbManager.getResultRows(result).length === 0) {
       return [null, createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-        errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
+        message: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
       })];
     }
 

@@ -136,8 +136,8 @@ export default async function executeMultipleServiceFunctions(
   if (!areServiceFunctionCallsValid) {
     throw createErrorFromErrorCodeMessageAndStatus({
       ...BACKK_ERRORS.INVALID_ARGUMENT,
-      errorMessage:
-        BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +
+      message:
+        BACKK_ERRORS.INVALID_ARGUMENT.message +
         'unknown service(s) or function(s) or invalid argument(s)'
     });
   }

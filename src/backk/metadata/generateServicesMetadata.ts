@@ -188,10 +188,10 @@ export default function generateServicesMetadata<T>(
         },
         types: {
           ...typesMetadata,
-          ErrorResponse: {
+          BackkError: {
             statusCode: 'integer',
             errorCode: '?string',
-            errorMessage: 'string',
+            message: 'string',
             stackTrace: '?string'
           }
         },

@@ -7,6 +7,6 @@ export default function createErrorFromErrorCodeMessageAndStatus(errorCodeMessag
     ':Error code ' +
     errorCodeMessageAndStatus.errorCode +
     ':' +
-    errorCodeMessageAndStatus.errorMessage
+    errorCodeMessageAndStatus.message
   )
 }

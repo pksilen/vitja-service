@@ -153,7 +153,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
     return this.dbManager.updateEntity({ _id, password: newPassword }, UserAccount, {
       preHooks: {
         isSuccessfulOrTrue: ({ password: hashedPassword }) => argon2.verify(hashedPassword, currentPassword),
-        errorMessage: userAccountServiceErrors.invalidCurrentPasswordError,
+        error: userAccountServiceErrors.invalidCurrentPasswordError,
         shouldDisregardFailureWhenExecutingTests: true
       }
     });

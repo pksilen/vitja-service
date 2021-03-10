@@ -95,7 +95,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
         // noinspection ExceptionCaughtLocallyJS
         throw createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED,
-          errorMessage:
+          message:
             parentEntityClassAndPropertyNameForSubEntity[0].name +
             '.' +
             parentEntityClassAndPropertyNameForSubEntity[1] +

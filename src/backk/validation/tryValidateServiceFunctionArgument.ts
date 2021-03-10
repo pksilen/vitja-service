@@ -73,7 +73,7 @@ export default async function tryValidateServiceFunctionArgument(
     }
 
     const errorMessage =
-      `Error code ${BACKK_ERRORS.INVALID_ARGUMENT.errorCode}:${BACKK_ERRORS.INVALID_ARGUMENT.errorMessage}` +
+      `Error code ${BACKK_ERRORS.INVALID_ARGUMENT.errorCode}:${BACKK_ERRORS.INVALID_ARGUMENT.message}` +
       getValidationErrors(validationErrors);
 
     createErrorFromErrorMessageAndThrowError(

@@ -58,7 +58,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
       // noinspection ExceptionCaughtLocallyJS
       throw createErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.INVALID_ARGUMENT,
-        errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + idFieldName + ': must be a numeric id'
+        message: BACKK_ERRORS.INVALID_ARGUMENT.message + idFieldName + ': must be a numeric id'
       });
     }
 

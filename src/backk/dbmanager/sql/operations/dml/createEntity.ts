@@ -86,8 +86,8 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
             if (isNaN(numericId)) {
               throw createErrorFromErrorCodeMessageAndStatus({
                 ...BACKK_ERRORS.INVALID_ARGUMENT,
-                errorMessage:
-                  BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +
+                message:
+                  BACKK_ERRORS.INVALID_ARGUMENT.message +
                   EntityClass.name +
                   '.' +
                   fieldName +
@@ -160,8 +160,8 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
                 if (parseInt(subEntity.id, 10) !== index) {
                   throw createErrorFromErrorCodeMessageAndStatus({
                     ...BACKK_ERRORS.INVALID_ARGUMENT,
-                    errorMessage:
-                      BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +
+                    message:
+                      BACKK_ERRORS.INVALID_ARGUMENT.message +
                       EntityClass.name +
                       '.' +
                       fieldName +
@@ -242,7 +242,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
     if (dbManager.isDuplicateEntityError(errorOrBackkError)) {
       return [null, createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.DUPLICATE_ENTITY,
-        errorMessage: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(1)}`
+        message: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(1)}`
       })];
     }
 

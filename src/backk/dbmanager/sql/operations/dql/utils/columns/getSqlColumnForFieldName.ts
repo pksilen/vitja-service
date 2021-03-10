@@ -17,7 +17,7 @@ export default function tryGetSqlColumnForFieldName(
   } catch (error) {
     throw createErrorFromErrorCodeMessageAndStatus({
       ...BACKK_ERRORS.INVALID_ARGUMENT,
-      errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + 'invalid sub pagination field: ' + fieldName
+      message: BACKK_ERRORS.INVALID_ARGUMENT.message + 'invalid sub pagination field: ' + fieldName
     });
   }
 

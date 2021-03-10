@@ -75,7 +75,7 @@ export default async function updateEntity<T extends BackkEntity>(
       if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
         eTagCheckPreHook = {
           isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
-          errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
+          error: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -87,7 +87,7 @@ export default async function updateEntity<T extends BackkEntity>(
         eTagCheckPreHook = {
           isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
             lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
-          errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
+          error: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
         };
 
         finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -243,8 +243,8 @@ export default async function updateEntity<T extends BackkEntity>(
             // noinspection ExceptionCaughtLocallyJS
             throw createErrorFromErrorCodeMessageAndStatus({
               ...BACKK_ERRORS.INVALID_ARGUMENT,
-              errorMessage:
-                BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + idFieldName + ': must be a numeric id'
+              message:
+                BACKK_ERRORS.INVALID_ARGUMENT.message + idFieldName + ': must be a numeric id'
             });
           }
 
@@ -303,7 +303,7 @@ export default async function updateEntity<T extends BackkEntity>(
         // noinspection ExceptionCaughtLocallyJS
         throw createErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.INVALID_ARGUMENT,
-          errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + idFieldName + ': must be a numeric id'
+          message: BACKK_ERRORS.INVALID_ARGUMENT.message + idFieldName + ': must be a numeric id'
         });
       }
     }

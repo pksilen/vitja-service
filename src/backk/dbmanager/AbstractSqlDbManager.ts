@@ -539,7 +539,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
         null,
         createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-          errorMessage: EntityClass.name + ' with given filter(s) not found'
+          message: EntityClass.name + ' with given filter(s) not found'
         })
       ];
     }

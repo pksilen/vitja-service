@@ -286,7 +286,7 @@ export default class MongoDbManager extends AbstractDbManager {
               null,
               createBackkErrorFromErrorCodeMessageAndStatus({
                 ...BACKK_ERRORS.DUPLICATE_ENTITY,
-                errorMessage: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(
+                message: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(
                   1
                 )}`
               })
@@ -411,7 +411,7 @@ export default class MongoDbManager extends AbstractDbManager {
             // noinspection ExceptionCaughtLocallyJS
             throw createBackkErrorFromErrorCodeMessageAndStatus({
               ...BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED,
-              errorMessage:
+              message:
                 parentEntityClassAndPropertyNameForSubEntity[0].name +
                 '.' +
                 parentEntityClassAndPropertyNameForSubEntity[1] +
@@ -603,7 +603,7 @@ export default class MongoDbManager extends AbstractDbManager {
         null,
         createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-          errorMessage: `${EntityClass.name} with given filter(s) not found`
+          message: `${EntityClass.name} with given filter(s) not found`
         })
       ];
     }
@@ -710,7 +710,7 @@ export default class MongoDbManager extends AbstractDbManager {
             null,
             createBackkErrorFromErrorCodeMessageAndStatus({
               ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-              errorMessage: `${EntityClass.name} with _id: ${_id} not found`
+              message: `${EntityClass.name} with _id: ${_id} not found`
             })
           ];
         }
@@ -897,7 +897,7 @@ export default class MongoDbManager extends AbstractDbManager {
             null,
             createBackkErrorFromErrorCodeMessageAndStatus({
               ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-              errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
+              message: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
             })
           ]
         : [entities[0], null];
@@ -972,7 +972,7 @@ export default class MongoDbManager extends AbstractDbManager {
             null,
             createBackkErrorFromErrorCodeMessageAndStatus({
               ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-              errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
+              message: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
             })
           ]
         : [entities, null];
@@ -1042,7 +1042,7 @@ export default class MongoDbManager extends AbstractDbManager {
             if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
               eTagCheckPreHook = {
                 isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
-                errorMessage: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
+                error: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
               };
 
               finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -1054,7 +1054,7 @@ export default class MongoDbManager extends AbstractDbManager {
               eTagCheckPreHook = {
                 isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
                   lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
-                errorMessage: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
+                error: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
               };
 
               finalPreHooks = [eTagCheckPreHook, ...finalPreHooks];
@@ -1128,7 +1128,7 @@ export default class MongoDbManager extends AbstractDbManager {
             null,
             createBackkErrorFromErrorCodeMessageAndStatus({
               ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-              errorMessage: EntityClass.name + ' with id: ' + _id + ' not found'
+              message: EntityClass.name + ' with id: ' + _id + ' not found'
             })
           ];
         }

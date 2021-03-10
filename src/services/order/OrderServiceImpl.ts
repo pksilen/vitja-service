@@ -100,7 +100,7 @@ export default class OrderServiceImpl extends OrderService {
         isSuccessfulOrTrue: (order) =>
           JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
           'toBeDelivered',
-        errorMessage: orderServiceErrors.cannotDeleteOrderItemWhichIsAlreadyDelivered
+        error: orderServiceErrors.cannotDeleteOrderItemWhichIsAlreadyDelivered
       },
       postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
     });
@@ -134,7 +134,7 @@ export default class OrderServiceImpl extends OrderService {
         () => this.shoppingCartService.deleteShoppingCart({ _id }),
         {
           isSuccessfulOrTrue: ({ paymentInfo }) => paymentInfo.transactionId === null,
-          errorMessage: orderServiceErrors.orderAlreadyPaid
+          error: orderServiceErrors.orderAlreadyPaid
         }
       ],
       postHook: () =>
@@ -167,7 +167,7 @@ export default class OrderServiceImpl extends OrderService {
           isSuccessfulOrTrue: (order) =>
             JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
             'toBeDelivered',
-          errorMessage: orderServiceErrors.cannotDeliverOrderWhichIsAlreadyDelivered
+          error: orderServiceErrors.cannotDeliverOrderWhichIsAlreadyDelivered
         },
         postHook: () =>
           sendToRemoteService(
@@ -211,7 +211,7 @@ export default class OrderServiceImpl extends OrderService {
                 json: order,
                 path: `orderItems[?(@.id == '${orderItemId}')].state`
               })[0] === OrderServiceImpl.getValidPreviousOrderStateFor(newState),
-            errorMessage: orderServiceErrors.cannotUpdateOrderItemStateDueToInvalidCurrentState
+            error: orderServiceErrors.cannotUpdateOrderItemStateDueToInvalidCurrentState
           }
         ],
         postHook: {
@@ -323,7 +323,7 @@ export default class OrderServiceImpl extends OrderService {
         {
           isSuccessfulOrTrue: (order) =>
             JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
-          errorMessage: orderServiceErrors.deleteOrderNotAllowed,
+          error: orderServiceErrors.deleteOrderNotAllowed,
           shouldDisregardFailureWhenExecutingTests: true
         },
         (order) =>

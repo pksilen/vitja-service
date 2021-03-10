@@ -59,15 +59,15 @@ export default async function tryExecutePreHooks<T extends BackkEntity | SubEnti
 
           let errorMessage = 'Pre-hook evaluated to false without specific error message';
 
-          if (preHook.errorMessage) {
+          if (preHook.error) {
             errorMessage =
-              'Error code ' + preHook.errorMessage.errorCode + ':' + preHook.errorMessage.errorMessage;
+              'Error code ' + preHook.error.errorCode + ':' + preHook.error.message;
           }
 
           throw new Error(
             createErrorMessageWithStatusCode(
               errorMessage,
-              preHook.errorMessage?.statusCode ?? HttpStatusCodes.BAD_REQUEST
+              preHook.error?.statusCode ?? HttpStatusCodes.BAD_REQUEST
             )
           );
         }

@@ -186,7 +186,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       preHooks: [
         {
           isSuccessfulOrTrue: ({ state }) => state === 'forSale',
-          errorMessage: salesItemServiceErrors.updateFailedBecauseSalesItemStateIsNotForSale
+          error: salesItemServiceErrors.updateFailedBecauseSalesItemStateIsNotForSale
         },
         ({ _id, price }) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem)
       ]
@@ -211,7 +211,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       preHooks: requiredCurrentState
         ? {
             isSuccessfulOrTrue: ({ state }) => state === requiredCurrentState,
-            errorMessage: salesItemServiceErrors.invalidSalesItemState
+            error: salesItemServiceErrors.invalidSalesItemState
           }
         : undefined
     });

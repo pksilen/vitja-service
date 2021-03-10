@@ -51,7 +51,7 @@ export default async function tryExecuteCreatePreHooks(preHooks: CreatePreHook |
 
         if (preHook.errorMessage) {
           errorMessage =
-            'Error code ' + preHook.errorMessage.errorCode + ':' + preHook.errorMessage.errorMessage;
+            'Error code ' + preHook.errorMessage.errorCode + ':' + preHook.errorMessage.message;
         }
 
         throw new Error(

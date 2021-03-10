@@ -6,7 +6,7 @@ export default function assertIsNumber(propertyName: string, value: any) {
   if (typeof value !== 'number') {
     throw createBackkErrorFromErrorCodeMessageAndStatus({
       ...BACKK_ERRORS.INVALID_ARGUMENT,
-      errorMessage:
+      message:
         BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + `value ${value} in ${propertyName} property must be a number`
     });
   }

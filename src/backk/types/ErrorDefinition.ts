@@ -1,6 +1,6 @@
 export type ErrorDefinition = {
   readonly errorCode: string;
-  readonly errorMessage: string;
+  readonly message: string;
   readonly statusCode?: number;
 };
 

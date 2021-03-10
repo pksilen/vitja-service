@@ -77,7 +77,7 @@ export default async function getEntitiesWhere<T>(
         null,
         createBackkErrorFromErrorCodeMessageAndStatus({
           ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-          errorMessage: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
+          message: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
         })
       ];
     }

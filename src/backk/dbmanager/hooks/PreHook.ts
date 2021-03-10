@@ -5,7 +5,7 @@ import { BackkError } from '../../types/BackkError';
 
 export interface ErrorCodeAndMessageAndStatus {
   errorCode: string;
-  errorMessage: string;
+  message: string;
   statusCode?: number;
 }
 
@@ -15,7 +15,7 @@ export type PreHook<T extends BackkEntity | SubEntity> =
       isSuccessfulOrTrue: (
         entity: T
       ) => PromiseOfErrorOr<BackkEntity | null> | Promise<boolean | BackkError | null | undefined> | boolean;
-      errorMessage?: ErrorCodeAndMessageAndStatus;
+      error?: ErrorCodeAndMessageAndStatus;
       shouldDisregardFailureWhenExecutingTests?: boolean;
     }
   | ((

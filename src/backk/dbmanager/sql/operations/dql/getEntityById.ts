@@ -52,7 +52,7 @@ export default async function getEntityById<T>(
       // noinspection ExceptionCaughtLocallyJS
       throw createErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.INVALID_ARGUMENT,
-        errorMessage: BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + idFieldName + ' must be a numeric id'
+        message: BACKK_ERRORS.INVALID_ARGUMENT.message + idFieldName + ' must be a numeric id'
       });
     }
 
@@ -74,7 +74,7 @@ export default async function getEntityById<T>(
     if (dbManager.getResultRows(result).length === 0) {
       return [null, createBackkErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-        errorMessage: `${EntityClass.name} with _id: ${_id} not found`
+        message: `${EntityClass.name} with _id: ${_id} not found`
       })];
     }
 

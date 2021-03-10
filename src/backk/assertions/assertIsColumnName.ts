@@ -6,7 +6,7 @@ export default function assertIsColumnName(propertyName: string, columnName: str
   if (columnName.match(/^[a-zA-Z_][a-zA-Z0-9_.]*$/) == null) {
     throw createBackkErrorFromErrorCodeMessageAndStatus({
       ...BACKK_ERRORS.INVALID_ARGUMENT,
-      errorMessage:
+      message:
         BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +
         `value ${columnName} in ${propertyName} property is not a valid column name`
     });
