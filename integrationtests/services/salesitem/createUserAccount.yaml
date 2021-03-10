@@ -4,8 +4,8 @@
     serviceFunctionName: userAccountService.createUserAccount
     response:
       tests:
-        - pm.collectionVariables.set('userId', response._id)
-    executeAfter: salesItemService.createSalesItem
+        - pm.collectionVariables.set('userAccountId', response._id)
+    executeBefore: salesItemService.createSalesItem
 
 
 
