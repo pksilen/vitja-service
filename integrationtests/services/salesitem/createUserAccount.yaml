@@ -5,7 +5,7 @@
     response:
       tests:
         - pm.collectionVariables.set('userId', response._id)
-    executeBefore: userService.getUsers
+    executeAfter: salesItemService.createSalesItem
 
 
 
