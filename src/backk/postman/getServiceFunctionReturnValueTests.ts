@@ -264,7 +264,7 @@ export default function getServiceFunctionReturnValueTests(
     return true; 
 })`
           );
-        } else if (isArrayType) {
+        } else if (responsePath.startsWith('[0].')) {
           javascriptLines.push(
             `pm.test("response${responsePath}${propertyName}", function () {
   if (response${responsePath.slice(
