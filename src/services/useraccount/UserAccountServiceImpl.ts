@@ -120,7 +120,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestAfter('salesItemService.createSalesItem')
-  @TestEntityAfterThisOperation('expect favoriteSalesItems to contain a sales item', {
+  @TestEntityAfterThisOperation('expect user account´s favoriteSalesItems to contain a sales item', {
     'favoriteSalesItems._id': '{{salesItemId}}'
   })
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
@@ -136,7 +136,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestAfter('salesItemService.createSalesItem')
-  @TestEntityAfterThisOperation('expect no favorite sales items', {
+  @TestEntityAfterThisOperation('expect no favorite sales items in user account', {
     favoriteSalesItems: []
   })
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
