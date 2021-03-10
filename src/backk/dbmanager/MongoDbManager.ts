@@ -1149,6 +1149,14 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
+  async updateEntitiesByFilters<T extends object>(
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    entity: Partial<T>,
+    EntityClass: new () => T
+  ): PromiseOfErrorOr<null> {
+    throw new Error('not implemented')
+  }
+
   async updateEntityWhere<T extends BackkEntity>(
     fieldPathName: string,
     fieldValue: T[keyof T],

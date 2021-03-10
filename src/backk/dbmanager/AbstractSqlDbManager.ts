@@ -37,6 +37,7 @@ import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackk
 import { BACKK_ERRORS } from '../errors/backkErrors';
 import { CreatePreHook } from './hooks/CreatePreHook';
 import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
+import updateEntitiesByFilters from './sql/operations/dml/updateEntitiesByFilters';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -676,6 +677,22 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       options?.preHooks,
       options?.postHook,
       options?.postQueryOperations
+    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  async updateEntitiesByFilters<T extends object>(
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    entity: Partial<T>,
+    EntityClass: new () => T
+  ): PromiseOfErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntitiesByFilters');
+    const response = await updateEntitiesByFilters(
+      this,
+      filters,
+      entity,
+      EntityClass
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;

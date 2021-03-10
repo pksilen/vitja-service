@@ -10,7 +10,7 @@ import UserAccountId from '../../backk/types/useraccount/UserAccountId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import FollowedUserSalesItem from './types/responses/FollowedUserSalesItem';
 import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
-import ChangeExpiredReservedSalesItemsStateToForSaleArg from './types/args/ChangeExpiredReservedSalesItemsStateToForSaleArg';
+import ChangeExpiredReservedSalesItemStatesToForSaleArg from './types/args/ChangeExpiredReservedSalesItemStatesToForSaleArg';
 
 export default abstract class SalesItemService extends CrudEntityService {
   abstract deleteAllSalesItems(): PromiseOfErrorOr<null>;
@@ -36,8 +36,8 @@ export default abstract class SalesItemService extends CrudEntityService {
     requiredCurrentState?: SalesItemState
   ): PromiseOfErrorOr<null>;
 
-  abstract changeExpiredReservedSalesItemsStateToForSale(
-    arg: ChangeExpiredReservedSalesItemsStateToForSaleArg
+  abstract changeExpiredReservedSalesItemStatesToForSale(
+    arg: ChangeExpiredReservedSalesItemStatesToForSaleArg
   ): PromiseOfErrorOr<null>;
 
   abstract deleteOldUnsoldSalesItems(arg: DeleteOldUnsoldSalesItemsArg): PromiseOfErrorOr<null>;

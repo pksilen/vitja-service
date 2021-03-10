@@ -1,9 +1,9 @@
-import AbstractDbManager, { Field } from "./AbstractDbManager";
-import { BackkEntity } from "../types/entities/BackkEntity";
-import { SubEntity } from "../types/entities/SubEntity";
-import MongoDbQuery from "./mongodb/MongoDbQuery";
-import SqlExpression from "./sql/expressions/SqlExpression";
-import { PromiseOfErrorOr } from "../types/PromiseOfErrorOr";
+import AbstractDbManager, { Field } from './AbstractDbManager';
+import { BackkEntity } from '../types/entities/BackkEntity';
+import { SubEntity } from '../types/entities/SubEntity';
+import MongoDbQuery from './mongodb/MongoDbQuery';
+import SqlExpression from './sql/expressions/SqlExpression';
+import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 
 export default class NoOpDbManager extends AbstractDbManager {
   getModifyColumnStatement(): string {
@@ -172,5 +172,9 @@ export default class NoOpDbManager extends AbstractDbManager {
 
   shouldConvertTinyIntegersToBooleans(): boolean {
     return false;
+  }
+
+  updateEntitiesByFilters<T extends BackkEntity>(): PromiseOfErrorOr<null> {
+    throw new Error('Not implemented');
   }
 }

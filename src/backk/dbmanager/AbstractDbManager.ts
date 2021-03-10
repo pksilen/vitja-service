@@ -232,6 +232,12 @@ export default abstract class AbstractDbManager {
     }
   ): PromiseOfErrorOr<null>;
 
+  abstract updateEntitiesByFilters<T extends object>(
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    entity: Partial<T>,
+    EntityClass: new () => T
+  ): PromiseOfErrorOr<null>;
+
   updateEntities<T extends BackkEntity>(
     entities: Array<RecursivePartial<T> & { _id: string }>,
     EntityClass: new () => T

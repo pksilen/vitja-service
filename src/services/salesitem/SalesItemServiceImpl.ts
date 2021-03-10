@@ -26,7 +26,7 @@ import User from '../user/types/entities/User';
 import FollowedUserSalesItem from './types/responses/FollowedUserSalesItem';
 import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
 import executeForAll from '../../backk/utils/executeForAll';
-import ChangeExpiredReservedSalesItemsStateToForSaleArg from './types/args/ChangeExpiredReservedSalesItemsStateToForSaleArg';
+import ChangeExpiredReservedSalesItemStatesToForSaleArg from './types/args/ChangeExpiredReservedSalesItemStatesToForSaleArg';
 import { salesItemServiceErrors } from './errors/salesItemServiceErrors';
 
 @Injectable()
@@ -161,15 +161,16 @@ export default class SalesItemServiceImpl extends SalesItemService {
       }
     );
 
-    const followedUserSalesItems = user?.followedUserAccounts
-      ?.map((followedUserAccount) =>
-        followedUserAccount.ownSalesItems.map((ownSalesItem) => ({
-          ...ownSalesItem,
-          userAccountId: followedUserAccount._id,
-          displayName: followedUserAccount.displayName
-        }))
-      )
-      .flat() ?? [];
+    const followedUserSalesItems =
+      user?.followedUserAccounts
+        ?.map((followedUserAccount) =>
+          followedUserAccount.ownSalesItems.map((ownSalesItem) => ({
+            ...ownSalesItem,
+            userAccountId: followedUserAccount._id,
+            displayName: followedUserAccount.displayName
+          }))
+        )
+        .flat() ?? [];
 
     return [followedUserSalesItems, error];
   }
@@ -218,9 +219,9 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @CronJob({ minuteInterval: 1 })
-  changeExpiredReservedSalesItemsStateToForSale({
+  changeExpiredReservedSalesItemStatesToForSale({
     maxSalesItemReservationDurationInMinutes
-  }: ChangeExpiredReservedSalesItemsStateToForSaleArg): PromiseOfErrorOr<null> {
+  }: ChangeExpiredReservedSalesItemStatesToForSaleArg): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {
         state: 'reserved',
@@ -238,7 +239,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       ]
     );
 
-    return this.dbManager.deleteEntitiesByFilters(filters, SalesItem);
+    return this.dbManager.updateEntitiesByFilters(filters, { state: 'forSale' }, SalesItem);
   }
 
   @CronJob({ minutes: 0, hours: 2 })

@@ -1,6 +1,8 @@
 # Vitja service
 
 TODO:
+- test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
+- test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
 - if multiple delete functions, execute create entity before next delete method
 
 - Split to multiple microservices
