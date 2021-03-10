@@ -13,6 +13,7 @@ import isBackkError from '../../../../errors/isBackkError';
 import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import getFilterValues from "../dql/utils/getFilterValues";
 
 export default async function updateEntitiesByFilters<T extends object>(
   dbManager: AbstractSqlDbManager,
@@ -42,14 +43,15 @@ export default async function updateEntitiesByFilters<T extends object>(
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     const whereClause = tryGetWhereClause(dbManager, '', filters as any);
+    const filterValues = getFilterValues(filters as any)
 
     const setStatements = Object.keys(entity)
-      .map((fieldName: string) => fieldName.toLowerCase() + ' = :' + fieldName)
+      .map((fieldName: string) => fieldName.toLowerCase() + ' = :xx' + fieldName)
       .join(', ');
 
     dbManager.tryExecuteQueryWithNamedParameters(
       `UPDATE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} SET ${setStatements} ${whereClause}`,
-      entity
+      filterValues
     );
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
