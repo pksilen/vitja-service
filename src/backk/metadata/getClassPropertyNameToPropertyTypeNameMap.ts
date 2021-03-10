@@ -47,6 +47,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     propNameToDefaultValueMap[propName] = defaultValue;
   });
 
+  // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
   validationMetadatas.forEach((validationMetadata: ValidationMetadata) => {
     if (!validationMetadata.propertyName.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/)) {
       throw new Error(
@@ -75,6 +76,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
     if (
       (validationMetadata.type === 'maxLength' ||
         validationMetadata.type === 'length' ||
+        validationMetadata.type === 'isString' ||
         validationMetadata.type === 'conditionalValidation' ||
         validationMetadata.type === 'nestedValidation') &&
       !validationMetadata.groups?.includes('__backk_none__')
