@@ -4,7 +4,7 @@
       statusCode: 404
     executeAfter: salesItemService.deleteOldUnsoldSalesItems
   tests:
-    - testName: expect no sales items found
+    - testName: expect sales item not to be found
 
 - testTemplate:
     serviceFunctionName: salesItemService.createSalesItem
