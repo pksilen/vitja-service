@@ -28,6 +28,7 @@ import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackk
 import { BACKK_ERRORS } from '../errors/backkErrors';
 import emptyError from '../errors/emptyError';
 import fetchFromRemoteServices from './fetchFromRemoteServices';
+import isBackkError from "../errors/isBackkError";
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -560,22 +561,22 @@ export default async function tryExecuteServiceMethod(
 
     resp?.status(HttpStatusCodes.SUCCESS);
     resp?.send(response);
-  } catch (errorOrErrorResponse) {
-    storedError = errorOrErrorResponse;
-    if (resp && errorOrErrorResponse instanceof HttpException) {
-      resp.status(errorOrErrorResponse.getStatus());
-      resp.send(errorOrErrorResponse.getResponse());
-    } else if (resp && 'errorMessage' in errorOrErrorResponse) {
-      resp.status((errorOrErrorResponse as BackkError).statusCode);
-      resp.send(errorOrErrorResponse);
+  } catch (errorOrBackkError) {
+    storedError = errorOrBackkError;
+    if (resp && errorOrBackkError instanceof HttpException) {
+      resp.status(errorOrBackkError.getStatus());
+      resp.send(errorOrBackkError.getResponse());
+    } else if (resp && isBackkError(errorOrBackkError)) {
+      resp.status((errorOrBackkError as BackkError).statusCode);
+      resp.send(errorOrBackkError);
     } else {
-      if (errorOrErrorResponse instanceof HttpException) {
-        throw errorOrErrorResponse;
-      } else if ('errorMessage' in errorOrErrorResponse) {
-        throw new HttpException(errorOrErrorResponse, errorOrErrorResponse.statusCode);
+      if (errorOrBackkError instanceof HttpException) {
+        throw errorOrBackkError;
+      } else if (isBackkError(errorOrBackkError)) {
+        throw new HttpException(errorOrBackkError, errorOrBackkError.statusCode);
       }
 
-      throw errorOrErrorResponse;
+      throw errorOrBackkError;
     }
   } finally {
     if (controller[serviceName] instanceof UserAccountBaseService || userName) {
