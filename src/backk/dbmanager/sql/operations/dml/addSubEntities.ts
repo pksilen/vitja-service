@@ -123,6 +123,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
         const associationTable = `${EntityClass.name}_${getSingularName(
           parentEntityClassAndPropertyNameForSubEntity[1]
         )}`;
+
         const {
           entityForeignIdFieldName,
           subEntityForeignIdFieldName

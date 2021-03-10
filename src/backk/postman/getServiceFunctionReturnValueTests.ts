@@ -151,8 +151,17 @@ export default function getServiceFunctionReturnValueTests(
       }
     } else if (propertyName === '_id') {
       if (isRecursive) {
-        expectedValue = `pm.collectionVariables.get('${returnValueTypeName.charAt(0).toLowerCase() +
-          returnValueTypeName.slice(1)}Id')`;
+        if (entityAnnotationContainer.entityNameToTableNameMap[returnValueTypeName]) {
+          expectedValue = `pm.collectionVariables.get('${entityAnnotationContainer.entityNameToTableNameMap[
+            returnValueTypeName
+          ]
+            .charAt(0)
+            .toLowerCase() +
+            entityAnnotationContainer.entityNameToTableNameMap[returnValueTypeName].slice(1)}Id')`;
+        } else {
+          expectedValue = `pm.collectionVariables.get('${returnValueTypeName.charAt(0).toLowerCase() +
+            returnValueTypeName.slice(1)}Id')`;
+        }
       } else {
         expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
       }

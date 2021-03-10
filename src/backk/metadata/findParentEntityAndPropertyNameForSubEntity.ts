@@ -1,6 +1,7 @@
 import getClassPropertyNameToPropertyTypeNameMap from './getClassPropertyNameToPropertyTypeNameMap';
 import isEntityTypeName from '../utils/type/isEntityTypeName';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
+import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 
 export default function findParentEntityAndPropertyNameForSubEntity(
   EntityClass: new () => any,
@@ -10,7 +11,13 @@ export default function findParentEntityAndPropertyNameForSubEntity(
   const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
 
   const foundPropertyEntry = Object.entries(entityPropertyNameToPropertyTypeNameMap).find(
-    ([, propertyTypeName]) => getTypeInfoForTypeName(propertyTypeName).baseTypeName === SubEntityClass.name
+    ([, propertyTypeName]) =>
+      getTypeInfoForTypeName(propertyTypeName).baseTypeName === SubEntityClass.name ||
+      Object.entries(entityAnnotationContainer.entityNameToTableNameMap).find(
+        ([entityName, tableName]) =>
+          getTypeInfoForTypeName(propertyTypeName).baseTypeName === entityName &&
+          SubEntityClass.name === tableName
+      )
   );
 
   if (foundPropertyEntry) {
