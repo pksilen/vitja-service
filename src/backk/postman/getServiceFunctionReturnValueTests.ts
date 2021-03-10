@@ -154,15 +154,7 @@ export default function getServiceFunctionReturnValueTests(
         expectedValue = `pm.collectionVariables.get('${returnValueTypeName.charAt(0).toLowerCase() +
           returnValueTypeName.slice(1)}Id')`;
       } else {
-        if (entityAnnotationContainer.entityNameToTableNameMap[serviceEntityName]) {
-          const entityName =
-            entityAnnotationContainer.entityNameToTableNameMap[serviceEntityName].charAt(0).toLowerCase() +
-            entityAnnotationContainer.entityNameToTableNameMap[serviceEntityName].slice(1);
-
-          expectedValue = `pm.collectionVariables.get('${entityName}Id')`;
-        } else {
-          expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
-        }
+        expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
       }
     } else if (propertyName.endsWith('Id') && !isExternalId) {
       expectedValue = `pm.collectionVariables.get('${propertyName}')`;

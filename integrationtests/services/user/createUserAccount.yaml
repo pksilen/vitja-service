@@ -1,0 +1,15 @@
+- tests:
+    - testName: create user account
+  testTemplate:
+    serviceFunctionName: userAccountService.createUserAccount
+    argument:
+      userName: test@test.com
+    response:
+      tests:
+        - pm.collectionVariables.set('userId', response._id)
+    executeBefore: userService.getUsers
+
+
+
+
+
