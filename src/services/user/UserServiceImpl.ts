@@ -22,7 +22,7 @@ export default class UserServiceImpl extends UserService {
   deleteAllUsers(): PromiseOfErrorOr<null> {
     return this.userAccountService.deleteAllUserAccounts();
   }
-  
+
   @AllowForEveryUser()
   getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): PromiseOfErrorOr<User[]> {
     const filters = this.dbManager.getFilters<User>(

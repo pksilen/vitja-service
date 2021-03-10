@@ -24,7 +24,7 @@ export default function setSubEntityInfo(
       entityName,
       subEntityName,
       entityFieldName: fieldName,
-      associationTableName: entityName + '_' + getSingularName(fieldName),
+      associationTableName: tableName + '_' + getSingularName(fieldName),
       entityForeignIdFieldName: tableName.charAt(0).toLowerCase() + tableName.slice(1) + 'Id',
       subEntityForeignIdFieldName: subEntityName.charAt(0).toLowerCase() + subEntityName.slice(1) + 'Id'
     };
