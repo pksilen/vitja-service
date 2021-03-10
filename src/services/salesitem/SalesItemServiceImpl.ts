@@ -27,7 +27,7 @@ import FollowedUserSalesItem from './types/responses/FollowedUserSalesItem';
 import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
 import executeForAll from '../../backk/utils/executeForAll';
 import ChangeExpiredReservedSalesItemsStateToForSaleArg from './types/args/ChangeExpiredReservedSalesItemsStateToForSaleArg';
-import { salesItemServiceErrors } from "./errors/salesItemServiceErrors";
+import { salesItemServiceErrors } from './errors/salesItemServiceErrors';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -161,17 +161,15 @@ export default class SalesItemServiceImpl extends SalesItemService {
       }
     );
 
-    console.log(user);
-
     const followedUserSalesItems = user?.followedUserAccounts
-      .map((followedUserAccount) =>
+      ?.map((followedUserAccount) =>
         followedUserAccount.ownSalesItems.map((ownSalesItem) => ({
           ...ownSalesItem,
           userAccountId: followedUserAccount._id,
           displayName: followedUserAccount.displayName
         }))
       )
-      .flat();
+      .flat() ?? [];
 
     return [followedUserSalesItems, error];
   }

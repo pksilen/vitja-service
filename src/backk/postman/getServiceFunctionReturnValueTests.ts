@@ -264,6 +264,18 @@ export default function getServiceFunctionReturnValueTests(
     return true; 
 })`
           );
+        } else if (isArrayType) {
+          javascriptLines.push(
+            `pm.test("response${responsePath}${propertyName}", function () {
+  if (response${responsePath.slice(
+    0,
+    -1
+  )} !== undefined && response${responsePath}${propertyName} !== undefined) 
+   return ${expectation}
+  else 
+    return true; 
+})`
+          );
         } else {
           javascriptLines.push(
             `pm.test("response${responsePath}${propertyName}", function () {
