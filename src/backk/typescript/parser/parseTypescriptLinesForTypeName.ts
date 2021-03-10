@@ -176,7 +176,9 @@ export default function parseTypescriptLinesForTypeName(
                 if (isPublic) {
                   classProperty.accessibility = 'public';
                   classProperty.decorators = classProperty.decorators?.filter(
-                    (decorator: any) => decorator.expression.callee.name !== 'Private'
+                    (decorator: any) =>
+                      decorator.expression.callee.name !== 'Private' &&
+                      decorator.expression.callee.name !== 'IsUndefined'
                   );
                 }
 
@@ -199,7 +201,9 @@ export default function parseTypescriptLinesForTypeName(
         if (isPublic) {
           classBodyNode.accessibility = 'public';
           classBodyNode.decorators = classBodyNode.decorators?.filter(
-            (decorator: any) => decorator.expression.callee.name !== 'Private'
+            (decorator: any) =>
+              decorator.expression.callee.name !== 'Private' &&
+              decorator.expression.callee.name !== 'IsUndefined'
           );
         }
 
