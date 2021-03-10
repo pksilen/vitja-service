@@ -36,7 +36,7 @@ export default function IsStrongPassword(validationOptions?: ValidationOptions) 
 
           const obj = args.object as any;
 
-          if (obj?.password.toLowerCase().includes(obj?.userName.toLowerCase())) {
+          if (value.toLowerCase().includes(obj?.userName?.toLowerCase())) {
             return false;
           }
 

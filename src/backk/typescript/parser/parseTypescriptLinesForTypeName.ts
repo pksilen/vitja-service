@@ -175,6 +175,9 @@ export default function parseTypescriptLinesForTypeName(
 
                 if (isPublic) {
                   classProperty.accessibility = 'public';
+                  classProperty.decorators = classProperty.decorators?.filter(
+                    (decorator: any) => decorator.expression.callee.name !== 'Private'
+                  );
                 }
 
                 finalClassPropertyDeclarations.push(classProperty);
@@ -195,6 +198,9 @@ export default function parseTypescriptLinesForTypeName(
 
         if (isPublic) {
           classBodyNode.accessibility = 'public';
+          classBodyNode.decorators = classBodyNode.decorators?.filter(
+            (decorator: any) => decorator.expression.callee.name !== 'Private'
+          );
         }
 
         finalClassPropertyDeclarations.push(classBodyNode);
@@ -204,8 +210,13 @@ export default function parseTypescriptLinesForTypeName(
 
   keys.forEach((key) => {
     if (!classPropertyNames.some((classPropertyName) => classPropertyName === key)) {
-      throw new Error('In type file: ' +
-        originatingTypeFilePathName + ': key: ' + key + ' does not exists in type: ' + typeName
+      throw new Error(
+        'In type file: ' +
+          originatingTypeFilePathName +
+          ': key: ' +
+          key +
+          ' does not exists in type: ' +
+          typeName
       );
     }
   });
