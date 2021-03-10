@@ -1,4 +1,11 @@
 - testTemplate:
+    serviceFunctionName: tagService.createTag
+    response:
+      tests:
+        - pm.collectionVariables.set("tagId", response._id)
+    executeBefore: userAccountService.addToFavoriteSalesItems
+
+- testTemplate:
     serviceFunctionName: salesItemService.createSalesItem
     response:
       tests:
