@@ -100,7 +100,7 @@ export default async function tryAuthorize(
 
   createErrorFromErrorMessageAndThrowError(
     createErrorMessageWithStatusCode(
-      `Error code: ${BACKK_ERRORS.SERVICE_FUNCTION_CALL_NOT_AUTHORIZED.errorCode}:${BACKK_ERRORS.SERVICE_FUNCTION_CALL_NOT_AUTHORIZED.errorMessage}`,
+      `Error code: ${BACKK_ERRORS.SERVICE_FUNCTION_CALL_NOT_AUTHORIZED.errorCode}:${BACKK_ERRORS.SERVICE_FUNCTION_CALL_NOT_AUTHORIZED.message}`,
       HttpStatusCodes.FORBIDDEN
     )
   );

@@ -578,6 +578,8 @@ export default async function tryExecuteServiceMethod(
       throw errorOrErrorResponse;
     }
   } finally {
+    console.log(storedError);
+
     if (controller[serviceName] instanceof UserAccountBaseService || userName) {
       const auditLogEntry = createAuditLogEntry(
         userName ?? serviceFunctionArgument?.userName ?? '',

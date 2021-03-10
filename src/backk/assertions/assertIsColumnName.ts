@@ -7,7 +7,7 @@ export default function assertIsColumnName(propertyName: string, columnName: str
     throw createBackkErrorFromErrorCodeMessageAndStatus({
       ...BACKK_ERRORS.INVALID_ARGUMENT,
       message:
-        BACKK_ERRORS.INVALID_ARGUMENT.errorMessage +
+        BACKK_ERRORS.INVALID_ARGUMENT.message +
         `value ${columnName} in ${propertyName} property is not a valid column name`
     });
   }

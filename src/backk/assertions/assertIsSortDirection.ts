@@ -7,7 +7,7 @@ export default function assertIsSortDirection(value: any) {
     throw createBackkErrorFromErrorCodeMessageAndStatus({
       ...BACKK_ERRORS.INVALID_ARGUMENT,
       message:
-        BACKK_ERRORS.INVALID_ARGUMENT.errorMessage + `${value} in 'sortDirection' property is not a valid sort direction`
+        BACKK_ERRORS.INVALID_ARGUMENT.message + `${value} in 'sortDirection' property is not a valid sort direction`
     });
   }
 }

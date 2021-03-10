@@ -78,7 +78,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestEntityAfterThisOperation('expect followed user accounts to contain a user account', {
+  @TestEntityAfterThisOperation('expect followedUserAccounts to contain a user account', {
     'followedUserAccounts._id': '{{followedUserAccountId}}'
   })
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {

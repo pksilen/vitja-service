@@ -100,7 +100,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
             '.' +
             parentEntityClassAndPropertyNameForSubEntity[1] +
             ': ' +
-            BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED.errorMessage
+            BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED.message
         });
       }
     }
