@@ -78,7 +78,7 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
         validationMetadata.type === 'length' ||
         validationMetadata.type === 'isString' ||
         validationMetadata.type === 'conditionalValidation' ||
-        validationMetadata.type === 'nestedValidation') &&
+        validationMetadata.type === 'nestedValidation' || (validationMetadata.type === 'customValidation' && validationMetadata.constraints?.[0] === 'isStringOrObjectId')) &&
       !validationMetadata.groups?.includes('__backk_none__')
     ) {
       if (
