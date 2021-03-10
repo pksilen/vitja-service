@@ -72,7 +72,7 @@ export default class TagServiceImpl extends TagService {
   }
 
   @AllowForEveryUser()
-  getTagsWhoseNameContains({ name }: TagName): PromiseOfErrorOr<Tag[]> {
+  getTagsWhereNameContains({ name }: TagName): PromiseOfErrorOr<Tag[]> {
     const filters = this.dbManager.getFilters<Tag>({ name: new RegExp(name) }, [
       new SqlExpression('name LIKE :name', { name: `%${name}%` })
     ]);
