@@ -8,14 +8,21 @@ import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import User from './types/entities/User';
 import UserService from './UserService';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import UserAccountService from "../useraccount/UserAccountService";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
 export default class UserServiceImpl extends UserService {
-  constructor(dbManager: AbstractDbManager) {
+  constructor(dbManager: AbstractDbManager, private readonly userAccountService: UserAccountService) {
     super({}, dbManager);
   }
 
+  @AllowForTests()
+  deleteAllUsers(): PromiseOfErrorOr<null> {
+    return this.userAccountService.deleteAllUserAccounts();
+  }
+  
   @AllowForEveryUser()
   getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): PromiseOfErrorOr<User[]> {
     const filters = this.dbManager.getFilters<User>(

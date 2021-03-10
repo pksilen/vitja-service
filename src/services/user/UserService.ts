@@ -5,6 +5,7 @@ import User from "./types/entities/User";
 import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 
 export default abstract class UserService extends CrudEntityService {
+  abstract deleteAllUsers(): PromiseOfErrorOr<null>;
   abstract getUsers(arg: GetUsersArg): PromiseOfErrorOr<User[]>;
   abstract getUser(arg: _Id): PromiseOfErrorOr<User>;
 }
