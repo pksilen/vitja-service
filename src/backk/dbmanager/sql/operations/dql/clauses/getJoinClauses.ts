@@ -158,6 +158,14 @@ export default function getJoinClauses(
           resultOuterSortBys.push(outerSortBys);
         }
 
+        if (entityAnnotationContainer.entityNameToTableNameMap[EntityClass.name]) {
+          // noinspection AssignmentToFunctionParameterJS
+          associationTableName =
+            entityAnnotationContainer.entityNameToTableNameMap[EntityClass.name].toLowerCase() +
+            '_' +
+            associationTableName.split('_')[1];
+        }
+
         const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
         const paginationClause = getPaginationClause(joinEntityPath, paginations);
         const whereClausePart =
