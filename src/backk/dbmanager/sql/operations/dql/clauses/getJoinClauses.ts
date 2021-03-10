@@ -244,6 +244,7 @@ export default function getJoinClauses(
         Types,
         resultOuterSortBys,
         tableAliasPath + '_' + fieldName.toLowerCase(),
+        RootEntityClass
       );
 
       if (subJoinClauses) {
