@@ -36,6 +36,14 @@ export default class OwnSalesItem {
   })
   public createdAtTimestamp!: Date;
 
+  @IsUndefined({
+    groups: ['__backk_create__', '__backk_update__']
+  })
+  @IsDate({
+    groups: ['__backk_none__']
+  })
+  public lastModifiedTimestamp!: Date;
+
   @MaxLength(Lengths._64)
   @IsAnyString()
   public title!: string;

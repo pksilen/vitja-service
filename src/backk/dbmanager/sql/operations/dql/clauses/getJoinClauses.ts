@@ -24,7 +24,8 @@ export default function getJoinClauses(
   EntityClass: new () => any,
   Types: object,
   resultOuterSortBys: string[],
-  tableAliasPath = EntityClass.name.toLowerCase()
+  tableAliasPath = EntityClass.name.toLowerCase(),
+  RootEntityClass = EntityClass
 ) {
   let joinClauses = '';
 
@@ -35,7 +36,10 @@ export default function getJoinClauses(
           ? subEntityPath + '.' + joinSpec.entityFieldName
           : joinSpec.entityFieldName;
 
-        if (!shouldIncludeField('id', joinEntityPath, projection)) {
+        if (
+          !shouldIncludeField('id', joinEntityPath, projection) &&
+          !shouldIncludeField('_id', joinEntityPath, projection)
+        ) {
           return '';
         }
 
@@ -51,14 +55,14 @@ export default function getJoinClauses(
         logicalSubEntityTableName = tableAliasPath + '_' + joinSpec.entityFieldName.toLowerCase();
 
         const whereClause = tryGetWhereClause(dbManager, joinEntityPath, filters);
-        const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
+        const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, RootEntityClass, Types);
         const joinTableAlias = dbManager.schema + '_' + logicalSubEntityTableName;
 
         const outerSortBys = tryGetSortClause(
           dbManager,
           joinEntityPath,
           sortBys,
-          EntityClass,
+          RootEntityClass,
           Types,
           joinTableAlias
         );
@@ -149,7 +153,7 @@ export default function getJoinClauses(
           dbManager,
           joinEntityPath,
           sortBys,
-          EntityClass,
+          RootEntityClass,
           Types,
           joinTableAlias
         );
@@ -166,7 +170,7 @@ export default function getJoinClauses(
             associationTableName.split('_')[1];
         }
 
-        const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, EntityClass, Types);
+        const sortClause = tryGetSortClause(dbManager, joinEntityPath, sortBys, RootEntityClass, Types);
         const paginationClause = getPaginationClause(joinEntityPath, paginations);
         const whereClausePart =
           '_id = ' +
@@ -239,7 +243,7 @@ export default function getJoinClauses(
         (Types as any)[baseTypeName],
         Types,
         resultOuterSortBys,
-        tableAliasPath + '_' + fieldName.toLowerCase()
+        tableAliasPath + '_' + fieldName.toLowerCase(),
       );
 
       if (subJoinClauses) {

@@ -147,7 +147,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
         sortBys: [
           {
             subEntityPath: 'followedUserAccounts.ownSalesItems',
-            fieldName: 'lastModifiedAtTimestamp',
+            fieldName: 'lastModifiedTimestamp',
             sortDirection: 'DESC'
           }
         ],
@@ -160,6 +160,8 @@ export default class SalesItemServiceImpl extends SalesItemService {
         ]
       }
     );
+
+    console.log(user);
 
     const followedUserSalesItems = user?.followedUserAccounts
       .map((followedUserAccount) =>
