@@ -578,8 +578,6 @@ export default async function tryExecuteServiceMethod(
       throw errorOrErrorResponse;
     }
   } finally {
-    console.log(storedError);
-
     if (controller[serviceName] instanceof UserAccountBaseService || userName) {
       const auditLogEntry = createAuditLogEntry(
         userName ?? serviceFunctionArgument?.userName ?? '',
@@ -591,7 +589,7 @@ export default async function tryExecuteServiceMethod(
         storedError?.getResponse().errorMessage,
         controller[serviceName] instanceof UserAccountBaseService
           ? serviceFunctionArgument
-          : { _id: response._id }
+          : { _id: response?._id }
       );
       await (controller?.auditLoggingService as AuditLoggingService).log(auditLogEntry);
     }

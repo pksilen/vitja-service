@@ -14,6 +14,10 @@ export default function IsStrongPassword(validationOptions?: ValidationOptions) 
       options: validationOptions,
       validator: {
         validate(value: any, args: ValidationArguments) {
+          if (typeof value !== 'string') {
+            return false;
+          }
+
           if (value.length > Lengths._512 || value.length < 8) {
             return false;
           }
