@@ -6,9 +6,3 @@
   tests:
     - testName: expect sales item not to be found
 
-- testTemplate:
-    serviceFunctionName: salesItemService.createSalesItem
-    response:
-      tests:
-        - pm.collectionVariables.set('salesItemId', response._id)
-    executeAfter: salesItemService.deleteOldUnsoldSalesItems

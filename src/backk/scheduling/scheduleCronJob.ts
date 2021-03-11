@@ -1,7 +1,7 @@
 import AbstractDbManager from '../dbmanager/AbstractDbManager';
 import { CronJob } from 'cron';
 import findAsyncSequential from '../utils/findAsyncSequential';
-import delay from '../utils/delay';
+import wait from '../utils/wait';
 import { createNamespace } from 'cls-hooked';
 // eslint-disable-next-line @typescript-eslint/camelcase
 import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
@@ -21,7 +21,7 @@ export async function scheduleCronJob(
 ) {
   const job = new CronJob(scheduledExecutionTimestampAsDate, async () => {
     await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
-      await delay(retryIntervalInSecs * 1000);
+      await wait(retryIntervalInSecs * 1000);
       const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
       const clsNamespace2 = createNamespace('serviceFunctionExecution');
       return clsNamespace.runAndReturn(async () => {

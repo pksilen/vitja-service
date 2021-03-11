@@ -5,7 +5,7 @@ import serviceFunctionAnnotationContainer from '../decorators/service/function/s
 // eslint-disable-next-line @typescript-eslint/camelcase
 import __Backk__CronJobScheduling from './entities/__Backk__CronJobScheduling';
 import findAsyncSequential from '../utils/findAsyncSequential';
-import delay from '../utils/delay';
+import wait from '../utils/wait';
 import { createNamespace } from 'cls-hooked';
 import { logError } from '../observability/logging/log';
 import tryExecuteServiceMethod from '../execution/tryExecuteServiceMethod';
@@ -25,7 +25,7 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
         const interval = parser.parseExpression(cronSchedule);
 
         await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
-          await delay(retryIntervalInSecs * 1000);
+          await wait(retryIntervalInSecs * 1000);
           const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
           const clsNamespace2 = createNamespace('serviceFunctionExecution');
           return clsNamespace.runAndReturn(async () => {

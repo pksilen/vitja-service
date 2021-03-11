@@ -18,6 +18,7 @@ import isDeleteFunction from '../service/crudentity/utils/isDeleteFunction';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import tryValidateIntegrationTests from './tryValidateIntegrationTests';
 import { HttpStatusCodes } from '../constants/constants';
+import isCreateFunction from "../service/crudentity/utils/isCreateFunction";
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -51,6 +52,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
     let previousFunctionType: string;
     let lastGetFunctionMetadata: FunctionMetadata | undefined;
+    let createFunctionMetadata: FunctionMetadata | undefined;
+    // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
       writtenTests
         .filter(
@@ -83,6 +86,15 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         )
       ) {
         return;
+      }
+
+      if (
+        isCreateFunction(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        )
+      ) {
+        createFunctionMetadata = functionMetadata;
       }
 
       if (
@@ -286,11 +298,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           (controller as any)[serviceMetadata.serviceName].constructor,
           functionMetadata.functionName
         ) &&
-        (index === serviceMetadata.functions.length - 1 ||
-          !isDeleteFunction(
-            (controller as any)[serviceMetadata.serviceName].constructor,
-            serviceMetadata.functions[index + 1].functionName
-          )) &&
         lastGetFunctionMetadata
       ) {
         const expectedResponseFieldPathNameToFieldValueMapInTests = serviceFunctionAnnotationContainer.getExpectedResponseValueFieldPathNameToFieldValueMapForTests(
@@ -329,6 +336,37 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             `expect ${itemName} not to be found`
           )
         );
+
+        if (index !== serviceMetadata.functions.length - 1 && createFunctionMetadata) {
+          const createFunctionTests = getServiceFunctionTests(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            (controller as any)[serviceMetadata.serviceName].Types,
+            serviceMetadata,
+            createFunctionMetadata,
+            false,
+            undefined,
+            expectedResponseFieldPathNameToFieldValueMapInTests
+          );
+
+          const createFunctionSampleArg = getServiceFunctionTestArgument(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            (controller as any)[serviceMetadata.serviceName].Types,
+            createFunctionMetadata.functionName,
+            createFunctionMetadata.argType,
+            serviceMetadata,
+            true
+          );
+
+          items.push(
+            createPostmanCollectionItem(
+              (controller as any)[serviceMetadata.serviceName].constructor,
+              serviceMetadata,
+              createFunctionMetadata,
+              createFunctionSampleArg,
+              createFunctionTests
+            )
+          );
+        }
       }
 
       writtenTests

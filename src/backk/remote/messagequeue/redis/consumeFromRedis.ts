@@ -7,7 +7,7 @@ import log, { Severity } from '../../../observability/logging/log';
 import defaultServiceMetrics from '../../../observability/metrics/defaultServiceMetrics';
 import getNamespacedServiceName from '../../../utils/getServiceNamespace';
 import BackkResponse from '../../../execution/BackkResponse';
-import delay from '../../../utils/delay';
+import wait from '../../../utils/wait';
 
 export default async function consumeFromRedis(
   controller: any,
@@ -26,7 +26,7 @@ export default async function consumeFromRedis(
     try {
       const request = await redis.lpop(topic);
       if (!request) {
-        await delay(100);
+        await wait(100);
         // noinspection ContinueStatementJS
         continue;
       }
@@ -44,7 +44,7 @@ export default async function consumeFromRedis(
       );
 
       if (response.getStatusCode() >= HttpStatusCodes.INTERNAL_ERRORS_START) {
-        await delay(10000);
+        await wait(10000);
         await sendToRemoteService(
           'redis://' + server + '/' + topic + '/' + serviceFunctionName,
           serviceFunctionArgument

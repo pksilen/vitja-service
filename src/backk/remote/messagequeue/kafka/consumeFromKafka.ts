@@ -9,7 +9,7 @@ import { HttpStatusCodes } from '../../../constants/constants';
 import sendToRemoteService from '../sendToRemoteService';
 import getNamespacedServiceName from '../../../utils/getServiceNamespace';
 import BackkResponse from '../../../execution/BackkResponse';
-import delay from '../../../utils/delay';
+import wait from '../../../utils/wait';
 import minimumLoggingSeverityToKafkaLoggingLevelMap from './minimumLoggingSeverityToKafkaLoggingLevelMap';
 import logCreator from './logCreator';
 
@@ -143,7 +143,7 @@ export default async function consumeFromKafka(
         server
       });
 
-      await delay(10000);
+      await wait(10000);
     } finally {
       try {
         await admin.disconnect();
@@ -179,7 +179,7 @@ export default async function consumeFromKafka(
           );
 
           if (response.getStatusCode() >= HttpStatusCodes.INTERNAL_ERRORS_START) {
-            await delay(10000);
+            await wait(10000);
             await sendToRemoteService(
               'kafka://' + server + '/' + defaultTopic + '/' + serviceFunctionName,
               serviceFunctionArgument
@@ -209,7 +209,7 @@ export default async function consumeFromKafka(
         // No operation
       }
 
-      await delay(10000);
+      await wait(10000);
     }
   }
 }
