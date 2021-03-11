@@ -32,7 +32,6 @@
     argument:
       '{{argumentPropertyName1}}': '{{argumentPropertyValue1}}'
       '{{argumentPropertyName2}}': '{{argumentPropertyValue2}}'
-      includeResponseFields: []
     response:
       tests:
         - pm.expect(response[0].{{responsePropertyName}}).to.eql({{responsePropertyValue}});
@@ -50,8 +49,8 @@
       testProperties:
         argumentPropertyName1: textFilter
         argumentPropertyValue1: secondDescription
-        responsePropertyName: description
-        responsePropertyValue: '"secondDescription"'
+        responsePropertyName: title
+        responsePropertyValue: '"secondTitle"'
         responseLength: 1
 
     - testName: get sales items where areas contains Area2
@@ -59,8 +58,8 @@
         argumentPropertyName1: areas
         argumentPropertyValue1:
           - Area2
-        responsePropertyName: area
-        responsePropertyValue: '"Area2"'
+        responsePropertyName: title
+        responsePropertyValue: '"secondTitle"'
         responseLength: 1
 
     - testName: get sales items where productDepartments contains 'Clothes'
@@ -68,8 +67,8 @@
         argumentPropertyName1: productDepartments
         argumentPropertyValue1:
           - Clothes
-        responsePropertyName: productDepartment
-        responsePropertyValue: '"Clothes"'
+        responsePropertyName: title
+        responsePropertyValue: '"secondTitle"'
         responseLength: 1
 
     - testName: get sales items where productCategories contains 'Clothes'
@@ -77,8 +76,8 @@
         argumentPropertyName1: productCategories
         argumentPropertyValue1:
           - Clothes
-        responsePropertyName: productCategory
-        responsePropertyValue: '"Clothes"'
+        responsePropertyName: title
+        responsePropertyValue: '"secondTitle"'
         responseLength: 1
 
     - testName: get sales items where productSubCategories contains 'Clothes'
@@ -86,8 +85,8 @@
         argumentPropertyName1: productSubCategories
         argumentPropertyValue1:
           - Clothes
-        responsePropertyName: productSubCategory
-        responsePropertyValue: '"Clothes"'
+        responsePropertyName: title
+        responsePropertyValue: '"secondTitle"'
         responseLength: 1
 
     - testName: get sales items where price is between minPrice and maxPrice
