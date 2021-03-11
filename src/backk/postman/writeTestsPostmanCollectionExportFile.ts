@@ -364,8 +364,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             (controller as any)[serviceMetadata.serviceName].Types,
             createFunctionMetadata.functionName,
             createFunctionMetadata.argType,
-            serviceMetadata,
-            true
+            serviceMetadata
           );
 
           items.push(

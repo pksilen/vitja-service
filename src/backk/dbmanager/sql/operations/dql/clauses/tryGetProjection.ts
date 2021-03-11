@@ -3,7 +3,7 @@ import { Projection } from '../../../../../types/postqueryoperations/Projection'
 import getFieldsForEntity from '../utils/columns/getFieldsForEntity';
 import createErrorMessageWithStatusCode from '../../../../../errors/createErrorMessageWithStatusCode';
 import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
-import { HttpStatusCodes } from "../../../../../constants/constants";
+import { HttpStatusCodes } from '../../../../../constants/constants';
 
 export default function tryGetProjection(
   dbManager: AbstractSqlDbManager,
@@ -65,7 +65,7 @@ export default function tryGetProjection(
         throw new Error(
           createErrorMessageWithStatusCode(
             'Invalid field: ' + excludeResponseField + ' in excludeResponseFields',
-            400
+            HttpStatusCodes.BAD_REQUEST
           )
         );
       }

@@ -1,12 +1,10 @@
-import { Projection } from "../../../../../../types/postqueryoperations/Projection";
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import typePropertyAnnotationContainer
-  from "../../../../../../decorators/typeproperty/typePropertyAnnotationContainer";
-import shouldIncludeField from "./shouldIncludeField";
-import getTypeInfoForTypeName from "../../../../../../utils/type/getTypeInfoForTypeName";
-import isEntityTypeName from "../../../../../../utils/type/isEntityTypeName";
-import AbstractSqlDbManager from "../../../../../AbstractSqlDbManager";
+import { Projection } from '../../../../../../types/postqueryoperations/Projection';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import typePropertyAnnotationContainer from '../../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import shouldIncludeField from './shouldIncludeField';
+import getTypeInfoForTypeName from '../../../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../../../utils/type/isEntityTypeName';
+import AbstractSqlDbManager from '../../../../../AbstractSqlDbManager';
 
 export default function getFieldsForEntity(
   dbManager: AbstractSqlDbManager,
@@ -46,7 +44,10 @@ export default function getFieldsForEntity(
           tableAlias + '_' + entityPropertyName.toLowerCase()
         );
       } else if (isArrayType) {
-        if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
+        if (
+          shouldIncludeField(entityPropertyName, fieldPath, projection) &&
+          !projection.includeResponseFields?.[0]?.endsWith('._id')
+        ) {
           const idFieldName = (
             EntityClass.name.charAt(0).toLowerCase() +
             EntityClass.name.slice(1) +
@@ -55,7 +56,9 @@ export default function getFieldsForEntity(
 
           const relationEntityName = (tableAlias + '_' + entityPropertyName).toLowerCase();
 
-          fields.push(`${dbManager.schema}_${relationEntityName}.${idFieldName} AS ${relationEntityName}_${idFieldName}`);
+          fields.push(
+            `${dbManager.schema}_${relationEntityName}.${idFieldName} AS ${relationEntityName}_${idFieldName}`
+          );
 
           const singularFieldName = entityPropertyName.slice(0, -1).toLowerCase();
 

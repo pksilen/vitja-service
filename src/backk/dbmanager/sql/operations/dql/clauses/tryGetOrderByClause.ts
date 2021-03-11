@@ -37,8 +37,7 @@ export default function tryGetOrderByClause<T>(
         if (sortBy.subEntityPath !== '*') {
           throw createErrorFromErrorCodeMessageAndStatus({
             ...BACKK_ERRORS.INVALID_ARGUMENT,
-            message:
-              BACKK_ERRORS.INVALID_ARGUMENT.message + 'invalid sort field: ' + sortBy.fieldName
+            message: BACKK_ERRORS.INVALID_ARGUMENT.message + 'invalid sort field: ' + sortBy.fieldName
           });
         }
       }
