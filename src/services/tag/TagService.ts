@@ -8,5 +8,5 @@ export default abstract class TagService extends CrudEntityService {
   abstract migrateDbFromVersion1To2(): PromiseOfErrorOr<null>;
   abstract deleteAllTags(): PromiseOfErrorOr<null>;
   abstract createTag(arg: TagName): PromiseOfErrorOr<Tag>;
-  abstract getTagsWhereNameContains(arg: TagName): PromiseOfErrorOr<Tag[]>;
+  abstract getTagsByName(arg: TagName): PromiseOfErrorOr<Tag[]>;
 }
