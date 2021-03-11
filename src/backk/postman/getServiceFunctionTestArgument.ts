@@ -13,8 +13,8 @@ import getCustomValidationConstraint from '../validation/getCustomValidationCons
 import entityAnnotationContainer from '../decorators/entity/entityAnnotationContainer';
 import getSampleStringValue from './getSampleStringValue';
 import { ValidationTypes } from 'class-validator';
-import isCreateFunction from "../service/crudentity/utils/isCreateFunction";
-import isUpdateFunction from "../service/crudentity/utils/isUpdateFunction";
+import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
+import isUpdateFunction from '../service/crudentity/utils/isUpdateFunction';
 
 export default function getServiceFunctionTestArgument(
   ServiceClass: Function,
@@ -134,7 +134,16 @@ export default function getServiceFunctionTestArgument(
       if (isRecursive) {
         sampleArg[propertyName] = `{{${argTypeName.charAt(0).toLowerCase() + argTypeName.slice(1)}Id}}`;
       } else {
-        sampleArg[propertyName] = `{{${serviceEntityName}Id}}`;
+        const finalServiceEntityName =
+          entityAnnotationContainer.entityNameToTableNameMap[
+            serviceEntityName.charAt(0).toUpperCase() + serviceEntityName.slice(1)
+          ];
+        if (finalServiceEntityName) {
+          sampleArg[propertyName] = `{{${finalServiceEntityName.charAt(0).toLowerCase() +
+            finalServiceEntityName.slice(1)}Id}}`;
+        } else {
+          sampleArg[propertyName] = `{{${serviceEntityName}Id}}`;
+        }
       }
     } else if (propertyName === '_ids') {
       sampleArg[propertyName] = `{{${serviceEntityName}Id}}`;

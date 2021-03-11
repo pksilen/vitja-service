@@ -163,7 +163,17 @@ export default function getServiceFunctionReturnValueTests(
             returnValueTypeName.slice(1)}Id')`;
         }
       } else {
-        expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
+        const finalServiceEntityName =
+          entityAnnotationContainer.entityNameToTableNameMap[
+            serviceEntityName.charAt(0).toUpperCase() + serviceEntityName.slice(1)
+          ];
+
+        if (finalServiceEntityName) {
+          expectedValue = `pm.collectionVariables.get('${finalServiceEntityName.charAt(0).toLowerCase() +
+            finalServiceEntityName.slice(1)}Id')`;
+        } else {
+          expectedValue = `pm.collectionVariables.get('${serviceEntityName}Id')`;
+        }
       }
     } else if (propertyName.endsWith('Id') && !isExternalId) {
       expectedValue = `pm.collectionVariables.get('${propertyName}')`;
