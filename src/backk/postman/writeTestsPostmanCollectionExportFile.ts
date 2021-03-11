@@ -18,7 +18,7 @@ import isDeleteFunction from '../service/crudentity/utils/isDeleteFunction';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import tryValidateIntegrationTests from './tryValidateIntegrationTests';
 import { HttpStatusCodes } from '../constants/constants';
-import isCreateFunction from "../service/crudentity/utils/isCreateFunction";
+import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -137,7 +137,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       let isUpdate = false;
       const isVoidFunction = getTypeInfoForTypeName(functionMetadata.returnValueType).isNull;
-      const updateType = serviceFunctionAnnotationContainer.getUpdateTypeForServiceFunction((controller as any)[serviceMetadata.serviceName].constructor,
+      const updateType = serviceFunctionAnnotationContainer.getUpdateTypeForServiceFunction(
+        (controller as any)[serviceMetadata.serviceName].constructor,
         functionMetadata.functionName
       );
 
@@ -145,13 +146,16 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         isUpdateFunction(
           (controller as any)[serviceMetadata.serviceName].constructor,
           functionMetadata.functionName
-        ) && updateType === 'addOrRemoveSubEntities' && !serviceFunctionAnnotationContainer.getTestSpec(
-        (controller as any)[serviceMetadata.serviceName].constructor,
-        functionMetadata.functionName
-        )) {
+        ) &&
+        updateType === 'addOrRemoveSubEntities' &&
+        !serviceFunctionAnnotationContainer.getTestSpec(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        )
+      ) {
         throw new Error(
           'There must be a test specified using @TestEntityAfterThisOperation annotation for service function: ' +
-          serviceMetadata.serviceName
+            serviceMetadata.serviceName
         );
       }
 
@@ -337,7 +341,14 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           )
         );
 
-        if (index !== serviceMetadata.functions.length - 1 && createFunctionMetadata) {
+        if (
+          index !== serviceMetadata.functions.length - 1 &&
+          isDeleteFunction(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            serviceMetadata.functions[index + 1].functionName
+          ) &&
+          createFunctionMetadata
+        ) {
           const createFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
