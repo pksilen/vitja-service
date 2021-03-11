@@ -7,9 +7,10 @@ import { PostQueryOperations } from '../../../../../types/postqueryoperations/Po
 import Pagination from '../../../../../types/postqueryoperations/Pagination';
 import convertTinyIntegersToBooleans from './convertTinyIntegersToBooleans';
 import AbstractDbManager from '../../../../AbstractDbManager';
+import { Values } from "../../../../../constants/constants";
 
 const parsedRowProcessingBatchSize = parseInt(process.env.ROW_PROCESSING_BATCH_SIZE ?? '500', 10);
-const ROW_PROCESSING_BATCH_SIZE = isNaN(parsedRowProcessingBatchSize) ? 500 : parsedRowProcessingBatchSize;
+const ROW_PROCESSING_BATCH_SIZE = isNaN(parsedRowProcessingBatchSize) ? Values._500 : parsedRowProcessingBatchSize;
 
 function getMappedRows(
   rows: any[],
@@ -74,7 +75,7 @@ export default function transformRowsToObjects<T>(
 
   if (!paginations) {
     // noinspection AssignmentToFunctionParameterJS
-    paginations = [new Pagination('*', 1, 50)];
+    paginations = [new Pagination('*', 1, Values._50)];
   }
 
   let rootPagination = paginations.find((pagination) => pagination.subEntityPath === '');

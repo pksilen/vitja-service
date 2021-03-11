@@ -1,9 +1,9 @@
 # Vitja service
 
 TODO:
+- if multiple delete functions, execute create entity before next delete method
 - test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
-- if multiple delete functions, execute create entity before next delete method
 
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

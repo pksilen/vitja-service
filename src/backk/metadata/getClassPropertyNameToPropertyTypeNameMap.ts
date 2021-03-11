@@ -37,10 +37,6 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
   });
 
   validationMetadatas.reverse();
-  
-  if (Class.name === '_Id') {
-    console.log(validationMetadatas);
-  }
 
   const propNameToIsOptionalMap: { [key: string]: boolean } = {};
   const propNameToPropTypeNameMap: { [key: string]: string } = {};
@@ -88,7 +84,11 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
       !validationMetadata.groups?.includes('__backk_none__')
     ) {
       if (
-        (validationMetadata.type === 'maxLength' || validationMetadata.type === 'length') &&
+        (validationMetadata.type === 'maxLength' ||
+          validationMetadata.type === 'length' ||
+          validationMetadata.type === 'isString' ||
+          (validationMetadata.type === 'customValidation' &&
+            validationMetadata.constraints?.[0] === 'isStringOrObjectId')) &&
         undefinedValidation &&
         undefinedValidation?.groups?.[0] === '__backk_update__'
       ) {
@@ -98,7 +98,11 @@ export default function getClassPropertyNameToPropertyTypeNameMap<T>(
           ];
         }
       } else if (
-        (validationMetadata.type === 'maxLength' || validationMetadata.type === 'length') &&
+        (validationMetadata.type === 'maxLength' ||
+          validationMetadata.type === 'length' ||
+          validationMetadata.type === 'isString' ||
+          (validationMetadata.type === 'customValidation' &&
+            validationMetadata.constraints?.[0] === 'isStringOrObjectId')) &&
         undefinedValidation &&
         undefinedValidation?.groups?.[0] === '__backk_create__'
       ) {
