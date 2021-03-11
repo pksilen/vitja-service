@@ -82,7 +82,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       ShoppingCartOrOrderSalesItem,
       {
         preHooks: {
-          isSuccessfulOrTrue: async () =>
+          isSuccessfulOrTrue: () =>
             this.salesItemService.updateSalesItemState(salesItemId, 'reserved', 'forSale'),
           error: shoppingCartServiceErrors.salesItemReservedOrSold
         }

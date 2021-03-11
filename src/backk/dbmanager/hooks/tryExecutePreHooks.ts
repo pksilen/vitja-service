@@ -50,8 +50,9 @@ export default async function tryExecutePreHooks<T extends BackkEntity | SubEnti
         throw hookCallResult[1];
       } else if (
         hookCallResult === false ||
-        (typeof hookCallResult === 'object' && hookCallResult !== null)
+        (typeof hookCallResult === 'object' && !Array.isArray(hookCallResult) && hookCallResult !== null)
       ) {
+        console.log(hookCallResult);
         if (typeof preHook === 'object') {
           if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
             return;

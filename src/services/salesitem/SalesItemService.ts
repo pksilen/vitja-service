@@ -32,7 +32,7 @@ export default abstract class SalesItemService extends CrudEntityService {
 
   abstract updateSalesItemState(
     _id: string,
-    newSalesItemState: SalesItemState,
+    newState: SalesItemState,
     requiredCurrentState?: SalesItemState
   ): PromiseOfErrorOr<null>;
 
