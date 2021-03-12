@@ -25,7 +25,7 @@ export default class UserServiceImpl extends UserService {
   }
 
   @AllowForEveryUser()
-  @TestSetup(['userAccountService.createUser'])
+  @TestSetup(['userAccountService.createUserAccount'])
   getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): PromiseOfErrorOr<User[]> {
     const filters = this.dbManager.getFilters<User>(
       {
