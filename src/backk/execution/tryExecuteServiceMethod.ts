@@ -28,7 +28,7 @@ import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackk
 import { BACKK_ERRORS } from '../errors/backkErrors';
 import emptyError from '../errors/emptyError';
 import fetchFromRemoteServices from './fetchFromRemoteServices';
-import isBackkError from "../errors/isBackkError";
+import isBackkError from '../errors/isBackkError';
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -446,7 +446,11 @@ export default async function tryExecuteServiceMethod(
             serviceFunctionName
           );
         } else if (typeof response === 'object') {
-          await tryValidateServiceFunctionReturnValue(response, ServiceFunctionReturnType, serviceFunctionName);
+          await tryValidateServiceFunctionReturnValue(
+            response,
+            ServiceFunctionReturnType,
+            serviceFunctionName
+          );
         }
 
         if (
@@ -562,9 +566,14 @@ export default async function tryExecuteServiceMethod(
     const responseStatusCode = serviceFunctionAnnotationContainer.getResponseStatusCodeForServiceFunction(
       controller[serviceName].constructor,
       functionName
-    )
+    );
 
-    resp?.status(responseStatusCode ?? HttpStatusCodes.SUCCESS);
+    resp?.status(
+      responseStatusCode && process.env.NODE_ENV !== 'development'
+        ? responseStatusCode
+        : HttpStatusCodes.SUCCESS
+    );
+    
     resp?.send(response);
   } catch (errorOrBackkError) {
     storedError = errorOrBackkError;
