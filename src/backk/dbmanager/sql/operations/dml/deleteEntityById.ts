@@ -53,6 +53,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
 
     const typeMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
     const idFieldName = typeMetadata._id ? '_id' : 'id';
+
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
@@ -79,7 +80,9 @@ export default async function deleteEntityById<T extends BackkEntity>(
       forEachAsyncParallel(
         entityContainer.manyToManyRelationTableSpecs,
         async ({ associationTableName, entityForeignIdFieldName }) => {
+          console.log(associationTableName)
           if (associationTableName.startsWith(EntityClass.name + '_')) {
+            console.log('after: ' + associationTableName)
             await dbManager.tryExecuteSql(
               `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
                 1
