@@ -2,15 +2,21 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
+// eslint-disable-next-line @typescript-eslint/class-name-casing
 import { IsUrl, MaxLength } from 'class-validator';
-import { Lengths } from '../../../../backk/constants/constants';
-import ShoppingCart from '../../../shoppingcart/types/entities/ShoppingCart';
+import { Lengths, Values } from '../../../../backk/constants/constants';
+import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId';
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import { Unique } from '../../../../backk/decorators/typeproperty/Unique';
 import { PaymentGateway } from '../enum/PaymentGateway';
 
 export default class PlaceOrderArg {
-  public paymentGateway: PaymentGateway = 'Paytrail';
+  @Unique()
+  @IsStringOrObjectId()
+  @MaxLengthAndMatches(Values._24, /^[a-f\d]{1,24}$/)
+  userAccountId!: string;
 
-  shoppingCart!: ShoppingCart;
+  public paymentGateway: PaymentGateway = 'Paytrail';
 
   @MaxLength(Lengths._4K)
   @IsUrl()
