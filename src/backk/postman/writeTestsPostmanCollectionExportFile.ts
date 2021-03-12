@@ -102,38 +102,38 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         }
 
         const expectedResponseStatusCode = serviceFunctionAnnotationContainer.getResponseStatusCodeForServiceFunction(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          functionMetadata.functionName
+          (controller as any)[foundServiceMetadata.serviceName].constructor,
+          foundFunctionMetadata.functionName
         );
 
         const expectedResponseFieldPathNameToFieldValueMapInTests = serviceFunctionAnnotationContainer.getExpectedResponseValueFieldPathNameToFieldValueMapForTests(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          functionMetadata.functionName
+          (controller as any)[foundServiceMetadata.serviceName].constructor,
+          foundFunctionMetadata.functionName
         );
 
         const tests = getServiceFunctionTests(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          (controller as any)[serviceMetadata.serviceName].Types,
-          serviceMetadata,
-          functionMetadata,
+          (controller as any)[foundServiceMetadata.serviceName].constructor,
+          (controller as any)[foundServiceMetadata.serviceName].Types,
+          foundServiceMetadata,
+          foundFunctionMetadata,
           false,
           expectedResponseStatusCode,
           expectedResponseFieldPathNameToFieldValueMapInTests
         );
 
         const sampleArg = getServiceFunctionTestArgument(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          (controller as any)[serviceMetadata.serviceName].Types,
-          functionMetadata.functionName,
-          functionMetadata.argType,
-          serviceMetadata,
+          (controller as any)[foundServiceMetadata.serviceName].constructor,
+          (controller as any)[foundServiceMetadata.serviceName].Types,
+          foundFunctionMetadata.functionName,
+          foundFunctionMetadata.argType,
+          foundServiceMetadata,
           false
         );
 
         const item = createPostmanCollectionItem(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          serviceMetadata,
-          functionMetadata,
+          (controller as any)[foundServiceMetadata.serviceName].constructor,
+          foundServiceMetadata,
+          foundFunctionMetadata,
           sampleArg,
           tests
         );
