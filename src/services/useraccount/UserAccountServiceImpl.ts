@@ -22,11 +22,11 @@ import { SalesItem } from "../salesitem/types/entities/SalesItem";
 import GetUserAccountArg from "./types/args/GetUserAccountArg";
 import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
 import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
-import { TestAfter } from "../../backk/decorators/service/function/TestAfter";
-import { TestEntityAfterThisOperation } from "../../backk/decorators/service/function/TestEntityAfterThisOperation";
+import { TestEntityAfterwards } from "../../backk/decorators/service/function/TestEntityAfterwards";
 import FollowedUserAccount from "./types/entities/FollowedUserAccount";
 import FollowingUserAccount from "./types/entities/FollowingUserAccount";
 import { userAccountServiceErrors } from "./errors/userAccountServiceErrors";
+import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -78,7 +78,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestEntityAfterThisOperation('expect followedUserAccounts to contain a user account', {
+  @TestEntityAfterwards('expect followedUserAccounts to contain a user account', {
     'followedUserAccounts._id': '{{followedUserAccountId}}'
   })
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
@@ -103,7 +103,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestEntityAfterThisOperation('expect no followed user accounts', { followedUserAccounts: [] })
+  @TestEntityAfterwards('expect no followed user accounts', { followedUserAccounts: [] })
   unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(
       _id,
@@ -119,8 +119,8 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestAfter('salesItemService.createSalesItem')
-  @TestEntityAfterThisOperation('expect user account´s favoriteSalesItems to contain a sales item', {
+  @TestSetup(['tagService.createTag', 'salesItemService.createSalesItem'])
+  @TestEntityAfterwards('expect user account´s favoriteSalesItems to contain a sales item', {
     'favoriteSalesItems._id': '{{salesItemId}}'
   })
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
@@ -135,8 +135,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestAfter('salesItemService.createSalesItem')
-  @TestEntityAfterThisOperation('expect no favorite sales items in user account', {
+  @TestEntityAfterwards('expect no favorite sales items in user account', {
     favoriteSalesItems: []
   })
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {

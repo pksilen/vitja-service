@@ -11,11 +11,11 @@ export type FieldPathNameToFieldValueMap = {
   [key: string]: any;
 };
 
-export function TestEntityAfterThisOperation(
+export function TestEntityAfterwards(
   testName: string,
-  fieldPathNameToFieldValueMap: FieldPathNameToFieldValueMap
+  expectedFieldPathNameToFieldValueMap: FieldPathNameToFieldValueMap
 ) {
-  const finalFieldPathNameToFieldValueMap = Object.entries(fieldPathNameToFieldValueMap).reduce(
+  const finalFieldPathNameToFieldValueMap = Object.entries(expectedFieldPathNameToFieldValueMap).reduce(
     (finalFieldPathNameToFieldValueMap, [fieldPathName, fieldValue]) => {
       let finalFieldValue = fieldValue;
 

@@ -1,8 +1,12 @@
 import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationContainer';
 
-export function TestBefore(serviceFunctionName: string) {
+export function TestSetup(serviceFunctionsToExecute: string[]) {
   // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, functionName: string) {
-    serviceFunctionAnnotationContainer.addTestBefore(object.constructor, functionName, serviceFunctionName);
+    serviceFunctionAnnotationContainer.addTestSetup(
+      object.constructor,
+      functionName,
+      serviceFunctionsToExecute
+    );
   };
 }

@@ -10,6 +10,7 @@ import UserService from './UserService';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 import UserAccountService from "../useraccount/UserAccountService";
+import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -24,6 +25,7 @@ export default class UserServiceImpl extends UserService {
   }
 
   @AllowForEveryUser()
+  @TestSetup(['userAccountService.createUser'])
   getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): PromiseOfErrorOr<User[]> {
     const filters = this.dbManager.getFilters<User>(
       {

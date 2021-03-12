@@ -36,9 +36,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
   tryValidateIntegrationTests(writtenTests, servicesMetadata);
 
-  const executeAfterTests: { executeAfter: string; item: object }[] = [];
-  const executeBeforeTests: { executeBefore: string; item: object }[] = [];
-
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
     let updateCount = 0;
 
@@ -64,13 +61,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
 
-      executeBeforeTests
-        .filter(
-          ({ executeBefore }) =>
-            executeBefore === serviceMetadata.serviceName + '.' + functionMetadata.functionName
-        )
-        .forEach((test) => items.push(test.item));
-
       if (
         serviceFunctionAnnotationContainer.hasNoAutoTests(
           (controller as any)[serviceMetadata.serviceName].constructor,
@@ -87,6 +77,69 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       ) {
         return;
       }
+
+      const serviceFunctionsToExecute = serviceFunctionAnnotationContainer.getTestSetup(
+        (controller as any)[serviceMetadata.serviceName].constructor,
+        functionMetadata.functionName
+      );
+
+      serviceFunctionsToExecute?.forEach((serviceFunction) => {
+        const [serviceName, functionName] = serviceFunction.split('.');
+
+        const foundServiceMetadata = servicesMetadata.find(
+          (serviceMetadata) => serviceMetadata.serviceName === serviceName
+        );
+
+        const foundFunctionMetadata = foundServiceMetadata?.functions.find(func => func.functionName === functionName);
+
+        if (!foundServiceMetadata || !foundFunctionMetadata) {
+          throw new Error(
+            'Invalid service function name in @TestSetup annotation in ' +
+              serviceMetadata.serviceName +
+              '.' +
+              functionMetadata.functionName
+          );
+        }
+
+        const expectedResponseStatusCode = serviceFunctionAnnotationContainer.getResponseStatusCodeForServiceFunction(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        );
+
+        const expectedResponseFieldPathNameToFieldValueMapInTests = serviceFunctionAnnotationContainer.getExpectedResponseValueFieldPathNameToFieldValueMapForTests(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          functionMetadata.functionName
+        );
+
+        const tests = getServiceFunctionTests(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          (controller as any)[serviceMetadata.serviceName].Types,
+          serviceMetadata,
+          functionMetadata,
+          false,
+          expectedResponseStatusCode,
+          expectedResponseFieldPathNameToFieldValueMapInTests
+        );
+
+        const sampleArg = getServiceFunctionTestArgument(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          (controller as any)[serviceMetadata.serviceName].Types,
+          functionMetadata.functionName,
+          functionMetadata.argType,
+          serviceMetadata,
+          false
+        );
+
+        const item = createPostmanCollectionItem(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          serviceMetadata,
+          functionMetadata,
+          sampleArg,
+          tests
+        );
+
+        items.push(item);
+      });
 
       if (
         isCreateFunction(
@@ -154,7 +207,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         )
       ) {
         throw new Error(
-          'There must be a test specified using @TestEntityAfterThisOperation annotation for service function: ' +
+          'There must be a test specified using @TestEntityAfterwards annotation for service function: ' +
             serviceMetadata.serviceName
         );
       }
@@ -199,29 +252,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         tests
       );
 
-      const executeBefore = serviceFunctionAnnotationContainer.getTestBefore(
-        (controller as any)[serviceMetadata.serviceName].constructor,
-        functionMetadata.functionName
-      );
-
-      const executeAfter = serviceFunctionAnnotationContainer.getTestAfter(
-        (controller as any)[serviceMetadata.serviceName].constructor,
-        functionMetadata.functionName
-      );
-
-      if (executeBefore) {
-        executeBeforeTests.push({
-          executeBefore,
-          item
-        });
-      } else if (executeAfter) {
-        executeAfterTests.push({
-          executeAfter,
-          item
-        });
-      } else {
-        items.push(item);
-      }
+      items.push(item);
 
       if (isUpdate && isVoidFunction && lastGetFunctionMetadata) {
         const foundCustomTest = writtenTests.find(
@@ -281,19 +312,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             testSpec?.testName
           );
 
-          if (executeBefore) {
-            executeBeforeTests.push({
-              executeBefore,
-              item
-            });
-          } else if (executeAfter) {
-            executeAfterTests.push({
-              executeAfter,
-              item
-            });
-          } else {
-            items.push(item);
-          }
+          items.push(item);
         }
       }
 
@@ -387,13 +406,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
-
-      executeAfterTests
-        .filter(
-          ({ executeAfter }) =>
-            executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
-        )
-        .forEach((test) => items.push(test.item));
 
       if (index === serviceMetadata.functions.length - 1) {
         writtenTests

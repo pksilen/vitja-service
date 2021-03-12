@@ -41,7 +41,10 @@ export default async function tryExecuteCreatePreHooks(preHooks: CreatePreHook |
       }
 
       throw hookCallResult[1];
-    } else if (hookCallResult === false || (typeof hookCallResult === 'object' && hookCallResult !== null)) {
+    } else if (
+      hookCallResult === false ||
+      (typeof hookCallResult === 'object' && !Array.isArray(hookCallResult) && hookCallResult !== null)
+    ) {
       if (typeof preHook === 'object') {
         if (process.env.NODE_ENV === 'development' && preHook.shouldDisregardFailureWhenExecutingTests) {
           return;
@@ -50,8 +53,7 @@ export default async function tryExecuteCreatePreHooks(preHooks: CreatePreHook |
         let errorMessage = 'Pre-hook evaluated to false without specific error message';
 
         if (preHook.errorMessage) {
-          errorMessage =
-            'Error code ' + preHook.errorMessage.errorCode + ':' + preHook.errorMessage.message;
+          errorMessage = 'Error code ' + preHook.errorMessage.errorCode + ':' + preHook.errorMessage.message;
         }
 
         throw new Error(

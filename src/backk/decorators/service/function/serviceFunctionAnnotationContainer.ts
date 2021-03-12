@@ -1,7 +1,7 @@
 import { ErrorCodeAndMessageAndStatus } from '../../../dbmanager/hooks/PreHook';
 import { HttpHeaders } from './ResponseHeaders';
-import { UpdateType } from "./Update";
-import { TestSpec } from "./TestEntityAfterThisOperation";
+import { UpdateType } from './Update';
+import { TestSpec } from './TestEntityAfterwards';
 
 class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
@@ -31,8 +31,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToIsMetadataFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsDeleteFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToResponseStatusCodeMap: { [key: string]: number } = {};
-  private readonly serviceFunctionNameToTestAfterMap: { [key: string]: string } = {};
-  private readonly serviceFunctionNameToTestBeforeMap: { [key: string]: string } = {};
+  private readonly serviceFunctionNameToTestSetupMap: { [key: string]: string[] } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -134,12 +133,8 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToIsDeleteFunctionMap[`${serviceClass.name}${functionName}`] = true;
   }
 
-  addTestAfter(serviceClass: Function, functionName: string, serviceFunctionName: string) {
-    this.serviceFunctionNameToTestAfterMap[`${serviceClass.name}${functionName}`] = serviceFunctionName;
-  }
-
-  addTestBefore(serviceClass: Function, functionName: string, serviceFunctionName: string) {
-    this.serviceFunctionNameToTestBeforeMap[`${serviceClass.name}${functionName}`] = serviceFunctionName;
+  addTestSetup(serviceClass: Function, functionName: string, serviceFunctionsToExecute: string[]) {
+    this.serviceFunctionNameToTestSetupMap[`${serviceClass.name}${functionName}`] = serviceFunctionsToExecute;
   }
 
   expectServiceFunctionReturnValueToContainInTests(
@@ -158,9 +153,10 @@ class ServiceFunctionAnnotationContainer {
     testName: string,
     fieldPathNameToFieldValueMap: { [key: string]: string }
   ) {
-    this.serviceFunctionNameToTestSpecMap[
-      `${serviceClass.name}${functionName}`
-      ] = { testName, fieldPathNameToFieldValueMap };
+    this.serviceFunctionNameToTestSpecMap[`${serviceClass.name}${functionName}`] = {
+      testName,
+      fieldPathNameToFieldValueMap
+    };
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -342,11 +338,8 @@ class ServiceFunctionAnnotationContainer {
   getUpdateTypeForServiceFunction(serviceClass: Function, functionName: string) {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (
-        this.serviceFunctionNameToUpdateTypeMap[`${proto.constructor.name}${functionName}`] !==
-        undefined
-      ) {
-        return  this.serviceFunctionNameToUpdateTypeMap[`${proto.constructor.name}${functionName}`];
+      if (this.serviceFunctionNameToUpdateTypeMap[`${proto.constructor.name}${functionName}`] !== undefined) {
+        return this.serviceFunctionNameToUpdateTypeMap[`${proto.constructor.name}${functionName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
@@ -471,20 +464,11 @@ class ServiceFunctionAnnotationContainer {
     return undefined;
   }
 
-  getTestSpec(
-    serviceClass: Function,
-    functionName: string
-  ): TestSpec | undefined {
+  getTestSpec(serviceClass: Function, functionName: string): TestSpec | undefined {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (
-        this.serviceFunctionNameToTestSpecMap[
-          `${proto.constructor.name}${functionName}`
-          ] !== undefined
-      ) {
-        return this.serviceFunctionNameToTestSpecMap[
-          `${proto.constructor.name}${functionName}`
-          ];
+      if (this.serviceFunctionNameToTestSpecMap[`${proto.constructor.name}${functionName}`] !== undefined) {
+        return this.serviceFunctionNameToTestSpecMap[`${proto.constructor.name}${functionName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }
@@ -492,23 +476,11 @@ class ServiceFunctionAnnotationContainer {
     return undefined;
   }
 
-  getTestAfter(serviceClass: Function, functionName: string): string | undefined{
+  getTestSetup(serviceClass: Function, functionName: string): string[] | undefined {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.serviceFunctionNameToTestAfterMap[`${proto.constructor.name}${functionName}`] !== undefined) {
-        return this.serviceFunctionNameToTestAfterMap[`${proto.constructor.name}${functionName}`];
-      }
-      proto = Object.getPrototypeOf(proto);
-    }
-
-    return undefined;
-  }
-
-  getTestBefore(serviceClass: Function, functionName: string): string | undefined{
-    let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
-    while (proto !== Object.prototype) {
-      if (this.serviceFunctionNameToTestBeforeMap[`${proto.constructor.name}${functionName}`] !== undefined) {
-        return this.serviceFunctionNameToTestBeforeMap[`${proto.constructor.name}${functionName}`];
+      if (this.serviceFunctionNameToTestSetupMap[`${proto.constructor.name}${functionName}`] !== undefined) {
+        return this.serviceFunctionNameToTestSetupMap[`${proto.constructor.name}${functionName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }

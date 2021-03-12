@@ -34,7 +34,7 @@ import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import { TestEntityAfterThisOperation } from '../../backk/decorators/service/function/TestEntityAfterThisOperation';
+import { TestEntityAfterwards } from '../../backk/decorators/service/function/TestEntityAfterwards';
 import { orderServiceErrors } from "./errors/orderServiceErrors";
 
 @Injectable()
@@ -93,7 +93,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
-  @TestEntityAfterThisOperation('expect no order items', { orderItems: [] })
+  @TestEntityAfterwards('expect no order items', { orderItems: [] })
   deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: {
@@ -108,7 +108,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForTests()
   @Update('addOrRemoveSubEntities')
-  @TestEntityAfterThisOperation('expect order to contain an order item', {
+  @TestEntityAfterwards('expect order to contain an order item', {
     'orderItems.salesItems._id': '{{salesItemId}}'
   })
   addOrderItem({ orderId, salesItemId }: AddOrderItemArg): PromiseOfErrorOr<null> {

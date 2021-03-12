@@ -18,8 +18,9 @@ import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import _IdAndUserAccountIdAndSalesItemId from './types/args/_IdAndUserAccountIdAndSalesItemId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { Update } from '../../backk/decorators/service/function/Update';
-import { TestEntityAfterThisOperation } from '../../backk/decorators/service/function/TestEntityAfterThisOperation';
+import { TestEntityAfterwards } from '../../backk/decorators/service/function/TestEntityAfterwards';
 import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
+import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -70,7 +71,8 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestEntityAfterThisOperation('expect shopping cart to contain a sales item', {
+  @TestSetup(['salesItemService.createSalesItem'])
+  @TestEntityAfterwards('expect shopping cart to contain a sales item', {
     'salesItems._id': '{{salesItemId}}'
   })
   addToShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
@@ -92,7 +94,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestEntityAfterThisOperation('expect empty shopping cart', { salesItems: [] })
+  @TestEntityAfterwards('expect empty shopping cart', { salesItems: [] })
   removeFromShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {
       preHooks: () => this.salesItemService.updateSalesItemState(salesItemId, 'forSale')
@@ -101,7 +103,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Delete()
-  @NoAutoTest()
   emptyShoppingCart({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
     return this.deleteShoppingCart({ _id });
   }
