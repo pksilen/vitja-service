@@ -16,9 +16,16 @@ export default function getFieldsForEntity(
   isInternalCall = false,
   tableAlias = EntityClass.name.toLowerCase()
 ) {
-  const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(
+  let entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(
     EntityClass as any
   );
+
+  if (isInternalCall) {
+    entityPropertyNameToPropertyTypeNameMap = {
+      ...entityPropertyNameToPropertyTypeNameMap,
+      _id: 'string'
+    }
+  }
 
   Object.entries(entityPropertyNameToPropertyTypeNameMap).forEach(
     ([entityPropertyName, entityPropertyTypeName]: [string, any]) => {

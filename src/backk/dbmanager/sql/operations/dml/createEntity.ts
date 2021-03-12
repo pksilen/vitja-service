@@ -137,9 +137,9 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
         if (isArrayType && isEntityTypeName(baseTypeName)) {
           await forEachAsyncParallel(subEntityOrEntities ?? [], async (subEntity: any, index) => {
             const SubEntityClass = (Types as any)[baseTypeName];
+
             if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
               const associationTableName = `${EntityClass.name}_${getSingularName(fieldName)}`;
-
               const {
                 entityForeignIdFieldName,
                 subEntityForeignIdFieldName

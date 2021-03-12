@@ -31,7 +31,7 @@ export default async function tryCreateTable(
   const _idColumnMetadata = idColumnName === 'id' ? { _id: 'string' } : {};
 
   await forEachAsyncSequential(
-    Object.entries({ ...entityMetadata, ..._idColumnMetadata, ...(idColumnName ? {} : { id: 'string' }) }),
+    Object.entries({ ...entityMetadata, ..._idColumnMetadata, ...(idColumnName ? {} : { id: 'string', _id: 'string' }) }),
     async ([fieldName, fieldTypeName]: [any, any]) => {
       if (typePropertyAnnotationContainer.isTypePropertyTransient(EntityClass, fieldName)) {
         return;

@@ -80,15 +80,12 @@ export default async function deleteEntityById<T extends BackkEntity>(
       forEachAsyncParallel(
         entityContainer.manyToManyRelationTableSpecs,
         async ({ associationTableName, entityForeignIdFieldName }) => {
-          console.log(associationTableName)
           if (associationTableName.startsWith(EntityClass.name + '_')) {
-            console.log('after: ' + associationTableName)
-            await dbManager.tryExecuteSql(
-              `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
-                1
-              )}`,
-              [numericId]
-            );
+            const sqlStatement = `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+              1
+            )}`;
+            console.log(sqlStatement, numericId)
+            await dbManager.tryExecuteSql(sqlStatement, [numericId]);
           }
         }
       ),

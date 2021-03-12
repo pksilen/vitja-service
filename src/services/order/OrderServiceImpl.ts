@@ -68,31 +68,33 @@ export default class OrderServiceImpl extends OrderService {
     'salesItemService.createSalesItem',
     'shoppingCartService.addToShoppingCart'
   ])
-  async placeOrder({ userAccountId, paymentGateway }: PlaceOrderArg): PromiseOfErrorOr<Order> {
-    const [shoppingCart, error] = await this.shoppingCartService.getShoppingCart({ userAccountId });
+  placeOrder({ userAccountId, paymentGateway }: PlaceOrderArg): PromiseOfErrorOr<Order> {
+    return this.dbManager.executeInsideTransaction(async () => {
+      const [shoppingCart, error] = await this.shoppingCartService.getShoppingCart({ userAccountId });
 
-    return shoppingCart
-      ? this.dbManager.createEntity(
-          {
-            userAccountId,
-            orderItems: shoppingCart.salesItems.map((salesItem, index) => ({
-              id: index.toString(),
-              state: 'toBeDelivered',
-              trackingUrl: null,
-              deliveryTimestamp: null,
-              salesItems: [salesItem]
-            })),
-            paymentInfo: {
-              paymentGateway,
-              transactionId: null,
-              transactionTimestamp: null,
-              amount: null
-            }
-          },
-          Order,
-          { preHooks: () => this.salesItemService.updateSalesItemStates(shoppingCart.salesItems, 'sold') }
-        )
-      : [null, error];
+      return shoppingCart
+        ? this.dbManager.createEntity(
+            {
+              userAccountId,
+              orderItems: shoppingCart.salesItems.map((salesItem, index) => ({
+                id: index.toString(),
+                state: 'toBeDelivered',
+                trackingUrl: null,
+                deliveryTimestamp: null,
+                salesItems: [salesItem]
+              })),
+              paymentInfo: {
+                paymentGateway,
+                transactionId: null,
+                transactionTimestamp: null,
+                amount: null
+              }
+            },
+            Order,
+            { preHooks: () => this.salesItemService.updateSalesItemStates(shoppingCart.salesItems, 'sold') }
+          )
+        : [null, error];
+    });
   }
 
   @AllowForSelf()
