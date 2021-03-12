@@ -36,6 +36,7 @@ import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { TestEntityAfterwards } from '../../backk/decorators/service/function/TestEntityAfterwards';
 import { orderServiceErrors } from './errors/orderServiceErrors';
+import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -61,6 +62,7 @@ export default class OrderServiceImpl extends OrderService {
     Location: ({ paymentGateway, uiRedirectUrl }, { _id }) =>
       OrderServiceImpl.getLocationHeaderUrl(paymentGateway, _id, uiRedirectUrl)
   })
+  @TestSetup(['shoppingCartService.createShoppingCart'])
   async placeOrder({ userAccountId, paymentGateway }: PlaceOrderArg): PromiseOfErrorOr<Order> {
     const [shoppingCart, error] = await this.shoppingCartService.getShoppingCart({ userAccountId });
 

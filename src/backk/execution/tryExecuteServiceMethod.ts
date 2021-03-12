@@ -559,7 +559,12 @@ export default async function tryExecuteServiceMethod(
       }
     });
 
-    resp?.status(HttpStatusCodes.SUCCESS);
+    const responseStatusCode = serviceFunctionAnnotationContainer.getResponseStatusCodeForServiceFunction(
+      controller[serviceName].constructor,
+      functionName
+    )
+
+    resp?.status(responseStatusCode ?? HttpStatusCodes.SUCCESS);
     resp?.send(response);
   } catch (errorOrBackkError) {
     storedError = errorOrBackkError;
