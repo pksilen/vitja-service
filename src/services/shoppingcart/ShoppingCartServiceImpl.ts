@@ -55,17 +55,11 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   getShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<ShoppingCart> {
     return this.dbManager.executeInsideTransaction(async () => {
-      const [shoppingCart, error] = await this.dbManager.getEntityWhere(
+      return this.dbManager.getEntityWhere(
         'userAccountId',
         userAccountId,
         ShoppingCart
       );
-
-      if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
-        return this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
-      }
-
-      return [shoppingCart, error];
     });
   }
 
