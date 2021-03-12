@@ -6,6 +6,8 @@ export default class PlaceOrderArg {
   ...UserAccountId
   ...Pick<PaymentInfo, 'paymentGateway'>
 
+  shoppingCartId!: string;
+
   @MaxLength(Lengths._4K)
   @IsUrl()
   uiRedirectUrl!: string;

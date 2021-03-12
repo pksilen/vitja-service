@@ -18,6 +18,8 @@ export default class PlaceOrderArg {
 
   public paymentGateway: PaymentGateway = 'Paytrail';
 
+  shoppingCartId!: string;
+
   @MaxLength(Lengths._4K)
   @IsUrl()
   uiRedirectUrl!: string;

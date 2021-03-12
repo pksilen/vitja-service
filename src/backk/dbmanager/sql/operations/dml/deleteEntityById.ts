@@ -81,7 +81,6 @@ export default async function deleteEntityById<T extends BackkEntity>(
             const sqlStatement = `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
               1
             )}`;
-            console.log(sqlStatement, numericId)
             await dbManager.tryExecuteSql(sqlStatement, [numericId]);
           }
         }

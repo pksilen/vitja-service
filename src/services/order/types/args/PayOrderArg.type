@@ -1,4 +1,6 @@
 export default class PayOrderArg {
   ..._Id;
   ...Omit<PaymentInfo, 'paymentGateway'>;
+
+  shoppingCartId!: string
 }

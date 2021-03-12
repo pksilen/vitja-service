@@ -68,7 +68,7 @@ export default class OrderServiceImpl extends OrderService {
     'salesItemService.createSalesItem',
     'shoppingCartService.addToShoppingCart'
   ])
-  placeOrder({ userAccountId, paymentGateway }: PlaceOrderArg): PromiseOfErrorOr<Order> {
+  placeOrder({ userAccountId, shoppingCartId, paymentGateway }: PlaceOrderArg): PromiseOfErrorOr<Order> {
     return this.dbManager.executeInsideTransaction(async () => {
       const [shoppingCart, error] = await this.shoppingCartService.getShoppingCart({ userAccountId });
 
@@ -138,10 +138,10 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update('update')
-  payOrder({ _id, ...paymentInfo }: PayOrderArg): PromiseOfErrorOr<null> {
+  payOrder({ _id, shoppingCartId, ...paymentInfo }: PayOrderArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, paymentInfo }, Order, {
       preHooks: [
-        () => this.shoppingCartService.deleteShoppingCart({ _id }),
+        () => this.shoppingCartService.deleteShoppingCart({ _id: shoppingCartId }),
         {
           isSuccessfulOrTrue: ({ paymentInfo }) => paymentInfo.transactionId === null,
           error: orderServiceErrors.orderAlreadyPaid

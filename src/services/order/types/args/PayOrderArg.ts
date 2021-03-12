@@ -34,4 +34,6 @@ export default class PayOrderArg {
   })
   @MinMax(0, Values._1B)
   public amount!: number | null;
+
+  shoppingCartId!: string;
 }
