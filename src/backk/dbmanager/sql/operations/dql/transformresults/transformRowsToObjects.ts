@@ -43,12 +43,13 @@ export default function transformRowsToObjects<T>(
   rows: any[],
   EntityClass: { new (): T },
   { paginations, includeResponseFields, excludeResponseFields }: PostQueryOperations,
-  dbManager: AbstractDbManager
+  dbManager: AbstractDbManager,
+  isInternalCall = false
 ) {
   const resultMaps = createResultMaps(EntityClass, dbManager.getTypes(), {
     includeResponseFields,
     excludeResponseFields
-  });
+  }, isInternalCall);
 
   let mappedRows: any[] = [];
 

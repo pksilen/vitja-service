@@ -51,15 +51,12 @@ export default async function deleteEntityById<T extends BackkEntity>(
       await tryExecutePreHooks(preHooks, currentEntity);
     }
 
-    const typeMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
-    const idFieldName = typeMetadata._id ? '_id' : 'id';
-
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
       // noinspection ExceptionCaughtLocallyJS
       throw createErrorFromErrorCodeMessageAndStatus({
         ...BACKK_ERRORS.INVALID_ARGUMENT,
-        message: BACKK_ERRORS.INVALID_ARGUMENT.message + idFieldName + ': must be a numeric id'
+        message: BACKK_ERRORS.INVALID_ARGUMENT.message + '_id: must be a numeric id'
       });
     }
 
@@ -90,7 +87,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
         }
       ),
       dbManager.tryExecuteSql(
-        `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()}.${idFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+        `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()}._id = ${dbManager.getValuePlaceholder(
           1
         )}`,
         [numericId]

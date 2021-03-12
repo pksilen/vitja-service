@@ -87,8 +87,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
           [numericId, subEntity._id]
         );
       } else {
-        console.log(subEntity);
-        const [, error] = await deleteEntityById(dbManager, subEntity.id, subEntity.constructor);
+        const [, error] = await deleteEntityById(dbManager, subEntity._id, subEntity.constructor);
 
         if (error) {
           throw error;

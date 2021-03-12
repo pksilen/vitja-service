@@ -10,11 +10,12 @@ function updateResultMaps(
   resultMaps: any[],
   projection: Projection,
   fieldPath: string,
+  isInternalCall: boolean,
   suppliedEntityMetadata: { [key: string]: string } = {},
   ParentEntityClass?: Function,
   tablePath?: string
 ) {
-  const entityMetadata =
+  let entityMetadata =
     typeof entityClassOrName === 'function'
       ? getClassPropertyNameToPropertyTypeNameMap(entityClassOrName as any)
       : suppliedEntityMetadata;
@@ -38,6 +39,13 @@ function updateResultMaps(
     associations: [] as object[]
   };
 
+  if (isInternalCall) {
+    entityMetadata = {
+      ...entityMetadata,
+      '_id': 'string'
+    }
+  }
+
   Object.entries(entityMetadata).forEach(([fieldName, fieldTypeName]: [string, any]) => {
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
 
@@ -59,6 +67,7 @@ function updateResultMaps(
           resultMaps,
           projection,
           fieldPath + fieldName + '.',
+          isInternalCall,
           {},
           entityClassOrName as Function,
           tablePath + '_' + fieldName.toLowerCase()
@@ -81,6 +90,7 @@ function updateResultMaps(
           resultMaps,
           projection,
           fieldPath + fieldName + '.',
+          isInternalCall,
           {},
           entityClassOrName as Function,
           tablePath + '_' + fieldName.toLowerCase()
@@ -102,6 +112,7 @@ function updateResultMaps(
           resultMaps,
           projection,
           fieldPath + fieldName + '.',
+          isInternalCall,
           {
             id: 'integer',
             [fieldName.slice(0, -1)]: 'integer'
@@ -121,8 +132,13 @@ function updateResultMaps(
   resultMaps.push(resultMap);
 }
 
-export default function createResultMaps(entityClass: Function, Types: object, projection: Projection) {
+export default function createResultMaps(
+  entityClass: Function,
+  Types: object,
+  projection: Projection,
+  isInternalCall: boolean
+) {
   const resultMaps: any[] = [];
-  updateResultMaps(entityClass, Types, resultMaps, projection, '');
+  updateResultMaps(entityClass, Types, resultMaps, projection, '', isInternalCall);
   return resultMaps;
 }
