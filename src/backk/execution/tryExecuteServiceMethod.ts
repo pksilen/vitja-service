@@ -573,7 +573,7 @@ export default async function tryExecuteServiceMethod(
         ? responseStatusCode
         : HttpStatusCodes.SUCCESS
     );
-    
+
     resp?.send(response);
   } catch (errorOrBackkError) {
     storedError = errorOrBackkError;

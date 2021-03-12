@@ -19,8 +19,12 @@ export default function getServiceFunctionTests(
   const serviceEntityName = serviceMetadata.serviceName.split('Service')[0];
   const { baseTypeName, isArrayType } = getTypeInfoForTypeName(functionMetadata.returnValueType);
 
-  const checkResponseCode = `pm.test("Status code is ${expectedResponseStatusCode}", function () {
-  pm.response.to.have.status(${expectedResponseStatusCode});
+  const checkResponseCode = `pm.test("Status code is ${
+    process.env.NODE_ENV === 'development' ? HttpStatusCodes.SUCCESS : expectedResponseStatusCode
+  }", function () {
+  pm.response.to.have.status(${
+    process.env.NODE_ENV === 'development' ? HttpStatusCodes.SUCCESS : expectedResponseStatusCode
+  });
 });`;
 
   if (isCreateFunction(ServiceClass, functionMetadata.functionName)) {
