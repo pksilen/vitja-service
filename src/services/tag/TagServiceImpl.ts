@@ -15,6 +15,7 @@ import { HttpStatusCodes } from '../../backk/constants/constants';
 import tryGetSeparatedValuesFromTextFile from '../../backk/file/tryGetSeparatedValuesFromTextFile';
 import executeForAll from '../../backk/utils/executeForAll';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import _Id from "../../backk/types/id/_Id";
 
 @Injectable()
 export default class TagServiceImpl extends TagService {
@@ -78,5 +79,10 @@ export default class TagServiceImpl extends TagService {
     ]);
 
     return this.dbManager.getEntitiesByFilters(filters, Tag, new DefaultPostQueryOperations());
+  }
+
+  @AllowForTests()
+  deleteTag({ _id }: _Id): PromiseOfErrorOr<null> {
+    return this.dbManager.deleteEntityById(_id , Tag);
   }
 }

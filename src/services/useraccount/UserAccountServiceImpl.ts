@@ -119,7 +119,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestSetup(['tagService.deleteAllTags', 'tagService.createTag', 'salesItemService.createSalesItem'])
+  @TestSetup(['tagService.createTag', 'salesItemService.createSalesItem'])
   @TestEntityAfterwards('expect user account´s favoriteSalesItems to contain a sales item', {
     'favoriteSalesItems._id': '{{salesItemId}}'
   })
