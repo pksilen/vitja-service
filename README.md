@@ -1,9 +1,10 @@
 # Vitja service
 
 TODO:
+- convert after placeOrder written test to TestTeardown
 - placeorder getentityById posthook to check shopping cart is not empty
 - TestSetup, possible to give serviceFunctionName and argument
-- TestTeardown
+- TestTeardown: testName, serviceFunctionName, expectedReturnValueFieldPathNameToFieldValueMap
 - check that changePassword username is valid
 - test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart

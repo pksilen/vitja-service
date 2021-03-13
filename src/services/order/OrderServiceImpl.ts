@@ -106,24 +106,6 @@ export default class OrderServiceImpl extends OrderService {
     return this.dbManager.getEntityById(_id, Order);
   }
 
-  @AllowForSelf()
-  @Update('addOrRemoveSubEntities')
-  @TestEntityAfterwards('expect order not to have order items', { orderItems: [] })
-  removeOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
-    return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
-      preHooks: [
-        this.isPaidOrderPreHook,
-        {
-          isSuccessfulOrTrue: (order) =>
-            JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
-            'toBeDelivered',
-          error: orderServiceErrors.cannotRemoveOrderItemWhichIsAlreadyDelivered
-        }
-      ],
-      postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
-    });
-  }
-
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update('update')
   payOrder({ _id, shoppingCartId, ...paymentInfo }: PayOrderArg): PromiseOfErrorOr<null> {
@@ -142,6 +124,24 @@ export default class OrderServiceImpl extends OrderService {
             orderId: _id
           }
         )
+    });
+  }
+
+  @AllowForSelf()
+  @Update('addOrRemoveSubEntities')
+  @TestEntityAfterwards('expect order not to have order items', { orderItems: [] })
+  removeOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
+    return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
+      preHooks: [
+        this.isPaidOrderPreHook,
+        {
+          isSuccessfulOrTrue: (order) =>
+            JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
+            'toBeDelivered',
+          error: orderServiceErrors.cannotRemoveOrderItemWhichIsAlreadyDelivered
+        }
+      ],
+      postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
     });
   }
 
