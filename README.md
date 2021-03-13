@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- remove extra deletes from deleteXXX funcs
 - check that changePassword username is valid
 - test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart

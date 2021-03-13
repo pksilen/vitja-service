@@ -1,7 +1,7 @@
 import { ArrayMaxSize, ArrayMinSize, IsUrl, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import Id from "../../../../backk/types/id/Id";
-import { OrderState } from "../enum/OrderState";
+import { OrderItemState } from "../enum/OrderItemState";
 import { ShouldBeTrueFor } from "../../../../backk/decorators/typeproperty/ShouldBeTrueFor";
 import { Lengths } from "../../../../backk/constants/constants";
 import { ManyToMany } from "../../../../backk/decorators/typeproperty/ManyToMany";
@@ -21,7 +21,7 @@ export default class OrderItem extends Id {
   )
   public deliveryTimestamp!: Date | null;
 
-  public state!: OrderState;
+  public state!: OrderItemState;
 
   @MaxLength(Lengths._4K)
   @IsUrl()

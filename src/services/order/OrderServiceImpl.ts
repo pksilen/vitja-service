@@ -1,42 +1,40 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import { AllowForUserRoles } from '../../backk/decorators/service/function/AllowForUserRoles';
-import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
-import SalesItemService from '../salesitem/SalesItemService';
-import OrderService from './OrderService';
-import PlaceOrderArg from './types/args/PlaceOrderArg';
-import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
-import Order from './types/entities/Order';
-import OrderItem from './types/entities/OrderItem';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import DeleteOrderItemArg from './types/args/DeleteOrderItemArg';
-import AddOrderItemArg from './types/args/AddOrderItemArg';
-import UpdateOrderItemStateArg from './types/args/UpdateOrderItemStateArg';
-import ShoppingCartService from '../shoppingcart/ShoppingCartService';
-import { OrderState } from './types/enum/OrderState';
-import { Update } from '../../backk/decorators/service/function/Update';
-import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
-import { Create } from '../../backk/decorators/service/function/Create';
-import { HttpStatusCodes } from '../../backk/constants/constants';
-import { ResponseStatusCode } from '../../backk/decorators/service/function/ResponseStatusCode';
-import { ResponseHeaders } from '../../backk/decorators/service/function/ResponseHeaders';
-import getServiceName from '../../backk/utils/getServiceName';
-import { PaymentGateway } from './types/enum/PaymentGateway';
-import _Id from '../../backk/types/id/_Id';
-import { Delete } from '../../backk/decorators/service/function/Delete';
-import PayOrderArg from './types/args/PayOrderArg';
-import { JSONPath } from 'jsonpath-plus';
-import { CronJob } from '../../backk/decorators/service/function/CronJob';
-import dayjs from 'dayjs';
-import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
-import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
-import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
-import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import { TestEntityAfterwards } from '../../backk/decorators/service/function/TestEntityAfterwards';
-import { orderServiceErrors } from './errors/orderServiceErrors';
-import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import { AllowForUserRoles } from "../../backk/decorators/service/function/AllowForUserRoles";
+import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
+import SalesItemService from "../salesitem/SalesItemService";
+import OrderService from "./OrderService";
+import PlaceOrderArg from "./types/args/PlaceOrderArg";
+import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
+import Order from "./types/entities/Order";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
+import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
+import ShoppingCartService from "../shoppingcart/ShoppingCartService";
+import { OrderItemState } from "./types/enum/OrderItemState";
+import { Update } from "../../backk/decorators/service/function/Update";
+import sendToRemoteService from "../../backk/remote/messagequeue/sendToRemoteService";
+import { Create } from "../../backk/decorators/service/function/Create";
+import { HttpStatusCodes } from "../../backk/constants/constants";
+import { ResponseStatusCode } from "../../backk/decorators/service/function/ResponseStatusCode";
+import { ResponseHeaders } from "../../backk/decorators/service/function/ResponseHeaders";
+import getServiceName from "../../backk/utils/getServiceName";
+import { PaymentGateway } from "./types/enum/PaymentGateway";
+import _Id from "../../backk/types/id/_Id";
+import { Delete } from "../../backk/decorators/service/function/Delete";
+import PayOrderArg from "./types/args/PayOrderArg";
+import { JSONPath } from "jsonpath-plus";
+import { CronJob } from "../../backk/decorators/service/function/CronJob";
+import dayjs from "dayjs";
+import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
+import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
+import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
+import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import { TestEntityAfterwards } from "../../backk/decorators/service/function/TestEntityAfterwards";
+import { orderServiceErrors } from "./errors/orderServiceErrors";
+import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -104,7 +102,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestEntityAfterwards('expect no order items', { orderItems: [] })
+  @TestEntityAfterwards('expect order not to have order items', { orderItems: [] })
   removeOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: {
@@ -115,26 +113,6 @@ export default class OrderServiceImpl extends OrderService {
       },
       postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
     });
-  }
-
-  @AllowForTests()
-  @Update('addOrRemoveSubEntities')
-  @TestEntityAfterwards('expect order to contain an order item', {
-    'orderItems.salesItems._id': '{{salesItemId}}'
-  })
-  addOrderItem({ orderId, salesItemId }: AddOrderItemArg): PromiseOfErrorOr<null> {
-    return this.dbManager.addSubEntity(
-      orderId,
-      'orderItems',
-      {
-        salesItems: [{ _id: salesItemId }],
-        state: 'toBeDelivered',
-        trackingUrl: null,
-        deliveryTimestamp: null
-      },
-      Order,
-      OrderItem
-    );
   }
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
@@ -315,7 +293,7 @@ export default class OrderServiceImpl extends OrderService {
     return `https://${paymentGatewayHost}/${paymentGatewayUrlPath}?successUrl=${successUrl}&failureUrl=${failureUrl}&successRedirectUrl=${successUiRedirectUrl}&failureRedirectUrl=${failureRedirectUrl}`;
   }
 
-  private static getValidPreviousOrderStateFor(newState: OrderState): OrderState {
+  private static getValidPreviousOrderStateFor(newState: OrderItemState): OrderItemState {
     switch (newState) {
       case 'delivered':
         return 'delivering';
