@@ -1,7 +1,7 @@
 export const orderServiceErrors = {
-  cannotDeleteOrderItemWhichIsAlreadyDelivered: {
+  cannotRemoveOrderItemWhichIsAlreadyDelivered: {
     errorCode: 'orderService.1',
-    message: 'Cannot delete order item which is already delivered'
+    message: 'Cannot remove order item which is already delivered'
   },
   cannotUpdateOrderItemStateDueToInvalidCurrentState: {
     errorCode: 'orderService.2',
@@ -15,8 +15,12 @@ export const orderServiceErrors = {
     errorCode: 'orderService.4',
     message: 'Order already paid'
   },
-  cannotDeliverOrderWhichIsAlreadyDelivered: {
+  cannotDeliverOrderItemWhichIsAlreadyDelivered: {
     errorCode: 'orderService.5',
-    message: 'Cannot deliver order which is already delivered'
-  }
+    message: 'Cannot deliver order item which is already delivered'
+  },
+  cannotUpdateOrderWhichIsNotPaid: {
+    errorCode: 'orderService.4',
+    message: 'Cannot update order which is not paid'
+  },
 };
