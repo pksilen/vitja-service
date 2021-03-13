@@ -12,8 +12,9 @@ import RemoveOrderItemArg from "./types/args/RemoveOrderItemArg";
 export default abstract class OrderService extends CrudEntityService {
   abstract deleteAllOrders(): PromiseOfErrorOr<null>;
   abstract placeOrder(arg: PlaceOrderArg): PromiseOfErrorOr<Order>;
-  abstract removeOrderItem(arg: RemoveOrderItemArg): PromiseOfErrorOr<null>;
   abstract getOrder(arg: _IdAndUserAccountId): PromiseOfErrorOr<Order>;
+  abstract removeOrderItem(arg: RemoveOrderItemArg): PromiseOfErrorOr<null>;
+  abstract addOrderItem(arg: AddOrderItemArg): PromiseOfErrorOr<null>
   abstract payOrder(arg: PayOrderArg):PromiseOfErrorOr<null>;
   abstract deliverOrderItem(arg: DeliverOrderItemArg): PromiseOfErrorOr<null>;
   abstract updateOrderItemState(arg: UpdateOrderItemStateArg): PromiseOfErrorOr<null>;

@@ -11,6 +11,7 @@ TODO:
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
 - after payOrder, check values updated
 - after deliverOrderItem, check values updated
+- postHooks should give entity as param and fetch it when needed
 - remove extra deletes from deleteXXX funcs
 - test error cases
 
