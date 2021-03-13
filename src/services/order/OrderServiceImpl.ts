@@ -9,7 +9,6 @@ import PlaceOrderArg from "./types/args/PlaceOrderArg";
 import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
 import Order from "./types/entities/Order";
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import DeleteOrderItemArg from "./types/args/DeleteOrderItemArg";
 import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
 import ShoppingCartService from "../shoppingcart/ShoppingCartService";
 import { OrderItemState } from "./types/enum/OrderItemState";
@@ -35,6 +34,7 @@ import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import { TestEntityAfterwards } from "../../backk/decorators/service/function/TestEntityAfterwards";
 import { orderServiceErrors } from "./errors/orderServiceErrors";
 import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
+import RemoveOrderItemArg from "./types/args/RemoveOrderItemArg";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -103,7 +103,7 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestEntityAfterwards('expect order not to have order items', { orderItems: [] })
-  removeOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<null> {
+  removeOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: {
         isSuccessfulOrTrue: (order) =>

@@ -17,6 +17,6 @@ export const orderServiceErrors = {
   },
   cannotDeliverOrderWhichIsAlreadyDelivered: {
     errorCode: 'orderService.5',
-    message: 'cannot deliver order which is already delivered'
+    message: 'Cannot deliver order which is already delivered'
   }
 };

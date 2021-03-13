@@ -1,6 +1,6 @@
 import _IdAndOrderItemId from './_IdAndOrderItemId';
 
-export default class DeleteOrderItemArg {
+export default class RemoveOrderItemArg {
   ..._IdAndOrderItemId;
   ...UserAccountId;
 }
