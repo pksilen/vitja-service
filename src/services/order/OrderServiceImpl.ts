@@ -102,6 +102,24 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
+  @Update('addOrRemoveSubEntities')
+  @TestEntityAfterwards('expect order not to have order items', { orderItems: [] })
+  removeOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
+    return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
+      preHooks: {
+        isSuccessfulOrTrue: (order) =>
+          JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
+          'toBeDelivered',
+        error: orderServiceErrors.cannotRemoveOrderItemWhichIsAlreadyDelivered
+      },
+      postHook: {
+        shouldExecutePostHook: (order) => order?.paymentInfo.transactionId !== null,
+        isSuccessful: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
+      }
+    });
+  }
+
+  @AllowForSelf()
   getOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<Order> {
     return this.dbManager.getEntityById(_id, Order);
   }
@@ -124,24 +142,6 @@ export default class OrderServiceImpl extends OrderService {
             orderId: _id
           }
         )
-    });
-  }
-
-  @AllowForSelf()
-  @Update('addOrRemoveSubEntities')
-  @TestEntityAfterwards('expect order not to have order items', { orderItems: [] })
-  removeOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
-    return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
-      preHooks: [
-        this.isPaidOrderPreHook,
-        {
-          isSuccessfulOrTrue: (order) =>
-            JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
-            'toBeDelivered',
-          error: orderServiceErrors.cannotRemoveOrderItemWhichIsAlreadyDelivered
-        }
-      ],
-      postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
     });
   }
 
@@ -240,9 +240,7 @@ export default class OrderServiceImpl extends OrderService {
     return this.deleteOrderById(_id, true);
   }
 
-  @TestSetup([
-    'orderService.placeOrder'
-  ])
+  @TestSetup(['orderService.placeOrder'])
   @CronJob({ minutes: 0, hourInterval: 1 })
   deleteIncompleteOrders(): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(

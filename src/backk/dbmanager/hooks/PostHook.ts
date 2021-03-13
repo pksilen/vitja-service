@@ -4,7 +4,7 @@ import { SubEntity } from "../../types/entities/SubEntity";
 
 export type PostHook<T extends BackkEntity | SubEntity> =
   | {
-      shouldExecutePostHook: () => boolean;
+      shouldExecutePostHook: (entity: T | null) => boolean;
       isSuccessful: (entity: T | null) => PromiseOfErrorOr<BackkEntity | null>;
     }
   | ((entity: T | null) => PromiseOfErrorOr<BackkEntity | null>);

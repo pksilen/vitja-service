@@ -16,7 +16,7 @@ export default async function tryExecutePostHook<T extends BackkEntity | SubEnti
 
   try {
     if (typeof postHook === 'object' && postHook.shouldExecutePostHook) {
-      if (postHook.shouldExecutePostHook()) {
+      if (postHook.shouldExecutePostHook(entity ?? null)) {
         [, hookCallError] = await postHookFunc(entity ?? null);
       }
     } else {
