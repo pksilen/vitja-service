@@ -36,6 +36,8 @@ import { orderServiceErrors } from './errors/orderServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import RemoveOrderItemArg from './types/args/RemoveOrderItemArg';
 import { PreHook } from '../../backk/dbmanager/hooks/PreHook';
+import AddOrderItemArg from "./types/args/AddOrderItemArg";
+import OrderItem from "./types/entities/OrderItem";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
