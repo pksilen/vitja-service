@@ -1,12 +1,15 @@
 # Vitja service
 
 TODO:
-- remove extra deletes from deleteXXX funcs
+- placeorder getentityById posthook to check shopping cart is not empty
+- TestSetup, possible to give serviceFunctionName and argument
+- TestTeardown
 - check that changePassword username is valid
 - test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
 - after payOrder, check values updated
 - after deliverOrderItem, check values updated
+- remove extra deletes from deleteXXX funcs
 - test error cases
 
 - Split to multiple microservices

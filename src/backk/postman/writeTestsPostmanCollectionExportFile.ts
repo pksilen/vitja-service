@@ -78,12 +78,12 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         return;
       }
 
-      const serviceFunctionsToExecute = serviceFunctionAnnotationContainer.getTestSetup(
+      const testSetupServiceFunctionsToExecute = serviceFunctionAnnotationContainer.getTestSetup(
         (controller as any)[serviceMetadata.serviceName].constructor,
         functionMetadata.functionName
       );
 
-      serviceFunctionsToExecute?.forEach((serviceFunction) => {
+      testSetupServiceFunctionsToExecute?.forEach((serviceFunction) => {
         const [serviceName, functionName] = serviceFunction.split('.');
 
         const foundServiceMetadata = servicesMetadata.find(
@@ -366,7 +366,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             (controller as any)[serviceMetadata.serviceName].constructor,
             serviceMetadata.functions[index + 1].functionName
           ) &&
-          createFunctionMetadata
+          createFunctionMetadata && !testSetupServiceFunctionsToExecute
         ) {
           const createFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,

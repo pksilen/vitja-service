@@ -231,10 +231,18 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
+  @TestSetup([
+    'shoppingCartService.createShoppingCart',
+    'shoppingCartService.addToShoppingCart',
+    'orderService.placeOrder'
+  ])
   deleteOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
     return this.deleteOrderById(_id, true);
   }
 
+  @TestSetup([
+    'orderService.placeOrder'
+  ])
   @CronJob({ minutes: 0, hourInterval: 1 })
   deleteIncompleteOrders(): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
@@ -333,7 +341,17 @@ export default class OrderServiceImpl extends OrderService {
             JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
             'forSale'
           ),
-        ...(shouldRefund ? [(order) => refundOrder()] : [])
+        ...(shouldRefund
+          ? [
+              () =>
+                sendToRemoteService(
+                  `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrder`,
+                  {
+                    orderId: _id
+                  }
+                )
+            ]
+          : [])
       ]
     });
   }
