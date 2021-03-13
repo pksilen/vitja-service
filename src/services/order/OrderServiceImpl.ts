@@ -339,7 +339,7 @@ export default class OrderServiceImpl extends OrderService {
         },
         (order) =>
           this.salesItemService.updateSalesItemStates(
-            JSONPath({ json: order, path: 'orderItems[*].salesItems' }),
+            JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
             'forSale'
           )
       ]

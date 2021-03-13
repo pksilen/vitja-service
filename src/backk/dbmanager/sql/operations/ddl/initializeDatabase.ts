@@ -132,7 +132,7 @@ export default async function initializeDatabase(
                   dbManager.schema.toLowerCase() +
                   '.' +
                   foreignIdFieldName.toLowerCase().slice(0, -2) +
-                  '(_id)';
+                  '(_id) ON DELETE CASCADE';
 
                 await dbManager.tryExecuteSqlWithoutCls(addForeignKeyStatement);
               }
@@ -173,9 +173,9 @@ export default async function initializeDatabase(
                FOREIGN KEY(${entityForeignIdFieldName.toLowerCase()}) 
                REFERENCES ${dbManager.schema.toLowerCase()}.${entityForeignIdFieldName
                 .toLowerCase()
-                .slice(0, -2)}(_id),
+                .slice(0, -2)}(_id) ON DELETE CASCADE,
             FOREIGN KEY(${subEntityForeignIdFieldName.toLowerCase()}) 
-               REFERENCES ${dbManager.schema.toLowerCase()}.${subEntityTableName}(_id))`;
+               REFERENCES ${dbManager.schema.toLowerCase()}.${subEntityTableName}(_id) ON DELETE CASCADE)`;
 
               await dbManager.tryExecuteSqlWithoutCls(createTableStatement);
             }

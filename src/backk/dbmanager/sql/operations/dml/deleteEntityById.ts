@@ -1,23 +1,28 @@
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import entityContainer, { EntityJoinSpec } from '../../../../decorators/entity/entityAnnotationContainer';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import getEntityById from '../dql/getEntityById';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { PreHook } from '../../../hooks/PreHook';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import { BackkEntity } from '../../../../types/entities/BackkEntity';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
-import isBackkError from '../../../../errors/isBackkError';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import entityContainer, { EntityJoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import getEntityById from "../dql/getEntityById";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { PreHook } from "../../../hooks/PreHook";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import isBackkError from "../../../../errors/isBackkError";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
+import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
 
 export default async function deleteEntityById<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
@@ -25,7 +30,8 @@ export default async function deleteEntityById<T extends BackkEntity>(
   EntityClass: new () => T,
   preHooks?: PreHook<T> | PreHook<T>[],
   postHook?: PostHook<T>,
-  postQueryOperations?: PostQueryOperations
+  postQueryOperations?: PostQueryOperations,
+  isRecursive = false
 ): PromiseOfErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
@@ -85,7 +91,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
           }
         }
       ),
-      dbManager.tryExecuteSql(
+      isRecursive ? Promise.resolve(undefined) : dbManager.tryExecuteSql(
         `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()}._id = ${dbManager.getValuePlaceholder(
           1
         )}`,
