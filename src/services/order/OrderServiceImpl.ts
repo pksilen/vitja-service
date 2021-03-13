@@ -63,12 +63,12 @@ export default class OrderServiceImpl extends OrderService {
       OrderServiceImpl.getLocationHeaderUrl(paymentGateway, _id, uiRedirectUrl)
   })
   @TestSetup([
-    'shoppingCartService.createShoppingCart',
     'tagService.createTag',
     'salesItemService.createSalesItem',
+    'shoppingCartService.createShoppingCart',
     'shoppingCartService.addToShoppingCart'
   ])
-  placeOrder({ userAccountId, shoppingCartId, paymentGateway }: PlaceOrderArg): PromiseOfErrorOr<Order> {
+  placeOrder({ userAccountId, paymentGateway }: PlaceOrderArg): PromiseOfErrorOr<Order> {
     return this.dbManager.executeInsideTransaction(async () => {
       const [shoppingCart, error] = await this.shoppingCartService.getShoppingCart({ userAccountId });
 
@@ -103,8 +103,9 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
+  @Update('addOrRemoveSubEntities')
   @TestEntityAfterwards('expect no order items', { orderItems: [] })
-  deleteOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<null> {
+  removeOrderItem({ _id, orderItemId }: DeleteOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: {
         isSuccessfulOrTrue: (order) =>

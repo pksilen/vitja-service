@@ -15,6 +15,7 @@ export interface SendToOptions {
 
 export async function sendOneOrMore(sends: CallOrSendTo[], isTransactional: boolean): PromiseOfErrorOr<null> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
+
   if (clsNamespace?.get('isInsidePostHook')) {
     clsNamespace?.set(
       'postHookRemoteServiceCallCount',
