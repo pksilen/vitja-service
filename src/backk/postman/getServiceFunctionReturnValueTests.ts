@@ -61,7 +61,13 @@ export default function getServiceFunctionReturnValueTests(
     }
 
     if (sampleArg && (sampleArg as any)[propertyName] === undefined) {
-      return;
+      if (
+        !(expectedResponseFieldPathNameToFieldValueMapInTests && Object.keys(expectedResponseFieldPathNameToFieldValueMapInTests).find((expectedFieldPathName) =>
+          expectedFieldPathName.startsWith(fieldPathName)
+        ))
+      ) {
+        return;
+      }
     }
 
     let testValue;

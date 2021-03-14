@@ -286,10 +286,10 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             (controller as any)[serviceMetadata.serviceName].Types,
             serviceMetadata,
             lastGetFunctionMetadata,
-            expectedFieldPathNameCount <= 0,
+            isUpdate,
             HttpStatusCodes.SUCCESS,
             finalExpectedFieldPathNameToFieldValueMapInTests,
-            expectedFieldPathNameCount > 0 ? undefined : sampleArg
+             sampleArg
           );
 
           const getFunctionSampleArg = getServiceFunctionTestArgument(
