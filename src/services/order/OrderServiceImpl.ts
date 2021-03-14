@@ -109,7 +109,7 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update('update')
   payOrder({ _id, shoppingCartId, ...restOfEntity }: PayOrderArg): PromiseOfErrorOr<null> {
-    return this.dbManager.updateEntity({ _id, ...restOfEntity} , Order, {
+    return this.dbManager.updateEntity({ _id, ...restOfEntity }, Order, {
       preHooks: [
         () => this.shoppingCartService.deleteShoppingCart({ _id: shoppingCartId }),
         {
@@ -167,11 +167,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  async deliverOrderItem({
-    _id,
-    version,
-    orderItems
-  }: DeliverOrderItemArg): PromiseOfErrorOr<null> {
+  async deliverOrderItem({ _id, version, orderItems }: DeliverOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       {
         version,
@@ -343,10 +339,11 @@ export default class OrderServiceImpl extends OrderService {
     }
   }
 
-  private deleteOrderById(_id: string, shouldRefund: boolean): PromiseOfErrorOr<null> {
+  private deleteOrderById(_id: string, isOrderPaid: boolean): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, Order, {
       preHooks: [
         {
+          shouldExecutePreHook: () => isOrderPaid,
           isSuccessfulOrTrue: (order) =>
             JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
           error: orderServiceErrors.deleteOrderNotAllowed
@@ -355,19 +352,18 @@ export default class OrderServiceImpl extends OrderService {
           this.salesItemService.updateSalesItemStates(
             JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
             'forSale'
-          ),
-        ...(shouldRefund
-          ? [
-              () =>
-                sendToRemoteService(
-                  `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrder`,
-                  {
-                    orderId: _id
-                  }
-                )
-            ]
-          : [])
-      ]
+          )
+      ],
+      postHook: {
+        shouldExecutePostHook: () => isOrderPaid,
+        isSuccessful: () =>
+          sendToRemoteService(
+            `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrder`,
+            {
+              orderId: _id
+            }
+          )
+      }
     });
   }
 }

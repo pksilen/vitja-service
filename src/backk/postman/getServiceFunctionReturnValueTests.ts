@@ -50,6 +50,7 @@ export default function getServiceFunctionReturnValueTests(
 
     const fieldPathName = fieldPath ? fieldPath + '.' + propertyName : propertyName;
 
+    let shouldInclude = false;
     if (expectedResponseFieldPathNameToFieldValueMapInTests) {
       if (
         Object.keys(expectedResponseFieldPathNameToFieldValueMapInTests).find((expectedFieldPathName) =>
@@ -57,17 +58,17 @@ export default function getServiceFunctionReturnValueTests(
         )
       ) {
         isOptionalType = false;
+        shouldInclude = true;
       }
     }
 
-    if (sampleArg && (sampleArg as any)[propertyName] === undefined) {
-      if (
-        !(expectedResponseFieldPathNameToFieldValueMapInTests && Object.keys(expectedResponseFieldPathNameToFieldValueMapInTests).find((expectedFieldPathName) =>
-          expectedFieldPathName.startsWith(fieldPathName)
-        ))
-      ) {
-        return;
-      }
+    if (
+      sampleArg &&
+      (sampleArg as any)[propertyName] === undefined &&
+      (!expectedResponseFieldPathNameToFieldValueMapInTests ||
+        (expectedResponseFieldPathNameToFieldValueMapInTests && !shouldInclude))
+    ) {
+      return;
     }
 
     let testValue;

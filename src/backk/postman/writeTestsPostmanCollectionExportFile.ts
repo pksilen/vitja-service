@@ -278,9 +278,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             ...(testSpec?.fieldPathNameToFieldValueMap ?? {})
           };
 
-          const expectedFieldPathNameCount = Object.keys(finalExpectedFieldPathNameToFieldValueMapInTests)
-            .length;
-
           const getFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
@@ -289,7 +286,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             isUpdate,
             HttpStatusCodes.SUCCESS,
             finalExpectedFieldPathNameToFieldValueMapInTests,
-             sampleArg
+            sampleArg
           );
 
           const getFunctionSampleArg = getServiceFunctionTestArgument(

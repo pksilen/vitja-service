@@ -3,7 +3,8 @@
 TODO:
 - convert after placeOrder written test to TestTeardown
 - placeorder getentityById posthook to check shopping cart is not empty
-- TestSetup, possible to give serviceFunctionName and argument
+- TestSetup, possible to give serviceFunctionName and argument and postman tests
+- Convert createFollowedUserAccount written test to TestSetup
 - TestTeardown: testName, serviceFunctionName, expectedReturnValueFieldPathNameToFieldValueMap
 - if not teardown, then execute default post update get, or post delete get
 - check that changePassword username is valid
