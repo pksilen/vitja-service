@@ -20,10 +20,16 @@ export default function getServiceFunctionTests(
   const { baseTypeName, isArrayType } = getTypeInfoForTypeName(functionMetadata.returnValueType);
 
   const checkResponseCode = `pm.test("Status code is ${
-    process.env.NODE_ENV === 'development' ? HttpStatusCodes.SUCCESS : expectedResponseStatusCode
+    process.env.NODE_ENV === 'development' &&
+    expectedResponseStatusCode >= 300 &&
+    expectedResponseStatusCode < 400
+      ? HttpStatusCodes.SUCCESS
+      : expectedResponseStatusCode
   }", function () {
   pm.response.to.have.status(${
-    process.env.NODE_ENV === 'development' ? HttpStatusCodes.SUCCESS : expectedResponseStatusCode
+    process.env.NODE_ENV === 'development' &&
+    expectedResponseStatusCode >= 300 &&
+    expectedResponseStatusCode < 400 ? HttpStatusCodes.SUCCESS : expectedResponseStatusCode
   });
 });`;
 

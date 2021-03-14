@@ -36,14 +36,14 @@ import { orderServiceErrors } from './errors/orderServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import RemoveOrderItemArg from './types/args/RemoveOrderItemArg';
 import { PreHook } from '../../backk/dbmanager/hooks/PreHook';
-import AddOrderItemArg from "./types/args/AddOrderItemArg";
-import OrderItem from "./types/entities/OrderItem";
+import AddOrderItemArg from './types/args/AddOrderItemArg';
+import OrderItem from './types/entities/OrderItem';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class OrderServiceImpl extends OrderService {
   private readonly isPaidOrderPreHook: PreHook<Order> = {
-    isSuccessfulOrTrue: ({ paymentInfo }) => paymentInfo.transactionId !== null,
+    isSuccessfulOrTrue: ({ transactionId }) => transactionId !== null,
     error: orderServiceErrors.cannotUpdateOrderWhichIsNotPaid
   };
 
@@ -89,12 +89,10 @@ export default class OrderServiceImpl extends OrderService {
                 deliveryTimestamp: null,
                 salesItems: [salesItem]
               })),
-              paymentInfo: {
-                paymentGateway,
-                transactionId: null,
-                transactionTimestamp: null,
-                amount: null
-              }
+              paymentGateway,
+              transactionId: null,
+              transactionTimestamp: null,
+              amount: null
             },
             Order,
             { preHooks: () => this.salesItemService.updateSalesItemStates(shoppingCart.salesItems, 'sold') }
@@ -108,21 +106,42 @@ export default class OrderServiceImpl extends OrderService {
     return this.dbManager.getEntityById(_id, Order);
   }
 
+  @AllowForUserRoles(['vitjaPaymentGateway'])
+  @Update('update')
+  payOrder({ _id, shoppingCartId, ...restOfEntity }: PayOrderArg): PromiseOfErrorOr<null> {
+    return this.dbManager.updateEntity({ _id, ...restOfEntity} , Order, {
+      preHooks: [
+        () => this.shoppingCartService.deleteShoppingCart({ _id: shoppingCartId }),
+        {
+          isSuccessfulOrTrue: ({ transactionId }) => transactionId === null,
+          error: orderServiceErrors.orderAlreadyPaid
+        }
+      ],
+      postHook: () =>
+        sendToRemoteService(
+          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
+          {
+            orderId: _id
+          }
+        )
+    });
+  }
+
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestEntityAfterwards('expect order not to have order items', { orderItems: [] })
   removeOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
-      preHooks: {
-        isSuccessfulOrTrue: (order) =>
-          JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
-          'toBeDelivered',
-        error: orderServiceErrors.cannotRemoveOrderItemWhichIsAlreadyDelivered
-      },
-      postHook: {
-        shouldExecutePostHook: (order) => order?.paymentInfo.transactionId !== null,
-        isSuccessful: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
-      }
+      preHooks: [
+        this.isPaidOrderPreHook,
+        {
+          isSuccessfulOrTrue: (order) =>
+            JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
+            'toBeDelivered',
+          error: orderServiceErrors.cannotRemoveOrderItemWhichIsAlreadyDelivered
+        }
+      ],
+      postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
     });
   }
 
@@ -144,27 +163,6 @@ export default class OrderServiceImpl extends OrderService {
       Order,
       OrderItem
     );
-  }
-
-  @AllowForUserRoles(['vitjaPaymentGateway'])
-  @Update('update')
-  payOrder({ _id, shoppingCartId, ...paymentInfo }: PayOrderArg): PromiseOfErrorOr<null> {
-    return this.dbManager.updateEntity({ _id, paymentInfo }, Order, {
-      preHooks: [
-        () => this.shoppingCartService.deleteShoppingCart({ _id: shoppingCartId }),
-        {
-          isSuccessfulOrTrue: ({ paymentInfo }) => paymentInfo.transactionId === null,
-          error: orderServiceErrors.orderAlreadyPaid
-        }
-      ],
-      postHook: () =>
-        sendToRemoteService(
-          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderCreateNotifications`,
-          {
-            orderId: _id
-          }
-        )
-    });
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
@@ -353,8 +351,7 @@ export default class OrderServiceImpl extends OrderService {
         {
           isSuccessfulOrTrue: (order) =>
             JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
-          error: orderServiceErrors.deleteOrderNotAllowed,
-          shouldDisregardFailureWhenExecutingTests: true
+          error: orderServiceErrors.deleteOrderNotAllowed
         },
         (order) =>
           this.salesItemService.updateSalesItemStates(

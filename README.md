@@ -5,7 +5,7 @@ TODO:
 - placeorder getentityById posthook to check shopping cart is not empty
 - TestSetup, possible to give serviceFunctionName and argument
 - TestTeardown: testName, serviceFunctionName, expectedReturnValueFieldPathNameToFieldValueMap
-- Jos teardown, then execute default post update get, or post delete get
+- if not teardown, then execute default post update get, or post delete get
 - check that changePassword username is valid
 - test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart

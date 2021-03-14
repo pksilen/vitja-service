@@ -360,14 +360,20 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           )
         );
 
+        const testSetupServiceFunctionsToExecuteForNextFunction = serviceFunctionAnnotationContainer.getTestSetup(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          serviceMetadata.functions[index + 1]?.functionName
+        );
+
         if (
           index !== serviceMetadata.functions.length - 1 &&
           isDeleteFunction(
             (controller as any)[serviceMetadata.serviceName].constructor,
             serviceMetadata.functions[index + 1].functionName
           ) &&
-          createFunctionMetadata && !testSetupServiceFunctionsToExecute
+          createFunctionMetadata && !testSetupServiceFunctionsToExecuteForNextFunction
         ) {
+
           const createFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
