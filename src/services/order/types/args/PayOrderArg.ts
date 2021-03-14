@@ -5,10 +5,11 @@
 import { IsAlphanumeric, IsNumber, MaxLength } from 'class-validator';
 import { Lengths, Values } from '../../../../backk/constants/constants';
 import { IsExternalId } from '../../../../backk/decorators/typeproperty/IsExternalId';
-import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId';
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
-import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
+import { PaymentGateway } from '../enum/PaymentGateway';
 
 export default class PayOrderArg {
   @IsUndefined({
@@ -21,6 +22,8 @@ export default class PayOrderArg {
     groups: ['__backk_update__']
   })
   public _id!: string;
+
+  public paymentGateway: PaymentGateway = 'Paytrail';
 
   @MaxLength(Lengths._256)
   @IsAlphanumeric()

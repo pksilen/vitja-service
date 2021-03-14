@@ -170,14 +170,13 @@ export default class OrderServiceImpl extends OrderService {
   async deliverOrderItem({
     _id,
     version,
-    orderItemId,
-    ...restOfArg
+    orderItems
   }: DeliverOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       {
         version,
         _id,
-        orderItems: [{ state: 'delivering', id: orderItemId, ...restOfArg }]
+        orderItems: [{ ...orderItems[0], state: 'delivering' }]
       },
       Order,
       {
@@ -185,7 +184,7 @@ export default class OrderServiceImpl extends OrderService {
           this.isPaidOrderPreHook,
           {
             isSuccessfulOrTrue: (order) =>
-              JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
+              JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItems[0].id}')].state` })[0] ===
               'toBeDelivered',
             error: orderServiceErrors.cannotDeliverOrderItemWhichIsAlreadyDelivered
           }
@@ -195,8 +194,7 @@ export default class OrderServiceImpl extends OrderService {
             `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderItemDeliveryNotification`,
             {
               orderId: _id,
-              orderItemId,
-              ...restOfArg
+              orderItem: orderItems[0]
             }
           )
       }

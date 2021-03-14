@@ -1,6 +1,4 @@
 export default class PayOrderArg {
-  ..._Id;
-  ...Omit<PaymentInfo, 'paymentGateway'>;
-
+  ...Pick<Order, '_id' | 'paymentGateway' | 'transactionId' | 'transactionTimestamp' | 'amount'>;
   shoppingCartId!: string
 }

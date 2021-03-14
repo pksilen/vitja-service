@@ -3,8 +3,7 @@ import { IsUrl, MaxLength } from "class-validator";
 import { Lengths } from "../../../../backk/constants/constants";
 
 export default class PlaceOrderArg {
-  ...UserAccountId
-  ...Pick<PaymentInfo, 'paymentGateway'>
+  ...Pick<Order, 'userAccountId' | 'paymentGateway'>
 
   @MaxLength(Lengths._4K)
   @IsUrl()

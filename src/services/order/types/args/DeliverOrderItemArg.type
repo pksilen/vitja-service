@@ -1,6 +1,10 @@
-import OrderItem from '../entities/OrderItem';
+import { ArrayMinSize, ArrayMaxSize } from "class-validator";
+import OrderItemForDelivery from './OrderItemForDelivery';
 
 export default class DeliverOrderItemArg {
-  ..._IdAndOrderItemId;
-  ...Pick<OrderItem, 'deliveryTimestamp' | 'trackingUrl'>;
+  ...Pick<Order, '_id' | 'version'>
+
+  @ArrayMinSize(1)
+  @ArrayMaxSize(1)
+  orderItems!: OrderItemForDelivery[];
 }

@@ -2,14 +2,12 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { IsString, IsUrl, MaxLength } from 'class-validator';
-import { Lengths } from '../../../../backk/constants/constants';
+import { ArrayMaxSize, ArrayMinSize, IsString, MaxLength } from 'class-validator';
 import IsIntegerStringOrAny from '../../../../backk/decorators/typeproperty/IsIntegerStringOrAny'; // eslint-disable-next-line @typescript-eslint/class-name-casing
-import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId';
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
-import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
-import { ShouldBeTrueFor } from '../../../../backk/decorators/typeproperty/ShouldBeTrueFor';
-import OrderItem from '../entities/OrderItem';
+import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import OrderItemForDelivery from './OrderItemForDelivery';
 
 export default class DeliverOrderItemArg {
   @IsUndefined({
@@ -37,21 +35,7 @@ export default class DeliverOrderItemArg {
   })
   public version!: string;
 
-  orderItemId!: string;
-
-  @ShouldBeTrueFor<OrderItem>(
-    ({ state, deliveryTimestamp }) =>
-      (state === 'toBeDelivered' && deliveryTimestamp === null) ||
-      (state !== 'toBeDelivered' && deliveryTimestamp !== null)
-  )
-  public deliveryTimestamp!: Date | null;
-
-  @MaxLength(Lengths._4K)
-  @IsUrl()
-  @ShouldBeTrueFor<OrderItem>(
-    ({ state, trackingUrl }) =>
-      (state === 'toBeDelivered' && trackingUrl === null) ||
-      (state !== 'toBeDelivered' && trackingUrl !== null)
-  )
-  public trackingUrl!: string | null;
+  @ArrayMinSize(1)
+  @ArrayMaxSize(1)
+  orderItems!: OrderItemForDelivery[];
 }
