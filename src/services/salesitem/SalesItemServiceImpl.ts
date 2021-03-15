@@ -52,7 +52,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @AllowForSelf()
   @NoCaptcha()
-  @TestSetup(['tagService.createTag'])
   async createSalesItem(arg: SalesItem): PromiseOfErrorOr<SalesItem> {
     const [salesItem, error] = await this.dbManager.createEntity(
       {

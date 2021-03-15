@@ -80,14 +80,4 @@ export default class TagServiceImpl extends TagService {
 
     return this.dbManager.getEntitiesByFilters(filters, Tag, new DefaultPostQueryOperations());
   }
-
-  @AllowForTests()
-  getTag({ _id }: _Id): PromiseOfErrorOr<Tag> {
-    return this.dbManager.getEntityById(_id, Tag);
-  }
-
-  @AllowForTests()
-  deleteTag({ _id }: _Id): PromiseOfErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id, Tag);
-  }
 }
