@@ -9,21 +9,21 @@ import {
   Post,
   Query,
   Res
-} from "@nestjs/common";
-import AuthorizationService from "../backk/authorization/AuthorizationService";
-import CaptchaVerifyService from "../backk/captcha/CaptchaVerifyService";
-import tryExecuteServiceMethod from "../backk/execution/tryExecuteServiceMethod";
-import StartupCheckService from "../backk/service/startup/StartupCheckService";
-import OrderService from "../services/order/OrderService";
-import SalesItemService from "../services/salesitem/SalesItemService";
-import ShoppingCartService from "../services/shoppingcart/ShoppingCartService";
-import UserAccountService from "../services/useraccount/UserAccountService";
-import ResponseCacheConfigService from "../backk/cache/ResponseCacheConfigService";
-import AuditLoggingService from "../backk/observability/logging/audit/AuditLoggingService";
-import initializeController from "../backk/controller/initializeController";
-import TagService from "../services/tag/TagService";
-import AbstractDbManager from "../backk/dbmanager/AbstractDbManager";
-import UserService from "../services/user/UserService";
+} from '@nestjs/common';
+import AuthorizationService from '../backk/authorization/AuthorizationService';
+import CaptchaVerifyService from '../backk/captcha/CaptchaVerifyService';
+import tryExecuteServiceMethod from '../backk/execution/tryExecuteServiceMethod';
+import StartupCheckService from '../backk/service/startup/StartupCheckService';
+import OrderService from '../services/order/OrderService';
+import SalesItemService from '../services/salesitem/SalesItemService';
+import ShoppingCartService from '../services/shoppingcart/ShoppingCartService';
+import UserAccountService from '../services/useraccount/UserAccountService';
+import ResponseCacheConfigService from '../backk/cache/ResponseCacheConfigService';
+import AuditLoggingService from '../backk/observability/logging/audit/AuditLoggingService';
+import initializeController from '../backk/controller/initializeController';
+import TagService from '../services/tag/TagService';
+import AbstractDbManager from '../backk/dbmanager/AbstractDbManager';
+import UserService from '../services/user/UserService';
 
 export let appController: any;
 
@@ -37,9 +37,9 @@ export class AppController {
     private readonly responseCacheConfigService: ResponseCacheConfigService,
     private readonly auditLoggingService: AuditLoggingService,
     private readonly authorizationService: AuthorizationService,
+    private readonly tagService: TagService,
     private readonly userAccountService: UserAccountService,
     private readonly userService: UserService,
-    private readonly tagService: TagService,
     private readonly salesItemService: SalesItemService,
     private readonly shoppingCartService: ShoppingCartService,
     private readonly orderService: OrderService
