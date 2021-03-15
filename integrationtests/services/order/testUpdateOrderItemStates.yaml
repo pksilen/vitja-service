@@ -1,7 +1,8 @@
 - testTemplate:
     serviceFunctionName: orderService.updateOrderItemState
     argument:
-      newState: '{{newState}}'
+      orderItems:
+        - state: {{newState}}
     executeAfter: orderService.updateOrderItemState
   tests:
     - testName: update order item state to delivered
