@@ -28,6 +28,7 @@ import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/Shoppin
 import executeForAll from '../../backk/utils/executeForAll';
 import ChangeExpiredReservedSalesItemStatesToForSaleArg from './types/args/ChangeExpiredReservedSalesItemStatesToForSaleArg';
 import { salesItemServiceErrors } from './errors/salesItemServiceErrors';
+import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -49,8 +50,9 @@ export default class SalesItemServiceImpl extends SalesItemService {
     return this.dbManager.deleteAllEntities(SalesItem);
   }
 
-  @NoCaptcha()
   @AllowForSelf()
+  @NoCaptcha()
+  @TestSetup(['tagService.createTag'])
   async createSalesItem(arg: SalesItem): PromiseOfErrorOr<SalesItem> {
     const [salesItem, error] = await this.dbManager.createEntity(
       {
