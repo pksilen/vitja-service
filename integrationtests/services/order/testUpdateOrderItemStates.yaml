@@ -3,7 +3,7 @@
     argument:
       orderItems:
         - id: '0'
-        - state: '{{newState}}'
+          state: '{{newState}}'
     executeAfter: orderService.updateOrderItemState
   tests:
     - testName: update order item state to delivered
