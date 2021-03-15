@@ -82,7 +82,7 @@ export default class TagServiceImpl extends TagService {
   }
 
   @AllowForTests()
-  getTagById({ _id }: _Id): PromiseOfErrorOr<Tag> {
+  getTag({ _id }: _Id): PromiseOfErrorOr<Tag> {
     return this.dbManager.getEntityById(_id, Tag);
   }
 

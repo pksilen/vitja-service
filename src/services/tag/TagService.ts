@@ -10,6 +10,6 @@ export default abstract class TagService extends CrudEntityService {
   abstract deleteAllTags(): PromiseOfErrorOr<null>;
   abstract createTag(arg: TagName): PromiseOfErrorOr<Tag>;
   abstract getTagsByName(arg: TagName): PromiseOfErrorOr<Tag[]>;
-  abstract getTagById(arg: _Id): PromiseOfErrorOr<Tag>;
+  abstract getTag(arg: _Id): PromiseOfErrorOr<Tag>;
   abstract deleteTag(arg: _Id): PromiseOfErrorOr<null>;
 }
