@@ -1,7 +1,7 @@
 import { ErrorCodeAndMessageAndStatus } from '../../../dbmanager/hooks/PreHook';
 import { HttpHeaders } from './ResponseHeaders';
 import { UpdateType } from './Update';
-import { TestSpec } from './TestEntityAfterwards';
+import { TestSpec } from './TestTeardown';
 
 class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
@@ -151,11 +151,13 @@ class ServiceFunctionAnnotationContainer {
     serviceClass: Function,
     functionName: string,
     testName: string,
-    fieldPathNameToFieldValueMap: { [key: string]: string }
+    serviceFunctionName: string,
+    expectedReturnValueFieldPathNameToFieldValueMap: { [key: string]: string }
   ) {
     this.serviceFunctionNameToTestSpecMap[`${serviceClass.name}${functionName}`] = {
       testName,
-      fieldPathNameToFieldValueMap
+      serviceFunctionName,
+      expectedResult: expectedReturnValueFieldPathNameToFieldValueMap
     };
   }
 

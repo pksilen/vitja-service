@@ -31,7 +31,7 @@ import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import { TestEntityAfterwards } from '../../backk/decorators/service/function/TestEntityAfterwards';
+import { TestTeardown } from '../../backk/decorators/service/function/TestTeardown';
 import { orderServiceErrors } from './errors/orderServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import RemoveOrderItemArg from './types/args/RemoveOrderItemArg';
@@ -74,6 +74,13 @@ export default class OrderServiceImpl extends OrderService {
     'shoppingCartService.createShoppingCart',
     'shoppingCartService.addToShoppingCart'
   ])
+  @TestTeardown({
+    testName: 'expect sales item state to be sold after placing order',
+    serviceFunctionName: 'salesItemService.getSalesItem',
+    expectedResult: {
+      state: 'sold'
+    }
+  })
   placeOrder({ userAccountId, paymentGateway }: PlaceOrderArg): PromiseOfErrorOr<Order> {
     return this.dbManager.executeInsideTransaction(async () => {
       const [shoppingCart, error] = await this.shoppingCartService.getShoppingCart({ userAccountId });
@@ -129,7 +136,11 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestEntityAfterwards('expect order not to have order items', { orderItems: [] })
+  @TestTeardown({
+    testName: 'expect order not to have order items',
+    serviceFunctionName: 'orderService.getOrder',
+    expectedResult: { orderItems: [] }
+  })
   removeOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: [
@@ -147,8 +158,12 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForTests()
   @Update('addOrRemoveSubEntities')
-  @TestEntityAfterwards('expect order to contain an order item', {
-    'orderItems.salesItems._id': '{{salesItemId}}'
+  @TestTeardown({
+    testName: 'expect order to contain an order item',
+    serviceFunctionName: 'orderService.getOrder',
+    expectedResult: {
+      'orderItems.salesItems._id': '{{salesItemId}}'
+    }
   })
   addOrderItem({ orderId, salesItemId }: AddOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
