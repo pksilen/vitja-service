@@ -11,5 +11,5 @@ export default class OrderItemForStateUpdate {
   @MaxLengthAndMatches(24, /^[a-f\d]{1,24}$/)
   public id!: string;
 
-  public newState!: OrderItemState;
+  public state!: OrderItemState;
 }

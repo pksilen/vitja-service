@@ -205,7 +205,7 @@ export default class OrderServiceImpl extends OrderService {
     version,
     orderItems
   }: UpdateOrderItemStateArg): PromiseOfErrorOr<null> {
-    const [{ newState, id }] = orderItems;
+    const [{ state: newState, id }] = orderItems;
 
     return this.dbManager.updateEntity(
       { _id, version, orderItems },
@@ -229,7 +229,7 @@ export default class OrderServiceImpl extends OrderService {
               JSONPath({
                 json: order,
                 path: `orderItems[?(@.id == '${id}')].state`
-              })[0] === OrderServiceImpl.getValidPreviousOrderStateFor(newState),
+              })[0] === OrderServiceImpl.getValidCurrentOrderStateFor(newState),
             error: orderServiceErrors.cannotUpdateOrderItemStateDueToInvalidCurrentState
           }
         ],
@@ -329,7 +329,7 @@ export default class OrderServiceImpl extends OrderService {
     return `https://${paymentGatewayHost}/${paymentGatewayUrlPath}?successUrl=${successUrl}&failureUrl=${failureUrl}&successRedirectUrl=${successUiRedirectUrl}&failureRedirectUrl=${failureRedirectUrl}`;
   }
 
-  private static getValidPreviousOrderStateFor(newState: OrderItemState): OrderItemState {
+  private static getValidCurrentOrderStateFor(newState: OrderItemState): OrderItemState {
     switch (newState) {
       case 'delivered':
         return 'delivering';
