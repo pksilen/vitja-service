@@ -1,17 +1,16 @@
 # Vitja service
 
 TODO:
-- convert after placeOrder written test to TestTeardown
 - placeorder getentityById posthook to check shopping cart is not empty
 - TestSetup, possible to give serviceFunctionName and argument and postman tests
 - Convert createFollowedUserAccount written test to TestSetup
 - if not teardown, then execute default post update get, or post delete get
 - check that changePassword username is valid
-- test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
-- test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
 - postHooks should give entity as param and fetch it when needed
 - remove extra deletes from deleteXXX funcs
 - for number, must specify isInt or isFloat
+- test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
+- test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
 - test error cases
 
 
