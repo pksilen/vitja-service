@@ -70,7 +70,6 @@ export default class OrderServiceImpl extends OrderService {
       OrderServiceImpl.getLocationHeaderUrl(paymentGateway, _id, uiRedirectUrl)
   })
   @TestSetup([
-    'tagService.createTag',
     'salesItemService.createSalesItem',
     'shoppingCartService.createShoppingCart',
     'shoppingCartService.addToShoppingCart'
