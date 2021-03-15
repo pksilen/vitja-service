@@ -19,6 +19,7 @@ import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
 import tryValidateIntegrationTests from './tryValidateIntegrationTests';
 import { HttpStatusCodes } from '../constants/constants';
 import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
+import CrudEntityService from '../service/crudentity/CrudEntityService';
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -35,6 +36,48 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   );
 
   tryValidateIntegrationTests(writtenTests, servicesMetadata);
+
+  servicesMetadata
+    .filter(
+      (serviceMetadata) => (controller as any)[serviceMetadata.serviceName] instanceof CrudEntityService
+    )
+    .forEach((serviceMetadata: ServiceMetadata) => {
+      const foundDeleteAllFunction = serviceMetadata.functions.find(
+        (func) =>
+          func.functionName.startsWith('deleteAll') ||
+          func.functionName.startsWith('destroyAll') ||
+          func.functionName.startsWith('eraseAll')
+      );
+
+      if (foundDeleteAllFunction) {
+        const tests = getServiceFunctionTests(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          (controller as any)[serviceMetadata.serviceName].Types,
+          serviceMetadata,
+          foundDeleteAllFunction,
+          false
+        );
+
+        const sampleArg = getServiceFunctionTestArgument(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          (controller as any)[serviceMetadata.serviceName].Types,
+          foundDeleteAllFunction.functionName,
+          foundDeleteAllFunction.argType,
+          serviceMetadata,
+          false
+        );
+
+        const item = createPostmanCollectionItem(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          serviceMetadata,
+          foundDeleteAllFunction,
+          sampleArg,
+          tests
+        );
+
+        items.push(item);
+      }
+    });
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
     let updateCount = 0;
@@ -90,7 +133,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           (serviceMetadata) => serviceMetadata.serviceName === serviceName
         );
 
-        const foundFunctionMetadata = foundServiceMetadata?.functions.find(func => func.functionName === functionName);
+        const foundFunctionMetadata = foundServiceMetadata?.functions.find(
+          (func) => func.functionName === functionName
+        );
 
         if (!foundServiceMetadata || !foundFunctionMetadata) {
           throw new Error(
@@ -368,9 +413,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             (controller as any)[serviceMetadata.serviceName].constructor,
             serviceMetadata.functions[index + 1].functionName
           ) &&
-          createFunctionMetadata && !testSetupServiceFunctionsToExecuteForNextFunction
+          createFunctionMetadata &&
+          !testSetupServiceFunctionsToExecuteForNextFunction
         ) {
-
           const createFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
