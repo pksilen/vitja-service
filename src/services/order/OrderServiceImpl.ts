@@ -262,7 +262,7 @@ export default class OrderServiceImpl extends OrderService {
   deleteIncompleteOrders(): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {
-        'paymentInfo.transactionId': null,
+        'transactionId': null,
         lastModifiedAtTimestamp: {
           $lte: dayjs()
             .subtract(1, 'hours')
@@ -270,7 +270,7 @@ export default class OrderServiceImpl extends OrderService {
         }
       },
       [
-        new SqlEquals({ transactionId: null }, 'paymentInfo'),
+        new SqlEquals({ transactionId: null }),
         new SqlExpression(`lastModifiedTimestamp <= current_timestamp - INTERVAL '1' hour`)
       ]
     );
