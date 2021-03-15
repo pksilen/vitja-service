@@ -168,11 +168,13 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
   async deliverOrderItem({ _id, version, orderItems }: DeliverOrderItemArg): PromiseOfErrorOr<null> {
+    const [orderItem] = orderItems;
+
     return this.dbManager.updateEntity(
       {
         version,
         _id,
-        orderItems: [{ ...orderItems[0], state: 'delivering' }]
+        orderItems: [{ ...orderItem, state: 'delivering' }]
       },
       Order,
       {
@@ -180,7 +182,7 @@ export default class OrderServiceImpl extends OrderService {
           this.isPaidOrderPreHook,
           {
             isSuccessfulOrTrue: (order) =>
-              JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItems[0].id}')].state` })[0] ===
+              JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItem.id}')].state` })[0] ===
               'toBeDelivered',
             error: orderServiceErrors.cannotDeliverOrderItemWhichIsAlreadyDelivered
           }
@@ -190,7 +192,7 @@ export default class OrderServiceImpl extends OrderService {
             `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderItemDeliveryNotification`,
             {
               orderId: _id,
-              orderItem: orderItems[0]
+              orderItem
             }
           )
       }
@@ -201,11 +203,12 @@ export default class OrderServiceImpl extends OrderService {
   async updateOrderItemState({
     _id,
     version,
-    orderItemId,
-    newState
+    orderItems
   }: UpdateOrderItemStateArg): PromiseOfErrorOr<null> {
+    const [{ newState, id }] = orderItems;
+
     return this.dbManager.updateEntity(
-      { _id, version, orderItems: [{ id: orderItemId, state: newState }] },
+      { _id, version, orderItems },
       Order,
       {
         preHooks: [
@@ -216,7 +219,7 @@ export default class OrderServiceImpl extends OrderService {
               this.salesItemService.updateSalesItemState(
                 JSONPath({
                   json: order,
-                  path: `orderItems[?(@.id == '${orderItemId}')].salesItems[0]._id`
+                  path: `orderItems[?(@.id == '${id}')].salesItems[0]._id`
                 })[0],
                 'forSale'
               )
@@ -225,14 +228,14 @@ export default class OrderServiceImpl extends OrderService {
             isSuccessfulOrTrue: (order) =>
               JSONPath({
                 json: order,
-                path: `orderItems[?(@.id == '${orderItemId}')].state`
+                path: `orderItems[?(@.id == '${id}')].state`
               })[0] === OrderServiceImpl.getValidPreviousOrderStateFor(newState),
             error: orderServiceErrors.cannotUpdateOrderItemStateDueToInvalidCurrentState
           }
         ],
         postHook: {
           shouldExecutePostHook: () => newState === 'returned',
-          isSuccessful: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
+          isSuccessful: () => OrderServiceImpl.refundOrderItem(_id, id)
         }
       }
     );
