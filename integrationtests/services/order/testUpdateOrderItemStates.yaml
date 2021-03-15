@@ -2,7 +2,7 @@
     serviceFunctionName: orderService.updateOrderItemState
     argument:
       orderItems:
-        - state: {{newState}}
+        - state: '{{newState}}'
     executeAfter: orderService.updateOrderItemState
   tests:
     - testName: update order item state to delivered
