@@ -49,11 +49,14 @@ export default function getServiceFunctionReturnValueTests(
     isOptionalType = isOptionalType || isOptional;
 
     const fieldPathName = fieldPath ? fieldPath + '.' + propertyName : propertyName;
+    const expectedResponseFieldPathNameToFieldValueMapInTestsKeyCount = Object.keys(
+      expectedResponseFieldPathNameToFieldValueMapInTests ?? {}
+    ).length;
 
     let shouldInclude = false;
-    if (expectedResponseFieldPathNameToFieldValueMapInTests) {
+    if (expectedResponseFieldPathNameToFieldValueMapInTestsKeyCount) {
       if (
-        Object.keys(expectedResponseFieldPathNameToFieldValueMapInTests).find((expectedFieldPathName) =>
+        Object.keys(expectedResponseFieldPathNameToFieldValueMapInTests ?? {}).find((expectedFieldPathName) =>
           expectedFieldPathName.startsWith(fieldPathName)
         )
       ) {
@@ -62,11 +65,14 @@ export default function getServiceFunctionReturnValueTests(
       }
     }
 
+    if (expectedResponseFieldPathNameToFieldValueMapInTestsKeyCount && !shouldInclude) {
+      return;
+    }
+
     if (
       sampleArg &&
       (sampleArg as any)[propertyName] === undefined &&
-      (!expectedResponseFieldPathNameToFieldValueMapInTests ||
-        (expectedResponseFieldPathNameToFieldValueMapInTests && !shouldInclude))
+      !expectedResponseFieldPathNameToFieldValueMapInTestsKeyCount
     ) {
       return;
     }
