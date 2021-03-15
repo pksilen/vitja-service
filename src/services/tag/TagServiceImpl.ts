@@ -15,7 +15,7 @@ import { HttpStatusCodes } from '../../backk/constants/constants';
 import tryGetSeparatedValuesFromTextFile from '../../backk/file/tryGetSeparatedValuesFromTextFile';
 import executeForAll from '../../backk/utils/executeForAll';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
-import _Id from "../../backk/types/id/_Id";
+import _Id from '../../backk/types/id/_Id';
 
 @Injectable()
 export default class TagServiceImpl extends TagService {
@@ -82,7 +82,12 @@ export default class TagServiceImpl extends TagService {
   }
 
   @AllowForTests()
+  getTagById({ _id }: _Id): PromiseOfErrorOr<Tag> {
+    return this.dbManager.getEntityById(_id, Tag);
+  }
+
+  @AllowForTests()
   deleteTag({ _id }: _Id): PromiseOfErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id , Tag);
+    return this.dbManager.deleteEntityById(_id, Tag);
   }
 }
