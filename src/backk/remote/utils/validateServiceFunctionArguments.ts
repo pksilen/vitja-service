@@ -27,7 +27,7 @@ export async function validateServiceFunctionArguments(sends: CallOrSendTo[]) {
 
       if (fs.existsSync('../' + topic + '/src')) {
         remoteServiceRootDir = '../' + topic;
-      } else if (fs.existsSync('./' + topic) + '/src') {
+      } else if (fs.existsSync('./' + topic + '/src')) {
         remoteServiceRootDir = './' + topic;
       } else {
         return;
