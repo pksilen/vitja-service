@@ -12,7 +12,9 @@ TODO:
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
 - postHooks should give entity as param and fetch it when needed
 - remove extra deletes from deleteXXX funcs
+- for number, must specify isInt or isFloat
 - test error cases
+
 
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

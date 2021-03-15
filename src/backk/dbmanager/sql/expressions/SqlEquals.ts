@@ -1,8 +1,7 @@
-import SqlExpression from './SqlExpression';
+import SqlExpression from "./SqlExpression";
 import shouldUseRandomInitializationVector from "../../../crypt/shouldUseRandomInitializationVector";
 import shouldEncryptValue from "../../../crypt/shouldEncryptValue";
 import encrypt from "../../../crypt/encrypt";
-import { BackkEntity } from "../../../types/entities/BackkEntity";
 
 export default class SqlEquals<T> extends SqlExpression {
   constructor(private readonly filters: Partial<T>, subEntityPath: string = '') {
@@ -10,18 +9,20 @@ export default class SqlEquals<T> extends SqlExpression {
   }
 
   getValues(): Partial<T> {
-    return Object.entries(this.filters).reduce((filterValues, [fieldName, fieldValue]) => {
-      let finalFieldValue = fieldValue;
+    return Object.entries(this.filters)
+      .filter(([, fieldValue]) => fieldValue !== null)
+      .reduce((filterValues, [fieldName, fieldValue]) => {
+        let finalFieldValue = fieldValue;
 
-      if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
-        finalFieldValue = encrypt(fieldValue as any, false);
-      }
+        if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
+          finalFieldValue = encrypt(fieldValue as any, false);
+        }
 
-      return {
-        ...filterValues,
-        [`${this.subEntityPath.replace('.', 'xx')}xx${fieldName}`]: finalFieldValue
-      };
-    }, {});
+        return {
+          ...filterValues,
+          [`${this.subEntityPath.replace('.', 'xx')}xx${fieldName}`]: finalFieldValue
+        };
+      }, {});
   }
 
   hasValues(): boolean {
@@ -31,7 +32,11 @@ export default class SqlEquals<T> extends SqlExpression {
   toSqlString(): string {
     return Object.entries(this.filters)
       .filter(([, fieldValue]) => fieldValue !== undefined)
-      .map(([fieldName]) => `${fieldName} = :${this.subEntityPath.replace('.', 'xx')}xx${fieldName}`)
+      .map(([fieldName, fieldValue]) =>
+        fieldValue === null
+          ? `${fieldName} IS NULL`
+          : `${fieldName} = :${this.subEntityPath.replace('.', 'xx')}xx${fieldName}`
+      )
       .join(' AND ');
   }
 }

@@ -38,6 +38,7 @@ import RemoveOrderItemArg from './types/args/RemoveOrderItemArg';
 import { PreHook } from '../../backk/dbmanager/hooks/PreHook';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
 import OrderItem from './types/entities/OrderItem';
+import DeleteIncompleteOrdersArg from './types/args/DeleteIncompleteOrdersArg';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -200,45 +201,37 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
-  async updateOrderItemState({
-    _id,
-    version,
-    orderItems
-  }: UpdateOrderItemStateArg): PromiseOfErrorOr<null> {
+  async updateOrderItemState({ _id, version, orderItems }: UpdateOrderItemStateArg): PromiseOfErrorOr<null> {
     const [{ state: newState, id }] = orderItems;
 
-    return this.dbManager.updateEntity(
-      { _id, version, orderItems },
-      Order,
-      {
-        preHooks: [
-          this.isPaidOrderPreHook,
-          {
-            shouldExecutePreHook: () => newState === 'returned',
-            isSuccessfulOrTrue: (order) =>
-              this.salesItemService.updateSalesItemState(
-                JSONPath({
-                  json: order,
-                  path: `orderItems[?(@.id == '${id}')].salesItems[0]._id`
-                })[0],
-                'forSale'
-              )
-          },
-          {
-            isSuccessfulOrTrue: (order) =>
+    return this.dbManager.updateEntity({ _id, version, orderItems }, Order, {
+      preHooks: [
+        this.isPaidOrderPreHook,
+        {
+          shouldExecutePreHook: () => newState === 'returned',
+          isSuccessfulOrTrue: (order) =>
+            this.salesItemService.updateSalesItemState(
               JSONPath({
                 json: order,
-                path: `orderItems[?(@.id == '${id}')].state`
-              })[0] === OrderServiceImpl.getValidCurrentOrderStateFor(newState),
-            error: orderServiceErrors.cannotUpdateOrderItemStateDueToInvalidCurrentState
-          }
-        ],
-        postHook: {
-          shouldExecutePostHook: () => newState === 'returned',
-          isSuccessful: () => OrderServiceImpl.refundOrderItem(_id, id)
+                path: `orderItems[?(@.id == '${id}')].salesItems[0]._id`
+              })[0],
+              'forSale'
+            )
+        },
+        {
+          isSuccessfulOrTrue: (order) =>
+            JSONPath({
+              json: order,
+              path: `orderItems[?(@.id == '${id}')].state`
+            })[0] === OrderServiceImpl.getValidCurrentOrderStateFor(newState),
+          error: orderServiceErrors.cannotUpdateOrderItemStateDueToInvalidCurrentState
         }
+      ],
+      postHook: {
+        shouldExecutePostHook: () => newState === 'returned',
+        isSuccessful: () => OrderServiceImpl.refundOrderItem(_id, id)
       }
-    );
+    });
   }
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
@@ -259,19 +252,21 @@ export default class OrderServiceImpl extends OrderService {
 
   @TestSetup(['orderService.placeOrder'])
   @CronJob({ minutes: 0, hourInterval: 1 })
-  deleteIncompleteOrders(): PromiseOfErrorOr<null> {
+  deleteIncompleteOrders({ incompleteOrderTtlInMinutes }: DeleteIncompleteOrdersArg): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {
-        'transactionId': null,
+        transactionId: null,
         lastModifiedAtTimestamp: {
           $lte: dayjs()
-            .subtract(1, 'hours')
+            .subtract(incompleteOrderTtlInMinutes, 'minutes')
             .toDate()
         }
       },
       [
         new SqlEquals({ transactionId: null }),
-        new SqlExpression(`lastModifiedTimestamp <= current_timestamp - INTERVAL '1' hour`)
+        new SqlExpression(
+          `lastModifiedTimestamp <= current_timestamp - INTERVAL '${incompleteOrderTtlInMinutes}' minute`
+        )
       ]
     );
 
