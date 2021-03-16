@@ -82,6 +82,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
     {
       testName: 'create followed user account',
       serviceFunctionName: 'userAccountService.createUserAccount',
+      argument: { userName: 'test2@test.com' },
       postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
     }
   ])
