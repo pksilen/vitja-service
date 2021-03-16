@@ -400,7 +400,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       );
 
       if (
-        isDeleteFunction &&
+        isDelete &&
         index !== serviceMetadata.functions.length - 1 &&
         isDeleteFunction(
           (controller as any)[serviceMetadata.serviceName].constructor,
