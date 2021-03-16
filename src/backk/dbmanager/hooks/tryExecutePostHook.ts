@@ -12,15 +12,15 @@ export default async function tryExecutePostHook<T extends BackkEntity | SubEnti
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('isInsidePostHook', true);
   const postHookFunc = typeof postHook === 'function' ? postHook : postHook.isSuccessful;
-  let hookCallError;
+  let hookCallResult;
 
   try {
     if (typeof postHook === 'object' && postHook.shouldExecutePostHook) {
       if (postHook.shouldExecutePostHook(entity ?? null)) {
-        [, hookCallError] = await postHookFunc(entity ?? null);
+        hookCallResult = await postHookFunc(entity ?? null);
       }
     } else {
-      [, hookCallError] = await postHookFunc(entity ?? null);
+      hookCallResult = await postHookFunc(entity ?? null);
     }
   } catch (error) {
     console.log(error);
@@ -31,7 +31,19 @@ export default async function tryExecutePostHook<T extends BackkEntity | SubEnti
 
   clsNamespace?.set('isInsidePostHook', false);
 
-  if (hookCallError) {
-    throw hookCallError;
+  if (Array.isArray(hookCallResult) && hookCallResult[1]) {
+    throw hookCallResult[1];
+  }
+
+  if (hookCallResult === false) {
+    let errorMessage = 'Post-hook evaluated to false without specific error message';
+
+    let statusCode = HttpStatusCodes.BAD_REQUEST;
+    if (typeof postHook === 'object' && postHook.error) {
+      errorMessage = 'Error code ' + postHook.error.errorCode + ':' + postHook.error.message;
+      statusCode = postHook.error?.statusCode ?? HttpStatusCodes.BAD_REQUEST;
+    }
+
+    throw new Error(createErrorMessageWithStatusCode(errorMessage, statusCode));
   }
 }

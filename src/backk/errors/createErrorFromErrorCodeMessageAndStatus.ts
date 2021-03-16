@@ -1,7 +1,7 @@
-import { ErrorCodeAndMessageAndStatus } from "../dbmanager/hooks/PreHook";
+import { ErrorDef } from "../dbmanager/hooks/PreHook";
 import { HttpStatusCodes } from "../constants/constants";
 
-export default function createErrorFromErrorCodeMessageAndStatus(errorCodeMessageAndStatus: ErrorCodeAndMessageAndStatus): Error {
+export default function createErrorFromErrorCodeMessageAndStatus(errorCodeMessageAndStatus: ErrorDef): Error {
   return new Error(
     (errorCodeMessageAndStatus.statusCode ?? HttpStatusCodes.INTERNAL_SERVER_ERROR) +
     ':Error code ' +

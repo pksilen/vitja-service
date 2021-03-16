@@ -1,4 +1,4 @@
-import { ErrorCodeAndMessageAndStatus } from '../../../dbmanager/hooks/PreHook';
+import { ErrorDef } from '../../../dbmanager/hooks/PreHook';
 import { HttpHeaders } from './ResponseHeaders';
 import { UpdateType } from './Update';
 import { TestSpec } from './TestTeardown';
@@ -12,7 +12,7 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToAllowedUserRolesMap: { [key: string]: string[] } = {};
   private readonly serviceFunctionNameToDocStringMap: { [key: string]: string } = {};
   private readonly serviceFunctionNameToAllowedForTestsMap: { [key: string]: boolean } = {};
-  private readonly serviceFunctionNameToErrorsMap: { [key: string]: ErrorCodeAndMessageAndStatus[] } = {};
+  private readonly serviceFunctionNameToErrorsMap: { [key: string]: ErrorDef[] } = {};
   private readonly serviceFunctionNameToIsNotTransactionalMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsNotDistributedTransactionalMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToCronScheduleMap: { [key: string]: string } = {};
@@ -72,7 +72,7 @@ class ServiceFunctionAnnotationContainer {
   addErrorsForServiceFunction(
     serviceClass: Function,
     functionName: string,
-    errors: ErrorCodeAndMessageAndStatus[]
+    errors: ErrorDef[]
   ) {
     this.serviceFunctionNameToErrorsMap[`${serviceClass.name}${functionName}`] = errors;
   }

@@ -1,8 +1,8 @@
-import { ErrorCodeAndMessageAndStatus } from "../../dbmanager/hooks/PreHook";
+import { ErrorDef } from "../../dbmanager/hooks/PreHook";
 
 export type FunctionMetadata = {
   functionName: string;
   argType: string;
   returnValueType: string;
-  errors: ErrorCodeAndMessageAndStatus[];
+  errors: ErrorDef[];
 };

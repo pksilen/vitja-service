@@ -83,7 +83,10 @@ export default class OrderServiceImpl extends OrderService {
   })
   placeOrder({ userAccountId, paymentGateway }: PlaceOrderArg): PromiseOfErrorOr<Order> {
     return this.dbManager.executeInsideTransaction(async () => {
-      const [shoppingCart, error] = await this.shoppingCartService.getShoppingCart({ userAccountId });
+      const [shoppingCart, error] = await this.shoppingCartService.getShoppingCartOrErrorIfEmpty(
+        userAccountId,
+        orderServiceErrors.cannotPlaceOrderBecauseShoppingCartIsEmpty
+      );
 
       return shoppingCart
         ? this.dbManager.createEntity(

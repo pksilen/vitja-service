@@ -3,7 +3,7 @@ import { SubEntity } from '../../types/entities/SubEntity';
 import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
 import { BackkError } from '../../types/BackkError';
 
-export interface ErrorCodeAndMessageAndStatus {
+export interface ErrorDef {
   errorCode: string;
   message: string;
   statusCode?: number;
@@ -15,7 +15,7 @@ export type PreHook<T extends BackkEntity | SubEntity> =
       isSuccessfulOrTrue: (
         entity: T
       ) => PromiseOfErrorOr<BackkEntity | null> | Promise<boolean | BackkError | null | undefined> | boolean;
-      error?: ErrorCodeAndMessageAndStatus;
+      error?: ErrorDef;
       shouldDisregardFailureWhenExecutingTests?: boolean;
     }
   | ((

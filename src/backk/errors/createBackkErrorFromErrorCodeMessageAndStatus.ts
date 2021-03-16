@@ -1,9 +1,9 @@
-import { ErrorCodeAndMessageAndStatus } from '../dbmanager/hooks/PreHook';
+import { ErrorDef } from '../dbmanager/hooks/PreHook';
 import createBackkErrorFromError from './createBackkErrorFromError';
 import { HttpStatusCodes } from '../constants/constants';
 
 export default function createBackkErrorFromErrorCodeMessageAndStatus(
-  errorCodeMessageAndStatus: ErrorCodeAndMessageAndStatus
+  errorCodeMessageAndStatus: ErrorDef
 ) {
   return createBackkErrorFromError(
     new Error(

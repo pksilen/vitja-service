@@ -19,6 +19,7 @@ import { TestTeardown } from '../../backk/decorators/service/function/TestTeardo
 import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import UserAccountId from '../../backk/types/useraccount/UserAccountId';
+import { ErrorDef } from '../../backk/dbmanager/hooks/PreHook';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -53,6 +54,16 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   getShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<ShoppingCart> {
     return this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart);
+  }
+
+  @AllowForServiceInternalUse()
+  getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseOfErrorOr<ShoppingCart> {
+    return this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
+      postHook: {
+        isSuccessful: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
+        error
+      }
+    });
   }
 
   @AllowForSelf()
