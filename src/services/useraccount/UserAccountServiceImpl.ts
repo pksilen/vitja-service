@@ -187,8 +187,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
         {
           isSuccessfulOrTrue: ({ password: hashedCurrentPassword }) =>
             argon2.verify(hashedCurrentPassword, currentPassword),
-          error: userAccountServiceErrors.invalidCurrentPasswordError,
-          shouldDisregardFailureWhenExecutingTests: true
+          error: userAccountServiceErrors.invalidCurrentPasswordError
         }
       ]
     });
