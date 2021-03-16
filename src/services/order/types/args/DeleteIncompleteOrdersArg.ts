@@ -4,7 +4,7 @@ import { TestValue } from "../../../../backk/decorators/typeproperty/testing/Tes
 
 export default class DeleteIncompleteOrdersArg {
   @IsInt()
-  @MinMax(0, 60)
-  @TestValue(0)
+  @MinMax(-1, 60)
+  @TestValue(-1)
   incompleteOrderTtlInMinutes: number = 60
 }
