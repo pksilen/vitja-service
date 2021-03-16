@@ -204,8 +204,11 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           (controller as any)[foundServiceMetadata.serviceName].constructor,
           foundServiceMetadata,
           foundFunctionMetadata,
-          typeof serviceFunctionOrSpec === 'string' ? sampleArg : serviceFunctionOrSpec.argument,
-          tests
+          typeof serviceFunctionOrSpec === 'object' && serviceFunctionOrSpec.argument
+            ? serviceFunctionOrSpec.argument
+            : sampleArg,
+          tests,
+          typeof serviceFunctionOrSpec === 'object' ? serviceFunctionOrSpec?.testName : undefined
         );
 
         items.push(item);
