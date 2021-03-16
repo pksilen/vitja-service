@@ -1,7 +1,8 @@
 import { ErrorDef } from '../../../dbmanager/hooks/PreHook';
 import { HttpHeaders } from './ResponseHeaders';
 import { UpdateType } from './Update';
-import { TestSpec } from './TestTeardown';
+import { TestTeardownSpec } from './TestTeardown';
+import { TestSetupSpec } from './TestSetup';
 
 class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToHasNoCaptchaAnnotationMap: { [key: string]: boolean } = {};
@@ -24,14 +25,14 @@ class ServiceFunctionAnnotationContainer {
     [key: string]: { [key: string]: any };
   } = {};
   private readonly serviceFunctionNameToTestSpecMap: {
-    [key: string]: TestSpec;
+    [key: string]: TestTeardownSpec;
   } = {};
   private readonly serviceFunctionNameToOnStartUpMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsCreateFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsMetadataFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsDeleteFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToResponseStatusCodeMap: { [key: string]: number } = {};
-  private readonly serviceFunctionNameToTestSetupMap: { [key: string]: string[] } = {};
+  private readonly serviceFunctionNameToTestSetupMap: { [key: string]: (string | TestSetupSpec)[] } = {};
 
   addNoCaptchaAnnotation(serviceClass: Function, functionName: string) {
     this.serviceFunctionNameToHasNoCaptchaAnnotationMap[`${serviceClass.name}${functionName}`] = true;
@@ -69,11 +70,7 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToAllowedForTestsMap[`${serviceClass.name}${functionName}`] = true;
   }
 
-  addErrorsForServiceFunction(
-    serviceClass: Function,
-    functionName: string,
-    errors: ErrorDef[]
-  ) {
+  addErrorsForServiceFunction(serviceClass: Function, functionName: string, errors: ErrorDef[]) {
     this.serviceFunctionNameToErrorsMap[`${serviceClass.name}${functionName}`] = errors;
   }
 
@@ -133,8 +130,14 @@ class ServiceFunctionAnnotationContainer {
     this.serviceFunctionNameToIsDeleteFunctionMap[`${serviceClass.name}${functionName}`] = true;
   }
 
-  addTestSetup(serviceClass: Function, functionName: string, serviceFunctionsToExecute: string[]) {
-    this.serviceFunctionNameToTestSetupMap[`${serviceClass.name}${functionName}`] = serviceFunctionsToExecute;
+  addTestSetup(
+    serviceClass: Function,
+    functionName: string,
+    serviceFunctionsOrSpecsToExecute: (string | TestSetupSpec)[]
+  ) {
+    this.serviceFunctionNameToTestSetupMap[
+      `${serviceClass.name}${functionName}`
+    ] = serviceFunctionsOrSpecsToExecute;
   }
 
   expectServiceFunctionReturnValueToContainInTests(
@@ -466,7 +469,7 @@ class ServiceFunctionAnnotationContainer {
     return undefined;
   }
 
-  getTestSpec(serviceClass: Function, functionName: string): TestSpec | undefined {
+  getTestSpec(serviceClass: Function, functionName: string): TestTeardownSpec | undefined {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (this.serviceFunctionNameToTestSpecMap[`${proto.constructor.name}${functionName}`] !== undefined) {
@@ -478,7 +481,7 @@ class ServiceFunctionAnnotationContainer {
     return undefined;
   }
 
-  getTestSetup(serviceClass: Function, functionName: string): string[] | undefined {
+  getTestSetup(serviceClass: Function, functionName: string): (string | TestSetupSpec)[] | undefined {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (this.serviceFunctionNameToTestSetupMap[`${proto.constructor.name}${functionName}`] !== undefined) {

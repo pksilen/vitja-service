@@ -1,25 +1,24 @@
-import { getFileNamesRecursively } from "../utils/file/getSrcFilePathNameForTypeName";
-import _ from "lodash";
-import YAML from "yaml";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import serviceAnnotationContainer from "../decorators/service/serviceAnnotationContainer";
-import serviceFunctionAnnotationContainer
-  from "../decorators/service/function/serviceFunctionAnnotationContainer";
-import { sign } from "jsonwebtoken";
-import { Base64 } from "js-base64";
-import getServiceFunctionTests from "./getServiceFunctionTests";
-import getServiceFunctionTestArgument from "./getServiceFunctionTestArgument";
-import createPostmanCollectionItem from "./createPostmanCollectionItem";
-import addCustomTest from "./addCustomTest";
-import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
-import { FunctionMetadata } from "../metadata/types/FunctionMetadata";
-import isReadFunction from "../service/crudentity/utils/isReadFunction";
-import isUpdateFunction from "../service/crudentity/utils/isUpdateFunction";
-import isDeleteFunction from "../service/crudentity/utils/isDeleteFunction";
-import tryValidateIntegrationTests from "./tryValidateIntegrationTests";
-import { HttpStatusCodes } from "../constants/constants";
-import isCreateFunction from "../service/crudentity/utils/isCreateFunction";
-import CrudEntityService from "../service/crudentity/CrudEntityService";
+import { getFileNamesRecursively } from '../utils/file/getSrcFilePathNameForTypeName';
+import _ from 'lodash';
+import YAML from 'yaml';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import { sign } from 'jsonwebtoken';
+import { Base64 } from 'js-base64';
+import getServiceFunctionTests from './getServiceFunctionTests';
+import getServiceFunctionTestArgument from './getServiceFunctionTestArgument';
+import createPostmanCollectionItem from './createPostmanCollectionItem';
+import addCustomTest from './addCustomTest';
+import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
+import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
+import isReadFunction from '../service/crudentity/utils/isReadFunction';
+import isUpdateFunction from '../service/crudentity/utils/isUpdateFunction';
+import isDeleteFunction from '../service/crudentity/utils/isDeleteFunction';
+import tryValidateIntegrationTests from './tryValidateIntegrationTests';
+import { HttpStatusCodes } from '../constants/constants';
+import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
+import CrudEntityService from '../service/crudentity/CrudEntityService';
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -120,13 +119,16 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         return;
       }
 
-      const testSetupServiceFunctionsToExecute = serviceFunctionAnnotationContainer.getTestSetup(
+      const testSetupServiceFunctionsOrSpecsToExecute = serviceFunctionAnnotationContainer.getTestSetup(
         (controller as any)[serviceMetadata.serviceName].constructor,
         functionMetadata.functionName
       );
 
-      testSetupServiceFunctionsToExecute?.forEach((serviceFunction) => {
-        const [serviceName, functionName] = serviceFunction.split('.');
+      testSetupServiceFunctionsOrSpecsToExecute?.forEach((serviceFunctionOrSpec) => {
+        const [serviceName, functionName] =
+          typeof serviceFunctionOrSpec === 'string'
+            ? serviceFunctionOrSpec.split('.')
+            : serviceFunctionOrSpec.serviceFunctionName.split('.');
 
         const foundServiceMetadata = servicesMetadata.find(
           (serviceMetadata) => serviceMetadata.serviceName === serviceName
@@ -155,15 +157,39 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           foundFunctionMetadata.functionName
         );
 
-        const tests = getServiceFunctionTests(
-          (controller as any)[foundServiceMetadata.serviceName].constructor,
-          (controller as any)[foundServiceMetadata.serviceName].Types,
-          foundServiceMetadata,
-          foundFunctionMetadata,
-          false,
-          expectedResponseStatusCode,
-          expectedResponseFieldPathNameToFieldValueMapInTests
-        );
+        let tests;
+
+        if (
+          typeof serviceFunctionOrSpec === 'string' ||
+          (typeof serviceFunctionOrSpec === 'object' && !serviceFunctionOrSpec.postmanTests)
+        ) {
+          tests = getServiceFunctionTests(
+            (controller as any)[foundServiceMetadata.serviceName].constructor,
+            (controller as any)[foundServiceMetadata.serviceName].Types,
+            foundServiceMetadata,
+            foundFunctionMetadata,
+            false,
+            expectedResponseStatusCode,
+            expectedResponseFieldPathNameToFieldValueMapInTests
+          );
+        } else if (serviceFunctionOrSpec.postmanTests) {
+          return {
+            id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+            listen: 'test',
+            script: {
+              id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
+              exec: [
+                'const response = pm.response.json();',
+                ...serviceFunctionOrSpec.postmanTests.map(
+                  (test: string) =>
+                    `pm.test("test", function () {
+  ${test} 
+})`
+                )
+              ]
+            }
+          };
+        }
 
         const sampleArg = getServiceFunctionTestArgument(
           (controller as any)[foundServiceMetadata.serviceName].constructor,
@@ -178,7 +204,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           (controller as any)[foundServiceMetadata.serviceName].constructor,
           foundServiceMetadata,
           foundFunctionMetadata,
-          sampleArg,
+          typeof serviceFunctionOrSpec === 'string' ? sampleArg : serviceFunctionOrSpec.argument,
           tests
         );
 
