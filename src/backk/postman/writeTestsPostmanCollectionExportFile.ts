@@ -90,8 +90,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       return;
     }
 
-    let previousFunctionType: string;
-    let lastGetFunctionMetadata: FunctionMetadata | undefined;
+    let lastReadFunctionMetadata: FunctionMetadata | undefined;
     let createFunctionMetadata: FunctionMetadata | undefined;
     // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
@@ -201,7 +200,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           functionMetadata.functionName
         )
       ) {
-        lastGetFunctionMetadata = functionMetadata;
+        lastReadFunctionMetadata = functionMetadata;
       }
 
       const expectedResponseStatusCode = serviceFunctionAnnotationContainer.getResponseStatusCodeForServiceFunction(
@@ -223,26 +222,18 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         updateCount++;
       }
 
-      const tests = getServiceFunctionTests(
-        (controller as any)[serviceMetadata.serviceName].constructor,
-        (controller as any)[serviceMetadata.serviceName].Types,
-        serviceMetadata,
-        functionMetadata,
-        false,
-        expectedResponseStatusCode,
-        expectedResponseFieldPathNameToFieldValueMapInTests
-      );
-
       const updateType = serviceFunctionAnnotationContainer.getUpdateTypeForServiceFunction(
         (controller as any)[serviceMetadata.serviceName].constructor,
         functionMetadata.functionName
       );
 
+      const isUpdate = isUpdateFunction(
+        (controller as any)[serviceMetadata.serviceName].constructor,
+        functionMetadata.functionName
+      );
+
       if (
-        isUpdateFunction(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          functionMetadata.functionName
-        ) &&
+        isUpdate &&
         updateType === 'addOrRemoveSubEntities' &&
         !serviceFunctionAnnotationContainer.getTestSpec(
           (controller as any)[serviceMetadata.serviceName].constructor,
@@ -254,11 +245,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             serviceMetadata.serviceName
         );
       }
-
-      const isUpdate = isUpdateFunction(
-        (controller as any)[serviceMetadata.serviceName].constructor,
-        functionMetadata.functionName
-      );
 
       const isDelete = isDeleteFunction(
         (controller as any)[serviceMetadata.serviceName].constructor,
@@ -275,6 +261,16 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         updateCount
       );
 
+      const tests = getServiceFunctionTests(
+        (controller as any)[serviceMetadata.serviceName].constructor,
+        (controller as any)[serviceMetadata.serviceName].Types,
+        serviceMetadata,
+        functionMetadata,
+        false,
+        expectedResponseStatusCode,
+        expectedResponseFieldPathNameToFieldValueMapInTests
+      );
+
       const item = createPostmanCollectionItem(
         (controller as any)[serviceMetadata.serviceName].constructor,
         serviceMetadata,
@@ -289,7 +285,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         const foundCustomTest = writtenTests.find(
           ({ testTemplate: { serviceFunctionName, executeAfter } }) =>
             serviceFunctionName ===
-              serviceMetadata.serviceName + '.' + lastGetFunctionMetadata?.functionName &&
+              serviceMetadata.serviceName + '.' + lastReadFunctionMetadata?.functionName &&
             executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
         );
 
@@ -345,7 +341,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             foundFunctionMetadata.functionName,
             foundFunctionMetadata.argType,
             foundServiceMetadata,
-            isUpdate,
+            true,
             1,
             isUpdate ? sampleArg : undefined
           );
@@ -360,12 +356,12 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           );
 
           items.push(item);
-        } else if (lastGetFunctionMetadata && !foundCustomTest) {
+        } else if (lastReadFunctionMetadata && !foundCustomTest) {
           const getFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
             serviceMetadata,
-            lastGetFunctionMetadata,
+            lastReadFunctionMetadata,
             isUpdate,
             isUpdate ? HttpStatusCodes.SUCCESS : HttpStatusCodes.NOT_FOUND,
             finalExpectedFieldPathNameToFieldValueMapInTests,
@@ -375,8 +371,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           const getFunctionSampleArg = getServiceFunctionTestArgument(
             (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
-            lastGetFunctionMetadata.functionName,
-            lastGetFunctionMetadata.argType,
+            lastReadFunctionMetadata.functionName,
+            lastReadFunctionMetadata.argType,
             serviceMetadata,
             true,
             1,
@@ -388,10 +384,10 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           const item = createPostmanCollectionItem(
             (controller as any)[serviceMetadata.serviceName].constructor,
             serviceMetadata,
-            lastGetFunctionMetadata,
+            lastReadFunctionMetadata,
             getFunctionSampleArg,
             getFunctionTests,
-            `expect ${itemName} not to be found`
+            isDelete ? `expect ${itemName} not to be found` : undefined
           );
 
           items.push(item);
