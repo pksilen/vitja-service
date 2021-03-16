@@ -173,7 +173,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             expectedResponseFieldPathNameToFieldValueMapInTests
           );
         } else if (serviceFunctionOrSpec.postmanTests) {
-          return {
+          tests = {
             id: serviceMetadata.serviceName + '.' + functionMetadata.functionName,
             listen: 'test',
             script: {
