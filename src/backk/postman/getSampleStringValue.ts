@@ -308,10 +308,15 @@ export default function getSampleStringValue(
       .join('');
   }
 
-  const strongPasswordValidation = doesClassPropertyContainCustomValidation(Class, propertyName, 'isStrongPassword');
+  const strongPasswordValidation = doesClassPropertyContainCustomValidation(
+    Class,
+    propertyName,
+    'isStrongPassword'
+  );
 
   if (strongPasswordValidation) {
-    sampleStringValue = isUpdate ? 'qweAT21=)(': 'tttAO123%!=';
+    const prefix = propertyName.slice(0, 1) + propertyName[propertyName.length - 1];
+    sampleStringValue = prefix + (isUpdate ? 'qweAT21=)(' : 'tttAO123%!=');
   }
 
   const postalCodeValidation = doesClassPropertyContainCustomValidation(Class, propertyName, 'isPostalCode');
