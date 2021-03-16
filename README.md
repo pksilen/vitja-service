@@ -1,7 +1,6 @@
 # Vitja service
 
-TODO: 
-- TestSetup, possible to give serviceFunctionName and argument and postman tests
+TODO:
 - Convert createFollowedUserAccount written test to TestSetup
 - check that changePassword username is valid
 - postHooks should give entity as param and fetch it when needed

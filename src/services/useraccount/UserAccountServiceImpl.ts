@@ -78,6 +78,12 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
+  @TestSetup([
+    {
+      serviceFunctionName: 'userAccountService.createUserAccount',
+      postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
+    }
+  ])
   @TestTeardown({
     testName: 'expect user account to follow a another user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
