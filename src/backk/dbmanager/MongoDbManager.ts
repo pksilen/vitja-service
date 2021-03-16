@@ -286,9 +286,7 @@ export default class MongoDbManager extends AbstractDbManager {
               null,
               createBackkErrorFromErrorCodeMessageAndStatus({
                 ...BACKK_ERRORS.DUPLICATE_ENTITY,
-                message: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(
-                  1
-                )}`
+                message: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(1)}`
               })
             ];
           }
@@ -300,7 +298,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const [createdEntity, error] = isInternalCall
           ? ([{ _id } as T, null] as [T, null])
-          : await this.getEntityById(_id, EntityClass, options?.postQueryOperations);
+          : await this.getEntityById(_id, EntityClass, { postQueryOperations: options?.postQueryOperations });
 
         if (options?.postHook) {
           await tryExecutePostHook(options?.postHook, createdEntity);
@@ -670,7 +668,10 @@ export default class MongoDbManager extends AbstractDbManager {
   async getEntityById<T>(
     _id: string,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations,
+    options?: {
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    },
     isSelectForUpdate = false,
     isInternalCall = false
   ): PromiseOfErrorOr<T> {
@@ -680,8 +681,8 @@ export default class MongoDbManager extends AbstractDbManager {
 
     try {
       if (
-        postQueryOperations?.includeResponseFields?.length === 1 &&
-        postQueryOperations.includeResponseFields[0] === '_id'
+        options?.postQueryOperations?.includeResponseFields?.length === 1 &&
+        options?.postQueryOperations.includeResponseFields[0] === '_id'
       ) {
         return [({ _id } as unknown) as T, null];
       }
@@ -702,7 +703,7 @@ export default class MongoDbManager extends AbstractDbManager {
           .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
           .match({ _id: new ObjectId(_id) });
 
-        performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
+        performPostQueryOperations(cursor, options?.postQueryOperations, EntityClass, this.getTypes());
         const rows = await cursor.toArray();
 
         if (rows.length === 0) {
@@ -721,10 +722,10 @@ export default class MongoDbManager extends AbstractDbManager {
           EntityClass,
           this.getTypes(),
           undefined,
-          postQueryOperations
+          options?.postQueryOperations
         );
 
-        paginateSubEntities(rows, postQueryOperations?.paginations, EntityClass, this.getTypes());
+        paginateSubEntities(rows, options?.postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes(), isInternalCall);
         decryptEntities(rows, EntityClass, this.getTypes(), false);
         return [rows[0], null];
@@ -770,7 +771,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass = this.getType(EntityClass);
 
     try {
-      const [entity, error] = await this.getEntityById(_id, EntityClass, postQueryOperations);
+      const [entity, error] = await this.getEntityById(_id, EntityClass, { postQueryOperations });
       const subItems = JSONPath({ json: entity ?? null, path: subEntityPath });
       return responseMode === 'first' ? [[subItems?.[0]], error] : [subItems, error];
     } catch (error) {
@@ -832,7 +833,10 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations,
+    options?: {
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    },
     isSelectForUpdate = false
   ): PromiseOfErrorOr<T> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
@@ -874,7 +878,7 @@ export default class MongoDbManager extends AbstractDbManager {
           .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
           .match(matchExpression);
 
-        performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
+        performPostQueryOperations(cursor, options?.postQueryOperations, EntityClass, this.getTypes());
         const rows = await cursor.toArray();
 
         await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
@@ -883,10 +887,10 @@ export default class MongoDbManager extends AbstractDbManager {
           EntityClass,
           this.getTypes(),
           filters as Array<MongoDbQuery<T>>,
-          postQueryOperations
+          options?.postQueryOperations
         );
 
-        paginateSubEntities(rows, postQueryOperations?.paginations, EntityClass, this.getTypes());
+        paginateSubEntities(rows, options?.postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes());
         decryptEntities(rows, EntityClass, this.getTypes(), false);
         return rows;
@@ -1022,7 +1026,7 @@ export default class MongoDbManager extends AbstractDbManager {
           [currentEntity, error] = await this.getEntityById(
             _id,
             EntityClass,
-            options?.postQueryOperations,
+            { postQueryOperations: options?.postQueryOperations },
             true,
             true
           );
@@ -1154,7 +1158,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entity: Partial<T>,
     EntityClass: new () => T
   ): PromiseOfErrorOr<null> {
-    throw new Error('not implemented')
+    throw new Error('not implemented');
   }
 
   async updateEntityWhere<T extends BackkEntity>(
@@ -1181,7 +1185,7 @@ export default class MongoDbManager extends AbstractDbManager {
           fieldPathName,
           fieldValue,
           EntityClass,
-          options?.postQueryOperations,
+          { postQueryOperations: options?.postQueryOperations },
           true
         );
 
@@ -1230,7 +1234,7 @@ export default class MongoDbManager extends AbstractDbManager {
           const [currentEntity, error] = await this.getEntityById(
             _id,
             EntityClass,
-            options?.postQueryOperations,
+            { postQueryOperations: options?.postQueryOperations },
             true,
             true
           );

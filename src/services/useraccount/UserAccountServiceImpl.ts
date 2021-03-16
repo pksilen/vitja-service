@@ -62,7 +62,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   getUserNameById({ _id }: _Id): PromiseOfErrorOr<UserName> {
     return this.dbManager.getEntityById(_id, UserAccount, {
-      includeResponseFields: ['userName']
+      postQueryOperations: { includeResponseFields: ['userName'] }
     });
   }
 

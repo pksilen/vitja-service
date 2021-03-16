@@ -2,18 +2,19 @@
 
 TODO:
 - placeorder getentityById posthook to check shopping cart is not empty
+- implement getEntityById/GetEntityWhere to use transaction and "for update" when postHook
+- Implement "for update" for queries when inside global transaction
 - TestSetup, possible to give serviceFunctionName and argument and postman tests
 - Convert createFollowedUserAccount written test to TestSetup
-- if not teardown, then execute default post update get, or post delete get
 - check that changePassword username is valid
 - postHooks should give entity as param and fetch it when needed
-- remove extra deletes from deleteXXX funcs
 - for number, must specify isInt or isFloat
 - addtofavoritesalesitems, cannot add own salesitem, must add followeduser's salesitem
 - test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
 - test error cases
-
+- remove extra deletes from deleteXXX funcs
+- MongoDb: implement getEntityById/GetEntityWhere to use transaction and "for update" when postHook
 
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

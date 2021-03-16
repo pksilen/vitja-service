@@ -39,6 +39,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
       fieldValue,
       EntityClass,
       postQueryOperations,
+      undefined,
       true
     );
 

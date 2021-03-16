@@ -561,10 +561,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async getEntityById<T>(
     _id: string,
     entityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      postQueryOperations?: PostQueryOperations
+      postHook?: PostHook<T>;
+    }
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
-    const response = await getEntityById(this, _id, entityClass, postQueryOperations);
+    const response = await getEntityById(this, _id, entityClass, options?.postQueryOperations, options?.postHook);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -624,7 +627,10 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldPathName: string,
     fieldValue: any,
     entityClass: new () => T,
-    postQueryOperations?: PostQueryOperations,
+    options?: {
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>
+    },
     isSelectForUpdate = false
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
@@ -633,7 +639,8 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       fieldPathName,
       fieldValue,
       entityClass,
-      postQueryOperations,
+      options?.postQueryOperations,
+      options?.postHook,
       isSelectForUpdate
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);

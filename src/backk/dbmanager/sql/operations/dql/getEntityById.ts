@@ -14,12 +14,14 @@ import createErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PostHook } from "../../../hooks/PostHook";
 
 export default async function getEntityById<T>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
+  postHook?: PostHook<T>,
   isSelectForUpdate = false,
   isInternalCall = false
 ): PromiseOfErrorOr<T> {

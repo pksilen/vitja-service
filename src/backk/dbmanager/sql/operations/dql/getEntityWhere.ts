@@ -12,6 +12,7 @@ import createBackkErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PostHook } from "../../../hooks/PostHook";
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -19,6 +20,7 @@ export default async function getEntityWhere<T>(
   fieldValue: any,
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
+  postHook?: PostHook<T>,
   isSelectForUpdate = false
 ): PromiseOfErrorOr<T> {
   if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {

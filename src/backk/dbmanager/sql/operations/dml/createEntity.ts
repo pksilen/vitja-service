@@ -224,7 +224,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
     const [createdEntity, error] =
       isRecursiveCall || !shouldReturnItem
         ? [({ _id } as T), null] as [T, null]
-        : await dbManager.getEntityById(_id, EntityClass, postQueryOperations);
+        : await dbManager.getEntityById(_id, EntityClass, { postQueryOperations });
 
     if (!isRecursiveCall && postHook) {
       await tryExecutePostHook(postHook, createdEntity);

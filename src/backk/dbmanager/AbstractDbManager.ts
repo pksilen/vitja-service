@@ -184,7 +184,10 @@ export default abstract class AbstractDbManager {
   abstract getEntityById<T>(
     _id: string,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      postQueryOperations?: PostQueryOperations
+      postHook?: PostHook<T>;
+    }
   ): PromiseOfErrorOr<T>;
 
   abstract getSubEntity<T extends object, U extends object>(
@@ -211,7 +214,10 @@ export default abstract class AbstractDbManager {
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations,
+    options?: {
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>
+    },
     isSelectForUpdate?: boolean
   ): PromiseOfErrorOr<T>;
 
