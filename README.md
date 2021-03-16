@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Implement "for update" for queries when inside global transaction
 - TestSetup, possible to give serviceFunctionName and argument and postman tests
 - Convert createFollowedUserAccount written test to TestSetup
 - check that changePassword username is valid

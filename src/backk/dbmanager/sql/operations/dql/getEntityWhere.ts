@@ -16,6 +16,7 @@ import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransa
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import { getNamespace } from "cls-hooked";
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -36,6 +37,14 @@ export default async function getEntityWhere<T>(
   let didStartTransaction = false;
 
   try {
+    if (
+      getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+      dbManager.getClsNamespace()?.get('globalTransaction')
+    ) {
+      // noinspection AssignmentToFunctionParameterJS
+      isSelectForUpdate = true;
+    }
+
     if (postHook) {
       didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
       // noinspection AssignmentToFunctionParameterJS

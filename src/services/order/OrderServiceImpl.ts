@@ -282,7 +282,7 @@ export default class OrderServiceImpl extends OrderService {
       [
         new SqlEquals({ transactionId: null }),
         new SqlExpression(
-          `lastModifiedTimestamp <= current_timestamp - INTERVAL '${incompleteOrderTtlInMinutes}' minute`
+          `lastmodifiedtimestamp <= current_timestamp - INTERVAL '${incompleteOrderTtlInMinutes}' minute`
         )
       ]
     );

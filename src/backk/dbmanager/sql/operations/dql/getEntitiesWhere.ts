@@ -13,6 +13,7 @@ import getTableName from '../../../utils/getTableName';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { getNamespace } from "cls-hooked";
 
 export default async function getEntitiesWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -30,6 +31,15 @@ export default async function getEntitiesWhere<T>(
 
   try {
     updateDbLocalTransactionCount(dbManager);
+
+    let isSelectForUpdate = false;
+
+    if (
+      getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+      dbManager.getClsNamespace()?.get('globalTransaction')
+    ) {
+      isSelectForUpdate = true;
+    }
 
     let finalFieldValue = fieldValue;
     const lastDotPosition = fieldPathName.lastIndexOf('.');
@@ -65,7 +75,8 @@ export default async function getEntitiesWhere<T>(
       rootPaginationClause,
       `) AS ${tableAlias}`,
       joinClauses,
-      outerSortClause
+      outerSortClause,
+      isSelectForUpdate ? 'FOR UPDATE' : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

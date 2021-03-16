@@ -10,6 +10,7 @@ import MongoDbQuery from '../../../mongodb/MongoDbQuery';
 import convertFilterObjectToSqlEquals from './utils/convertFilterObjectToSqlEquals';
 import getTableName from '../../../utils/getTableName';
 import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { getNamespace } from "cls-hooked";
 
 export default async function getEntitiesByFilters<T>(
   dbManager: AbstractSqlDbManager,
@@ -29,6 +30,15 @@ export default async function getEntitiesByFilters<T>(
   EntityClass = dbManager.getType(EntityClass);
 
   try {
+    let isSelectForUpdate = false;
+
+    if (
+      getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+      dbManager.getClsNamespace()?.get('globalTransaction')
+    ) {
+      isSelectForUpdate = true;
+    }
+
     const {
       rootWhereClause,
       rootSortClause,
@@ -49,7 +59,8 @@ export default async function getEntitiesByFilters<T>(
       rootPaginationClause,
       `) AS ${tableAlias}`,
       joinClauses,
-      outerSortClause
+      outerSortClause,
+      isSelectForUpdate ? 'FOR UPDATE' : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

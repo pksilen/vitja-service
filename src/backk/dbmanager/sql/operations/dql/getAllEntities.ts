@@ -8,6 +8,7 @@ import DefaultPostQueryOperations from "../../../../types/postqueryoperations/De
 import Pagination from "../../../../types/postqueryoperations/Pagination";
 import getTableName from "../../../utils/getTableName";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { getNamespace } from "cls-hooked";
 
 export default async function getAllEntities<T>(
   dbManager: AbstractSqlDbManager,
@@ -25,6 +26,15 @@ export default async function getAllEntities<T>(
   };
 
   try {
+    let isSelectForUpdate = false;
+
+    if (
+      getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+      dbManager.getClsNamespace()?.get('globalTransaction')
+    ) {
+      isSelectForUpdate = true;
+    }
+
     const { columns, joinClauses, rootSortClause, outerSortClause } = getSqlSelectStatementParts(
       dbManager,
       finalPostQueryOperations,
@@ -39,7 +49,8 @@ export default async function getAllEntities<T>(
       rootSortClause,
       `) AS ${tableAlias}`,
       joinClauses,
-      outerSortClause
+      outerSortClause,
+      isSelectForUpdate ? 'FOR UPDATE' : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

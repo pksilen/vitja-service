@@ -9,6 +9,7 @@ import createBackkErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { getNamespace } from "cls-hooked";
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
@@ -18,6 +19,15 @@ export default async function getEntitiesByIds<T>(
 ): PromiseOfErrorOr<T[]> {
   try {
     updateDbLocalTransactionCount(dbManager);
+
+    let isSelectForUpdate = false;
+
+    if (
+      getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+      dbManager.getClsNamespace()?.get('globalTransaction')
+    ) {
+      isSelectForUpdate = true;
+    }
 
     const {
       rootSortClause,
@@ -50,7 +60,8 @@ export default async function getEntitiesByIds<T>(
       rootPaginationClause,
       `) AS ${tableAlias}`,
       joinClauses,
-      outerSortClause
+      outerSortClause,
+      isSelectForUpdate ? 'FOR UPDATE' : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

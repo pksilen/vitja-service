@@ -9,6 +9,7 @@ import MongoDbQuery from '../../../mongodb/MongoDbQuery';
 import convertFilterObjectToSqlEquals from './utils/convertFilterObjectToSqlEquals';
 import getTableName from '../../../utils/getTableName';
 import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { getNamespace } from 'cls-hooked';
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
@@ -27,6 +28,15 @@ export default async function getEntitiesCount<T>(
   EntityClass = dbManager.getType(EntityClass);
 
   try {
+    let isSelectForUpdate = false;
+
+    if (
+      getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+      dbManager.getClsNamespace()?.get('globalTransaction')
+    ) {
+      isSelectForUpdate = true;
+    }
+
     const { rootWhereClause, filterValues } = getSqlSelectStatementParts(
       dbManager,
       new DefaultPostQueryOperations(),
@@ -36,7 +46,11 @@ export default async function getEntitiesCount<T>(
 
     const tableName = getTableName(EntityClass.name);
 
-    const sqlStatement = [`SELECT COUNT(*) as count FROM ${dbManager.schema}.${tableName}`, rootWhereClause]
+    const sqlStatement = [
+      `SELECT COUNT(*) as count FROM ${dbManager.schema}.${tableName}`,
+      rootWhereClause,
+      isSelectForUpdate ? 'FOR UPDATE' : undefined
+    ]
       .filter((sqlPart) => sqlPart)
       .join(' ');
 
