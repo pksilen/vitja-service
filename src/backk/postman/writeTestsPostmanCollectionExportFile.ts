@@ -205,7 +205,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           foundServiceMetadata,
           foundFunctionMetadata,
           typeof serviceFunctionOrSpec === 'object' && serviceFunctionOrSpec.argument
-            ? serviceFunctionOrSpec.argument
+            ? { ...sampleArg, ...serviceFunctionOrSpec.argument }
             : sampleArg,
           tests,
           typeof serviceFunctionOrSpec === 'object' ? serviceFunctionOrSpec?.testName : undefined
