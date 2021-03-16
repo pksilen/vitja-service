@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- placeorder getentityById posthook to check shopping cart is not empty
 - implement getEntityById/GetEntityWhere to use transaction and "for update" when postHook
 - Implement "for update" for queries when inside global transaction
 - TestSetup, possible to give serviceFunctionName and argument and postman tests

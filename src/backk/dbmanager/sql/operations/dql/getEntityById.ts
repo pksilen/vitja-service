@@ -15,6 +15,10 @@ import createErrorFromErrorCodeMessageAndStatus
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import { PostHook } from "../../../hooks/PostHook";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
 
 export default async function getEntityById<T>(
   dbManager: AbstractSqlDbManager,
@@ -25,10 +29,10 @@ export default async function getEntityById<T>(
   isSelectForUpdate = false,
   isInternalCall = false
 ): PromiseOfErrorOr<T> {
-  updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
+  let didStartTransaction = false;
 
   try {
     if (
@@ -37,6 +41,14 @@ export default async function getEntityById<T>(
     ) {
       return { _id } as any;
     }
+
+    if (postHook) {
+      didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
+      // noinspection AssignmentToFunctionParameterJS
+      isSelectForUpdate = true;
+    }
+
+    updateDbLocalTransactionCount(dbManager);
 
     const { columns, joinClauses, outerSortClause } = getSqlSelectStatementParts(
       dbManager,
@@ -88,8 +100,12 @@ export default async function getEntityById<T>(
       isInternalCall
     )[0];
 
+    await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [entity, null];
   } catch (error) {
+    await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [null, createBackkErrorFromError(error)];
+  } finally {
+    cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
 }

@@ -1,18 +1,21 @@
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
-import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
-import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
-import isUniqueField from "./utils/isUniqueField";
-import SqlEquals from "../../expressions/SqlEquals";
-import transformRowsToObjects from "./transformresults/transformRowsToObjects";
-import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
-import getTableName from "../../../utils/getTableName";
-import createBackkErrorFromErrorCodeMessageAndStatus
-  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS } from "../../../../errors/backkErrors";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
-import { PostHook } from "../../../hooks/PostHook";
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
+import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
+import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
+import isUniqueField from './utils/isUniqueField';
+import SqlEquals from '../../expressions/SqlEquals';
+import transformRowsToObjects from './transformresults/transformRowsToObjects';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
+import getTableName from '../../../utils/getTableName';
+import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
+import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { PostHook } from '../../../hooks/PostHook';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -27,12 +30,20 @@ export default async function getEntityWhere<T>(
     throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
   }
 
-  updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
+  let didStartTransaction = false;
 
   try {
+    if (postHook) {
+      didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
+      // noinspection AssignmentToFunctionParameterJS
+      isSelectForUpdate = true;
+    }
+
+    updateDbLocalTransactionCount(dbManager);
+
     const lastDotPosition = fieldPathName.lastIndexOf('.');
     const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
 
@@ -68,10 +79,13 @@ export default async function getEntityWhere<T>(
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     if (dbManager.getResultRows(result).length === 0) {
-      return [null, createBackkErrorFromErrorCodeMessageAndStatus({
-        ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-        message: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
-      })];
+      return [
+        null,
+        createBackkErrorFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+          message: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
+        })
+      ];
     }
 
     const entity = transformRowsToObjects(
@@ -81,8 +95,12 @@ export default async function getEntityWhere<T>(
       dbManager
     )[0];
 
+    await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [entity, null];
   } catch (error) {
+    await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [null, createBackkErrorFromError(error)];
+  } finally {
+    cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
 }
