@@ -1,6 +1,6 @@
 # Vitja service
 
-TODO:
+TODO: 
 - TestSetup, possible to give serviceFunctionName and argument and postman tests
 - Convert createFollowedUserAccount written test to TestSetup
 - check that changePassword username is valid

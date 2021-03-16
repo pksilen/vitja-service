@@ -218,7 +218,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     });
   }
 
-  @CronJob({ minuteInterval: 1 })
+  @CronJob({ minuteInterval: 15 })
   changeExpiredReservedSalesItemStatesToForSale({
     maxSalesItemReservationDurationInMinutes
   }: ChangeExpiredReservedSalesItemStatesToForSaleArg): PromiseOfErrorOr<null> {
