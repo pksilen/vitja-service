@@ -143,7 +143,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     {
       testName: 'create followed user account',
       serviceFunctionName: 'userAccountService.createUserAccount',
-      argument: { userName: 'test2@test.com' },
+      argument: { userName: 'test2@test.com', displayName: 'followed user' },
       postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
     },
     {
@@ -157,7 +157,11 @@ export default class SalesItemServiceImpl extends SalesItemService {
       postmanTests: ['pm.collectionVariables.set("followedUserSalesItemId", response._id)']
     }
   ])
-  @Test({ _id: '{{followedUserSalesItemId}}', userAccountId: '{{followedUserAccountId}}' })
+  @Test({
+    _id: '{{followedUserSalesItemId}}',
+    userAccountId: '{{followedUserAccountId}}',
+    displayName: 'followed user'
+  })
   async getFollowedUsersSalesItems({
     userAccountId
   }: UserAccountId): PromiseOfErrorOr<FollowedUserSalesItem[]> {
