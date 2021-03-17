@@ -30,4 +30,8 @@ export default class ChangeUserPasswordArg {
   @IsString()
   @IsStrongPassword()
   public newPassword!: string;
+
+  @IsString()
+  @IsStrongPassword()
+  public repeatNewPassword!: string;
 }

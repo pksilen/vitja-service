@@ -176,7 +176,8 @@ export default class UserAccountServiceImpl extends UserAccountService {
     _id,
     userName,
     currentPassword,
-    newPassword
+    newPassword,
+    repeatNewPassword
   }: ChangeUserPasswordArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, password: newPassword }, UserAccount, {
       preHooks: [
@@ -189,6 +190,10 @@ export default class UserAccountServiceImpl extends UserAccountService {
             return !(await argon2.verify(hashedCurrentPassword, newPassword));
           },
           error: userAccountServiceErrors.newPasswordCannotBeSameAsCurrentPasswordError
+        },
+        {
+          isSuccessfulOrTrue: async () => newPassword === repeatNewPassword,
+          error: userAccountServiceErrors.newPasswordAndRepeatNewPasswordDoNotMatchError
         },
         {
           isSuccessfulOrTrue: ({ password: hashedCurrentPassword }) =>

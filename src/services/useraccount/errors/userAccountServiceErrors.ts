@@ -10,5 +10,9 @@ export const userAccountServiceErrors = {
   newPasswordCannotBeSameAsCurrentPasswordError: {
     errorCode: 'userAccountService.3',
     message: 'New password cannot be same as current password'
+  },
+  newPasswordAndRepeatNewPasswordDoNotMatchError: {
+    errorCode: 'userAccountService.4',
+    message: 'Given new password and repeated new password do not match'
   }
 };
