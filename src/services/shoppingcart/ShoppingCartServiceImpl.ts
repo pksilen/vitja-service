@@ -15,7 +15,7 @@ import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import _IdAndUserAccountIdAndSalesItemId from './types/args/_IdAndUserAccountIdAndSalesItemId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { Update } from '../../backk/decorators/service/function/Update';
-import { TestTeardown } from '../../backk/decorators/service/function/TestTeardown';
+import { PostTest } from '../../backk/decorators/service/function/PostTest';
 import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import UserAccountId from '../../backk/types/useraccount/UserAccountId';
@@ -69,7 +69,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestSetup(['salesItemService.createSalesItem'])
-  @TestTeardown({
+  @PostTest({
     testName: 'expect shopping cart to contain a sales item',
     serviceFunctionName: 'shoppingCartService.getShoppingCart',
     expectedResult: {
@@ -95,7 +95,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestTeardown({
+  @PostTest({
     testName: 'expect empty shopping cart',
     serviceFunctionName: 'shoppingCartService.getShoppingCart',
     expectedResult: { salesItems: [] }

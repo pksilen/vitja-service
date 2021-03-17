@@ -31,7 +31,7 @@ import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import { TestTeardown } from '../../backk/decorators/service/function/TestTeardown';
+import { PostTest } from '../../backk/decorators/service/function/PostTest';
 import { orderServiceErrors } from './errors/orderServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import RemoveOrderItemArg from './types/args/RemoveOrderItemArg';
@@ -74,7 +74,7 @@ export default class OrderServiceImpl extends OrderService {
     'shoppingCartService.createShoppingCart',
     'shoppingCartService.addToShoppingCart'
   ])
-  @TestTeardown({
+  @PostTest({
     testName: 'expect sales item state to be sold after placing order',
     serviceFunctionName: 'salesItemService.getSalesItem',
     expectedResult: {
@@ -139,7 +139,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestTeardown({
+  @PostTest({
     testName: 'expect order not to have order items',
     serviceFunctionName: 'orderService.getOrder',
     expectedResult: { orderItems: [] }
@@ -161,7 +161,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForTests()
   @Update('addOrRemoveSubEntities')
-  @TestTeardown({
+  @PostTest({
     testName: 'expect order to contain an order item',
     serviceFunctionName: 'orderService.getOrder',
     expectedResult: {

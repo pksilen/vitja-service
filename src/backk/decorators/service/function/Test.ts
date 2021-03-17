@@ -1,5 +1,5 @@
 import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationContainer';
-import { FieldPathNameToFieldValueMap } from './TestTeardown';
+import { FieldPathNameToFieldValueMap } from './PostTest';
 
 export function Test(expectedResult: FieldPathNameToFieldValueMap) {
   const finalFieldPathNameToFieldValueMap = Object.entries(expectedResult).reduce(

@@ -30,6 +30,7 @@ import ChangeExpiredReservedSalesItemStatesToForSaleArg from './types/args/Chang
 import { salesItemServiceErrors } from './errors/salesItemServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import { Test } from '../../backk/decorators/service/function/Test';
+import { PostTest } from '../../backk/decorators/service/function/PostTest';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -141,17 +142,17 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   @TestSetup([
     {
-      testName: 'create followed user account',
+      setupStepName: 'create followed user account',
       serviceFunctionName: 'userAccountService.createUserAccount',
       argument: { userName: 'test2@test.com', displayName: 'followed user' },
       postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
     },
     {
-      testName: 'follow user',
+      setupStepName: 'follow user',
       serviceFunctionName: 'userAccountService.followUser'
     },
     {
-      testName: 'create sales item for followed user',
+      setupStepName: 'create sales item for followed user',
       serviceFunctionName: 'salesItemService.createSalesItem',
       argument: { userAccountId: '{{followedUserAccountId}}' },
       postmanTests: ['pm.collectionVariables.set("followedUserSalesItemId", response._id)']
@@ -242,6 +243,21 @@ export default class SalesItemServiceImpl extends SalesItemService {
     });
   }
 
+  @TestSetup([
+    {
+      setupStepName: 'create shopping cart',
+      serviceFunctionName: 'shoppingCartService.createShoppingCart'
+    },
+    {
+      setupStepName: 'add sales item to shopping cart',
+      serviceFunctionName: 'shoppingCartService.addToShoppingCart'
+    }
+  ])
+  @PostTest({
+    testName: 'except sales item state to be for sale',
+    serviceFunctionName: 'salesItemService.getSalesItem',
+    expectedResult: { state: 'forSale' }
+  })
   @CronJob({ minuteInterval: 1 })
   changeExpiredReservedSalesItemStatesToForSale({
     maxSalesItemReservationDurationInMinutes

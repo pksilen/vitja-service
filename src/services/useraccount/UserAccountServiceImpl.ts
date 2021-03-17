@@ -22,7 +22,7 @@ import { SalesItem } from '../salesitem/types/entities/SalesItem';
 import GetUserAccountArg from './types/args/GetUserAccountArg';
 import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
 import _IdAndFollowedUserAccountId from './types/args/_IdAndFollowedUserAccountId';
-import { TestTeardown } from '../../backk/decorators/service/function/TestTeardown';
+import { PostTest } from '../../backk/decorators/service/function/PostTest';
 import FollowedUserAccount from './types/entities/FollowedUserAccount';
 import FollowingUserAccount from './types/entities/FollowingUserAccount';
 import { userAccountServiceErrors } from './errors/userAccountServiceErrors';
@@ -80,13 +80,13 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update('addOrRemoveSubEntities')
   @TestSetup([
     {
-      testName: 'create followed user account',
+      setupStepName: 'create followed user account',
       serviceFunctionName: 'userAccountService.createUserAccount',
       argument: { userName: 'test2@test.com' },
       postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
     }
   ])
-  @TestTeardown({
+  @PostTest({
     testName: 'expect user account to follow a another user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
@@ -115,7 +115,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestTeardown({
+  @PostTest({
     testName: 'expect no followed user accounts',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: { followedUserAccounts: [] }
@@ -136,7 +136,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestSetup(['salesItemService.createSalesItem'])
-  @TestTeardown({
+  @PostTest({
     testName: 'expect a favorite sales item in user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
@@ -155,7 +155,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @TestTeardown({
+  @PostTest({
     testName: 'expect no favorite sales items in user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {

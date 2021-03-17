@@ -1,7 +1,7 @@
 import { ErrorDef } from '../../../dbmanager/hooks/PreHook';
 import { HttpHeaders } from './ResponseHeaders';
 import { UpdateType } from './Update';
-import { TestTeardownSpec } from './TestTeardown';
+import { PostTestSpec } from './PostTest';
 import { TestSetupSpec } from './TestSetup';
 
 class ServiceFunctionAnnotationContainer {
@@ -25,7 +25,7 @@ class ServiceFunctionAnnotationContainer {
     [key: string]: { [key: string]: any };
   } = {};
   private readonly serviceFunctionNameToTestSpecMap: {
-    [key: string]: TestTeardownSpec;
+    [key: string]: PostTestSpec;
   } = {};
   private readonly serviceFunctionNameToOnStartUpMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsCreateFunctionMap: { [key: string]: boolean } = {};
@@ -469,7 +469,7 @@ class ServiceFunctionAnnotationContainer {
     return undefined;
   }
 
-  getTestSpec(serviceClass: Function, functionName: string): TestTeardownSpec | undefined {
+  getTestSpec(serviceClass: Function, functionName: string): PostTestSpec | undefined {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
       if (this.serviceFunctionNameToTestSpecMap[`${proto.constructor.name}${functionName}`] !== undefined) {

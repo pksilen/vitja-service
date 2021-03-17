@@ -1,6 +1,6 @@
 import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationContainer';
 
-export type TestTeardownSpec = {
+export type PostTestSpec = {
   testName: string;
   serviceFunctionName: string;
   expectedResult: {
@@ -12,7 +12,7 @@ export type FieldPathNameToFieldValueMap = {
   [key: string]: any;
 };
 
-export function TestTeardown(testSpec: TestTeardownSpec) {
+export function PostTest(testSpec: PostTestSpec) {
   const finalFieldPathNameToFieldValueMap = Object.entries(
     testSpec.expectedResult
   ).reduce((finalFieldPathNameToFieldValueMap, [fieldPathName, fieldValue]) => {

@@ -1,7 +1,7 @@
 import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationContainer';
 
 export type TestSetupSpec = {
-  testName: string;
+  setupStepName: string;
   serviceFunctionName: string;
   argument?: {
     [key: string]: any;

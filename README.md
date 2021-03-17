@@ -1,8 +1,9 @@
 # Vitja service
 
 TODO:
-- test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
+- Generate annotation for primaryImageThumbnailImage, in getXX function, this will generate value
+  remove @Transient annotation from  primaryImageThumbnailImage
 - test error cases
 - remove extra deletes from deleteXXX funcs
 - MongoDb: implement getEntityById/GetEntityWhere to use transaction and "for update" when postHook

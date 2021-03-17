@@ -208,7 +208,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             ? { ...sampleArg, ...serviceFunctionOrSpec.argument }
             : sampleArg,
           tests,
-          typeof serviceFunctionOrSpec === 'object' ? serviceFunctionOrSpec?.testName : undefined
+          typeof serviceFunctionOrSpec === 'object' ? serviceFunctionOrSpec?.setupStepName : undefined
         );
 
         items.push(item);
@@ -270,7 +270,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         )
       ) {
         throw new Error(
-          'There must be a test specified using @TestTeardown annotation for service function: ' +
+          'There must be a test specified using @PostTest annotation for service function: ' +
             serviceMetadata.serviceName
         );
       }
@@ -341,7 +341,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
           if (!foundServiceMetadata || !foundFunctionMetadata) {
             throw new Error(
-              'Invalid service function name in @TestTeardown annotation in ' +
+              'Invalid service function name in @PostTest annotation in ' +
                 serviceMetadata.serviceName +
                 '.' +
                 functionMetadata.functionName
