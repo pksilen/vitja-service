@@ -4,7 +4,7 @@ import { IsInt } from "class-validator";
 
 export default class ChangeExpiredReservedSalesItemStatesToForSaleArg {
   @IsInt()
-  @MinMax(0, 15)
-  @TestValue(0)
+  @MinMax(-1, 15)
+  @TestValue(-1)
   maxSalesItemReservationDurationInMinutes: number = 15;
 }
