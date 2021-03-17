@@ -16,7 +16,6 @@ export type PreHook<T extends BackkEntity | SubEntity> =
         entity: T
       ) => PromiseOfErrorOr<BackkEntity | null> | Promise<boolean | BackkError | null | undefined> | boolean;
       error?: ErrorDef;
-      shouldDisregardFailureWhenExecutingTests?: boolean;
     }
   | ((
       entity: T
