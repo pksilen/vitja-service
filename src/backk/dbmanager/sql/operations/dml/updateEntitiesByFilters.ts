@@ -1,23 +1,23 @@
-import MongoDbQuery from "../../../mongodb/MongoDbQuery";
-import SqlExpression from "../../expressions/SqlExpression";
-import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
-import convertFilterObjectToSqlEquals from "../dql/utils/convertFilterObjectToSqlEquals";
-import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
-import tryGetWhereClause from "../dql/clauses/tryGetWhereClause";
-import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
-import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
-import isBackkError from "../../../../errors/isBackkError";
-import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
-import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import getFilterValues from "../dql/utils/getFilterValues";
+import MongoDbQuery from '../../../mongodb/MongoDbQuery';
+import SqlExpression from '../../expressions/SqlExpression';
+import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
+import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import convertFilterObjectToSqlEquals from '../dql/utils/convertFilterObjectToSqlEquals';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryGetWhereClause from '../dql/clauses/tryGetWhereClause';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import isBackkError from '../../../../errors/isBackkError';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import getFilterValues from '../dql/utils/getFilterValues';
 
 // noinspection DuplicatedCode
 export default async function updateEntitiesByFilters<T extends object>(
   dbManager: AbstractSqlDbManager,
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-  entity: Partial<T>,
+  update: Partial<T>,
   EntityClass: new () => T
 ): PromiseOfErrorOr<null> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
@@ -42,16 +42,22 @@ export default async function updateEntitiesByFilters<T extends object>(
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     const whereClause = tryGetWhereClause(dbManager, '', filters as any);
-    const filterValues = getFilterValues(filters as any)
+    const filterValues = getFilterValues(filters as any);
 
-    const setStatements = Object.keys(entity)
-      .map((fieldName: string) => fieldName.toLowerCase() + ' = :xx' + fieldName)
+    const setStatements = Object.keys(update)
+      .map((fieldName: string) => fieldName.toLowerCase() + ' = :yy' + fieldName)
       .join(', ');
 
-    await dbManager.tryExecuteQueryWithNamedParameters(
-      `UPDATE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} SET ${setStatements} ${whereClause}`,
-      filterValues
+    const updateValues = Object.entries(update).reduce(
+      (updateValues, [fieldName, fieldValue]) => ({
+        ...updateValues,
+        [`yy${fieldName}`]: fieldValue
+      }),
+      {}
     );
+
+    const sqlStatement = `UPDATE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} SET ${setStatements} ${whereClause}`;
+    await dbManager.tryExecuteQueryWithNamedParameters(sqlStatement, { ...filterValues, ...updateValues });
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [null, null];

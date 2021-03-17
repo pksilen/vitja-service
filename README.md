@@ -2,6 +2,7 @@
 
 TODO:
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
+- another postTest for addToShoppingCart to check that salesItem state if reserved
 - Generate annotation for primaryImageThumbnailImage, in getXX function, this will generate value
   remove @Transient annotation from  primaryImageThumbnailImage
 - test error cases
