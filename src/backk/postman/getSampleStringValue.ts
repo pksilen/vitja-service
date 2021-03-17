@@ -315,8 +315,7 @@ export default function getSampleStringValue(
   );
 
   if (strongPasswordValidation) {
-    const prefix = propertyName.slice(0, 1) + propertyName[propertyName.length - 1];
-    sampleStringValue = prefix + (isUpdate ? 'qweAT21=)(' : 'tttAO123%!=');
+    sampleStringValue = isUpdate ? 'qweAT21=)(' : 'tttAO123%!=';
   }
 
   const postalCodeValidation = doesClassPropertyContainCustomValidation(Class, propertyName, 'isPostalCode');
