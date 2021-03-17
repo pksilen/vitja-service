@@ -1,34 +1,36 @@
-import { HttpException } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
-import { createNamespace, getNamespace } from 'cls-hooked';
-import _ from 'lodash';
-import Redis from 'ioredis';
-import tryAuthorize from '../authorization/tryAuthorize';
-import BaseService from '../service/BaseService';
-import tryVerifyCaptchaToken from '../captcha/tryVerifyCaptchaToken';
-import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
-import UserAccountBaseService from '../service/useraccount/UserAccountBaseService';
-import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
-import tryValidateServiceFunctionArgument from '../validation/tryValidateServiceFunctionArgument';
-import tryValidateServiceFunctionReturnValue from '../validation/tryValidateServiceFunctionReturnValue';
-import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
-import createBackkErrorFromError from '../errors/createBackkErrorFromError';
-import log, { Severity } from '../observability/logging/log';
-import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import { HttpStatusCodes, MAX_INT_VALUE } from '../constants/constants';
-import getNamespacedServiceName from '../utils/getServiceNamespace';
-import AuditLoggingService from '../observability/logging/audit/AuditLoggingService';
-import createAuditLogEntry from '../observability/logging/audit/createAuditLogEntry';
-import executeMultipleServiceFunctions from './executeMultipleServiceFunctions';
-import tryScheduleJobExecution from '../scheduling/tryScheduleJobExecution';
-import isExecuteMultipleRequest from './isExecuteMultipleRequest';
-import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BackkError } from '../types/BackkError';
-import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../errors/backkErrors';
-import emptyError from '../errors/emptyError';
-import fetchFromRemoteServices from './fetchFromRemoteServices';
-import isBackkError from '../errors/isBackkError';
+import { HttpException } from "@nestjs/common";
+import { plainToClass } from "class-transformer";
+import _ from "lodash";
+import Redis from "ioredis";
+import tryAuthorize from "../authorization/tryAuthorize";
+import BaseService from "../service/BaseService";
+import tryVerifyCaptchaToken from "../captcha/tryVerifyCaptchaToken";
+import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import UserAccountBaseService from "../service/useraccount/UserAccountBaseService";
+import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
+import tryValidateServiceFunctionArgument from "../validation/tryValidateServiceFunctionArgument";
+import tryValidateServiceFunctionReturnValue from "../validation/tryValidateServiceFunctionReturnValue";
+import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
+import createBackkErrorFromError from "../errors/createBackkErrorFromError";
+import log, { Severity } from "../observability/logging/log";
+import serviceFunctionAnnotationContainer
+  from "../decorators/service/function/serviceFunctionAnnotationContainer";
+import { HttpStatusCodes, MAX_INT_VALUE } from "../constants/constants";
+import getNamespacedServiceName from "../utils/getServiceNamespace";
+import AuditLoggingService from "../observability/logging/audit/AuditLoggingService";
+import createAuditLogEntry from "../observability/logging/audit/createAuditLogEntry";
+import executeMultipleServiceFunctions from "./executeMultipleServiceFunctions";
+import tryScheduleJobExecution from "../scheduling/tryScheduleJobExecution";
+import isExecuteMultipleRequest from "./isExecuteMultipleRequest";
+import createErrorFromErrorCodeMessageAndStatus from "../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BackkError } from "../types/BackkError";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../errors/backkErrors";
+import emptyError from "../errors/emptyError";
+import fetchFromRemoteServices from "./fetchFromRemoteServices";
+import isBackkError from "../errors/isBackkError";
+import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
@@ -321,9 +323,7 @@ export default async function tryExecuteServiceMethod(
     let backkError = emptyError;
 
     if (!response) {
-      const clsNamespace = shouldCreateClsNamespace
-        ? createNamespace('serviceFunctionExecution')
-        : getNamespace('serviceFunctionExecution')!;
+      const clsNamespace = getClsNamespace('serviceFunctionExecution');
 
       [response, backkError] = await clsNamespace.runAndReturn(async () => {
         clsNamespace.set('authHeader', headers.Authorization);

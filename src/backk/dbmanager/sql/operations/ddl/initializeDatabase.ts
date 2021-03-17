@@ -1,22 +1,22 @@
-import AbstractDbManager from '../../../AbstractDbManager';
-import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
-import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import tryAlterOrCreateTable from './tryAlterOrCreateTable';
-import tryCreateIndex from './tryCreateIndex';
-import tryCreateUniqueIndex from './tryCreateUniqueIndex';
-import log, { logError, Severity } from '../../../../observability/logging/log';
-import tryInitializeCronJobSchedulingTable from '../../../../scheduling/tryInitializeCronJobSchedulingTable';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import MongoDbManager from '../../../MongoDbManager';
-import tryCreateMongoDbIndex from '../../../mongodb/tryCreateMongoDbIndex';
-import setJoinSpecs from '../../../mongodb/setJoinSpecs';
-import tryExecuteOnStartUpTasks from '../../../../initialization/tryExecuteOnStartupTasks';
-import tryCreateMongoDbIndexesForUniqueFields from '../../../mongodb/tryCreateMongoDbIndexesForUniqueFields';
-import shouldInitializeDb from './shouldInitializeDb';
-import removeDbInitialization from './removeDbInitialization';
-import setDbInitialized from './setDbInitialized';
-import { createNamespace } from "cls-hooked";
+import AbstractDbManager from "../../../AbstractDbManager";
+import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import tryAlterOrCreateTable from "./tryAlterOrCreateTable";
+import tryCreateIndex from "./tryCreateIndex";
+import tryCreateUniqueIndex from "./tryCreateUniqueIndex";
+import log, { logError, Severity } from "../../../../observability/logging/log";
+import tryInitializeCronJobSchedulingTable from "../../../../scheduling/tryInitializeCronJobSchedulingTable";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import MongoDbManager from "../../../MongoDbManager";
+import tryCreateMongoDbIndex from "../../../mongodb/tryCreateMongoDbIndex";
+import setJoinSpecs from "../../../mongodb/setJoinSpecs";
+import tryExecuteOnStartUpTasks from "../../../../initialization/tryExecuteOnStartupTasks";
+import tryCreateMongoDbIndexesForUniqueFields from "../../../mongodb/tryCreateMongoDbIndexesForUniqueFields";
+import shouldInitializeDb from "./shouldInitializeDb";
+import removeDbInitialization from "./removeDbInitialization";
+import setDbInitialized from "./setDbInitialized";
 import removeDbInitializationWhenPendingTooLong from "./removeDbInitializationWhenPendingTooLong";
+import getClsNamespace from "../../../../continuationLocalStorages/getClsNamespace";
 
 let isMongoDBInitialized = false;
 
@@ -38,7 +38,7 @@ export async function isDbInitialized(dbManager: AbstractDbManager) {
     }`;
 
     try {
-      const clsNamespace = createNamespace('serviceFunctionExecution');
+      const clsNamespace = getClsNamespace('serviceFunctionExecution');
       return await clsNamespace.runAndReturn(async () => {
         await dbManager.tryReserveDbConnectionFromPool();
         const result = await dbManager.tryExecuteQuery(getAppVersionInitializationStatusSql);

@@ -1,14 +1,15 @@
-import AbstractDbManager from '../dbmanager/AbstractDbManager';
-import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import { createNamespace } from 'cls-hooked';
+import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import serviceFunctionAnnotationContainer
+  from "../decorators/service/function/serviceFunctionAnnotationContainer";
 // eslint-disable-next-line @typescript-eslint/camelcase
-import __Backk__CronJobScheduling from './entities/__Backk__CronJobScheduling';
-import parser from 'cron-parser';
-import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import { HttpStatusCodes } from '../constants/constants';
+import __Backk__CronJobScheduling from "./entities/__Backk__CronJobScheduling";
+import parser from "cron-parser";
+import forEachAsyncParallel from "../utils/forEachAsyncParallel";
+import { HttpStatusCodes } from "../constants/constants";
+import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
 
 export default async function tryInitializeCronJobSchedulingTable(dbManager: AbstractDbManager) {
-  const clsNamespace = createNamespace('serviceFunctionExecution');
+  const clsNamespace = getClsNamespace('serviceFunctionExecution');
 
   await forEachAsyncParallel(
     Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()),

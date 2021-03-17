@@ -3,10 +3,10 @@ import BaseService from "../service/BaseService";
 import forEachAsyncSequential from "../utils/forEachAsyncSequential";
 import serviceFunctionAnnotationContainer
   from "../decorators/service/function/serviceFunctionAnnotationContainer";
-import { createNamespace } from "cls-hooked";
+import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
 
 export default async function tryExecuteOnStartUpTasks(controller: any, dbManager: AbstractDbManager) {
-  const clsNamespace = createNamespace('serviceFunctionExecution');
+  const clsNamespace = getClsNamespace('serviceFunctionExecution');
   const [, error] = await clsNamespace.runAndReturn(async () => {
     await dbManager.tryReserveDbConnectionFromPool();
 

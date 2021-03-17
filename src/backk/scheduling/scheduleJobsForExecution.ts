@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import AbstractDbManager from "../dbmanager/AbstractDbManager";
-import { createNamespace } from "cls-hooked";
 import findAsyncSequential from "../utils/findAsyncSequential";
 import wait from "../utils/wait";
 import __Backk__JobScheduling from "./entities/__Backk__JobScheduling";
 import { logError } from "../observability/logging/log";
 import forEachAsyncParallel from "../utils/forEachAsyncParallel";
 import { scheduleCronJob } from "./scheduleCronJob";
+import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
 
 export let scheduledJobs: __Backk__JobScheduling[] | null | undefined = null;
 
@@ -20,7 +20,7 @@ export default async function scheduleJobsForExecution(
 
   await findAsyncSequential([0, 1, 2, 5, 10, 30, 60, 120, 300, 600], async (retryDelayInSecs) => {
     await wait(retryDelayInSecs * 1000);
-    const clsNamespace = createNamespace('serviceFunctionExecution');
+    const clsNamespace = getClsNamespace('serviceFunctionExecution');
 
     await clsNamespace.runAndReturn(async () => {
       try {

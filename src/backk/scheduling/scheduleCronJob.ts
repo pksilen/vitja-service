@@ -1,12 +1,12 @@
-import AbstractDbManager from '../dbmanager/AbstractDbManager';
-import { CronJob } from 'cron';
-import findAsyncSequential from '../utils/findAsyncSequential';
-import wait from '../utils/wait';
-import { createNamespace } from 'cls-hooked';
+import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import { CronJob } from "cron";
+import findAsyncSequential from "../utils/findAsyncSequential";
+import wait from "../utils/wait";
 // eslint-disable-next-line @typescript-eslint/camelcase
-import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
-import tryExecuteServiceMethod from '../execution/tryExecuteServiceMethod';
-import { logError } from '../observability/logging/log';
+import __Backk__JobScheduling from "./entities/__Backk__JobScheduling";
+import tryExecuteServiceMethod from "../execution/tryExecuteServiceMethod";
+import { logError } from "../observability/logging/log";
+import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
 
 const scheduledJobs: { [key: string]: CronJob } = {};
 
@@ -22,8 +22,8 @@ export async function scheduleCronJob(
   const job = new CronJob(scheduledExecutionTimestampAsDate, async () => {
     await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
       await wait(retryIntervalInSecs * 1000);
-      const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
-      const clsNamespace2 = createNamespace('serviceFunctionExecution');
+      const clsNamespace = getClsNamespace('multipleServiceFunctionExecutions');
+      const clsNamespace2 = getClsNamespace('serviceFunctionExecution');
       return clsNamespace.runAndReturn(async () => {
         return clsNamespace2.runAndReturn(async () => {
           try {

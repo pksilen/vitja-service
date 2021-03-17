@@ -1,17 +1,19 @@
-import { CronJob } from 'cron';
-import parser from 'cron-parser';
-import AbstractDbManager from '../dbmanager/AbstractDbManager';
-import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import { CronJob } from "cron";
+import parser from "cron-parser";
+import AbstractDbManager from "../dbmanager/AbstractDbManager";
+import serviceFunctionAnnotationContainer
+  from "../decorators/service/function/serviceFunctionAnnotationContainer";
 // eslint-disable-next-line @typescript-eslint/camelcase
-import __Backk__CronJobScheduling from './entities/__Backk__CronJobScheduling';
-import findAsyncSequential from '../utils/findAsyncSequential';
-import wait from '../utils/wait';
-import { createNamespace } from 'cls-hooked';
-import { logError } from '../observability/logging/log';
-import tryExecuteServiceMethod from '../execution/tryExecuteServiceMethod';
-import findServiceFunctionArgumentType from '../metadata/findServiceFunctionArgumentType';
-import BackkResponse from '../execution/BackkResponse';
-import { HttpStatusCodes, Values } from '../constants/constants';
+import __Backk__CronJobScheduling from "./entities/__Backk__CronJobScheduling";
+import findAsyncSequential from "../utils/findAsyncSequential";
+import wait from "../utils/wait";
+import { getNamespace } from "cls-hooked";
+import { logError } from "../observability/logging/log";
+import tryExecuteServiceMethod from "../execution/tryExecuteServiceMethod";
+import findServiceFunctionArgumentType from "../metadata/findServiceFunctionArgumentType";
+import BackkResponse from "../execution/BackkResponse";
+import { HttpStatusCodes, Values } from "../constants/constants";
+import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
 
 const cronJobs: { [key: string]: CronJob } = {};
 
@@ -26,16 +28,14 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
 
         await findAsyncSequential([0, ...retryIntervalsInSecs], async (retryIntervalInSecs) => {
           await wait(retryIntervalInSecs * 1000);
-          const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
-          const clsNamespace2 = createNamespace('serviceFunctionExecution');
-          return clsNamespace.runAndReturn(async () => {
-            return clsNamespace2.runAndReturn(async () => {
+          return getClsNamespace('multipleServiceFunctionExecutions').runAndReturn(async () => {
+            return getClsNamespace('serviceFunctionExecution').runAndReturn(async () => {
               try {
                 await dbManager.tryReserveDbConnectionFromPool();
-                clsNamespace.set('connection', true);
+                getClsNamespace('multipleServiceFunctionExecutions').set('connection', true);
 
                 const [, error] = await dbManager.executeInsideTransaction(async () => {
-                  clsNamespace.set('globalTransaction', true);
+                  getClsNamespace('multipleServiceFunctionExecutions').set('globalTransaction', true);
 
                   const [, error] = await dbManager.updateEntityWhere(
                     'serviceFunctionName',
@@ -79,14 +79,14 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
                   return [null, response.getErrorResponse()];
                 });
 
-                clsNamespace.set('globalTransaction', true);
+                getClsNamespace('multipleServiceFunctionExecutions').set('globalTransaction', true);
                 return !error;
               } catch (error) {
                 logError(error);
                 return false;
               } finally {
                 dbManager.tryReleaseDbConnectionBackToPool();
-                clsNamespace.set('connection', false);
+                getClsNamespace('multipleServiceFunctionExecutions').set('connection', false);
               }
             });
           });

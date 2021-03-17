@@ -1,19 +1,20 @@
-import Mustache from 'mustache';
-import tryExecuteServiceMethod, { ExecuteServiceFunctionOptions } from './tryExecuteServiceMethod';
-import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import { ServiceFunctionCall } from './ServiceFunctionCall';
-import { ServiceFunctionCallResponse } from './ServiceFunctionCallResponse';
-import BackkResponse from './BackkResponse';
-import forEachAsyncSequential from '../utils/forEachAsyncSequential';
-import { createNamespace } from 'cls-hooked';
-import BaseService from '../service/BaseService';
-import isValidServiceFunctionName from './isValidServiceFunctionName';
-import { HttpStatusCodes } from '../constants/constants';
-import { BackkError } from '../types/BackkError';
-import callRemoteService from '../remote/http/callRemoteService';
-import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
-import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../errors/backkErrors';
+import Mustache from "mustache";
+import tryExecuteServiceMethod, { ExecuteServiceFunctionOptions } from "./tryExecuteServiceMethod";
+import forEachAsyncParallel from "../utils/forEachAsyncParallel";
+import { ServiceFunctionCall } from "./ServiceFunctionCall";
+import { ServiceFunctionCallResponse } from "./ServiceFunctionCallResponse";
+import BackkResponse from "./BackkResponse";
+import forEachAsyncSequential from "../utils/forEachAsyncSequential";
+import BaseService from "../service/BaseService";
+import isValidServiceFunctionName from "./isValidServiceFunctionName";
+import { HttpStatusCodes } from "../constants/constants";
+import { BackkError } from "../types/BackkError";
+import callRemoteService from "../remote/http/callRemoteService";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
+import createErrorFromErrorCodeMessageAndStatus from "../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../errors/backkErrors";
+import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
 
 async function executeMultiple<T>(
   isConcurrent: boolean,
@@ -147,8 +148,8 @@ export default async function executeMultipleServiceFunctions(
   const services = Object.values(controller).filter((service) => service instanceof BaseService);
   const dbManager = (services as BaseService[])[0].getDbManager();
 
-  const clsNamespace = createNamespace('multipleServiceFunctionExecutions');
-  const clsNamespace2 = createNamespace('serviceFunctionExecution');
+  const clsNamespace = getClsNamespace('multipleServiceFunctionExecutions');
+  const clsNamespace2 = getClsNamespace('serviceFunctionExecution');
   await clsNamespace.runAndReturn(async () => {
     await clsNamespace2.runAndReturn(async () => {
       await dbManager.tryReserveDbConnectionFromPool();

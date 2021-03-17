@@ -1,7 +1,8 @@
 # Vitja service
 
 TODO:
-- check that changePassword username is valid
+- newPassword cannot be same as currentpassword
+- Add repeatNewPassword field and check it is same as newPassword
 - remove shouldDisregardFailure..
 - postHooks should give entity as param and fetch it when needed
 - for number, must specify isInt or isFloat

@@ -1,19 +1,19 @@
-import { createNamespace } from 'cls-hooked';
-import BaseService from '../service/BaseService';
+import BaseService from "../service/BaseService";
 // eslint-disable-next-line @typescript-eslint/camelcase
-import __Backk__JobScheduling from './entities/__Backk__JobScheduling';
-import { BackkError } from '../types/BackkError';
-import { validateOrReject } from 'class-validator';
-import getValidationErrors from '../validation/getValidationErrors';
-import createErrorFromErrorMessageAndThrowError from '../errors/createErrorFromErrorMessageAndThrowError';
-import createErrorMessageWithStatusCode from '../errors/createErrorMessageWithStatusCode';
-import { HttpStatusCodes } from '../constants/constants';
-import { plainToClass } from 'class-transformer';
-import JobScheduling from './entities/JobScheduling';
-import { scheduleCronJob } from './scheduleCronJob';
-import createErrorFromErrorCodeMessageAndStatus from '../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../errors/backkErrors';
-import emptyError from '../errors/emptyError';
+import __Backk__JobScheduling from "./entities/__Backk__JobScheduling";
+import { BackkError } from "../types/BackkError";
+import { validateOrReject } from "class-validator";
+import getValidationErrors from "../validation/getValidationErrors";
+import createErrorFromErrorMessageAndThrowError from "../errors/createErrorFromErrorMessageAndThrowError";
+import createErrorMessageWithStatusCode from "../errors/createErrorMessageWithStatusCode";
+import { HttpStatusCodes } from "../constants/constants";
+import { plainToClass } from "class-transformer";
+import JobScheduling from "./entities/JobScheduling";
+import { scheduleCronJob } from "./scheduleCronJob";
+import createErrorFromErrorCodeMessageAndStatus from "../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../errors/backkErrors";
+import emptyError from "../errors/emptyError";
+import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
 
 export default async function tryScheduleJobExecution(
   controller: any,
@@ -76,7 +76,7 @@ export default async function tryScheduleJobExecution(
   // eslint-disable-next-line @typescript-eslint/camelcase
   let entity: __Backk__JobScheduling | null | undefined = null;
   let error: BackkError | null | undefined = emptyError;
-  const clsNamespace = createNamespace('serviceFunctionExecution');
+  const clsNamespace = getClsNamespace('serviceFunctionExecution');
 
   await clsNamespace.runAndReturn(async () => {
     await dbManager.tryReserveDbConnectionFromPool();
