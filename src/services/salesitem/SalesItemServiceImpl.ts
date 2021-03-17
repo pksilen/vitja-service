@@ -28,7 +28,8 @@ import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/Shoppin
 import executeForAll from '../../backk/utils/executeForAll';
 import ChangeExpiredReservedSalesItemStatesToForSaleArg from './types/args/ChangeExpiredReservedSalesItemStatesToForSaleArg';
 import { salesItemServiceErrors } from './errors/salesItemServiceErrors';
-import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
+import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
+import { Test } from '../../backk/decorators/service/function/Test';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -138,6 +139,25 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
+  @TestSetup([
+    {
+      testName: 'create followed user account',
+      serviceFunctionName: 'userAccountService.createUserAccount',
+      argument: { userName: 'test2@test.com' },
+      postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
+    },
+    {
+      testName: 'follow user',
+      serviceFunctionName: 'userAccountService.followUser'
+    },
+    {
+      testName: 'create sales item for followed user',
+      serviceFunctionName: 'salesItemService.createSalesItem',
+      argument: { userAccountId: '{{followedUserAccountId}}' },
+      postmanTests: ['pm.collectionVariables.set("followedUserSalesItemId", response._id)']
+    }
+  ])
+  @Test({ _id: '{{followedUserSalesItemId}}', userAccountId: '{{followedUserAccountId}}' })
   async getFollowedUsersSalesItems({
     userAccountId
   }: UserAccountId): PromiseOfErrorOr<FollowedUserSalesItem[]> {
@@ -203,7 +223,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForServiceInternalUse()
-   updateSalesItemState(
+  updateSalesItemState(
     _id: string,
     newState: SalesItemState,
     requiredCurrentState?: SalesItemState

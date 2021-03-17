@@ -143,7 +143,7 @@ class ServiceFunctionAnnotationContainer {
   expectServiceFunctionReturnValueToContainInTests(
     serviceClass: Function,
     functionName: string,
-    fieldPathNameToFieldValueMap: { [key: string]: string }
+    fieldPathNameToFieldValueMap: { [key: string]: any }
   ) {
     this.serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap[
       `${serviceClass.name}${functionName}`
