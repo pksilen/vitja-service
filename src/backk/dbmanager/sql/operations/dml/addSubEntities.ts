@@ -158,7 +158,17 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
     });
 
     if (postHook) {
-      await tryExecutePostHook(postHook, null);
+      const [postOperationEntity] = await getEntityById(
+        dbManager,
+        _id,
+        EntityClass,
+        postQueryOperations,
+        undefined,
+        true,
+        true
+      );
+
+      await tryExecutePostHook(postHook, postOperationEntity);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

@@ -324,7 +324,17 @@ export default async function updateEntity<T extends BackkEntity>(
     await Promise.all(promises);
 
     if (postHook) {
-      await tryExecutePostHook(postHook, null);
+      const [postOperationEntity] = await getEntityById(
+        dbManager,
+        _id ?? id,
+        EntityClass,
+        postQueryOperations,
+        undefined,
+        true,
+        true
+      );
+
+      await tryExecutePostHook(postHook, postOperationEntity);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

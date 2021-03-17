@@ -1,16 +1,16 @@
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import { RecursivePartial } from '../../../../types/RecursivePartial';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import { BackkEntity } from '../../../../types/entities/BackkEntity';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import { PreHook } from '../../../hooks/PreHook';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import getEntityWhere from '../dql/getEntityWhere';
-import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import { RecursivePartial } from "../../../../types/RecursivePartial";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import { PreHook } from "../../../hooks/PreHook";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import getEntityWhere from "../dql/getEntityWhere";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
@@ -55,7 +55,17 @@ export default async function updateEntityWhere<T extends BackkEntity>(
     );
 
     if (postHook) {
-      await tryExecutePostHook(postHook, null);
+      const [postOperationEntity] = await getEntityWhere(
+        dbManager,
+        fieldPathName,
+        fieldValue,
+        EntityClass,
+        postQueryOperations,
+        undefined,
+        true
+      );
+
+      await tryExecutePostHook(postHook, postOperationEntity);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

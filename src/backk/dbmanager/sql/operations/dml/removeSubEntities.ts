@@ -99,7 +99,17 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
     });
 
     if (postHook) {
-      await tryExecutePostHook(postHook, currentEntity);
+      const [postOperationEntity] = await getEntityById(
+        dbManager,
+        _id,
+        EntityClass,
+        postQueryOperations,
+        undefined,
+        true,
+        true
+      );
+
+      await tryExecutePostHook(postHook, postOperationEntity);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
