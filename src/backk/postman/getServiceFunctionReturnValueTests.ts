@@ -220,7 +220,7 @@ export default function getServiceFunctionReturnValueTests(
       }
     }
 
-    if (isEnumTypeName(baseTypeName)) {
+    if (isEnumTypeName(baseTypeName) && testValue !== undefined) {
       let enumValues;
       if (baseTypeName.startsWith('(')) {
         enumValues = baseTypeName.slice(1).split(/[|)]/);

@@ -21,7 +21,7 @@ export default function MinMax(
           return true;
         },
         defaultMessage: () =>
-          propertyName + ' value must be between' + minValue + '-' + maxValue
+          propertyName + ' value must be between ' + minValue + ' - ' + maxValue
       }
     });
   };
