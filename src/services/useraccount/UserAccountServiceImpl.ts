@@ -185,6 +185,12 @@ export default class UserAccountServiceImpl extends UserAccountService {
           error: userAccountServiceErrors.invalidUserNameError
         },
         {
+          isSuccessfulOrTrue: async ({ password: hashedCurrentPassword }) => {
+            return !(await argon2.verify(hashedCurrentPassword, newPassword));
+          },
+          error: userAccountServiceErrors.newPasswordCannotBeSameAsCurrentPasswordError
+        },
+        {
           isSuccessfulOrTrue: ({ password: hashedCurrentPassword }) =>
             argon2.verify(hashedCurrentPassword, currentPassword),
           error: userAccountServiceErrors.invalidCurrentPasswordError

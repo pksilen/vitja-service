@@ -6,5 +6,9 @@ export const userAccountServiceErrors = {
   invalidUserNameError: {
     errorCode: 'userAccountService.2',
     message: 'Invalid user name'
+  },
+  newPasswordCannotBeSameAsCurrentPasswordError: {
+    errorCode: 'userAccountService.3',
+    message: 'New password cannot be same as current password'
   }
 };
