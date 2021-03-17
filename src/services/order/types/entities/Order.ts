@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, IsAlphanumeric, IsNumber, MaxLength } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsAlphanumeric, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import OrderItem from "./OrderItem";
 import { Lengths, Values } from "../../../../backk/constants/constants";
@@ -8,6 +8,7 @@ import { OneToMany } from "../../../../backk/decorators/typeproperty/OneToMany";
 import { PaymentGateway } from "../enum/PaymentGateway";
 import { IsExternalId } from "../../../../backk/decorators/typeproperty/IsExternalId";
 import MinMax from "../../../../backk/decorators/typeproperty/MinMax";
+import { IsFloat } from "../../../../backk/decorators/typeproperty/IsFloat";
 
 @Entity()
 export default class Order extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId {
@@ -25,7 +26,7 @@ export default class Order extends _IdAndVersionAndCreatedAtTimestampAndLastModi
 
   public transactionTimestamp!: Date | null;
 
-  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsFloat(2 )
   @MinMax(0, Values._1B)
-  public amount!: number | null;
+  public paymentAmount!: number | null;
 }

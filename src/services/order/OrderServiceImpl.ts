@@ -102,7 +102,7 @@ export default class OrderServiceImpl extends OrderService {
               paymentGateway,
               transactionId: null,
               transactionTimestamp: null,
-              amount: null
+              paymentAmount: null
             },
             Order,
             { preHooks: () => this.salesItemService.updateSalesItemStates(shoppingCart.salesItems, 'sold') }

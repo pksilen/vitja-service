@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- for number, must specify isInt or isFloat
 - test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
 - test error cases
