@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- currentPassword handling
 - newPassword cannot be same as currentpassword
 - Add repeatNewPassword field and check it is same as newPassword
 - remove shouldDisregardFailure..

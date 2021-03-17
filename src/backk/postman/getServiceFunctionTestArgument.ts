@@ -122,9 +122,7 @@ export default function getServiceFunctionTestArgument(
       sampleArg[propertyName] = 'any';
     } else if (propertyName === 'lastModifiedTimestamp') {
       sampleArg[propertyName] = new Date(0);
-    }
-    // noinspection IfStatementWithTooManyBranchesJS
-    else if (testValue !== undefined) {
+    } else if (testValue !== undefined) {
       if (baseTypeName.startsWith('string')) {
         getSampleStringValue(serviceTypes[argTypeName], propertyName, isUpdate);
       }
@@ -160,7 +158,11 @@ export default function getServiceFunctionTestArgument(
     } else if (baseTypeName.startsWith('boolean')) {
       sampleArg[propertyName] = !isUpdate;
     } else if (baseTypeName.startsWith('string')) {
-      sampleArg[propertyName] = getSampleStringValue(serviceTypes[argTypeName], propertyName, isUpdate);
+      sampleArg[propertyName] = getSampleStringValue(
+        serviceTypes[argTypeName],
+        propertyName,
+        propertyName.startsWith('current') ? false : isUpdate
+      );
     } else if (baseTypeName.startsWith('Date')) {
       const minDate = getValidationConstraint(
         serviceTypes[argTypeName],
