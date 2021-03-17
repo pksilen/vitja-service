@@ -199,7 +199,7 @@ export default function getServiceFunctionReturnValueTests(
 
       switch (baseTypeName) {
         case 'string':
-          sampleString = getSampleStringValue(serviceTypes[returnValueTypeName], propertyName, isUpdate);
+          sampleString = getSampleStringValue(serviceTypes[returnValueTypeName], propertyName, propertyName.startsWith('current') ? false : isUpdate);
           expectedValue = `'${sampleString}'`;
           break;
         case 'boolean':
