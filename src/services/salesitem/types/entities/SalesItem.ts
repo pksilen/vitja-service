@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, IsNumber, MaxLength } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { Area } from "../enums/Area";
 import { Department } from "../enums/Department";
@@ -15,6 +15,7 @@ import { Lengths, Values } from "../../../../backk/constants/constants";
 import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId
   from "../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId";
 import { Transient } from "../../../../backk/decorators/typeproperty/Transient";
+import { IsFloat } from "../../../../backk/decorators/typeproperty/IsFloat";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId {
@@ -36,15 +37,15 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   public productCategory!: Category;
   public productSubCategory!: Category;
 
-  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsFloat(2 )
   @MinMax(0, Values._1B)
   public price!: number;
 
-  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsFloat(2 )
   @MinMax(-1, Values._1B)
   public readonly previousPrice!: number;
 
-  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsFloat(2 )
   @MinMax(0, Values._1B)
   public shippingCost!: number;
 

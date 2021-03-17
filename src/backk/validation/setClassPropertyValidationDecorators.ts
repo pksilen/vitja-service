@@ -266,10 +266,15 @@ export default function setClassPropertyValidationDecorators(
 
             if (
               !doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_INT) &&
+              !doesPropertyContainValidation(Class, propertyName, ValidationTypes.IS_NUMBER) &&
               !doesClassPropertyContainCustomValidation(Class, propertyName, 'isBigInt')
             ) {
-              validationType = ValidationTypes.IS_NUMBER;
-              constraints = [{}];
+              throw new Error(
+                Class.name +
+                '.' +
+                propertyName +
+                ' must have either @IsInt(), @IsFloat() or @IsBigInt() annotation'
+              );
             }
           } else if (baseTypeName === 'string') {
             if (

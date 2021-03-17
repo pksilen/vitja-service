@@ -1,9 +1,7 @@
 # Vitja service
 
 TODO:
-- postHooks should give entity as param and fetch it when needed
 - for number, must specify isInt or isFloat
-- addtofavoritesalesitems, cannot add own salesitem, must add followeduser's salesitem
 - test case for getFollowedUsersSalesItems: create followed user, create sales item for followed user
 - test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
 - test error cases
