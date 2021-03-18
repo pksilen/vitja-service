@@ -2,11 +2,11 @@
 
 TODO:
 - updateEntititesByFilters, update version and lastmodifiedtimestamp
-- UiProperties({ backk.shouldBeVisible, backk.showBooleanValueAs: 'toggle' | 'checkbox}, backk.radioButtonGroupName)
 - another postTest for addToShoppingCart to check that salesItem state if reserved
 - is it possible to use private keyword  with setter in class
 - Generate annotation for primaryImageThumbnailImage, in getXX function, this will generate value
   remove @Transient annotation from  primaryImageThumbnailImage
+- Alter table column NULL if entity field is removed
 - test error cases
 - remove extra deletes from deleteXXX funcs
 - MongoDb: implement getEntityById/GetEntityWhere to use transaction and "for update" when postHook

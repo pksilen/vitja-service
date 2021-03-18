@@ -12,6 +12,9 @@ import createBackkErrorFromError from '../../../../errors/createBackkErrorFromEr
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import getFilterValues from '../dql/utils/getFilterValues';
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import set = Reflect.set;
 
 // noinspection DuplicatedCode
 export default async function updateEntitiesByFilters<T extends object>(
@@ -45,8 +48,7 @@ export default async function updateEntitiesByFilters<T extends object>(
     const filterValues = getFilterValues(filters as any);
 
     const setStatements = Object.keys(update)
-      .map((fieldName: string) => fieldName.toLowerCase() + ' = :yy' + fieldName)
-      .join(', ');
+      .map((fieldName: string) => fieldName.toLowerCase() + ' = :yy' + fieldName);
 
     const updateValues = Object.entries(update).reduce(
       (updateValues, [fieldName, fieldValue]) => ({
@@ -56,7 +58,18 @@ export default async function updateEntitiesByFilters<T extends object>(
       {}
     );
 
-    const sqlStatement = `UPDATE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} SET ${setStatements} ${whereClause}`;
+    const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
+
+    if (Object.keys(entityMetadata).find(fieldName => fieldName === 'version')) {
+      setStatements.push('version = version + 1')
+    }
+
+    if (Object.keys(entityMetadata).find(fieldName => fieldName === 'lastModifiedTimestamp')) {
+      setStatements.push('lastmodifiedtimestamp = current_timestamp')
+    }
+
+    const setStatement = setStatements.join(', ');
+    const sqlStatement = `UPDATE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} SET ${setStatement} ${whereClause}`;
     await dbManager.tryExecuteQueryWithNamedParameters(sqlStatement, { ...filterValues, ...updateValues });
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
