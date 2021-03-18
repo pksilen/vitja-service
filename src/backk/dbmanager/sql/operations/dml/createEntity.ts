@@ -103,7 +103,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
               values.push(new Date());
             } else {
               if ((entity as any)[fieldName] === undefined) {
-                throw new Error(EntityClass.name + '.' + fieldName + " is undefined and readonly field. You need to provide value for that field in backend call to DbManager's createEntity method.")
+                throw new Error(EntityClass.name + '.' + fieldName + " is a readonly field. Value must be provided for that field in backend call to DbManager's createEntity method.")
               }
 
               values.push((entity as any)[fieldName]);

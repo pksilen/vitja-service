@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- remove isBusinessUser and replace with isLocked (private readonly), setter
 - updateEntititesByFilters, update version and lastmodifiedtimestamp
 - UiProperties({ backk.shouldBeVisible, backk.showBooleanValueAs: 'toggle' | 'checkbox}, backk.radioButtonGroupName)
 - another postTest for addToShoppingCart to check that salesItem state if reserved

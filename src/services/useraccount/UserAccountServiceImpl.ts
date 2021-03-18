@@ -47,17 +47,21 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForEveryUser()
   createUserAccount(arg: UserAccount): PromiseOfErrorOr<UserAccount> {
-    return this.dbManager.createEntity({ ...arg, commissionDiscountPercentage: 0 }, UserAccount, {
-      postQueryOperations: {
-        excludeResponseFields: [
-          'favoriteSalesItems',
-          'ownSalesItems',
-          'orders',
-          'followedUserAccounts',
-          'followingUserAccounts'
-        ]
+    return this.dbManager.createEntity(
+      { ...arg, commissionDiscountPercentage: 0, isLocked: false },
+      UserAccount,
+      {
+        postQueryOperations: {
+          excludeResponseFields: [
+            'favoriteSalesItems',
+            'ownSalesItems',
+            'orders',
+            'followedUserAccounts',
+            'followingUserAccounts'
+          ]
+        }
       }
-    });
+    );
   }
 
   getUserNameById({ _id }: _Id): PromiseOfErrorOr<UserName> {
