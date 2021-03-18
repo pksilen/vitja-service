@@ -133,9 +133,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
           failureDurationInSecs
         );
       }
+
       log(Severity.ERROR, error.message, error.stack ?? '', {
         function: `${this.constructor.name}.tryReserveDbConnectionFromPool`
       });
+
       throw error;
     }
   }

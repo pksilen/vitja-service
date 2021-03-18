@@ -22,6 +22,10 @@ export default function createBackkErrorFromError(error: Error): BackkError {
 
   log(Severity.DEBUG, message, error.stack ?? '', { errorCode, statusCode });
 
+  if (statusCode >= HttpStatusCodes.INTERNAL_SERVER_ERROR) {
+    log(Severity.ERROR, message, error.stack ?? '', { errorCode, statusCode });
+  }
+
   return {
     [backkErrorSymbol]: true,
     statusCode,

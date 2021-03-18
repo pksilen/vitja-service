@@ -16,12 +16,11 @@ import FavoriteSalesItem from "../../../salesitem/types/entities/FavoriteSalesIt
 import OwnSalesItem from "../../../salesitem/types/entities/OwnSalesItem";
 import FollowedUserAccount from "./FollowedUserAccount";
 import FollowingUserAccount from "./FollowingUserAccount";
+import { Private } from "../../../../backk/decorators/typeproperty/Private";
 
 @Entity()
 export default class UserAccount extends BaseUserAccount {
-  /* this is property documentation */
-  public isBusinessUser!: boolean;
-
+  /* this is an example of property documentation */
   @MaxLength(Lengths._512)
   @IsAnyString()
   public streetAddress!: string;
@@ -41,6 +40,9 @@ export default class UserAccount extends BaseUserAccount {
   @MaxLength(Lengths._10M)
   @IsDataUri()
   public imageDataUri!: string;
+
+  @Private()
+  readonly isLocked!: boolean;
 
   @ArrayMinSize(0)
   @ArrayMaxSize(10)

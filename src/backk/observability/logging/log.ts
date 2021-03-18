@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { LogEntry } from './LogEntry';
 import * as fs from 'fs';
-import tracerProvider from "../distributedtracinig/tracerProvider";
-import getTimeZone from "../../utils/getTimeZone";
-import getServiceName from "../../utils/getServiceName";
+import tracerProvider from '../distributedtracinig/tracerProvider';
+import getTimeZone from '../../utils/getTimeZone';
+import getServiceName from '../../utils/getServiceName';
 
 export enum Severity {
   DEBUG = 5,
@@ -11,7 +11,7 @@ export enum Severity {
   WARN = 13,
   ERROR = 17,
   FATAL = 21
-};
+}
 
 export const severityNameToSeverityMap: { [key: string]: number } = {
   DEBUG: Severity.DEBUG,
@@ -34,6 +34,8 @@ if (
     'NODE_NAME, SERVICE_NAMESPACE and SERVICE_INSTANCE_ID environment variables must be defined'
   );
 }
+
+let lastLoggedErrorName = '';
 
 export default function log(
   severityNumber: Severity,
@@ -76,7 +78,11 @@ export default function log(
       }
     };
 
-    console.log(logEntry);
+    if (lastLoggedErrorName !== name) {
+      console.log(logEntry);
+    }
+
+    lastLoggedErrorName = name;
   }
 }
 

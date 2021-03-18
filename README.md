@@ -1,13 +1,17 @@
 # Vitja service
 
 TODO:
-- test case for changeExpiredReservedSalesItemStatesToForSale, before this create shopping cart and add to shopping cart
+- remove isBusinessUser and replace with isLocked (private readonly), setter
+- updateEntititesByFilters, update version and lastmodifiedtimestamp
+- UiProperties({ backk.shouldBeVisible, backk.showBooleanValueAs: 'toggle' | 'checkbox}, backk.radioButtonGroupName)
 - another postTest for addToShoppingCart to check that salesItem state if reserved
+- is it possible to use private keyword  with setter in class
 - Generate annotation for primaryImageThumbnailImage, in getXX function, this will generate value
   remove @Transient annotation from  primaryImageThumbnailImage
 - test error cases
 - remove extra deletes from deleteXXX funcs
 - MongoDb: implement getEntityById/GetEntityWhere to use transaction and "for update" when postHook
+ - updateEntititesByFilters, update version and lastmodifiedtimestamp
 
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate

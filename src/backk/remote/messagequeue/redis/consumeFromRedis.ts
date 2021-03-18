@@ -62,7 +62,7 @@ export default async function consumeFromRedis(
         lastQueueLengthUpdateTimestamp = now;
       }
     } catch (error) {
-      log(Severity.ERROR, 'Redis consumer errorMessageOnPreHookFuncExecFailure: ' + error.message, error.stack, {
+      log(Severity.ERROR, 'Redis consumer error: ' + error.message, error.stack, {
         consumerType: 'redis',
         server,
         topic

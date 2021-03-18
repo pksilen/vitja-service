@@ -57,7 +57,7 @@ export default async function consumeFromKafka(
   let hasFetchError = false;
 
   consumer.on(consumer.events.CRASH, ({ error, ...restOfEvent }) => {
-    log(Severity.ERROR, 'Kafka consumer errorMessageOnPreHookFuncExecFailure: crashed due to errorMessageOnPreHookFuncExecFailure', error, restOfEvent);
+    log(Severity.ERROR, 'Kafka consumer error: crashed due to errorMessageOnPreHookFuncExecFailure', error, restOfEvent);
     defaultServiceMetrics.incrementKafkaConsumerErrorsByOne();
     hasFetchError = true;
     fetchSpan?.setStatus({
@@ -67,7 +67,7 @@ export default async function consumeFromKafka(
   });
 
   consumer.on(consumer.events.REQUEST_TIMEOUT, (event) => {
-    log(Severity.ERROR, 'Kafka consumer errorMessageOnPreHookFuncExecFailure: request to server has timed out', '', event);
+    log(Severity.ERROR, 'Kafka consumer error: request to server has timed out', '', event);
     defaultServiceMetrics.incrementKafkaConsumerRequestTimeoutsByOne();
     hasFetchError = true;
     fetchSpan?.setStatus({
@@ -138,7 +138,7 @@ export default async function consumeFromKafka(
 
       hasCreatedDefaultTopic = true;
     } catch (error) {
-      log(Severity.ERROR, 'Kafka admin client errorMessageOnPreHookFuncExecFailure: ' + error.message, error.stack, {
+      log(Severity.ERROR, 'Kafka admin client error: ' + error.message, error.stack, {
         consumerType: 'kafka',
         server
       });
@@ -194,7 +194,7 @@ export default async function consumeFromKafka(
 
       hasStartedConsumer = true;
     } catch (error) {
-      log(Severity.ERROR, 'Kafka consumer errorMessageOnPreHookFuncExecFailure: ' + error.message, error.stack, {
+      log(Severity.ERROR, 'Kafka consumer error: ' + error.message, error.stack, {
         consumerType: 'kafka',
         server,
         defaultTopic,
