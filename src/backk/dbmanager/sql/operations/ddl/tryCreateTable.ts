@@ -63,7 +63,7 @@ export default async function tryCreateTable(
           fieldName.toLowerCase() +
           ' ' +
           sqlColumnType +
-          (isNullableType || fieldName === 'id' ? '' : ' NOT NULL') +
+          (fieldName === 'id' ? '' : ' NOT NULL') +
           (isUnique ? ' UNIQUE' : '');
 
         fieldCnt++;

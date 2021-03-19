@@ -1,5 +1,5 @@
 import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import typeAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import AbstractDbManager, { Field } from '../../../AbstractDbManager';
 import getEnumSqlColumnType from './utils/getEnumSqlColumnType';
 import getSqlColumnType from './utils/getSqlColumnType';
@@ -10,7 +10,6 @@ import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getC
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
 import isEnumTypeName from '../../../../utils/type/isEnumTypeName';
-import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
 
 export default async function tryAlterTable(
@@ -55,7 +54,7 @@ export default async function tryAlterTable(
           const foreignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
           addArrayValuesTableJoinSpec(entityName, fieldName, foreignIdFieldName);
         } else {
-          const isUnique = typeAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName);
+          const isUnique = typePropertyAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName);
 
           alterTableStatement += fieldName.toLowerCase() + ' ' + sqlColumnType + (isUnique ? ' UNIQUE' : '');
 
@@ -78,7 +77,7 @@ export default async function tryAlterTable(
           tableName = entityAnnotationContainer.entityNameToTableNameMap[entityName].toLowerCase();
         }
 
-        const isUnique = typeAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName);
+        const isUnique = typePropertyAnnotationContainer.isTypePropertyUnique(EntityClass, fieldName);
 
         const alterTableStatement = dbManager.getModifyColumnStatement(
           schema,

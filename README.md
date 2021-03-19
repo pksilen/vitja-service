@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Alter table column NULL if entity field is removed
 - test error cases
 - remove extra deletes from deleteXXX funcs
 - MongoDb: implement getEntityById/GetEntityWhere to use transaction and "for update" when postHook
