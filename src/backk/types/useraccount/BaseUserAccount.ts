@@ -7,12 +7,12 @@ import IsStrongPassword from "../../decorators/typeproperty/IsStrongPassword";
 import { Private } from "../../decorators/typeproperty/Private";
 import IsUndefined from "../../decorators/typeproperty/IsUndefined";
 
-export default class BaseUserAccount extends _IdAndCaptcha {
+export default class BaseUserAccount extends _IdAndCaptcha  {
   @IsUndefined({ groups: ['__backk_update__'] })
   @Unique()
   @IsString()
   @MaxLength(320)
-  @IsEmail( )
+  @IsEmail()
   @Private()
   userName!: string;
 

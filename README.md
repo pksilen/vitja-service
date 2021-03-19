@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- is it possible to use private keyword  with setter in class
 - Alter table column NULL if entity field is removed
 - test error cases
 - remove extra deletes from deleteXXX funcs
