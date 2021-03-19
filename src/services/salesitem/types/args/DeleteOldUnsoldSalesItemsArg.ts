@@ -4,7 +4,7 @@ import { IsInt } from "class-validator";
 
 export default class DeleteOldUnsoldSalesItemsArg {
   @IsInt()
-  @MinMax(0, 12)
-  @TestValue(0)
+  @MinMax(-1, 12)
+  @TestValue(-1)
   deletableUnsoldSalesItemMinAgeInMonths: number = 4
 }

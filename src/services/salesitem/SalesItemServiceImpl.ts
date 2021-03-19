@@ -31,6 +31,7 @@ import { salesItemServiceErrors } from './errors/salesItemServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import { Test } from '../../backk/decorators/service/function/Test';
 import { PostTests } from '../../backk/decorators/service/function/PostTests';
+import getThumbnailImageDataUri from '../common/utils/getThumbnailImageDataUri';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -54,12 +55,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @AllowForSelf()
   @NoCaptcha()
-  async createSalesItem(arg: SalesItem): PromiseOfErrorOr<SalesItem> {
-    const [salesItem, error] = await this.dbManager.createEntity(
+  createSalesItem(arg: SalesItem): PromiseOfErrorOr<SalesItem> {
+    return this.dbManager.createEntity(
       {
         ...arg,
         state: 'forSale',
-        previousPrice: -1
+        previousPrice: -1,
+        primaryImageThumbnailDataUri: getThumbnailImageDataUri(arg.primaryImageDataUri)
       },
       SalesItem,
       {
@@ -78,8 +80,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
         }
       }
     );
-
-    return salesItem ? [SalesItemServiceImpl.getSalesItemWithThumbnailImage(salesItem), null] : [null, error];
   }
 
   @AllowForEveryUser()
@@ -202,8 +202,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @AllowForEveryUser()
   async getSalesItem({ _id }: _Id): PromiseOfErrorOr<SalesItem> {
-    const [salesItem, error] = await this.dbManager.getEntityById(_id, SalesItem);
-    return salesItem ? [SalesItemServiceImpl.getSalesItemWithThumbnailImage(salesItem), null] : [null, error];
+    return this.dbManager.getEntityById(_id, SalesItem);
   }
 
   @AllowForSelf()
@@ -253,11 +252,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
       serviceFunctionName: 'shoppingCartService.addToShoppingCart'
     }
   ])
-  @PostTests([{
-    testName: 'except sales item state to be for sale',
-    serviceFunctionName: 'salesItemService.getSalesItem',
-    expectedResult: { state: 'forSale' }
-  }])
+  @PostTests([
+    {
+      testName: 'except sales item state to be for sale',
+      serviceFunctionName: 'salesItemService.getSalesItem',
+      expectedResult: { state: 'forSale' }
+    }
+  ])
   @CronJob({ minuteInterval: 1 })
   changeExpiredReservedSalesItemStatesToForSale({
     maxSalesItemReservationDurationInMinutes
@@ -309,13 +310,5 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   deleteSalesItem({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, SalesItem);
-  }
-
-  private static getSalesItemWithThumbnailImage(salesItem: SalesItem): SalesItem {
-    // Resize the primary image to thumbnail size here in real-world implementation
-    return {
-      ...salesItem,
-      primaryImageThumbnailDataUri: salesItem.primaryImageDataUri
-    };
   }
 }

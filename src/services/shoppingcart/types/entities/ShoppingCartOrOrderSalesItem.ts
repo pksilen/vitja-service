@@ -12,7 +12,6 @@ import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStri
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
-import { Transient } from '../../../../backk/decorators/typeproperty/Transient';
 
 @Entity('SalesItem')
 export default class ShoppingCartOrOrderSalesItem {
@@ -41,6 +40,5 @@ export default class ShoppingCartOrOrderSalesItem {
 
   @MaxLength(Lengths._1M)
   @IsDataUri()
-  @Transient()
   public readonly primaryImageThumbnailDataUri?: string;
 }

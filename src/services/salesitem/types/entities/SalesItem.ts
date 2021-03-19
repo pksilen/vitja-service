@@ -14,7 +14,6 @@ import ArrayNotUnique from "../../../../backk/decorators/typeproperty/ArrayNotUn
 import { Lengths, Values } from "../../../../backk/constants/constants";
 import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId
   from "../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId";
-import { Transient } from "../../../../backk/decorators/typeproperty/Transient";
 import { IsFloat } from "../../../../backk/decorators/typeproperty/IsFloat";
 
 @Entity()
@@ -55,7 +54,6 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
 
   @MaxLength(Lengths._1M)
   @IsDataUri()
-  @Transient()
   public readonly primaryImageThumbnailDataUri!: string;
 
   @MaxLength(Lengths._10M, { each: true })
