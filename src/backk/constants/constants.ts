@@ -48,6 +48,9 @@ export class Values {
   static readonly _24 = 24;
   static readonly _25 = 25;
   static readonly _50 = 50;
+  static readonly _100 = 100;
+  static readonly _200 = 200;
+  static readonly _250 = 250;
   static readonly _500 = 500;
   static readonly _1K = 1000;
   static readonly _10K = 10000;

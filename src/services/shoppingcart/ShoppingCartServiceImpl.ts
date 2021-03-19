@@ -75,7 +75,14 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     expectedResult: {
       'salesItems._id': '{{salesItemId}}'
     }
-  }])
+  },
+    {
+      testName: 'expect sales item to be in reserved state',
+      serviceFunctionName: 'salesItemService.getSalesItem',
+      expectedResult: {
+        state: 'reserved'
+      }
+    }])
   addToShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,

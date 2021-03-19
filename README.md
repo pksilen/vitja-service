@@ -2,6 +2,7 @@
 
 TODO:
 - another postTest for addToShoppingCart to check that salesItem state if reserved
+- post test from removeFromShoopingCart, state is forSale
 - Generate annotation for primaryImageThumbnailImage, in getXX function, this will generate value
   remove @Transient annotation from  primaryImageThumbnailImage
 - is it possible to use private keyword  with setter in class

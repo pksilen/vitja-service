@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import tracerProvider from '../distributedtracinig/tracerProvider';
 import getTimeZone from '../../utils/getTimeZone';
 import getServiceName from '../../utils/getServiceName';
+import { Values } from "../../constants/constants";
 
 export enum Severity {
   DEBUG = 5,
@@ -36,6 +37,7 @@ if (
 }
 
 let lastLoggedErrorName = '';
+let lastLoggedTimeInMillis = Date.now();
 
 export default function log(
   severityNumber: Severity,
@@ -78,11 +80,12 @@ export default function log(
       }
     };
 
-    if (lastLoggedErrorName !== name) {
+    if (lastLoggedErrorName !== name || Date.now() > lastLoggedTimeInMillis + Values._100) {
       console.log(logEntry);
     }
 
     lastLoggedErrorName = name;
+    lastLoggedTimeInMillis = Date.now()
   }
 }
 
