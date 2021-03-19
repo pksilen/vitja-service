@@ -57,6 +57,7 @@ export default abstract class AbstractDbManager {
   abstract getIdColumnType(): string;
   abstract getTimestampType(): string;
   abstract getVarCharType(maxLength: number): string;
+  abstract getBooleanType(): string;
   abstract getDbManagerType(): string;
   abstract getDbHost(): string;
   abstract shouldConvertTinyIntegersToBooleans(): boolean;

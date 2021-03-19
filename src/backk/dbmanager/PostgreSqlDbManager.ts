@@ -115,4 +115,8 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   shouldConvertTinyIntegersToBooleans(): boolean {
     return false;
   }
+
+  getBooleanType(): string {
+    return "BOOLEAN";
+  }
 }

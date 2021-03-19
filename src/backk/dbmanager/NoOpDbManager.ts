@@ -177,4 +177,8 @@ export default class NoOpDbManager extends AbstractDbManager {
   updateEntitiesByFilters<T extends BackkEntity>(): PromiseOfErrorOr<null> {
     throw new Error('Not implemented');
   }
+
+  getBooleanType(): string {
+    throw new Error('Not implemented');
+  }
 }

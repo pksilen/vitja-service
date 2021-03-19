@@ -85,6 +85,10 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
+  getBooleanType(): string {
+    throw new Error('Not implemented');
+  }
+
   isDuplicateEntityError(): boolean {
     return false;
   }

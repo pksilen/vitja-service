@@ -124,4 +124,8 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
   shouldConvertTinyIntegersToBooleans(): boolean {
     return true;
   }
+
+  getBooleanType(): string {
+    return 'TINYINT';
+  }
 }
