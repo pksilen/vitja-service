@@ -3,6 +3,7 @@
 TODO:
 - test error cases
 - remove extra deletes from deleteXXX funcs
+- remove create unique index for oneToMany table
 - MongoDb: implement getEntityById/GetEntityWhere to use transaction and "for update" when postHook
  - updateEntititesByFilters, update version and lastmodifiedtimestamp
 

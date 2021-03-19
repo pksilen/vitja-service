@@ -61,7 +61,7 @@ export default async function updateEntitiesByFilters<T extends object>(
     const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
 
     if (Object.keys(entityMetadata).find(fieldName => fieldName === 'version')) {
-      setStatements.push('version = version + 1')
+      setStatements.push(`version = CAST(CAST(version AS BIGINT) + 1 AS ${dbManager.getIdColumnCastType()})`)
     }
 
     if (Object.keys(entityMetadata).find(fieldName => fieldName === 'lastModifiedTimestamp')) {

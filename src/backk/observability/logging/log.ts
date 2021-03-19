@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import tracerProvider from '../distributedtracinig/tracerProvider';
 import getTimeZone from '../../utils/getTimeZone';
 import getServiceName from '../../utils/getServiceName';
-import { Values } from "../../constants/constants";
+import { Values } from '../../constants/constants';
 
 export enum Severity {
   DEBUG = 5,
@@ -38,6 +38,7 @@ if (
 
 let lastLoggedErrorName = '';
 let lastLoggedTimeInMillis = Date.now();
+let lastSpanId: string | undefined = '';
 
 export default function log(
   severityNumber: Severity,
@@ -47,6 +48,10 @@ export default function log(
 ) {
   const minLoggingSeverityNumber = severityNameToSeverityMap[process.env.LOG_LEVEL ?? 'INFO'];
   const now = new Date();
+  const spanId = tracerProvider
+    .getTracer('default')
+    .getCurrentSpan()
+    ?.context().spanId;
 
   if (severityNumber >= minLoggingSeverityNumber) {
     const logEntry: LogEntry = {
@@ -55,10 +60,7 @@ export default function log(
         .getTracer('default')
         .getCurrentSpan()
         ?.context().traceId,
-      SpanId: tracerProvider
-        .getTracer('default')
-        .getCurrentSpan()
-        ?.context().spanId,
+      SpanId: spanId,
       TraceFlags: tracerProvider
         .getTracer('default')
         .getCurrentSpan()
@@ -80,12 +82,18 @@ export default function log(
       }
     };
 
-    if (lastLoggedErrorName !== name || Date.now() > lastLoggedTimeInMillis + Values._100) {
+    if (
+      lastLoggedErrorName !== name ||
+      Date.now() > lastLoggedTimeInMillis + Values._100 ||
+      severityNumber !== Severity.ERROR ||
+      spanId !== lastSpanId
+    ) {
       console.log(logEntry);
     }
 
     lastLoggedErrorName = name;
-    lastLoggedTimeInMillis = Date.now()
+    lastLoggedTimeInMillis = Date.now();
+    lastSpanId = spanId;
   }
 }
 

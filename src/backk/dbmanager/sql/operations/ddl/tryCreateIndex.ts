@@ -18,7 +18,7 @@ export default async function tryCreateIndex(
   try {
     const createIndexStatement = `CREATE ${
       isUnique ? 'UNIQUE' : ''
-    } INDEX ${indexName.replace(':', '_').toLowerCase()} ON ${schema?.toLowerCase()}.${indexName.split(':')[0].toLowerCase()} ${
+    }INDEX ${indexName.replace(':', '_').toLowerCase()} ON ${schema?.toLowerCase()}.${indexName.split(':')[0].toLowerCase()} ${
       indexUsingOption ? 'USING ' + indexUsingOption : ''
     }(${lowerCaseIndexFields.join(', ')} ${sortOrderStr}) ${additionalSqlCreateIndexStatementOptions ?? ''}`;
 

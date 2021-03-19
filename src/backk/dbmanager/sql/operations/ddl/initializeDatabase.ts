@@ -1,22 +1,22 @@
-import AbstractDbManager from "../../../AbstractDbManager";
-import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
-import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
-import tryAlterOrCreateTable from "./tryAlterOrCreateTable";
-import tryCreateIndex from "./tryCreateIndex";
-import tryCreateUniqueIndex from "./tryCreateUniqueIndex";
-import log, { logError, Severity } from "../../../../observability/logging/log";
-import tryInitializeCronJobSchedulingTable from "../../../../scheduling/tryInitializeCronJobSchedulingTable";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import MongoDbManager from "../../../MongoDbManager";
-import tryCreateMongoDbIndex from "../../../mongodb/tryCreateMongoDbIndex";
-import setJoinSpecs from "../../../mongodb/setJoinSpecs";
-import tryExecuteOnStartUpTasks from "../../../../initialization/tryExecuteOnStartupTasks";
-import tryCreateMongoDbIndexesForUniqueFields from "../../../mongodb/tryCreateMongoDbIndexesForUniqueFields";
-import shouldInitializeDb from "./shouldInitializeDb";
-import removeDbInitialization from "./removeDbInitialization";
-import setDbInitialized from "./setDbInitialized";
-import removeDbInitializationWhenPendingTooLong from "./removeDbInitializationWhenPendingTooLong";
-import getClsNamespace from "../../../../continuationLocalStorages/getClsNamespace";
+import AbstractDbManager from '../../../AbstractDbManager';
+import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
+import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
+import tryAlterOrCreateTable from './tryAlterOrCreateTable';
+import tryCreateIndex from './tryCreateIndex';
+import tryCreateUniqueIndex from './tryCreateUniqueIndex';
+import log, { logError, Severity } from '../../../../observability/logging/log';
+import tryInitializeCronJobSchedulingTable from '../../../../scheduling/tryInitializeCronJobSchedulingTable';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import MongoDbManager from '../../../MongoDbManager';
+import tryCreateMongoDbIndex from '../../../mongodb/tryCreateMongoDbIndex';
+import setJoinSpecs from '../../../mongodb/setJoinSpecs';
+import tryExecuteOnStartUpTasks from '../../../../initialization/tryExecuteOnStartupTasks';
+import tryCreateMongoDbIndexesForUniqueFields from '../../../mongodb/tryCreateMongoDbIndexesForUniqueFields';
+import shouldInitializeDb from './shouldInitializeDb';
+import removeDbInitialization from './removeDbInitialization';
+import setDbInitialized from './setDbInitialized';
+import removeDbInitializationWhenPendingTooLong from './removeDbInitializationWhenPendingTooLong';
+import getClsNamespace from '../../../../continuationLocalStorages/getClsNamespace';
 
 let isMongoDBInitialized = false;
 
@@ -30,8 +30,7 @@ export async function isDbInitialized(dbManager: AbstractDbManager) {
   }
 
   if (dbManager instanceof AbstractSqlDbManager) {
-
-    removeDbInitializationWhenPendingTooLong(dbManager);
+    await removeDbInitializationWhenPendingTooLong(dbManager);
 
     const getAppVersionInitializationStatusSql = `SELECT * ${dbManager.schema.toLowerCase()}.__backk_db_initialization WHERE isinitialized = 1 AND appversion = ${
       process.env.npm_package_version
@@ -113,12 +112,10 @@ export default async function initializeDatabase(
                 await dbManager.tryExecuteSqlWithoutCls(addForeignIdColumnStatement);
 
                 const addUniqueIndexStatement =
-                  `CREATE UNIQUE INDEX ${
-                    foreignIdFieldName.toLowerCase() +
-                    entityAnnotationContainer.entityNameToIsArrayMap[entityName]
+                  `CREATE UNIQUE INDEX ${foreignIdFieldName.toLowerCase() +
+                    (entityAnnotationContainer.entityNameToIsArrayMap[entityName]
                       ? '_id'
-                      : ''
-                  } ON ${dbManager.schema.toLowerCase()}.${tableName} (` +
+                      : '')} ON ${dbManager.schema.toLowerCase()}.${tableName} (` +
                   foreignIdFieldName.toLowerCase() +
                   (entityAnnotationContainer.entityNameToIsArrayMap[entityName] ? ', id)' : ')');
 
@@ -142,9 +139,14 @@ export default async function initializeDatabase(
 
         await forEachAsyncSequential(
           entityAnnotationContainer.manyToManyRelationTableSpecs,
-          async ({ entityName, associationTableName, entityForeignIdFieldName, subEntityForeignIdFieldName }) => {
+          async ({
+            entityName,
+            associationTableName,
+            entityForeignIdFieldName,
+            subEntityForeignIdFieldName
+          }) => {
             if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
-             return;
+              return;
             }
 
             try {
@@ -200,8 +202,7 @@ export default async function initializeDatabase(
 
       await forEachAsyncSequential(
         Object.entries(entityAnnotationContainer.entityNameToClassMap),
-        async ([, EntityClass]: [any, any]) =>
-          tryCreateMongoDbIndexesForUniqueFields(dbManager, EntityClass)
+        async ([, EntityClass]: [any, any]) => tryCreateMongoDbIndexesForUniqueFields(dbManager, EntityClass)
       );
 
       Object.entries(entityAnnotationContainer.entityNameToClassMap).forEach(([entityName, entityClass]) =>

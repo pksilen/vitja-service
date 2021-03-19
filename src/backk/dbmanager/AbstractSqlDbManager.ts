@@ -99,7 +99,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       return true;
     } catch (error) {
       try {
-        const createTableStatement = `CREATE TABLE IF NOT EXISTS ${this.schema.toLowerCase()}.__backk_db_initialization (appversion VARCHAR(64) PRIMARY KEY NOT NULL UNIQUE, isinitialized TINYINT, createdattimestamp ${this.getTimestampType()})`;
+        const createTableStatement = `CREATE TABLE IF NOT EXISTS ${this.schema.toLowerCase()}.__backk_db_initialization (appversion VARCHAR(64) PRIMARY KEY NOT NULL UNIQUE, isinitialized ${this.getBooleanType()}, createdattimestamp ${this.getTimestampType()})`;
         await this.tryExecuteSqlWithoutCls(createTableStatement);
         return true;
       } catch (error) {
@@ -564,12 +564,18 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     _id: string,
     entityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations
+      postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
-    const response = await getEntityById(this, _id, entityClass, options?.postQueryOperations, options?.postHook);
+    const response = await getEntityById(
+      this,
+      _id,
+      entityClass,
+      options?.postQueryOperations,
+      options?.postHook
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -630,8 +636,8 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldValue: any,
     entityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     },
     isSelectForUpdate = false
   ): PromiseOfErrorOr<T> {
@@ -697,12 +703,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     EntityClass: new () => T
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntitiesByFilters');
-    const response = await updateEntitiesByFilters(
-      this,
-      filters,
-      entity,
-      EntityClass
-    );
+    const response = await updateEntitiesByFilters(this, filters, entity, EntityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
