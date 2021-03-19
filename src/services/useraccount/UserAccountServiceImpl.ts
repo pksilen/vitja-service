@@ -22,7 +22,7 @@ import { SalesItem } from '../salesitem/types/entities/SalesItem';
 import GetUserAccountArg from './types/args/GetUserAccountArg';
 import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
 import _IdAndFollowedUserAccountId from './types/args/_IdAndFollowedUserAccountId';
-import { PostTest } from '../../backk/decorators/service/function/PostTest';
+import { PostTests } from '../../backk/decorators/service/function/PostTests';
 import FollowedUserAccount from './types/entities/FollowedUserAccount';
 import FollowingUserAccount from './types/entities/FollowingUserAccount';
 import { userAccountServiceErrors } from './errors/userAccountServiceErrors';
@@ -90,13 +90,13 @@ export default class UserAccountServiceImpl extends UserAccountService {
       postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
     }
   ])
-  @PostTest({
+  @PostTests([{
     testName: 'expect user account to follow a another user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
       'followedUserAccounts._id': '{{followedUserAccountId}}'
     }
-  })
+  }])
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
@@ -119,11 +119,11 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @PostTest({
+  @PostTests([{
     testName: 'expect no followed user accounts',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: { followedUserAccounts: [] }
-  })
+  }])
   unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(
       _id,
@@ -140,13 +140,13 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestSetup(['salesItemService.createSalesItem'])
-  @PostTest({
+  @PostTests([{
     testName: 'expect a favorite sales item in user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
       'favoriteSalesItems._id': '{{salesItemId}}'
     }
-  })
+  }])
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
@@ -159,13 +159,13 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @PostTest({
+  @PostTests([{
     testName: 'expect no favorite sales items in user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
       favoriteSalesItems: []
     }
-  })
+  }])
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount);
   }

@@ -1,7 +1,7 @@
 import { ErrorDef } from '../../../dbmanager/hooks/PreHook';
 import { HttpHeaders } from './ResponseHeaders';
 import { UpdateType } from './Update';
-import { PostTestSpec } from './PostTest';
+import { PostTestSpec } from './PostTests';
 import { TestSetupSpec } from './TestSetup';
 
 class ServiceFunctionAnnotationContainer {
@@ -21,12 +21,15 @@ class ServiceFunctionAnnotationContainer {
   private readonly serviceFunctionNameToUpdateTypeMap: { [key: string]: UpdateType } = {};
   private readonly serviceFunctionNameToResponseHeadersMap: { [key: string]: HttpHeaders<any, any> } = {};
   private readonly serviceFunctionNameToHasNoAutoTestMap: { [key: string]: boolean } = {};
+
   private readonly serviceFunctionNameToExpectedResponseFieldPathNameToFieldValueMapMap: {
     [key: string]: { [key: string]: any };
   } = {};
-  private readonly serviceFunctionNameToTestSpecMap: {
-    [key: string]: PostTestSpec;
+
+  private readonly serviceFunctionNameToPostTestSpecsMap: {
+    [key: string]: PostTestSpec[];
   } = {};
+
   private readonly serviceFunctionNameToOnStartUpMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsCreateFunctionMap: { [key: string]: boolean } = {};
   private readonly serviceFunctionNameToIsMetadataFunctionMap: { [key: string]: boolean } = {};
@@ -153,15 +156,9 @@ class ServiceFunctionAnnotationContainer {
   expectServiceFunctionEntityToContainInTests(
     serviceClass: Function,
     functionName: string,
-    testName: string,
-    serviceFunctionName: string,
-    expectedReturnValueFieldPathNameToFieldValueMap: { [key: string]: string }
+    testSpecs: PostTestSpec[]
   ) {
-    this.serviceFunctionNameToTestSpecMap[`${serviceClass.name}${functionName}`] = {
-      testName,
-      serviceFunctionName,
-      expectedResult: expectedReturnValueFieldPathNameToFieldValueMap
-    };
+    this.serviceFunctionNameToPostTestSpecsMap[`${serviceClass.name}${functionName}`] = testSpecs;
   }
 
   getAllowedUserRoles(serviceClass: Function, functionName: string) {
@@ -469,11 +466,11 @@ class ServiceFunctionAnnotationContainer {
     return undefined;
   }
 
-  getTestSpec(serviceClass: Function, functionName: string): PostTestSpec | undefined {
+  getPostTestSpecs(serviceClass: Function, functionName: string): PostTestSpec[] | undefined {
     let proto = Object.getPrototypeOf(new (serviceClass as new () => any)());
     while (proto !== Object.prototype) {
-      if (this.serviceFunctionNameToTestSpecMap[`${proto.constructor.name}${functionName}`] !== undefined) {
-        return this.serviceFunctionNameToTestSpecMap[`${proto.constructor.name}${functionName}`];
+      if (this.serviceFunctionNameToPostTestSpecsMap[`${proto.constructor.name}${functionName}`] !== undefined) {
+        return this.serviceFunctionNameToPostTestSpecsMap[`${proto.constructor.name}${functionName}`];
       }
       proto = Object.getPrototypeOf(proto);
     }

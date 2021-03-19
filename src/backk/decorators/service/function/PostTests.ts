@@ -1,9 +1,22 @@
 import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationContainer';
-import { FieldPathNameToFieldValueMap } from './PostTests';
 
-export function Test(expectedResult: FieldPathNameToFieldValueMap) {
-  const finalFieldPathNameToFieldValueMap = Object.entries(expectedResult).reduce(
-    (finalFieldPathNameToFieldValueMap, [fieldPathName, fieldValue]) => {
+export type PostTestSpec = {
+  testName: string;
+  serviceFunctionName: string;
+  expectedResult: {
+    [key: string]: any;
+  };
+};
+
+export type FieldPathNameToFieldValueMap = {
+  [key: string]: any;
+};
+
+export function PostTests(testSpecs: PostTestSpec[]) {
+  testSpecs.forEach(testSpec => {
+    testSpec.expectedResult = Object.entries(
+      testSpec.expectedResult
+    ).reduce((finalExpectedResult, [fieldPathName, fieldValue]) => {
       let finalFieldValue = fieldValue;
 
       if (typeof fieldValue === 'string' && fieldValue.startsWith('{{') && fieldValue.endsWith('}}')) {
@@ -12,19 +25,19 @@ export function Test(expectedResult: FieldPathNameToFieldValueMap) {
       }
 
       return {
-        ...finalFieldPathNameToFieldValueMap,
+        ...finalExpectedResult,
         [fieldPathName]: finalFieldValue
       };
-    },
-    {}
-  );
+    }, {});
+  })
+
 
   // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, functionName: string) {
-    serviceFunctionAnnotationContainer.expectServiceFunctionReturnValueToContainInTests(
+    serviceFunctionAnnotationContainer.expectServiceFunctionEntityToContainInTests(
       object.constructor,
       functionName,
-      finalFieldPathNameToFieldValueMap
+      testSpecs
     );
   };
 }

@@ -15,7 +15,7 @@ import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import _IdAndUserAccountIdAndSalesItemId from './types/args/_IdAndUserAccountIdAndSalesItemId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { Update } from '../../backk/decorators/service/function/Update';
-import { PostTest } from '../../backk/decorators/service/function/PostTest';
+import { PostTests } from '../../backk/decorators/service/function/PostTests';
 import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import UserAccountId from '../../backk/types/useraccount/UserAccountId';
@@ -69,13 +69,13 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestSetup(['salesItemService.createSalesItem'])
-  @PostTest({
+  @PostTests([{
     testName: 'expect shopping cart to contain a sales item',
     serviceFunctionName: 'shoppingCartService.getShoppingCart',
     expectedResult: {
       'salesItems._id': '{{salesItemId}}'
     }
-  })
+  }])
   addToShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
@@ -95,11 +95,11 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @PostTest({
+  @PostTests([{
     testName: 'expect empty shopping cart',
     serviceFunctionName: 'shoppingCartService.getShoppingCart',
     expectedResult: { salesItems: [] }
-  })
+  }])
   removeFromShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {
       preHooks: () => this.salesItemService.updateSalesItemState(salesItemId, 'forSale')

@@ -1,11 +1,10 @@
 # Vitja service
 
 TODO:
-- updateEntititesByFilters, update version and lastmodifiedtimestamp
 - another postTest for addToShoppingCart to check that salesItem state if reserved
-- is it possible to use private keyword  with setter in class
 - Generate annotation for primaryImageThumbnailImage, in getXX function, this will generate value
   remove @Transient annotation from  primaryImageThumbnailImage
+- is it possible to use private keyword  with setter in class
 - Alter table column NULL if entity field is removed
 - test error cases
 - remove extra deletes from deleteXXX funcs

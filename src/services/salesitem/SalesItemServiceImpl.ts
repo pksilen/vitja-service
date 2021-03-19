@@ -30,7 +30,7 @@ import ChangeExpiredReservedSalesItemStatesToForSaleArg from './types/args/Chang
 import { salesItemServiceErrors } from './errors/salesItemServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import { Test } from '../../backk/decorators/service/function/Test';
-import { PostTest } from '../../backk/decorators/service/function/PostTest';
+import { PostTests } from '../../backk/decorators/service/function/PostTests';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -253,11 +253,11 @@ export default class SalesItemServiceImpl extends SalesItemService {
       serviceFunctionName: 'shoppingCartService.addToShoppingCart'
     }
   ])
-  @PostTest({
+  @PostTests([{
     testName: 'except sales item state to be for sale',
     serviceFunctionName: 'salesItemService.getSalesItem',
     expectedResult: { state: 'forSale' }
-  })
+  }])
   @CronJob({ minuteInterval: 1 })
   changeExpiredReservedSalesItemStatesToForSale({
     maxSalesItemReservationDurationInMinutes
