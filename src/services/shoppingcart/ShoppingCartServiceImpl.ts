@@ -106,7 +106,14 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     testName: 'expect empty shopping cart',
     serviceFunctionName: 'shoppingCartService.getShoppingCart',
     expectedResult: { salesItems: [] }
-  }])
+  },
+    {
+      testName: 'expect sales item to be for sale',
+      serviceFunctionName: 'salesItemService.getSalesItem',
+      expectedResult: {
+        state: 'forSale'
+      }
+    }])
   removeFromShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {
       preHooks: () => this.salesItemService.updateSalesItemState(salesItemId, 'forSale')
