@@ -32,7 +32,8 @@ export default async function getEntitiesCount<T>(
 
     if (
       getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
-      dbManager.getClsNamespace()?.get('globalTransaction')
+      dbManager.getClsNamespace()?.get('globalTransaction') ||
+      dbManager.getClsNamespace()?.get('localTransaction')
     ) {
       isSelectForUpdate = true;
     }
@@ -45,19 +46,19 @@ export default async function getEntitiesCount<T>(
     );
 
     const tableName = getTableName(EntityClass.name);
+    const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
+
 
     const sqlStatement = [
-      `SELECT COUNT(*) as count FROM ${dbManager.schema}.${tableName}`,
+      `SELECT COUNT(*) as count FROM ${dbManager.schema}.${tableAlias}`,
       rootWhereClause,
-      isSelectForUpdate ? 'FOR UPDATE' : undefined
+      isSelectForUpdate ? `FOR UPDATE OF ${tableAlias}` : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');
 
     const result = await dbManager.tryExecuteQueryWithNamedParameters(sqlStatement, filterValues);
-
     const entityCount = dbManager.getResultRows(result)[0].count;
-
     return [entityCount, null];
   } catch (error) {
     return [null, createBackkErrorFromError(error)];

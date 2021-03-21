@@ -193,14 +193,14 @@ export default abstract class AbstractDbManager {
 
   abstract getSubEntity<T extends object, U extends object>(
     _id: string,
-    subEntityPath: string,
+    subEntityJsonPath: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): PromiseOfErrorOr<U>;
 
   abstract getSubEntities<T extends object, U extends object>(
     _id: string,
-    subEntityPath: string,
+    subEntityJsonPath: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
   ): PromiseOfErrorOr<U[]>;

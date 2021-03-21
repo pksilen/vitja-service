@@ -17,6 +17,7 @@ import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTran
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import { getNamespace } from "cls-hooked";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
@@ -80,7 +81,7 @@ export default async function getEntityWhere<T>(
       `LIMIT 1) AS ${tableAlias}`,
       joinClauses,
       outerSortClause,
-      isSelectForUpdate ? 'FOR UPDATE' : undefined
+      isSelectForUpdate ? `FOR UPDATE OF ${tableAlias}` : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');
@@ -103,6 +104,10 @@ export default async function getEntityWhere<T>(
       finalPostQueryOperations,
       dbManager
     )[0];
+
+    if (postHook) {
+      await tryExecutePostHook(postHook, entity);
+    }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [entity, null];

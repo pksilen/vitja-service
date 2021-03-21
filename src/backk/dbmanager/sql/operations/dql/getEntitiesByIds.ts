@@ -10,6 +10,8 @@ import createBackkErrorFromErrorCodeMessageAndStatus
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import { getNamespace } from "cls-hooked";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
@@ -24,7 +26,8 @@ export default async function getEntitiesByIds<T>(
 
     if (
       getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
-      dbManager.getClsNamespace()?.get('globalTransaction')
+      dbManager.getClsNamespace()?.get('globalTransaction') ||
+      dbManager.getClsNamespace()?.get('localTransaction')
     ) {
       isSelectForUpdate = true;
     }
@@ -50,18 +53,20 @@ export default async function getEntitiesByIds<T>(
       return numericId;
     });
 
+    const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
+    const idFieldName = entityMetadata._id ? '_id' : 'id';
     const idPlaceholders = _ids.map((_, index) => dbManager.getValuePlaceholder(index + 1)).join(', ');
     const tableName = getTableName(EntityClass.name);
     const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
 
     const selectStatement = [
-      `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} WHERE _id IN (${idPlaceholders})`,
+      `SELECT ${columns} FROM (SELECT * FROM ${dbManager.schema}.${tableName} WHERE ${idFieldName} IN (${idPlaceholders})`,
       rootSortClause,
       rootPaginationClause,
       `) AS ${tableAlias}`,
       joinClauses,
       outerSortClause,
-      isSelectForUpdate ? 'FOR UPDATE' : undefined
+      isSelectForUpdate ? `FOR UPDATE OF ${tableName}` : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

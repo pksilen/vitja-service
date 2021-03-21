@@ -36,7 +36,8 @@ export default async function getEntitiesWhere<T>(
 
     if (
       getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
-      dbManager.getClsNamespace()?.get('globalTransaction')
+      dbManager.getClsNamespace()?.get('globalTransaction') ||
+      dbManager.getClsNamespace()?.get('localTransaction')
     ) {
       isSelectForUpdate = true;
     }
@@ -76,7 +77,7 @@ export default async function getEntitiesWhere<T>(
       `) AS ${tableAlias}`,
       joinClauses,
       outerSortClause,
-      isSelectForUpdate ? 'FOR UPDATE' : undefined
+      isSelectForUpdate ? `FOR UPDATE OF ${tableAlias}` : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');
