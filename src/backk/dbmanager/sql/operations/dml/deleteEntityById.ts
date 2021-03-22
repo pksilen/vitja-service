@@ -18,11 +18,6 @@ import { BackkEntity } from "../../../../types/entities/BackkEntity";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import forEachAsyncSequential from "../../../../utils/forEachAsyncSequential";
-import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
-import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
 
 export default async function deleteEntityById<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,

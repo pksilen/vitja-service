@@ -14,9 +14,9 @@ import __Backk__CronJobScheduling from '../scheduling/entities/__Backk__CronJobS
 import __Backk__JobScheduling from '../scheduling/entities/__Backk__JobScheduling';
 import MongoDbQuery from './mongodb/MongoDbQuery';
 import { PostHook } from './hooks/PostHook';
-import { CreatePreHook } from './hooks/CreatePreHook';
 import { FilterQuery } from 'mongodb';
 import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
+import { EntityPreHook } from "./hooks/EntityPreHook";
 
 export interface Field {
   name: string;
@@ -98,7 +98,7 @@ export default abstract class AbstractDbManager {
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     EntityClass: new () => T,
     options?: {
-      preHooks?: CreatePreHook | CreatePreHook[];
+      preHooks?: PreHook | PreHook[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -107,7 +107,7 @@ export default abstract class AbstractDbManager {
   async createEntities<T extends BackkEntity>(
     entities: Array<Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>>,
     EntityClass: new () => T,
-    preHooks?: CreatePreHook | CreatePreHook[],
+    preHooks?: PreHook | PreHook[],
     postQueryOperations?: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
     return this.executeInsideTransaction(async () => {
@@ -140,7 +140,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -154,7 +154,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -233,7 +233,7 @@ export default abstract class AbstractDbManager {
     entity: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -271,7 +271,7 @@ export default abstract class AbstractDbManager {
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[],
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
       postHook?: PostHook<T>,
       postQueryOperations?: PostQueryOperations
     }
@@ -281,7 +281,7 @@ export default abstract class AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[],
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
       postHook?: PostHook<T>,
       postQueryOperations?: PostQueryOperations
     }
@@ -323,7 +323,7 @@ export default abstract class AbstractDbManager {
     subEntitiesJsonPath: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -335,7 +335,7 @@ export default abstract class AbstractDbManager {
     subEntityId: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }

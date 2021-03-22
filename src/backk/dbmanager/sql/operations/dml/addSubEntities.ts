@@ -34,7 +34,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
   newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
   SubEntityClass: new () => U,
-  preHooks?: PreHook<T> | PreHook<T>[],
+  preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
 ): PromiseOfErrorOr<null> {
@@ -60,7 +60,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
       throw error;
     }
 
-    await tryExecutePreHooks(preHooks ?? [], currentEntity);
+    await tryExecutePreHooks(preHooks ?? []);
     await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntity, EntityClass);
     const maxSubItemId = JSONPath({ json: currentEntity, path: subEntitiesJsonPath }).reduce(
       (maxSubItemId: number, subItem: any) => {

@@ -35,9 +35,9 @@ import { PostHook } from './hooks/PostHook';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
-import { CreatePreHook } from './hooks/CreatePreHook';
 import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 import updateEntitiesByFilters from './sql/operations/dml/updateEntitiesByFilters';
+import { EntityPreHook } from "./hooks/EntityPreHook";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -415,7 +415,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
     options?: {
-      preHooks?: CreatePreHook | CreatePreHook[];
+      preHooks?: PreHook | PreHook[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     },
@@ -446,7 +446,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     subEntityClass: new () => U,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -477,7 +477,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     subEntityClass: new () => U,
     options: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -679,7 +679,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     entity: RecursivePartial<T> & { _id: string },
     entityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -714,7 +714,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -740,7 +740,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -784,7 +784,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     subEntitiesJsonPath: string,
     entityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -811,7 +811,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     subEntityId: string,
     entityClass: new () => T,
     options: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }

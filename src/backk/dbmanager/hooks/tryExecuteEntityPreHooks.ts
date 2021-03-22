@@ -1,22 +1,23 @@
-import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
-import { PreHook } from './PreHook';
-import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
-import { HttpStatusCodes } from '../../constants/constants';
-import { BackkEntity } from '../../types/entities/BackkEntity';
-import { SubEntity } from '../../types/entities/SubEntity';
+import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
+import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
+import { HttpStatusCodes } from "../../constants/constants";
+import { BackkEntity } from "../../types/entities/BackkEntity";
+import { SubEntity } from "../../types/entities/SubEntity";
+import { EntityPreHook } from "./EntityPreHook";
 
-export default async function tryExecutePreHooks<T extends BackkEntity | SubEntity>(
-  preHooks: PreHook<T> | PreHook<T>[]
+export default async function tryExecuteEntityPreHooks<T extends BackkEntity | SubEntity>(
+  preHooks: EntityPreHook<T> | EntityPreHook<T>[],
+  entity: T
 ) {
   await forEachAsyncSequential(
     Array.isArray(preHooks) ? preHooks : [preHooks],
-    async (preHook: PreHook<T>) => {
+    async (preHook: EntityPreHook<T>) => {
       const hookFunc = typeof preHook === 'function' ? preHook : preHook.isSuccessfulOrTrue;
       let hookCallResult;
 
       try {
         if (typeof preHook === 'object' && preHook.shouldExecutePreHook) {
-          const shouldExecuteResult = await preHook.shouldExecutePreHook();
+          const shouldExecuteResult = await preHook.shouldExecutePreHook(entity);
 
           if (typeof shouldExecuteResult === 'object' && shouldExecuteResult[1]) {
             throw shouldExecuteResult[1];
@@ -26,10 +27,10 @@ export default async function tryExecutePreHooks<T extends BackkEntity | SubEnti
             shouldExecuteResult === true ||
             (typeof shouldExecuteResult === 'object' && shouldExecuteResult[0])
           ) {
-            hookCallResult = await hookFunc();
+            hookCallResult = await hookFunc(entity);
           }
         } else {
-          hookCallResult = await hookFunc();
+          hookCallResult = await hookFunc(entity);
         }
       } catch (error) {
         throw new Error(

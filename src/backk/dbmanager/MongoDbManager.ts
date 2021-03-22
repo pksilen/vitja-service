@@ -54,11 +54,11 @@ import getFieldOrdering from './mongodb/getFieldOrdering';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
 import log, { Severity } from '../observability/logging/log';
-import { CreatePreHook } from './hooks/CreatePreHook';
-import tryExecuteCreatePreHooks from './hooks/tryExecuteCreatePreHooks';
 import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 import isBackkError from '../errors/isBackkError';
 import { ErrorOr } from '../types/ErrorOr';
+import { EntityPreHook } from "./hooks/EntityPreHook";
+import tryExecuteEntityPreHooks from "./hooks/tryExecuteEntityPreHooks";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -234,7 +234,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     EntityClass: new () => T,
     options?: {
-      preHooks?: CreatePreHook | CreatePreHook[];
+      preHooks?: PreHook | PreHook[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     },
@@ -276,7 +276,7 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
-        await tryExecuteCreatePreHooks(options?.preHooks ?? []);
+        await tryExecutePreHooks(options?.preHooks ?? []);
         let createEntityResult;
 
         try {
@@ -327,7 +327,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entityClass: new () => T,
     subEntityClass: new () => U,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -354,7 +354,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -376,7 +376,7 @@ export default class MongoDbManager extends AbstractDbManager {
           return [null, error];
         }
 
-        await tryExecutePreHooks(options?.preHooks ?? [], currentEntity);
+        await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
         const [parentEntity] = JSONPath({
           json: currentEntity,
           path: subEntitiesJsonPath + '^'
@@ -997,7 +997,7 @@ export default class MongoDbManager extends AbstractDbManager {
     { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     },
@@ -1039,7 +1039,7 @@ export default class MongoDbManager extends AbstractDbManager {
             return [null, error];
           }
 
-          let eTagCheckPreHook: PreHook<T>;
+          let eTagCheckPreHook: EntityPreHook<T>;
           let finalPreHooks = Array.isArray(options?.preHooks)
             ? options?.preHooks ?? []
             : options?.preHooks
@@ -1069,7 +1069,7 @@ export default class MongoDbManager extends AbstractDbManager {
             }
           }
 
-          await tryExecutePreHooks(finalPreHooks, currentEntity);
+          await tryExecuteEntityPreHooks(finalPreHooks, currentEntity);
         }
 
         const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
@@ -1171,7 +1171,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -1197,7 +1197,7 @@ export default class MongoDbManager extends AbstractDbManager {
           return [null, error];
         }
 
-        await tryExecutePreHooks(options?.preHooks ?? [], currentEntity);
+        await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
         await this.updateEntity({ _id: currentEntity._id, ...entity }, EntityClass);
 
         if (options?.postHook) {
@@ -1220,7 +1220,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -1247,7 +1247,7 @@ export default class MongoDbManager extends AbstractDbManager {
             return [null, error];
           }
 
-          await tryExecutePreHooks(options?.preHooks, currentEntity);
+          await tryExecuteEntityPreHooks(options?.preHooks, currentEntity);
         }
 
         await client
@@ -1374,7 +1374,7 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntitiesJsonPath: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -1393,7 +1393,7 @@ export default class MongoDbManager extends AbstractDbManager {
           throw error;
         }
 
-        await tryExecutePreHooks(options?.preHooks ?? [], currentEntity);
+        await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
         const subEntities = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
 
         if (subEntities.length > 0) {
@@ -1423,7 +1423,7 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntityId: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook<T> | PreHook<T>[];
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }

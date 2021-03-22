@@ -1,7 +1,6 @@
-import { BackkEntity } from '../../types/entities/BackkEntity';
-import { SubEntity } from '../../types/entities/SubEntity';
-import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
-import { BackkError } from '../../types/BackkError';
+import { BackkEntity } from "../../types/entities/BackkEntity";
+import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
+import { BackkError } from "../../types/BackkError";
 
 export interface ErrorDef {
   errorCode: string;
@@ -9,17 +8,16 @@ export interface ErrorDef {
   statusCode?: number;
 }
 
-export type PreHook<T extends BackkEntity | SubEntity> =
+export type PreHook<> =
   | {
-      shouldExecutePreHook?: (entity: T) => boolean | PromiseOfErrorOr<boolean>;
-      isSuccessfulOrTrue: (
-        entity: T
-      ) => PromiseOfErrorOr<BackkEntity | null> | Promise<boolean | BackkError | null | undefined> | boolean;
+      shouldExecutePreHook?: () => boolean | Promise<boolean> | PromiseOfErrorOr<boolean>;
+      isSuccessfulOrTrue: () =>
+        | PromiseOfErrorOr<BackkEntity | null>
+        | Promise<boolean | BackkError | null | undefined>
+        | boolean;
       error?: ErrorDef;
     }
-  | ((
-      entity: T
-    ) =>
+  | (() =>
       | PromiseOfErrorOr<boolean | BackkEntity | null>
       | Promise<boolean | BackkError | null | undefined>
       | boolean);
