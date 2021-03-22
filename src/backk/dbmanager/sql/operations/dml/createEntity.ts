@@ -23,18 +23,18 @@ import createBackkErrorFromErrorCodeMessageAndStatus
 import createErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
-import tryExecuteCreatePreHooks from "../../../hooks/tryExecuteCreatePreHooks";
-import { CreatePreHook } from "../../../hooks/CreatePreHook";
 import getSingularName from "../../../../utils/getSingularName";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
+import { PreHook } from "../../../hooks/PreHook";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 
 export default async function createEntity<T extends BackkEntity | SubEntity>(
   dbManager: AbstractSqlDbManager,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
   EntityClass: new () => T,
-  preHooks?: CreatePreHook | CreatePreHook[],
+  preHooks?: PreHook | PreHook[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false,
@@ -55,8 +55,8 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
 
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
-    if (!isRecursiveCall && preHooks) {
-      await tryExecuteCreatePreHooks(preHooks);
+    if (!isRecursiveCall) {
+      await tryExecutePreHooks(preHooks ?? []);
     }
 
     const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);

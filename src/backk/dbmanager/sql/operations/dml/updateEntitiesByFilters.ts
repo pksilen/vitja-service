@@ -1,20 +1,19 @@
-import MongoDbQuery from '../../../mongodb/MongoDbQuery';
-import SqlExpression from '../../expressions/SqlExpression';
-import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
-import convertFilterObjectToSqlEquals from '../dql/utils/convertFilterObjectToSqlEquals';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryGetWhereClause from '../dql/clauses/tryGetWhereClause';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import isBackkError from '../../../../errors/isBackkError';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import getFilterValues from '../dql/utils/getFilterValues';
+import MongoDbQuery from "../../../mongodb/MongoDbQuery";
+import SqlExpression from "../../expressions/SqlExpression";
+import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import convertFilterObjectToSqlEquals from "../dql/utils/convertFilterObjectToSqlEquals";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryGetWhereClause from "../dql/clauses/tryGetWhereClause";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import isBackkError from "../../../../errors/isBackkError";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import getFilterValues from "../dql/utils/getFilterValues";
 import getClassPropertyNameToPropertyTypeNameMap
   from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import set = Reflect.set;
 
 // noinspection DuplicatedCode
 export default async function updateEntitiesByFilters<T extends object>(

@@ -1,30 +1,34 @@
-import { JSONPath } from 'jsonpath-plus';
-import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import { BackkEntity } from '../../../../types/entities/BackkEntity';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { PreHook } from '../../../hooks/PreHook';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import findParentEntityAndPropertyNameForSubEntity from '../../../../metadata/findParentEntityAndPropertyNameForSubEntity';
-import { getFromContainer, MetadataStorage } from 'class-validator';
-import { ValidationMetadata } from 'class-validator/metadata/ValidationMetadata';
-import tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded';
-import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import { SubEntity } from '../../../../types/entities/SubEntity';
-import getEntityById from '../dql/getEntityById';
-import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import getSingularName from '../../../../utils/getSingularName';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
-import isBackkError from '../../../../errors/isBackkError';
+import { JSONPath } from "jsonpath-plus";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import findParentEntityAndPropertyNameForSubEntity
+  from "../../../../metadata/findParentEntityAndPropertyNameForSubEntity";
+import { getFromContainer, MetadataStorage } from "class-validator";
+import { ValidationMetadata } from "class-validator/metadata/ValidationMetadata";
+import tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded
+  from "./utils/tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import { SubEntity } from "../../../../types/entities/SubEntity";
+import getEntityById from "../dql/getEntityById";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import getSingularName from "../../../../utils/getSingularName";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import isBackkError from "../../../../errors/isBackkError";
+import { EntityPreHook } from "../../../hooks/EntityPreHook";
+import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
 
 // noinspection OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function addSubEntities<T extends BackkEntity, U extends SubEntity>(
@@ -46,6 +50,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
+
     const [currentEntity, error] = await getEntityById(
       dbManager,
       _id,
@@ -60,8 +65,9 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
       throw error;
     }
 
-    await tryExecutePreHooks(preHooks ?? []);
+    await tryExecuteEntityPreHooks(preHooks ?? [], currentEntity);
     await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntity, EntityClass);
+
     const maxSubItemId = JSONPath({ json: currentEntity, path: subEntitiesJsonPath }).reduce(
       (maxSubItemId: number, subItem: any) => {
         const subItemId = parseInt(subItem.id);
@@ -158,17 +164,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
     });
 
     if (postHook) {
-      const [postOperationEntity] = await getEntityById(
-        dbManager,
-        _id,
-        EntityClass,
-        postQueryOperations,
-        undefined,
-        true,
-        true
-      );
-
-      await tryExecutePostHook(postHook, postOperationEntity);
+      await tryExecutePostHook(postHook, null);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

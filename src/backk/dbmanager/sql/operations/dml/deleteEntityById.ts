@@ -4,7 +4,6 @@ import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import getEntityById from "../dql/getEntityById";
 import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
-import { PreHook } from "../../../hooks/PreHook";
 import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
 import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
 import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
@@ -18,12 +17,14 @@ import { BackkEntity } from "../../../../types/entities/BackkEntity";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import { EntityPreHook } from "../../../hooks/EntityPreHook";
+import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
 
 export default async function deleteEntityById<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   EntityClass: new () => T,
-  preHooks?: PreHook<T> | PreHook<T>[],
+  preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations,
   isRecursive = false
@@ -50,7 +51,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
         throw error;
       }
 
-      await tryExecutePreHooks(preHooks, currentEntity);
+      await tryExecuteEntityPreHooks(preHooks, currentEntity);
     }
 
     const numericId = parseInt(_id, 10);

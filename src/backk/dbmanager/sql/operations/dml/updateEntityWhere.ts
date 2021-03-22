@@ -6,14 +6,14 @@ import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransa
 import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
 import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
 import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import { PreHook } from "../../../hooks/PreHook";
-import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 import getEntityWhere from "../dql/getEntityWhere";
 import { PostHook } from "../../../hooks/PostHook";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import { EntityPreHook } from "../../../hooks/EntityPreHook";
+import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
 
 export default async function updateEntityWhere<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
@@ -21,7 +21,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
   fieldValue: any,
   entity: RecursivePartial<T>,
   EntityClass: new () => T,
-  preHooks?: PreHook<T> | PreHook<T>[],
+  preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
 ): PromiseOfErrorOr<null> {
@@ -47,7 +47,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
       throw error;
     }
 
-    await tryExecutePreHooks(preHooks ?? [], currentEntity);
+    await tryExecuteEntityPreHooks(preHooks ?? [], currentEntity);
 
      [, error] = await dbManager.updateEntity(
       { _id: currentEntity?._id ?? '', ...entity },
@@ -55,17 +55,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
     );
 
     if (postHook) {
-      const [postOperationEntity] = await getEntityWhere(
-        dbManager,
-        fieldPathName,
-        fieldValue,
-        EntityClass,
-        postQueryOperations,
-        undefined,
-        true
-      );
-
-      await tryExecutePostHook(postHook, postOperationEntity);
+      await tryExecutePostHook(postHook, null);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

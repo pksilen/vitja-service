@@ -1,34 +1,37 @@
-import { JSONPath } from 'jsonpath-plus';
-import { plainToClass } from 'class-transformer';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import getEntityById from '../dql/getEntityById';
-import deleteEntityById from './deleteEntityById';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { PreHook } from '../../../hooks/PreHook';
-import { BackkEntity } from '../../../../types/entities/BackkEntity';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded from './utils/tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded';
-import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import findParentEntityAndPropertyNameForSubEntity from '../../../../metadata/findParentEntityAndPropertyNameForSubEntity';
-import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import getSingularName from '../../../../utils/getSingularName';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
-import isBackkError from '../../../../errors/isBackkError';
+import { JSONPath } from "jsonpath-plus";
+import { plainToClass } from "class-transformer";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import getEntityById from "../dql/getEntityById";
+import deleteEntityById from "./deleteEntityById";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded
+  from "./utils/tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import findParentEntityAndPropertyNameForSubEntity
+  from "../../../../metadata/findParentEntityAndPropertyNameForSubEntity";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import getSingularName from "../../../../utils/getSingularName";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import isBackkError from "../../../../errors/isBackkError";
+import { EntityPreHook } from "../../../hooks/EntityPreHook";
+import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
 
 export default async function removeSubEntities<T extends BackkEntity, U extends object>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   subEntitiesJsonPath: string,
   EntityClass: new () => T,
-  preHooks?: PreHook<T> | PreHook<T>[],
+  preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
 ): PromiseOfErrorOr<null> {
@@ -38,6 +41,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
+
     const [currentEntity, error] = await getEntityById(
       dbManager,
       _id,
@@ -47,14 +51,13 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
       true,
       true
     );
+
     if (!currentEntity) {
       throw error;
     }
 
-    await tryExecutePreHooks(preHooks ?? [], currentEntity);
-
+    await tryExecuteEntityPreHooks(preHooks ?? [], currentEntity);
     await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntity, EntityClass);
-
     const currentEntityInstance = plainToClass(EntityClass, currentEntity);
     const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesJsonPath });
 
@@ -99,17 +102,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
     });
 
     if (postHook) {
-      const [postOperationEntity] = await getEntityById(
-        dbManager,
-        _id,
-        EntityClass,
-        postQueryOperations,
-        undefined,
-        true,
-        true
-      );
-
-      await tryExecutePostHook(postHook, postOperationEntity);
+      await tryExecutePostHook(postHook, null);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

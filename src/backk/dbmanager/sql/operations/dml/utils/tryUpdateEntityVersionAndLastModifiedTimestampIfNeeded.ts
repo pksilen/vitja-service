@@ -1,5 +1,5 @@
-import AbstractDbManager from '../../../../AbstractDbManager';
-import { BackkEntity } from '../../../../../types/entities/BackkEntity';
+import AbstractDbManager from "../../../../AbstractDbManager";
+import { BackkEntity } from "../../../../../types/entities/BackkEntity";
 
 export default async function tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded<T extends BackkEntity>(
   dbManager: AbstractDbManager,
