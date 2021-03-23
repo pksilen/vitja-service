@@ -187,22 +187,22 @@ export default class UserAccountServiceImpl extends UserAccountService {
       preHooks: [
         {
           isSuccessfulOrTrue: ({ userName: currentUserName }) => userName === currentUserName,
-          error: userAccountServiceErrors.invalidUserNameError
+          error: userAccountServiceErrors.invalidUserName
         },
         {
           isSuccessfulOrTrue: async ({ password: hashedCurrentPassword }) => {
             return !(await argon2.verify(hashedCurrentPassword, newPassword));
           },
-          error: userAccountServiceErrors.newPasswordCannotBeSameAsCurrentPasswordError
+          error: userAccountServiceErrors.newPasswordCannotBeSameAsCurrentPassword
         },
         {
           isSuccessfulOrTrue: async () => newPassword === repeatNewPassword,
-          error: userAccountServiceErrors.newPasswordAndRepeatNewPasswordDoNotMatchError
+          error: userAccountServiceErrors.newPasswordAndRepeatNewPasswordDoNotMatch
         },
         {
           isSuccessfulOrTrue: ({ password: hashedCurrentPassword }) =>
             argon2.verify(hashedCurrentPassword, currentPassword),
-          error: userAccountServiceErrors.invalidCurrentPasswordError
+          error: userAccountServiceErrors.invalidCurrentPassword
         }
       ]
     });

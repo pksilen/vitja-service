@@ -1477,4 +1477,8 @@ export default class MongoDbManager extends AbstractDbManager {
   shouldConvertTinyIntegersToBooleans(): boolean {
     return false;
   }
+
+  deleteEntityWhere<T extends BackkEntity>(fieldName: string, fieldValue: T[keyof T], EntityClass: { new(): T }, options?: { preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }): PromiseOfErrorOr<null> {
+    throw new Error('Not implemented')
+  }
 }

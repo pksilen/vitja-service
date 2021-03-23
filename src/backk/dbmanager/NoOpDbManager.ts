@@ -181,4 +181,8 @@ export default class NoOpDbManager extends AbstractDbManager {
   getBooleanType(): string {
     throw new Error('Not implemented');
   }
+
+  deleteEntityWhere<T extends BackkEntity>(): PromiseOfErrorOr<null> {
+    throw new Error('Not implemented');
+  }
 }
