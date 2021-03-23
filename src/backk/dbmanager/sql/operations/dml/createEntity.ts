@@ -29,6 +29,7 @@ import isBackkError from "../../../../errors/isBackkError";
 import { PreHook } from "../../../hooks/PreHook";
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 import { doesClassPropertyContainCustomValidation } from "../../../../validation/setClassPropertyValidationDecorators";
+import { plainToClass } from "class-transformer";
 
 export default async function createEntity<T extends BackkEntity | SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -45,6 +46,8 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
   let sqlStatement;
+  // noinspection AssignmentToFunctionParameterJS
+  entity = plainToClass(EntityClass, entity);
 
   // noinspection ExceptionCaughtLocallyJS
   try {
@@ -73,7 +76,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
           return;
         }
 
-        const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
+        const { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
 
         if (!isArrayType && !isEntityTypeName(baseTypeName) && fieldName !== '_id') {
           columns.push(fieldName);
@@ -81,7 +84,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
           if (
             (fieldName === 'id' || fieldName.endsWith('Id')) &&
             !typePropertyAnnotationContainer.isTypePropertyExternalId(EntityClass, fieldName) &&
-            doesClassPropertyContainCustomValidation(EntityClass, fieldName,'isUndefined')
+            (!isNullableType || isNullableType && (entity as any)[fieldName] !== null)
           ) {
             const numericId = parseInt((entity as any)[fieldName], 10);
 
