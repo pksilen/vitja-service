@@ -7,7 +7,7 @@ export const orderServiceErrors = {
     errorCode: 'orderService.2',
     message: 'Cannot update order item state due to invalid current state'
   },
-  paidOrderDeleteNotAllowed: {
+  deliveredOrderDeleteNotAllowed: {
     errorCode: 'orderService.3',
     message: 'Deleting order is not allowed when some or all of order items have been delivered'
   },

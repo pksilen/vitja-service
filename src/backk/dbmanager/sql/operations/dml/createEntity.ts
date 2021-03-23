@@ -127,12 +127,10 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
       .map((_: any, index: number) => dbManager.getValuePlaceholder(index + 1))
       .join(', ');
 
-    const idFieldName = entityMetadata._id ? '_id' : 'id';
-    const getIdSqlStatement = dbManager.getReturningIdClause(idFieldName)
+    const getIdSqlStatement = dbManager.getReturningIdClause('_id')
     sqlStatement = `INSERT INTO ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`;
     const result = await dbManager.tryExecuteQuery(sqlStatement, values);
-    console.log(sqlStatement, result);
-    const _id = dbManager.getInsertId(result, idFieldName)?.toString();
+    const _id = dbManager.getInsertId(result, '_id')?.toString();
 
     await forEachAsyncParallel(
       Object.entries(entityMetadata),

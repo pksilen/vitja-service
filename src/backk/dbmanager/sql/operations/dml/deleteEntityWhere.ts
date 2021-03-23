@@ -36,8 +36,10 @@ export default async function deleteEntityWhere<T extends BackkEntity>(
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
+    let currentEntity, error;
+
     if (preHooks) {
-      const [currentEntity, error] = await getEntityWhere(
+      [currentEntity, error] = await getEntityWhere(
         dbManager,
         fieldName,
         fieldValue,
@@ -90,7 +92,7 @@ export default async function deleteEntityWhere<T extends BackkEntity>(
     ]);
 
     if (postHook) {
-      await tryExecutePostHook(postHook, null);
+      await tryExecutePostHook(postHook, currentEntity);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

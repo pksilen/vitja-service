@@ -270,7 +270,7 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Delete()
   discardOrder({ _id }: _Id): PromiseOfErrorOr<null> {
-    return this.deleteOrderById(_id, false);
+    return this.deleteOrderById(_id);
   }
 
   @AllowForSelf()
@@ -280,7 +280,7 @@ export default class OrderServiceImpl extends OrderService {
     'orderService.placeOrder'
   ])
   deleteOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
-    return this.deleteOrderById(_id, true);
+    return this.deleteOrderById(_id);
   }
 
   @TestSetup(['orderService.placeOrder'])
@@ -370,14 +370,13 @@ export default class OrderServiceImpl extends OrderService {
     }
   }
 
-  private deleteOrderById(_id: string, isOrderPaid: boolean): PromiseOfErrorOr<null> {
+  private deleteOrderById(_id: string): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, Order, {
       preHooks: [
         {
-          shouldExecutePreHook: () => isOrderPaid,
           isSuccessfulOrTrue: (order) =>
             JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
-          error: orderServiceErrors.paidOrderDeleteNotAllowed
+          error: orderServiceErrors.deliveredOrderDeleteNotAllowed
         },
         (order) =>
           this.salesItemService.updateSalesItemStates(
@@ -388,7 +387,7 @@ export default class OrderServiceImpl extends OrderService {
           )
       ],
       postHook: {
-        shouldExecutePostHook: () => isOrderPaid,
+        shouldExecutePostHook: (order) => order?.transactionId !== null,
         isSuccessful: () =>
           sendToRemoteService(
             `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrder`,
