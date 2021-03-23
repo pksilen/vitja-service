@@ -76,7 +76,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
           return;
         }
 
-        const { baseTypeName, isArrayType, isNullableType } = getTypeInfoForTypeName(fieldTypeName);
+        const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
 
         if (!isArrayType && !isEntityTypeName(baseTypeName) && fieldName !== '_id') {
           columns.push(fieldName);
@@ -84,7 +84,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
           if (
             (fieldName === 'id' || fieldName.endsWith('Id')) &&
             !typePropertyAnnotationContainer.isTypePropertyExternalId(EntityClass, fieldName) &&
-            (!isNullableType || isNullableType && (entity as any)[fieldName] !== null)
+            ((entity as any)[fieldName] !== null)
           ) {
             const numericId = parseInt((entity as any)[fieldName], 10);
 
