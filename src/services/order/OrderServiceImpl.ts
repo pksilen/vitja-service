@@ -246,9 +246,7 @@ export default class OrderServiceImpl extends OrderService {
                 json: order,
                 path: `orderItems[?(@.id == '${id}')].salesItems[0]._id`
               })[0],
-              'forSale',
-              'sold',
-              null
+              'forSale'
             )
         },
         {
@@ -269,8 +267,8 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Delete()
-  discardOrder({ _id }: _Id): PromiseOfErrorOr<null> {
-    return this.deleteOrderById(_id);
+  discardUnpaidOrder({ _id }: _Id): PromiseOfErrorOr<null> {
+    return this.deleteOrderById(_id, false);
   }
 
   @AllowForSelf()
@@ -280,7 +278,7 @@ export default class OrderServiceImpl extends OrderService {
     'orderService.placeOrder'
   ])
   deleteOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
-    return this.deleteOrderById(_id);
+    return this.deleteOrderById(_id, true);
   }
 
   @TestSetup(['orderService.placeOrder'])
@@ -370,10 +368,11 @@ export default class OrderServiceImpl extends OrderService {
     }
   }
 
-  private deleteOrderById(_id: string): PromiseOfErrorOr<null> {
+  private deleteOrderById(_id: string, shouldCheckOrderItemStates: boolean): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, Order, {
       preHooks: [
         {
+          shouldExecutePreHook: () => shouldCheckOrderItemStates,
           isSuccessfulOrTrue: (order) =>
             JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
           error: orderServiceErrors.deliveredOrderDeleteNotAllowed
@@ -381,9 +380,7 @@ export default class OrderServiceImpl extends OrderService {
         (order) =>
           this.salesItemService.updateSalesItemStates(
             JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
-            'forSale',
-            'sold',
-            null
+            'forSale'
           )
       ],
       postHook: {

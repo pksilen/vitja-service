@@ -222,8 +222,8 @@ export default class SalesItemServiceImpl extends SalesItemService {
   updateSalesItemStates(
     salesItems: ShoppingCartOrOrderSalesItem[],
     newState: SalesItemState,
-    requiredCurrentState: SalesItemState,
-    buyerUserAccountId: string | null
+    requiredCurrentState?: SalesItemState,
+    buyerUserAccountId?: string
   ): PromiseOfErrorOr<null> {
     return executeForAll(salesItems, ({ _id }) =>
       this.updateSalesItemState(_id, newState, requiredCurrentState, buyerUserAccountId)
@@ -234,11 +234,11 @@ export default class SalesItemServiceImpl extends SalesItemService {
   updateSalesItemState(
     _id: string,
     newState: SalesItemState,
-    requiredCurrentState: SalesItemState,
-    buyerUserAccountId: string | null
+    requiredCurrentState?: SalesItemState,
+    buyerUserAccountId?: string
   ): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
-      { _id, state: newState, buyerUserAccountId },
+      { _id, state: newState, buyerUserAccountId: newState === 'forSale' ? null : buyerUserAccountId },
       SalesItem,
       {
         preHooks: [
