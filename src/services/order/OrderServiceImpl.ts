@@ -247,7 +247,8 @@ export default class OrderServiceImpl extends OrderService {
                 path: `orderItems[?(@.id == '${id}')].salesItems[0]._id`
               })[0],
               'forSale',
-              'sold'
+              'sold',
+              null
             )
         },
         {
