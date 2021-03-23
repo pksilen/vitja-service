@@ -28,6 +28,7 @@ import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PreHook } from "../../../hooks/PreHook";
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { doesClassPropertyContainCustomValidation } from "../../../../validation/setClassPropertyValidationDecorators";
 
 export default async function createEntity<T extends BackkEntity | SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -79,7 +80,8 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
 
           if (
             (fieldName === 'id' || fieldName.endsWith('Id')) &&
-            !typePropertyAnnotationContainer.isTypePropertyExternalId(EntityClass, fieldName)
+            !typePropertyAnnotationContainer.isTypePropertyExternalId(EntityClass, fieldName) &&
+            doesClassPropertyContainCustomValidation(EntityClass, fieldName,'isUndefined')
           ) {
             const numericId = parseInt((entity as any)[fieldName], 10);
 
