@@ -28,16 +28,6 @@ export default async function getEntitiesCount<T>(
   EntityClass = dbManager.getType(EntityClass);
 
   try {
-    let isSelectForUpdate = false;
-
-    if (
-      getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
-      dbManager.getClsNamespace()?.get('globalTransaction') ||
-      dbManager.getClsNamespace()?.get('localTransaction')
-    ) {
-      isSelectForUpdate = true;
-    }
-
     const { rootWhereClause, filterValues } = getSqlSelectStatementParts(
       dbManager,
       new DefaultPostQueryOperations(),
@@ -50,8 +40,7 @@ export default async function getEntitiesCount<T>(
 
     const sqlStatement = [
       `SELECT COUNT(*) as count FROM ${dbManager.schema}.${tableName} AS ${tableAlias}`,
-      rootWhereClause,
-      isSelectForUpdate ? `FOR UPDATE OF ${tableAlias}` : undefined
+      rootWhereClause
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');
