@@ -71,16 +71,16 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
     return `$${index}`;
   }
 
-  getReturningIdClause(): string {
-    return 'RETURNING _id';
+  getReturningIdClause(idFieldName: string): string {
+    return `RETURNING ${idFieldName}`;
   }
 
   getBeginTransactionStatement(): string {
     return 'BEGIN';
   }
 
-  getInsertId(result: any): number {
-    return result?.rows[0]?._id;
+  getInsertId(result: any, idFieldName: string): number {
+    return result?.rows[0]?.[idFieldName];
   }
 
   getIdColumnCastType(): string {

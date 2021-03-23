@@ -127,13 +127,12 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
       .map((_: any, index: number) => dbManager.getValuePlaceholder(index + 1))
       .join(', ');
 
-    const getIdSqlStatement = Object.keys(entityMetadata).includes('_id')
-      ? dbManager.getReturningIdClause()
-      : '';
-
+    const idFieldName = entityMetadata._id ? '_id' : 'id';
+    const getIdSqlStatement = dbManager.getReturningIdClause(idFieldName)
     sqlStatement = `INSERT INTO ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} (${sqlColumns}) VALUES (${sqlValuePlaceholders}) ${getIdSqlStatement}`;
     const result = await dbManager.tryExecuteQuery(sqlStatement, values);
-    const _id = dbManager.getInsertId(result)?.toString();
+    console.log(sqlStatement, result);
+    const _id = dbManager.getInsertId(result, idFieldName)?.toString();
 
     await forEachAsyncParallel(
       Object.entries(entityMetadata),
@@ -154,7 +153,6 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
                 subEntityForeignIdFieldName
               } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
 
-              console.log(associationTableName, _id, subEntity._id);
               await dbManager.tryExecuteSql(
                 `INSERT INTO ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}) VALUES (${dbManager.getValuePlaceholder(
                   1

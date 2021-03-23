@@ -66,11 +66,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   abstract getValuePlaceholder(index: number): string;
 
-  abstract getReturningIdClause(): string;
+  abstract getReturningIdClause(idFieldName: string): string;
 
   abstract getBeginTransactionStatement(): string;
 
-  abstract getInsertId(result: any): number;
+  abstract getInsertId(result: any, idFieldName: string): number;
 
   abstract getIdColumnCastType(): string;
 
