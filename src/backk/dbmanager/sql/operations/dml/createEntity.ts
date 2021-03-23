@@ -1,35 +1,31 @@
-import hashAndEncryptEntity from "../../../../crypt/hashAndEncryptEntity";
-import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
-import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
-import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
-import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
-import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
-import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
-import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
-import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import typePropertyAnnotationContainer
-  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
-import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
-import { PostHook } from "../../../hooks/PostHook";
-import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
-import { BackkEntity } from "../../../../types/entities/BackkEntity";
-import { SubEntity } from "../../../../types/entities/SubEntity";
-import createBackkErrorFromErrorCodeMessageAndStatus
-  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
-import createErrorFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS } from "../../../../errors/backkErrors";
-import getSingularName from "../../../../utils/getSingularName";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
-import isBackkError from "../../../../errors/isBackkError";
-import { PreHook } from "../../../hooks/PreHook";
-import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
-import { doesClassPropertyContainCustomValidation } from "../../../../validation/setClassPropertyValidationDecorators";
-import { plainToClass } from "class-transformer";
+import hashAndEncryptEntity from '../../../../crypt/hashAndEncryptEntity';
+import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
+import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
+import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
+import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
+import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
+import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
+import { PostHook } from '../../../hooks/PostHook';
+import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import { BackkEntity } from '../../../../types/entities/BackkEntity';
+import { SubEntity } from '../../../../types/entities/SubEntity';
+import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
+import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
+import getSingularName from '../../../../utils/getSingularName';
+import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import isBackkError from '../../../../errors/isBackkError';
+import { PreHook } from '../../../hooks/PreHook';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
+import { doesClassPropertyContainCustomValidation } from '../../../../validation/setClassPropertyValidationDecorators';
+import { plainToClass } from 'class-transformer';
 
 export default async function createEntity<T extends BackkEntity | SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -84,7 +80,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
           if (
             (fieldName === 'id' || fieldName.endsWith('Id')) &&
             !typePropertyAnnotationContainer.isTypePropertyExternalId(EntityClass, fieldName) &&
-            ((entity as any)[fieldName] !== null)
+            (entity as any)[fieldName] !== null
           ) {
             const numericId = parseInt((entity as any)[fieldName], 10);
 
@@ -108,7 +104,12 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
               values.push(new Date());
             } else {
               if ((entity as any)[fieldName] === undefined) {
-                throw new Error(EntityClass.name + '.' + fieldName + " is a readonly field. Value must be provided for that field in backend call to DbManager's createEntity method.")
+                throw new Error(
+                  EntityClass.name +
+                    '.' +
+                    fieldName +
+                    " is a readonly field. Value must be provided for that field in backend call to DbManager's createEntity method."
+                );
               }
 
               values.push((entity as any)[fieldName]);
@@ -229,7 +230,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
 
     const [createdEntity, error] =
       isRecursiveCall || !shouldReturnItem
-        ? [({ _id } as T), null] as [T, null]
+        ? ([{ _id } as T, null] as [T, null])
         : await dbManager.getEntityById(_id, EntityClass, { postQueryOperations });
 
     if (!isRecursiveCall && postHook) {
@@ -246,13 +247,19 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
 
     if (dbManager.isDuplicateEntityError(errorOrBackkError)) {
-      return [null, createBackkErrorFromErrorCodeMessageAndStatus({
-        ...BACKK_ERRORS.DUPLICATE_ENTITY,
-        message: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(1)}`
-      })];
+      return [
+        null,
+        createBackkErrorFromErrorCodeMessageAndStatus({
+          ...BACKK_ERRORS.DUPLICATE_ENTITY,
+          message: `Duplicate ${EntityClass.name.charAt(0).toLowerCase()}${EntityClass.name.slice(1)}`
+        })
+      ];
     }
 
-    return [null, isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError)];
+    return [
+      null,
+      isBackkError(errorOrBackkError) ? errorOrBackkError : createBackkErrorFromError(errorOrBackkError)
+    ];
   } finally {
     cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
