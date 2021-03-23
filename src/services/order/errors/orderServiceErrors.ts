@@ -23,7 +23,7 @@ export const orderServiceErrors = {
     errorCode: 'orderService.4',
     message: 'Cannot update order which is not paid'
   },
-  cannotPlaceOrderBecauseShoppingCartIsEmpty: {
+  shoppingCartIsEmpty: {
     errorCode: 'orderService.4',
     message: 'Cannot place order because shopping cart is empty'
   },

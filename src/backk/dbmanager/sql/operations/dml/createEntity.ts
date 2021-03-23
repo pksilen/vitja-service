@@ -1,31 +1,34 @@
-import hashAndEncryptEntity from '../../../../crypt/hashAndEncryptEntity';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
-import isEntityTypeName from '../../../../utils/type/isEntityTypeName';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import typePropertyAnnotationContainer from '../../../../decorators/typeproperty/typePropertyAnnotationContainer';
-import entityAnnotationContainer from '../../../../decorators/entity/entityAnnotationContainer';
-import { PostHook } from '../../../hooks/PostHook';
-import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
-import { BackkEntity } from '../../../../types/entities/BackkEntity';
-import { SubEntity } from '../../../../types/entities/SubEntity';
-import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
-import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import getSingularName from '../../../../utils/getSingularName';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
-import isBackkError from '../../../../errors/isBackkError';
-import { PreHook } from '../../../hooks/PreHook';
-import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import { doesClassPropertyContainCustomValidation } from '../../../../validation/setClassPropertyValidationDecorators';
-import { plainToClass } from 'class-transformer';
+import hashAndEncryptEntity from "../../../../crypt/hashAndEncryptEntity";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import getClassPropertyNameToPropertyTypeNameMap
+  from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import getTypeInfoForTypeName from "../../../../utils/type/getTypeInfoForTypeName";
+import isEntityTypeName from "../../../../utils/type/isEntityTypeName";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import typePropertyAnnotationContainer
+  from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
+import entityAnnotationContainer from "../../../../decorators/entity/entityAnnotationContainer";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
+import { SubEntity } from "../../../../types/entities/SubEntity";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import getSingularName from "../../../../utils/getSingularName";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import isBackkError from "../../../../errors/isBackkError";
+import { PreHook } from "../../../hooks/PreHook";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { plainToClass } from "class-transformer";
 
 export default async function createEntity<T extends BackkEntity | SubEntity>(
   dbManager: AbstractSqlDbManager,
@@ -151,6 +154,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
                 subEntityForeignIdFieldName
               } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
 
+              console.log(associationTableName, _id, subEntity._id);
               await dbManager.tryExecuteSql(
                 `INSERT INTO ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} (${entityForeignIdFieldName.toLowerCase()}, ${subEntityForeignIdFieldName.toLowerCase()}) VALUES (${dbManager.getValuePlaceholder(
                   1

@@ -87,7 +87,7 @@ export default class OrderServiceImpl extends OrderService {
     return this.dbManager.executeInsideTransaction(async () => {
       const [shoppingCart, error] = await this.shoppingCartService.getShoppingCartOrErrorIfEmpty(
         userAccountId,
-        orderServiceErrors.cannotPlaceOrderBecauseShoppingCartIsEmpty
+        orderServiceErrors.shoppingCartIsEmpty
       );
 
       return shoppingCart
