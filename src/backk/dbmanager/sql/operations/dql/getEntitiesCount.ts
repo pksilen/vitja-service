@@ -48,9 +48,8 @@ export default async function getEntitiesCount<T>(
     const tableName = getTableName(EntityClass.name);
     const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
 
-
     const sqlStatement = [
-      `SELECT COUNT(*) as count FROM ${dbManager.schema}.${tableAlias}`,
+      `SELECT COUNT(*) as count FROM ${dbManager.schema}.${tableName} AS ${tableAlias}`,
       rootWhereClause,
       isSelectForUpdate ? `FOR UPDATE OF ${tableAlias}` : undefined
     ]
