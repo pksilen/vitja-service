@@ -75,7 +75,8 @@ export default async function deleteEntityWhere<T extends BackkEntity>(
             await dbManager.tryExecuteSql(
               `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} IN (SELECT _id FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${fieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
                 1
-              )})`
+              )})`,
+              [fieldValue]
             );
           }
         }
