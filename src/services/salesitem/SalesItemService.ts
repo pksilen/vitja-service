@@ -27,13 +27,16 @@ export default abstract class SalesItemService extends CrudEntityService {
 
   abstract updateSalesItemStates(
     salesItems: ShoppingCartOrOrderSalesItem[],
-    newState: SalesItemState
+    newState: SalesItemState,
+    requiredCurrentState: SalesItemState,
+    requiredBuyerUserAccountId?: string
   ): PromiseOfErrorOr<null>;
 
   abstract updateSalesItemState(
     _id: string,
     newState: SalesItemState,
-    requiredCurrentState?: SalesItemState
+    requiredCurrentState?: SalesItemState,
+    requiredBuyerUserAccountId?: string
   ): PromiseOfErrorOr<null>;
 
   abstract changeExpiredReservedSalesItemStatesToForSale(

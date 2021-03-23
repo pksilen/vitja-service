@@ -35,15 +35,15 @@ import { PostTests } from '../../backk/decorators/service/function/PostTests';
 import { orderServiceErrors } from './errors/orderServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import RemoveOrderItemArg from './types/args/RemoveOrderItemArg';
-import { PreHook } from '../../backk/dbmanager/hooks/PreHook';
 import AddOrderItemArg from './types/args/AddOrderItemArg';
 import OrderItem from './types/entities/OrderItem';
 import DeleteIncompleteOrdersArg from './types/args/DeleteIncompleteOrdersArg';
+import { EntityPreHook } from '../../backk/dbmanager/hooks/EntityPreHook';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class OrderServiceImpl extends OrderService {
-  private readonly isPaidOrderPreHook: PreHook<Order> = {
+  private readonly isPaidOrderPreHook: EntityPreHook<Order> = {
     isSuccessfulOrTrue: ({ transactionId }) => transactionId !== null,
     error: orderServiceErrors.cannotUpdateOrderWhichIsNotPaid
   };
@@ -74,13 +74,15 @@ export default class OrderServiceImpl extends OrderService {
     'shoppingCartService.createShoppingCart',
     'shoppingCartService.addToShoppingCart'
   ])
-  @PostTests([{
-    testName: 'expect sales item state to be sold after placing order',
-    serviceFunctionName: 'salesItemService.getSalesItem',
-    expectedResult: {
-      state: 'sold'
+  @PostTests([
+    {
+      testName: 'expect sales item state to be sold after placing order',
+      serviceFunctionName: 'salesItemService.getSalesItem',
+      expectedResult: {
+        state: 'sold'
+      }
     }
-  }])
+  ])
   placeOrder({ userAccountId, paymentGateway }: PlaceOrderArg): PromiseOfErrorOr<Order> {
     return this.dbManager.executeInsideTransaction(async () => {
       const [shoppingCart, error] = await this.shoppingCartService.getShoppingCartOrErrorIfEmpty(
@@ -105,7 +107,15 @@ export default class OrderServiceImpl extends OrderService {
               paymentAmount: null
             },
             Order,
-            { preHooks: () => this.salesItemService.updateSalesItemStates(shoppingCart.salesItems, 'sold') }
+            {
+              preHooks: () =>
+                this.salesItemService.updateSalesItemStates(
+                  shoppingCart.salesItems,
+                  'sold',
+                  'reserved',
+                  userAccountId
+                )
+            }
           )
         : [null, error];
     });
@@ -118,10 +128,10 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update('update')
-  payOrder({ _id, shoppingCartId, ...restOfEntity }: PayOrderArg): PromiseOfErrorOr<null> {
+  payOrder({ _id, ...restOfEntity }: PayOrderArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, ...restOfEntity }, Order, {
       preHooks: [
-        () => this.shoppingCartService.deleteShoppingCart({ _id: shoppingCartId }),
+        ({ userAccountId }) => this.shoppingCartService.emptyOrderedShoppingCart({ userAccountId }),
         {
           isSuccessfulOrTrue: ({ transactionId }) => transactionId === null,
           error: orderServiceErrors.orderAlreadyPaid
@@ -139,11 +149,13 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @PostTests([{
-    testName: 'expect order not to have order items',
-    serviceFunctionName: 'orderService.getOrder',
-    expectedResult: { orderItems: [] }
-  }])
+  @PostTests([
+    {
+      testName: 'expect order has no order items',
+      serviceFunctionName: 'orderService.getOrder',
+      expectedResult: { orderItems: [] }
+    }
+  ])
   removeOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: [
@@ -152,7 +164,7 @@ export default class OrderServiceImpl extends OrderService {
           isSuccessfulOrTrue: (order) =>
             JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
             'toBeDelivered',
-          error: orderServiceErrors.cannotRemoveOrderItemWhichIsAlreadyDelivered
+          error: orderServiceErrors.cannotRemoveDeliveredOrderItem
         }
       ],
       postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
@@ -161,13 +173,15 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForTests()
   @Update('addOrRemoveSubEntities')
-  @PostTests([{
-    testName: 'expect order to contain an order item',
-    serviceFunctionName: 'orderService.getOrder',
-    expectedResult: {
-      'orderItems.salesItems._id': '{{salesItemId}}'
+  @PostTests([
+    {
+      testName: 'expect order to contain an order item',
+      serviceFunctionName: 'orderService.getOrder',
+      expectedResult: {
+        'orderItems.salesItems._id': '{{salesItemId}}'
+      }
     }
-  }])
+  ])
   addOrderItem({ orderId, salesItemId }: AddOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       orderId,
@@ -202,7 +216,7 @@ export default class OrderServiceImpl extends OrderService {
             isSuccessfulOrTrue: (order) =>
               JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItem.id}')].state` })[0] ===
               'toBeDelivered',
-            error: orderServiceErrors.cannotDeliverOrderItemWhichIsAlreadyDelivered
+            error: orderServiceErrors.orderItemAlreadyDelivered
           }
         ],
         postHook: () =>
@@ -232,7 +246,8 @@ export default class OrderServiceImpl extends OrderService {
                 json: order,
                 path: `orderItems[?(@.id == '${id}')].salesItems[0]._id`
               })[0],
-              'forSale'
+              'forSale',
+              'sold'
             )
         },
         {
@@ -241,7 +256,7 @@ export default class OrderServiceImpl extends OrderService {
               json: order,
               path: `orderItems[?(@.id == '${id}')].state`
             })[0] === OrderServiceImpl.getValidCurrentOrderStateFor(newState),
-          error: orderServiceErrors.cannotUpdateOrderItemStateDueToInvalidCurrentState
+          error: orderServiceErrors.invalidOrderItemCurrentState
         }
       ],
       postHook: {
@@ -326,7 +341,7 @@ export default class OrderServiceImpl extends OrderService {
     const successUrl = encodeURIComponent(
       `https://${
         process.env.API_GATEWAY_FQDN
-      }/${getServiceName()}/ordersService.payOrder?_id=${orderId}&transactionId=transactionId&transactionTimestamp=transactionTimestamp&amount=amount`
+      }/${getServiceName()}/ordersService.payOrder?_id=${orderId}&transactionId=transactionId&transactionTimestamp=transactionTimestamp&paymentAmount=paymentAmount`
     );
 
     const failureUrl = encodeURIComponent(
@@ -361,12 +376,13 @@ export default class OrderServiceImpl extends OrderService {
           shouldExecutePreHook: () => isOrderPaid,
           isSuccessfulOrTrue: (order) =>
             JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
-          error: orderServiceErrors.deleteOrderNotAllowed
+          error: orderServiceErrors.paidOrderDeleteNotAllowed
         },
         (order) =>
           this.salesItemService.updateSalesItemStates(
             JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
-            'forSale'
+            'forSale',
+            'sold'
           )
       ],
       postHook: {

@@ -36,6 +36,4 @@ export default class PayOrderArg {
   @IsFloat(2)
   @MinMax(0, Values._1B)
   public paymentAmount!: number | null;
-
-  shoppingCartId!: string;
 }

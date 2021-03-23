@@ -37,7 +37,8 @@ import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackk
 import { BACKK_ERRORS } from '../errors/backkErrors';
 import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 import updateEntitiesByFilters from './sql/operations/dml/updateEntitiesByFilters';
-import { EntityPreHook } from "./hooks/EntityPreHook";
+import { EntityPreHook } from './hooks/EntityPreHook';
+import deleteEntityWhere from './sql/operations/dml/deleteEntityWhere';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -765,6 +766,30 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesWhere');
     const response = await deleteEntitiesWhere(this, fieldName, fieldValue, entityClass);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  async deleteEntityWhere<T extends BackkEntity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    entityClass: new () => T,
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseOfErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityWhere');
+    const response = await deleteEntityWhere(
+      this,
+      fieldName,
+      fieldValue,
+      entityClass,
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

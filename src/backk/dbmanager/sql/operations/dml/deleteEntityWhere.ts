@@ -1,7 +1,6 @@
 import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
 import entityContainer, { EntityJoinSpec } from "../../../../decorators/entity/entityAnnotationContainer";
 import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
-import getEntityById from "../dql/getEntityById";
 import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
 import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
 import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
@@ -9,25 +8,27 @@ import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
 import { PostHook } from "../../../hooks/PostHook";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
-import createErrorFromErrorCodeMessageAndStatus
-  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
-import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import { BackkEntity } from "../../../../types/entities/BackkEntity";
 import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import { EntityPreHook } from "../../../hooks/EntityPreHook";
 import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
+import getEntityWhere from "../dql/getEntityWhere";
 
-export default async function deleteEntityById<T extends BackkEntity>(
+export default async function deleteEntityWhere<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
-  _id: string,
+  fieldName: string,
+  fieldValue: T[keyof T],
   EntityClass: new () => T,
   preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
-  postQueryOperations?: PostQueryOperations,
-  isRecursive = false
+  postQueryOperations?: PostQueryOperations
 ): PromiseOfErrorOr<null> {
+  if (fieldName.includes('.')) {
+    throw new Error('fieldName parameter may not contain dots, i.e. it cannot be a field path name');
+  }
+
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;
@@ -36,13 +37,13 @@ export default async function deleteEntityById<T extends BackkEntity>(
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     if (preHooks) {
-      const [currentEntity, error] = await getEntityById(
+      const [currentEntity, error] = await getEntityWhere(
         dbManager,
-        _id,
+        fieldName,
+        fieldValue,
         EntityClass,
         postQueryOperations,
         undefined,
-        true,
         true
       );
 
@@ -53,25 +54,16 @@ export default async function deleteEntityById<T extends BackkEntity>(
       await tryExecuteEntityPreHooks(preHooks, currentEntity);
     }
 
-    const numericId = parseInt(_id, 10);
-    if (isNaN(numericId)) {
-      // noinspection ExceptionCaughtLocallyJS
-      throw createErrorFromErrorCodeMessageAndStatus({
-        ...BACKK_ERRORS.INVALID_ARGUMENT,
-        message: BACKK_ERRORS.INVALID_ARGUMENT.message + '_id: must be a numeric id'
-      });
-    }
-
     await Promise.all([
       forEachAsyncParallel(
         Object.values(entityContainer.entityNameToJoinsMap[EntityClass.name] || {}),
         async (joinSpec: EntityJoinSpec) => {
           if (!joinSpec.isReadonly) {
             await dbManager.tryExecuteSql(
-              `DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()} WHERE ${joinSpec.subEntityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+              `DELETE FROM ${dbManager.schema.toLowerCase()}.${joinSpec.subEntityTableName.toLowerCase()} WHERE ${joinSpec.subEntityForeignIdFieldName.toLowerCase()} IN (SELECT _id FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${fieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
                 1
-              )}`,
-              [numericId]
+              )})`,
+              [fieldValue]
             );
           }
         }
@@ -80,18 +72,19 @@ export default async function deleteEntityById<T extends BackkEntity>(
         entityContainer.manyToManyRelationTableSpecs,
         async ({ associationTableName, entityForeignIdFieldName }) => {
           if (associationTableName.startsWith(EntityClass.name + '_')) {
-            const sqlStatement = `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
-              1
-            )}`;
-            await dbManager.tryExecuteSql(sqlStatement, [numericId]);
+            await dbManager.tryExecuteSql(
+              `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} IN (SELECT _id FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${fieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+                1
+              )})`
+            );
           }
         }
       ),
-      isRecursive ? Promise.resolve(undefined) : dbManager.tryExecuteSql(
-        `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()}._id = ${dbManager.getValuePlaceholder(
+      dbManager.tryExecuteSql(
+        `DELETE FROM ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase()} WHERE ${fieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
           1
         )}`,
-        [numericId]
+        [fieldValue]
       )
     ]);
 

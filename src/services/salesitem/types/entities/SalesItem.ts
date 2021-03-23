@@ -15,6 +15,7 @@ import { Lengths, Values } from "../../../../backk/constants/constants";
 import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId
   from "../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId";
 import { IsFloat } from "../../../../backk/decorators/typeproperty/IsFloat";
+import { Private } from "../../../../backk/decorators/typeproperty/Private";
 
 @Entity()
 export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId {
@@ -65,4 +66,7 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
 
   @Index()
   public readonly state!: SalesItemState;
+
+  @Private()
+  readonly buyerUserAccountId: string | null = null;
 }

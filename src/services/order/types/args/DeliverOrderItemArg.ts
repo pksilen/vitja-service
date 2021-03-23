@@ -27,7 +27,7 @@ export default class DeliverOrderItemArg {
   @IsString({
     groups: ['__backk_none__']
   })
-  @MaxLength(25, {
+  @MaxLength(24, {
     groups: ['__backk_none__']
   })
   @IsIntegerStringOrAny({

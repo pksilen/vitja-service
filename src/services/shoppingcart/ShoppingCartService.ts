@@ -19,6 +19,6 @@ export default abstract class ShoppingCartService extends CrudEntityService {
 
   abstract addToShoppingCart(arg: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null>;
   abstract removeFromShoppingCart(arg: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null>;
-  abstract emptyShoppingCart(arg: _IdAndUserAccountId): PromiseOfErrorOr<null>;
-  abstract deleteShoppingCart(arg: _Id): PromiseOfErrorOr<null>;
+  abstract emptyShoppingCart(arg: UserAccountId): PromiseOfErrorOr<null>;
+  abstract emptyOrderedShoppingCart(arg: UserAccountId): PromiseOfErrorOr<null>;
 }

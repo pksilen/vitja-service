@@ -307,6 +307,17 @@ export default abstract class AbstractDbManager {
     });
   }
 
+  abstract deleteEntityWhere<T extends BackkEntity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    EntityClass: new () => T,
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+      postHook?: PostHook<T>,
+      postQueryOperations?: PostQueryOperations
+    }
+  ): PromiseOfErrorOr<null>;
+
   abstract deleteEntitiesWhere<T extends BackkEntity>(
     fieldName: string,
     fieldValue: any,

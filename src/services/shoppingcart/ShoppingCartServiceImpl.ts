@@ -69,20 +69,22 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestSetup(['salesItemService.createSalesItem'])
-  @PostTests([{
-    testName: 'expect shopping cart to contain a sales item',
-    serviceFunctionName: 'shoppingCartService.getShoppingCart',
-    expectedResult: {
-      'salesItems._id': '{{salesItemId}}'
-    }
-  },
+  @PostTests([
+    {
+      testName: 'expect shopping cart to contain a sales item',
+      serviceFunctionName: 'shoppingCartService.getShoppingCart',
+      expectedResult: {
+        'salesItems._id': '{{salesItemId}}'
+      }
+    },
     {
       testName: 'expect sales item to be in reserved state',
       serviceFunctionName: 'salesItemService.getSalesItem',
       expectedResult: {
         state: 'reserved'
       }
-    }])
+    }
+  ])
   addToShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
@@ -102,18 +104,20 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @PostTests([{
-    testName: 'expect empty shopping cart',
-    serviceFunctionName: 'shoppingCartService.getShoppingCart',
-    expectedResult: { salesItems: [] }
-  },
+  @PostTests([
+    {
+      testName: 'expect empty shopping cart',
+      serviceFunctionName: 'shoppingCartService.getShoppingCart',
+      expectedResult: { salesItems: [] }
+    },
     {
       testName: 'expect sales item to be for sale',
       serviceFunctionName: 'salesItemService.getSalesItem',
       expectedResult: {
         state: 'forSale'
       }
-    }])
+    }
+  ])
   removeFromShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {
       preHooks: () => this.salesItemService.updateSalesItemState(salesItemId, 'forSale')
@@ -122,14 +126,15 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Delete()
-  emptyShoppingCart({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
-    return this.deleteShoppingCart({ _id });
+  emptyShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
+    return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart, {
+      preHooks: ({ salesItems }) =>
+        this.salesItemService.updateSalesItemStates(salesItems, 'forSale', 'reserved', userAccountId)
+    });
   }
 
   @AllowForServiceInternalUse()
-  deleteShoppingCart({ _id }: _Id): PromiseOfErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id, ShoppingCart, {
-      preHooks: ({ salesItems }) => this.salesItemService.updateSalesItemStates(salesItems, 'forSale')
-    });
+  emptyOrderedShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
+    return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart);
   }
 }

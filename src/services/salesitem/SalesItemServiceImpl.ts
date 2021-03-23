@@ -221,24 +221,35 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForServiceInternalUse()
   updateSalesItemStates(
     salesItems: ShoppingCartOrOrderSalesItem[],
-    newState: SalesItemState
+    newState: SalesItemState,
+    requiredCurrentState: SalesItemState,
+    requiredBuyerUserAccountId?: string
   ): PromiseOfErrorOr<null> {
-    return executeForAll(salesItems, ({ _id }) => this.updateSalesItemState(_id, newState));
+    return executeForAll(salesItems, ({ _id }) =>
+      this.updateSalesItemState(_id, newState, requiredCurrentState, requiredBuyerUserAccountId)
+    );
   }
 
   @AllowForServiceInternalUse()
   updateSalesItemState(
     _id: string,
     newState: SalesItemState,
-    requiredCurrentState?: SalesItemState
+    requiredCurrentState?: SalesItemState,
+    requiredBuyerUserAccountId?: string
   ): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, state: newState }, SalesItem, {
-      preHooks: requiredCurrentState
-        ? {
-            isSuccessfulOrTrue: ({ state }) => state === requiredCurrentState,
-            error: salesItemServiceErrors.invalidSalesItemState
-          }
-        : undefined
+      preHooks: [
+        {
+          shouldExecutePreHook: () => !!requiredCurrentState,
+          isSuccessfulOrTrue: ({ state }) => state === requiredCurrentState,
+          error: salesItemServiceErrors.invalidSalesItemState
+        },
+        {
+          shouldExecutePreHook: () => !!requiredBuyerUserAccountId,
+          isSuccessfulOrTrue: ({ buyerUserAccountId }) => buyerUserAccountId === requiredBuyerUserAccountId,
+          error: salesItemServiceErrors.invalidSalesItemState
+        }
+      ]
     });
   }
 
