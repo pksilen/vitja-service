@@ -14,9 +14,10 @@ import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
 import getFilterValues from "../dql/utils/getFilterValues";
 import getClassPropertyNameToPropertyTypeNameMap
   from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
 
 // noinspection DuplicatedCode
-export default async function updateEntitiesByFilters<T extends object>(
+export default async function updateEntitiesByFilters<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
   update: Partial<T>,

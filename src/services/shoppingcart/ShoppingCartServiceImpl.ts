@@ -9,9 +9,7 @@ import SalesItemService from '../salesitem/SalesItemService';
 import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
 import { Delete } from '../../backk/decorators/service/function/Delete';
 import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
-import _Id from '../../backk/types/id/_Id';
 import ShoppingCartOrOrderSalesItem from './types/entities/ShoppingCartOrOrderSalesItem';
-import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import _IdAndUserAccountIdAndSalesItemId from './types/args/_IdAndUserAccountIdAndSalesItemId';
 import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
 import { Update } from '../../backk/decorators/service/function/Update';
@@ -46,7 +44,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
           return shoppingCartCount === 0;
         },
-        errorMessage: shoppingCartServiceErrors.shoppingCartAlreadyExists
+        error: shoppingCartServiceErrors.shoppingCartAlreadyExists
       }
     });
   }
@@ -85,7 +83,11 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       }
     }
   ])
-  addToShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
+  addToShoppingCart({
+    _id,
+    userAccountId,
+    salesItemId
+  }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
       'salesItems',
@@ -95,7 +97,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       {
         preHooks: {
           isSuccessfulOrTrue: () =>
-            this.salesItemService.updateSalesItemState(salesItemId, 'reserved', 'forSale'),
+            this.salesItemService.updateSalesItemState(salesItemId, 'reserved', 'forSale', userAccountId),
           error: shoppingCartServiceErrors.salesItemReservedOrSold
         }
       }
@@ -118,9 +120,14 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       }
     }
   ])
-  removeFromShoppingCart({ _id, salesItemId }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
+  removeFromShoppingCart({
+    _id,
+    userAccountId,
+    salesItemId
+  }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {
-      preHooks: () => this.salesItemService.updateSalesItemState(salesItemId, 'forSale')
+      preHooks: () =>
+        this.salesItemService.updateSalesItemState(salesItemId, 'forSale', 'reserved', userAccountId)
     });
   }
 

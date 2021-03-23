@@ -76,7 +76,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
               ? usersSellableSalesItemCount < 100
               : error;
           },
-          errorMessage: salesItemServiceErrors.maximumSalesItemCountPerUserExceeded
+          error: salesItemServiceErrors.maximumSalesItemCountPerUserExceeded
         }
       }
     );
@@ -211,7 +211,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       preHooks: [
         {
           isSuccessfulOrTrue: ({ state }) => state === 'forSale',
-          error: salesItemServiceErrors.updateFailedBecauseSalesItemStateIsNotForSale
+          error: salesItemServiceErrors.salesItemStateIsNotForSale
         },
         ({ _id, price }) => this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem)
       ]
@@ -223,10 +223,10 @@ export default class SalesItemServiceImpl extends SalesItemService {
     salesItems: ShoppingCartOrOrderSalesItem[],
     newState: SalesItemState,
     requiredCurrentState: SalesItemState,
-    requiredBuyerUserAccountId?: string
+    buyerUserAccountId: string | null
   ): PromiseOfErrorOr<null> {
     return executeForAll(salesItems, ({ _id }) =>
-      this.updateSalesItemState(_id, newState, requiredCurrentState, requiredBuyerUserAccountId)
+      this.updateSalesItemState(_id, newState, requiredCurrentState, buyerUserAccountId)
     );
   }
 
@@ -234,23 +234,27 @@ export default class SalesItemServiceImpl extends SalesItemService {
   updateSalesItemState(
     _id: string,
     newState: SalesItemState,
-    requiredCurrentState?: SalesItemState,
-    requiredBuyerUserAccountId?: string
+    requiredCurrentState: SalesItemState,
+    buyerUserAccountId: string | null
   ): PromiseOfErrorOr<null> {
-    return this.dbManager.updateEntity({ _id, state: newState }, SalesItem, {
-      preHooks: [
-        {
-          shouldExecutePreHook: () => !!requiredCurrentState,
-          isSuccessfulOrTrue: ({ state }) => state === requiredCurrentState,
-          error: salesItemServiceErrors.invalidSalesItemState
-        },
-        {
-          shouldExecutePreHook: () => !!requiredBuyerUserAccountId,
-          isSuccessfulOrTrue: ({ buyerUserAccountId }) => buyerUserAccountId === requiredBuyerUserAccountId,
-          error: salesItemServiceErrors.invalidSalesItemState
-        }
-      ]
-    });
+    return this.dbManager.updateEntity(
+      { _id, state: newState, buyerUserAccountId },
+      SalesItem,
+      {
+        preHooks: [
+          {
+            shouldExecutePreHook: () => !!requiredCurrentState,
+            isSuccessfulOrTrue: ({ state }) => state === requiredCurrentState,
+            error: salesItemServiceErrors.invalidSalesItemState
+          },
+          {
+            shouldExecutePreHook: () => newState === 'sold',
+            isSuccessfulOrTrue: ({ buyerUserAccountId }) => buyerUserAccountId === buyerUserAccountId,
+            error: salesItemServiceErrors.invalidSalesItemState
+          }
+        ]
+      }
+    );
   }
 
   @TestSetup([
@@ -291,7 +295,11 @@ export default class SalesItemServiceImpl extends SalesItemService {
       ]
     );
 
-    return this.dbManager.updateEntitiesByFilters(filters, { state: 'forSale' }, SalesItem);
+    return this.dbManager.updateEntitiesByFilters<SalesItem>(
+      filters,
+      { state: 'forSale', buyerUserAccountId: null },
+      SalesItem
+    );
   }
 
   @CronJob({ minutes: 0, hours: 2 })

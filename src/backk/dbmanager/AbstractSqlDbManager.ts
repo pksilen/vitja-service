@@ -698,7 +698,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async updateEntitiesByFilters<T extends object>(
+  async updateEntitiesByFilters<T extends BackkEntity>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     entity: Partial<T>,
     EntityClass: new () => T

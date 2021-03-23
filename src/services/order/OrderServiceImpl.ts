@@ -382,7 +382,8 @@ export default class OrderServiceImpl extends OrderService {
           this.salesItemService.updateSalesItemStates(
             JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
             'forSale',
-            'sold'
+            'sold',
+            null
           )
       ],
       postHook: {

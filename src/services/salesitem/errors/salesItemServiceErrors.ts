@@ -3,7 +3,7 @@ export const salesItemServiceErrors = {
     errorCode: 'salesItemsService.1',
     message: 'Maximum sales item count exceeded. Maximum 100 active sales items allowed'
   },
-  updateFailedBecauseSalesItemStateIsNotForSale: {
+  salesItemStateIsNotForSale: {
     errorCode: 'salesItemsService.2',
     message: "Sales item update failed, because sales item state was not 'for sale'"
   },
