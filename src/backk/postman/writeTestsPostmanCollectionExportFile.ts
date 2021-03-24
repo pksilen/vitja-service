@@ -437,7 +437,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             lastReadFunctionMetadata,
             getFunctionSampleArg,
             getFunctionTests,
-            isDelete ? `Expect: ${itemName} not to be found` : undefined
+            isDelete ? `THEN ${itemName} is not found` : undefined
           );
 
           items.push(item);

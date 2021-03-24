@@ -82,25 +82,27 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
         );
       }
 
-      return shoppingCart ? this.dbManager.addSubEntity(
-        shoppingCart._id,
-        'salesItems',
-        { _id: salesItemId },
-        ShoppingCart,
-        ShoppingCartOrOrderSalesItem,
-        {
-          preHooks: {
-            isSuccessfulOrTrue: () =>
-              this.salesItemService.updateSalesItemState(
-                salesItemId,
-                'reserved',
-                'forSale',
-                userAccountId
-              ),
-            error: shoppingCartServiceErrors.salesItemReservedOrSold
-          }
-        }
-      ) : [null, error];
+      return shoppingCart
+        ? this.dbManager.addSubEntity(
+            shoppingCart._id,
+            'salesItems',
+            { _id: salesItemId },
+            ShoppingCart,
+            ShoppingCartOrOrderSalesItem,
+            {
+              preHooks: {
+                isSuccessfulOrTrue: () =>
+                  this.salesItemService.updateSalesItemState(
+                    salesItemId,
+                    'reserved',
+                    'forSale',
+                    userAccountId
+                  ),
+                error: shoppingCartServiceErrors.salesItemReservedOrSold
+              }
+            }
+          )
+        : [null, error];
     });
   }
 
@@ -149,6 +151,13 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Delete()
+  @PostTests([
+    {
+      testName: 'shopping cart is empty',
+      serviceFunctionName: 'shoppingCartService.getShoppingCart',
+      expectedResult: { salesItems: [] }
+    }
+  ])
   emptyShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart, {
       preHooks: ({ salesItems }) =>
