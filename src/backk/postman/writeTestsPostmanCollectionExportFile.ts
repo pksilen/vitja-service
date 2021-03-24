@@ -36,6 +36,13 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
   tryValidateIntegrationTests(writtenTests, servicesMetadata);
 
+  items.push({
+    name:  'CLEANUP ---------------',
+    request: {
+      method: 'POST'
+    }
+  });
+
   servicesMetadata
     .filter(
       (serviceMetadata) => (controller as any)[serviceMetadata.serviceName] instanceof CrudEntityService
