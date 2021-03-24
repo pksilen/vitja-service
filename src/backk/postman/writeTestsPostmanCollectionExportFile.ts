@@ -37,7 +37,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   tryValidateIntegrationTests(writtenTests, servicesMetadata);
 
   items.push({
-    name: '------',
+    name: '-----------------------------------------------',
     request: {
       method: 'POST'
     }
@@ -51,7 +51,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   });
 
   items.push({
-    name: '------',
+    name:  '-----------------------------------------------',
     request: {
       method: 'POST'
     }
@@ -110,7 +110,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       return;
     }
     items.push({
-      name: Array(serviceMetadata.serviceName.length).fill('-').join(''),
+      name:  '-----------------------------------------------',
       request: {
         method: 'POST'
       }
@@ -124,7 +124,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     });
 
     items.push({
-      name: Array(serviceMetadata.serviceName.length).fill('-').join(''),
+      name: '-----------------------------------------------',
       request: {
         method: 'POST'
       }
@@ -573,7 +573,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       },
       ...items.map((item, index) => ({
         ...item,
-        name: item.name.endsWith('---') ? item.name : item.name + ` (${index})`
+        name: item.request.url ? item.name : item.name + ` (${index})`
       }))
     ]
   };
