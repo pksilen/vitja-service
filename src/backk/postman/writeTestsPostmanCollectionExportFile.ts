@@ -103,6 +103,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     let createFunctionMetadata: FunctionMetadata | undefined;
     // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, functionIndex: number) => {
+      // noinspection ReuseOfLocalVariableJS
       items = [];
 
       writtenTests
@@ -223,7 +224,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           typeof serviceFunctionOrSpec === 'object' ? serviceFunctionOrSpec?.setupStepName : undefined
         );
 
-        items.push(item);
+        items.push({ ...item, name: 'Setup: ' + item.name });
       });
 
       if (
@@ -397,7 +398,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
               testSpec.testName
             );
 
-            items.push(item);
+            items.push({ ...item, name: 'Expect: ' + item.name });
           }
         });
 
@@ -432,7 +433,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             lastReadFunctionMetadata,
             getFunctionSampleArg,
             getFunctionTests,
-            isDelete ? `expect ${itemName} not to be found` : undefined
+            isDelete ? `Expect: ${itemName} not to be found` : undefined
           );
 
           items.push(item);

@@ -53,17 +53,18 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @TestSetup(['salesItemService.createSalesItem'])
   @PostTests([
     {
-      testName: 'expect shopping cart to contain a sales item',
+      testName: 'Shopping cart contains a sales item',
       serviceFunctionName: 'shoppingCartService.getShoppingCart',
       expectedResult: {
         'salesItems._id': '{{salesItemId}}'
       }
     },
     {
-      testName: 'expect sales item to be in reserved state',
+      testName: 'sales item is in reserved state',
       serviceFunctionName: 'salesItemService.getSalesItem',
       expectedResult: {
-        state: 'reserved'
+        state: 'reserved',
+        buyerUserAccountId: '{{userAccountId}}'
       }
     }
   ])
