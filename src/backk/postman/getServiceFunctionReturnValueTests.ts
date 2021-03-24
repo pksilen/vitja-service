@@ -306,7 +306,7 @@ export default function getServiceFunctionReturnValueTests(
         } else {
           let collectionVariableCheck = '';
           if (typeof expectedValue === 'string' && expectedValue?.startsWith('pm.collectionVariables.get(')) {
-            collectionVariableCheck = ` && ${expectedValue} !== undefined`;
+            collectionVariableCheck = `&& ${expectedValue} !== undefined`;
           }
 
           javascriptLines.push(
