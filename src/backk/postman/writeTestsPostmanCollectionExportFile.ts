@@ -85,7 +85,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     item: items
   });
 
-  servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
+  servicesMetadata.forEach((serviceMetadata: ServiceMetadata, serviceIndex) => {
     // noinspection ReuseOfLocalVariableJS
     items = [];
 
@@ -504,7 +504,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
     itemGroups.push({
       name: serviceMetadata.serviceName,
-      item: items.map((item, index) => ({ ...item, name: item.name + ` (${index})` }))
+      item: items.map((item, index) => ({ ...item, name: item.name + ` (${serviceIndex + 1}.${index + 1})` }))
     });
   });
 
