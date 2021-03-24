@@ -142,7 +142,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   @TestSetup([
     {
-      setupStepName: 'create followed user account',
+      setupStepName: 'create user account to follow',
       serviceFunctionName: 'userAccountService.createUserAccount',
       argument: { userName: 'test2@test.com', displayName: 'followed user' },
       postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']

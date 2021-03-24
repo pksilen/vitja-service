@@ -121,7 +121,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @Update('addOrRemoveSubEntities')
   @PostTests([
     {
-      testName: 'empty shopping cart',
+      testName: 'shopping cart is empty',
       serviceFunctionName: 'shoppingCartService.getShoppingCart',
       expectedResult: { salesItems: [] }
     },

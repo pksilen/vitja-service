@@ -84,14 +84,14 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update('addOrRemoveSubEntities')
   @TestSetup([
     {
-      setupStepName: 'create followed user account',
+      setupStepName: 'create user account to follow',
       serviceFunctionName: 'userAccountService.createUserAccount',
       argument: { userName: 'test2@test.com' },
       postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
     }
   ])
   @PostTests([{
-    testName: 'user account follows a another user account',
+    testName: 'user account follows another user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
       'followedUserAccounts._id': '{{followedUserAccountId}}'
@@ -120,7 +120,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @PostTests([{
-    testName: 'no followed user accounts',
+    testName: 'user account does not follow another user accounts',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: { followedUserAccounts: [] }
   }])
@@ -141,7 +141,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update('addOrRemoveSubEntities')
   @TestSetup(['salesItemService.createSalesItem'])
   @PostTests([{
-    testName: 'favorite sales item in user account',
+    testName: 'user account has a favorite sales item',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
       'favoriteSalesItems._id': '{{salesItemId}}'
@@ -160,7 +160,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @PostTests([{
-    testName: 'no favorite sales items in user account',
+    testName: 'user account has no favorite sales items',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
       favoriteSalesItems: []
