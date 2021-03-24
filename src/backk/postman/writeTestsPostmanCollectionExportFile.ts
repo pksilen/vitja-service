@@ -530,7 +530,10 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           }
         }
       },
-      ...items
+      ...items.map((item, index) => ({
+        ...item,
+        name: item.name + ` (${index})`
+      }))
     ]
   };
 
