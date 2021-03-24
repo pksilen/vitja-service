@@ -37,21 +37,21 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   tryValidateIntegrationTests(writtenTests, servicesMetadata);
 
   items.push({
-    name:  '------------------------------------',
+    name: '------',
     request: {
       method: 'POST'
     }
   });
 
   items.push({
-    name:  'CLEANUP',
+    name: 'CLEANUP',
     request: {
       method: 'POST'
     }
   });
 
   items.push({
-    name:  '------------------------------------',
+    name: '------',
     request: {
       method: 'POST'
     }
@@ -110,7 +110,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       return;
     }
     items.push({
-      name:  '------------------------------------',
+      name: Array(serviceMetadata.serviceName.length).fill('-'),
       request: {
         method: 'POST'
       }
@@ -124,7 +124,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     });
 
     items.push({
-      name:  '------------------------------------',
+      name: Array(serviceMetadata.serviceName.length).fill('-'),
       request: {
         method: 'POST'
       }
