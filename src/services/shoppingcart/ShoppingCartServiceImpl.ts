@@ -68,14 +68,14 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       }
     }
   ])
-  async addToShoppingCart({
-    userAccountId,
-    salesItemId
-  }: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
+  addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.executeInsideTransaction(async () => {
-      let [, error] = await this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart);
+      let [shoppingCart, error] = await this.dbManager.getEntityWhere(
+        'userAccountId',
+        userAccountId,
+        ShoppingCart
+      );
 
-      let shoppingCart;
       if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
         [shoppingCart, error] = await this.dbManager.createEntity(
           { userAccountId, salesItems: [] },
@@ -83,27 +83,25 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
         );
       }
 
-      return error || !shoppingCart
-        ? [null, error]
-        : this.dbManager.addSubEntity(
-            shoppingCart._id,
-            'salesItems',
-            { _id: salesItemId },
-            ShoppingCart,
-            ShoppingCartOrOrderSalesItem,
-            {
-              preHooks: {
-                isSuccessfulOrTrue: () =>
-                  this.salesItemService.updateSalesItemState(
-                    salesItemId,
-                    'reserved',
-                    'forSale',
-                    userAccountId
-                  ),
-                error: shoppingCartServiceErrors.salesItemReservedOrSold
-              }
-            }
-          );
+      return shoppingCart ? this.dbManager.addSubEntity(
+        shoppingCart._id,
+        'salesItems',
+        { _id: salesItemId },
+        ShoppingCart,
+        ShoppingCartOrOrderSalesItem,
+        {
+          preHooks: {
+            isSuccessfulOrTrue: () =>
+              this.salesItemService.updateSalesItemState(
+                salesItemId,
+                'reserved',
+                'forSale',
+                userAccountId
+              ),
+            error: shoppingCartServiceErrors.salesItemReservedOrSold
+          }
+        }
+      ) : [null, error];
     });
   }
 
