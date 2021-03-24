@@ -63,8 +63,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       testName: 'sales item is in reserved state',
       serviceFunctionName: 'salesItemService.getSalesItem',
       expectedResult: {
-        state: 'reserved',
-        buyerUserAccountId: '{{userAccountId}}'
+        state: 'reserved'
       }
     }
   ])
