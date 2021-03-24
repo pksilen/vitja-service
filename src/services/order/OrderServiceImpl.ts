@@ -75,7 +75,7 @@ export default class OrderServiceImpl extends OrderService {
   ])
   @PostTests([
     {
-      testName: 'expect sales item state to be sold after placing order',
+      testName: 'sales item is sold',
       serviceFunctionName: 'salesItemService.getSalesItem',
       expectedResult: {
         state: 'sold'
@@ -164,7 +164,7 @@ export default class OrderServiceImpl extends OrderService {
   @Update('addOrRemoveSubEntities')
   @PostTests([
     {
-      testName: 'expect order has no order items',
+      testName: 'order has no order items',
       serviceFunctionName: 'orderService.getOrder',
       expectedResult: { orderItems: [] }
     }
@@ -188,7 +188,7 @@ export default class OrderServiceImpl extends OrderService {
   @Update('addOrRemoveSubEntities')
   @PostTests([
     {
-      testName: 'expect order to contain an order item',
+      testName: 'order contains an order item',
       serviceFunctionName: 'orderService.getOrder',
       expectedResult: {
         'orderItems.salesItems._id': '{{salesItemId}}'

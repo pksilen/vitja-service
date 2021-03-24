@@ -265,7 +265,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   ])
   @PostTests([
     {
-      testName: 'except sales item state to be for sale',
+      testName: 'sales item is for sale',
       serviceFunctionName: 'salesItemService.getSalesItem',
       expectedResult: { state: 'forSale' }
     }

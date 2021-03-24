@@ -91,7 +91,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
     }
   ])
   @PostTests([{
-    testName: 'expect user account to follow a another user account',
+    testName: 'user account follows a another user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
       'followedUserAccounts._id': '{{followedUserAccountId}}'
@@ -120,7 +120,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @PostTests([{
-    testName: 'expect no followed user accounts',
+    testName: 'no followed user accounts',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: { followedUserAccounts: [] }
   }])
@@ -141,7 +141,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update('addOrRemoveSubEntities')
   @TestSetup(['salesItemService.createSalesItem'])
   @PostTests([{
-    testName: 'expect a favorite sales item in user account',
+    testName: 'favorite sales item in user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
       'favoriteSalesItems._id': '{{salesItemId}}'
@@ -160,7 +160,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @PostTests([{
-    testName: 'expect no favorite sales items in user account',
+    testName: 'no favorite sales items in user account',
     serviceFunctionName: 'userAccountService.getUserAccount',
     expectedResult: {
       favoriteSalesItems: []

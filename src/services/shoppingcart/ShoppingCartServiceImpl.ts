@@ -53,7 +53,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @TestSetup(['salesItemService.createSalesItem'])
   @PostTests([
     {
-      testName: 'Shopping cart contains a sales item',
+      testName: 'shopping cart contains a sales item',
       serviceFunctionName: 'shoppingCartService.getShoppingCart',
       expectedResult: {
         'salesItems._id': '{{salesItemId}}'
@@ -121,12 +121,12 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @Update('addOrRemoveSubEntities')
   @PostTests([
     {
-      testName: 'expect empty shopping cart',
+      testName: 'empty shopping cart',
       serviceFunctionName: 'shoppingCartService.getShoppingCart',
       expectedResult: { salesItems: [] }
     },
     {
-      testName: 'expect sales item to be for sale',
+      testName: 'sales item is for sale',
       serviceFunctionName: 'salesItemService.getSalesItem',
       expectedResult: {
         state: 'forSale'
