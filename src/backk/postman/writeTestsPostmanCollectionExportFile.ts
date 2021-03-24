@@ -491,6 +491,10 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           });
       }
     });
+
+    items.push({
+      name: '------------------------------'
+    })
   });
 
   const cwd = process.cwd();
