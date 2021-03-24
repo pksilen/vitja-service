@@ -33,17 +33,19 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   async getShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<ShoppingCart> {
-    const [shoppingCart, error] = await this.dbManager.getEntityWhere(
-      'userAccountId',
-      userAccountId,
-      ShoppingCart
-    );
+    return this.dbManager.executeInsideTransaction(async () => {
+      const [shoppingCart, error] = await this.dbManager.getEntityWhere(
+        'userAccountId',
+        userAccountId,
+        ShoppingCart
+      );
 
-    if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
-      return this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
-    }
+      if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
+        return this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
+      }
 
-    return [shoppingCart, error];
+      return [shoppingCart, error];
+    });
   }
 
   @AllowForSelf()
