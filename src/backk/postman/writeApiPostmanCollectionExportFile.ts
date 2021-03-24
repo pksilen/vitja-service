@@ -13,10 +13,14 @@ export default function writeApiPostmanCollectionExportFile<T>(
   controller: T,
   servicesMetadata: ServiceMetadata[]
 ) {
-  const items: any[] = [];
+  const serviceItemGroups: any[] = [];
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
+    const functionItemGroups: any[] = [];
+
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata) => {
+      let items: any[] = [];
+
       if (
         serviceFunctionAnnotationContainer.hasOnStartUp(
           (controller as any)[serviceMetadata.serviceName].constructor,
@@ -57,6 +61,16 @@ export default function writeApiPostmanCollectionExportFile<T>(
           isArrayType
         )
       );
+
+      functionItemGroups.push({
+        name: functionMetadata.functionName,
+        item: items
+      });
+    });
+
+    serviceItemGroups.push({
+      name: serviceMetadata.serviceName,
+      item: functionItemGroups
     });
   });
 
@@ -97,7 +111,7 @@ export default function writeApiPostmanCollectionExportFile<T>(
           }
         }
       },
-      ...items
+      ...serviceItemGroups
     ]
   };
 
