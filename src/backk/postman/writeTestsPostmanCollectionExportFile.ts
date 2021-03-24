@@ -343,9 +343,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             if (!foundServiceMetadata || !foundFunctionMetadata) {
               throw new Error(
                 'Invalid service function name in @PostTest annotation in ' +
-                serviceMetadata.serviceName +
-                '.' +
-                functionMetadata.functionName
+                  serviceMetadata.serviceName +
+                  '.' +
+                  functionMetadata.functionName
               );
             }
 
@@ -387,9 +387,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
             items.push(item);
           }
-        })
+        });
 
-         if (!testSpecs && lastReadFunctionMetadata && !foundCustomTest) {
+        if (!testSpecs && lastReadFunctionMetadata && !foundCustomTest) {
           const getFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
             (controller as any)[serviceMetadata.serviceName].Types,
@@ -493,8 +493,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     });
 
     items.push({
-      name: '------------------------------'
-    })
+      name: '------------------------------------------------------------------------------',
+      method: 'POST'
+    });
   });
 
   const cwd = process.cwd();
@@ -536,7 +537,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       },
       ...items.map((item, index) => ({
         ...item,
-        name: item.name + ` (${index})`
+        name: item.name.startsWith('---') ? item.name : item.name + ` (${index})`
       }))
     ]
   };
