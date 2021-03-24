@@ -127,11 +127,25 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
+  @Delete()
+  discardOrder({ _id }: _Id): PromiseOfErrorOr<null> {
+    return this.dbManager.deleteEntityById(_id, Order, {
+      preHooks: (order) =>
+        this.salesItemService.updateSalesItemStates(
+          JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
+          'reserved',
+          'forSale'
+        )
+    });
+  }
+
+  @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update('update')
+  @TestSetup(['orderService.placeOrder'])
   payOrder({ _id, ...restOfEntity }: PayOrderArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, ...restOfEntity }, Order, {
       preHooks: [
-        ({ userAccountId }) => this.shoppingCartService.emptyOrderedShoppingCart({ userAccountId }),
+        ({ userAccountId }) => this.shoppingCartService.deleteShoppingCart({ userAccountId }),
         {
           isSuccessfulOrTrue: ({ transactionId }) => transactionId === null,
           error: orderServiceErrors.orderAlreadyPaid
@@ -265,20 +279,38 @@ export default class OrderServiceImpl extends OrderService {
     });
   }
 
-  @AllowForUserRoles(['vitjaPaymentGateway'])
-  @Delete()
-  discardOrder({ _id }: _Id): PromiseOfErrorOr<null> {
-    return this.deleteOrderById(_id, false);
-  }
-
   @AllowForSelf()
   @TestSetup([
     'shoppingCartService.createShoppingCart',
     'shoppingCartService.addToShoppingCart',
-    'orderService.placeOrder'
+    'orderService.placeOrder',
+    'orderService.payOrder'
   ])
   deleteOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
-    return this.deleteOrderById(_id, true);
+    return this.dbManager.deleteEntityById(_id, Order, {
+      preHooks: [
+        {
+          isSuccessfulOrTrue: (order) =>
+            JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
+          error: orderServiceErrors.deliveredOrderDeleteNotAllowed
+        },
+        (order) =>
+          this.salesItemService.updateSalesItemStates(
+            JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
+            'forSale'
+          )
+      ],
+      postHook: {
+        shouldExecutePostHook: (order) => order?.transactionId !== null,
+        isSuccessful: () =>
+          sendToRemoteService(
+            `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrder`,
+            {
+              orderId: _id
+            }
+          )
+      }
+    });
   }
 
   @TestSetup([
@@ -370,33 +402,5 @@ export default class OrderServiceImpl extends OrderService {
       default:
         return newState;
     }
-  }
-
-  private deleteOrderById(_id: string, shouldCheckOrderItemStates: boolean): PromiseOfErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id, Order, {
-      preHooks: [
-        {
-          shouldExecutePreHook: () => shouldCheckOrderItemStates,
-          isSuccessfulOrTrue: (order) =>
-            JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
-          error: orderServiceErrors.deliveredOrderDeleteNotAllowed
-        },
-        (order) =>
-          this.salesItemService.updateSalesItemStates(
-            JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
-            'forSale'
-          )
-      ],
-      postHook: {
-        shouldExecutePostHook: (order) => order?.transactionId !== null,
-        isSuccessful: () =>
-          sendToRemoteService(
-            `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrder`,
-            {
-              orderId: _id
-            }
-          )
-      }
-    });
   }
 }

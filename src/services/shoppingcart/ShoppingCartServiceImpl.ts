@@ -141,7 +141,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForServiceInternalUse()
-  emptyOrderedShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
+  deleteShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart);
   }
 }
