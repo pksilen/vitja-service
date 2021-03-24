@@ -32,6 +32,21 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
+  async getShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<ShoppingCart> {
+    const [shoppingCart, error] = await this.dbManager.getEntityWhere(
+      'userAccountId',
+      userAccountId,
+      ShoppingCart
+    );
+
+    if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
+      return this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
+    }
+
+    return [shoppingCart, error];
+  }
+
+  @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestSetup(['salesItemService.createSalesItem'])
   @PostTests([
@@ -59,7 +74,10 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
       let shoppingCart;
       if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
-        [shoppingCart, error] = await this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
+        [shoppingCart, error] = await this.dbManager.createEntity(
+          { userAccountId, salesItems: [] },
+          ShoppingCart
+        );
       }
 
       return error || !shoppingCart
@@ -84,11 +102,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
             }
           );
     });
-  }
-
-  @AllowForSelf()
-  getShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<ShoppingCart> {
-    return this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart);
   }
 
   @AllowForServiceInternalUse()
@@ -121,10 +134,17 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     userAccountId,
     salesItemId
   }: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
-    return this.dbManager.removeSubEntityByIdWhere('userAccountId', userAccountId, 'salesItems', salesItemId, ShoppingCart, {
-      preHooks: () =>
-        this.salesItemService.updateSalesItemState(salesItemId, 'forSale', 'reserved', userAccountId)
-    });
+    return this.dbManager.removeSubEntityByIdWhere(
+      'userAccountId',
+      userAccountId,
+      'salesItems',
+      salesItemId,
+      ShoppingCart,
+      {
+        preHooks: () =>
+          this.salesItemService.updateSalesItemState(salesItemId, 'forSale', 'reserved', userAccountId)
+      }
+    );
   }
 
   @AllowForSelf()
