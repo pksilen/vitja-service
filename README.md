@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- number test cases
 - payorder, test shopping cart is empty
 - previousPrice tyyppi number | null
 - test error cases

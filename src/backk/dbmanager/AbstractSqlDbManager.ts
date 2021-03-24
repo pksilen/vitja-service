@@ -39,6 +39,7 @@ import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 import updateEntitiesByFilters from './sql/operations/dml/updateEntitiesByFilters';
 import { EntityPreHook } from './hooks/EntityPreHook';
 import deleteEntityWhere from './sql/operations/dml/deleteEntityWhere';
+import removeSubEntitiesWhere from './sql/operations/dml/removeSubEntitiesWhere';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -843,9 +844,35 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-
     const response = await this.removeSubEntities(_id, subEntityJsonPath, entityClass, options);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
 
+  async removeSubEntityByIdWhere<T extends BackkEntity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    subEntitiesJsonPath: string,
+    subEntityId: string,
+    EntityClass: new () => T,
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseOfErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityByIdWhere');
+    const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
+    const response = await removeSubEntitiesWhere(
+      this,
+      fieldName,
+      fieldValue,
+      subEntityJsonPath,
+      EntityClass,
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

@@ -1,23 +1,23 @@
-import { Injectable } from "@nestjs/common";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import ShoppingCartService from "./ShoppingCartService";
-import ShoppingCart from "./types/entities/ShoppingCart";
-import SalesItemService from "../salesitem/SalesItemService";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import { Delete } from "../../backk/decorators/service/function/Delete";
-import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
-import ShoppingCartOrOrderSalesItem from "./types/entities/ShoppingCartOrOrderSalesItem";
-import _IdAndUserAccountIdAndSalesItemId from "./types/args/_IdAndUserAccountIdAndSalesItemId";
-import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
-import { Update } from "../../backk/decorators/service/function/Update";
-import { PostTests } from "../../backk/decorators/service/function/PostTests";
-import { shoppingCartServiceErrors } from "./errors/shoppingCartServiceErrors";
-import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
-import UserAccountId from "../../backk/types/useraccount/UserAccountId";
-import { ErrorDef } from "../../backk/dbmanager/hooks/PreHook";
-import { HttpStatusCodes } from "../../backk/constants/constants";
+import { Injectable } from '@nestjs/common';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import ShoppingCartService from './ShoppingCartService';
+import ShoppingCart from './types/entities/ShoppingCart';
+import SalesItemService from '../salesitem/SalesItemService';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import { Delete } from '../../backk/decorators/service/function/Delete';
+import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
+import ShoppingCartOrOrderSalesItem from './types/entities/ShoppingCartOrOrderSalesItem';
+import UserAccountIdAndSalesItemId from './types/args/UserAccountIdAndSalesItemId';
+import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import { Update } from '../../backk/decorators/service/function/Update';
+import { PostTests } from '../../backk/decorators/service/function/PostTests';
+import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
+import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
+import UserAccountId from '../../backk/types/useraccount/UserAccountId';
+import { ErrorDef } from '../../backk/dbmanager/hooks/PreHook';
+import { HttpStatusCodes } from '../../backk/constants/constants';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -51,38 +51,38 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     }
   ])
   async addToShoppingCart({
-                            _id,
-                            userAccountId,
-                            salesItemId
-                          }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
+    userAccountId,
+    salesItemId
+  }: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.executeInsideTransaction(async () => {
       let [, error] = await this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart);
 
+      let shoppingCart;
       if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
-        [, error] = await this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
+        [shoppingCart, error] = await this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
       }
 
-      return error
+      return error || !shoppingCart
         ? [null, error]
         : this.dbManager.addSubEntity(
-          _id,
-          'salesItems',
-          { _id: salesItemId },
-          ShoppingCart,
-          ShoppingCartOrOrderSalesItem,
-          {
-            preHooks: {
-              isSuccessfulOrTrue: () =>
-                this.salesItemService.updateSalesItemState(
-                  salesItemId,
-                  'reserved',
-                  'forSale',
-                  userAccountId
-                ),
-              error: shoppingCartServiceErrors.salesItemReservedOrSold
+            shoppingCart._id,
+            'salesItems',
+            { _id: salesItemId },
+            ShoppingCart,
+            ShoppingCartOrOrderSalesItem,
+            {
+              preHooks: {
+                isSuccessfulOrTrue: () =>
+                  this.salesItemService.updateSalesItemState(
+                    salesItemId,
+                    'reserved',
+                    'forSale',
+                    userAccountId
+                  ),
+                error: shoppingCartServiceErrors.salesItemReservedOrSold
+              }
             }
-          }
-        );
+          );
     });
   }
 
@@ -101,7 +101,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     });
   }
 
-
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @PostTests([
@@ -119,11 +118,10 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     }
   ])
   removeFromShoppingCart({
-    _id,
     userAccountId,
     salesItemId
-  }: _IdAndUserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
-    return this.dbManager.removeSubEntityById(_id, 'salesItems', salesItemId, ShoppingCart, {
+  }: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
+    return this.dbManager.removeSubEntityByIdWhere('userAccountId', userAccountId, 'salesItems', salesItemId, ShoppingCart, {
       preHooks: () =>
         this.salesItemService.updateSalesItemState(salesItemId, 'forSale', 'reserved', userAccountId)
     });

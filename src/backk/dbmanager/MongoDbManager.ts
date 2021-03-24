@@ -1481,4 +1481,8 @@ export default class MongoDbManager extends AbstractDbManager {
   deleteEntityWhere<T extends BackkEntity>(fieldName: string, fieldValue: T[keyof T], EntityClass: { new(): T }, options?: { preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }): PromiseOfErrorOr<null> {
     throw new Error('Not implemented')
   }
+
+  removeSubEntityByIdWhere<T extends BackkEntity>(fieldName: string, fieldValue: T[keyof T], subEntitiesJsonPath: string, subEntityId: string, EntityClass: { new(): T }, options?: { preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }): PromiseOfErrorOr<null> {
+    throw new Error('Not implemented')
+  }
 }

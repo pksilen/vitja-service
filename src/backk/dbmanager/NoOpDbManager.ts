@@ -4,6 +4,9 @@ import { SubEntity } from '../types/entities/SubEntity';
 import MongoDbQuery from './mongodb/MongoDbQuery';
 import SqlExpression from './sql/expressions/SqlExpression';
 import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
+import { EntityPreHook } from './hooks/EntityPreHook';
+import { PostHook } from './hooks/PostHook';
+import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
 
 export default class NoOpDbManager extends AbstractDbManager {
   getModifyColumnStatement(): string {
@@ -183,6 +186,10 @@ export default class NoOpDbManager extends AbstractDbManager {
   }
 
   deleteEntityWhere<T extends BackkEntity>(): PromiseOfErrorOr<null> {
+    throw new Error('Not implemented');
+  }
+
+  removeSubEntityByIdWhere<T extends BackkEntity>(): PromiseOfErrorOr<null> {
     throw new Error('Not implemented');
   }
 }
