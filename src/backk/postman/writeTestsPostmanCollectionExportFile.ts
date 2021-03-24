@@ -37,7 +37,21 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   tryValidateIntegrationTests(writtenTests, servicesMetadata);
 
   items.push({
-    name:  'CLEANUP ---------------',
+    name:  '------------------------------------',
+    request: {
+      method: 'POST'
+    }
+  });
+
+  items.push({
+    name:  'CLEANUP',
+    request: {
+      method: 'POST'
+    }
+  });
+
+  items.push({
+    name:  '------------------------------------',
     request: {
       method: 'POST'
     }
@@ -95,9 +109,22 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     ) {
       return;
     }
+    items.push({
+      name:  '------------------------------------',
+      request: {
+        method: 'POST'
+      }
+    });
 
     items.push({
-      name: serviceMetadata.serviceName.toUpperCase() + ' ---------------',
+      name: serviceMetadata.serviceName.toUpperCase(),
+      request: {
+        method: 'POST'
+      }
+    });
+
+    items.push({
+      name:  '------------------------------------',
       request: {
         method: 'POST'
       }
@@ -546,7 +573,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       },
       ...items.map((item, index) => ({
         ...item,
-        name: item.name.startsWith('---') ? item.name : item.name + ` (${index})`
+        name: item.name.endsWith('---') ? item.name : item.name + ` (${index})`
       }))
     ]
   };
