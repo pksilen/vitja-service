@@ -110,7 +110,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       return;
     }
     items.push({
-      name: Array(serviceMetadata.serviceName.length).fill('-'),
+      name: Array(serviceMetadata.serviceName.length).fill('-').join(''),
       request: {
         method: 'POST'
       }
@@ -124,7 +124,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     });
 
     items.push({
-      name: Array(serviceMetadata.serviceName.length).fill('-'),
+      name: Array(serviceMetadata.serviceName.length).fill('-').join(''),
       request: {
         method: 'POST'
       }
