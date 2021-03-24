@@ -87,7 +87,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata, serviceIndex) => {
     // noinspection ReuseOfLocalVariableJS
-    items = [];
+    const functionItemGroups: object[] = [];
 
     let updateCount = 0;
 
@@ -102,7 +102,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     let lastReadFunctionMetadata: FunctionMetadata | undefined;
     let createFunctionMetadata: FunctionMetadata | undefined;
     // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
-    serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, index: number) => {
+    serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, functionIndex: number) => {
+      items = [];
+
       writtenTests
         .filter(
           ({ testTemplate: { executeBefore } }) =>
@@ -439,15 +441,15 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       const testSetupServiceFunctionsToExecuteForNextFunction = serviceFunctionAnnotationContainer.getTestSetup(
         (controller as any)[serviceMetadata.serviceName].constructor,
-        serviceMetadata.functions[index + 1]?.functionName
+        serviceMetadata.functions[functionIndex + 1]?.functionName
       );
 
       if (
         isDelete &&
-        index !== serviceMetadata.functions.length - 1 &&
+        functionIndex !== serviceMetadata.functions.length - 1 &&
         isDeleteFunction(
           (controller as any)[serviceMetadata.serviceName].constructor,
-          serviceMetadata.functions[index + 1].functionName
+          serviceMetadata.functions[functionIndex + 1].functionName
         ) &&
         createFunctionMetadata &&
         !testSetupServiceFunctionsToExecuteForNextFunction
@@ -490,7 +492,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
 
-      if (index === serviceMetadata.functions.length - 1) {
+      if (functionIndex === serviceMetadata.functions.length - 1) {
         writtenTests
           .filter(
             ({ testTemplate: { serviceFunctionName, executeAfter } }) =>
@@ -500,11 +502,19 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             addCustomTest(writtenTest, controller, servicesMetadata, items);
           });
       }
+
+      functionItemGroups.push({
+        name: functionMetadata.functionName + ` (${serviceIndex + 1}.${functionIndex + 1})`,
+        item: items.map((item, index) => ({
+          ...item,
+          name: item.name + ` (${serviceIndex + 1}.${functionIndex + 1}.${index + 1})`
+        }))
+      });
     });
 
     itemGroups.push({
       name: serviceMetadata.serviceName + ` (${serviceIndex + 1})`,
-      item: items.map((item, index) => ({ ...item, name: item.name + ` (${serviceIndex + 1}.${index + 1})` }))
+      item: functionItemGroups
     });
   });
 
