@@ -81,8 +81,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     });
 
   itemGroups.push({
-    name: 'Cleanup',
-    item: items
+    name: 'Cleanup (0)',
+    item: items.map((item, index) => ({ ...item, name: item.name + ` (0.${index + 1})` }))
   });
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata, serviceIndex) => {
