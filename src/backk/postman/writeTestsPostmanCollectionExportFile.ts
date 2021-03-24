@@ -503,7 +503,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     });
 
     itemGroups.push({
-      name: serviceMetadata.serviceName,
+      name: serviceMetadata.serviceName + ` (${serviceIndex + 1})`,
       item: items.map((item, index) => ({ ...item, name: item.name + ` (${serviceIndex + 1}.${index + 1})` }))
     });
   });
