@@ -25,7 +25,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   servicesMetadata: ServiceMetadata[]
 ) {
   let items: any[] = [];
+  const itemGroups: object[] = [];
   const testFilePathNames = getFileNamesRecursively(process.cwd() + '/integrationtests');
+
   const writtenTests = _.flatten(
     testFilePathNames.map((testFilePathName) => {
       const testFileContents = readFileSync(testFilePathName, { encoding: 'UTF-8' });
@@ -35,8 +37,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   );
 
   tryValidateIntegrationTests(writtenTests, servicesMetadata);
-
-  const itemGroups: object[] = [];
 
   servicesMetadata
     .filter(
@@ -83,7 +83,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   itemGroups.push({
     name: 'Cleanup',
     item: items
-  })
+  });
 
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
     // noinspection ReuseOfLocalVariableJS
@@ -502,11 +502,10 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       }
     });
 
-
     itemGroups.push({
       name: serviceMetadata.serviceName,
-      item: items.map((item, index) => item.name + ` (${index})`)
-    })
+      item: items.map((item, index) => ({ ...item, name: item.name + ` (${index})` }))
+    });
   });
 
   const cwd = process.cwd();
