@@ -199,7 +199,11 @@ export default function getServiceFunctionReturnValueTests(
 
       switch (baseTypeName) {
         case 'string':
-          sampleString = getSampleStringValue(serviceTypes[returnValueTypeName], propertyName, propertyName.startsWith('current') ? false : isUpdate);
+          sampleString = getSampleStringValue(
+            serviceTypes[returnValueTypeName],
+            propertyName,
+            propertyName.startsWith('current') ? false : isUpdate
+          );
           expectedValue = `'${sampleString}'`;
           break;
         case 'boolean':
@@ -300,9 +304,14 @@ export default function getServiceFunctionReturnValueTests(
 })`
           );
         } else {
+          let collectionVariableCheck = '';
+          if (typeof expectedValue === 'string' && expectedValue?.startsWith('pm.collectionVariables.get(')) {
+            collectionVariableCheck = ` && ${expectedValue} !== undefined`;
+          }
+
           javascriptLines.push(
             `pm.test("response${responsePath}${propertyName}", function () {
-  if (response${responsePath}${propertyName} !== undefined) 
+  if (response${responsePath}${propertyName} !== undefined ${collectionVariableCheck}) 
    return ${expectation}
   else 
     return true; 
