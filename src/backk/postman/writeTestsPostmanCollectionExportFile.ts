@@ -137,7 +137,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         functionMetadata.functionName
       );
 
-      testSetupServiceFunctionsOrSpecsToExecute?.forEach((serviceFunctionOrSpec) => {
+      testSetupServiceFunctionsOrSpecsToExecute?.forEach((serviceFunctionOrSpec, testSpecIndex) => {
         const [serviceName, functionName] =
           typeof serviceFunctionOrSpec === 'string'
             ? serviceFunctionOrSpec.split('.')
@@ -224,7 +224,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           typeof serviceFunctionOrSpec === 'object' ? serviceFunctionOrSpec?.setupStepName : undefined
         );
 
-        items.push({ ...item, name: 'GIVEN ' + item.name });
+        items.push({ ...item, name: (testSpecIndex === 0 ? 'GIVEN ' : 'AND ') + item.name });
       });
 
       if (
@@ -321,7 +321,16 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         tests
       );
 
-      items.push(item);
+      const testSpecs = serviceFunctionAnnotationContainer.getPostTestSpecs(
+        (controller as any)[serviceMetadata.serviceName].constructor,
+        functionMetadata.functionName
+      );
+
+      if (testSetupServiceFunctionsOrSpecsToExecute || testSpecs) {
+        items.push({ ...item, name: 'WHEN ' + item.name });
+      } else {
+        items.push(item);
+      }
 
       if (isUpdate || isDelete) {
         const foundCustomTest = writtenTests.find(
@@ -331,12 +340,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
         );
 
-        const testSpecs = serviceFunctionAnnotationContainer.getPostTestSpecs(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          functionMetadata.functionName
-        );
-
-        testSpecs?.forEach((testSpec) => {
+        testSpecs?.forEach((testSpec, testSpecIndex) => {
           const finalExpectedFieldPathNameToFieldValueMapInTests = {
             ...(expectedResponseFieldPathNameToFieldValueMapInTests ?? {}),
             ...(testSpec?.expectedResult ?? {})
@@ -398,7 +402,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
               testSpec.testName
             );
 
-            items.push({ ...item, name: 'THEN ' + item.name });
+            items.push({ ...item, name: (testSpecIndex === 0 ? 'THEN ' : 'AND ') + item.name });
           }
         });
 
