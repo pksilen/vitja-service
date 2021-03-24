@@ -151,6 +151,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Delete()
+  @TestSetup(['shoppingCartService.addToShoppingCart'])
   @PostTests([
     {
       testName: 'shopping cart is empty',
