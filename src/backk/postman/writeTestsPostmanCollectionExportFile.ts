@@ -89,6 +89,13 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       return;
     }
 
+    items.push({
+      name: serviceMetadata.serviceName.toUpperCase() + ' ---------------',
+      request: {
+        method: 'POST'
+      }
+    });
+
     let lastReadFunctionMetadata: FunctionMetadata | undefined;
     let createFunctionMetadata: FunctionMetadata | undefined;
     // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
@@ -490,11 +497,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             addCustomTest(writtenTest, controller, servicesMetadata, items);
           });
       }
-    });
-
-    items.push({
-      name: '------------------------------------------------------------------------------',
-      method: 'POST'
     });
   });
 
