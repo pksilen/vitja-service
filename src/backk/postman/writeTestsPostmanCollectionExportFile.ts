@@ -51,7 +51,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   });
 
   items.push({
-    name:  '-----------------------------------------------',
+    name: '-----------------------------------------------',
     request: {
       method: 'POST'
     }
@@ -110,7 +110,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       return;
     }
     items.push({
-      name:  '-----------------------------------------------',
+      name: '-----------------------------------------------',
       request: {
         method: 'POST'
       }
@@ -573,7 +573,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       },
       ...items.map((item, index) => ({
         ...item,
-        name: item.request.url ? item.name : item.name + ` (${index})`
+        name: item.request.url ? item.name + ` (${index})` : item.name
       }))
     ]
   };
