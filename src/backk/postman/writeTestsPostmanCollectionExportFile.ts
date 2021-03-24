@@ -224,7 +224,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           typeof serviceFunctionOrSpec === 'object' ? serviceFunctionOrSpec?.setupStepName : undefined
         );
 
-        items.push({ ...item, name: 'Setup: ' + item.name });
+        items.push({ ...item, name: 'GIVEN ' + item.name });
       });
 
       if (
@@ -398,7 +398,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
               testSpec.testName
             );
 
-            items.push({ ...item, name: 'Expect: ' + item.name });
+            items.push({ ...item, name: 'THEN ' + item.name });
           }
         });
 
