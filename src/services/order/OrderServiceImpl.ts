@@ -71,7 +71,6 @@ export default class OrderServiceImpl extends OrderService {
   })
   @TestSetup([
     'salesItemService.createSalesItem',
-    'shoppingCartService.createShoppingCart',
     'shoppingCartService.addToShoppingCart'
   ])
   @PostTests([
@@ -281,7 +280,6 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   @TestSetup([
-    'shoppingCartService.createShoppingCart',
     'shoppingCartService.addToShoppingCart',
     'orderService.placeOrder',
     'orderService.payOrder'
@@ -314,7 +312,6 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @TestSetup([
-    'shoppingCartService.createShoppingCart',
     'shoppingCartService.addToShoppingCart',
     'orderService.placeOrder'
   ])

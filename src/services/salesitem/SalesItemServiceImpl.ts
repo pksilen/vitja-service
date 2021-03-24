@@ -259,10 +259,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @TestSetup([
     {
-      setupStepName: 'create shopping cart',
-      serviceFunctionName: 'shoppingCartService.createShoppingCart'
-    },
-    {
       setupStepName: 'add sales item to shopping cart',
       serviceFunctionName: 'shoppingCartService.addToShoppingCart'
     }
