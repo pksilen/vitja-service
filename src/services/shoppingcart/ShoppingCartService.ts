@@ -7,7 +7,6 @@ import UserAccountIdAndSalesItemId from "./types/args/UserAccountIdAndSalesItemI
 
 export default abstract class ShoppingCartService extends CrudEntityService {
   abstract deleteAllShoppingCarts(): PromiseOfErrorOr<null>;
-  abstract addToShoppingCart(arg: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null>;
   abstract getShoppingCart(arg: UserAccountId): PromiseOfErrorOr<ShoppingCart>;
 
   abstract getShoppingCartOrErrorIfEmpty(
@@ -15,6 +14,7 @@ export default abstract class ShoppingCartService extends CrudEntityService {
     error: ErrorDef
   ): PromiseOfErrorOr<ShoppingCart>;
 
+  abstract addToShoppingCart(arg: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null>;
   abstract removeFromShoppingCart(arg: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null>;
   abstract emptyShoppingCart(arg: UserAccountId): PromiseOfErrorOr<null>;
   abstract deleteShoppingCart(arg: UserAccountId): PromiseOfErrorOr<null>;
