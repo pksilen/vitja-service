@@ -24,7 +24,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
   servicesMetadata: ServiceMetadata[]
 ) {
-  const items: any[] = [];
+  let items: any[] = [];
   const testFilePathNames = getFileNamesRecursively(process.cwd() + '/integrationtests');
   const writtenTests = _.flatten(
     testFilePathNames.map((testFilePathName) => {
@@ -36,26 +36,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
   tryValidateIntegrationTests(writtenTests, servicesMetadata);
 
-  items.push({
-    name: '-----------------------------------------------',
-    request: {
-      method: 'POST'
-    }
-  });
-
-  items.push({
-    name: 'CLEANUP',
-    request: {
-      method: 'POST'
-    }
-  });
-
-  items.push({
-    name: '-----------------------------------------------',
-    request: {
-      method: 'POST'
-    }
-  });
+  const itemGroups: object[] = [];
 
   servicesMetadata
     .filter(
@@ -99,7 +80,15 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       }
     });
 
+  itemGroups.push({
+    name: 'Cleanup',
+    item: items
+  })
+
   servicesMetadata.forEach((serviceMetadata: ServiceMetadata) => {
+    // noinspection ReuseOfLocalVariableJS
+    items = [];
+
     let updateCount = 0;
 
     if (
@@ -109,26 +98,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     ) {
       return;
     }
-    items.push({
-      name: '-----------------------------------------------',
-      request: {
-        method: 'POST'
-      }
-    });
-
-    items.push({
-      name: serviceMetadata.serviceName.toUpperCase(),
-      request: {
-        method: 'POST'
-      }
-    });
-
-    items.push({
-      name: '-----------------------------------------------',
-      request: {
-        method: 'POST'
-      }
-    });
 
     let lastReadFunctionMetadata: FunctionMetadata | undefined;
     let createFunctionMetadata: FunctionMetadata | undefined;
@@ -532,6 +501,12 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           });
       }
     });
+
+
+    itemGroups.push({
+      name: serviceMetadata.serviceName,
+      item: items.map((item, index) => item.name + ` (${index})`)
+    })
   });
 
   const cwd = process.cwd();
@@ -571,10 +546,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           }
         }
       },
-      ...items.map((item, index) => ({
-        ...item,
-        name: item.request.url ? item.name + ` (${index})` : item.name
-      }))
+      ...itemGroups
     ]
   };
 
