@@ -20,7 +20,7 @@ export default abstract class OrderService extends CrudEntityService {
   abstract addOrderItem(arg: AddOrderItemArg): PromiseOfErrorOr<null>
   abstract deliverOrderItem(arg: DeliverOrderItemArg): PromiseOfErrorOr<null>;
   abstract updateOrderItemState(arg: UpdateOrderItemStateArg): PromiseOfErrorOr<null>;
-  abstract discardUnpaidOrder(arg: _Id): PromiseOfErrorOr<null>;
+  abstract discardOrder(arg: _Id): PromiseOfErrorOr<null>;
   abstract deleteOrder(arg: _IdAndUserAccountId): PromiseOfErrorOr<null>;
   abstract deleteIncompleteOrders(arg: DeleteIncompleteOrdersArg): PromiseOfErrorOr<null>;
 }

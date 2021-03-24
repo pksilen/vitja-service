@@ -267,7 +267,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Delete()
-  discardUnpaidOrder({ _id }: _Id): PromiseOfErrorOr<null> {
+  discardOrder({ _id }: _Id): PromiseOfErrorOr<null> {
     return this.deleteOrderById(_id, false);
   }
 
@@ -281,7 +281,11 @@ export default class OrderServiceImpl extends OrderService {
     return this.deleteOrderById(_id, true);
   }
 
-  @TestSetup(['orderService.placeOrder'])
+  @TestSetup([
+    'shoppingCartService.createShoppingCart',
+    'shoppingCartService.addToShoppingCart',
+    'orderService.placeOrder'
+  ])
   @CronJob({ minutes: 0, hourInterval: 1 })
   deleteIncompleteOrders({ incompleteOrderTtlInMinutes }: DeleteIncompleteOrdersArg): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
