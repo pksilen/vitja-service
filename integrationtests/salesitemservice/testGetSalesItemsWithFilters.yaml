@@ -123,3 +123,6 @@
         responsePropertyValue: 1
         responseLength: 1
 
+- testTemplate:
+    serviceFunctionName: salesItemService.deleteAllSalesItems
+
