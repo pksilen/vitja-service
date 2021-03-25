@@ -347,24 +347,24 @@ export default class OrderServiceImpl extends OrderService {
     'orderService.placeOrder'
   ])
   deleteUnpaidOrders({ unpaidOrderTimeToLiveInMinutes }: DeleteUnpaidOrdersArg): PromiseOfErrorOr<null> {
-    const orderFilters = this.dbManager.getFilters(
-      {
-        transactionId: null,
-        lastModifiedAtTimestamp: {
-          $lte: dayjs()
-            .subtract(unpaidOrderTimeToLiveInMinutes, 'minutes')
-            .toDate()
-        }
-      },
-      [
-        new SqlEquals({ transactionId: null }),
-        new SqlExpression(
-          `lastmodifiedtimestamp <= current_timestamp - INTERVAL '${unpaidOrderTimeToLiveInMinutes}' minute`
-        )
-      ]
-    );
-
     return this.dbManager.executeInsideTransaction(async () => {
+      const orderFilters = this.dbManager.getFilters(
+        {
+          transactionId: null,
+          lastModifiedAtTimestamp: {
+            $lte: dayjs()
+              .subtract(unpaidOrderTimeToLiveInMinutes, 'minutes')
+              .toDate()
+          }
+        },
+        [
+          new SqlEquals({ transactionId: null }),
+          new SqlExpression(
+            `lastmodifiedtimestamp <= current_timestamp - INTERVAL '${unpaidOrderTimeToLiveInMinutes}' minute`
+          )
+        ]
+      );
+      
       const [orders, error] = await this.dbManager.getEntitiesByFilters<Order>(orderFilters, Order, {
         includeResponseFields: ['orderItems._id', 'orderItems.salesItems._id'],
         paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
