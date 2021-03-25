@@ -20,7 +20,7 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
   if (process.env.NODE_ENV === 'development') {
     return;
   }
-  
+
   Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()).forEach(
     ([serviceFunctionName, cronSchedule]) => {
       const job = new CronJob(cronSchedule, async () => {
