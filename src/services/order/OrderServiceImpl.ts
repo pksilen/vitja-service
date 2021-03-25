@@ -246,6 +246,13 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
+  @PostTests([
+    {
+      testName: 'order item state is delivered',
+      serviceFunctionName: 'orderService.getOrder',
+      expectedResult: { 'orderItems.state': 'delivered' }
+    }
+  ])
   async receiveOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'delivered' }] },
@@ -265,6 +272,13 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
+  @PostTests([
+    {
+      testName: 'order item state is returning',
+      serviceFunctionName: 'orderService.getOrder',
+      expectedResult: { 'orderItems.state': 'returning' }
+    }
+  ])
   async returnOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'returning' }] },
@@ -284,6 +298,18 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
+  @PostTests([
+    {
+      testName: 'order item state is returned',
+      serviceFunctionName: 'orderService.getOrder',
+      expectedResult: { 'orderItems.state': 'returned' }
+    },
+    {
+      testName: 'sales item state is for sale',
+      serviceFunctionName: 'salesItemService.getSalesItem',
+      expectedResult: { state: 'forSale' }
+    }
+  ])
   async receiveReturnedOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'returned' }] },
