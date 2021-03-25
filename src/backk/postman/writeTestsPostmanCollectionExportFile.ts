@@ -35,7 +35,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       const fileType = testFilePathName.endsWith('json') ? 'json' : 'yaml';
       const writtenTestsInFile =
         fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
-      return writtenTestsInFile.map((writtenTest) => ({
+      return writtenTestsInFile.map((writtenTest: any) => ({
         ...writtenTest,
         serviceName: path.basename(path.dirname(testFilePathName)),
         testFileName: path.basename(testFilePathName).split('.')[0]
