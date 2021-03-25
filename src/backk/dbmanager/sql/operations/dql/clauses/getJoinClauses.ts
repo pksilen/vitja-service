@@ -37,8 +37,7 @@ export default function getJoinClauses(
           : joinSpec.entityFieldName;
 
         if (
-          !shouldIncludeField('id', joinEntityPath, projection) &&
-          !shouldIncludeField('_id', joinEntityPath, projection)
+          !shouldIncludeField('', joinEntityPath, projection)
         ) {
           return '';
         }

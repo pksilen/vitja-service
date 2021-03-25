@@ -7,7 +7,7 @@ export default function shouldIncludeField(
 ): boolean {
   let shouldIncludeField = true;
   const fullFieldPath =
-    fieldPath.endsWith('.') || !fieldPath ? fieldPath + fieldName : fieldPath + '.' + fieldName;
+    fieldPath.endsWith('.') || !fieldPath ? fieldPath + fieldName : fieldPath + (fieldName ? '.' : '') + fieldName;
 
   if (includeResponseFields && includeResponseFields.length > 0) {
     shouldIncludeField = !!includeResponseFields.find((includeResponseField) => {
