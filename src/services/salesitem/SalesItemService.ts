@@ -28,14 +28,14 @@ export default abstract class SalesItemService extends CrudEntityService {
   abstract updateSalesItemStates(
     salesItems: ShoppingCartOrOrderSalesItem[],
     newState: SalesItemState,
-    requiredCurrentState?: SalesItemState,
+    requiredCurrentStates?: SalesItemState[],
     buyerUserAccountId?: string
   ): PromiseOfErrorOr<null>;
 
   abstract updateSalesItemState(
     _id: string,
     newState: SalesItemState,
-    requiredCurrentState?: SalesItemState,
+    requiredCurrentStates?: SalesItemState[],
     buyerUserAccountId?: string | null
   ): PromiseOfErrorOr<null>;
 
@@ -43,6 +43,6 @@ export default abstract class SalesItemService extends CrudEntityService {
     arg: ChangeExpiredReservedSalesItemStatesToForSaleArg
   ): PromiseOfErrorOr<null>;
 
-  abstract deleteOldUnsoldSalesItems(arg: DeleteOldUnsoldSalesItemsArg): PromiseOfErrorOr<null>;
+  abstract deleteOldUnsoldSalesItemsDaily(arg: DeleteOldUnsoldSalesItemsArg): PromiseOfErrorOr<null>;
   abstract deleteSalesItem(arg: _IdAndUserAccountId): PromiseOfErrorOr<null>;
 }

@@ -34,9 +34,11 @@ import { PostTests } from '../../backk/decorators/service/function/PostTests';
 import { orderServiceErrors } from './errors/orderServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import RemoveOrderItemArg from './types/args/RemoveOrderItemArg';
-import DeleteIncompleteOrdersArg from './types/args/DeleteIncompleteOrdersArg';
+import DeleteUnpaidOrdersArg from './types/args/DeleteUnpaidOrdersArg';
 import { EntityPreHook } from '../../backk/dbmanager/hooks/EntityPreHook';
 import _IdAndOrderItemId from './types/args/_IdAndOrderItemId';
+import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
+import { SalesItem } from '../salesitem/types/entities/SalesItem';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -106,7 +108,7 @@ export default class OrderServiceImpl extends OrderService {
                 this.salesItemService.updateSalesItemStates(
                   shoppingCart.salesItems,
                   'sold',
-                  'reserved',
+                  ['forSale', 'reserved'],
                   userAccountId
                 )
             }
@@ -128,7 +130,7 @@ export default class OrderServiceImpl extends OrderService {
         this.salesItemService.updateSalesItemStates(
           JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
           'reserved',
-          'sold'
+          ['sold']
         )
     });
   }
@@ -338,27 +340,48 @@ export default class OrderServiceImpl extends OrderService {
     );
   }
 
+  @CronJob({ minuteInterval: 5 })
   @TestSetup(['shoppingCartService.addToShoppingCart', 'orderService.placeOrder'])
-  @CronJob({ minutes: 0, hourInterval: 1 })
-  deleteIncompleteOrders({ incompleteOrderTtlInMinutes }: DeleteIncompleteOrdersArg): PromiseOfErrorOr<null> {
+  deleteUnpaidOrders({ unpaidOrderTimeToLiveInMinutes }: DeleteUnpaidOrdersArg): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {
         transactionId: null,
         lastModifiedAtTimestamp: {
           $lte: dayjs()
-            .subtract(incompleteOrderTtlInMinutes, 'minutes')
+            .subtract(unpaidOrderTimeToLiveInMinutes, 'minutes')
             .toDate()
         }
       },
       [
         new SqlEquals({ transactionId: null }),
         new SqlExpression(
-          `lastmodifiedtimestamp <= current_timestamp - INTERVAL '${incompleteOrderTtlInMinutes}' minute`
+          `lastmodifiedtimestamp <= current_timestamp - INTERVAL '${unpaidOrderTimeToLiveInMinutes}' minute`
         )
       ]
     );
 
-    return this.dbManager.deleteEntitiesByFilters(filters, Order);
+    return this.dbManager.executeInsideTransaction(async () => {
+      const [orders, error] = await this.dbManager.getEntitiesByFilters<Order>(filters, Order, {
+        includeResponseFields: ['orderItems.salesItems._id'],
+        paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
+      });
+
+      if (orders) {
+        const salesItemIdsToUpdate = JSONPath({ json: orders, path: '$[*].orderItems[*].salesItems[*]' });
+        const salesItemFilters = this.dbManager.getFilters(
+          [{ _id: { $in: salesItemIdsToUpdate } }],
+          [new SqlInExpression('_id', salesItemIdsToUpdate)]
+        );
+
+        return this.dbManager.updateEntitiesByFilters<SalesItem>(
+          salesItemFilters,
+          { state: 'forSale' },
+          SalesItem
+        );
+      }
+
+      return [null, error];
+    });
   }
 
   private static refundOrderItem(orderId: string, orderItemId: string): PromiseOfErrorOr<null> {
@@ -414,11 +437,7 @@ export default class OrderServiceImpl extends OrderService {
     return `https://${paymentGatewayHost}/${paymentGatewayUrlPath}?successUrl=${successUrl}&failureUrl=${failureUrl}&successRedirectUrl=${successUiRedirectUrl}&failureRedirectUrl=${failureRedirectUrl}`;
   }
 
-  private static hasOrderItemState(
-    order: Order,
-    orderItemId: string,
-    currentState: OrderItemState
-  ): boolean {
+  private static hasOrderItemState(order: Order, orderItemId: string, currentState: OrderItemState): boolean {
     return (
       JSONPath({
         json: order,

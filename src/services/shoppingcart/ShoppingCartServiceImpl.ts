@@ -95,7 +95,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
                   this.salesItemService.updateSalesItemState(
                     salesItemId,
                     'reserved',
-                    'forSale',
+                    ['forSale'],
                     userAccountId
                   ),
                 error: shoppingCartServiceErrors.salesItemReservedOrSold
@@ -144,7 +144,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       ShoppingCart,
       {
         preHooks: () =>
-          this.salesItemService.updateSalesItemState(salesItemId, 'forSale', 'reserved', userAccountId)
+          this.salesItemService.updateSalesItemState(salesItemId, 'forSale', ['reserved'], userAccountId)
       }
     );
   }
@@ -162,7 +162,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   emptyShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart, {
       preHooks: ({ salesItems }) =>
-        this.salesItemService.updateSalesItemStates(salesItems, 'forSale', 'reserved', userAccountId)
+        this.salesItemService.updateSalesItemStates(salesItems, 'forSale', ['reserved'], userAccountId)
     });
   }
 

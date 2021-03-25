@@ -222,11 +222,11 @@ export default class SalesItemServiceImpl extends SalesItemService {
   updateSalesItemStates(
     salesItems: ShoppingCartOrOrderSalesItem[],
     newState: SalesItemState,
-    requiredCurrentState?: SalesItemState,
+    requiredCurrentStates?: SalesItemState[],
     buyerUserAccountId?: string
   ): PromiseOfErrorOr<null> {
     return executeForAll(salesItems, ({ _id }) =>
-      this.updateSalesItemState(_id, newState, requiredCurrentState, buyerUserAccountId)
+      this.updateSalesItemState(_id, newState, requiredCurrentStates, buyerUserAccountId)
     );
   }
 
@@ -234,7 +234,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   updateSalesItemState(
     _id: string,
     newState: SalesItemState,
-    requiredCurrentState?: SalesItemState,
+    requiredCurrentStates?: SalesItemState[],
     buyerUserAccountId?: string
   ): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
@@ -243,8 +243,8 @@ export default class SalesItemServiceImpl extends SalesItemService {
       {
         preHooks: [
           {
-            shouldExecutePreHook: () => !!requiredCurrentState,
-            isSuccessfulOrTrue: ({ state }) => state === requiredCurrentState,
+            shouldExecutePreHook: () => !!requiredCurrentStates,
+            isSuccessfulOrTrue: ({ state }) => (requiredCurrentStates ?? []).includes(state),
             error: salesItemServiceErrors.invalidSalesItemState
           },
           {
@@ -299,7 +299,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @CronJob({ minutes: 0, hours: 2 })
-  deleteOldUnsoldSalesItems({
+  deleteOldUnsoldSalesItemsDaily({
     deletableUnsoldSalesItemMinAgeInMonths
   }: DeleteOldUnsoldSalesItemsArg): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(

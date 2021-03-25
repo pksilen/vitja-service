@@ -7,7 +7,7 @@ import PayOrderArg from "./types/args/PayOrderArg";
 import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
 import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 import RemoveOrderItemArg from "./types/args/RemoveOrderItemArg";
-import DeleteIncompleteOrdersArg from "./types/args/DeleteIncompleteOrdersArg";
+import DeleteUnpaidOrdersArg from "./types/args/DeleteUnpaidOrdersArg";
 import _IdAndOrderItemId from "./types/args/_IdAndOrderItemId";
 
 export default abstract class OrderService extends CrudEntityService {
@@ -22,5 +22,5 @@ export default abstract class OrderService extends CrudEntityService {
   abstract receiveOrderItem(arg: _IdAndOrderItemId): PromiseOfErrorOr<null>;
   abstract returnOrderItem(arg: _IdAndOrderItemId): PromiseOfErrorOr<null>;
   abstract receiveReturnedOrderItem(arg: _IdAndOrderItemId): PromiseOfErrorOr<null>;
-  abstract deleteIncompleteOrders(arg: DeleteIncompleteOrdersArg): PromiseOfErrorOr<null>;
+  abstract deleteUnpaidOrders(arg: DeleteUnpaidOrdersArg): PromiseOfErrorOr<null>;
 }
