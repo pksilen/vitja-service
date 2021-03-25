@@ -342,7 +342,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @CronJob({ minuteInterval: 5 })
   @TestSetup([
-    'ordersService.deleteAllOrders',
+    'orderService.deleteAllOrders',
     'shoppingCartService.addToShoppingCart',
     'orderService.placeOrder'
   ])
