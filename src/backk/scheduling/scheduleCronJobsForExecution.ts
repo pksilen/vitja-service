@@ -7,7 +7,6 @@ import serviceFunctionAnnotationContainer
 import __Backk__CronJobScheduling from "./entities/__Backk__CronJobScheduling";
 import findAsyncSequential from "../utils/findAsyncSequential";
 import wait from "../utils/wait";
-import { getNamespace } from "cls-hooked";
 import { logError } from "../observability/logging/log";
 import tryExecuteServiceMethod from "../execution/tryExecuteServiceMethod";
 import findServiceFunctionArgumentType from "../metadata/findServiceFunctionArgumentType";
@@ -18,6 +17,10 @@ import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
 const cronJobs: { [key: string]: CronJob } = {};
 
 export default function scheduleCronJobsForExecution(controller: any, dbManager: AbstractDbManager) {
+  if (process.env.NODE_ENV === 'development') {
+    return;
+  }
+  
   Object.entries(serviceFunctionAnnotationContainer.getServiceFunctionNameToCronScheduleMap()).forEach(
     ([serviceFunctionName, cronSchedule]) => {
       const job = new CronJob(cronSchedule, async () => {
