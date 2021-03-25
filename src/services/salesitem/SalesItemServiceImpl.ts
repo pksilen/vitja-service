@@ -60,7 +60,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       {
         ...arg,
         state: 'forSale',
-        previousPrice: -1,
+        previousPrice: null,
         primaryImageThumbnailDataUri: getThumbnailImageDataUri(arg.primaryImageDataUri)
       },
       SalesItem,

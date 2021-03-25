@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- payorder, test shopping cart is empty
 - previousPrice tyyppi number | null
 - test error cases
 - remove extra deletes from deleteXXX funcs

@@ -42,8 +42,8 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   public price!: number;
 
   @IsFloat(2 )
-  @MinMax(-1, Values._1B)
-  public readonly previousPrice!: number;
+  @MinMax(0, Values._1B)
+  public readonly previousPrice!: number | null;
 
   @IsFloat(2 )
   @MinMax(0, Values._1B)
