@@ -341,7 +341,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @CronJob({ minuteInterval: 5 })
-  @TestSetup(['shoppingCartService.addToShoppingCart', 'orderService.placeOrder'])
+  @TestSetup(['ordersService.deleteAllOrders', 'shoppingCartService.addToShoppingCart', 'orderService.placeOrder'])
   deleteUnpaidOrders({ unpaidOrderTimeToLiveInMinutes }: DeleteUnpaidOrdersArg): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {
