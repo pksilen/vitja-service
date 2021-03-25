@@ -513,23 +513,26 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       });
     });
 
-    const customTestItems: any[] = [];
-
-    writtenTests
-      .filter(
+    const customTestGroups = _.groupBy(
+      writtenTests.filter(
         ({ serviceName, testTemplate: { executeAfter } }) =>
           serviceName.toLowerCase() === serviceMetadata.serviceName.toLowerCase() && !executeAfter
-      )
-      .forEach((writtenTest) => {
-        addCustomTest(writtenTest, controller, servicesMetadata, customTestItems);
-      });
+      ),
+      ({ testFileName }) => testFileName
+    );
 
-    if (customTestItems.length > 0) {
+    Object.entries(customTestGroups).forEach(([testFileName, writtenTests]) => {
+      const customTestItems: any[] = [];
+
+      writtenTests.forEach((writtenTest) =>
+        addCustomTest(writtenTest, controller, servicesMetadata, customTestItems)
+      );
+      
       functionItemGroups.push({
-        name: customTestItems[0].testFileName,
+        name: testFileName,
         item: customTestItems
       });
-    }
+    });
 
     itemGroups.push({
       name: serviceMetadata.serviceName + ` (${serviceIndex + 1})`,
