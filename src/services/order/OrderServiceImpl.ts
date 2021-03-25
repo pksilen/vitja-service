@@ -372,9 +372,7 @@ export default class OrderServiceImpl extends OrderService {
       });
 
       if (orders) {
-        console.log(util.inspect(orders, { depth: null, showHidden: false}));
-
-        const salesItemIdsToUpdate = JSONPath({ json: orders, path: '$[*].orderItems[*].salesItems[*]' });
+        const salesItemIdsToUpdate = JSONPath({ json: orders, path: '$[*].orderItems[*].salesItems[*]._id' });
         if (salesItemIdsToUpdate.length > 0) {
           const salesItemFilters = this.dbManager.getFilters(
             [{ _id: { $in: salesItemIdsToUpdate } }],
