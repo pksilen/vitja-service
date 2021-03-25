@@ -527,7 +527,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       writtenTests.forEach((writtenTest) =>
         addCustomTest(writtenTest, controller, servicesMetadata, customTestItems)
       );
-      
+
       functionItemGroups.push({
         name: testFileName,
         item: customTestItems
