@@ -28,10 +28,11 @@ function generateTypescriptFileFor(
       let isBaseTypeOptional = false;
       let isReadonly = false;
       let isPublic = false;
+      let isNonNullable = false;
 
-      if (spreadType.startsWith('Partial<')) {
-        spreadType = spreadType.slice(8, -1);
-        isBaseTypeOptional = true;
+      if (spreadType.startsWith('Public<')) {
+        spreadType = spreadType.slice(7, -1);
+        isPublic = true;
       }
 
       if (spreadType.startsWith('Readonly<')) {
@@ -39,22 +40,19 @@ function generateTypescriptFileFor(
         isReadonly = true;
       }
 
-      if (spreadType.startsWith('Public<')) {
-        spreadType = spreadType.slice(7, -1);
-        isPublic = true;
+      if (spreadType.startsWith('Partial<')) {
+        spreadType = spreadType.slice(8, -1);
+        isBaseTypeOptional = true;
+      } else if (spreadType.startsWith('NonNullable<')) {
+        spreadType = spreadType.slice(12, -1);
+        isNonNullable = true;
       }
 
       if (spreadType.startsWith('Omit<')) {
-        let baseType = spreadType
+        const baseType = spreadType
           .slice(5)
           .split(',')[0]
           .trim();
-
-        if (baseType.startsWith('Partial<')) {
-          baseType = baseType.slice(8, -1);
-          // noinspection ReuseOfLocalVariableJS
-          isBaseTypeOptional = true;
-        }
 
         const ommittedKeyParts = spreadType
           .slice(5)
@@ -75,6 +73,7 @@ function generateTypescriptFileFor(
           isBaseTypeOptional,
           isReadonly,
           isPublic,
+          isNonNullable,
           omittedKeys,
           'omit',
           typeFilePathName
@@ -83,16 +82,10 @@ function generateTypescriptFileFor(
         outputImportCodeLines = outputImportCodeLines.concat(importLines);
         outputClassPropertyDeclarations = outputClassPropertyDeclarations.concat(classPropertyDeclarations);
       } else if (spreadType.startsWith('Pick<')) {
-        let baseType = spreadType
+        const baseType = spreadType
           .slice(5)
           .split(',')[0]
           .trim();
-
-        if (baseType.startsWith('Partial<')) {
-          baseType = baseType.slice(8, -1);
-          // noinspection ReuseOfLocalVariableJS
-          isBaseTypeOptional = true;
-        }
 
         const pickedKeyParts = spreadType
           .slice(5)
@@ -138,6 +131,7 @@ function generateTypescriptFileFor(
           isBaseTypeOptional,
           isReadonly,
           isPublic,
+          isNonNullable,
           pickedKeys,
           'pick',
           typeFilePathName,
@@ -148,13 +142,7 @@ function generateTypescriptFileFor(
         outputClassPropertyDeclarations = outputClassPropertyDeclarations.concat(classPropertyDeclarations);
       } else {
         const spreadTypeFilePathName = getTypeFilePathNameFor(spreadType);
-        let isBaseTypeOptional = false;
-        let baseType = spreadType;
-
-        if (baseType.startsWith('Partial<')) {
-          baseType = baseType.slice(8, -1);
-          isBaseTypeOptional = true;
-        }
+        const baseType = spreadType;
 
         if (spreadTypeFilePathName) {
           handledTypeFilePathNames.push(spreadTypeFilePathName);
@@ -166,6 +154,7 @@ function generateTypescriptFileFor(
           isBaseTypeOptional,
           isReadonly,
           isPublic,
+          isNonNullable,
           [],
           'omit',
           typeFilePathName

@@ -79,6 +79,7 @@ export default function parseTypescriptLinesForTypeName(
   isBaseTypeOptional: boolean,
   isReadonly: boolean,
   isPublic: boolean,
+  isNonNullable: boolean,
   keys: string[],
   keyType: 'omit' | 'pick',
   originatingTypeFilePathName: string,
@@ -205,6 +206,13 @@ export default function parseTypescriptLinesForTypeName(
               decorator.expression.callee.name !== 'Private' &&
               decorator.expression.callee.name !== 'IsUndefined'
           );
+        }
+
+        if (isNonNullable) {
+          classBodyNode.optional = false;
+          if (classBodyNode.typeAnnotation.typeAnnotation.type === 'TSUnionType' && classBodyNode.typeAnnotation.typeAnnotation.types[1] === 'TSNullKeyword') {
+            classBodyNode.typeAnnotation.typeAnnotation = classBodyNode.typeAnnotation.typeAnnotation.types[0];
+          }
         }
 
         finalClassPropertyDeclarations.push(classBodyNode);
