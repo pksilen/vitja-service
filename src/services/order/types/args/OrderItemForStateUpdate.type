@@ -1,5 +1,0 @@
-import OrderItem from '../entities/OrderItem';
-
-export default class OrderItemForStateUpdate {
-  ...Pick<OrderItem, 'id' | 'state'>
-}

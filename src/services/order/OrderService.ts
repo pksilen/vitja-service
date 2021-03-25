@@ -1,7 +1,6 @@
 import PlaceOrderArg from "./types/args/PlaceOrderArg";
 import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
 import Order from "./types/entities/Order";
-import UpdateOrderItemStateArg from "./types/args/UpdateOrderItemStateArg";
 import CrudEntityService from "../../backk/service/crudentity/CrudEntityService";
 import _Id from "../../backk/types/id/_Id";
 import PayOrderArg from "./types/args/PayOrderArg";
