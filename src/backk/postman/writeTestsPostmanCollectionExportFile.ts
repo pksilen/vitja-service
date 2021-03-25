@@ -19,7 +19,7 @@ import tryValidateIntegrationTests from './tryValidateIntegrationTests';
 import { HttpStatusCodes } from '../constants/constants';
 import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
 import CrudEntityService from '../service/crudentity/CrudEntityService';
-import path from "path";
+import path from 'path';
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -33,12 +33,13 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     testFilePathNames.map((testFilePathName) => {
       const testFileContents = readFileSync(testFilePathName, { encoding: 'UTF-8' });
       const fileType = testFilePathName.endsWith('json') ? 'json' : 'yaml';
-      const writtenTest = fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
-      return {
+      const writtenTestsInFile =
+        fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
+      return writtenTestsInFile.map((writtenTest) => ({
         ...writtenTest,
         serviceName: path.basename(path.dirname(testFilePathName)),
         testFileName: path.basename(testFilePathName).split('.')[0]
-      }
+      }));
     })
   );
 
@@ -527,7 +528,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       functionItemGroups.push({
         name: customTestItems[0].testFileName,
         item: customTestItems
-      })
+      });
     }
 
     itemGroups.push({
