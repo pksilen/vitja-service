@@ -362,7 +362,7 @@ export default class OrderServiceImpl extends OrderService {
 
     return this.dbManager.executeInsideTransaction(async () => {
       const [orders, error] = await this.dbManager.getEntitiesByFilters<Order>(filters, Order, {
-        includeResponseFields: ['orderItems.salesItems._id'],
+        includeResponseFields: ['orderItems._id', 'orderItems.salesItems._id'],
         paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
       });
 

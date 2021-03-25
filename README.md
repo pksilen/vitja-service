@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- when running test, disable cronJobs execution
 - payorder, test shopping cart is empty
 - previousPrice tyyppi number | null
 - test error cases
