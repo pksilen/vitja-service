@@ -341,9 +341,13 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @CronJob({ minuteInterval: 5 })
-  @TestSetup(['ordersService.deleteAllOrders', 'shoppingCartService.addToShoppingCart', 'orderService.placeOrder'])
+  @TestSetup([
+    'ordersService.deleteAllOrders',
+    'shoppingCartService.addToShoppingCart',
+    'orderService.placeOrder'
+  ])
   deleteUnpaidOrders({ unpaidOrderTimeToLiveInMinutes }: DeleteUnpaidOrdersArg): PromiseOfErrorOr<null> {
-    const filters = this.dbManager.getFilters(
+    const orderFilters = this.dbManager.getFilters(
       {
         transactionId: null,
         lastModifiedAtTimestamp: {
@@ -361,7 +365,7 @@ export default class OrderServiceImpl extends OrderService {
     );
 
     return this.dbManager.executeInsideTransaction(async () => {
-      const [orders, error] = await this.dbManager.getEntitiesByFilters<Order>(filters, Order, {
+      const [orders, error] = await this.dbManager.getEntitiesByFilters<Order>(orderFilters, Order, {
         includeResponseFields: ['orderItems._id', 'orderItems.salesItems._id'],
         paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
       });
@@ -374,11 +378,13 @@ export default class OrderServiceImpl extends OrderService {
             [new SqlInExpression('_id', salesItemIdsToUpdate)]
           );
 
-          return this.dbManager.updateEntitiesByFilters<SalesItem>(
+          const [, error] = await this.dbManager.updateEntitiesByFilters<SalesItem>(
             salesItemFilters,
             { state: 'forSale' },
             SalesItem
           );
+
+          return error ? [null, error] : this.dbManager.deleteEntitiesByFilters(orderFilters, Order);
         }
       }
 
