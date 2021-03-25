@@ -19,6 +19,7 @@ import tryValidateIntegrationTests from './tryValidateIntegrationTests';
 import { HttpStatusCodes } from '../constants/constants';
 import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
 import CrudEntityService from '../service/crudentity/CrudEntityService';
+import path from "path";
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -32,7 +33,12 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     testFilePathNames.map((testFilePathName) => {
       const testFileContents = readFileSync(testFilePathName, { encoding: 'UTF-8' });
       const fileType = testFilePathName.endsWith('json') ? 'json' : 'yaml';
-      return fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
+      const writtenTest = fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
+      return {
+        ...writtenTest,
+        serviceName: path.basename(path.dirname(testFilePathName)),
+        testFileName: path.basename(testFilePathName).split('.')[0]
+      }
     })
   );
 
@@ -326,7 +332,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         functionMetadata.functionName
       );
 
-      if (testSetupServiceFunctionsOrSpecsToExecute || testSpecs) {
+      if (testSpecs) {
         items.push({ ...item, name: 'WHEN ' + item.name });
       } else {
         items.push(item);
@@ -497,17 +503,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
 
-      if (functionIndex === serviceMetadata.functions.length - 1) {
-        writtenTests
-          .filter(
-            ({ testTemplate: { serviceFunctionName, executeAfter } }) =>
-              serviceFunctionName.split('.')[0] === serviceMetadata.serviceName && !executeAfter
-          )
-          .forEach((writtenTest) => {
-            addCustomTest(writtenTest, controller, servicesMetadata, items);
-          });
-      }
-
       functionItemGroups.push({
         name: functionMetadata.functionName + ` (${serviceIndex + 1}.${functionIndex + 1})`,
         item: items.map((item, index) => ({
@@ -516,6 +511,24 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         }))
       });
     });
+
+    const customTestItems: any[] = [];
+
+    writtenTests
+      .filter(
+        ({ serviceName, testTemplate: { executeAfter } }) =>
+          serviceName.toLowerCase() === serviceMetadata.serviceName.toLowerCase() && !executeAfter
+      )
+      .forEach((writtenTest) => {
+        addCustomTest(writtenTest, controller, servicesMetadata, customTestItems);
+      });
+
+    if (customTestItems.length > 0) {
+      functionItemGroups.push({
+        name: customTestItems[0].testFileName,
+        item: customTestItems
+      })
+    }
 
     itemGroups.push({
       name: serviceMetadata.serviceName + ` (${serviceIndex + 1})`,

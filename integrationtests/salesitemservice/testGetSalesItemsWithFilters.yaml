@@ -12,14 +12,14 @@
       tests:
         - pm.collectionVariables.set("salesItemId", response._id)
   tests:
-    - testName: create sales item with price = 1
+    - testName: GIVEN create sales item with price = 1
       testProperties:
         price: 1
         title: firstTitle
         description: firstDescription
         area: Area1
         category: Vehicles
-    - testName: create sales item with price = 2
+    - testName: GIVEN create sales item with price = 2
       testProperties:
         price: 2
         title: secondTitle
