@@ -35,10 +35,9 @@ import { PostTests } from '../../backk/decorators/service/function/PostTests';
 import { orderServiceErrors } from './errors/orderServiceErrors';
 import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import RemoveOrderItemArg from './types/args/RemoveOrderItemArg';
-import AddOrderItemArg from './types/args/AddOrderItemArg';
-import OrderItem from './types/entities/OrderItem';
 import DeleteIncompleteOrdersArg from './types/args/DeleteIncompleteOrdersArg';
 import { EntityPreHook } from '../../backk/dbmanager/hooks/EntityPreHook';
+import _IdAndOrderItemId from './types/args/_IdAndOrderItemId';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -69,10 +68,7 @@ export default class OrderServiceImpl extends OrderService {
     Location: ({ paymentGateway, uiRedirectUrl }, { _id }) =>
       OrderServiceImpl.getLocationHeaderUrl(paymentGateway, _id, uiRedirectUrl)
   })
-  @TestSetup([
-    'salesItemService.createSalesItem',
-    'shoppingCartService.addToShoppingCart'
-  ])
+  @TestSetup(['salesItemService.createSalesItem', 'shoppingCartService.addToShoppingCart'])
   @PostTests([
     {
       testName: 'sales item is sold',
@@ -127,7 +123,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Delete()
-  discardOrder({ _id }: _Id): PromiseOfErrorOr<null> {
+  discardUnpaidOrder({ _id }: _Id): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, Order, {
       preHooks: (order) =>
         this.salesItemService.updateSalesItemStates(
@@ -169,7 +165,7 @@ export default class OrderServiceImpl extends OrderService {
       expectedResult: { orderItems: [] }
     }
   ])
-  removeOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
+  removeUndeliveredOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: [
         this.isPaidOrderPreHook,
@@ -178,36 +174,41 @@ export default class OrderServiceImpl extends OrderService {
             JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
             'toBeDelivered',
           error: orderServiceErrors.cannotRemoveDeliveredOrderItem
-        }
+        },
+        (order) =>
+          this.salesItemService.updateSalesItemStates(
+            JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].salesItems[*]` }),
+            'forSale'
+          )
       ],
       postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
     });
   }
 
-  @AllowForTests()
-  @Update('addOrRemoveSubEntities')
-  @PostTests([
-    {
-      testName: 'order contains an order item',
-      serviceFunctionName: 'orderService.getOrder',
-      expectedResult: {
-        'orderItems.salesItems._id': '{{salesItemId}}'
-      }
-    }
-  ])
-  addOrderItem({ orderId, salesItemId }: AddOrderItemArg): PromiseOfErrorOr<null> {
-    return this.dbManager.addSubEntity(
-      orderId,
-      'orderItems',
-      {
-        salesItems: [{ _id: salesItemId }],
-        state: 'toBeDelivered',
-        trackingUrl: null,
-        deliveryTimestamp: null
-      },
-      Order,
-      OrderItem
-    );
+  @AllowForSelf()
+  deleteUndeliveredPaidOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
+    return this.dbManager.deleteEntityById(_id, Order, {
+      preHooks: [
+        this.isPaidOrderPreHook,
+        {
+          isSuccessfulOrTrue: (order) =>
+            JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
+          error: orderServiceErrors.deliveredOrderDeleteNotAllowed
+        },
+        (order) =>
+          this.salesItemService.updateSalesItemStates(
+            JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
+            'forSale'
+          )
+      ],
+      postHook: () =>
+        sendToRemoteService(
+          `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrder`,
+          {
+            orderId: _id
+          }
+        )
+    });
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
@@ -227,8 +228,7 @@ export default class OrderServiceImpl extends OrderService {
           this.isPaidOrderPreHook,
           {
             isSuccessfulOrTrue: (order) =>
-              JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItem.id}')].state` })[0] ===
-              'toBeDelivered',
+              OrderServiceImpl.hasCurrentOrderItemState(order, orderItem.id, 'toBeDelivered'),
             error: orderServiceErrors.orderItemAlreadyDelivered
           }
         ],
@@ -245,76 +245,74 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
-  async updateOrderItemState({ _id, version, orderItems }: UpdateOrderItemStateArg): PromiseOfErrorOr<null> {
-    const [{ state: newState, id }] = orderItems;
-
-    return this.dbManager.updateEntity({ _id, version, orderItems }, Order, {
-      preHooks: [
-        this.isPaidOrderPreHook,
-        {
-          shouldExecutePreHook: () => newState === 'returned',
-          isSuccessfulOrTrue: (order) =>
-            this.salesItemService.updateSalesItemState(
-              JSONPath({
-                json: order,
-                path: `orderItems[?(@.id == '${id}')].salesItems[0]._id`
-              })[0],
-              'forSale'
-            )
-        },
-        {
-          isSuccessfulOrTrue: (order) =>
-            JSONPath({
-              json: order,
-              path: `orderItems[?(@.id == '${id}')].state`
-            })[0] === OrderServiceImpl.getValidCurrentOrderStateFor(newState),
-          error: orderServiceErrors.invalidOrderItemCurrentState
-        }
-      ],
-      postHook: {
-        shouldExecutePostHook: () => newState === 'returned',
-        isSuccessful: () => OrderServiceImpl.refundOrderItem(_id, id)
+  @Update('update')
+  async receiveOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
+    return this.dbManager.updateEntity(
+      { _id, version, orderItems: [{ id: orderItemId, state: 'delivered' }] },
+      Order,
+      {
+        preHooks: [
+          this.isPaidOrderPreHook,
+          {
+            isSuccessfulOrTrue: (order) =>
+              OrderServiceImpl.hasCurrentOrderItemState(order, orderItemId, 'delivering'),
+            error: orderServiceErrors.invalidOrderItemCurrentState
+          }
+        ]
       }
-    });
+    );
   }
 
-  @AllowForSelf()
-  @TestSetup([
-    'shoppingCartService.addToShoppingCart',
-    'orderService.placeOrder',
-    'orderService.payOrder'
-  ])
-  deleteOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id, Order, {
-      preHooks: [
-        {
-          isSuccessfulOrTrue: (order) =>
-            JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
-          error: orderServiceErrors.deliveredOrderDeleteNotAllowed
-        },
-        (order) =>
-          this.salesItemService.updateSalesItemStates(
-            JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
-            'forSale'
-          )
-      ],
-      postHook: {
-        shouldExecutePostHook: (order) => order?.transactionId !== null,
-        isSuccessful: () =>
-          sendToRemoteService(
-            `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrder`,
-            {
-              orderId: _id
-            }
-          )
+  @AllowForUserRoles(['vitjaLogisticsPartner'])
+  @Update('update')
+  async returnOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
+    return this.dbManager.updateEntity(
+      { _id, version, orderItems: [{ id: orderItemId, state: 'returning' }] },
+      Order,
+      {
+        preHooks: [
+          this.isPaidOrderPreHook,
+          {
+            isSuccessfulOrTrue: (order) =>
+              OrderServiceImpl.hasCurrentOrderItemState(order, orderItemId, 'delivered'),
+            error: orderServiceErrors.invalidOrderItemCurrentState
+          }
+        ]
       }
-    });
+    );
   }
 
-  @TestSetup([
-    'shoppingCartService.addToShoppingCart',
-    'orderService.placeOrder'
-  ])
+  @AllowForUserRoles(['vitjaLogisticsPartner'])
+  @Update('update')
+  async receiveReturnedOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
+    return this.dbManager.updateEntity(
+      { _id, version, orderItems: [{ id: orderItemId, state: 'returned' }] },
+      Order,
+      {
+        preHooks: [
+          this.isPaidOrderPreHook,
+          {
+            isSuccessfulOrTrue: (order) =>
+              this.salesItemService.updateSalesItemState(
+                JSONPath({
+                  json: order,
+                  path: `orderItems[?(@.id == '${orderItemId}')].salesItems[0]._id`
+                })[0],
+                'forSale'
+              )
+          },
+          {
+            isSuccessfulOrTrue: (order) =>
+              OrderServiceImpl.hasCurrentOrderItemState(order, orderItemId, 'returning'),
+            error: orderServiceErrors.invalidOrderItemCurrentState
+          }
+        ],
+        postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
+      }
+    );
+  }
+
+  @TestSetup(['shoppingCartService.addToShoppingCart', 'orderService.placeOrder'])
   @CronJob({ minutes: 0, hourInterval: 1 })
   deleteIncompleteOrders({ incompleteOrderTtlInMinutes }: DeleteIncompleteOrdersArg): PromiseOfErrorOr<null> {
     const filters = this.dbManager.getFilters(
@@ -377,7 +375,9 @@ export default class OrderServiceImpl extends OrderService {
     );
 
     const failureUrl = encodeURIComponent(
-      `https://${process.env.API_GATEWAY_FQDN}/${getServiceName()}/ordersService.discardOrder?_id=${orderId}`
+      `https://${
+        process.env.API_GATEWAY_FQDN
+      }/${getServiceName()}/ordersService.discardUnpaidOrder?_id=${orderId}`
     );
 
     const paymentSuccessMessage = `Order with id ${orderId} was successfully registered and paid`;
@@ -388,16 +388,16 @@ export default class OrderServiceImpl extends OrderService {
     return `https://${paymentGatewayHost}/${paymentGatewayUrlPath}?successUrl=${successUrl}&failureUrl=${failureUrl}&successRedirectUrl=${successUiRedirectUrl}&failureRedirectUrl=${failureRedirectUrl}`;
   }
 
-  private static getValidCurrentOrderStateFor(newState: OrderItemState): OrderItemState {
-    switch (newState) {
-      case 'delivered':
-        return 'delivering';
-      case 'returning':
-        return 'delivered';
-      case 'returned':
-        return 'returning';
-      default:
-        return newState;
-    }
+  private static hasCurrentOrderItemState(
+    order: Order,
+    orderItemId: string,
+    currentState: OrderItemState
+  ): boolean {
+    return (
+      JSONPath({
+        json: order,
+        path: `orderItems[?(@.id == '${orderItemId}')].state`
+      })[0] === currentState
+    );
   }
 }
