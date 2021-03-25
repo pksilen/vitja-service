@@ -210,7 +210,7 @@ export default function parseTypescriptLinesForTypeName(
 
         if (isNonNullable) {
           classBodyNode.optional = false;
-          if (classBodyNode.typeAnnotation.typeAnnotation.type === 'TSUnionType' && classBodyNode.typeAnnotation.typeAnnotation.types[1].type === 'TSNullKeyword') {
+          if (classBodyNode.typeAnnotation.typeAnnotation.type === 'TSUnionType' && classBodyNode.typeAnnotation.typeAnnotation?.types[1]?.type === 'TSNullKeyword') {
             classBodyNode.typeAnnotation.typeAnnotation = classBodyNode.typeAnnotation.typeAnnotation.types[0];
           }
         }
