@@ -183,6 +183,13 @@ export default function parseTypescriptLinesForTypeName(
                   );
                 }
 
+                if (isNonNullable) {
+                  classProperty.optional = false;
+                  if (classProperty.typeAnnotation.typeAnnotation.type === 'TSUnionType' && classProperty.typeAnnotation.typeAnnotation?.types[1]?.type === 'TSNullKeyword') {
+                    classProperty.typeAnnotation.typeAnnotation = classProperty.typeAnnotation.typeAnnotation.types[0];
+                  }
+                }
+
                 finalClassPropertyDeclarations.push(classProperty);
               });
               return;

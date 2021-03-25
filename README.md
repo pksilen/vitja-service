@@ -2,6 +2,7 @@
 
 TODO:
 - when running test, disable cronJobs execution
+- placeOrder, transient property to I have read terms and conditions
 - payorder, test shopping cart is empty
 - previousPrice tyyppi number | null
 - test error cases
