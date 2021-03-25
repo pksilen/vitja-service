@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- placeOrder, transient property to I have read terms and conditions
+- assert error codes and messages are unique
 - payorder, test shopping cart is empty
 - previousPrice tyyppi number | null
 - test error cases

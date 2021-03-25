@@ -20,11 +20,15 @@ export const orderServiceErrors = {
     message: 'Cannot deliver order item which is already delivered'
   },
   cannotUpdateOrderWhichIsNotPaid: {
-    errorCode: 'orderService.4',
+    errorCode: 'orderService.6',
     message: 'Cannot update order which is not paid'
   },
   shoppingCartIsEmpty: {
-    errorCode: 'orderService.4',
+    errorCode: 'orderService.7',
     message: 'Cannot place order because shopping cart is empty'
   },
+  notAgreedWithTermsAndConditions: {
+    errorCode: 'orderService.8',
+    message: 'Terms and conditions were not agreed with'
+  }
 };
