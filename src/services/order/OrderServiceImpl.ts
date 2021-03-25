@@ -39,6 +39,7 @@ import { EntityPreHook } from '../../backk/dbmanager/hooks/EntityPreHook';
 import _IdAndOrderItemId from './types/args/_IdAndOrderItemId';
 import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
 import { SalesItem } from '../salesitem/types/entities/SalesItem';
+import * as util from "util";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -366,11 +367,13 @@ export default class OrderServiceImpl extends OrderService {
       );
 
       const [orders, error] = await this.dbManager.getEntitiesByFilters<Order>(orderFilters, Order, {
-        includeResponseFields: ['orderItems.id', 'orderItems.salesItems._id'],
+        includeResponseFields: [ 'orderItems.salesItems._id'],
         paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
       });
 
       if (orders) {
+        console.log(util.inspect(orders, { depth: null, showHidden: false}));
+
         const salesItemIdsToUpdate = JSONPath({ json: orders, path: '$[*].orderItems[*].salesItems[*]' });
         if (salesItemIdsToUpdate.length > 0) {
           const salesItemFilters = this.dbManager.getFilters(

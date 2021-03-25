@@ -15,6 +15,10 @@ export default function shouldIncludeField(
         return includeResponseField === fullFieldPath.slice(0, includeResponseField.length);
       } else if (includeResponseField.length > fullFieldPath.length && includeResponseField.startsWith(fullFieldPath)) {
         return true;
+      } else if (includeResponseField.length > fullFieldPath.length && fullFieldPath.endsWith('id') && includeResponseField.startsWith(fullFieldPath.slice(0, -3))) {
+        return true;
+      } else if (includeResponseField.length > fullFieldPath.length && fullFieldPath.endsWith('_id') && includeResponseField.startsWith(fullFieldPath.slice(0, -4))) {
+        return true;
       } else {
         return includeResponseField === fullFieldPath;
       }

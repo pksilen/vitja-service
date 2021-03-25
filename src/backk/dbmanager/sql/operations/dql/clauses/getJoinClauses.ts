@@ -40,6 +40,7 @@ export default function getJoinClauses(
           !shouldIncludeField('id', joinEntityPath, projection) &&
           !shouldIncludeField('_id', joinEntityPath, projection)
         ) {
+
           return '';
         }
 
