@@ -333,7 +333,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         functionMetadata.functionName
       );
 
-      if (testSpecs || isDelete) {
+      if (testSpecs || isDelete && lastReadFunctionMetadata) {
         items.push({ ...item, name: 'WHEN ' + item.name });
       } else {
         items.push(item);
