@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- assert error codes and messages are unique
 - payorder, test shopping cart is empty
 - previousPrice tyyppi number | null
 - test error cases

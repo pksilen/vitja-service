@@ -148,6 +148,15 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update('update')
   @TestSetup(['orderService.placeOrder'])
+  @PostTests([
+    {
+      testName: 'shopping cart is empty',
+      serviceFunctionName: 'shoppingCartService.getShoppingCart',
+      expectedResult: {
+        salesItems: []
+      }
+    }
+  ])
   payOrder({ _id, ...restOfEntity }: PayOrderArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, ...restOfEntity }, Order, {
       preHooks: [
