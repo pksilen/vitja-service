@@ -75,6 +75,8 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   abstract getIdColumnCastType(): string;
 
+  abstract getUpdateForClause(tableAlias: string): string;
+
   abstract executeSql(connection: any, sqlStatement: string, values?: any[]): Promise<any>;
 
   abstract executeSqlWithNamedPlaceholders(

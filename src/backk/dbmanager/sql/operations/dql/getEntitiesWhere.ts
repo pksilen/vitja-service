@@ -77,7 +77,7 @@ export default async function getEntitiesWhere<T>(
       `) AS ${tableAlias}`,
       joinClauses,
       outerSortClause,
-      isSelectForUpdate ? `FOR UPDATE OF ${tableAlias}` : undefined
+      isSelectForUpdate ? dbManager.getUpdateForClause(tableAlias) : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

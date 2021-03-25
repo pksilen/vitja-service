@@ -128,4 +128,8 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
   getBooleanType(): string {
     return 'TINYINT';
   }
+
+  getUpdateForClause(): string {
+    return "FOR UPDATE";
+  }
 }

@@ -117,6 +117,10 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   }
 
   getBooleanType(): string {
-    return "BOOLEAN";
+    return 'BOOLEAN';
+  }
+
+  getUpdateForClause(tableAlias: string): string {
+    return `FOR UPDATE OF ${tableAlias}`;
   }
 }

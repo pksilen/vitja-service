@@ -86,7 +86,7 @@ export default async function getEntityById<T>(
       `WHERE ${idFieldName} = ${dbManager.getValuePlaceholder(1)} LIMIT 1) AS ${tableAlias}`,
       joinClauses,
       outerSortClause,
-      isSelectForUpdate ? `FOR UPDATE OF ${tableAlias}` : undefined
+      isSelectForUpdate ? dbManager.getUpdateForClause(tableAlias) : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');

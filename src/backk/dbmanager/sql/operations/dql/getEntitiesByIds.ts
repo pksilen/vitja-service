@@ -66,7 +66,7 @@ export default async function getEntitiesByIds<T>(
       `) AS ${tableAlias}`,
       joinClauses,
       outerSortClause,
-      isSelectForUpdate ? `FOR UPDATE OF ${tableName}` : undefined
+      isSelectForUpdate ? dbManager.getUpdateForClause(tableAlias) : undefined
     ]
       .filter((sqlPart) => sqlPart)
       .join(' ');
