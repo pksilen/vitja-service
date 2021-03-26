@@ -744,7 +744,6 @@ export default class MongoDbManager extends AbstractDbManager {
         );
 
         paginateSubEntities(rows, options?.postQueryOperations?.paginations, EntityClass, this.getTypes());
-        console.log(rows);
         removePrivateProperties(rows, EntityClass, this.getTypes(), isInternalCall);
         decryptEntities(rows, EntityClass, this.getTypes(), false);
         return [rows[0], null];

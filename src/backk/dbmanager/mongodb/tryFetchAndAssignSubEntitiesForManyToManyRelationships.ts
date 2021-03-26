@@ -11,6 +11,8 @@ import { JSONPath } from 'jsonpath-plus';
 import MongoDbQuery from './MongoDbQuery';
 import replaceSubEntityPaths from './replaceSubEntityPaths';
 import replaceFieldPathNames from './replaceFieldPathNames';
+import getProjection from "./getProjection";
+import getRootProjection from "./getRootProjection";
 
 export default async function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
   dbManager: AbstractDbManager,
@@ -23,11 +25,18 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
   subEntityPath = ''
 ): Promise<void> {
   const entityPropertyNameToPropertyTypeMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
+  const projection = getProjection(EntityClass, postQueryOperations);
+  const rootProjection = getRootProjection(projection, EntityClass, Types);
 
   await forEachAsyncParallel(
     Object.entries(entityPropertyNameToPropertyTypeMap),
     async ([propertyName, propertyTypeName]) => {
       if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
+
+        if ((rootProjection as any)[propertyName] !== 1) {
+          return;
+        }
+
         await forEachAsyncParallel(rows, async (row: any) => {
           const [subEntityIds] = JSONPath({
             json: row,
