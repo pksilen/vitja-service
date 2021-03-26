@@ -60,7 +60,6 @@ export default async function updateEntitiesByFilters<T extends BackkEntity>(
 
     const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
 
-
     if (Object.keys(entityMetadata).find(fieldName => fieldName === 'version')) {
       setStatements.push(`version = CAST(${dbManager.castAsBigint('version')} + 1 AS ${dbManager.getIdColumnCastType()})`)
     }
