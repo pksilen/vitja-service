@@ -15,8 +15,8 @@ export default function getRootProjection(
   return Object.entries(entityClassPropertyNameToPropertyTypeNameMap).reduce(
     (otherRootProjection, [propertyName, propertyTypeName]) => {
       const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
-
       let subEntityProjection = {};
+
       if (isEntityTypeName(baseTypeName) && !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
         subEntityProjection = getRootProjection(
           projection,

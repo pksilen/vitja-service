@@ -22,5 +22,12 @@ export default function getProjection(EntityClass: new() => any, projection?: Pr
   }
 
   const excludeFieldsMap = getExcludeFieldsMap(excludeResponseFields);
-  return { ...includeFieldsMap, ...excludeFieldsMap };
+
+  Object.keys(includeFieldsMap).forEach(includeFieldName => {
+    if((excludeFieldsMap as any)[includeFieldName]) {
+      delete (includeFieldsMap as any)[includeFieldName];
+    }
+  })
+
+  return includeFieldsMap;
 }

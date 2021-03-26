@@ -41,17 +41,15 @@ export default async function getEntityById<T>(
       return { _id } as any;
     }
 
+    if (postHook) {
+      didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
+    }
+
     if (
       getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
       dbManager.getClsNamespace()?.get('globalTransaction') ||
       dbManager.getClsNamespace()?.get('localTransaction')
     ) {
-      // noinspection AssignmentToFunctionParameterJS
-      isSelectForUpdate = true;
-    }
-
-    if (postHook) {
-      didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
       // noinspection AssignmentToFunctionParameterJS
       isSelectForUpdate = true;
     }

@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- Mongodb: make getEntitiesXXX to use select for update
 - test error cases
 - remove extra deletes from deleteXXX funcs
 - remove create unique index for oneToMany table

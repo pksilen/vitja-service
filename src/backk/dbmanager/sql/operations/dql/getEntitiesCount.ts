@@ -1,15 +1,14 @@
-import SqlExpression from '../../expressions/SqlExpression';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import getSqlSelectStatementParts from './utils/getSqlSelectStatementParts';
-import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
-import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
-import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
-import MongoDbQuery from '../../../mongodb/MongoDbQuery';
-import convertFilterObjectToSqlEquals from './utils/convertFilterObjectToSqlEquals';
-import getTableName from '../../../utils/getTableName';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
-import { getNamespace } from 'cls-hooked';
+import SqlExpression from "../../expressions/SqlExpression";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import getSqlSelectStatementParts from "./utils/getSqlSelectStatementParts";
+import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
+import updateDbLocalTransactionCount from "./utils/updateDbLocalTransactionCount";
+import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
+import MongoDbQuery from "../../../mongodb/MongoDbQuery";
+import convertFilterObjectToSqlEquals from "./utils/convertFilterObjectToSqlEquals";
+import getTableName from "../../../utils/getTableName";
+import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,

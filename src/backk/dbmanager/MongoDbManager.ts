@@ -682,6 +682,7 @@ export default class MongoDbManager extends AbstractDbManager {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
 
     try {
       if (
@@ -691,7 +692,20 @@ export default class MongoDbManager extends AbstractDbManager {
         return [({ _id } as unknown) as T, null];
       }
 
-      return await this.tryExecute(false, async (client) => {
+      if (options?.postHook) {
+        shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+      }
+
+      if (
+        getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('localTransaction')
+      ) {
+        // noinspection AssignmentToFunctionParameterJS
+        isSelectForUpdate = true;
+      }
+
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
         if (isSelectForUpdate) {
           await client
             .db(this.dbName)

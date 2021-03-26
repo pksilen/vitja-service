@@ -38,22 +38,21 @@ export default async function getEntityWhere<T>(
   let didStartTransaction = false;
 
   try {
+
+    if (postHook) {
+      didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
+    }
+
     if (
       getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
-      dbManager.getClsNamespace()?.get('globalTransaction')
+      dbManager.getClsNamespace()?.get('globalTransaction') ||
+      dbManager.getClsNamespace()?.get('localTransaction')
     ) {
       // noinspection AssignmentToFunctionParameterJS
       isSelectForUpdate = true;
     }
 
-    if (postHook) {
-      didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-      // noinspection AssignmentToFunctionParameterJS
-      isSelectForUpdate = true;
-    }
-
     updateDbLocalTransactionCount(dbManager);
-
     const lastDotPosition = fieldPathName.lastIndexOf('.');
     const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
 
