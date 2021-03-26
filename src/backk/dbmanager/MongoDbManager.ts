@@ -545,7 +545,6 @@ export default class MongoDbManager extends AbstractDbManager {
     replaceIdStringsWithObjectIds(matchExpression);
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
-    console.log(matchExpression);
 
     try {
       const entities = await this.tryExecute(false, async (client) => {

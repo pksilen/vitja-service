@@ -11,8 +11,8 @@ import { JSONPath } from 'jsonpath-plus';
 import MongoDbQuery from './MongoDbQuery';
 import replaceSubEntityPaths from './replaceSubEntityPaths';
 import replaceFieldPathNames from './replaceFieldPathNames';
-import getProjection from "./getProjection";
-import getRootProjection from "./getRootProjection";
+import getProjection from './getProjection';
+import getRootProjection from './getRootProjection';
 
 export default async function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
   dbManager: AbstractDbManager,
@@ -32,7 +32,6 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
     Object.entries(entityPropertyNameToPropertyTypeMap),
     async ([propertyName, propertyTypeName]) => {
       if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
-
         if ((rootProjection as any)[propertyName] !== 1) {
           return;
         }
@@ -45,7 +44,15 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
 
           const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
           const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
-          const subEntityFilters = replaceSubEntityPaths(filters, wantedSubEntityPath);
+
+          let subEntityFilters = replaceSubEntityPaths(filters, wantedSubEntityPath);
+          subEntityFilters = subEntityFilters.map((subEntityFilter) => {
+            if ('filterQuery' in subEntityFilter) {
+              return new MongoDbQuery(subEntityFilter.filterQuery, subEntityFilter.subEntityPath);
+            }
+            return subEntityFilter;
+          });
+
           const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
           const subEntitySortBys = replaceSubEntityPaths(
