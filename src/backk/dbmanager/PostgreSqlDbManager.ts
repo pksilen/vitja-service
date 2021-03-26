@@ -123,4 +123,8 @@ export default class PostgreSqlDbManager extends AbstractSqlDbManager {
   getUpdateForClause(tableAlias: string): string {
     return `FOR UPDATE OF ${tableAlias}`;
   }
+
+  castAsBigint(columnName: string): string {
+    return `CAST(${columnName} AS BIGINT)`
+  }
 }

@@ -132,4 +132,8 @@ export default class MySqlDbManager extends AbstractSqlDbManager {
   getUpdateForClause(): string {
     return "FOR UPDATE";
   }
+
+  castAsBigint(columnName: string): string {
+    return `CAST(${columnName} AS UNSIGNED)`
+  }
 }
