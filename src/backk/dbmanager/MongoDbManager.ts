@@ -511,6 +511,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     let matchExpression: any;
     let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
 
@@ -542,8 +543,6 @@ export default class MongoDbManager extends AbstractDbManager {
     }
 
     replaceIdStringsWithObjectIds(matchExpression);
-
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
 
