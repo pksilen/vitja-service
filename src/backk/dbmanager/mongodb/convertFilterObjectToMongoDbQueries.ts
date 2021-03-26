@@ -14,7 +14,7 @@ export default function convertFilterObjectToMongoDbQueries(filters: object): Mo
 
       let finalFieldValue;
       if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
-        finalFieldValue = encrypt(fieldValue as any, false);
+        finalFieldValue = encrypt(fieldValue, false);
       }
 
       return new MongoDbQuery({ [fieldName]: finalFieldValue }, subEntityPath);
@@ -22,7 +22,7 @@ export default function convertFilterObjectToMongoDbQueries(filters: object): Mo
 
     let finalFieldValue;
     if (!shouldUseRandomInitializationVector(fieldPathName) && shouldEncryptValue(fieldPathName)) {
-      finalFieldValue = encrypt(fieldValue as any, false);
+      finalFieldValue = encrypt(fieldValue, false);
     }
 
     return new MongoDbQuery({ [fieldPathName]: finalFieldValue });
