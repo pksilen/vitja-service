@@ -41,7 +41,7 @@ export default class TagServiceImpl extends TagService {
   @OnStartUp()
   async migrateDbFromVersion1To2(): PromiseOfErrorOr<null> {
     const [tagDbTableVersion1, error] = await this.dbManager.getEntityByFilters(
-      { entityName: 'Tag', version: 1 },
+      { entityName: 'Tag', version: '1' },
       DbTableVersion
     );
 

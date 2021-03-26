@@ -31,7 +31,7 @@ import UserServiceImpl from "../services/user/UserServiceImpl";
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: postgreSqlDbManager },
+    { provide: AbstractDbManager, useValue: mongoDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: StartupCheckService, useClass: StartupCheckServiceImpl },
