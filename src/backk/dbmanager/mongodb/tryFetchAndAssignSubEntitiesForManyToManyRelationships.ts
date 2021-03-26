@@ -59,7 +59,7 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
             wantedSubEntityPath
           );
 
-          const subEntitiesOrErrorResponse = await dbManager.getEntitiesByFilters(
+          const [subEntities, error] = await dbManager.getEntitiesByFilters(
             [
               new MongoDbQuery({
                 _id: { $in: (subEntityIds ?? []).map((subEntityId: any) => new ObjectId(subEntityId)) }
@@ -75,13 +75,13 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
             }
           );
 
-          if ('errorMessage' in subEntitiesOrErrorResponse) {
-            throw subEntitiesOrErrorResponse;
+          if (error) {
+            throw error;
           }
 
           const [subEntitiesParent] = JSONPath({ json: row, path: propertyJsonPath + propertyName + '^' });
           if (subEntitiesParent) {
-            subEntitiesParent[propertyName] = subEntitiesOrErrorResponse;
+            subEntitiesParent[propertyName] = subEntities;
           }
         });
       }
