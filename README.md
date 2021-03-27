@@ -1,6 +1,8 @@
 # Vitja service
 
 TODO:
+- createUserAccount should return only id
+- getUserAccount filters should be a common object filter
 - Mongodb: make getEntitiesXXX to use select for update
 - test error cases
 - remove extra deletes from deleteXXX funcs

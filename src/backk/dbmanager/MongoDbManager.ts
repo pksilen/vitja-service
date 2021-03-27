@@ -369,8 +369,8 @@ export default class MongoDbManager extends AbstractDbManager {
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
-      return await this.tryExecute(shouldUseTransaction, async (client) => {
-        const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+      return await this.tryExecute(shouldUseTransaction, async () => {
+       const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
 
         if (!currentEntity) {
           return [null, error];
@@ -440,13 +440,13 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
-        await this.updateEntity(currentEntity as any, EntityClass, undefined, false, true);
+        const [, updateError] = await this.updateEntity(currentEntity as any, EntityClass, undefined, false, true);
 
         if (options?.postHook) {
           await tryExecutePostHook(options?.postHook, null);
         }
 
-        return [null, null];
+        return [null, updateError];
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
