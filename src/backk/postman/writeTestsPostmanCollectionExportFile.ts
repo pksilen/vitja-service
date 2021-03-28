@@ -234,6 +234,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         items.push({ ...item, name: (testSpecIndex === 0 ? 'GIVEN ' : 'AND ') + item.name });
       });
 
+
       if (
         isCreateFunction(
           (controller as any)[serviceMetadata.serviceName].constructor,
@@ -299,6 +300,45 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         (controller as any)[serviceMetadata.serviceName].constructor,
         functionMetadata.functionName
       );
+
+      if (
+        isDelete &&
+        functionIndex !== 0 &&
+        isDeleteFunction(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          serviceMetadata.functions[functionIndex - 1].functionName
+        ) &&
+        createFunctionMetadata &&
+        !testSetupServiceFunctionsOrSpecsToExecute
+      ) {
+        const createFunctionTests = getServiceFunctionTests(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          (controller as any)[serviceMetadata.serviceName].Types,
+          serviceMetadata,
+          createFunctionMetadata,
+          false,
+          undefined,
+          expectedResponseFieldPathNameToFieldValueMapInTests
+        );
+
+        const createFunctionSampleArg = getServiceFunctionTestArgument(
+          (controller as any)[serviceMetadata.serviceName].constructor,
+          (controller as any)[serviceMetadata.serviceName].Types,
+          createFunctionMetadata.functionName,
+          createFunctionMetadata.argType,
+          serviceMetadata
+        );
+
+        items.push(
+          createPostmanCollectionItem(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            serviceMetadata,
+            createFunctionMetadata,
+            createFunctionSampleArg,
+            createFunctionTests
+          )
+        );
+      }
 
       const sampleArg = getServiceFunctionTestArgument(
         (controller as any)[serviceMetadata.serviceName].constructor,
@@ -449,50 +489,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
           items.push(item);
         }
-      }
-
-      const testSetupServiceFunctionsToExecuteForNextFunction = serviceFunctionAnnotationContainer.getTestSetup(
-        (controller as any)[serviceMetadata.serviceName].constructor,
-        serviceMetadata.functions[functionIndex + 1]?.functionName
-      );
-
-      if (
-        isDelete &&
-        functionIndex !== serviceMetadata.functions.length - 1 &&
-        isDeleteFunction(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          serviceMetadata.functions[functionIndex + 1].functionName
-        ) &&
-        createFunctionMetadata &&
-        !testSetupServiceFunctionsToExecuteForNextFunction
-      ) {
-        const createFunctionTests = getServiceFunctionTests(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          (controller as any)[serviceMetadata.serviceName].Types,
-          serviceMetadata,
-          createFunctionMetadata,
-          false,
-          undefined,
-          expectedResponseFieldPathNameToFieldValueMapInTests
-        );
-
-        const createFunctionSampleArg = getServiceFunctionTestArgument(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          (controller as any)[serviceMetadata.serviceName].Types,
-          createFunctionMetadata.functionName,
-          createFunctionMetadata.argType,
-          serviceMetadata
-        );
-
-        items.push(
-          createPostmanCollectionItem(
-            (controller as any)[serviceMetadata.serviceName].constructor,
-            serviceMetadata,
-            createFunctionMetadata,
-            createFunctionSampleArg,
-            createFunctionTests
-          )
-        );
       }
 
       writtenTests
