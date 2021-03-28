@@ -20,26 +20,24 @@ export default function getRootProjection(
         isEntityTypeName(baseTypeName) &&
         !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)
       ) {
-        subEntityProjection = getRootProjection(projection, Types[baseTypeName], Types, propertyName + '.');
+        subEntityProjection = getRootProjection(projection, Types[baseTypeName], Types, propertyName);
       }
 
       const entityProjection = Object.entries(projection).reduce(
         (entityProjection, [projectionFieldPathName, shouldIncludeField]) => {
           const fieldPathName = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
+          let newEntityProjection = entityProjection;
+
           if (projectionFieldPathName === fieldPathName) {
-            let newEntityProjection = { ...entityProjection, [fieldPathName]: shouldIncludeField };
-
-            if (
-              projectionFieldPathName.length > fieldPathName.length &&
-              projectionFieldPathName.startsWith(fieldPathName)
-            ) {
-              newEntityProjection = { ...newEntityProjection, [fieldPathName]: shouldIncludeField}
-            }
-
-            return newEntityProjection;
+            newEntityProjection = { ...newEntityProjection, [fieldPathName]: shouldIncludeField };
+          } else if (
+            projectionFieldPathName.length > fieldPathName.length &&
+            projectionFieldPathName.startsWith(fieldPathName)
+          ) {
+            newEntityProjection = { ...newEntityProjection, [fieldPathName]: shouldIncludeField };
           }
 
-          return entityProjection;
+          return newEntityProjection;
         },
         {}
       );
