@@ -11,7 +11,7 @@ export default function getRootProjection(
 ): object {
   const entityClassPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
 
-  return Object.entries(entityClassPropertyNameToPropertyTypeNameMap).reduce(
+  const rootProjection = Object.entries(entityClassPropertyNameToPropertyTypeNameMap).reduce(
     (otherRootProjection, [propertyName, propertyTypeName]) => {
       const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
       let subEntityProjection = {};
@@ -46,4 +46,15 @@ export default function getRootProjection(
     },
     {}
   );
+
+  Object.keys(rootProjection).forEach((fieldName) => {
+    if (!fieldName.includes('.')) {
+      const foundFieldName = Object.keys(rootProjection).find(otherFieldName => otherFieldName === fieldName + '.');
+      if (foundFieldName) {
+        delete (rootProjection as any)[fieldName];
+      }
+    }
+  });
+
+  return rootProjection;
 }
