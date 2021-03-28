@@ -20,7 +20,7 @@ function decryptEntityValues(
         const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
         const isManyToMany = typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)
 
-        if (!isManyToMany || isManyToMany && shouldDecryptManyToMany) {
+        if ((!isManyToMany || isManyToMany && shouldDecryptManyToMany) && entityMetadata[propertyName]) {
           propertyValue.forEach((pv: any) => {
             decryptEntityValues(
               pv,
@@ -43,12 +43,14 @@ function decryptEntityValues(
       }
     } else if (propertyName !== '_id' && typeof propertyValue === 'object' && propertyValue !== null) {
       const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
-      decryptEntityValues(
-        propertyValue,
-        (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],
-        Types,
-        shouldDecryptManyToMany
-      );
+      if (entityMetadata[propertyName]) {
+        decryptEntityValues(
+          propertyValue,
+          (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],
+          Types,
+          shouldDecryptManyToMany
+        );
+      }
     } else if (
       propertyValue !== null &&
       propertyValue !== undefined &&
