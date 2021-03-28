@@ -20,16 +20,18 @@ function removeEntityPrivateProperties<T>(
       return;
     }
 
-    const { baseTypeName, isArrayType } = getTypeInfoForTypeName(entityMetadata[propertyName]);
-    const SubEntityClass = (Types as any)[baseTypeName];
+    if (entityMetadata[propertyName]) {
+      const { baseTypeName, isArrayType } = getTypeInfoForTypeName(entityMetadata[propertyName]);
+      const SubEntityClass = (Types as any)[baseTypeName];
 
-    if (SubEntityClass && propertyValue !== null) {
-      if (isArrayType) {
-        propertyValue.forEach((subValue: any) => {
-          removeEntityPrivateProperties(subValue, SubEntityClass, Types, isInternalCall);
-        });
-      } else {
-        removeEntityPrivateProperties(propertyValue, SubEntityClass, Types, isInternalCall);
+      if (SubEntityClass && propertyValue !== null) {
+        if (isArrayType) {
+          propertyValue.forEach((subValue: any) => {
+            removeEntityPrivateProperties(subValue, SubEntityClass, Types, isInternalCall);
+          });
+        } else {
+          removeEntityPrivateProperties(propertyValue, SubEntityClass, Types, isInternalCall);
+        }
       }
     }
   });

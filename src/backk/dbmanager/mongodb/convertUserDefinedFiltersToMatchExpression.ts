@@ -182,8 +182,6 @@ export default function convertUserDefinedFiltersToMatchExpression(
   userDefinedFilters: UserDefinedFilter[]
 ): object {
   return userDefinedFilters.reduce((matchExpressions, userDefinedFilter) => {
-    console.log(userDefinedFilter);
-
     if (userDefinedFilter.operator === 'OR' && userDefinedFilter.orFilters) {
       return {
         $or: userDefinedFilter.orFilters.map((orFilter) =>
