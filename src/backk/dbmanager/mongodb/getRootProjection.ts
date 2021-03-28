@@ -1,8 +1,7 @@
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import getTypeInfoForTypeName from "../../utils/type/getTypeInfoForTypeName";
-import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
-import isEntityTypeName from "../../utils/type/isEntityTypeName";
+import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
+import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
+import isEntityTypeName from '../../utils/type/isEntityTypeName';
 
 export default function getRootProjection(
   projection: object,
@@ -17,20 +16,22 @@ export default function getRootProjection(
       const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
       let subEntityProjection = {};
 
-      if (isEntityTypeName(baseTypeName) && !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
-        subEntityProjection = getRootProjection(
-          projection,
-          Types[baseTypeName],
-          Types,
-          propertyName + '.'
-        );
+      if (
+        isEntityTypeName(baseTypeName) &&
+        !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)
+      ) {
+        subEntityProjection = getRootProjection(projection, Types[baseTypeName], Types, propertyName + '.');
       }
 
       const entityProjection = Object.entries(projection).reduce(
-        (entityProjection, [fieldPathName, shouldIncludeField]) => {
+        (entityProjection, [projectionFieldPathName, shouldIncludeField]) => {
           const wantedFieldPathName = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
-          if (fieldPathName === wantedFieldPathName) {
-            return { ...entityProjection, [fieldPathName]: shouldIncludeField };
+          if (
+            projectionFieldPathName === wantedFieldPathName ||
+            (projectionFieldPathName.length > wantedFieldPathName.length &&
+              projectionFieldPathName.startsWith(wantedFieldPathName))
+          ) {
+            return { ...entityProjection, [wantedFieldPathName]: shouldIncludeField };
           }
           return entityProjection;
         },
