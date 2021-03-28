@@ -32,6 +32,7 @@ import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
 import { Test } from '../../backk/decorators/service/function/Test';
 import { PostTests } from '../../backk/decorators/service/function/PostTests';
 import getThumbnailImageDataUri from '../common/utils/getThumbnailImageDataUri';
+import * as util from "util";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])

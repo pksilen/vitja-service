@@ -25,14 +25,20 @@ export default function getRootProjection(
 
       const entityProjection = Object.entries(projection).reduce(
         (entityProjection, [projectionFieldPathName, shouldIncludeField]) => {
-          const wantedFieldPathName = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
-          if (
-            projectionFieldPathName === wantedFieldPathName ||
-            (projectionFieldPathName.length > wantedFieldPathName.length &&
-              projectionFieldPathName.startsWith(wantedFieldPathName))
-          ) {
-            return { ...entityProjection, [wantedFieldPathName]: shouldIncludeField };
+          const fieldPathName = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
+          if (projectionFieldPathName === fieldPathName) {
+            let newEntityProjection = { ...entityProjection, [fieldPathName]: shouldIncludeField };
+
+            if (
+              projectionFieldPathName.length > fieldPathName.length &&
+              projectionFieldPathName.startsWith(fieldPathName)
+            ) {
+              newEntityProjection = { ...newEntityProjection, [fieldPathName]: shouldIncludeField}
+            }
+
+            return newEntityProjection;
           }
+
           return entityProjection;
         },
         {}

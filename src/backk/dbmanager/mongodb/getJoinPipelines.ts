@@ -21,6 +21,5 @@ export default function getJoinPipelines(EntityClass: Function, Types: object) {
       .flat();
   }
 
-  console.log(EntityClass, joinPipelines);
   return joinPipelines;
 }
