@@ -1205,7 +1205,62 @@ export default class MongoDbManager extends AbstractDbManager {
     entity: Partial<T>,
     EntityClass: new () => T
   ): PromiseOfErrorOr<null> {
-    throw new Error('not implemented');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+
+    let matchExpression: any;
+    let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
+
+    if (typeof filters === 'object' && !Array.isArray(filters)) {
+      finalFilters = convertFilterObjectToMongoDbQueries(filters);
+    } else {
+      finalFilters = filters;
+    }
+
+    if (Array.isArray(finalFilters) && finalFilters?.find((filter) => filter instanceof SqlExpression)) {
+      throw new Error('SqlExpression is not supported for MongoDB');
+    } else {
+      const rootFilters = getRootOperations(finalFilters, EntityClass, this.getTypes());
+      const rootUserDefinedFilters = rootFilters.filter((filter) => !(filter instanceof MongoDbQuery));
+      const rootMongoDbQueries = rootFilters.filter((filter) => filter instanceof MongoDbQuery);
+
+      const userDefinedFiltersMatchExpression = convertUserDefinedFiltersToMatchExpression(
+        rootUserDefinedFilters as UserDefinedFilter[]
+      );
+
+      const mongoDbQueriesMatchExpression = convertMongoDbQueriesToMatchExpression(
+        rootMongoDbQueries as Array<MongoDbQuery<T>>
+      );
+
+      matchExpression = {
+        ...userDefinedFiltersMatchExpression,
+        ...mongoDbQueriesMatchExpression
+      };
+    }
+
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      await this.tryExecute(shouldUseTransaction, async (client) => {
+        client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .updateOne(matchExpression, { $set: entity });
+
+      });
+
+      return [null, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
   }
 
   async updateEntityWhere<T extends BackkEntity>(
