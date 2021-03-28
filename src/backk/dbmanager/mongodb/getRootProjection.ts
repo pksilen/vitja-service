@@ -49,7 +49,9 @@ export default function getRootProjection(
 
   Object.keys(rootProjection).forEach((fieldName) => {
     if (!fieldName.includes('.')) {
-      const foundSubFieldName = Object.keys(rootProjection).find(otherFieldName => otherFieldName.startsWith(fieldName + '.'));
+      const foundSubFieldName = Object.keys(rootProjection).find((otherFieldName) =>
+        otherFieldName.startsWith(fieldName + '.')
+      );
       if (foundSubFieldName) {
         delete (rootProjection as any)[fieldName];
       }

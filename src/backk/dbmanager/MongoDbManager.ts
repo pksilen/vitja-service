@@ -753,6 +753,11 @@ export default class MongoDbManager extends AbstractDbManager {
         paginateSubEntities(rows, options?.postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes(), isInternalCall);
         decryptEntities(rows, EntityClass, this.getTypes(), false);
+
+        if (options?.postHook) {
+          await tryExecutePostHook(options?.postHook, rows[0]);
+        }
+
         return [rows[0], null];
       });
     } catch (errorOrBackkError) {
@@ -883,11 +888,26 @@ export default class MongoDbManager extends AbstractDbManager {
         lastDotPosition === -1 ? '' : fieldPathName.slice(0, lastDotPosition)
       )
     ];
+
     const rootFilters = getRootOperations(filters as Array<MongoDbQuery<T>>, EntityClass, this.getTypes());
     const matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
+    let shouldUseTransaction = false;
 
     try {
-      const entities = await this.tryExecute(false, async (client) => {
+      if (options?.postHook) {
+        shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+      }
+
+      if (
+        getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('localTransaction')
+      ) {
+        // noinspection AssignmentToFunctionParameterJS
+        isSelectForUpdate = true;
+      }
+
+      const entities = await this.tryExecute(shouldUseTransaction, async (client) => {
         if (isSelectForUpdate) {
           await client
             .db(this.dbName)
@@ -920,6 +940,10 @@ export default class MongoDbManager extends AbstractDbManager {
         decryptEntities(rows, EntityClass, this.getTypes(), false);
         return rows;
       });
+
+      if (options?.postHook) {
+        await tryExecutePostHook(options?.postHook, entities[0]);
+      }
 
       return entities.length === 0
         ? [

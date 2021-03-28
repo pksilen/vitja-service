@@ -8,7 +8,7 @@ TODO:
 - remove extra deletes from deleteXXX funcs
 - remove create unique index for oneToMany table
 - MongoDb: implement getEntityById/GetEntityWhere to use transaction and "for update" when postHook
- - updateEntititesByFilters, update version and lastmodifiedtimestamp
+- updateEntititesByFilters: change version to integer (-1 means all) and lastmodifiedtimestamp
 
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
