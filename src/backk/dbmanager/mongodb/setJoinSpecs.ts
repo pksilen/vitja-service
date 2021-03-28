@@ -15,9 +15,9 @@ function setJoinSpec(entityName: string, EntityClass: Function, fieldName: strin
     typePropertyAnnotationContainer.isTypePropertyExternalServiceEntity(EntityClass, fieldName)
   ) {
 
-    let subEntityTableName = subEntityName;
+    let subEntityTableName = subEntityName.toLowerCase();
     if (entityAnnotationContainer.entityNameToTableNameMap[subEntityName]) {
-      subEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[subEntityName];
+      subEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[subEntityName].toLowerCase();
     }
 
     let entityTableName = entityName;
