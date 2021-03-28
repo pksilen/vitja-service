@@ -6,8 +6,8 @@ import shouldHashValue from './shouldHashValue';
 import shouldUseRandomInitializationVector from './shouldUseRandomInitializationVector';
 import getClassPropertyNameToPropertyTypeNameMap from '../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
-import forEachAsyncSequential from "../utils/forEachAsyncSequential";
-import { ObjectId } from "mongodb";
+import forEachAsyncSequential from '../utils/forEachAsyncSequential';
+import { ObjectId } from 'mongodb';
 
 async function hashOrEncryptEntityValues(
   entity: { [key: string]: any },
@@ -48,14 +48,22 @@ async function hashOrEncryptEntityValues(
           }
         });
       }
-    } else if (typeof propertyValue === 'object' && !(propertyValue instanceof ObjectId) && propertyValue !== null) {
+    } else if (
+      typeof propertyValue === 'object' &&
+      !(propertyValue instanceof ObjectId) &&
+      propertyValue !== null
+    ) {
       const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
       await hashOrEncryptEntityValues(
         propertyValue,
         (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],
         Types
       );
-    } else if (propertyValue !== null && !(propertyValue instanceof ObjectId) && shouldHashValue(propertyName, EntityClass)) {
+    } else if (
+      propertyValue !== null &&
+      !(propertyValue instanceof ObjectId) &&
+      shouldHashValue(propertyName, EntityClass)
+    ) {
       if (typeof propertyValue !== 'string') {
         throw new Error(EntityClass.name + '.' + propertyName + ' must be string in order to hash it');
       }

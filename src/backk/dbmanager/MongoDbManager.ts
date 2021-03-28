@@ -59,6 +59,7 @@ import isBackkError from '../errors/isBackkError';
 import { ErrorOr } from '../types/ErrorOr';
 import { EntityPreHook } from "./hooks/EntityPreHook";
 import tryExecuteEntityPreHooks from "./hooks/tryExecuteEntityPreHooks";
+import * as util from "util";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -545,18 +546,20 @@ export default class MongoDbManager extends AbstractDbManager {
     replaceIdStringsWithObjectIds(matchExpression);
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
+    const Types = this.getTypes();
 
     try {
       const entities = await this.tryExecute(false, async (client) => {
-        const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
+        const joinPipelines = getJoinPipelines(EntityClass, Types);
+        const tableName = getTableName(EntityClass.name)
 
         const cursor = client
           .db(this.dbName)
-          .collection<T>(getTableName(EntityClass.name))
-          .aggregate([...joinPipelines, getFieldOrdering(EntityClass)])
+          .collection<T>(tableName)
+          .aggregate([...joinPipelines, getFieldOrdering(Types[tableName])])
           .match(matchExpression);
 
-        performPostQueryOperations(cursor, postQueryOperations, EntityClass, this.getTypes());
+        performPostQueryOperations(cursor, postQueryOperations, EntityClass, Types);
         const rows = await cursor.toArray();
 
         await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
