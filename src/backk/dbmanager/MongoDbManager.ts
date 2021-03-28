@@ -49,7 +49,7 @@ import paginateSubEntities from './mongodb/paginateSubEntities';
 import convertFilterObjectToMongoDbQueries from './mongodb/convertFilterObjectToMongoDbQueries';
 import { PostHook } from './hooks/PostHook';
 import tryExecutePostHook from './hooks/tryExecutePostHook';
-import getTableName from './utils/getTableName';
+import getTableName, { getEntityName } from './utils/getTableName';
 import getFieldOrdering from './mongodb/getFieldOrdering';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
@@ -57,9 +57,9 @@ import log, { Severity } from '../observability/logging/log';
 import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 import isBackkError from '../errors/isBackkError';
 import { ErrorOr } from '../types/ErrorOr';
-import { EntityPreHook } from "./hooks/EntityPreHook";
-import tryExecuteEntityPreHooks from "./hooks/tryExecuteEntityPreHooks";
-import * as util from "util";
+import { EntityPreHook } from './hooks/EntityPreHook';
+import tryExecuteEntityPreHooks from './hooks/tryExecuteEntityPreHooks';
+import * as util from 'util';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -371,7 +371,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async () => {
-       const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+        const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
 
         if (!currentEntity) {
           return [null, error];
@@ -441,7 +441,13 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
-        const [, updateError] = await this.updateEntity(currentEntity as any, EntityClass, undefined, false, true);
+        const [, updateError] = await this.updateEntity(
+          currentEntity as any,
+          EntityClass,
+          undefined,
+          false,
+          true
+        );
 
         if (options?.postHook) {
           await tryExecutePostHook(options?.postHook, null);
@@ -551,12 +557,11 @@ export default class MongoDbManager extends AbstractDbManager {
     try {
       const entities = await this.tryExecute(false, async (client) => {
         const joinPipelines = getJoinPipelines(EntityClass, Types);
-        const tableName = getTableName(EntityClass.name)
 
         const cursor = client
           .db(this.dbName)
-          .collection<T>(tableName)
-          .aggregate([...joinPipelines, getFieldOrdering(Types[tableName])])
+          .collection<T>(getTableName(EntityClass.name))
+          .aggregate([...joinPipelines, getFieldOrdering((Types as any)[getEntityName(EntityClass.name)])])
           .match(matchExpression);
 
         performPostQueryOperations(cursor, postQueryOperations, EntityClass, Types);
@@ -1492,11 +1497,31 @@ export default class MongoDbManager extends AbstractDbManager {
     return false;
   }
 
-  deleteEntityWhere<T extends BackkEntity>(fieldName: string, fieldValue: T[keyof T], EntityClass: { new(): T }, options?: { preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }): PromiseOfErrorOr<null> {
-    throw new Error('Not implemented')
+  deleteEntityWhere<T extends BackkEntity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    EntityClass: { new (): T },
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseOfErrorOr<null> {
+    throw new Error('Not implemented');
   }
 
-  removeSubEntityByIdWhere<T extends BackkEntity>(fieldName: string, fieldValue: T[keyof T], subEntitiesJsonPath: string, subEntityId: string, EntityClass: { new(): T }, options?: { preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }): PromiseOfErrorOr<null> {
-    throw new Error('Not implemented')
+  removeSubEntityByIdWhere<T extends BackkEntity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    subEntitiesJsonPath: string,
+    subEntityId: string,
+    EntityClass: { new (): T },
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseOfErrorOr<null> {
+    throw new Error('Not implemented');
   }
 }

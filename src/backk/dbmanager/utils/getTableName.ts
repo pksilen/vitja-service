@@ -7,3 +7,11 @@ export default function getTableName(entityName: string): string {
 
   return entityName.toLowerCase();
 }
+
+export function getEntityName(entityName: string): string {
+  if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
+    return entityAnnotationContainer.entityNameToTableNameMap[entityName]
+  }
+
+  return entityName;
+}
