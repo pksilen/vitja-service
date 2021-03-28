@@ -1018,10 +1018,8 @@ export default class MongoDbManager extends AbstractDbManager {
     isInternalCall = false
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
-
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
-
     const Types = this.getTypes();
     let shouldUseTransaction = false;
 
