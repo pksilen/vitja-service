@@ -14,13 +14,24 @@ function setJoinSpec(entityName: string, EntityClass: Function, fieldName: strin
     typePropertyAnnotationContainer.isTypePropertyOneToMany(EntityClass, fieldName) &&
     typePropertyAnnotationContainer.isTypePropertyExternalServiceEntity(EntityClass, fieldName)
   ) {
-    const subEntityForeignIdFieldName = entityName.charAt(0).toLowerCase() + entityName.slice(1) + 'Id';
+
+    let subEntityTableName = subEntityName;
+    if (entityAnnotationContainer.entityNameToTableNameMap[subEntityName]) {
+      subEntityTableName = entityAnnotationContainer.entityNameToTableNameMap[subEntityName];
+    }
+
+    let entityTableName = entityName;
+    if (entityAnnotationContainer.entityNameToTableNameMap[entityName]) {
+      entityTableName = entityAnnotationContainer.entityNameToTableNameMap[entityName];
+    }
+
+    const subEntityForeignIdFieldName = entityTableName.charAt(0).toLowerCase() + entityTableName.slice(1) + 'Id';
 
     const entityJoinSpec: EntityJoinSpec = {
       EntityClass,
       isReadonly,
       entityFieldName: fieldName,
-      subEntityTableName: subEntityName,
+      subEntityTableName,
       entityIdFieldName: '_id',
       subEntityForeignIdFieldName,
       asFieldName: fieldName

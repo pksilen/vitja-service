@@ -15,7 +15,6 @@ export default function performPostQueryOperations<T>(
   const projection = getProjection(EntityClass, postQueryOperations);
   const rootProjection = getRootProjection(projection, EntityClass, Types);
 
-  console.log(rootProjection);
   if (Object.keys(rootProjection).length > 0) {
     cursor.project(rootProjection);
   }
