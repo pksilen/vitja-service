@@ -285,8 +285,6 @@ export default class MongoDbManager extends AbstractDbManager {
         await tryExecutePreHooks(options?.preHooks ?? []);
         let createEntityResult;
 
-        console.log(entity);
-
         try {
           createEntityResult = await client
             .db(this.dbName)

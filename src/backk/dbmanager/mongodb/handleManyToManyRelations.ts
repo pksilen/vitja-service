@@ -25,7 +25,22 @@ export default function handleManyToManyRelations(
       isEntityTypeName(baseTypeName) &&
       typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)
     ) {
-      _.set(entity, fieldPathName, (_.get(entity, fieldPathName) ?? []).map((subEntity: any) => subEntity._id));
+      if (Array.isArray(_.get(entity, subEntityPath))) {
+        _.get(entity, subEntityPath).forEach((subEntity: any, index: number) => {
+          const fieldPathName = subEntityPath + '[' + index + ']' +'.' + fieldName;
+          _.set(
+            entity,
+            fieldPathName,
+            (_.get(entity, fieldPathName) ?? []).map((subEntity: any) => subEntity._id)
+          );
+        });
+      } else {
+        _.set(
+          entity,
+          fieldPathName,
+          (_.get(entity, fieldPathName) ?? []).map((subEntity: any) => subEntity._id)
+        );
+      }
     } else if (isEntityTypeName(baseTypeName)) {
       handleManyToManyRelations(entity, Types, (Types as any)[baseTypeName], fieldPathName);
     }
