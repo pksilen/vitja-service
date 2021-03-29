@@ -62,6 +62,7 @@ import tryExecuteEntityPreHooks from './hooks/tryExecuteEntityPreHooks';
 import * as util from 'util';
 import removeSubEntitiesWhere from './sql/operations/dml/removeSubEntitiesWhere';
 import AbstractSqlDbManager from './AbstractSqlDbManager';
+import handleManyToManyRelations from "./mongodb/handleManyToManyRelations";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -276,6 +277,8 @@ export default class MongoDbManager extends AbstractDbManager {
             (entity as any)[fieldName] = ((entity as any)[fieldName] ?? []).map(
               (subEntity: any) => subEntity._id
             );
+          } else if (isEntityTypeName(baseTypeName)) {
+            handleManyToManyRelations(entity, Types, (Types as any)[baseTypeName], fieldName);
           }
         });
 
