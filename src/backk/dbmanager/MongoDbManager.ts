@@ -445,6 +445,7 @@ export default class MongoDbManager extends AbstractDbManager {
           }
         });
 
+        console.log(currentEntity);
         const [, updateError] = await this.updateEntity(
           currentEntity as any,
           EntityClass,

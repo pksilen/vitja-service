@@ -19,8 +19,12 @@ export default function handleNestedOneToManyRelations(
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
     const fieldPathName = subEntityPath + '.' + fieldName;
 
-    if (entity[subEntityPath] !== undefined && entity[subEntityPath].length > 0) {
-      (entity[subEntityPath]).forEach((subEntity: any) => {
+    if (
+      entity[subEntityPath] !== undefined &&
+      entity[subEntityPath].length > 0 &&
+      !typePropertyAnnotationContainer.isTypePropertyExternalServiceEntity(EntityClass, fieldName)
+    ) {
+      entity[subEntityPath].forEach((subEntity: any) => {
         const arrayIndex = subEntity.id;
         Object.entries(subEntity).forEach(([fieldName, fieldValue]) => {
           if (fieldName !== 'id') {
@@ -38,7 +42,10 @@ export default function handleNestedOneToManyRelations(
       handleNestedOneToManyRelations(entity, Types, (Types as any)[baseTypeName], fieldPathName);
     }
 
-    if (entity[subEntityPath] !== undefined && entity[subEntityPath].length > 0) {
+    if (
+      (entity[subEntityPath] !== undefined && entity[subEntityPath].length > 0) ||
+      typePropertyAnnotationContainer.isTypePropertyExternalServiceEntity(EntityClass, fieldName)
+    ) {
       delete entity[subEntityPath];
     }
   });
