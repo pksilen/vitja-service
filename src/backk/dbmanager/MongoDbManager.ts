@@ -60,7 +60,7 @@ import { ErrorOr } from '../types/ErrorOr';
 import { EntityPreHook } from './hooks/EntityPreHook';
 import tryExecuteEntityPreHooks from './hooks/tryExecuteEntityPreHooks';
 import handleNestedManyToManyRelations from './mongodb/handleNestedManyToManyRelations';
-import handleNestedOneToManyRelations from "./mongodb/handleNestedOneToManyRelations";
+import handleNestedOneToManyRelations from './mongodb/handleNestedOneToManyRelations';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -1129,21 +1129,11 @@ export default class MongoDbManager extends AbstractDbManager {
           const newSubEntities = (restOfEntity as any)[fieldName];
 
           if (isArrayType && isEntityTypeName(baseTypeName) && newSubEntities) {
-            const finalAllowAdditionAndRemovalForSubEntities = 'all';
-
-            if (finalAllowAdditionAndRemovalForSubEntities === 'all') {
-              if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-                (restOfEntity as any)[fieldName] = newSubEntities.map((subEntity: any) => subEntity._id);
-              }
+            if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
+              (restOfEntity as any)[fieldName] = newSubEntities.map((subEntity: any) => subEntity._id);
             } else {
-              if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-                (restOfEntity as any)[fieldName] = (currentEntity as any)[fieldName].map(
-                  (currentSubEntity: any) => currentSubEntity._id
-                );
-              } else {
-                handleNestedManyToManyRelations(restOfEntity, Types, (Types as any)[baseTypeName], fieldName);
-                handleNestedOneToManyRelations(restOfEntity, Types, (Types as any)[baseTypeName], fieldName);
-              }
+              handleNestedManyToManyRelations(restOfEntity, Types, (Types as any)[baseTypeName], fieldName);
+              handleNestedOneToManyRelations(restOfEntity, Types, (Types as any)[baseTypeName], fieldName);
             }
           } else if (fieldName !== '_id') {
             if (fieldName === 'version') {
