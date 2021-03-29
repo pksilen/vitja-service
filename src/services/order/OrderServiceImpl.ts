@@ -39,7 +39,8 @@ import { EntityPreHook } from '../../backk/dbmanager/hooks/EntityPreHook';
 import _IdAndOrderItemId from './types/args/_IdAndOrderItemId';
 import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
 import { SalesItem } from '../salesitem/types/entities/SalesItem';
-import * as util from "util";
+import * as util from 'util';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -390,16 +391,14 @@ export default class OrderServiceImpl extends OrderService {
         paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
       });
 
-      console.log(util.inspect(orders, {depth: null, showHidden: false}));
-
       if (orders) {
         const salesItemIdsToUpdate = JSONPath({ json: orders, path: '$[*].orderItems[*].salesItems[*]._id' });
         if (salesItemIdsToUpdate.length > 0) {
           const salesItemFilters = this.dbManager.getFilters(
-            [{ _id: { $in: salesItemIdsToUpdate } }],
+            { _id: { $in: salesItemIdsToUpdate.map((id: string) => new ObjectId(id)) } },
             [new SqlInExpression('_id', salesItemIdsToUpdate)]
           );
-
+          
           const [, error] = await this.dbManager.updateEntitiesByFilters<SalesItem>(
             salesItemFilters,
             { state: 'forSale' },
@@ -467,7 +466,11 @@ export default class OrderServiceImpl extends OrderService {
     return `https://${paymentGatewayHost}/${paymentGatewayUrlPath}?successUrl=${successUrl}&failureUrl=${failureUrl}&successRedirectUrl=${successUiRedirectUrl}&failureRedirectUrl=${failureRedirectUrl}`;
   }
 
-  private static hasOrderItemState(order: Order, orderItemId: string, requiredState: OrderItemState): boolean {
+  private static hasOrderItemState(
+    order: Order,
+    orderItemId: string,
+    requiredState: OrderItemState
+  ): boolean {
     return (
       JSONPath({
         json: order,
