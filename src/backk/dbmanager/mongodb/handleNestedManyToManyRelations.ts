@@ -26,14 +26,16 @@ export default function handleNestedManyToManyRelations(
       typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)
     ) {
       const subEntityValue = _.get(entity, subEntityPath);
-      if (subEntityValue !== undefined && Array.isArray(subEntityValue)) {
+      if (Array.isArray(subEntityValue)) {
         subEntityValue.forEach((subEntity: any, index: number) => {
-          const fieldPathName = subEntityPath + '[' + index + ']' +'.' + fieldName;
-          _.set(
-            entity,
-            fieldPathName,
-            (_.get(entity, fieldPathName) ?? []).map((subEntity: any) => subEntity._id)
-          );
+          const fieldPathName = subEntityPath + '[' + index + ']' + '.' + fieldName;
+          if (_.get(entity, fieldPathName) !== undefined) {
+            _.set(
+              entity,
+              fieldPathName,
+              _.get(entity, fieldPathName).map((subEntity: any) => subEntity._id)
+            );
+          }
         });
       } else {
         _.set(
