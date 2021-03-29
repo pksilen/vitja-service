@@ -28,12 +28,23 @@ export default function getRootProjection(
           const subEntityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(
             Types[baseTypeName]
           );
-          Object.keys(subEntityPropertyNameToPropertyTypeNameMap).forEach((subEntityPropertyName) => {
+
+          const areAllSubEntityPropertiesUndefined = Object.keys(subEntityPropertyNameToPropertyTypeNameMap).reduce((areAllSubEntityPropertiesUndefined, subEntityPropertyName) => {
             const subEntityFieldPathName = fieldPathName + '.' + subEntityPropertyName;
-            if ((projection as any)[subEntityFieldPathName] === undefined) {
-              (projection as any)[subEntityFieldPathName] = 1;
+            if ((projection as any)[subEntityFieldPathName] !== undefined) {
+              return false;
             }
-          });
+            return areAllSubEntityPropertiesUndefined;
+          }, true);
+
+          if (areAllSubEntityPropertiesUndefined) {
+            Object.keys(subEntityPropertyNameToPropertyTypeNameMap).forEach((subEntityPropertyName) => {
+              const subEntityFieldPathName = fieldPathName + '.' + subEntityPropertyName;
+              if ((projection as any)[subEntityFieldPathName] === undefined) {
+                (projection as any)[subEntityFieldPathName] = 1;
+              }
+            });
+          }
         }
 
         subEntityProjection = getRootProjection(projection, Types[baseTypeName], Types, propertyName);
