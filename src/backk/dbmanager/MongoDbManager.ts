@@ -60,8 +60,8 @@ import { ErrorOr } from '../types/ErrorOr';
 import { EntityPreHook } from './hooks/EntityPreHook';
 import tryExecuteEntityPreHooks from './hooks/tryExecuteEntityPreHooks';
 import * as util from 'util';
-import removeSubEntitiesWhere from "./sql/operations/dml/removeSubEntitiesWhere";
-import AbstractSqlDbManager from "./AbstractSqlDbManager";
+import removeSubEntitiesWhere from './sql/operations/dml/removeSubEntitiesWhere';
+import AbstractSqlDbManager from './AbstractSqlDbManager';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -1251,7 +1251,6 @@ export default class MongoDbManager extends AbstractDbManager {
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .updateOne(matchExpression, { $set: entity });
-
       });
 
       return [null, null];
@@ -1576,9 +1575,9 @@ export default class MongoDbManager extends AbstractDbManager {
     return false;
   }
 
-  deleteEntityWhere<T extends BackkEntity>(
+  async deleteEntityWhere<T extends BackkEntity>(
     fieldName: string,
-    fieldValue: T[keyof T],
+    fieldValue: T[keyof T] | string,
     EntityClass: { new (): T },
     options?: {
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -1586,7 +1585,56 @@ export default class MongoDbManager extends AbstractDbManager {
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<null> {
-    throw new Error('Not implemented');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityWhere');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+
+    try {
+      const lastFieldNamePart = fieldName.slice(fieldName.lastIndexOf('.') + 1);
+      if (!shouldUseRandomInitializationVector(lastFieldNamePart) && shouldEncryptValue(lastFieldNamePart)) {
+        // noinspection AssignmentToFunctionParameterJS
+        fieldValue = encrypt(fieldValue as any, false);
+      }
+
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      await this.tryExecute(shouldUseTransaction, async (client) => {
+        if (options?.preHooks) {
+          const [currentEntity, error] = await this.getEntityWhere(
+            fieldName,
+            fieldValue,
+            EntityClass,
+            { postQueryOperations: options?.postQueryOperations },
+            true
+          );
+
+          if (!currentEntity) {
+            return [null, error];
+          }
+
+          await tryExecuteEntityPreHooks(options?.preHooks, currentEntity);
+        }
+
+        await client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .deleteOne({ [fieldName]: fieldValue });
+
+        if (options?.postHook) {
+          await tryExecutePostHook(options?.postHook, null);
+        }
+      });
+
+      return [null, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
   }
 
   async removeSubEntitiesWhere<T extends BackkEntity, U extends object>(
@@ -1607,7 +1655,13 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async () => {
-        const [currentEntity, error] = await this.getEntityWhere(fieldName, fieldValue, EntityClass, undefined, true);
+        const [currentEntity, error] = await this.getEntityWhere(
+          fieldName,
+          fieldValue,
+          EntityClass,
+          { postQueryOperations },
+          true
+        );
         if (!currentEntity) {
           throw error;
         }
