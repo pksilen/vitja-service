@@ -570,6 +570,8 @@ export default class MongoDbManager extends AbstractDbManager {
         performPostQueryOperations(cursor, postQueryOperations, EntityClass, Types);
         const rows = await cursor.toArray();
 
+        // console.log(EntityClass, postQueryOperations, rows)
+
         await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
           this,
           rows,

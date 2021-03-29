@@ -39,6 +39,7 @@ import { EntityPreHook } from '../../backk/dbmanager/hooks/EntityPreHook';
 import _IdAndOrderItemId from './types/args/_IdAndOrderItemId';
 import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
 import { SalesItem } from '../salesitem/types/entities/SalesItem';
+import * as util from "util";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -370,7 +371,7 @@ export default class OrderServiceImpl extends OrderService {
       const orderFilters = this.dbManager.getFilters(
         {
           transactionId: null,
-          lastModifiedAtTimestamp: {
+          lastModifiedTimestamp: {
             $lte: dayjs()
               .subtract(unpaidOrderTimeToLiveInMinutes, 'minutes')
               .toDate()
@@ -388,6 +389,8 @@ export default class OrderServiceImpl extends OrderService {
         includeResponseFields: ['orderItems.salesItems._id'],
         paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
       });
+
+      console.log(util.inspect(orders, {depth: null, showHidden: false}));
 
       if (orders) {
         const salesItemIdsToUpdate = JSONPath({ json: orders, path: '$[*].orderItems[*].salesItems[*]._id' });
@@ -464,12 +467,12 @@ export default class OrderServiceImpl extends OrderService {
     return `https://${paymentGatewayHost}/${paymentGatewayUrlPath}?successUrl=${successUrl}&failureUrl=${failureUrl}&successRedirectUrl=${successUiRedirectUrl}&failureRedirectUrl=${failureRedirectUrl}`;
   }
 
-  private static hasOrderItemState(order: Order, orderItemId: string, currentState: OrderItemState): boolean {
+  private static hasOrderItemState(order: Order, orderItemId: string, requiredState: OrderItemState): boolean {
     return (
       JSONPath({
         json: order,
         path: `orderItems[?(@.id == '${orderItemId}')].state`
-      })[0] === currentState
+      })[0] === requiredState
     );
   }
 }

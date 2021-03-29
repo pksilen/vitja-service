@@ -26,13 +26,17 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
 ): Promise<void> {
   const entityPropertyNameToPropertyTypeMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
   const projection = getProjection(EntityClass, postQueryOperations);
-  const rootProjection = getRootProjection(projection, EntityClass, Types);
 
   await forEachAsyncParallel(
     Object.entries(entityPropertyNameToPropertyTypeMap),
     async ([propertyName, propertyTypeName]) => {
       if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
-        if ((rootProjection as any)[propertyName] !== 1) {
+        const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
+        const foundProjection = Object.keys(projection).find((fieldPathName) =>
+          fieldPathName.startsWith(wantedSubEntityPath)
+        );
+
+        if (!foundProjection) {
           return;
         }
 
@@ -43,7 +47,6 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
           });
 
           const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
-          const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
 
           let subEntityFilters = replaceSubEntityPaths(filters, wantedSubEntityPath);
           subEntityFilters = subEntityFilters.map((subEntityFilter) => {
@@ -114,7 +117,7 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
           filters,
           postQueryOperations,
           propertyJsonPath + propertyName + '[*].',
-          subEntityPath + propertyName + '.'
+          subEntityPath + propertyName
         );
       }
     }
