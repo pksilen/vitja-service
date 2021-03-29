@@ -61,6 +61,7 @@ import { EntityPreHook } from './hooks/EntityPreHook';
 import tryExecuteEntityPreHooks from './hooks/tryExecuteEntityPreHooks';
 import handleNestedManyToManyRelations from './mongodb/handleNestedManyToManyRelations';
 import handleNestedOneToManyRelations from './mongodb/handleNestedOneToManyRelations';
+import * as util from "util";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {

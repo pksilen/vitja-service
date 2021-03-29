@@ -36,7 +36,7 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
           fieldPathName.startsWith(wantedSubEntityPath)
         );
 
-        if (!foundProjection) {
+        if (!foundProjection && Object.keys(projection).length > 0) {
           return;
         }
 
