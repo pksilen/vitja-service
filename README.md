@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- PayOrder, automatically execute getOrder test
 - createUserAccount should return only id
 - getUserAccount filters should be a common object filter
 - Mongodb: make getEntitiesXXX to use select for update

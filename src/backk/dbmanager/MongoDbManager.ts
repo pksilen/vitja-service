@@ -59,10 +59,8 @@ import isBackkError from '../errors/isBackkError';
 import { ErrorOr } from '../types/ErrorOr';
 import { EntityPreHook } from './hooks/EntityPreHook';
 import tryExecuteEntityPreHooks from './hooks/tryExecuteEntityPreHooks';
-import * as util from 'util';
-import removeSubEntitiesWhere from './sql/operations/dml/removeSubEntitiesWhere';
-import AbstractSqlDbManager from './AbstractSqlDbManager';
-import handleManyToManyRelations from "./mongodb/handleManyToManyRelations";
+import handleNestedManyToManyRelations from './mongodb/handleNestedManyToManyRelations';
+import handleNestedOneToManyRelations from "./mongodb/handleNestedOneToManyRelations";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -278,7 +276,7 @@ export default class MongoDbManager extends AbstractDbManager {
               (subEntity: any) => subEntity._id
             );
           } else if (isEntityTypeName(baseTypeName)) {
-            handleManyToManyRelations(entity, Types, (Types as any)[baseTypeName], fieldName);
+            handleNestedManyToManyRelations(entity, Types, (Types as any)[baseTypeName], fieldName);
           }
         });
 
@@ -1128,7 +1126,6 @@ export default class MongoDbManager extends AbstractDbManager {
           }
 
           const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
-          const SubEntityClass = (Types as any)[baseTypeName];
           const newSubEntities = (restOfEntity as any)[fieldName];
 
           if (isArrayType && isEntityTypeName(baseTypeName) && newSubEntities) {
@@ -1139,28 +1136,13 @@ export default class MongoDbManager extends AbstractDbManager {
                 (restOfEntity as any)[fieldName] = newSubEntities.map((subEntity: any) => subEntity._id);
               }
             } else {
-              const currentSubEntities = (currentEntity as any)[fieldName];
-
               if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)) {
-                (restOfEntity as any)[fieldName] = currentSubEntities.map(
+                (restOfEntity as any)[fieldName] = (currentEntity as any)[fieldName].map(
                   (currentSubEntity: any) => currentSubEntity._id
                 );
               } else {
-                (restOfEntity as any)[fieldName] = await Promise.all(
-                  currentSubEntities.map(async (currentSubEntity: any) => {
-                    const foundUpdatedSubEntity = newSubEntities.find(
-                      (newSubEntity: any) => newSubEntity._id === currentSubEntity._id
-                    );
-
-                    if (foundUpdatedSubEntity) {
-                      await hashAndEncryptEntity(currentSubEntity, SubEntityClass, Types);
-                    }
-
-                    return foundUpdatedSubEntity
-                      ? { ...currentSubEntity, ...foundUpdatedSubEntity }
-                      : undefined;
-                  })
-                );
+                handleNestedManyToManyRelations(restOfEntity, Types, (Types as any)[baseTypeName], fieldName);
+                handleNestedOneToManyRelations(restOfEntity, Types, (Types as any)[baseTypeName], fieldName);
               }
             }
           } else if (fieldName !== '_id') {

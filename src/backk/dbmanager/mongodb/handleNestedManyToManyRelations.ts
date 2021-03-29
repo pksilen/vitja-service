@@ -4,7 +4,7 @@ import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../utils/type/isEntityTypeName';
 import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 
-export default function handleManyToManyRelations(
+export default function handleNestedManyToManyRelations(
   entity: any,
   Types: object,
   EntityClass: new () => any,
@@ -42,7 +42,7 @@ export default function handleManyToManyRelations(
         );
       }
     } else if (isEntityTypeName(baseTypeName)) {
-      handleManyToManyRelations(entity, Types, (Types as any)[baseTypeName], fieldPathName);
+      handleNestedManyToManyRelations(entity, Types, (Types as any)[baseTypeName], fieldPathName);
     }
   });
 }
