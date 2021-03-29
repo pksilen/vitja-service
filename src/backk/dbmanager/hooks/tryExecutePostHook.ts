@@ -23,7 +23,6 @@ export default async function tryExecutePostHook<T extends BackkEntity | SubEnti
       hookCallResult = await postHookFunc(entity ?? null);
     }
   } catch (error) {
-    console.log(error);
     throw new Error(
       createErrorMessageWithStatusCode(error.errorMessage, HttpStatusCodes.INTERNAL_SERVER_ERROR)
     );

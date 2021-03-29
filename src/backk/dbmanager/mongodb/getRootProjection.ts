@@ -2,6 +2,7 @@ import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPr
 import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 import isEntityTypeName from '../../utils/type/isEntityTypeName';
+import entityAnnotationContainer from '../../decorators/entity/entityAnnotationContainer';
 
 export default function getRootProjection(
   projection: object,
@@ -9,23 +10,37 @@ export default function getRootProjection(
   Types: any,
   subEntityPath = ''
 ): object {
-  const entityClassPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
+  const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
 
-  const rootProjection = Object.entries(entityClassPropertyNameToPropertyTypeNameMap).reduce(
+  const rootProjection = Object.entries(entityPropertyNameToPropertyTypeNameMap).reduce(
     (otherRootProjection, [propertyName, propertyTypeName]) => {
       const { baseTypeName } = getTypeInfoForTypeName(propertyTypeName);
       let subEntityProjection = {};
+      const fieldPathName = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
 
       if (
         isEntityTypeName(baseTypeName) &&
         !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)
       ) {
+        const subEntityName = entityAnnotationContainer.entityNameToTableNameMap[baseTypeName];
+
+        if (subEntityName) {
+          const subEntityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(
+            Types[baseTypeName]
+          );
+          Object.keys(subEntityPropertyNameToPropertyTypeNameMap).forEach((subEntityPropertyName) => {
+            const subEntityFieldPathName = fieldPathName + '.' + subEntityPropertyName;
+            if ((projection as any)[subEntityFieldPathName] === undefined) {
+              (projection as any)[subEntityFieldPathName] = 1;
+            }
+          });
+        }
+
         subEntityProjection = getRootProjection(projection, Types[baseTypeName], Types, propertyName);
       }
 
       const entityProjection = Object.entries(projection).reduce(
         (entityProjection, [projectionFieldPathName, shouldIncludeField]) => {
-          const fieldPathName = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
           let newEntityProjection = entityProjection;
 
           if (projectionFieldPathName === fieldPathName) {
