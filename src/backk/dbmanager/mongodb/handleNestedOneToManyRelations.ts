@@ -19,14 +19,16 @@ export default function handleNestedOneToManyRelations(
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
     const fieldPathName = subEntityPath + '.' + fieldName;
 
-    (entity[subEntityPath] ?? []).forEach((subEntity: any) => {
-      const arrayIndex = subEntity.id;
-      Object.entries(subEntity).forEach(([fieldName, fieldValue]) => {
-        if (fieldName !== 'id') {
-          entity[`${subEntityPath}.${arrayIndex}.${fieldName}`] = fieldValue;
-        }
+    if (entity[subEntityPath] !== undefined && entity[subEntityPath].length > 0) {
+      (entity[subEntityPath]).forEach((subEntity: any) => {
+        const arrayIndex = subEntity.id;
+        Object.entries(subEntity).forEach(([fieldName, fieldValue]) => {
+          if (fieldName !== 'id') {
+            entity[`${subEntityPath}.${arrayIndex}.${fieldName}`] = fieldValue;
+          }
+        });
       });
-    });
+    }
 
     if (
       isArrayType &&
@@ -36,6 +38,8 @@ export default function handleNestedOneToManyRelations(
       handleNestedOneToManyRelations(entity, Types, (Types as any)[baseTypeName], fieldPathName);
     }
 
-    delete entity[subEntityPath];
+    if (entity[subEntityPath] !== undefined && entity[subEntityPath].length > 0) {
+      delete entity[subEntityPath];
+    }
   });
 }
