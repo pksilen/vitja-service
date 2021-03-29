@@ -75,7 +75,6 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
             wantedSubEntityPath
           );
 
-          console.log(EntityClass, propertyName, subEntityIds)
           const [subEntities, error] = await dbManager.getEntitiesByFilters(
             [
               new MongoDbQuery({
