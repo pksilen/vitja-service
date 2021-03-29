@@ -2,6 +2,7 @@ import typePropertyAnnotationContainer from '../../decorators/typeproperty/typeP
 import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
 import isEntityTypeName from '../../utils/type/isEntityTypeName';
 import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import { doesClassPropertyContainCustomValidation } from "../../validation/setClassPropertyValidationDecorators";
 
 export default function handleNestedOneToManyRelations(
   entity: any,
@@ -22,7 +23,7 @@ export default function handleNestedOneToManyRelations(
     if (
       entity[subEntityPath] !== undefined &&
       entity[subEntityPath].length > 0 &&
-      !typePropertyAnnotationContainer.isTypePropertyExternalServiceEntity(EntityClass, fieldName)
+      !doesClassPropertyContainCustomValidation(EntityClass, fieldName, 'isUndefined')
     ) {
       entity[subEntityPath].forEach((subEntity: any) => {
         const arrayIndex = subEntity.id;
@@ -44,7 +45,7 @@ export default function handleNestedOneToManyRelations(
 
     if (
       (entity[subEntityPath] !== undefined && entity[subEntityPath].length > 0) ||
-      typePropertyAnnotationContainer.isTypePropertyExternalServiceEntity(EntityClass, fieldName)
+      doesClassPropertyContainCustomValidation(EntityClass, fieldName, 'isUndefined')
     ) {
       delete entity[subEntityPath];
     }

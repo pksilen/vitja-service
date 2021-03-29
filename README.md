@@ -1,6 +1,8 @@
 # Vitja service
 
 TODO:
+- MongoDb: addSubEntities, update only needed
+  - RemoveSubentites, update only needed
 - PayOrder, automatically execute getOrder test
 - DeleteUnpaidOrders: check that salesitem is for sale
 - createUserAccount should return only id
