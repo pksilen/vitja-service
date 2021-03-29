@@ -11,8 +11,6 @@ TODO:
 - follow sales item price change
 - test error cases
 
-
-
 - remove extra deletes from deleteXXX funcs
 - remove create unique index for oneToMany table
 - Split to multiple microservices

@@ -1,18 +1,17 @@
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../metadata/getClassPropertyNameToPropertyTypeNameMap";
-import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
-import AbstractDbManager from "../AbstractDbManager";
-import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
-import DefaultPostQueryOperations from "../../types/postqueryoperations/DefaultPostQueryOperations";
-import forEachAsyncParallel from "../../utils/forEachAsyncParallel";
-import getTypeInfoForTypeName from "../../utils/type/getTypeInfoForTypeName";
-import { ObjectId } from "mongodb";
-import isEntityTypeName from "../../utils/type/isEntityTypeName";
-import { JSONPath } from "jsonpath-plus";
-import MongoDbQuery from "./MongoDbQuery";
-import replaceSubEntityPaths from "./replaceSubEntityPaths";
-import replaceFieldPathNames from "./replaceFieldPathNames";
-import getProjection from "./getProjection";
+import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
+import AbstractDbManager from '../AbstractDbManager';
+import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
+import DefaultPostQueryOperations from '../../types/postqueryoperations/DefaultPostQueryOperations';
+import forEachAsyncParallel from '../../utils/forEachAsyncParallel';
+import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
+import { ObjectId } from 'mongodb';
+import isEntityTypeName from '../../utils/type/isEntityTypeName';
+import { JSONPath } from 'jsonpath-plus';
+import MongoDbQuery from './MongoDbQuery';
+import replaceSubEntityPaths from './replaceSubEntityPaths';
+import replaceFieldPathNames from './replaceFieldPathNames';
+import getProjection from './getProjection';
 
 export default async function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
   dbManager: AbstractDbManager,
@@ -32,11 +31,15 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
     async ([propertyName, propertyTypeName]) => {
       if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
         const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
-        const foundProjection = Object.keys(projection).find((fieldPathName) =>
-          fieldPathName.startsWith(wantedSubEntityPath)
-        );
+        const foundProjection = Object.keys(projection).find((fieldPathName) => {
+          if (fieldPathName.includes('.')) {
+            fieldPathName.startsWith(wantedSubEntityPath);
+          } else {
+            fieldPathName === propertyName;
+          }
+        });
 
-        if (!foundProjection && Object.keys(projection).length > 0) {
+        if (!foundProjection) {
           return;
         }
 
