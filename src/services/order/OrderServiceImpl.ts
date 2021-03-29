@@ -398,7 +398,7 @@ export default class OrderServiceImpl extends OrderService {
             { _id: { $in: salesItemIdsToUpdate.map((id: string) => new ObjectId(id)) } },
             [new SqlInExpression('_id', salesItemIdsToUpdate)]
           );
-          
+
           const [, error] = await this.dbManager.updateEntitiesByFilters<SalesItem>(
             salesItemFilters,
             { state: 'forSale' },
