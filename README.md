@@ -4,11 +4,15 @@ TODO:
 - createUserAccount should return only id
 - getUserAccount filters should be a common object filter
 - Mongodb: make getEntitiesXXX to use select for update
+- updateEntititesByFilters: change version to integer (-1 means all) and lastmodifiedtimestamp
+- add sales item manufacturer field
+- follow sales item price change
 - test error cases
+
+
+
 - remove extra deletes from deleteXXX funcs
 - remove create unique index for oneToMany table
-- updateEntititesByFilters: change version to integer (-1 means all) and lastmodifiedtimestamp
-
 - Split to multiple microservices
 - Node project for Backk: https://github.com/jsynowiec/node-typescript-boilerplate
 - Starter projects:

@@ -60,6 +60,8 @@ import { ErrorOr } from '../types/ErrorOr';
 import { EntityPreHook } from './hooks/EntityPreHook';
 import tryExecuteEntityPreHooks from './hooks/tryExecuteEntityPreHooks';
 import * as util from 'util';
+import removeSubEntitiesWhere from "./sql/operations/dml/removeSubEntitiesWhere";
+import AbstractSqlDbManager from "./AbstractSqlDbManager";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -1528,9 +1530,7 @@ export default class MongoDbManager extends AbstractDbManager {
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-
     const response = await this.removeSubEntities(_id, subEntityPath, EntityClass, options);
-
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -1589,7 +1589,54 @@ export default class MongoDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  removeSubEntityByIdWhere<T extends BackkEntity>(
+  async removeSubEntitiesWhere<T extends BackkEntity, U extends object>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    subEntitiesJsonPath: string,
+    EntityClass: new () => T,
+    preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+    postHook?: PostHook<T>,
+    postQueryOperations?: PostQueryOperations
+  ): PromiseOfErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesWhere');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      return await this.tryExecute(shouldUseTransaction, async () => {
+        const [currentEntity, error] = await this.getEntityWhere(fieldName, fieldValue, EntityClass, undefined, true);
+        if (!currentEntity) {
+          throw error;
+        }
+
+        await tryExecuteEntityPreHooks(preHooks ?? [], currentEntity);
+        const subEntities = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
+
+        if (subEntities.length > 0) {
+          removeSubEntities(currentEntity, subEntities);
+          await this.updateEntity(currentEntity as any, EntityClass, undefined, false, true);
+        }
+
+        if (postHook) {
+          await tryExecutePostHook(postHook, null);
+        }
+
+        return [null, null];
+      });
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
+  }
+
+  async removeSubEntityByIdWhere<T extends BackkEntity>(
     fieldName: string,
     fieldValue: T[keyof T],
     subEntitiesJsonPath: string,
@@ -1601,6 +1648,18 @@ export default class MongoDbManager extends AbstractDbManager {
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseOfErrorOr<null> {
-    throw new Error('Not implemented');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityByIdWhere');
+    const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
+    const response = await this.removeSubEntitiesWhere(
+      fieldName,
+      fieldValue,
+      subEntityJsonPath,
+      EntityClass,
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
+    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
   }
 }
