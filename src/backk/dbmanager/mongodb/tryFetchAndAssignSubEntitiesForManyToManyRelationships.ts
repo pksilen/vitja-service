@@ -12,6 +12,7 @@ import MongoDbQuery from './MongoDbQuery';
 import replaceSubEntityPaths from './replaceSubEntityPaths';
 import replaceFieldPathNames from './replaceFieldPathNames';
 import getProjection from './getProjection';
+import getRootProjection from './getRootProjection';
 
 export default async function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
   dbManager: AbstractDbManager,
@@ -25,19 +26,25 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
 ): Promise<void> {
   const entityPropertyNameToPropertyTypeMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
   const projection = getProjection(EntityClass, postQueryOperations);
+  const rootProjection = getRootProjection(projection, EntityClass, Types);
 
   await forEachAsyncParallel(
     Object.entries(entityPropertyNameToPropertyTypeMap),
     async ([propertyName, propertyTypeName]) => {
       if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, propertyName)) {
         const wantedSubEntityPath = subEntityPath ? subEntityPath + '.' + propertyName : propertyName;
-        const foundProjection = Object.keys(projection).find((fieldPathName) => {
+        let foundProjection = !!Object.keys(projection).find((fieldPathName) => {
           if (fieldPathName.includes('.')) {
-            fieldPathName.startsWith(wantedSubEntityPath);
-          } else {
-            fieldPathName === propertyName;
+            return fieldPathName.startsWith(wantedSubEntityPath);
           }
+          return false;
         });
+
+        if (!foundProjection) {
+          if ((rootProjection as any)[propertyName] === 1) {
+            foundProjection = true;
+          }
+        }
 
         if (!foundProjection) {
           return;
