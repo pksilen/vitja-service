@@ -19,7 +19,7 @@ export default function handleNestedOneToManyRelations(
     const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
     const fieldPathName = subEntityPath + '.' + fieldName;
 
-    entity[subEntityPath].forEach((subEntity: any) => {
+    (entity[subEntityPath] ?? []).forEach((subEntity: any) => {
       const arrayIndex = subEntity.id;
       Object.entries(subEntity).forEach(([fieldName, fieldValue]) => {
         if (fieldName !== 'id') {
