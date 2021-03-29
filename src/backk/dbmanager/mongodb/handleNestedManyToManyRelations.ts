@@ -25,8 +25,9 @@ export default function handleNestedManyToManyRelations(
       isEntityTypeName(baseTypeName) &&
       typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)
     ) {
-      if (Array.isArray(_.get(entity, subEntityPath))) {
-        _.get(entity, subEntityPath).forEach((subEntity: any, index: number) => {
+      const subEntityValue = _.get(entity, subEntityPath);
+      if (subEntityValue !== undefined && Array.isArray(subEntityValue)) {
+        subEntityValue.forEach((subEntity: any, index: number) => {
           const fieldPathName = subEntityPath + '[' + index + ']' +'.' + fieldName;
           _.set(
             entity,

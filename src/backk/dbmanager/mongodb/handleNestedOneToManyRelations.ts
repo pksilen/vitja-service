@@ -1,8 +1,7 @@
-import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
-import getTypeInfoForTypeName from "../../utils/type/getTypeInfoForTypeName";
-import isEntityTypeName from "../../utils/type/isEntityTypeName";
-import getClassPropertyNameToPropertyTypeNameMap
-  from "../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
+import getTypeInfoForTypeName from '../../utils/type/getTypeInfoForTypeName';
+import isEntityTypeName from '../../utils/type/isEntityTypeName';
+import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 
 export default function handleNestedOneToManyRelations(
   entity: any,
@@ -17,9 +16,10 @@ export default function handleNestedOneToManyRelations(
       delete entity[fieldName];
     }
 
-    const { baseTypeName } = getTypeInfoForTypeName(fieldTypeName);
+    const { baseTypeName, isArrayType } = getTypeInfoForTypeName(fieldTypeName);
     const fieldPathName = subEntityPath + '.' + fieldName;
 
+    console.log(EntityClass, subEntityPath, entity);
     const arrayIndex = entity[subEntityPath].id;
     Object.entries(entity[subEntityPath]).forEach(([fieldName, fieldValue]) => {
       if (fieldName !== 'id') {
@@ -27,10 +27,14 @@ export default function handleNestedOneToManyRelations(
       }
     });
 
-    delete entity[subEntityPath];
-
-    if (isEntityTypeName(baseTypeName)) {
+    if (
+      isArrayType &&
+      isEntityTypeName(baseTypeName) &&
+      !typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, fieldName)
+    ) {
       handleNestedOneToManyRelations(entity, Types, (Types as any)[baseTypeName], fieldPathName);
     }
+
+    delete entity[subEntityPath];
   });
 }
