@@ -2,7 +2,7 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { ArrayMaxSize, ArrayMinSize, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, Max, Min } from 'class-validator';
 import IsBigInt from '../../../../backk/decorators/typeproperty/IsBigInt'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId';
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
@@ -23,12 +23,6 @@ export default class DeliverOrderItemArg {
 
   @IsUndefined({
     groups: ['__backk_create__']
-  })
-  @IsString({
-    groups: ['__backk_none__']
-  })
-  @MaxLength(24, {
-    groups: ['__backk_none__']
   })
   @IsBigInt({
     groups: ['__backk_none__']
