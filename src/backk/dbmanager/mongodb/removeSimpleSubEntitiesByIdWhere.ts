@@ -22,6 +22,7 @@ import MongoDbQuery from './MongoDbQuery';
 import getRootOperations from './getRootOperations';
 import convertMongoDbQueriesToMatchExpression from './convertMongoDbQueriesToMatchExpression';
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
+import replaceIdStringsWithObjectIds from './replaceIdStringsWithObjectIds';
 
 export default async function removeSimpleSubEntitiesByIdWhere<T extends BackkEntity, U extends SubEntity>(
   dbManager: MongoDbManager,
@@ -60,6 +61,7 @@ export default async function removeSimpleSubEntitiesByIdWhere<T extends BackkEn
 
   const rootFilters = getRootOperations(filters as Array<MongoDbQuery<T>>, EntityClass, dbManager.getTypes());
   const matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
+  replaceIdStringsWithObjectIds(matchExpression, EntityClass, dbManager.getTypes());
   let shouldUseTransaction = false;
 
   try {
@@ -95,6 +97,7 @@ export default async function removeSimpleSubEntitiesByIdWhere<T extends BackkEn
             }
           };
 
+      console.log(matchExpression, pullCondition);
       await client
         .db(dbManager.dbName)
         .collection(EntityClass.name.toLowerCase())

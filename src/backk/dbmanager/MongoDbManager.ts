@@ -572,7 +572,7 @@ export default class MongoDbManager extends AbstractDbManager {
       };
     }
 
-    replaceIdStringsWithObjectIds(matchExpression);
+    replaceIdStringsWithObjectIds(matchExpression, EntityClass, this.getTypes());
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     const Types = this.getTypes();
@@ -677,7 +677,7 @@ export default class MongoDbManager extends AbstractDbManager {
       };
     }
 
-    replaceIdStringsWithObjectIds(matchExpression);
+    replaceIdStringsWithObjectIds(matchExpression, EntityClass, this.getTypes());
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
     // noinspection AssignmentToFunctionParameterJS
@@ -1235,7 +1235,7 @@ export default class MongoDbManager extends AbstractDbManager {
         ...mongoDbQueriesMatchExpression
       };
 
-      replaceIdStringsWithObjectIds(matchExpression);
+      replaceIdStringsWithObjectIds(matchExpression, EntityClass, this.getTypes());
     }
 
     let shouldUseTransaction = false;
@@ -1442,7 +1442,7 @@ export default class MongoDbManager extends AbstractDbManager {
       };
     }
 
-    replaceIdStringsWithObjectIds(matchExpression);
+    replaceIdStringsWithObjectIds(matchExpression, EntityClass, this.getTypes());
 
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
