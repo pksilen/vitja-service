@@ -23,6 +23,7 @@ import getRootOperations from './getRootOperations';
 import convertMongoDbQueriesToMatchExpression from './convertMongoDbQueriesToMatchExpression';
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 import replaceIdStringsWithObjectIds from './replaceIdStringsWithObjectIds';
+import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 
 export default async function removeSimpleSubEntityByIdWhere<T extends BackkEntity, U extends SubEntity>(
   dbManager: MongoDbManager,
@@ -84,6 +85,18 @@ export default async function removeSimpleSubEntityByIdWhere<T extends BackkEnti
         await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
       }
 
+      const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
+      let versionUpdate = {};
+      if (entityPropertyNameToPropertyTypeNameMap.version) {
+        // noinspection ReuseOfLocalVariableJS
+        versionUpdate = { $inc: { version: 1 } };
+      }
+
+      let lastModifiedTimestampUpdate = {};
+      if (entityPropertyNameToPropertyTypeNameMap.lastModifiedTimestamp) {
+        lastModifiedTimestampUpdate = { $set: { lastModifiedTimestamp: new Date() } };
+      }
+
       const isManyToMany = typePropertyAnnotationContainer.isTypePropertyManyToMany(
         EntityClass,
         subEntityPath
@@ -93,20 +106,15 @@ export default async function removeSimpleSubEntityByIdWhere<T extends BackkEnti
       const pullCondition = isManyToMany
         ? { [subEntityPath]: subEntityId }
         : {
-          [subEntityPath]: {
-            [`${isMongoIdString ? '_id' : 'id'}`]: isMongoIdString ? new ObjectId(subEntityId) : subEntityId
-          }
-        };
+            [subEntityPath]: {
+              [`${isMongoIdString ? '_id' : 'id'}`]: isMongoIdString ? new ObjectId(subEntityId) : subEntityId
+            }
+          };
 
       await client
         .db(dbManager.dbName)
         .collection(EntityClass.name.toLowerCase())
-        .updateOne(
-          matchExpression,
-          {
-            $pull: pullCondition
-          }
-        );
+        .updateOne(matchExpression, { ...versionUpdate, ...lastModifiedTimestampUpdate, $pull: pullCondition });
 
       if (options?.postHook) {
         await tryExecutePostHook(options.postHook, null);

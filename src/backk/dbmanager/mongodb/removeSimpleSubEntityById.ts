@@ -15,6 +15,7 @@ import cleanupLocalTransactionIfNeeded from '../sql/operations/transaction/clean
 import recordDbOperationDuration from '../utils/recordDbOperationDuration';
 import { ObjectId } from 'mongodb';
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
+import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 
 export default async function removeSimpleSubEntityById<T extends BackkEntity, U extends SubEntity>(
   dbManager: MongoDbManager,
@@ -51,12 +52,24 @@ export default async function removeSimpleSubEntityById<T extends BackkEntity, U
         subEntityPath
       );
 
+      const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
+      let versionUpdate = {};
+      if (entityPropertyNameToPropertyTypeNameMap.version) {
+        // noinspection ReuseOfLocalVariableJS
+        versionUpdate = { $inc: { version: 1 } };
+      }
+
+      let lastModifiedTimestampUpdate = {};
+      if (entityPropertyNameToPropertyTypeNameMap.lastModifiedTimestamp) {
+        lastModifiedTimestampUpdate = { $set: { lastModifiedTimestamp: new Date() } };
+      }
+
       const isMongoIdString = isNaN(parseInt(subEntityId, 10)) && subEntityId.length === 24;
       const pullCondition = isManyToMany
         ? { [subEntityPath]: subEntityId }
         : {
             [subEntityPath]: {
-             [`${isMongoIdString ? '_id' : 'id'}`]: isMongoIdString ? new ObjectId(subEntityId) : subEntityId
+              [`${isMongoIdString ? '_id' : 'id'}`]: isMongoIdString ? new ObjectId(subEntityId) : subEntityId
             }
           };
 
@@ -65,9 +78,7 @@ export default async function removeSimpleSubEntityById<T extends BackkEntity, U
         .collection(EntityClass.name.toLowerCase())
         .updateOne(
           { _id: new ObjectId(_id) },
-          {
-            $pull: pullCondition
-          }
+          { ...versionUpdate, ...lastModifiedTimestampUpdate, $pull: pullCondition }
         );
 
       if (options?.postHook) {

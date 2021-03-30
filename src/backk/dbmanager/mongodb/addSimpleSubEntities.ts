@@ -1,13 +1,14 @@
-import { BackkEntity } from "../../types/entities/BackkEntity";
-import { SubEntity } from "../../types/entities/SubEntity";
-import { EntityPreHook } from "../hooks/EntityPreHook";
-import { PostHook } from "../hooks/PostHook";
-import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
-import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
-import tryExecuteEntityPreHooks from "../hooks/tryExecuteEntityPreHooks";
-import MongoDbManager from "../MongoDbManager";
-import { MongoClient, ObjectId } from "mongodb";
-import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
+import { BackkEntity } from '../../types/entities/BackkEntity';
+import { SubEntity } from '../../types/entities/SubEntity';
+import { EntityPreHook } from '../hooks/EntityPreHook';
+import { PostHook } from '../hooks/PostHook';
+import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
+import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
+import tryExecuteEntityPreHooks from '../hooks/tryExecuteEntityPreHooks';
+import MongoDbManager from '../MongoDbManager';
+import { MongoClient, ObjectId } from 'mongodb';
+import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
+import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 
 export default async function addSimpleSubEntities<T extends BackkEntity, U extends SubEntity>(
   client: MongoClient,
@@ -37,10 +38,25 @@ export default async function addSimpleSubEntities<T extends BackkEntity, U exte
     newSubEntities = newSubEntities.map((subEntity: any) => subEntity._id);
   }
 
+  const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
+  let versionUpdate = {};
+  if (entityPropertyNameToPropertyTypeNameMap.version) {
+    // noinspection ReuseOfLocalVariableJS
+    versionUpdate = { $inc: { version: 1 } };
+  }
+
+  let lastModifiedTimestampUpdate = {};
+  if (entityPropertyNameToPropertyTypeNameMap.lastModifiedTimestamp) {
+    lastModifiedTimestampUpdate = { $set: { lastModifiedTimestamp: new Date() } };
+  }
+
   await client
     .db(dbManager.dbName)
     .collection(EntityClass.name.toLowerCase())
-    .updateOne({ _id: new ObjectId(_id) }, { $push: { [subEntityPath]: { $each: newSubEntities } } });
+    .updateOne(
+      { _id: new ObjectId(_id) },
+      { ...versionUpdate, ...lastModifiedTimestampUpdate, $push: { [subEntityPath]: { $each: newSubEntities } } }
+    );
 
   return [null, null];
 }

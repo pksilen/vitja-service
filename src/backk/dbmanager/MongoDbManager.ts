@@ -1243,11 +1243,25 @@ export default class MongoDbManager extends AbstractDbManager {
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
+      const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
+      let versionUpdate = {};
+      if (entityPropertyNameToPropertyTypeNameMap.version) {
+        delete (entity as any).version;
+        // noinspection ReuseOfLocalVariableJS
+        versionUpdate = { $inc: { version: 1 } };
+      }
+
+      let lastModifiedTimestampUpdate = {};
+      if (entityPropertyNameToPropertyTypeNameMap.lastModifiedTimestamp) {
+        delete (entity as any).lastModifiedTimestamp;
+        lastModifiedTimestampUpdate = { $set: { lastModifiedTimestamp: new Date() } };
+      }
+
       await this.tryExecute(shouldUseTransaction, async (client) => {
         client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
-          .updateOne(matchExpression, { $set: entity });
+          .updateMany(matchExpression, { ...versionUpdate, ...lastModifiedTimestampUpdate, $set: entity });
       });
 
       return [null, null];
