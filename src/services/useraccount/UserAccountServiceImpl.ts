@@ -66,12 +66,11 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   getUserAccount({ userName, ...postQueryOperations }: GetUserAccountArg): PromiseOfErrorOr<UserAccount> {
-    const filters = this.dbManager.getFilters<UserAccount>(
-      [new MongoDbQuery({ userName }), new MongoDbQuery({ state: 'forSale' }, 'favoriteSalesItems')],
-      [new SqlEquals({ userName }), new SqlEquals({ state: 'forSale' }, 'favoriteSalesItems')]
+    return this.dbManager.getEntityByFilters(
+      { userName, 'favoriteSalesItems.state': 'forSale' },
+      UserAccount,
+      postQueryOperations
     );
-
-    return this.dbManager.getEntityByFilters(filters, UserAccount, postQueryOperations);
   }
 
   @AllowForSelf()
