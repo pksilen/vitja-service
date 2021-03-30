@@ -52,13 +52,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
       UserAccount,
       {
         postQueryOperations: {
-          excludeResponseFields: [
-            'favoriteSalesItems',
-            'ownSalesItems',
-            'orders',
-            'followedUserAccounts',
-            'followingUserAccounts'
-          ]
+          includeResponseFields: ['_id', 'commissionDiscountPercentage']
         }
       }
     );
@@ -90,13 +84,15 @@ export default class UserAccountServiceImpl extends UserAccountService {
       postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
     }
   ])
-  @PostTests([{
-    testName: 'user account follows another user account',
-    serviceFunctionName: 'userAccountService.getUserAccount',
-    expectedResult: {
-      'followedUserAccounts._id': '{{followedUserAccountId}}'
+  @PostTests([
+    {
+      testName: 'user account follows another user account',
+      serviceFunctionName: 'userAccountService.getUserAccount',
+      expectedResult: {
+        'followedUserAccounts._id': '{{followedUserAccountId}}'
+      }
     }
-  }])
+  ])
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
@@ -119,11 +115,13 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @PostTests([{
-    testName: 'user account does not follow another user accounts',
-    serviceFunctionName: 'userAccountService.getUserAccount',
-    expectedResult: { followedUserAccounts: [] }
-  }])
+  @PostTests([
+    {
+      testName: 'user account does not follow another user accounts',
+      serviceFunctionName: 'userAccountService.getUserAccount',
+      expectedResult: { followedUserAccounts: [] }
+    }
+  ])
   unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(
       _id,
@@ -140,13 +138,15 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
   @TestSetup(['salesItemService.createSalesItem'])
-  @PostTests([{
-    testName: 'user account has a favorite sales item',
-    serviceFunctionName: 'userAccountService.getUserAccount',
-    expectedResult: {
-      'favoriteSalesItems._id': '{{salesItemId}}'
+  @PostTests([
+    {
+      testName: 'user account has a favorite sales item',
+      serviceFunctionName: 'userAccountService.getUserAccount',
+      expectedResult: {
+        'favoriteSalesItems._id': '{{salesItemId}}'
+      }
     }
-  }])
+  ])
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
@@ -159,13 +159,15 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemoveSubEntities')
-  @PostTests([{
-    testName: 'user account has no favorite sales items',
-    serviceFunctionName: 'userAccountService.getUserAccount',
-    expectedResult: {
-      favoriteSalesItems: []
+  @PostTests([
+    {
+      testName: 'user account has no favorite sales items',
+      serviceFunctionName: 'userAccountService.getUserAccount',
+      expectedResult: {
+        favoriteSalesItems: []
+      }
     }
-  }])
+  ])
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount);
   }

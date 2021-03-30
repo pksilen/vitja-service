@@ -1,8 +1,7 @@
 # Vitja service
 
 TODO:
-- DeleteUnpaidOrders: check that salesitem is for sale
-- createUserAccount should return only id
+- createUserAccount should return only id, comissiondiscount
 - getUserAccount filters should be a common object filter
 - Mongodb: make getEntitiesXXX to use select for update
 - follow sales item price change
