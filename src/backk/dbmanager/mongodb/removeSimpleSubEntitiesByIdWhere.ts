@@ -21,6 +21,7 @@ import encrypt from '../../crypt/encrypt';
 import MongoDbQuery from './MongoDbQuery';
 import getRootOperations from './getRootOperations';
 import convertMongoDbQueriesToMatchExpression from './convertMongoDbQueriesToMatchExpression';
+import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 
 export default async function removeSimpleSubEntitiesByIdWhere<T extends BackkEntity, U extends SubEntity>(
   dbManager: MongoDbManager,
@@ -81,17 +82,26 @@ export default async function removeSimpleSubEntitiesByIdWhere<T extends BackkEn
         await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
       }
 
+      const isManyToMany = typePropertyAnnotationContainer.isTypePropertyManyToMany(
+        EntityClass,
+        subEntityPath
+      );
+
+      const pullCondition = isManyToMany
+        ? { [subEntityPath]: subEntityId }
+        : {
+            [subEntityPath]: {
+              $or: [{ _id: new ObjectId(subEntityId) }, { id: new ObjectId(subEntityId) }]
+            }
+          };
+
       await client
         .db(dbManager.dbName)
         .collection(EntityClass.name.toLowerCase())
         .updateOne(
           { matchExpression },
           {
-            $pull: {
-              [subEntityPath]: {
-                $or: [{ _id: new ObjectId(subEntityId) }, { id: new ObjectId(subEntityId) }]
-              }
-            }
+            $pull: pullCondition
           }
         );
 

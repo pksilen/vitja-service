@@ -50,7 +50,7 @@ export default async function removeSimpleSubEntitiesById<T extends BackkEntity,
         EntityClass,
         subEntityPath
       );
-      
+
       const pullCondition = isManyToMany
         ? { [subEntityPath]: subEntityId }
         : {
