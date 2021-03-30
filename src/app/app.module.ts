@@ -24,12 +24,14 @@ import TagServiceImpl from "../services/tag/TagServiceImpl";
 import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
 import UserService from "../services/user/UserService";
 import UserServiceImpl from "../services/user/UserServiceImpl";
+import { mySqlDbManager } from "../database/mySqlDatabaseManager";
+import { mongoDbManager } from "../database/mongoDbManager";
 
 @Module({
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: postgreSqlDbManager },
+    { provide: AbstractDbManager, useValue: mongoDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: StartupCheckService, useClass: StartupCheckServiceImpl },
