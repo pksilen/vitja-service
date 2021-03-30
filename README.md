@@ -1,8 +1,6 @@
 # Vitja service
 
 TODO:
-- MongoDb: addSubEntities, update only needed
-  - RemoveSubentites, update only needed
 - Change version to integer, addSubEntities/RemoveSubEntities
 - PayOrder, automatically execute getOrder test
 - DeleteUnpaidOrders: check that salesitem is for sale

@@ -1,19 +1,20 @@
-import { BackkEntity } from "../../types/entities/BackkEntity";
-import { SubEntity } from "../../types/entities/SubEntity";
-import { EntityPreHook } from "../hooks/EntityPreHook";
-import { PostHook } from "../hooks/PostHook";
-import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
-import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
-import tryExecuteEntityPreHooks from "../hooks/tryExecuteEntityPreHooks";
-import MongoDbManager from "../MongoDbManager";
-import startDbOperation from "../utils/startDbOperation";
-import tryStartLocalTransactionIfNeeded from "../sql/operations/transaction/tryStartLocalTransactionIfNeeded";
-import tryExecutePostHook from "../hooks/tryExecutePostHook";
-import isBackkError from "../../errors/isBackkError";
-import createBackkErrorFromError from "../../errors/createBackkErrorFromError";
-import cleanupLocalTransactionIfNeeded from "../sql/operations/transaction/cleanupLocalTransactionIfNeeded";
-import recordDbOperationDuration from "../utils/recordDbOperationDuration";
-import { ObjectId } from "mongodb";
+import { BackkEntity } from '../../types/entities/BackkEntity';
+import { SubEntity } from '../../types/entities/SubEntity';
+import { EntityPreHook } from '../hooks/EntityPreHook';
+import { PostHook } from '../hooks/PostHook';
+import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
+import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
+import tryExecuteEntityPreHooks from '../hooks/tryExecuteEntityPreHooks';
+import MongoDbManager from '../MongoDbManager';
+import startDbOperation from '../utils/startDbOperation';
+import tryStartLocalTransactionIfNeeded from '../sql/operations/transaction/tryStartLocalTransactionIfNeeded';
+import tryExecutePostHook from '../hooks/tryExecutePostHook';
+import isBackkError from '../../errors/isBackkError';
+import createBackkErrorFromError from '../../errors/createBackkErrorFromError';
+import cleanupLocalTransactionIfNeeded from '../sql/operations/transaction/cleanupLocalTransactionIfNeeded';
+import recordDbOperationDuration from '../utils/recordDbOperationDuration';
+import { ObjectId } from 'mongodb';
+import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 
 export default async function removeSimpleSubEntitiesById<T extends BackkEntity, U extends SubEntity>(
   dbManager: MongoDbManager,
@@ -45,17 +46,26 @@ export default async function removeSimpleSubEntitiesById<T extends BackkEntity,
         await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
       }
 
-       await client
+      const isManyToMany = typePropertyAnnotationContainer.isTypePropertyManyToMany(
+        EntityClass,
+        subEntityPath
+      );
+      
+      const pullCondition = isManyToMany
+        ? { [subEntityPath]: subEntityId }
+        : {
+            [subEntityPath]: {
+              $or: [{ _id: new ObjectId(subEntityId) }, { id: new ObjectId(subEntityId) }]
+            }
+          };
+
+      await client
         .db(dbManager.dbName)
         .collection(EntityClass.name.toLowerCase())
         .updateOne(
           { _id: new ObjectId(_id) },
           {
-            $pull: {
-              [subEntityPath]: {
-                $or: [{ _id: new ObjectId(subEntityId) }, { id: new ObjectId(subEntityId) }]
-              }
-            }
+            $pull: pullCondition
           }
         );
 

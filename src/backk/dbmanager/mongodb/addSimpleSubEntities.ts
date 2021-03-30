@@ -7,6 +7,7 @@ import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
 import tryExecuteEntityPreHooks from "../hooks/tryExecuteEntityPreHooks";
 import MongoDbManager from "../MongoDbManager";
 import { MongoClient, ObjectId } from "mongodb";
+import typePropertyAnnotationContainer from "../../decorators/typeproperty/typePropertyAnnotationContainer";
 
 export default async function addSimpleSubEntities<T extends BackkEntity, U extends SubEntity>(
   client: MongoClient,
@@ -29,6 +30,11 @@ export default async function addSimpleSubEntities<T extends BackkEntity, U exte
     }
 
     await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+  }
+
+  if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, subEntityPath)) {
+    // noinspection AssignmentToFunctionParameterJS
+    newSubEntities = newSubEntities.map((subEntity: any) => subEntity._id);
   }
 
   await client
