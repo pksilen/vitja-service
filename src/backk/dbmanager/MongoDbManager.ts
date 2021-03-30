@@ -66,6 +66,7 @@ import { jsonRegex } from 'ts-loader/dist/constants';
 import addSimpleSubEntities from './mongodb/addSimpleSubEntities';
 import removeSimpleSubEntityById from './mongodb/removeSimpleSubEntityById';
 import removeSimpleSubEntityByIdWhere from './mongodb/removeSimpleSubEntityByIdWhere';
+import getEntitiesByFilters from './mongodb/operations/dql/getEntitiesByFilters';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -554,100 +555,12 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async getEntitiesByFilters<T>(
+  getEntitiesByFilters<T>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
-    updateDbLocalTransactionCount(this);
-    let matchExpression: any;
-    let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
-
-    if (typeof filters === 'object' && !Array.isArray(filters)) {
-      finalFilters = convertFilterObjectToMongoDbQueries(filters);
-    } else {
-      finalFilters = filters;
-    }
-
-    if (Array.isArray(finalFilters) && finalFilters?.find((filter) => filter instanceof SqlExpression)) {
-      throw new Error('SqlExpression is not supported for MongoDB');
-    } else {
-      const rootFilters = getRootOperations(finalFilters, EntityClass, this.getTypes());
-      const rootUserDefinedFilters = rootFilters.filter((filter) => !(filter instanceof MongoDbQuery));
-      const rootMongoDbQueries = rootFilters.filter((filter) => filter instanceof MongoDbQuery);
-
-      const userDefinedFiltersMatchExpression = convertUserDefinedFiltersToMatchExpression(
-        rootUserDefinedFilters as UserDefinedFilter[]
-      );
-
-      const mongoDbQueriesMatchExpression = convertMongoDbQueriesToMatchExpression(
-        rootMongoDbQueries as Array<MongoDbQuery<T>>
-      );
-
-      matchExpression = {
-        ...userDefinedFiltersMatchExpression,
-        ...mongoDbQueriesMatchExpression
-      };
-    }
-
-    replaceIdStringsWithObjectIds(matchExpression);
-    // noinspection AssignmentToFunctionParameterJS
-    EntityClass = this.getType(EntityClass);
-    const Types = this.getTypes();
-
-    try {
-      let isSelectForUpdate = false;
-
-      if (
-        getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
-        this.getClsNamespace()?.get('globalTransaction') ||
-        this.getClsNamespace()?.get('localTransaction')
-      ) {
-        isSelectForUpdate = true;
-      }
-
-      const entities = await this.tryExecute(false, async (client) => {
-        if (isSelectForUpdate) {
-          await client
-            .db(this.dbName)
-            .collection(EntityClass.name.toLowerCase())
-            .updateMany(matchExpression, { $set: { _backkLock: new ObjectId() } });
-        }
-
-        const joinPipelines = getJoinPipelines(EntityClass, Types);
-        const cursor = client
-          .db(this.dbName)
-          .collection<T>(getTableName(EntityClass.name))
-          .aggregate([...joinPipelines, getFieldOrdering((Types as any)[getEntityName(EntityClass.name)])])
-          .match(matchExpression);
-
-        performPostQueryOperations(cursor, postQueryOperations, EntityClass, Types);
-        const rows = await cursor.toArray();
-
-        await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
-          this,
-          rows,
-          EntityClass,
-          this.getTypes(),
-          finalFilters as Array<MongoDbQuery<T>>,
-          postQueryOperations
-        );
-
-        paginateSubEntities(rows, postQueryOperations.paginations, EntityClass, this.getTypes());
-        removePrivateProperties(rows, EntityClass, this.getTypes());
-        decryptEntities(rows, EntityClass, this.getTypes(), false);
-        return rows;
-      });
-
-      return [entities, null];
-    } catch (errorOrBackkError) {
-      return isBackkError(errorOrBackkError)
-        ? [null, errorOrBackkError]
-        : [null, createBackkErrorFromError(errorOrBackkError)];
-    } finally {
-      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-    }
+    return getEntitiesByFilters(this, filters, EntityClass, postQueryOperations, false)
   }
 
   async getEntityByFilters<T>(

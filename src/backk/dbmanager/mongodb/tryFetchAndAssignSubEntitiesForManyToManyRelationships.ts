@@ -14,9 +14,11 @@ import replaceSubEntityPaths from "./replaceSubEntityPaths";
 import replaceFieldPathNames from "./replaceFieldPathNames";
 import getProjection from "./getProjection";
 import getRootProjection from "./getRootProjection";
+import getEntitiesByFilters from "./operations/dql/getEntitiesByFilters";
+import MongoDbManager from "../MongoDbManager";
 
 export default async function tryFetchAndAssignSubEntitiesForManyToManyRelationships<T>(
-  dbManager: AbstractDbManager,
+  dbManager: MongoDbManager,
   rows: T[],
   EntityClass: new () => T,
   Types: object,
@@ -89,7 +91,8 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
             wantedSubEntityPath
           );
 
-          const [subEntities, error] = await dbManager.getEntitiesByFilters(
+          const [subEntities, error] = await getEntitiesByFilters(
+            dbManager,
             [
               new MongoDbQuery({
                 _id: { $in: (subEntityIds ?? []).map((subEntityId: any) => new ObjectId(subEntityId)) }
@@ -102,7 +105,8 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
               excludeResponseFields: subEntityExcludeResponseFields,
               sortBys: subEntitySortBys,
               paginations: subEntityPaginations
-            }
+            },
+            true
           );
 
           if (error) {
