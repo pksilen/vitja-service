@@ -444,7 +444,7 @@ export default class MongoDbManager extends AbstractDbManager {
             });
           }
         });
-        
+
         const [, updateError] = await this.updateEntity(
           currentEntity as any,
           EntityClass,
@@ -1215,6 +1215,8 @@ export default class MongoDbManager extends AbstractDbManager {
         ...userDefinedFiltersMatchExpression,
         ...mongoDbQueriesMatchExpression
       };
+
+      replaceIdStringsWithObjectIds(matchExpression);
     }
 
     let shouldUseTransaction = false;

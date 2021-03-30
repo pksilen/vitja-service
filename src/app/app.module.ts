@@ -22,8 +22,6 @@ import AuditLoggingServiceImpl from "../services/auditlogging/AuditLoggingServic
 import TagService from "../services/tag/TagService";
 import TagServiceImpl from "../services/tag/TagServiceImpl";
 import { postgreSqlDbManager } from "../database/postgreSqlDbManager";
-import { mongoDbManager } from "../database/mongoDbManager";
-import { mySqlDbManager } from "../database/mySqlDatabaseManager";
 import UserService from "../services/user/UserService";
 import UserServiceImpl from "../services/user/UserServiceImpl";
 
@@ -31,7 +29,7 @@ import UserServiceImpl from "../services/user/UserServiceImpl";
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: mongoDbManager },
+    { provide: AbstractDbManager, useValue: postgreSqlDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: StartupCheckService, useClass: StartupCheckServiceImpl },
