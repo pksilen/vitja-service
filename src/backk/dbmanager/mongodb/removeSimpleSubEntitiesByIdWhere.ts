@@ -88,7 +88,7 @@ export default async function removeSimpleSubEntitiesByIdWhere<T extends BackkEn
       );
 
       const pullCondition = isManyToMany
-        ? { [subEntityPath]: subEntityId }
+        ? { [subEntityPath]: new ObjectId(subEntityId) }
         : {
             [subEntityPath]: {
               $or: [{ _id: new ObjectId(subEntityId) }, { id: new ObjectId(subEntityId) }]
