@@ -1,24 +1,24 @@
-import forEachAsyncParallel from '../utils/forEachAsyncParallel';
-import encrypt from './encrypt';
-import hash from './hash';
-import shouldEncryptValue from './shouldEncryptValue';
-import shouldHashValue from './shouldHashValue';
-import shouldUseRandomInitializationVector from './shouldUseRandomInitializationVector';
-import getClassPropertyNameToPropertyTypeNameMap from '../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import getTypeInfoForTypeName from '../utils/type/getTypeInfoForTypeName';
-import forEachAsyncSequential from '../utils/forEachAsyncSequential';
-import { ObjectId } from 'mongodb';
+import encrypt from "./encrypt";
+import hash from "./hash";
+import shouldEncryptValue from "./shouldEncryptValue";
+import shouldHashValue from "./shouldHashValue";
+import shouldUseRandomInitializationVector from "./shouldUseRandomInitializationVector";
+import getClassPropertyNameToPropertyTypeNameMap from "../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import getTypeInfoForTypeName from "../utils/type/getTypeInfoForTypeName";
+import forEachAsyncSequential from "../utils/forEachAsyncSequential";
+import { ObjectId } from "mongodb";
+import forEachAsyncParallel from "../utils/forEachAsyncParallel";
 
 async function hashOrEncryptEntityValues(
   entity: { [key: string]: any },
   EntityClass: new () => any,
   Types: object
 ) {
-  await forEachAsyncSequential(Object.entries(entity), async ([propertyName, propertyValue]) => {
+  await forEachAsyncParallel(Object.entries(entity), async ([propertyName, propertyValue]) => {
     if (Array.isArray(propertyValue) && propertyValue.length > 0) {
       if (typeof propertyValue[0] === 'object' && propertyValue[0] !== null) {
         const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
-        await forEachAsyncSequential(propertyValue, async (pv: any) => {
+        await forEachAsyncParallel(propertyValue, async (pv: any) => {
           await hashOrEncryptEntityValues(
             pv,
             (Types as any)[getTypeInfoForTypeName(entityMetadata[propertyName]).baseTypeName],
@@ -26,7 +26,7 @@ async function hashOrEncryptEntityValues(
           );
         });
       } else if (shouldHashValue(propertyName, EntityClass)) {
-        await forEachAsyncSequential(propertyValue, async (_, index) => {
+        await forEachAsyncParallel(propertyValue, async (_, index) => {
           if (propertyValue[index] !== null) {
             if (typeof propertyValue[index] !== 'string') {
               throw new Error(
@@ -37,7 +37,7 @@ async function hashOrEncryptEntityValues(
           }
         });
       } else if (shouldEncryptValue(propertyName, EntityClass)) {
-        await forEachAsyncSequential(propertyValue, async (_, index) => {
+        await forEachAsyncParallel(propertyValue, async (_, index) => {
           if (propertyValue[index] !== null) {
             if (typeof propertyValue[index] !== 'string') {
               throw new Error(

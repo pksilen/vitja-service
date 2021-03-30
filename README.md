@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- getUserAccount filters should be a common object filter
 - Mongodb: make getEntitiesXXX to use select for update
 - follow sales item price change
 - test error cases

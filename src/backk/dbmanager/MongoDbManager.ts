@@ -493,12 +493,30 @@ export default class MongoDbManager extends AbstractDbManager {
     postQueryOperations?: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getAllEntities');
+    updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
 
     try {
+      let isSelectForUpdate = false;
+
+      if (
+        getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('localTransaction')
+      ) {
+        isSelectForUpdate = true;
+      }
+
       const entities = await this.tryExecute(false, async (client) => {
+        if (isSelectForUpdate) {
+          await client
+            .db(this.dbName)
+            .collection(EntityClass.name.toLowerCase())
+            .updateMany({}, { $set: { _backkLock: new ObjectId() } });
+        }
+
         const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
 
         const cursor = client
@@ -542,6 +560,7 @@ export default class MongoDbManager extends AbstractDbManager {
     postQueryOperations: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
+    updateDbLocalTransactionCount(this);
     let matchExpression: any;
     let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
 
@@ -578,9 +597,25 @@ export default class MongoDbManager extends AbstractDbManager {
     const Types = this.getTypes();
 
     try {
-      const entities = await this.tryExecute(false, async (client) => {
-        const joinPipelines = getJoinPipelines(EntityClass, Types);
+      let isSelectForUpdate = false;
 
+      if (
+        getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('localTransaction')
+      ) {
+        isSelectForUpdate = true;
+      }
+
+      const entities = await this.tryExecute(false, async (client) => {
+        if (isSelectForUpdate) {
+          await client
+            .db(this.dbName)
+            .collection(EntityClass.name.toLowerCase())
+            .updateMany(matchExpression, { $set: { _backkLock: new ObjectId() } });
+        }
+
+        const joinPipelines = getJoinPipelines(EntityClass, Types);
         const cursor = client
           .db(this.dbName)
           .collection<T>(getTableName(EntityClass.name))
@@ -710,6 +745,7 @@ export default class MongoDbManager extends AbstractDbManager {
     isInternalCall = false
   ): PromiseOfErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
+    updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     let shouldUseTransaction = false;
@@ -840,13 +876,33 @@ export default class MongoDbManager extends AbstractDbManager {
     postQueryOperations: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByIds');
+    updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
 
     try {
-      const entities = await this.tryExecute(false, async (client) => {
-        const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
+      let isSelectForUpdate = false;
 
+      if (
+        getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('localTransaction')
+      ) {
+        isSelectForUpdate = true;
+      }
+
+      const entities = await this.tryExecute(false, async (client) => {
+        if (isSelectForUpdate) {
+          await client
+            .db(this.dbName)
+            .collection(EntityClass.name.toLowerCase())
+            .updateMany(
+              { _id: { $in: _ids.map((_id: string) => new ObjectId(_id)) } },
+              { $set: { _backkLock: new ObjectId() } }
+            );
+        }
+
+        const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
         const cursor = client
           .db(this.dbName)
           .collection<T>(getTableName(EntityClass.name))
@@ -897,6 +953,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
+    updateDbLocalTransactionCount(this);
 
     let finalFieldValue = fieldValue;
     const lastDotPosition = fieldPathName.lastIndexOf('.');
@@ -997,6 +1054,7 @@ export default class MongoDbManager extends AbstractDbManager {
     }
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesWhere');
+    updateDbLocalTransactionCount(this);
 
     let finalFieldValue = fieldValue;
     const lastDotPosition = fieldPathName.lastIndexOf('.');
@@ -1016,7 +1074,24 @@ export default class MongoDbManager extends AbstractDbManager {
     const matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
 
     try {
+      let isSelectForUpdate = false;
+
+      if (
+        getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('localTransaction')
+      ) {
+        isSelectForUpdate = true;
+      }
+
       const entities = await this.tryExecute(false, async (client) => {
+        if (isSelectForUpdate) {
+          await client
+            .db(this.dbName)
+            .collection(EntityClass.name.toLowerCase())
+            .updateMany(matchExpression, { $set: { _backkLock: new ObjectId() } });
+        }
+
         const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
 
         const cursor = client
