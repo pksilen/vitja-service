@@ -1,14 +1,11 @@
 # Vitja service
 
 TODO:
-- Change version to integer, addSubEntities/RemoveSubEntities
 - PayOrder, automatically execute getOrder test
 - DeleteUnpaidOrders: check that salesitem is for sale
 - createUserAccount should return only id
 - getUserAccount filters should be a common object filter
 - Mongodb: make getEntitiesXXX to use select for update
-- updateEntititesByFilters: change version to integer (-1 means all) and lastmodifiedtimestamp
-- add sales item manufacturer field
 - follow sales item price change
 - test error cases
 
