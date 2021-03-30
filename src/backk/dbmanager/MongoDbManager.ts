@@ -64,8 +64,8 @@ import handleNestedOneToManyRelations from './mongodb/handleNestedOneToManyRelat
 import * as util from 'util';
 import { jsonRegex } from 'ts-loader/dist/constants';
 import addSimpleSubEntities from './mongodb/addSimpleSubEntities';
-import removeSimpleSubEntitiesById from './mongodb/removeSimpleSubEntitiesById';
-import removeSimpleSubEntitiesByIdWhere from './mongodb/removeSimpleSubEntitiesByIdWhere';
+import removeSimpleSubEntityById from './mongodb/removeSimpleSubEntityById';
+import removeSimpleSubEntityByIdWhere from './mongodb/removeSimpleSubEntityByIdWhere';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -1536,7 +1536,7 @@ export default class MongoDbManager extends AbstractDbManager {
     let response;
 
     if (isNonNestedColumnName) {
-      response = await removeSimpleSubEntitiesById(
+      response = await removeSimpleSubEntityById(
         this,
         _id,
         subEntitiesJsonPath,
@@ -1727,7 +1727,7 @@ export default class MongoDbManager extends AbstractDbManager {
     let response;
 
     if (isNonNestedColumnName) {
-      response = await removeSimpleSubEntitiesByIdWhere(
+      response = await removeSimpleSubEntityByIdWhere(
         this,
         fieldName,
         fieldValue,

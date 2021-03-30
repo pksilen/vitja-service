@@ -14,11 +14,20 @@ import createBackkErrorFromError from '../../errors/createBackkErrorFromError';
 import cleanupLocalTransactionIfNeeded from '../sql/operations/transaction/cleanupLocalTransactionIfNeeded';
 import recordDbOperationDuration from '../utils/recordDbOperationDuration';
 import { ObjectId } from 'mongodb';
+import isUniqueField from '../sql/operations/dql/utils/isUniqueField';
+import shouldUseRandomInitializationVector from '../../crypt/shouldUseRandomInitializationVector';
+import shouldEncryptValue from '../../crypt/shouldEncryptValue';
+import encrypt from '../../crypt/encrypt';
+import MongoDbQuery from './MongoDbQuery';
+import getRootOperations from './getRootOperations';
+import convertMongoDbQueriesToMatchExpression from './convertMongoDbQueriesToMatchExpression';
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
+import replaceIdStringsWithObjectIds from './replaceIdStringsWithObjectIds';
 
-export default async function removeSimpleSubEntitiesById<T extends BackkEntity, U extends SubEntity>(
+export default async function removeSimpleSubEntityByIdWhere<T extends BackkEntity, U extends SubEntity>(
   dbManager: MongoDbManager,
-  _id: string,
+  fieldPathName: string,
+  fieldValue: any,
   subEntityPath: string,
   subEntityId: string,
   EntityClass: new () => T,
@@ -28,9 +37,31 @@ export default async function removeSimpleSubEntitiesById<T extends BackkEntity,
     postQueryOperations?: PostQueryOperations;
   }
 ): PromiseOfErrorOr<null> {
-  const dbOperationStartTimeInMillis = startDbOperation(dbManager, 'removeSubEntities');
+  const dbOperationStartTimeInMillis = startDbOperation(dbManager, 'removeSubEntitiesByIdWhere');
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
+
+  if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {
+    throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
+  }
+
+  let finalFieldValue = fieldValue;
+  const lastDotPosition = fieldPathName.lastIndexOf('.');
+  const fieldName = lastDotPosition === -1 ? fieldPathName : fieldPathName.slice(lastDotPosition + 1);
+  if (!shouldUseRandomInitializationVector(fieldName) && shouldEncryptValue(fieldName)) {
+    finalFieldValue = encrypt(fieldValue, false);
+  }
+
+  const filters = [
+    new MongoDbQuery(
+      { [fieldName]: finalFieldValue },
+      lastDotPosition === -1 ? '' : fieldPathName.slice(0, lastDotPosition)
+    )
+  ];
+
+  const rootFilters = getRootOperations(filters as Array<MongoDbQuery<T>>, EntityClass, dbManager.getTypes());
+  const matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
+  replaceIdStringsWithObjectIds(matchExpression);
   let shouldUseTransaction = false;
 
   try {
@@ -38,7 +69,14 @@ export default async function removeSimpleSubEntitiesById<T extends BackkEntity,
 
     return await dbManager.tryExecute(shouldUseTransaction, async (client) => {
       if (options?.preHooks) {
-        const [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, undefined, true, true);
+        const [currentEntity, error] = await dbManager.getEntityWhere(
+          fieldPathName,
+          fieldValue,
+          EntityClass,
+          undefined,
+          true
+        );
+
         if (!currentEntity) {
           throw error;
         }
@@ -55,15 +93,16 @@ export default async function removeSimpleSubEntitiesById<T extends BackkEntity,
         ? { [subEntityPath]: subEntityId }
         : {
             [subEntityPath]: {
-              $or: [{ _id: new ObjectId(subEntityId) }, { id: new ObjectId(subEntityId) }]
+              $or: [{ _id: new ObjectId(subEntityId) }, { id: subEntityId }]
             }
           };
 
+      console.log(matchExpression, pullCondition);
       await client
         .db(dbManager.dbName)
         .collection(EntityClass.name.toLowerCase())
         .updateOne(
-          { _id: new ObjectId(_id) },
+          matchExpression,
           {
             $pull: pullCondition
           }
