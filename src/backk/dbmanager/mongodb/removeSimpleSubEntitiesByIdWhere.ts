@@ -61,7 +61,7 @@ export default async function removeSimpleSubEntitiesByIdWhere<T extends BackkEn
 
   const rootFilters = getRootOperations(filters as Array<MongoDbQuery<T>>, EntityClass, dbManager.getTypes());
   const matchExpression = convertMongoDbQueriesToMatchExpression(rootFilters);
-  replaceIdStringsWithObjectIds(matchExpression, EntityClass, dbManager.getTypes());
+  replaceIdStringsWithObjectIds(matchExpression);
   let shouldUseTransaction = false;
 
   try {
@@ -90,7 +90,7 @@ export default async function removeSimpleSubEntitiesByIdWhere<T extends BackkEn
       );
 
       const pullCondition = isManyToMany
-        ? { [subEntityPath]: new ObjectId(subEntityId) }
+        ? { [subEntityPath]: subEntityId }
         : {
             [subEntityPath]: {
               $or: [{ _id: new ObjectId(subEntityId) }, { id: new ObjectId(subEntityId) }]
@@ -102,7 +102,7 @@ export default async function removeSimpleSubEntitiesByIdWhere<T extends BackkEn
         .db(dbManager.dbName)
         .collection(EntityClass.name.toLowerCase())
         .updateOne(
-          { matchExpression },
+          matchExpression,
           {
             $pull: pullCondition
           }

@@ -1,18 +1,8 @@
 import { ObjectId } from 'mongodb';
-import isExternalIdProperty from '../../utils/type/isExternalIdProperty';
 
-export default function replaceIdStringsWithObjectIds(
-  filters: any,
-  EntityClass: new () => any,
-  Types: any,
-  prevFieldName = ''
-): void {
+export default function replaceIdStringsWithObjectIds(filters: any, prevFieldName = ''): void {
   Object.entries(filters).forEach(([filterName, filterValue]: [string, any]) => {
-    if (
-      (filterName.endsWith('_id') ||
-        (filterName.endsWith('Id') && !isExternalIdProperty(filterName, Types, EntityClass))) &&
-      typeof filterValue === 'string'
-    ) {
+    if (filterName.endsWith('_id') && typeof filterValue === 'string') {
       filters[filterName] = new ObjectId(filterValue);
     } else if (
       prevFieldName.endsWith('_id') &&
@@ -25,12 +15,7 @@ export default function replaceIdStringsWithObjectIds(
     }
 
     if (typeof filterValue === 'object' && filterValue !== null && !Array.isArray(filterValue)) {
-      replaceIdStringsWithObjectIds(
-        filterValue,
-        EntityClass,
-        Types,
-        filterName.startsWith('$') ? prevFieldName : filterName
-      );
+      replaceIdStringsWithObjectIds(filterValue, filterName.startsWith('$') ? prevFieldName : filterName);
     }
   });
 }
