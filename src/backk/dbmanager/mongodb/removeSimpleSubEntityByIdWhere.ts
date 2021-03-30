@@ -89,15 +89,15 @@ export default async function removeSimpleSubEntityByIdWhere<T extends BackkEnti
         subEntityPath
       );
 
+      const isMongoIdString = isNaN(parseInt(subEntityId, 10)) && subEntityId.length === 24;
       const pullCondition = isManyToMany
         ? { [subEntityPath]: subEntityId }
         : {
-            [subEntityPath]: {
-              $or: [{ _id: new ObjectId(subEntityId) }, { id: subEntityId }]
-            }
-          };
-
-      console.log(matchExpression, pullCondition);
+          [subEntityPath]: {
+            [`${isMongoIdString ? '_id' : 'id'}`]: isMongoIdString ? new ObjectId(subEntityId) : subEntityId
+          }
+        };
+      
       await client
         .db(dbManager.dbName)
         .collection(EntityClass.name.toLowerCase())
