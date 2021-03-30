@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- PayOrder, automatically execute getOrder test
 - DeleteUnpaidOrders: check that salesitem is for sale
 - createUserAccount should return only id
 - getUserAccount filters should be a common object filter

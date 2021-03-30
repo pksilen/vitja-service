@@ -366,6 +366,13 @@ export default class OrderServiceImpl extends OrderService {
     'shoppingCartService.addToShoppingCart',
     'orderService.placeOrder'
   ])
+  @PostTests([
+    {
+      testName: 'sales item state is for sale',
+      serviceFunctionName: 'salesItemService.getSalesItem',
+      expectedResult: { state: 'forSale' }
+    }
+  ])
   deleteUnpaidOrders({ unpaidOrderTimeToLiveInMinutes }: DeleteUnpaidOrdersArg): PromiseOfErrorOr<null> {
     return this.dbManager.executeInsideTransaction(async () => {
       const orderFilters = this.dbManager.getFilters(
