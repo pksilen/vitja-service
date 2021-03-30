@@ -97,7 +97,7 @@ export default async function removeSimpleSubEntityByIdWhere<T extends BackkEnti
             [`${isMongoIdString ? '_id' : 'id'}`]: isMongoIdString ? new ObjectId(subEntityId) : subEntityId
           }
         };
-      
+
       await client
         .db(dbManager.dbName)
         .collection(EntityClass.name.toLowerCase())

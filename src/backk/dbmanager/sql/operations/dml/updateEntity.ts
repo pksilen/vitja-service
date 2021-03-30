@@ -76,7 +76,7 @@ export default async function updateEntity<T extends BackkEntity>(
       let eTagCheckPreHook: EntityPreHook<T>;
       let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
 
-      if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
+      if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== -1) {
         eTagCheckPreHook = {
           isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
           error: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
@@ -278,7 +278,7 @@ export default async function updateEntity<T extends BackkEntity>(
         } else if (fieldName !== '_id' && fieldName !== 'id') {
           if (fieldName === 'version' && currentEntity?.version) {
             columns.push(fieldName);
-            values.push((parseInt(currentEntity.version, 10) + 1).toString());
+            values.push(currentEntity.version + 1);
           } else if (fieldName === 'lastModifiedTimestamp') {
             columns.push(fieldName);
             values.push(new Date());

@@ -268,7 +268,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
           if (!isArrayType && !isEntityTypeName(baseTypeName) && fieldName !== '_id') {
             if (fieldName === 'version') {
-              (entity as any).version = '1';
+              (entity as any).version = 1;
             } else if (fieldName === 'lastModifiedTimestamp' || fieldName === 'createdAtTimestamp') {
               (entity as any)[fieldName] = new Date();
             }
@@ -1113,7 +1113,7 @@ export default class MongoDbManager extends AbstractDbManager {
             : [];
 
           if (!isInternalCall && currentEntity) {
-            if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== 'any') {
+            if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== -1) {
               eTagCheckPreHook = {
                 isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
                 error: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
@@ -1158,7 +1158,7 @@ export default class MongoDbManager extends AbstractDbManager {
           } else if (fieldName !== '_id') {
             if (fieldName === 'version') {
               (restOfEntity as any)[fieldName] = (
-                parseInt(currentEntity?.version ?? (restOfEntity as any).version, 10) + 1
+                (currentEntity?.version ?? (restOfEntity as any).version) + 1
               ).toString();
             } else if (fieldName === 'lastModifiedTimestamp') {
               (restOfEntity as any)[fieldName] = new Date();

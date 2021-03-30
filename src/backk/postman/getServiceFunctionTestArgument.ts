@@ -119,7 +119,7 @@ export default function getServiceFunctionTestArgument(
     );
 
     if (propertyName === 'version') {
-      sampleArg[propertyName] = 'any';
+      sampleArg[propertyName] = -1;
     } else if (propertyName === 'lastModifiedTimestamp') {
       sampleArg[propertyName] = new Date(0);
     } else if (testValue !== undefined) {

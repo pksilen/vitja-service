@@ -1,6 +1,6 @@
 export interface BackkEntity {
   _id: string;
   id?: string;
-  version?: string;
+  version?: number;
   lastModifiedTimestamp?: Date;
 }

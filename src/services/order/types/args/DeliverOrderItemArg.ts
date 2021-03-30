@@ -2,8 +2,8 @@
 // DO NOT MODIFY THIS FILE! Updates should be made to the respective .type file only
 // This file can be generated from the respective .type file by running npm script 'generateTypes'
 
-import { ArrayMaxSize, ArrayMinSize, IsString, MaxLength } from 'class-validator';
-import IsIntegerStringOrAny from '../../../../backk/decorators/typeproperty/IsIntegerStringOrAny'; // eslint-disable-next-line @typescript-eslint/class-name-casing
+import { ArrayMaxSize, ArrayMinSize, IsString, Max, MaxLength, Min } from 'class-validator';
+import IsBigInt from '../../../../backk/decorators/typeproperty/IsBigInt'; // eslint-disable-next-line @typescript-eslint/class-name-casing
 import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStringOrObjectId';
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches'; // eslint-disable-next-line @typescript-eslint/class-name-casing
@@ -30,10 +30,12 @@ export default class DeliverOrderItemArg {
   @MaxLength(24, {
     groups: ['__backk_none__']
   })
-  @IsIntegerStringOrAny({
+  @IsBigInt({
     groups: ['__backk_none__']
   })
-  public version!: string;
+  @Min(-1)
+  @Max(Number.MAX_SAFE_INTEGER)
+  public version!: number;
 
   @ArrayMinSize(1)
   @ArrayMaxSize(1)

@@ -98,7 +98,7 @@ export default function getServiceFunctionExampleReturnValue(
     );
 
     if (propertyName === 'version') {
-      sampleArg[propertyName] = '1';
+      sampleArg[propertyName] = 1;
     } else if (propertyName === 'lastModifiedTimestamp') {
       sampleArg[propertyName] = new Date();
     }
