@@ -61,7 +61,11 @@ import { EntityPreHook } from './hooks/EntityPreHook';
 import tryExecuteEntityPreHooks from './hooks/tryExecuteEntityPreHooks';
 import handleNestedManyToManyRelations from './mongodb/handleNestedManyToManyRelations';
 import handleNestedOneToManyRelations from './mongodb/handleNestedOneToManyRelations';
-import * as util from "util";
+import * as util from 'util';
+import { jsonRegex } from 'ts-loader/dist/constants';
+import addSimpleSubEntities from './mongodb/addSimpleSubEntities';
+import removeSimpleSubEntitiesById from './mongodb/removeSimpleSubEntitiesById';
+import removeSimpleSubEntitiesByIdWhere from './mongodb/removeSimpleSubEntitiesByIdWhere';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -374,84 +378,99 @@ export default class MongoDbManager extends AbstractDbManager {
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
-      return await this.tryExecute(shouldUseTransaction, async () => {
-        const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
+        const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
+        let updateError;
 
-        if (!currentEntity) {
-          return [null, error];
-        }
-
-        await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
-        const [parentEntity] = JSONPath({
-          json: currentEntity,
-          path: subEntitiesJsonPath + '^'
-        });
-
-        const [subEntities] = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
-        const maxSubItemId = subEntities.reduce((maxSubItemId: number, subEntity: any) => {
-          const subItemId = parseInt(subEntity.id, 10);
-          return subItemId > maxSubItemId ? subItemId : maxSubItemId;
-        }, -1);
-
-        const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
-          EntityClass,
-          SubEntityClass,
-          this.getTypes()
-        );
-
-        if (parentEntityClassAndPropertyNameForSubEntity) {
-          const metadataForValidations = getFromContainer(MetadataStorage).getTargetValidationMetadatas(
-            parentEntityClassAndPropertyNameForSubEntity[0],
-            ''
+        if (isNonNestedColumnName) {
+          [, updateError] = await addSimpleSubEntities(
+            client,
+            this,
+            _id,
+            subEntitiesJsonPath,
+            newSubEntities,
+            EntityClass,
+            options
           );
+        } else {
+          const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
 
-          const foundArrayMaxSizeValidation = metadataForValidations.find(
-            (validationMetadata: ValidationMetadata) =>
-              validationMetadata.propertyName === parentEntityClassAndPropertyNameForSubEntity[1] &&
-              validationMetadata.type === 'arrayMaxSize'
-          );
-
-          if (
-            foundArrayMaxSizeValidation &&
-            maxSubItemId + newSubEntities.length >= foundArrayMaxSizeValidation.constraints[0]
-          ) {
-            // noinspection ExceptionCaughtLocallyJS
-            throw createBackkErrorFromErrorCodeMessageAndStatus({
-              ...BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED,
-              message:
-                parentEntityClassAndPropertyNameForSubEntity[0].name +
-                '.' +
-                parentEntityClassAndPropertyNameForSubEntity[1] +
-                ': ' +
-                BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED.message
-            });
+          if (!currentEntity) {
+            return [null, error];
           }
-        }
 
-        await forEachAsyncParallel(newSubEntities, async (newSubEntity, index) => {
-          if (
-            parentEntityClassAndPropertyNameForSubEntity &&
-            typePropertyAnnotationContainer.isTypePropertyManyToMany(
+          await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+          const [parentEntity] = JSONPath({
+            json: currentEntity,
+            path: subEntitiesJsonPath + '^'
+          });
+
+          const [subEntities] = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
+          const maxSubItemId = subEntities.reduce((maxSubItemId: number, subEntity: any) => {
+            const subItemId = parseInt(subEntity.id, 10);
+            return subItemId > maxSubItemId ? subItemId : maxSubItemId;
+          }, -1);
+
+          const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
+            EntityClass,
+            SubEntityClass,
+            this.getTypes()
+          );
+
+          if (parentEntityClassAndPropertyNameForSubEntity) {
+            const metadataForValidations = getFromContainer(MetadataStorage).getTargetValidationMetadatas(
               parentEntityClassAndPropertyNameForSubEntity[0],
-              parentEntityClassAndPropertyNameForSubEntity[1]
-            )
-          ) {
-            parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push(newSubEntity);
-          } else if (parentEntityClassAndPropertyNameForSubEntity) {
-            parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push({
-              ...newSubEntity,
-              id: (maxSubItemId + 1 + index).toString()
-            });
-          }
-        });
+              ''
+            );
 
-        const [, updateError] = await this.updateEntity(
-          currentEntity as any,
-          EntityClass,
-          undefined,
-          false,
-          true
-        );
+            const foundArrayMaxSizeValidation = metadataForValidations.find(
+              (validationMetadata: ValidationMetadata) =>
+                validationMetadata.propertyName === parentEntityClassAndPropertyNameForSubEntity[1] &&
+                validationMetadata.type === 'arrayMaxSize'
+            );
+
+            if (
+              foundArrayMaxSizeValidation &&
+              maxSubItemId + newSubEntities.length >= foundArrayMaxSizeValidation.constraints[0]
+            ) {
+              // noinspection ExceptionCaughtLocallyJS
+              throw createBackkErrorFromErrorCodeMessageAndStatus({
+                ...BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED,
+                message:
+                  parentEntityClassAndPropertyNameForSubEntity[0].name +
+                  '.' +
+                  parentEntityClassAndPropertyNameForSubEntity[1] +
+                  ': ' +
+                  BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED.message
+              });
+            }
+          }
+
+          await forEachAsyncParallel(newSubEntities, async (newSubEntity, index) => {
+            if (
+              parentEntityClassAndPropertyNameForSubEntity &&
+              typePropertyAnnotationContainer.isTypePropertyManyToMany(
+                parentEntityClassAndPropertyNameForSubEntity[0],
+                parentEntityClassAndPropertyNameForSubEntity[1]
+              )
+            ) {
+              parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push(newSubEntity);
+            } else if (parentEntityClassAndPropertyNameForSubEntity) {
+              parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push({
+                ...newSubEntity,
+                id: (maxSubItemId + 1 + index).toString()
+              });
+            }
+          });
+
+          [, updateError] = await this.updateEntity(
+            currentEntity as any,
+            EntityClass,
+            undefined,
+            false,
+            true
+          );
+        }
 
         if (options?.postHook) {
           await tryExecutePostHook(options?.postHook, null);
@@ -1464,7 +1483,7 @@ export default class MongoDbManager extends AbstractDbManager {
     try {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
-      return await this.tryExecute(shouldUseTransaction, async () => {
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
         const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
         if (!currentEntity) {
           throw error;
@@ -1472,17 +1491,24 @@ export default class MongoDbManager extends AbstractDbManager {
 
         await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
         const subEntities = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
+        let updateError = null;
 
         if (subEntities.length > 0) {
           removeSubEntities(currentEntity, subEntities);
-          await this.updateEntity(currentEntity as any, EntityClass, undefined, false, true);
+          [, updateError] = await this.updateEntity(
+            currentEntity as any,
+            EntityClass,
+            undefined,
+            false,
+            true
+          );
         }
 
         if (options?.postHook) {
           await tryExecutePostHook(options.postHook, null);
         }
 
-        return [null, null];
+        return [null, updateError];
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
@@ -1506,8 +1532,23 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
-    const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-    const response = await this.removeSubEntities(_id, subEntityPath, EntityClass, options);
+    const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
+    let response;
+
+    if (isNonNestedColumnName) {
+      response = await removeSimpleSubEntitiesById(
+        this,
+        _id,
+        subEntitiesJsonPath,
+        subEntityId,
+        EntityClass,
+        options
+      );
+    } else {
+      const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
+      response = await this.removeSubEntities(_id, subEntityPath, EntityClass, options);
+    }
+
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -1640,6 +1681,7 @@ export default class MongoDbManager extends AbstractDbManager {
           { postQueryOperations },
           true
         );
+
         if (!currentEntity) {
           throw error;
         }
@@ -1681,16 +1723,32 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   ): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityByIdWhere');
-    const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-    const response = await this.removeSubEntitiesWhere(
-      fieldName,
-      fieldValue,
-      subEntityJsonPath,
-      EntityClass,
-      options?.preHooks,
-      options?.postHook,
-      options?.postQueryOperations
-    );
+    const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
+    let response;
+
+    if (isNonNestedColumnName) {
+      response = await removeSimpleSubEntitiesByIdWhere(
+        this,
+        fieldName,
+        fieldValue,
+        subEntitiesJsonPath,
+        subEntityId,
+        EntityClass,
+        options
+      );
+    } else {
+      const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
+      response = await this.removeSubEntitiesWhere(
+        fieldName,
+        fieldValue,
+        subEntityJsonPath,
+        EntityClass,
+        options?.preHooks,
+        options?.postHook,
+        options?.postQueryOperations
+      );
+    }
+
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

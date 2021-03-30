@@ -1,13 +1,12 @@
-import { BackkEntity } from '../../types/entities/BackkEntity';
-import { SubEntity } from '../../types/entities/SubEntity';
-import { EntityPreHook } from '../hooks/EntityPreHook';
-import { PostHook } from '../hooks/PostHook';
-import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
-import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
-import tryExecuteEntityPreHooks from '../hooks/tryExecuteEntityPreHooks';
-import AbstractDbManager from '../AbstractDbManager';
-import MongoDbManager from '../MongoDbManager';
-import { MongoClient, ObjectId } from 'mongodb';
+import { BackkEntity } from "../../types/entities/BackkEntity";
+import { SubEntity } from "../../types/entities/SubEntity";
+import { EntityPreHook } from "../hooks/EntityPreHook";
+import { PostHook } from "../hooks/PostHook";
+import { PostQueryOperations } from "../../types/postqueryoperations/PostQueryOperations";
+import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
+import tryExecuteEntityPreHooks from "../hooks/tryExecuteEntityPreHooks";
+import MongoDbManager from "../MongoDbManager";
+import { MongoClient, ObjectId } from "mongodb";
 
 export default async function addSimpleSubEntities<T extends BackkEntity, U extends SubEntity>(
   client: MongoClient,
