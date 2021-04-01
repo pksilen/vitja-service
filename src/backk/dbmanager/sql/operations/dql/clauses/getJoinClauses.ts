@@ -12,6 +12,7 @@ import UserDefinedFilter from '../../../../../types/userdefinedfilters/UserDefin
 import AbstractSqlDbManager from '../../../../AbstractSqlDbManager';
 import SortBy from '../../../../../types/postqueryoperations/SortBy';
 import Pagination from '../../../../../types/postqueryoperations/Pagination';
+import typePropertyAnnotationContainer from '../../../../../decorators/typeproperty/typePropertyAnnotationContainer';
 
 // noinspection OverlyComplexFunctionJS
 export default function getJoinClauses(
@@ -37,7 +38,8 @@ export default function getJoinClauses(
           : joinSpec.entityFieldName;
 
         if (
-          !shouldIncludeField('', joinEntityPath, projection)
+          !shouldIncludeField('', joinEntityPath, projection) ||
+          typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, joinSpec.entityFieldName)
         ) {
           return '';
         }
@@ -141,7 +143,8 @@ export default function getJoinClauses(
             '_id',
             subEntityPath ? subEntityPath + '.' + entityFieldName : entityFieldName,
             projection
-          )
+          ) ||
+          typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, entityFieldName)
         ) {
           return '';
         }
