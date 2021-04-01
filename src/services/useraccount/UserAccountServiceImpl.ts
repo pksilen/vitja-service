@@ -1,32 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import * as argon2 from 'argon2';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import UserAccount from './types/entities/UserAccount';
-import _Id from '../../backk/types/id/_Id';
-import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { Update } from '../../backk/decorators/service/function/Update';
-import { Name } from '../../backk/types/Name';
-import getCities from './validation/getCities';
-import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
-import { Metadata } from '../../backk/decorators/service/function/Metadata';
-import UserAccountService from './UserAccountService';
-import UserName from '../../backk/types/useraccount/UserName';
-import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
-import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
-import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
-import { SalesItem } from '../salesitem/types/entities/SalesItem';
-import GetUserAccountArg from './types/args/GetUserAccountArg';
-import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
-import _IdAndFollowedUserAccountId from './types/args/_IdAndFollowedUserAccountId';
-import { PostTests } from '../../backk/decorators/service/function/PostTests';
-import FollowedUserAccount from './types/entities/FollowedUserAccount';
-import FollowingUserAccount from './types/entities/FollowingUserAccount';
-import { userAccountServiceErrors } from './errors/userAccountServiceErrors';
-import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
+import { Injectable } from "@nestjs/common";
+import * as argon2 from "argon2";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import UserAccount from "./types/entities/UserAccount";
+import _Id from "../../backk/types/id/_Id";
+import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { Update } from "../../backk/decorators/service/function/Update";
+import { Name } from "../../backk/types/Name";
+import getCities from "./validation/getCities";
+import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
+import { Metadata } from "../../backk/decorators/service/function/Metadata";
+import UserAccountService from "./UserAccountService";
+import UserName from "../../backk/types/useraccount/UserName";
+import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import { SalesItem } from "../salesitem/types/entities/SalesItem";
+import GetUserAccountArg from "./types/args/GetUserAccountArg";
+import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
+import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
+import { PostTests } from "../../backk/decorators/service/function/PostTests";
+import FollowedUserAccount from "./types/entities/FollowedUserAccount";
+import FollowingUserAccount from "./types/entities/FollowingUserAccount";
+import { userAccountServiceErrors } from "./errors/userAccountServiceErrors";
+import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -37,7 +35,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @OnStartUp()
   preloadCities(): PromiseOfErrorOr<Name[]> {
-    return Promise.resolve(getCities());
+    return getCities();
   }
 
   @AllowForTests()
@@ -217,6 +215,6 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForEveryUser()
   @Metadata()
   getCities(): PromiseOfErrorOr<Name[]> {
-    return Promise.resolve(getCities());
+    return getCities();
   }
 }
