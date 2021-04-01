@@ -17,7 +17,8 @@ TODO:
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
 
-- In @POstTests, possible to give remoteServiceUrl to check expected value (kafka/redis consume, http request)
+- In @Tests to give remoteServiceUrl and test if that url was called with expected result, 
+  remote services will keep hashmap of calls by url and argument
 - MongoDb optimize removePrivateProperties to use projection
 - Create serviceClientImplGenerator that generates client service implementation that use backk-client library
   to fetch data
