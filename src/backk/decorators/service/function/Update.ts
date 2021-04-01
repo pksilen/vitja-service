@@ -1,6 +1,6 @@
 import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationContainer';
 
-export type UpdateType = 'update' | 'addOrRemoveSubEntities';
+export type UpdateType = 'update' | 'addOrRemove';
 
 export function Update(updateType: UpdateType) {
   // eslint-disable-next-line @typescript-eslint/ban-types

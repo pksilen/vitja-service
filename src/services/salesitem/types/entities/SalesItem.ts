@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, MaxLength } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, ArrayUnique, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { Area } from "../enums/Area";
 import { Department } from "../enums/Department";
@@ -69,4 +69,8 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
 
   @Private()
   readonly buyerUserAccountId: string | null = null;
+
+  @ArrayUnique()
+  @Private()
+  readonly priceChangeFollowingUserAccountIds!: string[];
 }

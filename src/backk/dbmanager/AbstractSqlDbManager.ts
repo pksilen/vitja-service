@@ -40,6 +40,8 @@ import updateEntitiesByFilters from './sql/operations/dml/updateEntitiesByFilter
 import { EntityPreHook } from './hooks/EntityPreHook';
 import deleteEntityWhere from './sql/operations/dml/deleteEntityWhere';
 import removeSubEntitiesWhere from './sql/operations/dml/removeSubEntitiesWhere';
+import addFieldValues from './sql/operations/dml/addFieldValues';
+import removeFieldValues from './sql/operations/dml/removeFieldValues';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -884,6 +886,30 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async deleteAllEntities<T>(entityClass: new () => T): PromiseOfErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteAllEntities');
     const response = await deleteAllEntities(this, entityClass);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  async addFieldValues<T extends BackkEntity>(
+    _id: string,
+    fieldName: string,
+    fieldValues: (string | number | boolean)[],
+    EntityClass: new () => T
+  ): PromiseOfErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addFieldValues');
+    const response = await addFieldValues(this, _id, fieldName, fieldValues, EntityClass);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  async removeFieldValues<T extends BackkEntity>(
+    _id: string,
+    fieldName: string,
+    fieldValues: (string | number | boolean)[],
+    EntityClass: new () => T
+  ): PromiseOfErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeFieldValues');
+    const response = await removeFieldValues(this, _id, fieldName, fieldValues, EntityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

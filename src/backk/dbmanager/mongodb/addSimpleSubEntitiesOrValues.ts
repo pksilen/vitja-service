@@ -10,12 +10,12 @@ import { MongoClient, ObjectId } from 'mongodb';
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 
-export default async function addSimpleSubEntities<T extends BackkEntity, U extends SubEntity>(
+export default async function addSimpleSubEntitiesOrValues<T extends BackkEntity, U extends SubEntity>(
   client: MongoClient,
   dbManager: MongoDbManager,
   _id: string,
   subEntityPath: string,
-  newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
+  newSubEntities: Array<Omit<U, 'id'> | { _id: string } | string | number | boolean>,
   EntityClass: new () => T,
   options?: {
     preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -25,11 +25,9 @@ export default async function addSimpleSubEntities<T extends BackkEntity, U exte
 ): PromiseOfErrorOr<null> {
   if (options?.preHooks) {
     const [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, undefined, true, true);
-
     if (!currentEntity) {
       return [null, error];
     }
-
     await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
   }
 

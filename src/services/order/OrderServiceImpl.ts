@@ -178,7 +178,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
-  @Update('addOrRemoveSubEntities')
+  @Update('addOrRemove')
   @PostTests([
     {
       testName: 'order has no order items',

@@ -74,7 +74,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  @Update('addOrRemoveSubEntities')
+  @Update('addOrRemove')
   @TestSetup([
     {
       setupStepName: 'create user account to follow',
@@ -113,7 +113,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  @Update('addOrRemoveSubEntities')
+  @Update('addOrRemove')
   @PostTests([
     {
       testName: 'user account does not follow another user accounts',
@@ -135,7 +135,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  @Update('addOrRemoveSubEntities')
+  @Update('addOrRemove')
   @TestSetup(['salesItemService.createSalesItem'])
   @PostTests([
     {
@@ -157,7 +157,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  @Update('addOrRemoveSubEntities')
+  @Update('addOrRemove')
   @PostTests([
     {
       testName: 'user account has no favorite sales items',

@@ -366,4 +366,19 @@ export default abstract class AbstractDbManager {
   ): PromiseOfErrorOr<null>;
 
   abstract deleteAllEntities<T>(EntityClass: new () => T): PromiseOfErrorOr<null>;
+
+  abstract addFieldValues<T extends BackkEntity>(
+    _id: string,
+    fieldName: string,
+    values: (string | number | boolean)[],
+    EntityClass: new() => T
+  ): PromiseOfErrorOr<null>;
+
+  abstract removeFieldValues<T extends BackkEntity>(
+    _id: string,
+    fieldName: string,
+    values: (string | number | boolean)[],
+    EntityClass: new() => T
+  ): PromiseOfErrorOr<null>;
 }
+

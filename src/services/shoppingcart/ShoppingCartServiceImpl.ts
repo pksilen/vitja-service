@@ -49,7 +49,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  @Update('addOrRemoveSubEntities')
+  @Update('addOrRemove')
   @TestSetup(['salesItemService.createSalesItem'])
   @PostTests([
     {
@@ -110,14 +110,14 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseOfErrorOr<ShoppingCart> {
     return this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
       postHook: {
-        isSuccessful: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
+        isSuccessfulOrTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
         error
       }
     });
   }
 
   @AllowForSelf()
-  @Update('addOrRemoveSubEntities')
+  @Update('addOrRemove')
   @PostTests([
     {
       testName: 'shopping cart is empty',

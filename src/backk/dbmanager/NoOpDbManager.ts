@@ -1,12 +1,9 @@
-import AbstractDbManager, { Field } from './AbstractDbManager';
-import { BackkEntity } from '../types/entities/BackkEntity';
-import { SubEntity } from '../types/entities/SubEntity';
-import MongoDbQuery from './mongodb/MongoDbQuery';
-import SqlExpression from './sql/expressions/SqlExpression';
-import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
-import { EntityPreHook } from './hooks/EntityPreHook';
-import { PostHook } from './hooks/PostHook';
-import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import { BackkEntity } from "../types/entities/BackkEntity";
+import { SubEntity } from "../types/entities/SubEntity";
+import MongoDbQuery from "./mongodb/MongoDbQuery";
+import SqlExpression from "./sql/expressions/SqlExpression";
+import { PromiseOfErrorOr } from "../types/PromiseOfErrorOr";
 
 export default class NoOpDbManager extends AbstractDbManager {
   getModifyColumnStatement(): string {
@@ -190,6 +187,14 @@ export default class NoOpDbManager extends AbstractDbManager {
   }
 
   removeSubEntityByIdWhere<T extends BackkEntity>(): PromiseOfErrorOr<null> {
+    throw new Error('Not implemented');
+  }
+
+  addFieldValues<T extends BackkEntity>(): PromiseOfErrorOr<null> {
+    throw new Error('Not implemented');
+  }
+
+  removeFieldValues<T extends BackkEntity>(): PromiseOfErrorOr<null> {
     throw new Error('Not implemented');
   }
 }

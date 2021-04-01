@@ -283,7 +283,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       if (
         isUpdate &&
-        updateType === 'addOrRemoveSubEntities' &&
+        updateType === 'addOrRemove' &&
         !serviceFunctionAnnotationContainer.getPostTestSpecs(
           (controller as any)[serviceMetadata.serviceName].constructor,
           functionMetadata.functionName

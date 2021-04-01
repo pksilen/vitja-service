@@ -2,6 +2,7 @@
 
 TODO:
 - follow sales item price change
+- updateSalesItem test previousPrice is updated
 - test error cases
 
 - remove extra deletes from deleteXXX funcs
@@ -15,6 +16,7 @@ TODO:
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
 
+- MongoDb optimize removePrivateProperties to use projection
 - Create serviceClientImplGenerator that generates client service implementation that use backk-client library
   to fetch data
 - Create backk-client library

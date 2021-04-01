@@ -11,7 +11,7 @@ export default async function tryExecutePostHook<T extends BackkEntity | SubEnti
 ) {
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('isInsidePostHook', true);
-  const postHookFunc = typeof postHook === 'function' ? postHook : postHook.isSuccessful;
+  const postHookFunc = typeof postHook === 'function' ? postHook : postHook.isSuccessfulOrTrue;
   let hookCallResult;
 
   try {

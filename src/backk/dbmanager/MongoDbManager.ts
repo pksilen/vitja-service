@@ -49,7 +49,7 @@ import paginateSubEntities from './mongodb/paginateSubEntities';
 import convertFilterObjectToMongoDbQueries from './mongodb/convertFilterObjectToMongoDbQueries';
 import { PostHook } from './hooks/PostHook';
 import tryExecutePostHook from './hooks/tryExecutePostHook';
-import getTableName, { getEntityName } from './utils/getTableName';
+import getTableName from './utils/getTableName';
 import getFieldOrdering from './mongodb/getFieldOrdering';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
@@ -61,12 +61,11 @@ import { EntityPreHook } from './hooks/EntityPreHook';
 import tryExecuteEntityPreHooks from './hooks/tryExecuteEntityPreHooks';
 import handleNestedManyToManyRelations from './mongodb/handleNestedManyToManyRelations';
 import handleNestedOneToManyRelations from './mongodb/handleNestedOneToManyRelations';
-import * as util from 'util';
-import { jsonRegex } from 'ts-loader/dist/constants';
-import addSimpleSubEntities from './mongodb/addSimpleSubEntities';
+import addSimpleSubEntitiesOrValues from './mongodb/addSimpleSubEntitiesOrValues';
 import removeSimpleSubEntityById from './mongodb/removeSimpleSubEntityById';
 import removeSimpleSubEntityByIdWhere from './mongodb/removeSimpleSubEntityByIdWhere';
 import getEntitiesByFilters from './mongodb/operations/dql/getEntitiesByFilters';
+import removeFieldValues from './mongodb/removeFieldValues';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -384,7 +383,7 @@ export default class MongoDbManager extends AbstractDbManager {
         let updateError;
 
         if (isNonNestedColumnName) {
-          [, updateError] = await addSimpleSubEntities(
+          [, updateError] = await addSimpleSubEntitiesOrValues(
             client,
             this,
             _id,
@@ -560,7 +559,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
   ): PromiseOfErrorOr<T[]> {
-    return getEntitiesByFilters(this, filters, EntityClass, postQueryOperations, false)
+    return getEntitiesByFilters(this, filters, EntityClass, postQueryOperations, false);
   }
 
   async getEntityByFilters<T>(
@@ -1079,7 +1078,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         if (
           !isRecursiveCall &&
-          (options?.preHooks || restOfEntity.version || (restOfEntity as any).lastModifiedTimestamp)
+          (options?.preHooks || restOfEntity.version || restOfEntity.lastModifiedTimestamp)
         ) {
           [currentEntity, error] = await this.getEntityById(
             _id,
@@ -1752,5 +1751,59 @@ export default class MongoDbManager extends AbstractDbManager {
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
+  }
+
+  async addFieldValues<T extends BackkEntity>(
+    _id: string,
+    fieldName: string,
+    fieldValues: (string | number | boolean)[],
+    EntityClass: new () => T
+  ): PromiseOfErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addFieldValues');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
+        return addSimpleSubEntitiesOrValues(client, this, _id, fieldName, fieldValues, EntityClass);
+      });
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
+  }
+
+  async removeFieldValues<T extends BackkEntity>(
+    _id: string,
+    fieldName: string,
+    fieldValues: any,
+    EntityClass: new () => T
+  ): PromiseOfErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addFieldValues');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
+        return removeFieldValues(client, this, _id, fieldName, fieldValues, EntityClass);
+      });
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
   }
 }
