@@ -63,7 +63,7 @@ export default async function removeFieldValues<T extends BackkEntity>(
             .slice(0, -1)
             .toLowerCase()} WHERE ${foreignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
           1
-        )} AND ${fieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(2)}`;
+        )} AND ${fieldName.slice(0, -1).toLowerCase()} = ${dbManager.getValuePlaceholder(2)}`;
         await dbManager.tryExecuteSql(deleteStatement, [_id, fieldValue]);
       })
     );
