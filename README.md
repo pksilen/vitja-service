@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- createSalesItem: previous price is null
 - @Private(isPublicInTests)
 - test error cases
 

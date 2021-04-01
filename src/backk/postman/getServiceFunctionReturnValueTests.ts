@@ -84,7 +84,7 @@ export default function getServiceFunctionReturnValueTests(
     let allowAnyValue;
     testValue = testValueContainer.getTestValue(serviceTypes[returnValueTypeName], propertyName);
 
-    if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPathName]) {
+    if (expectedResponseFieldPathNameToFieldValueMapInTests?.[fieldPathName] !== undefined) {
       testValue = JSON.stringify(expectedResponseFieldPathNameToFieldValueMapInTests[fieldPathName]);
       if (testValue.startsWith('"pm.collectionVariables.get(')) {
         testValue = JSON.parse(testValue);
