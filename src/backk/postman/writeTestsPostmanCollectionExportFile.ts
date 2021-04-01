@@ -234,12 +234,12 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         items.push({ ...item, name: (testSpecIndex === 0 ? 'GIVEN ' : 'AND ') + item.name });
       });
 
-      if (
-        isCreateFunction(
-          (controller as any)[serviceMetadata.serviceName].constructor,
+      const isCreate = isCreateFunction(
+        (controller as any)[serviceMetadata.serviceName].constructor,
           functionMetadata.functionName
-        )
-      ) {
+      )
+
+      if (isCreate) {
         createFunctionMetadata = functionMetadata;
       }
 
@@ -378,14 +378,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         items.push(item);
       }
 
-      if (isUpdate || isDelete) {
-        const foundCustomTest = writtenTests.find(
-          ({ testTemplate: { serviceFunctionName, executeAfter } }) =>
-            serviceFunctionName ===
-              serviceMetadata.serviceName + '.' + lastReadFunctionMetadata?.functionName &&
-            executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
-        );
-
         postTestSpecs?.forEach((testSpec, testSpecIndex) => {
           const finalExpectedFieldPathNameToFieldValueMapInTests = {
             ...(expectedResponseFieldPathNameToFieldValueMapInTests ?? {}),
@@ -452,7 +444,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           }
         });
 
-        if (lastReadFunctionMetadata && !foundCustomTest) {
+        if (lastReadFunctionMetadata && (isUpdate || isDelete)) {
           const foundReadFunctionTestSpec = postTestSpecs?.find((postTestSpec) => {
             const [serviceName, functionName] = postTestSpec.serviceFunctionName.split('.');
             if (
@@ -501,7 +493,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             items.push(item);
           }
         }
-      }
+
 
       writtenTests
         .filter(
