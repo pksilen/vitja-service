@@ -2,6 +2,7 @@
 
 TODO:
 - follow sales item price change
+- @Private(isPublicForTests: boolean)
 - updateSalesItem test previousPrice is updated
 - test error cases
 
@@ -16,6 +17,7 @@ TODO:
    kafka-kubernetes-mysql...
    redis-kubernetes-mysql...
 
+- In @POstTests, possible to give remoteServiceUrl to check expected value (kafka/redis consume, http request)
 - MongoDb optimize removePrivateProperties to use projection
 - Create serviceClientImplGenerator that generates client service implementation that use backk-client library
   to fetch data
