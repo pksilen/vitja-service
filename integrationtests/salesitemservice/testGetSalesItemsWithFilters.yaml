@@ -10,7 +10,7 @@
       price: '{{price}}'
     response:
       tests:
-        - pm.collectionVariables.set("salesItemId", response._id)
+        - pm.collectionVariables.set("salesItemId", body._id)
   tests:
     - testName: GIVEN create sales item with price = 1
       testProperties:
@@ -34,8 +34,8 @@
       '{{argumentPropertyName2}}': '{{argumentPropertyValue2}}'
     response:
       tests:
-        - pm.expect(response[0].{{responsePropertyName}}).to.eql({{responsePropertyValue}});
-          pm.expect(response.length).to.eql({{responseLength}});
+        - pm.expect(body[0].{{responsePropertyName}}).to.eql({{responsePropertyValue}});
+          pm.expect(bodylength).to.eql({{responseLength}});
   tests:
     - testName: get sales items for textFilter = 'secondTitle'
       testProperties:

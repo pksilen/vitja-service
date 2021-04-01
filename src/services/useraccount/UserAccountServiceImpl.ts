@@ -73,31 +73,6 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemove')
-  @TestSetup([
-    {
-      setupStepName: 'create user account to follow',
-      serviceFunctionName: 'userAccountService.createUserAccount',
-      argument: { userName: 'test2@test.com' },
-      postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
-    }
-  ])
-  @PostTests([
-    {
-      testName: 'user account follows another user account',
-      serviceFunctionName: 'userAccountService.getUserAccount',
-      expectedResult: {
-        'followedUserAccounts._id': '{{followedUserAccountId}}'
-      }
-    },
-    {
-      testName: 'another user account has a following user account',
-      serviceFunctionName: 'userAccountService.getUserAccount',
-      argument: { userName: 'test2@test.com' },
-      expectedResult: {
-        'followingUserAccounts._id': '{{userAccountId}}'
-      }
-    }
-  ])
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,

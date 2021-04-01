@@ -51,7 +51,7 @@ export default function createPostmanCollectionItemFromCustomTest({
           id: serviceFunctionName,
           exec: [
             checkResponseCode,
-            response.tests ? 'const response = pm.response.json();' : '',
+            response.tests ? 'const body = pm.response.json();' : '',
             ...(response.tests
               ? response.tests.map(
                   (test: string) =>

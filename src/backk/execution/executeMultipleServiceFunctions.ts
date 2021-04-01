@@ -14,7 +14,7 @@ import createBackkErrorFromErrorCodeMessageAndStatus
   from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import createErrorFromErrorCodeMessageAndStatus from "../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../errors/backkErrors";
-import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
+import getClsNamespace from "../continuationlocalstorages/getClsNamespace";
 
 async function executeMultiple<T>(
   isConcurrent: boolean,

@@ -13,7 +13,7 @@ import { scheduleCronJob } from "./scheduleCronJob";
 import createErrorFromErrorCodeMessageAndStatus from "../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../errors/backkErrors";
 import emptyError from "../errors/emptyError";
-import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
+import getClsNamespace from "../continuationlocalstorages/getClsNamespace";
 
 export default async function tryScheduleJobExecution(
   controller: any,

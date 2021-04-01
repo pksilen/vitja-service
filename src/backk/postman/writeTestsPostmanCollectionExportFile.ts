@@ -35,11 +35,11 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       const fileType = testFilePathName.endsWith('json') ? 'json' : 'yaml';
       const writtenTestsInFile =
         fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
-      return writtenTestsInFile.map((writtenTest: any) => ({
+      return Array.isArray(writtenTestsInFile) ? writtenTestsInFile.map((writtenTest: any) => ({
         ...writtenTest,
         serviceName: path.basename(path.dirname(testFilePathName)),
         testFileName: path.basename(testFilePathName).split('.')[0]
-      }));
+      })) : [];
     })
   );
 
@@ -115,8 +115,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       writtenTests
         .filter(
-          ({ testTemplate: { executeBefore } }) =>
-            executeBefore === serviceMetadata.serviceName + '.' + functionMetadata.functionName
+          ({ testTemplate: { before } }) =>
+            before === serviceMetadata.serviceName + '.' + functionMetadata.functionName
         )
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);
@@ -280,20 +280,6 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         (controller as any)[serviceMetadata.serviceName].constructor,
         functionMetadata.functionName
       );
-
-      if (
-        isUpdate &&
-        updateType === 'addOrRemove' &&
-        !serviceFunctionAnnotationContainer.getPostTestSpecs(
-          (controller as any)[serviceMetadata.serviceName].constructor,
-          functionMetadata.functionName
-        )
-      ) {
-        throw new Error(
-          'There must be a test specified using @PostTest annotation for service function: ' +
-            serviceMetadata.serviceName + '.' + functionMetadata.functionName
-        );
-      }
 
       const isDelete = isDeleteFunction(
         (controller as any)[serviceMetadata.serviceName].constructor,
@@ -497,8 +483,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       writtenTests
         .filter(
-          ({ testTemplate: { executeAfter } }) =>
-            executeAfter === serviceMetadata.serviceName + '.' + functionMetadata.functionName
+          ({ testTemplate: { after } }) =>
+            after === serviceMetadata.serviceName + '.' + functionMetadata.functionName
         )
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);
@@ -515,8 +501,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
     const customTestGroups = _.groupBy(
       writtenTests.filter(
-        ({ serviceName, testTemplate: { executeAfter } }) =>
-          serviceName.toLowerCase() === serviceMetadata.serviceName.toLowerCase() && !executeAfter
+        ({ serviceName, testTemplate: { after } }) =>
+          serviceName.toLowerCase() === serviceMetadata.serviceName.toLowerCase() && !after
       ),
       ({ testFileName }) => testFileName
     );

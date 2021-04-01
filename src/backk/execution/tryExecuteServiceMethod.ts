@@ -30,7 +30,7 @@ import { BACKK_ERRORS } from "../errors/backkErrors";
 import emptyError from "../errors/emptyError";
 import fetchFromRemoteServices from "./fetchFromRemoteServices";
 import isBackkError from "../errors/isBackkError";
-import getClsNamespace from "../continuationLocalStorages/getClsNamespace";
+import getClsNamespace from "../continuationlocalstorages/getClsNamespace";
 
 export interface ExecuteServiceFunctionOptions {
   httpMethod?: 'POST' | 'GET';
