@@ -291,7 +291,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       ) {
         throw new Error(
           'There must be a test specified using @PostTest annotation for service function: ' +
-            serviceMetadata.serviceName
+            serviceMetadata.serviceName + '.' + functionMetadata.functionName
         );
       }
 
