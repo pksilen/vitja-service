@@ -77,7 +77,6 @@ export default function getFieldsForEntity(
         }
       } else {
         if (shouldIncludeField(entityPropertyName, fieldPath, projection)) {
-          console.log(entityPropertyName, fieldPath, projection)
           if (
             entityPropertyName === '_id' ||
             entityPropertyName === 'id' ||
