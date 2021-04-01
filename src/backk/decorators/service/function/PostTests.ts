@@ -3,6 +3,9 @@ import serviceFunctionAnnotationContainer from './serviceFunctionAnnotationConta
 export type PostTestSpec = {
   testName: string;
   serviceFunctionName: string;
+  argument?: {
+    [key: string]: any;
+  },
   expectedResult: {
     [key: string]: any;
   };

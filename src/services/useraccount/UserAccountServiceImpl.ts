@@ -44,9 +44,9 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForEveryUser()
-  createUserAccount(arg: UserAccount): PromiseOfErrorOr<UserAccount> {
+  createUserAccount(userAccount: UserAccount): PromiseOfErrorOr<UserAccount> {
     return this.dbManager.createEntity(
-      { ...arg, commissionDiscountPercentage: 0, isLocked: false },
+      { ...userAccount, commissionDiscountPercentage: 0, isLocked: false },
       UserAccount,
       {
         postQueryOperations: {
@@ -88,6 +88,14 @@ export default class UserAccountServiceImpl extends UserAccountService {
       expectedResult: {
         'followedUserAccounts._id': '{{followedUserAccountId}}'
       }
+    },
+    {
+      testName: 'another user account has a following user account',
+      serviceFunctionName: 'userAccountService.getUserAccount',
+      argument: { userName: 'test2@test.com' },
+      expectedResult: {
+        'followingUserAccounts._id': '{{userAccountId}}'
+      }
     }
   ])
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
@@ -114,7 +122,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update('addOrRemove')
   @PostTests([
     {
-      testName: 'user account does not follow another user accounts',
+      testName: 'user account does not follow user accounts',
       serviceFunctionName: 'userAccountService.getUserAccount',
       expectedResult: { followedUserAccounts: [] }
     }

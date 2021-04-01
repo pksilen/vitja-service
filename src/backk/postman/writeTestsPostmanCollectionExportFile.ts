@@ -378,14 +378,14 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         items.push(item);
       }
 
-        postTestSpecs?.forEach((testSpec, testSpecIndex) => {
+        postTestSpecs?.forEach((postTestSpec, testSpecIndex) => {
           const finalExpectedFieldPathNameToFieldValueMapInTests = {
             ...(expectedResponseFieldPathNameToFieldValueMapInTests ?? {}),
-            ...(testSpec?.expectedResult ?? {})
+            ...(postTestSpec?.expectedResult ?? {})
           };
 
-          if (testSpec?.serviceFunctionName) {
-            const [serviceName, functionName] = testSpec.serviceFunctionName.split('.');
+          if (postTestSpec?.serviceFunctionName) {
+            const [serviceName, functionName] = postTestSpec.serviceFunctionName.split('.');
 
             const foundServiceMetadata = servicesMetadata.find(
               (serviceMetadata) => serviceMetadata.serviceName === serviceName
@@ -409,7 +409,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
               foundFunctionMetadata.functionName
             );
 
-            const tearDownTests = getServiceFunctionTests(
+            const postTests = getServiceFunctionTests(
               (controller as any)[foundServiceMetadata.serviceName].constructor,
               (controller as any)[foundServiceMetadata.serviceName].Types,
               foundServiceMetadata,
@@ -420,7 +420,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
               isUpdate ? sampleArg : undefined
             );
 
-            const tearDownSampleArg = getServiceFunctionTestArgument(
+            const postSampleArg = postTestSpec.argument ?? getServiceFunctionTestArgument(
               (controller as any)[foundServiceMetadata.serviceName].constructor,
               (controller as any)[foundServiceMetadata.serviceName].Types,
               foundFunctionMetadata.functionName,
@@ -435,9 +435,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
               (controller as any)[foundServiceMetadata.serviceName].constructor,
               foundServiceMetadata,
               foundFunctionMetadata,
-              tearDownSampleArg,
-              tearDownTests,
-              testSpec.testName
+              postSampleArg,
+              postTests,
+              postTestSpec.testName
             );
 
             items.push({ ...item, name: (testSpecIndex === 0 ? 'THEN ' : 'AND ') + item.name });
