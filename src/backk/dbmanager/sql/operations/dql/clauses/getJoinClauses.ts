@@ -25,6 +25,7 @@ export default function getJoinClauses(
   EntityClass: new () => any,
   Types: object,
   resultOuterSortBys: string[],
+  isInternalCall: boolean,
   tableAliasPath = EntityClass.name.toLowerCase(),
   RootEntityClass = EntityClass
 ) {
@@ -38,7 +39,7 @@ export default function getJoinClauses(
           : joinSpec.entityFieldName;
 
         if (
-          !shouldIncludeField('', joinEntityPath, projection) ||
+          !shouldIncludeField('', joinEntityPath, projection) || !isInternalCall &&
           typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, joinSpec.entityFieldName)
         ) {
           return '';
@@ -143,7 +144,7 @@ export default function getJoinClauses(
             '_id',
             subEntityPath ? subEntityPath + '.' + entityFieldName : entityFieldName,
             projection
-          ) ||
+          ) || !isInternalCall &&
           typePropertyAnnotationContainer.isTypePropertyPrivate(EntityClass, entityFieldName)
         ) {
           return '';
@@ -245,6 +246,7 @@ export default function getJoinClauses(
         (Types as any)[baseTypeName],
         Types,
         resultOuterSortBys,
+        isInternalCall,
         tableAliasPath + '_' + fieldName.toLowerCase(),
         RootEntityClass
       );

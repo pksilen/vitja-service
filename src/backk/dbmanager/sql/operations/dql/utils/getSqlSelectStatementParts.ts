@@ -42,7 +42,8 @@ export default function getSqlSelectStatementParts<T>(
     paginations,
     EntityClass,
     Types,
-    outerSortBys
+    outerSortBys,
+    isInternalCall
   );
 
   const outerSortClause =

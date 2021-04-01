@@ -36,7 +36,8 @@ export default function getServiceFunctionReturnValueTests(
     if (
       propertyName === 'version' ||
       propertyName === 'createdAtTimestamp' ||
-      propertyName === 'lastModifiedTimestamp'
+      propertyName === 'lastModifiedTimestamp' ||
+      typePropertyAnnotationContainer.isTypePropertyPrivate(serviceTypes[returnValueTypeName], propertyName)
     ) {
       return;
     }
