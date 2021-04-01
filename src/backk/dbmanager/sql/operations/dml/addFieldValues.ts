@@ -72,11 +72,13 @@ export default async function addFieldValues<T extends BackkEntity>(
     const columns = [];
     const values = [];
 
-    if (currentEntity?.version) {
-      columns.push(fieldName);
+    if (currentEntity.version) {
+      columns.push('version');
       values.push(currentEntity.version + 1);
-    } else if (currentEntity.lastModifiedTimestamp) {
-      columns.push(fieldName);
+    }
+    
+    if (currentEntity.lastModifiedTimestamp) {
+      columns.push('lastModifiedTimestamp');
       values.push(new Date());
     }
 
