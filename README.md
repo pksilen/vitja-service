@@ -2,6 +2,7 @@
 
 TODO:
 - updateSalesItem test previousPrice is updated
+- @Private(isPublicInTests)
 - test error cases
 
 - remove extra deletes from deleteXXX funcs
