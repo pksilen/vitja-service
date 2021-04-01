@@ -464,7 +464,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             return false;
           });
 
-          if (isUpdate && updateType === 'update' ||  isDelete && !foundReadFunctionTestSpec) {
+          if (isUpdate && (updateType === 'update' || updateType === undefined) ||  isDelete && !foundReadFunctionTestSpec) {
             const getFunctionTests = getServiceFunctionTests(
               (controller as any)[serviceMetadata.serviceName].constructor,
               (controller as any)[serviceMetadata.serviceName].Types,
