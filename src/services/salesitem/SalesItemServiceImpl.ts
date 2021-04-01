@@ -57,6 +57,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @AllowForSelf()
   @NoCaptcha()
+  @PostTests([
+    {
+      testName: 'previous price is updated',
+      serviceFunctionName: 'salesItemService.getSalesItem',
+      expectedResult: { previousPrice: null }
+    }
+  ])
   createSalesItem(arg: SalesItem): PromiseOfErrorOr<SalesItem> {
     return this.dbManager.createEntity(
       {
