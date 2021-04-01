@@ -8,9 +8,8 @@
       productCategory: '{{category}}'
       productSubCategory: '{{category}}'
       price: '{{price}}'
-    response:
-      tests:
-        - pm.collectionVariables.set("salesItemId", body._id)
+    responseTests:
+      - pm.collectionVariables.set('salesItemId', body._id)
   tests:
     - testName: GIVEN create sales item with price = 1
       testProperties:
@@ -32,10 +31,9 @@
     argument:
       '{{argumentPropertyName1}}': '{{argumentPropertyValue1}}'
       '{{argumentPropertyName2}}': '{{argumentPropertyValue2}}'
-    response:
-      tests:
-        - pm.expect(body[0].{{responsePropertyName}}).to.eql({{responsePropertyValue}});
-          pm.expect(bodylength).to.eql({{responseLength}});
+    responseTests:
+      - pm.expect(body[0].{{responsePropertyName}}).to.eql({{responsePropertyValue}})
+      - pm.expect(bodylength).to.eql({{responseLength}})
   tests:
     - testName: get sales items for textFilter = 'secondTitle'
       testProperties:

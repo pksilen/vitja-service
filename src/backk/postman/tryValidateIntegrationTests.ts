@@ -23,7 +23,8 @@ export default function tryValidateIntegrationTests(
         key !== 'before' &&
         key !== 'serviceFunctionName' &&
         key !== 'argument' &&
-        key !== 'response'
+        key !== 'responseTests' &&
+        key !== 'responseStatusCode'
     );
 
     if (foundInvalidKey) {
@@ -31,22 +32,9 @@ export default function tryValidateIntegrationTests(
     }
 
     if (integrationTest.testTemplate) {
-      if (!integrationTest.testTemplate.response || !integrationTest.testTemplate.response.statusCode) {
-        integrationTest.testTemplate.response = {
-          statusCode: HttpStatusCodes.SUCCESS,
-          ...(integrationTest.testTemplate.response ?? {})
-        };
+      if (!integrationTest.testTemplate.responseStatusCode) {
+        integrationTest.testTemplate.responseStatusCode = HttpStatusCodes.SUCCESS;
       }
-    }
-
-    const foundInvalidResponseKey = Object.keys(integrationTest.testTemplate.response).find(
-      (key) => key !== 'statusCode' && key !== 'tests'
-    );
-
-    if (foundInvalidResponseKey) {
-      throw new Error(
-        "Integration tests: Invalid key '" + foundInvalidResponseKey + "' in testTemplate.response"
-      );
     }
 
     if (integrationTest.tests) {

@@ -1,9 +1,9 @@
 export default function createPostmanCollectionItemFromCustomTest({
-  testTemplate: { testTemplateName, serviceFunctionName, argument, response }
+  testTemplate: { testTemplateName, serviceFunctionName, argument, responseStatusCode, responseTests }
 }: any) {
-  const checkResponseCode = response.statusCode
-    ? `pm.test("Status code is ${response.statusCode} OK", function () {
-  pm.response.to.have.status(${response.statusCode});
+  const checkResponseCode = responseStatusCode
+    ? `pm.test("Status code is ${responseStatusCode} OK", function () {
+  pm.response.to.have.status(${responseStatusCode});
 });`
     : '';
 
@@ -51,9 +51,9 @@ export default function createPostmanCollectionItemFromCustomTest({
           id: serviceFunctionName,
           exec: [
             checkResponseCode,
-            response.tests ? 'const body = pm.response.json();' : '',
-            ...(response.tests
-              ? response.tests.map(
+            responseTests ? 'const body = pm.response.json();' : '',
+            ...(responseTests
+              ? responseTests.map(
                   (test: string) =>
                     `pm.test("test", function () {
   ${test} 

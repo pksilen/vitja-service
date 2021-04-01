@@ -4,17 +4,15 @@
     serviceFunctionName: userAccountService.createUserAccount
     argument:
       userName: test2@test.com
-    response:
-      tests:
-        - pm.collectionVariables.set('followedUserAccountId', body._id)
+    responseTests:
+      - pm.collectionVariables.set('followedUserAccountId', body._id)
 
 - test:
     after: userAccountService.followUser
     name: THEN user account follows another user account
     serviceFunctionName: userAccountService.getUserAccount
-    response:
-      tests:
-        - pm.expect(body.followedUserAccounts[0]._id).to.eql(pm.collectionVariables.get('followedUserAccountId'))
+    responseTests:
+      - pm.expect(body.followedUserAccounts[0]._id).to.eql(pm.collectionVariables.get('followedUserAccountId'))
 
 - test:
     after: userAccountService.followUser
@@ -22,6 +20,5 @@
     serviceFunctionName: userAccountService.getUserAccount
     argument:
       userName: test2@test.com
-    response:
-      tests:
-        - pm.expect(body.followingUserAccounts[0]._id).to.eql(pm.collectionVariables.get('userAccountId'))
+    responseTests:
+      - pm.expect(body.followingUserAccounts[0]._id).to.eql(pm.collectionVariables.get('userAccountId'))
