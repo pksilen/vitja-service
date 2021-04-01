@@ -211,7 +211,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
             throw error;
           }
         } else if (isArrayType) {
-          await forEachAsyncParallel((entity as any)[fieldName], async (subItem: any, index: number) => {
+          await forEachAsyncParallel((entity as any)[fieldName] ?? [], async (subItem: any, index: number) => {
             const insertStatement = `INSERT INTO ${dbManager.schema.toLowerCase()}.${EntityClass.name.toLowerCase() +
               '_' +
               fieldName

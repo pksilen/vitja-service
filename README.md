@@ -2,8 +2,8 @@
 
 TODO:
 - follow sales item price change
-- @Private(isPublicForTests: boolean)
 - updateSalesItem test previousPrice is updated
+- @Private(isPublicForTests: boolean)
 - test error cases
 
 - remove extra deletes from deleteXXX funcs
