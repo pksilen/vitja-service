@@ -76,7 +76,7 @@ export default async function addFieldValues<T extends BackkEntity>(
       columns.push('version');
       values.push(currentEntity.version + 1);
     }
-    
+
     if (currentEntity.lastModifiedTimestamp) {
       columns.push('lastModifiedTimestamp');
       values.push(new Date());

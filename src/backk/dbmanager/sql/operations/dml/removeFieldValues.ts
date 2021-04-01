@@ -72,10 +72,12 @@ export default async function removeFieldValues<T extends BackkEntity>(
     const values = [];
 
     if (currentEntity?.version) {
-      columns.push(fieldName);
+      columns.push('version');
       values.push(currentEntity.version + 1);
-    } else if (currentEntity.lastModifiedTimestamp) {
-      columns.push(fieldName);
+    }
+
+    if (currentEntity.lastModifiedTimestamp) {
+      columns.push('lastModifiedTimestamp');
       values.push(new Date());
     }
 
