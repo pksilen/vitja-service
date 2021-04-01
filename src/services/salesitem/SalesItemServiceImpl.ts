@@ -222,6 +222,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
+  @PostTests([
+    {
+      testName: 'previous price is updated',
+      serviceFunctionName: 'salesItemService.getSalesItem',
+      expectedResult: { previousPrice: 0 }
+    }
+  ])
   async updateSalesItem(salesItem: SalesItem): PromiseOfErrorOr<null> {
     let isPriceUpdated: boolean;
 
