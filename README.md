@@ -1,9 +1,7 @@
 # Vitja service
 
 TODO:
-- follow sales item price change
 - updateSalesItem test previousPrice is updated
-- @Private(isPublicForTests: boolean)
 - test error cases
 
 - remove extra deletes from deleteXXX funcs

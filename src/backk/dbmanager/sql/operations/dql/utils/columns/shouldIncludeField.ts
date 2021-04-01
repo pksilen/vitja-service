@@ -15,7 +15,7 @@ export default function shouldIncludeField(
         return includeResponseField === fullFieldPath.slice(0, includeResponseField.length);
       } else if (
         includeResponseField.length > fullFieldPath.length &&
-        includeResponseField.startsWith(fullFieldPath)
+        includeResponseField.startsWith(fullFieldPath + '.')
       ) {
         return true;
       } else {
