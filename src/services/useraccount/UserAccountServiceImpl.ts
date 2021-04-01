@@ -125,6 +125,14 @@ export default class UserAccountServiceImpl extends UserAccountService {
       testName: 'user account does not follow user accounts',
       serviceFunctionName: 'userAccountService.getUserAccount',
       expectedResult: { followedUserAccounts: [] }
+    },
+    {
+      testName: 'another user account has no following user accounts',
+      serviceFunctionName: 'userAccountService.getUserAccount',
+      argument: { userName: 'test2@test.com' },
+      expectedResult: {
+        'followingUserAccounts': []
+      }
     }
   ])
   unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseOfErrorOr<null> {
