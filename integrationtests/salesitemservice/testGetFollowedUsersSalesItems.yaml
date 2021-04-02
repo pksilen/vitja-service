@@ -17,6 +17,7 @@
     - pm.collectionVariables.set('followedUserSalesItemId', body._id)
 
 - when: get followed users sales items
+- serviceFunctionName: salesItemService.getFollowedUsersSalesItems
   responseTests:
     - pm.expect(body._id).to.eql(pm.collectionVariables.get('followedUserSalesItemId'))
     - pm.expect(body.userAccountId).to.eql(pm.collectionVariables.get('followedUserAccountId'))

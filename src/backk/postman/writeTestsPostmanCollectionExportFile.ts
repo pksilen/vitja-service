@@ -1,26 +1,25 @@
-import { getFileNamesRecursively } from "../utils/file/getSrcFilePathNameForTypeName";
-import _ from "lodash";
-import YAML from "yaml";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import serviceAnnotationContainer from "../decorators/service/serviceAnnotationContainer";
-import serviceFunctionAnnotationContainer
-  from "../decorators/service/function/serviceFunctionAnnotationContainer";
-import { sign } from "jsonwebtoken";
-import { Base64 } from "js-base64";
-import getServiceFunctionTests from "./getServiceFunctionTests";
-import getServiceFunctionTestArgument from "./getServiceFunctionTestArgument";
-import createPostmanCollectionItem from "./createPostmanCollectionItem";
-import addCustomTest from "./addCustomTest";
-import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
-import { FunctionMetadata } from "../metadata/types/FunctionMetadata";
-import isReadFunction from "../service/crudentity/utils/isReadFunction";
-import isUpdateFunction from "../service/crudentity/utils/isUpdateFunction";
-import isDeleteFunction from "../service/crudentity/utils/isDeleteFunction";
-import tryValidateIntegrationTests from "./tryValidateIntegrationTests";
-import { HttpStatusCodes } from "../constants/constants";
-import isCreateFunction from "../service/crudentity/utils/isCreateFunction";
-import CrudEntityService from "../service/crudentity/CrudEntityService";
-import path from "path";
+import { getFileNamesRecursively } from '../utils/file/getSrcFilePathNameForTypeName';
+import _ from 'lodash';
+import YAML from 'yaml';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
+import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
+import { sign } from 'jsonwebtoken';
+import { Base64 } from 'js-base64';
+import getServiceFunctionTests from './getServiceFunctionTests';
+import getServiceFunctionTestArgument from './getServiceFunctionTestArgument';
+import createPostmanCollectionItem from './createPostmanCollectionItem';
+import addCustomTest from './addCustomTest';
+import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
+import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
+import isReadFunction from '../service/crudentity/utils/isReadFunction';
+import isUpdateFunction from '../service/crudentity/utils/isUpdateFunction';
+import isDeleteFunction from '../service/crudentity/utils/isDeleteFunction';
+import tryValidateIntegrationTests from './tryValidateIntegrationTests';
+import { HttpStatusCodes } from '../constants/constants';
+import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
+import CrudEntityService from '../service/crudentity/CrudEntityService';
+import path from 'path';
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -36,11 +35,13 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       const fileType = testFilePathName.endsWith('json') ? 'json' : 'yaml';
       const writtenTestsInFile =
         fileType === 'json' ? JSON.parse(testFileContents) : YAML.parse(testFileContents);
-      return Array.isArray(writtenTestsInFile) ? writtenTestsInFile.map((writtenTest: any) => ({
-        ...writtenTest,
-        serviceName: path.basename(path.dirname(testFilePathName)),
-        testFileName: path.basename(testFilePathName).split('.')[0]
-      })) : [];
+      return Array.isArray(writtenTestsInFile)
+        ? writtenTestsInFile.map((writtenTest: any) => ({
+            ...writtenTest,
+            serviceName: path.basename(path.dirname(testFilePathName)),
+            testFileName: path.basename(testFilePathName).split('.')[0]
+          }))
+        : [];
     })
   );
 
@@ -118,10 +119,11 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       writtenTests
         .filter(
           ({ testTemplate: { before } }) =>
-            before?.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+            before?.toLowerCase() ===
+            (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
-          hasBeforeTest = true
+          hasBeforeTest = true;
           addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
 
@@ -239,8 +241,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       const isCreate = isCreateFunction(
         (controller as any)[serviceMetadata.serviceName].constructor,
-          functionMetadata.functionName
-      )
+        functionMetadata.functionName
+      );
 
       if (isCreate) {
         createFunctionMetadata = functionMetadata;
@@ -364,11 +366,12 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       let hasWrittenTest = false;
       writtenTests
         .filter(
-          ({ testTemplate: { execute } }) =>
-            execute?.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+          ({ testTemplate: { serviceFunctionName } }) =>
+            serviceFunctionName.toLowerCase() ===
+            (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
-          hasWrittenTest = true
+          hasWrittenTest = true;
           addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
 
@@ -378,49 +381,51 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         items.push(item);
       }
 
-        postTestSpecs?.forEach((postTestSpec, testSpecIndex) => {
-          const finalExpectedFieldPathNameToFieldValueMapInTests = {
-            ...(expectedResponseFieldPathNameToFieldValueMapInTests ?? {}),
-            ...(postTestSpec?.expectedResult ?? {})
-          };
+      postTestSpecs?.forEach((postTestSpec, testSpecIndex) => {
+        const finalExpectedFieldPathNameToFieldValueMapInTests = {
+          ...(expectedResponseFieldPathNameToFieldValueMapInTests ?? {}),
+          ...(postTestSpec?.expectedResult ?? {})
+        };
 
-          if (postTestSpec?.serviceFunctionName) {
-            const [serviceName, functionName] = postTestSpec.serviceFunctionName.split('.');
+        if (postTestSpec?.serviceFunctionName) {
+          const [serviceName, functionName] = postTestSpec.serviceFunctionName.split('.');
 
-            const foundServiceMetadata = servicesMetadata.find(
-              (serviceMetadata) => serviceMetadata.serviceName === serviceName
+          const foundServiceMetadata = servicesMetadata.find(
+            (serviceMetadata) => serviceMetadata.serviceName === serviceName
+          );
+
+          const foundFunctionMetadata = foundServiceMetadata?.functions.find(
+            (func) => func.functionName === functionName
+          );
+
+          if (!foundServiceMetadata || !foundFunctionMetadata) {
+            throw new Error(
+              'Invalid service function name in @PostTest annotation in ' +
+                serviceMetadata.serviceName +
+                '.' +
+                functionMetadata.functionName
             );
+          }
 
-            const foundFunctionMetadata = foundServiceMetadata?.functions.find(
-              (func) => func.functionName === functionName
-            );
+          const expectedResponseStatusCode = serviceFunctionAnnotationContainer.getResponseStatusCodeForServiceFunction(
+            (controller as any)[foundServiceMetadata.serviceName].constructor,
+            foundFunctionMetadata.functionName
+          );
 
-            if (!foundServiceMetadata || !foundFunctionMetadata) {
-              throw new Error(
-                'Invalid service function name in @PostTest annotation in ' +
-                  serviceMetadata.serviceName +
-                  '.' +
-                  functionMetadata.functionName
-              );
-            }
+          const postTests = getServiceFunctionTests(
+            (controller as any)[foundServiceMetadata.serviceName].constructor,
+            (controller as any)[foundServiceMetadata.serviceName].Types,
+            foundServiceMetadata,
+            foundFunctionMetadata,
+            isUpdate,
+            expectedResponseStatusCode,
+            finalExpectedFieldPathNameToFieldValueMapInTests,
+            isUpdate ? sampleArg : undefined
+          );
 
-            const expectedResponseStatusCode = serviceFunctionAnnotationContainer.getResponseStatusCodeForServiceFunction(
-              (controller as any)[foundServiceMetadata.serviceName].constructor,
-              foundFunctionMetadata.functionName
-            );
-
-            const postTests = getServiceFunctionTests(
-              (controller as any)[foundServiceMetadata.serviceName].constructor,
-              (controller as any)[foundServiceMetadata.serviceName].Types,
-              foundServiceMetadata,
-              foundFunctionMetadata,
-              isUpdate,
-              expectedResponseStatusCode,
-              finalExpectedFieldPathNameToFieldValueMapInTests,
-              isUpdate ? sampleArg : undefined
-            );
-
-            const postSampleArg = postTestSpec.argument ?? getServiceFunctionTestArgument(
+          const postSampleArg =
+            postTestSpec.argument ??
+            getServiceFunctionTestArgument(
               (controller as any)[foundServiceMetadata.serviceName].constructor,
               (controller as any)[foundServiceMetadata.serviceName].Types,
               foundFunctionMetadata.functionName,
@@ -431,74 +436,77 @@ export default function writeTestsPostmanCollectionExportFile<T>(
               isUpdate ? sampleArg : undefined
             );
 
-            const item = createPostmanCollectionItem(
-              (controller as any)[foundServiceMetadata.serviceName].constructor,
-              foundServiceMetadata,
-              foundFunctionMetadata,
-              postSampleArg,
-              postTests,
-              postTestSpec.testName
-            );
+          const item = createPostmanCollectionItem(
+            (controller as any)[foundServiceMetadata.serviceName].constructor,
+            foundServiceMetadata,
+            foundFunctionMetadata,
+            postSampleArg,
+            postTests,
+            postTestSpec.testName
+          );
 
-            items.push({ ...item, name: (testSpecIndex === 0 ? 'THEN ' : 'AND ') + item.name });
+          items.push({ ...item, name: (testSpecIndex === 0 ? 'THEN ' : 'AND ') + item.name });
+        }
+      });
+
+      if (lastReadFunctionMetadata && (isUpdate || isDelete)) {
+        const foundReadFunctionTestSpec = postTestSpecs?.find((postTestSpec) => {
+          const [serviceName, functionName] = postTestSpec.serviceFunctionName.split('.');
+          if (
+            serviceName === serviceMetadata.serviceName &&
+            functionName === lastReadFunctionMetadata?.functionName
+          ) {
+            return true;
           }
+          return false;
         });
 
-        if (lastReadFunctionMetadata && (isUpdate || isDelete)) {
-          const foundReadFunctionTestSpec = postTestSpecs?.find((postTestSpec) => {
-            const [serviceName, functionName] = postTestSpec.serviceFunctionName.split('.');
-            if (
-              serviceName === serviceMetadata.serviceName &&
-              functionName === lastReadFunctionMetadata?.functionName
-            ) {
-              return true;
-            }
-            return false;
-          });
+        if (
+          (isUpdate && (updateType === 'update' || updateType === undefined)) ||
+          (isDelete && !foundReadFunctionTestSpec && !hasBeforeTest)
+        ) {
+          const getFunctionTests = getServiceFunctionTests(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            (controller as any)[serviceMetadata.serviceName].Types,
+            serviceMetadata,
+            lastReadFunctionMetadata,
+            isUpdate,
+            isUpdate ? HttpStatusCodes.SUCCESS : HttpStatusCodes.NOT_FOUND,
+            expectedResponseFieldPathNameToFieldValueMapInTests,
+            isUpdate ? sampleArg : undefined
+          );
 
-          if (isUpdate && (updateType === 'update' || updateType === undefined) || isDelete && !foundReadFunctionTestSpec && !hasBeforeTest) {
-            const getFunctionTests = getServiceFunctionTests(
-              (controller as any)[serviceMetadata.serviceName].constructor,
-              (controller as any)[serviceMetadata.serviceName].Types,
-              serviceMetadata,
-              lastReadFunctionMetadata,
-              isUpdate,
-              isUpdate ? HttpStatusCodes.SUCCESS : HttpStatusCodes.NOT_FOUND,
-              expectedResponseFieldPathNameToFieldValueMapInTests,
-              isUpdate ? sampleArg : undefined
-            );
+          const getFunctionSampleArg = getServiceFunctionTestArgument(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            (controller as any)[serviceMetadata.serviceName].Types,
+            lastReadFunctionMetadata.functionName,
+            lastReadFunctionMetadata.argType,
+            serviceMetadata,
+            true,
+            1,
+            sampleArg
+          );
 
-            const getFunctionSampleArg = getServiceFunctionTestArgument(
-              (controller as any)[serviceMetadata.serviceName].constructor,
-              (controller as any)[serviceMetadata.serviceName].Types,
-              lastReadFunctionMetadata.functionName,
-              lastReadFunctionMetadata.argType,
-              serviceMetadata,
-              true,
-              1,
-              sampleArg
-            );
+          const itemName = _.startCase(serviceMetadata.serviceName.split('Service')[0]).toLowerCase();
 
-            const itemName = _.startCase(serviceMetadata.serviceName.split('Service')[0]).toLowerCase();
+          const item = createPostmanCollectionItem(
+            (controller as any)[serviceMetadata.serviceName].constructor,
+            serviceMetadata,
+            lastReadFunctionMetadata,
+            getFunctionSampleArg,
+            getFunctionTests,
+            isDelete ? `THEN ${itemName} is not found` : undefined
+          );
 
-            const item = createPostmanCollectionItem(
-              (controller as any)[serviceMetadata.serviceName].constructor,
-              serviceMetadata,
-              lastReadFunctionMetadata,
-              getFunctionSampleArg,
-              getFunctionTests,
-              isDelete ? `THEN ${itemName} is not found` : undefined
-            );
-
-            items.push(item);
-          }
+          items.push(item);
         }
-
+      }
 
       writtenTests
         .filter(
           ({ testTemplate: { after } }) =>
-            after?.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+            after?.toLowerCase() ===
+            (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);
