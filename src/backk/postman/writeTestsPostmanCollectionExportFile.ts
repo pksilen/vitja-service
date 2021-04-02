@@ -20,6 +20,7 @@ import { HttpStatusCodes } from '../constants/constants';
 import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
 import CrudEntityService from '../service/crudentity/CrudEntityService';
 import path from 'path';
+import * as util from "util";
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -112,7 +113,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, functionIndex: number) => {
       // noinspection ReuseOfLocalVariableJS
       items = [];
-      
+
       writtenTests
         .filter(
           ({ testTemplate: { before } }) =>

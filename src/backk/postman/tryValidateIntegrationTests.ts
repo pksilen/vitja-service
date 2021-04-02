@@ -8,22 +8,23 @@ export default function tryValidateIntegrationTests(
   integrationTests.forEach((integrationTest, index) => {
     if (!integrationTest.testTemplate) {
       const functionName = integrationTest.testFileName.split('test')[1];
+      let tests;
       if (integrationTest.given) {
-        integrationTest.tests = [{ testName: 'GIVEN ' + integrationTest.given }];
+        tests = [{ testName: 'GIVEN ' + integrationTest.given }];
         integrationTest.type = 'given';
         integrationTest.before = integrationTest.serviceName + '.' + functionName;
         delete integrationTest.given;
       } else if (integrationTest.then) {
-        integrationTest.tests = [{ testName: 'THEN ' + integrationTest.then }];
+        tests = [{ testName: 'THEN ' + integrationTest.then }];
         integrationTest.type = 'then';
         delete integrationTest.then;
         integrationTest.after = integrationTest.serviceName + '.' + functionName;
       } else if (integrationTest.when) {
-        integrationTest.tests = [{ testName: 'WHEN ' + integrationTest.when }];
+        tests = [{ testName: 'WHEN ' + integrationTest.when }];
         integrationTest.type = 'when';
         delete integrationTest.when;
       } else if (integrationTest.name) {
-        integrationTest.tests = [{ testName: integrationTest.name }];
+        tests = [{ testName: integrationTest.name }];
         integrationTest.type = 'when';
         delete integrationTest.name;
       } else {
@@ -32,6 +33,7 @@ export default function tryValidateIntegrationTests(
       // noinspection AssignmentToFunctionParameterJS
       integrationTest = {
         testTemplate: integrationTest,
+        tests,
         serviceName: integrationTest.serviceName,
         testFileName: integrationTest.testFileName
       };
