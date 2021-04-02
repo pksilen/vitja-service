@@ -19,6 +19,8 @@
 - when: get followed users sales items
   serviceFunctionName: salesItemService.getFollowedUsersSalesItems
   responseTests:
-    - pm.expect(body._id).to.eql(pm.collectionVariables.get('followedUserSalesItemId'))
-    - pm.expect(body.userAccountId).to.eql(pm.collectionVariables.get('followedUserAccountId'))
-    - pm.expect(body.displayName).to.eql('followed user')
+    - pm.expect(body[0]._id).to.eql(pm.collectionVariables.get('followedUserSalesItemId'))
+    - pm.expect(body[0].userAccountId).to.eql(pm.collectionVariables.get('followedUserAccountId'))
+    - pm.expect(body[0].displayName).to.eql('followed user')
+    - pm.expect(body[0].price).to.eql(0)
+    - pm.expect(body[0].title).to.eql('abc)
