@@ -69,16 +69,6 @@ export default class OrderServiceImpl extends OrderService {
     Location: ({ paymentGateway, uiRedirectUrl }, { _id }) =>
       OrderServiceImpl.getLocationHeaderUrl(paymentGateway, _id, uiRedirectUrl)
   })
-  @TestSetup(['salesItemService.createSalesItem', 'shoppingCartService.addToShoppingCart'])
-  @PostTests([
-    {
-      testName: 'sales item is sold',
-      serviceFunctionName: 'salesItemService.getSalesItem',
-      expectedResult: {
-        state: 'sold'
-      }
-    }
-  ])
   placeOrder({
     userAccountId,
     iAgreeWithTermsAndConditions,

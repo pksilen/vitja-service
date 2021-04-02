@@ -1,0 +1,12 @@
+- given: sales item exists
+  serviceFunctionName: salesItemService.createSalesItem
+  responseTests:
+    - pm.collectionVariables.set('salesItemId', body._id)
+
+- given: there is a sales item in shopping cart
+  serviceFunctionName: shoppingCartService.addToShoppingCart
+
+- then: sales item is sold,
+  serviceFunctionName: 'salesItemService.getSalesItem'
+  expectedResult:
+    - pm.expect(body.state).to.eql('sold)
