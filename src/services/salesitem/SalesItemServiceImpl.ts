@@ -269,19 +269,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
     );
   }
 
-  @TestSetup([
-    {
-      setupStepName: 'add sales item to shopping cart',
-      serviceFunctionName: 'shoppingCartService.addToShoppingCart'
-    }
-  ])
-  @PostTests([
-    {
-      testName: 'sales item is for sale',
-      serviceFunctionName: 'salesItemService.getSalesItem',
-      expectedResult: { state: 'forSale' }
-    }
-  ])
   @CronJob({ minuteInterval: 1 })
   changeExpiredReservedSalesItemStatesToForSale({
     maxSalesItemReservationDurationInMinutes
