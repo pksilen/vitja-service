@@ -6,7 +6,7 @@
 - given: there is a sales item in shopping cart
   serviceFunctionName: shoppingCartService.addToShoppingCart
 
-- then: sales item is sold,
+- then: sales item is sold
   serviceFunctionName: salesItemService.getSalesItem
   responseTests:
     - pm.expect(body.state).to.eql('sold')
