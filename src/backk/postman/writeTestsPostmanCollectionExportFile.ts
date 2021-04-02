@@ -1,26 +1,26 @@
-import { getFileNamesRecursively } from '../utils/file/getSrcFilePathNameForTypeName';
-import _ from 'lodash';
-import YAML from 'yaml';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import serviceAnnotationContainer from '../decorators/service/serviceAnnotationContainer';
-import serviceFunctionAnnotationContainer from '../decorators/service/function/serviceFunctionAnnotationContainer';
-import { sign } from 'jsonwebtoken';
-import { Base64 } from 'js-base64';
-import getServiceFunctionTests from './getServiceFunctionTests';
-import getServiceFunctionTestArgument from './getServiceFunctionTestArgument';
-import createPostmanCollectionItem from './createPostmanCollectionItem';
-import addCustomTest from './addCustomTest';
-import { ServiceMetadata } from '../metadata/types/ServiceMetadata';
-import { FunctionMetadata } from '../metadata/types/FunctionMetadata';
-import isReadFunction from '../service/crudentity/utils/isReadFunction';
-import isUpdateFunction from '../service/crudentity/utils/isUpdateFunction';
-import isDeleteFunction from '../service/crudentity/utils/isDeleteFunction';
-import tryValidateIntegrationTests from './tryValidateIntegrationTests';
-import { HttpStatusCodes } from '../constants/constants';
-import isCreateFunction from '../service/crudentity/utils/isCreateFunction';
-import CrudEntityService from '../service/crudentity/CrudEntityService';
-import path from 'path';
-import * as util from "util";
+import { getFileNamesRecursively } from "../utils/file/getSrcFilePathNameForTypeName";
+import _ from "lodash";
+import YAML from "yaml";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import serviceAnnotationContainer from "../decorators/service/serviceAnnotationContainer";
+import serviceFunctionAnnotationContainer
+  from "../decorators/service/function/serviceFunctionAnnotationContainer";
+import { sign } from "jsonwebtoken";
+import { Base64 } from "js-base64";
+import getServiceFunctionTests from "./getServiceFunctionTests";
+import getServiceFunctionTestArgument from "./getServiceFunctionTestArgument";
+import createPostmanCollectionItem from "./createPostmanCollectionItem";
+import addCustomTest from "./addCustomTest";
+import { ServiceMetadata } from "../metadata/types/ServiceMetadata";
+import { FunctionMetadata } from "../metadata/types/FunctionMetadata";
+import isReadFunction from "../service/crudentity/utils/isReadFunction";
+import isUpdateFunction from "../service/crudentity/utils/isUpdateFunction";
+import isDeleteFunction from "../service/crudentity/utils/isDeleteFunction";
+import tryValidateIntegrationTests from "./tryValidateIntegrationTests";
+import { HttpStatusCodes } from "../constants/constants";
+import isCreateFunction from "../service/crudentity/utils/isCreateFunction";
+import CrudEntityService from "../service/crudentity/CrudEntityService";
+import path from "path";
 
 export default function writeTestsPostmanCollectionExportFile<T>(
   controller: T,
@@ -113,6 +113,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, functionIndex: number) => {
       // noinspection ReuseOfLocalVariableJS
       items = [];
+      let hasBeforeTest = false;
 
       writtenTests
         .filter(
@@ -120,6 +121,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             before?.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
+          hasBeforeTest = true
           addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
 
@@ -443,7 +445,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             return false;
           });
 
-          if (isUpdate && (updateType === 'update' || updateType === undefined) ||  isDelete && !foundReadFunctionTestSpec) {
+          if (isUpdate && (updateType === 'update' || updateType === undefined) || isDelete && !foundReadFunctionTestSpec && !hasBeforeTest) {
             const getFunctionTests = getServiceFunctionTests(
               (controller as any)[serviceMetadata.serviceName].constructor,
               (controller as any)[serviceMetadata.serviceName].Types,
