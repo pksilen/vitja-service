@@ -1,3 +1,6 @@
+- given: sales item exists
+  serviceFunctionName: salesItemService.createSalesItem
+  
 - then: user account has a favorite sales item
   serviceFunctionName: userAccountService.getUserAccount
   responseTests:
