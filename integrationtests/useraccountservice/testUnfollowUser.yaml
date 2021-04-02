@@ -1,0 +1,12 @@
+- then: user account does not follow user accounts
+  serviceFunctionName: userAccountService.getUserAccount
+  responseTests:
+    - pm.expect(body.followedUserAccounts).to.eql([])
+
+- then: another user account has no following user accounts
+  serviceFunctionName: userAccountService.getUserAccount
+  argument:
+    userName: 'test2@test.com'
+  responseTests:
+    - pm.expect(body.followingUserAccounts).to.eql([])
+
