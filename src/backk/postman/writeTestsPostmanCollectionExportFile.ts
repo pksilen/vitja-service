@@ -112,11 +112,11 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, functionIndex: number) => {
       // noinspection ReuseOfLocalVariableJS
       items = [];
-
+      
       writtenTests
         .filter(
           ({ testTemplate: { before } }) =>
-            before.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+            before?.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);
@@ -484,7 +484,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       writtenTests
         .filter(
           ({ testTemplate: { after } }) =>
-            after.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+            after?.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);

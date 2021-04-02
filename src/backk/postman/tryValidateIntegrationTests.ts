@@ -5,7 +5,7 @@ export default function tryValidateIntegrationTests(
   integrationTests: any[],
   servicesMetadata: ServiceMetadata[]
 ) {
-  integrationTests.forEach((integrationTest) => {
+  integrationTests.forEach((integrationTest, index) => {
     if (!integrationTest.testTemplate) {
       const functionName = integrationTest.testFileName.split('test')[1];
       if (integrationTest.given) {
@@ -30,7 +30,13 @@ export default function tryValidateIntegrationTests(
         throw new Error('Integration tests: Missing testTemplate or test specification');
       }
       // noinspection AssignmentToFunctionParameterJS
-      integrationTest = { testTemplate: integrationTest };
+      integrationTest = {
+        testTemplate: integrationTest,
+        serviceName: integrationTest.serviceName,
+        testFileName: integrationTest.testFileName
+      };
+
+      integrationTests[index] = integrationTest;
     }
 
     const foundInvalidKey = Object.keys(integrationTest.testTemplate).find(
