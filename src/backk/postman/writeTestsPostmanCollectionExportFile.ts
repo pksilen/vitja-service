@@ -361,9 +361,20 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         functionMetadata.functionName
       );
 
+      let hasWrittenTest = false;
+      writtenTests
+        .filter(
+          ({ testTemplate: { execute } }) =>
+            execute?.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+        )
+        .forEach((writtenTest) => {
+          hasWrittenTest = true
+          addCustomTest(writtenTest, controller, servicesMetadata, items);
+        });
+
       if (postTestSpecs || (isDelete && lastReadFunctionMetadata)) {
         items.push({ ...item, name: 'WHEN ' + item.name });
-      } else {
+      } else if (!hasWrittenTest) {
         items.push(item);
       }
 

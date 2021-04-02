@@ -57,13 +57,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @AllowForSelf()
   @NoCaptcha()
-  @PostTests([
-    {
-      testName: 'previous price is updated',
-      serviceFunctionName: 'salesItemService.getSalesItem',
-      expectedResult: { previousPrice: null }
-    }
-  ])
   createSalesItem(arg: SalesItem): PromiseOfErrorOr<SalesItem> {
     return this.dbManager.createEntity(
       {
@@ -149,29 +142,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  @TestSetup([
-    {
-      setupStepName: 'create user account to follow',
-      serviceFunctionName: 'userAccountService.createUserAccount',
-      argument: { userName: 'test2@test.com', displayName: 'followed user' },
-      postmanTests: ['pm.collectionVariables.set("followedUserAccountId", response._id)']
-    },
-    {
-      setupStepName: 'follow user',
-      serviceFunctionName: 'userAccountService.followUser'
-    },
-    {
-      setupStepName: 'create sales item for followed user',
-      serviceFunctionName: 'salesItemService.createSalesItem',
-      argument: { userAccountId: '{{followedUserAccountId}}' },
-      postmanTests: ['pm.collectionVariables.set("followedUserSalesItemId", response._id)']
-    }
-  ])
-  @Test({
-    _id: '{{followedUserSalesItemId}}',
-    userAccountId: '{{followedUserAccountId}}',
-    displayName: 'followed user'
-  })
   async getFollowedUsersSalesItems({
     userAccountId
   }: UserAccountId): PromiseOfErrorOr<FollowedUserSalesItem[]> {

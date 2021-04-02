@@ -21,6 +21,7 @@ export default function tryValidateIntegrationTests(
         integrationTest.after = integrationTest.serviceName + '.' + functionName;
       } else if (integrationTest.when) {
         tests = [{ testName: 'WHEN ' + integrationTest.when }];
+        integrationTest.execute = integrationTest.serviceName + '.' + functionName;
         integrationTest.type = 'when';
         delete integrationTest.when;
       } else if (integrationTest.name) {

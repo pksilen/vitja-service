@@ -1,0 +1,6 @@
+- then: previous price is null, sales item is for sale and thumbnail image is available
+  serviceFunctionName: salesItemService.getSalesItem
+  responseTests:
+    - pm.expect(body.previousPrice).to.eql(null)
+    - pm.expect(body.state).to.eql('forSale')
+    - pm.expect(body.primaryImageThumbnailDataUri).to.eql(body.primaryImageDataUri)
