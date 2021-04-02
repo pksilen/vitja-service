@@ -23,4 +23,4 @@
     - pm.expect(body[0].userAccountId).to.eql(pm.collectionVariables.get('followedUserAccountId'))
     - pm.expect(body[0].displayName).to.eql('followed user')
     - pm.expect(body[0].price).to.eql(0)
-    - pm.expect(body[0].title).to.eql('abc)
+    - pm.expect(body[0].title).to.eql('abc')
