@@ -1,0 +1,2 @@
+- given: user account exists
+  serviceFunctionName: userAccountService.createUserAccount

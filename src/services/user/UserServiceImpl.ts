@@ -1,16 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import _Id from '../../backk/types/id/_Id';
-import GetUsersArg from './/types/args/GetUsersArg';
-import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
-import User from './types/entities/User';
-import UserService from './UserService';
-import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import _Id from "../../backk/types/id/_Id";
+import GetUsersArg from ".//types/args/GetUsersArg";
+import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
+import User from "./types/entities/User";
+import UserService from "./UserService";
+import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 import UserAccountService from "../useraccount/UserAccountService";
-import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -25,7 +24,6 @@ export default class UserServiceImpl extends UserService {
   }
 
   @AllowForEveryUser()
-  @TestSetup(['userAccountService.createUserAccount'])
   getUsers({ displayNameFilter, ...postQueryOperations }: GetUsersArg): PromiseOfErrorOr<User[]> {
     const filters = this.dbManager.getFilters<User>(
       {
