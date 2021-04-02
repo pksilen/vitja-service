@@ -6,10 +6,10 @@
   responseTests:
     - pm.collectionVariables.set('followedUserAccountId', body._id)
 
-- given: user is followed
+- given: user account is followed
   serviceFunctionName: userAccountService.followUser
 
-- given: sales item for followed user exists
+- given: sales item for followed user account exists
   serviceFunctionName: salesItemService.createSalesItem
   argument:
     userAccountId: '{{followedUserAccountId}}'
