@@ -101,20 +101,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemove')
-  @PostTests([
-    {
-      testName: 'shopping cart is empty',
-      serviceFunctionName: 'shoppingCartService.getShoppingCart',
-      expectedResult: { salesItems: [] }
-    },
-    {
-      testName: 'sales item is for sale',
-      serviceFunctionName: 'salesItemService.getSalesItem',
-      expectedResult: {
-        state: 'forSale'
-      }
-    }
-  ])
   removeFromShoppingCart({
     userAccountId,
     salesItemId
