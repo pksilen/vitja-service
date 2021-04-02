@@ -116,7 +116,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       writtenTests
         .filter(
           ({ testTemplate: { before } }) =>
-            before === serviceMetadata.serviceName + '.' + functionMetadata.functionName
+            before.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);
@@ -484,7 +484,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       writtenTests
         .filter(
           ({ testTemplate: { after } }) =>
-            after === serviceMetadata.serviceName + '.' + functionMetadata.functionName
+            after.toLowerCase() === (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);

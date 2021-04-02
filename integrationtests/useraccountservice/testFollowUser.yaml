@@ -1,24 +1,18 @@
-- test:
-    before: userAccountService.followUser
-    name: GIVEN create user account to follow
-    serviceFunctionName: userAccountService.createUserAccount
-    argument:
-      userName: test2@test.com
-    responseTests:
-      - pm.collectionVariables.set('followedUserAccountId', body._id)
+- given: create user account to follow
+  serviceFunctionName: userAccountService.createUserAccount
+  argument:
+    userName: test2@test.com
+  responseTests:
+    - pm.collectionVariables.set('followedUserAccountId', body._id)
 
-- test:
-    after: userAccountService.followUser
-    name: THEN user account follows another user account
-    serviceFunctionName: userAccountService.getUserAccount
-    responseTests:
-      - pm.expect(body.followedUserAccounts[0]._id).to.eql(pm.collectionVariables.get('followedUserAccountId'))
+- then: user account follows another user account
+  serviceFunctionName: userAccountService.getUserAccount
+  responseTests:
+    - pm.expect(body.followedUserAccounts[0]._id).to.eql(pm.collectionVariables.get('followedUserAccountId'))
 
-- test:
-    after: userAccountService.followUser
-    name: THEN another user account has following user account
-    serviceFunctionName: userAccountService.getUserAccount
-    argument:
-      userName: test2@test.com
-    responseTests:
-      - pm.expect(body.followingUserAccounts[0]._id).to.eql(pm.collectionVariables.get('userAccountId'))
+- then: another user account has following user account
+  serviceFunctionName: userAccountService.getUserAccount
+  argument:
+    userName: test2@test.com
+  responseTests:
+    - pm.expect(body.followingUserAccounts[0]._id).to.eql(pm.collectionVariables.get('userAccountId'))
