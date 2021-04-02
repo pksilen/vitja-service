@@ -1,2 +1,4 @@
 - given: user account exists
   serviceFunctionName: userAccountService.createUserAccount
+  responseTests:
+    - pm.collectionVariables.set('userAccountId', body._id)
