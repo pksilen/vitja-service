@@ -1,0 +1,15 @@
+- given: sales item exists
+  serviceFunctionName: salesItemService.createSalesItem
+  responseTests:
+    - pm.collectionVariables.set('salesItemId', body._id)
+
+- then: shopping cart contains a sales item
+  serviceFunctionName: shoppingCartService.getShoppingCart
+  responseTests:
+    - pm.expect(body.salesItems[0]._id).to.eql(pm.collectionVariables.get('salesItemId'))
+
+- then: sales item is in reserved state
+  serviceFunctionName: salesItemService.getSalesItem
+  responseTests:
+    - pm.expect(body.state).to.eql('reserved')
+

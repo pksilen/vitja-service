@@ -50,23 +50,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemove')
-  @TestSetup(['salesItemService.createSalesItem'])
-  @PostTests([
-    {
-      testName: 'shopping cart contains a sales item',
-      serviceFunctionName: 'shoppingCartService.getShoppingCart',
-      expectedResult: {
-        'salesItems._id': '{{salesItemId}}'
-      }
-    },
-    {
-      testName: 'sales item is in reserved state',
-      serviceFunctionName: 'salesItemService.getSalesItem',
-      expectedResult: {
-        state: 'reserved'
-      }
-    }
-  ])
   addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.executeInsideTransaction(async () => {
       let [shoppingCart, error] = await this.dbManager.getEntityWhere(
