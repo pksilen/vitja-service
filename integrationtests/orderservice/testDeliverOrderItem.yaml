@@ -4,7 +4,7 @@
 - given: order is placed
   serviceFunctionName: orderService.placeOrder
   responseTests:
-    - pm.collectionVariables.set('orderId', body_.id)
+    - pm.collectionVariables.set('orderId', body._id)
 
 - given: order is paid
   serviceFunctionName: orderService.payOrder

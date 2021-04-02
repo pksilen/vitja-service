@@ -6,4 +6,4 @@
 - then: shopping cart is empty
   serviceFunctionName: shoppingCartService.getShoppingCart
   responseTests:
-    - pm.expect(body.salesItems).to.equal([])
+    - pm.expect(body.salesItems).to.eql([])
