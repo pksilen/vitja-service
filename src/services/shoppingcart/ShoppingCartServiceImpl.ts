@@ -1,23 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import ShoppingCartService from './ShoppingCartService';
-import ShoppingCart from './types/entities/ShoppingCart';
-import SalesItemService from '../salesitem/SalesItemService';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { Delete } from '../../backk/decorators/service/function/Delete';
-import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
-import ShoppingCartOrOrderSalesItem from './types/entities/ShoppingCartOrOrderSalesItem';
-import UserAccountIdAndSalesItemId from './types/args/UserAccountIdAndSalesItemId';
-import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
-import { Update } from '../../backk/decorators/service/function/Update';
-import { PostTests } from '../../backk/decorators/service/function/PostTests';
-import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
-import { TestSetup } from '../../backk/decorators/service/function/TestSetup';
-import UserAccountId from '../../backk/types/useraccount/UserAccountId';
-import { ErrorDef } from '../../backk/dbmanager/hooks/PreHook';
-import { HttpStatusCodes } from '../../backk/constants/constants';
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import ShoppingCartService from "./ShoppingCartService";
+import ShoppingCart from "./types/entities/ShoppingCart";
+import SalesItemService from "../salesitem/SalesItemService";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { Delete } from "../../backk/decorators/service/function/Delete";
+import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
+import ShoppingCartOrOrderSalesItem from "./types/entities/ShoppingCartOrOrderSalesItem";
+import UserAccountIdAndSalesItemId from "./types/args/UserAccountIdAndSalesItemId";
+import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import { Update } from "../../backk/decorators/service/function/Update";
+import { shoppingCartServiceErrors } from "./errors/shoppingCartServiceErrors";
+import UserAccountId from "../../backk/types/useraccount/UserAccountId";
+import { ErrorDef } from "../../backk/dbmanager/hooks/PreHook";
+import { HttpStatusCodes } from "../../backk/constants/constants";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -120,14 +118,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Delete()
-  @TestSetup(['shoppingCartService.addToShoppingCart'])
-  @PostTests([
-    {
-      testName: 'shopping cart is empty',
-      serviceFunctionName: 'shoppingCartService.getShoppingCart',
-      expectedResult: { salesItems: [] }
-    }
-  ])
   emptyShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart, {
       preHooks: ({ salesItems }) =>

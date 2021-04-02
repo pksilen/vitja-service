@@ -1244,7 +1244,7 @@ export default class MongoDbManager extends AbstractDbManager {
       }
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
-        client
+        await client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .updateMany(matchExpression, { ...versionUpdate, ...lastModifiedTimestampUpdate, $set: entity });

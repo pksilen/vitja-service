@@ -1,0 +1,8 @@
+- given: there is a sales item in shopping cart
+  serviceFunctionName: shoppingCartService.addToShoppingCart
+
+- then: shopping cart is empty
+  serviceFunctionName: shoppingCartService.getShoppingCart
+  responseTests:
+    - pm.expect(body.salesItems).to.eql([])
+
