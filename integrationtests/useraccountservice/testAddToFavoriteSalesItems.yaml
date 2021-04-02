@@ -1,0 +1,4 @@
+- then: user account has a favorite sales item
+  serviceFunctionName: userAccountService.getUserAccount
+  responseTests:
+    - pm.expect(body.favoriteSalesItems[0]._id).to.eql(pm.collectionVariables.get('salesItemId'))

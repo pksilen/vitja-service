@@ -111,15 +111,6 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemove')
   @TestSetup(['salesItemService.createSalesItem'])
-  @PostTests([
-    {
-      testName: 'user account has a favorite sales item',
-      serviceFunctionName: 'userAccountService.getUserAccount',
-      expectedResult: {
-        'favoriteSalesItems._id': '{{salesItemId}}'
-      }
-    }
-  ])
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.addSubEntity(
       _id,
