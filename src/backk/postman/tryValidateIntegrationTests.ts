@@ -7,7 +7,7 @@ export default function tryValidateIntegrationTests(
 ) {
   integrationTests.forEach((integrationTest) => {
     if (!integrationTest.testTemplate) {
-      const functionName = integrationTest.testFileName.split('test')[1].slice(1);
+      const functionName = integrationTest.testFileName.split('test')[1];
       if (integrationTest.given) {
         integrationTest.tests = [{ testName: 'GIVEN ' + integrationTest.given }];
         integrationTest.type = 'given';
