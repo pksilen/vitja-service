@@ -33,7 +33,7 @@
       '{{argumentPropertyName2}}': '{{argumentPropertyValue2}}'
     responseTests:
       - pm.expect(body[0].{{responsePropertyName}}).to.eql({{responsePropertyValue}})
-      - pm.expect(bodylength).to.eql({{responseLength}})
+      - pm.expect(body.length).to.eql({{responseLength}})
   tests:
     - testName: get sales items for textFilter = 'secondTitle'
       testProperties:
