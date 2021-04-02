@@ -1,0 +1,4 @@
+- then: user account has no favorite sales items
+  serviceFunctionName: userAccountService.getUserAccount
+  responseTests:
+    - pm.expect(body.favoriteSalesItems).to.eql([])

@@ -2,7 +2,7 @@
   serviceFunctionName: salesItemService.createSalesItem
   responseTests:
     - pm.collectionVariables.set('salesItemId', body._id);
-    
+
 - then: user account has a favorite sales item
   serviceFunctionName: userAccountService.getUserAccount
   responseTests:

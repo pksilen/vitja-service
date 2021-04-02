@@ -24,7 +24,6 @@ import { PostTests } from "../../backk/decorators/service/function/PostTests";
 import FollowedUserAccount from "./types/entities/FollowedUserAccount";
 import FollowingUserAccount from "./types/entities/FollowingUserAccount";
 import { userAccountServiceErrors } from "./errors/userAccountServiceErrors";
-import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -122,15 +121,6 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   @Update('addOrRemove')
-  @PostTests([
-    {
-      testName: 'user account has no favorite sales items',
-      serviceFunctionName: 'userAccountService.getUserAccount',
-      expectedResult: {
-        favoriteSalesItems: []
-      }
-    }
-  ])
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount);
   }
