@@ -89,7 +89,7 @@ export default async function getEntitiesByFilters<T>(
           .collection(EntityClass.name.toLowerCase())
           .updateMany(matchExpression, { $set: { _backkLock: new ObjectId() } });
       }
-      
+
       const joinPipelines = getJoinPipelines(EntityClass, Types);
       const cursor = client
         .db(dbManager.dbName)

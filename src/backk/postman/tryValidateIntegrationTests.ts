@@ -25,7 +25,6 @@ export default function tryValidateIntegrationTests(
         delete integrationTest.when;
       } else if (integrationTest.name) {
         tests = [{ testName: integrationTest.name }];
-        integrationTest.type = 'when';
         delete integrationTest.name;
       } else {
         throw new Error('Integration tests: Missing testTemplate or test specification');
