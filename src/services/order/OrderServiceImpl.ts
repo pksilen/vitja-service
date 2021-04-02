@@ -137,16 +137,6 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update('update')
-  @TestSetup(['orderService.placeOrder'])
-  @PostTests([
-    {
-      testName: 'shopping cart is empty',
-      serviceFunctionName: 'shoppingCartService.getShoppingCart',
-      expectedResult: {
-        salesItems: []
-      }
-    }
-  ])
   payOrder({ _id, ...restOfEntity }: PayOrderArg): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity({ _id, ...restOfEntity }, Order, {
       preHooks: [
@@ -168,13 +158,6 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   @Update('addOrRemove')
-  @PostTests([
-    {
-      testName: 'order has no order items',
-      serviceFunctionName: 'orderService.getOrder',
-      expectedResult: { orderItems: [] }
-    }
-  ])
   removeUndeliveredOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: [
@@ -223,7 +206,6 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  @TestSetup(['shoppingCartService.addToShoppingCart', 'orderService.placeOrder', 'orderService.payOrder'])
   async deliverOrderItem({ _id, version, orderItems }: DeliverOrderItemArg): PromiseOfErrorOr<null> {
     const [orderItem] = orderItems;
 
@@ -257,13 +239,6 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  @PostTests([
-    {
-      testName: 'order item state is delivered',
-      serviceFunctionName: 'orderService.getOrder',
-      expectedResult: { 'orderItems.state': 'delivered' }
-    }
-  ])
   async receiveOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'delivered' }] },
@@ -283,13 +258,6 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  @PostTests([
-    {
-      testName: 'order item state is returning',
-      serviceFunctionName: 'orderService.getOrder',
-      expectedResult: { 'orderItems.state': 'returning' }
-    }
-  ])
   async returnOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'returning' }] },
@@ -309,18 +277,6 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  @PostTests([
-    {
-      testName: 'order item state is returned',
-      serviceFunctionName: 'orderService.getOrder',
-      expectedResult: { 'orderItems.state': 'returned' }
-    },
-    {
-      testName: 'sales item state is for sale',
-      serviceFunctionName: 'salesItemService.getSalesItem',
-      expectedResult: { state: 'forSale' }
-    }
-  ])
   async receiveReturnedOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'returned' }] },
@@ -350,18 +306,6 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @CronJob({ minuteInterval: 5 })
-  @TestSetup([
-    'orderService.deleteAllOrders',
-    'shoppingCartService.addToShoppingCart',
-    'orderService.placeOrder'
-  ])
-  @PostTests([
-    {
-      testName: 'sales item state is for sale',
-      serviceFunctionName: 'salesItemService.getSalesItem',
-      expectedResult: { state: 'forSale' }
-    }
-  ])
   deleteUnpaidOrders({ unpaidOrderTimeToLiveInMinutes }: DeleteUnpaidOrdersArg): PromiseOfErrorOr<null> {
     return this.dbManager.executeInsideTransaction(async () => {
       const orderFilters = this.dbManager.getFilters(

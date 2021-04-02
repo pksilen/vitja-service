@@ -8,5 +8,5 @@
 
 - then: sales item is sold,
   serviceFunctionName: 'salesItemService.getSalesItem'
-  expectedResult:
+  responseTests:
     - pm.expect(body.state).to.eql('sold)

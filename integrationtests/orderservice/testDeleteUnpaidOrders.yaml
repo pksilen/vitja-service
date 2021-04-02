@@ -1,0 +1,15 @@
+- given: there is no orders
+  serviceFunctionName: orderService.deleteAllOrders
+
+- given: there is a sales item in shopping cart
+  serviceFunctionName: shoppingCartService.addToShoppingCart
+
+- given: order is placed
+  serviceFunctionName: orderService.placeOrder
+  responseTests:
+    - pm.collectionVariables.set('orderId', body._id)
+
+- then: sales item state is for sale
+  serviceFunctionName: salesItemService.getSalesItem
+  responseTests:
+    - pm.expect(body.state).to.eql('forSale')

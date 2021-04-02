@@ -1,0 +1,4 @@
+- then: order item state is returning
+  serviceFunctionName: orderService.getOrder
+  responseTests:
+    - pm.expect(body.orderItems[0].state).to.eql('returning')

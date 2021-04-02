@@ -1,0 +1,10 @@
+- given: there is a sales item in shopping cart
+  serviceFunctionName: shoppingCartService.addToShoppingCart
+
+- given: order is placed
+  serviceFunctionName: orderService.placeOrder
+  responseTests:
+    - pm.collectionVariables.set('orderId', body_.id)
+
+- given: order is paid
+  serviceFunctionName: orderService.payOrder

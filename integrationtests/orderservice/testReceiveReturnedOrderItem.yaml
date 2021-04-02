@@ -1,0 +1,9 @@
+- then: order item state is returned
+  serviceFunctionName: orderService.getOrder
+  responseTests:
+    - pm.expect(body.orderItems[0].state).to.eql('returned')
+
+- then: sales item state is for sale
+  serviceFunctionName: salesItemService.getSalesItem
+  responseTests:
+    - pm.expect(body.state).to.eql('forSale')

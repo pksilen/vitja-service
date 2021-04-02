@@ -1,0 +1,4 @@
+- then: order has no order items
+  serviceFunctionName: orderService.getOrder
+  responseTests:
+    - pm.expect(body.orderItems).to.eql([])
