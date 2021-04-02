@@ -17,6 +17,7 @@ import { PostHook } from './hooks/PostHook';
 import { FilterQuery } from 'mongodb';
 import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
 import { EntityPreHook } from "./hooks/EntityPreHook";
+import DbTableVersion from "./version/DbTableVersion";
 
 export interface Field {
   name: string;
@@ -40,7 +41,8 @@ export default abstract class AbstractDbManager {
   getTypes(): Readonly<object> {
     return this.services.reduce((types, service) => ({ ...types, ...service.Types }), {
       __Backk__CronJobScheduling,
-      __Backk__JobScheduling
+      __Backk__JobScheduling,
+      DbTableVersion
     });
   }
 

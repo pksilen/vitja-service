@@ -90,6 +90,7 @@ export default async function getEntitiesByFilters<T>(
           .updateMany(matchExpression, { $set: { _backkLock: new ObjectId() } });
       }
 
+      console.log(EntityClass, getEntityName(EntityClass.name), (Types as any)[getEntityName(EntityClass.name)]);
       const joinPipelines = getJoinPipelines(EntityClass, Types);
       const cursor = client
         .db(dbManager.dbName)
