@@ -367,8 +367,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       writtenTests
         .filter(
           ({ testTemplate: { serviceFunctionName, type } }) =>
-            type === 'when' && serviceFunctionName.toLowerCase() ===
-            (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+            type === 'when' &&
+            serviceFunctionName.toLowerCase() ===
+              (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
           hasWrittenTest = true;
@@ -461,9 +462,26 @@ export default function writeTestsPostmanCollectionExportFile<T>(
           return false;
         });
 
+        const foundAfterReadTest = writtenTests
+          .filter(
+            ({ testTemplate: { after } }) =>
+              after?.toLowerCase() ===
+              (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+          )
+          .find((writtenTest) => {
+            if (
+              writtenTest.serviceFunctionName ===
+              serviceMetadata.serviceName + '.' + functionMetadata.functionName
+            ) {
+              return true;
+            }
+            return false;
+          });
+
         if (
-          (isUpdate && (updateType === 'update' || updateType === undefined)) ||
-          (isDelete && !foundReadFunctionTestSpec && !hasBeforeTest)
+          ((isUpdate && (updateType === 'update' || updateType === undefined)) || isDelete) &&
+          !foundReadFunctionTestSpec &&
+          !foundAfterReadTest
         ) {
           const getFunctionTests = getServiceFunctionTests(
             (controller as any)[serviceMetadata.serviceName].constructor,
