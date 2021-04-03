@@ -136,7 +136,6 @@ export default class MongoDbManager extends AbstractDbManager {
         return await executeDbOperations(this.mongoClient);
       }
     } catch (error) {
-      log(Severity.ERROR, error.message, error.stack);
       throw error;
     }
   }
