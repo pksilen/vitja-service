@@ -539,7 +539,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
     const customTestGroups = _.groupBy(
       writtenTests.filter(
-        ({ serviceName, executeLast }) =>
+        ({ serviceName, testTemplate: { executeLast }}) =>
           serviceName.toLowerCase() === serviceMetadata.serviceName.toLowerCase() && executeLast
       ),
       ({ testFileName }) => testFileName

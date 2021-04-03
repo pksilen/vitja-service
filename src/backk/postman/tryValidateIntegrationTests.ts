@@ -6,8 +6,9 @@ export default function tryValidateIntegrationTests(
   servicesMetadata: ServiceMetadata[]
 ) {
   integrationTests.forEach((integrationTest, index) => {
+    const functionName = integrationTest.testFileName.split('test')[1];
+
     if (!integrationTest.testTemplate) {
-      const functionName = integrationTest.testFileName.split('test')[1];
       let tests;
       if (integrationTest.given) {
         tests = [{ testName: 'GIVEN ' + integrationTest.given }];
@@ -25,9 +26,11 @@ export default function tryValidateIntegrationTests(
         integrationTest.at = integrationTest.serviceName + '.' + functionName;
         delete integrationTest.when;
       } else if (integrationTest.cleanup) {
-          tests = [{ testName: 'CLEANUP ' + integrationTest.when }];
-          integrationTest.type = 'cleanup';
-          delete integrationTest.cleanup;
+        tests = [{ testName: 'CLEANUP ' + integrationTest.when }];
+        integrationTest.type = 'cleanup';
+        integrationTest.after = integrationTest.serviceName + '.' + functionName;
+        integrationTest.at = integrationTest.serviceName + '.' + functionName;
+        delete integrationTest.cleanup;
       } else if (integrationTest.name) {
         tests = [{ testName: integrationTest.name }];
         delete integrationTest.name;
@@ -43,6 +46,8 @@ export default function tryValidateIntegrationTests(
       };
 
       integrationTests[index] = integrationTest;
+    } else {
+      integrationTest.testTemplate.at = integrationTest.serviceName + '.' + functionName;
     }
 
     const foundInvalidKey = Object.keys(integrationTest.testTemplate).find(
@@ -94,7 +99,7 @@ export default function tryValidateIntegrationTests(
       );
 
       if (!serviceMetadata || !functionMetadata) {
-       integrationTest.testTemplate.executeLast = true;
+        integrationTest.testTemplate.executeLast = true;
       }
     }
 
