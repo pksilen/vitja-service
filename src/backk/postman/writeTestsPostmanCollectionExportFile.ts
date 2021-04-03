@@ -467,7 +467,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
             ({ testTemplate: { after, executeLast } }) =>
               !executeLast &&
               after?.toLowerCase() ===
-                (serviceMetadata.serviceName + '.' + lastReadFunctionMetadata?.functionName).toLowerCase()
+                (serviceMetadata.serviceName + '.' + functionMetadata?.functionName).toLowerCase()
           )
           .find(({ testTemplate: { serviceFunctionName } }) => {
             if (serviceFunctionName === serviceMetadata.serviceName + '.' + lastReadFunctionMetadata?.functionName) {
