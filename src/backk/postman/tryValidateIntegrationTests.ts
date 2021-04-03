@@ -75,37 +75,5 @@ export default function tryValidateIntegrationTests(
         }
       });
     }
-
-    if (integrationTest.testTemplate.before) {
-      const [serviceName, functionName] = integrationTest.testTemplate.before.split('.');
-
-      const serviceMetadata = servicesMetadata.find(
-        (serviceMetadata) => serviceMetadata.serviceName.toLowerCase() === serviceName.toLowerCase()
-      );
-
-      const functionMetadata = serviceMetadata?.functions.find(
-        (func) => func.functionName.toLowerCase() === functionName.toLowerCase()
-      );
-
-      if (!serviceMetadata || !functionMetadata) {
-        throw new Error('Integration tests: unknown before: ' + integrationTest.testTemplate.before);
-      }
-    }
-
-    if (integrationTest.testTemplate.after) {
-      const [serviceName, functionName] = integrationTest.testTemplate.after.split('.');
-
-      const serviceMetadata = servicesMetadata.find(
-        (serviceMetadata) => serviceMetadata.serviceName.toLowerCase() === serviceName.toLowerCase()
-      );
-
-      const functionMetadata = serviceMetadata?.functions.find(
-        (func) => func.functionName.toLowerCase() === functionName.toLowerCase()
-      );
-
-      if (!serviceMetadata || !functionMetadata) {
-        throw new Error('Integration tests: unknown after: ' + integrationTest.testTemplate.after);
-      }
-    }
   });
 }

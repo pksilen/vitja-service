@@ -20,7 +20,6 @@ import { SalesItem } from "../salesitem/types/entities/SalesItem";
 import GetUserAccountArg from "./types/args/GetUserAccountArg";
 import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
 import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
-import { PostTests } from "../../backk/decorators/service/function/PostTests";
 import FollowedUserAccount from "./types/entities/FollowedUserAccount";
 import FollowingUserAccount from "./types/entities/FollowingUserAccount";
 import { userAccountServiceErrors } from "./errors/userAccountServiceErrors";
@@ -126,8 +125,8 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   @AllowForSelf()
-  updateUserAccount(arg: UserAccount): PromiseOfErrorOr<null> {
-    return this.dbManager.updateEntity(arg, UserAccount);
+  updateUserAccount(userAccount: UserAccount): PromiseOfErrorOr<null> {
+    return this.dbManager.updateEntity(userAccount, UserAccount);
   }
 
   @AllowForSelf()
