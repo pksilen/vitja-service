@@ -466,15 +466,16 @@ export default function writeTestsPostmanCollectionExportFile<T>(
              !executeLast && after?.toLowerCase() ===
               (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
           )
-          .find((writtenTest) => {
+          .find(({ testTemplate: {serviceFunctionName }}) => {
             if (
-              writtenTest.serviceFunctionName ===
+             serviceFunctionName ===
               serviceMetadata.serviceName + '.' + functionMetadata.functionName
             ) {
               return true;
             }
             return false;
           });
+
 
         if (
           ((isUpdate && (updateType === 'update' || updateType === undefined)) || isDelete) &&
