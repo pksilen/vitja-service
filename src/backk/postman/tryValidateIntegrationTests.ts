@@ -26,7 +26,7 @@ export default function tryValidateIntegrationTests(
         integrationTest.at = integrationTest.serviceName + '.' + functionName;
         delete integrationTest.when;
       } else if (integrationTest.cleanup) {
-        tests = [{ testName: 'CLEANUP ' + integrationTest.when }];
+        tests = [{ testName: 'CLEANUP ' + integrationTest.cleanup }];
         integrationTest.type = 'cleanup';
         integrationTest.after = integrationTest.serviceName + '.' + functionName;
         integrationTest.at = integrationTest.serviceName + '.' + functionName;
