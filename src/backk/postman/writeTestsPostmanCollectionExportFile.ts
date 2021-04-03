@@ -114,16 +114,14 @@ export default function writeTestsPostmanCollectionExportFile<T>(
     serviceMetadata.functions.forEach((functionMetadata: FunctionMetadata, functionIndex: number) => {
       // noinspection ReuseOfLocalVariableJS
       items = [];
-      let hasBeforeTest = false;
 
       writtenTests
         .filter(
-          ({ testTemplate: { before } }) =>
-            before?.toLowerCase() ===
+          ({ testTemplate: { before, executeLast } }) =>
+            !executeLast && before?.toLowerCase() ===
             (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
-          hasBeforeTest = true;
           addCustomTest(writtenTest, controller, servicesMetadata, items);
         });
 
@@ -366,8 +364,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       let hasWrittenTest = false;
       writtenTests
         .filter(
-          ({ testTemplate: { serviceFunctionName, type, at } }) =>
-            type === 'when' &&
+          ({ testTemplate: { serviceFunctionName, type, at, executeLast } }) =>
+            !executeLast && type === 'when' &&
             at.toLowerCase() ===
               (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
@@ -464,8 +462,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
         const foundAfterReadTest = writtenTests
           .filter(
-            ({ testTemplate: { after } }) =>
-              after?.toLowerCase() ===
+            ({ testTemplate: { after, executeLast } }) =>
+             !executeLast && after?.toLowerCase() ===
               (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
           )
           .find((writtenTest) => {
@@ -522,8 +520,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
       writtenTests
         .filter(
-          ({ testTemplate: { after } }) =>
-            after?.toLowerCase() ===
+          ({ testTemplate: { after, executeLast } }) =>
+            !executeLast && after?.toLowerCase() ===
             (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
@@ -541,8 +539,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
     const customTestGroups = _.groupBy(
       writtenTests.filter(
-        ({ serviceName, testTemplate: { type } }) =>
-          serviceName.toLowerCase() === serviceMetadata.serviceName.toLowerCase() && !type
+        ({ serviceName, executeLast }) =>
+          serviceName.toLowerCase() === serviceMetadata.serviceName.toLowerCase() && executeLast
       ),
       ({ testFileName }) => testFileName
     );
