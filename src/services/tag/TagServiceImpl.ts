@@ -3,7 +3,6 @@ import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
 import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
 import TagService from "./TagService";
 import Tag from "./entities/Tag";
-import TagName from "./args/TagName";
 import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
 import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
@@ -30,7 +29,7 @@ export default class TagServiceImpl extends TagService {
       [, error] = await this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, {
         preHooks: () => {
           const tags = tryGetSeparatedValuesFromTextFile('resources/tags1.txt');
-          return executeForAll(tags, (tag) => this.createTag({ name: tag }));
+          return executeForAll(tags, (tag) => this.dbManager.createEntity({ name: tag }, Tag));
         }
       });
     }
@@ -52,7 +51,7 @@ export default class TagServiceImpl extends TagService {
     return this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, {
       preHooks: () => {
         const tags = tryGetSeparatedValuesFromTextFile('resources/tags2.txt');
-        return executeForAll(tags, (tag) => this.createTag({ name: tag }));
+        return executeForAll(tags, (tag) => this.dbManager.createEntity({ name: tag }, Tag));
       }
     });
   }
@@ -67,12 +66,12 @@ export default class TagServiceImpl extends TagService {
 
   @AllowForEveryUser()
   @NoCaptcha()
-  createTag({ name }: TagName): PromiseOfErrorOr<Tag> {
-    return this.dbManager.createEntity({ name }, Tag);
+  createTag(tag: Tag): PromiseOfErrorOr<Tag> {
+    return this.dbManager.createEntity(tag, Tag);
   }
 
   @AllowForEveryUser()
-  getTagsByName({ name }: TagName): PromiseOfErrorOr<Tag[]> {
+  getTagsByName({ name }: Tag): PromiseOfErrorOr<Tag[]> {
     const filters = this.dbManager.getFilters<Tag>({ name: new RegExp(name) }, [
       new SqlExpression('name LIKE :name', { name: `%${name}%` })
     ]);

@@ -8,13 +8,11 @@ import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
 import User from "./types/entities/User";
 import UserService from "./UserService";
 import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import UserAccountService from "../useraccount/UserAccountService";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
 export default class UserServiceImpl extends UserService {
-  constructor(dbManager: AbstractDbManager, private readonly userAccountService: UserAccountService) {
+  constructor(dbManager: AbstractDbManager) {
     super({}, dbManager);
   }
 

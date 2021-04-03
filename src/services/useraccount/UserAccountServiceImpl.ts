@@ -144,6 +144,11 @@ export default class UserAccountServiceImpl extends UserAccountService {
           error: userAccountServiceErrors.invalidUserName
         },
         {
+          isSuccessfulOrTrue: ({ password: hashedCurrentPassword }) =>
+            argon2.verify(hashedCurrentPassword, currentPassword),
+          error: userAccountServiceErrors.invalidCurrentPassword
+        },
+        {
           isSuccessfulOrTrue: async ({ password: hashedCurrentPassword }) => {
             return !(await argon2.verify(hashedCurrentPassword, newPassword));
           },
@@ -152,11 +157,6 @@ export default class UserAccountServiceImpl extends UserAccountService {
         {
           isSuccessfulOrTrue: async () => newPassword === repeatNewPassword,
           error: userAccountServiceErrors.newPasswordAndRepeatNewPasswordDoNotMatch
-        },
-        {
-          isSuccessfulOrTrue: ({ password: hashedCurrentPassword }) =>
-            argon2.verify(hashedCurrentPassword, currentPassword),
-          error: userAccountServiceErrors.invalidCurrentPassword
         }
       ]
     });

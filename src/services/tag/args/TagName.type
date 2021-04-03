@@ -1,3 +1,0 @@
-export default class TagName {
-  ...Pick<Tag, 'name'>;
-}
