@@ -118,8 +118,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       writtenTests
         .filter(
           ({ testTemplate: { before, executeLast } }) =>
-            !executeLast && before?.toLowerCase() ===
-            (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+            !executeLast &&
+            before?.toLowerCase() ===
+              (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);
@@ -365,7 +366,8 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       writtenTests
         .filter(
           ({ testTemplate: { serviceFunctionName, type, at, executeLast } }) =>
-            !executeLast && type === 'when' &&
+            !executeLast &&
+            type === 'when' &&
             at.toLowerCase() ===
               (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
@@ -463,14 +465,12 @@ export default function writeTestsPostmanCollectionExportFile<T>(
         const foundAfterReadTest = writtenTests
           .filter(
             ({ testTemplate: { after, executeLast } }) =>
-             !executeLast && after?.toLowerCase() ===
-              (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+              !executeLast &&
+              after?.toLowerCase() ===
+                (serviceMetadata.serviceName + '.' + lastReadFunctionMetadata?.functionName).toLowerCase()
           )
-          .find(({ testTemplate: {serviceFunctionName }}) => {
-            if (
-             serviceFunctionName ===
-              serviceMetadata.serviceName + '.' + functionMetadata.functionName
-            ) {
+          .find(({ testTemplate: { serviceFunctionName } }) => {
+            if (serviceFunctionName === serviceMetadata.serviceName + '.' + lastReadFunctionMetadata?.functionName) {
               return true;
             }
             return false;
@@ -522,8 +522,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       writtenTests
         .filter(
           ({ testTemplate: { after, executeLast } }) =>
-            !executeLast && after?.toLowerCase() ===
-            (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
+            !executeLast &&
+            after?.toLowerCase() ===
+              (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {
           addCustomTest(writtenTest, controller, servicesMetadata, items);
@@ -540,7 +541,7 @@ export default function writeTestsPostmanCollectionExportFile<T>(
 
     const customTestGroups = _.groupBy(
       writtenTests.filter(
-        ({ serviceName, testTemplate: { executeLast }}) =>
+        ({ serviceName, testTemplate: { executeLast } }) =>
           serviceName.toLowerCase() === serviceMetadata.serviceName.toLowerCase() && executeLast
       ),
       ({ testFileName }) => testFileName
