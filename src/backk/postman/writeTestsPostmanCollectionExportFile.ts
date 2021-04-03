@@ -366,9 +366,9 @@ export default function writeTestsPostmanCollectionExportFile<T>(
       let hasWrittenTest = false;
       writtenTests
         .filter(
-          ({ testTemplate: { serviceFunctionName, type } }) =>
+          ({ testTemplate: { serviceFunctionName, type, at } }) =>
             type === 'when' &&
-            serviceFunctionName.toLowerCase() ===
+            at.toLowerCase() ===
               (serviceMetadata.serviceName + '.' + functionMetadata.functionName).toLowerCase()
         )
         .forEach((writtenTest) => {

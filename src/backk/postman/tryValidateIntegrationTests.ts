@@ -22,7 +22,12 @@ export default function tryValidateIntegrationTests(
       } else if (integrationTest.when) {
         tests = [{ testName: 'WHEN ' + integrationTest.when }];
         integrationTest.type = 'when';
+        integrationTest.at = integrationTest.serviceName + '.' + functionName;
         delete integrationTest.when;
+      } else if (integrationTest.cleanup) {
+          tests = [{ testName: 'CLEANUP ' + integrationTest.when }];
+          integrationTest.type = 'cleanup';
+          delete integrationTest.cleanup;
       } else if (integrationTest.name) {
         tests = [{ testName: integrationTest.name }];
         delete integrationTest.name;
@@ -44,6 +49,7 @@ export default function tryValidateIntegrationTests(
       (key) =>
         key !== 'after' &&
         key !== 'before' &&
+        key !== 'at' &&
         key !== 'serviceFunctionName' &&
         key !== 'argument' &&
         key !== 'responseTests' &&
