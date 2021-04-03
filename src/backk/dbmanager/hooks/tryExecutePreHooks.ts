@@ -35,26 +35,25 @@ export default async function tryExecutePreHooks<T extends BackkEntity | SubEnti
       );
     }
 
-    if (Array.isArray(hookCallResult) && hookCallResult[1]) {
-      throw hookCallResult[1];
-    } else if (
+    if (
+      (Array.isArray(hookCallResult) && hookCallResult[1]) ||
       hookCallResult === false ||
       (typeof hookCallResult === 'object' && !Array.isArray(hookCallResult) && hookCallResult !== null)
     ) {
-      if (typeof preHook === 'object') {
-        let errorMessage = 'Pre-hook evaluated to false without specific error message';
+      let errorMessage = 'Pre-hook evaluated to false without specific error message';
 
-        if (preHook.error) {
-          errorMessage = 'Error code ' + preHook.error.errorCode + ':' + preHook.error.message;
-        }
-
-        throw new Error(
-          createErrorMessageWithStatusCode(
-            errorMessage,
-            preHook.error?.statusCode ?? HttpStatusCodes.BAD_REQUEST
-          )
-        );
+      if (typeof preHook === 'object' && preHook.error) {
+        errorMessage = 'Error code ' + preHook.error.errorCode + ':' + preHook.error.message;
       }
+
+      throw new Error(
+        createErrorMessageWithStatusCode(
+          errorMessage,
+          typeof preHook === 'object'
+            ? preHook.error?.statusCode ?? HttpStatusCodes.BAD_REQUEST
+            : HttpStatusCodes.BAD_REQUEST
+        )
+      );
     }
   });
 }
