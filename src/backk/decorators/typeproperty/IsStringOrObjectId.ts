@@ -9,9 +9,8 @@ export default function IsStringOrObjectId(validationOptions?: ValidationOptions
       constraints: ['isStringOrObjectId'],
       options: validationOptions,
       validator: {
-        validate(value: any, args: ValidationArguments) {
-          // TODO: support validationOption each:true
-          return typeof value === 'string' || value.constructor?.name === 'ObjectID';
+        validate(value: any) {
+          return typeof value === 'string' || value?.constructor?.name === 'ObjectID';
         },
         defaultMessage: () => propertyName + ' must be a string or MongoDB ObjectId'
       },

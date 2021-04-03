@@ -1,9 +1,9 @@
-import forEachAsyncSequential from "../../utils/forEachAsyncSequential";
-import createErrorMessageWithStatusCode from "../../errors/createErrorMessageWithStatusCode";
-import { HttpStatusCodes } from "../../constants/constants";
-import { BackkEntity } from "../../types/entities/BackkEntity";
-import { SubEntity } from "../../types/entities/SubEntity";
-import { EntityPreHook } from "./EntityPreHook";
+import forEachAsyncSequential from '../../utils/forEachAsyncSequential';
+import createErrorMessageWithStatusCode from '../../errors/createErrorMessageWithStatusCode';
+import { HttpStatusCodes } from '../../constants/constants';
+import { BackkEntity } from '../../types/entities/BackkEntity';
+import { SubEntity } from '../../types/entities/SubEntity';
+import { EntityPreHook } from './EntityPreHook';
 
 export default async function tryExecuteEntityPreHooks<T extends BackkEntity | SubEntity>(
   preHooks: EntityPreHook<T> | EntityPreHook<T>[],
@@ -38,9 +38,8 @@ export default async function tryExecuteEntityPreHooks<T extends BackkEntity | S
         );
       }
 
-      if (Array.isArray(hookCallResult) && hookCallResult[1]) {
-        throw hookCallResult[1];
-      } else if (
+      if (
+        (Array.isArray(hookCallResult) && hookCallResult[1]) ||
         hookCallResult === false ||
         (typeof hookCallResult === 'object' && !Array.isArray(hookCallResult) && hookCallResult !== null)
       ) {

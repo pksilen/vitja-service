@@ -14,6 +14,7 @@ import { HttpStatusCodes } from "../../backk/constants/constants";
 import tryGetSeparatedValuesFromTextFile from "../../backk/file/tryGetSeparatedValuesFromTextFile";
 import executeForAll from "../../backk/utils/executeForAll";
 import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import TagName from "./args/TagName";
 
 @Injectable()
 export default class TagServiceImpl extends TagService {
@@ -71,7 +72,7 @@ export default class TagServiceImpl extends TagService {
   }
 
   @AllowForEveryUser()
-  getTagsByName({ name }: Tag): PromiseOfErrorOr<Tag[]> {
+  getTagsByName({ name }: TagName): PromiseOfErrorOr<Tag[]> {
     const filters = this.dbManager.getFilters<Tag>({ name: new RegExp(name) }, [
       new SqlExpression('name LIKE :name', { name: `%${name}%` })
     ]);

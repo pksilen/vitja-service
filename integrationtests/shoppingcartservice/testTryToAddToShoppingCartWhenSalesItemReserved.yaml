@@ -8,6 +8,7 @@
 
 - when: try to add sales item to shopping cart again
   serviceFunctionName: shoppingCartService.addToShoppingCart
+  responseStatusCode: 400
   responseTests:
     - pm.expect(body.errorCode).to.eql('shoppingCartService.1')
 
