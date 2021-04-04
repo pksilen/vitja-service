@@ -1,44 +1,42 @@
-import { Injectable } from "@nestjs/common";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
-import { AllowForUserRoles } from "../../backk/decorators/service/function/AllowForUserRoles";
-import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
-import SalesItemService from "../salesitem/SalesItemService";
-import OrderService from "./OrderService";
-import PlaceOrderArg from "./types/args/PlaceOrderArg";
-import DeliverOrderItemArg from "./types/args/DeliverOrderItemArg";
-import Order from "./types/entities/Order";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import ShoppingCartService from "../shoppingcart/ShoppingCartService";
-import { OrderItemState } from "./types/enum/OrderItemState";
-import { Update } from "../../backk/decorators/service/function/Update";
-import sendToRemoteService from "../../backk/remote/messagequeue/sendToRemoteService";
-import { Create } from "../../backk/decorators/service/function/Create";
-import { HttpStatusCodes } from "../../backk/constants/constants";
-import { ResponseStatusCode } from "../../backk/decorators/service/function/ResponseStatusCode";
-import { ResponseHeaders } from "../../backk/decorators/service/function/ResponseHeaders";
-import getServiceName from "../../backk/utils/getServiceName";
-import { PaymentGateway } from "./types/enum/PaymentGateway";
-import _Id from "../../backk/types/id/_Id";
-import { Delete } from "../../backk/decorators/service/function/Delete";
-import PayOrderArg from "./types/args/PayOrderArg";
-import { JSONPath } from "jsonpath-plus";
-import { CronJob } from "../../backk/decorators/service/function/CronJob";
-import dayjs from "dayjs";
-import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
-import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
-import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import { PostTests } from "../../backk/decorators/service/function/PostTests";
-import { orderServiceErrors } from "./errors/orderServiceErrors";
-import { TestSetup } from "../../backk/decorators/service/function/TestSetup";
-import RemoveOrderItemArg from "./types/args/RemoveOrderItemArg";
-import DeleteUnpaidOrdersArg from "./types/args/DeleteUnpaidOrdersArg";
-import { EntityPreHook } from "../../backk/dbmanager/hooks/EntityPreHook";
-import _IdAndOrderItemId from "./types/args/_IdAndOrderItemId";
-import SqlInExpression from "../../backk/dbmanager/sql/expressions/SqlInExpression";
-import { SalesItem } from "../salesitem/types/entities/SalesItem";
+import { Injectable } from '@nestjs/common';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import { AllowForUserRoles } from '../../backk/decorators/service/function/AllowForUserRoles';
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
+import SalesItemService from '../salesitem/SalesItemService';
+import OrderService from './OrderService';
+import PlaceOrderArg from './types/args/PlaceOrderArg';
+import DeliverOrderItemArg from './types/args/DeliverOrderItemArg';
+import Order from './types/entities/Order';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import ShoppingCartService from '../shoppingcart/ShoppingCartService';
+import { OrderItemState } from './types/enum/OrderItemState';
+import { Update } from '../../backk/decorators/service/function/Update';
+import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
+import { Create } from '../../backk/decorators/service/function/Create';
+import { HttpStatusCodes } from '../../backk/constants/constants';
+import { ResponseStatusCode } from '../../backk/decorators/service/function/ResponseStatusCode';
+import { ResponseHeaders } from '../../backk/decorators/service/function/ResponseHeaders';
+import getServiceName from '../../backk/utils/getServiceName';
+import { PaymentGateway } from './types/enum/PaymentGateway';
+import _Id from '../../backk/types/id/_Id';
+import { Delete } from '../../backk/decorators/service/function/Delete';
+import PayOrderArg from './types/args/PayOrderArg';
+import { JSONPath } from 'jsonpath-plus';
+import { CronJob } from '../../backk/decorators/service/function/CronJob';
+import dayjs from 'dayjs';
+import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
+import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import { orderServiceErrors } from './errors/orderServiceErrors';
+import RemoveOrderItemArg from './types/args/RemoveOrderItemArg';
+import DeleteUnpaidOrdersArg from './types/args/DeleteUnpaidOrdersArg';
+import { EntityPreHook } from '../../backk/dbmanager/hooks/EntityPreHook';
+import _IdAndOrderItemId from './types/args/_IdAndOrderItemId';
+import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
+import { SalesItem } from '../salesitem/types/entities/SalesItem';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -107,7 +105,7 @@ export default class OrderServiceImpl extends OrderService {
                   this.salesItemService.updateSalesItemStates(
                     shoppingCart.salesItems,
                     'sold',
-                    ['forSale', 'reserved'],
+                    'reserved',
                     userAccountId
                   )
               ]
@@ -129,8 +127,7 @@ export default class OrderServiceImpl extends OrderService {
       preHooks: (order) =>
         this.salesItemService.updateSalesItemStates(
           JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
-          'reserved',
-          ['sold']
+          'reserved'
         )
     });
   }
@@ -168,11 +165,7 @@ export default class OrderServiceImpl extends OrderService {
             'toBeDelivered',
           error: orderServiceErrors.cannotRemoveDeliveredOrderItem
         },
-        (order) =>
-          this.salesItemService.updateSalesItemStates(
-            JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].salesItems[*]` }),
-            'forSale'
-          )
+        (order) => this.updateSalesItemStateToForSale(order, orderItemId)
       ],
       postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
     });
@@ -284,16 +277,7 @@ export default class OrderServiceImpl extends OrderService {
       {
         preHooks: [
           this.isPaidOrderPreHook,
-          {
-            isSuccessfulOrTrue: (order) =>
-              this.salesItemService.updateSalesItemState(
-                JSONPath({
-                  json: order,
-                  path: `orderItems[?(@.id == '${orderItemId}')].salesItems[0]._id`
-                })[0],
-                'forSale'
-              )
-          },
+          (order) => this.updateSalesItemStateToForSale(order, orderItemId),
           {
             isSuccessfulOrTrue: (order) =>
               OrderServiceImpl.hasOrderItemState(order, orderItemId, 'returning'),
@@ -414,6 +398,16 @@ export default class OrderServiceImpl extends OrderService {
         json: order,
         path: `orderItems[?(@.id == '${orderItemId}')].state`
       })[0] === requiredState
+    );
+  }
+
+  private updateSalesItemStateToForSale(order: Order, orderItemId: string): PromiseOfErrorOr<null> {
+    return this.salesItemService.updateSalesItemState(
+      JSONPath({
+        json: order,
+        path: `orderItems[?(@.id == '${orderItemId}')].salesItems[0]._id`
+      })[0],
+      'forSale'
     );
   }
 }

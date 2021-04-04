@@ -234,11 +234,11 @@ export default class SalesItemServiceImpl extends SalesItemService {
   updateSalesItemStates(
     salesItems: ShoppingCartOrOrderSalesItem[],
     newState: SalesItemState,
-    requiredCurrentStates?: SalesItemState[],
+    requiredCurrentState?: SalesItemState,
     buyerUserAccountId?: string
   ): PromiseOfErrorOr<null> {
     return executeForAll(salesItems, ({ _id }) =>
-      this.updateSalesItemState(_id, newState, requiredCurrentStates, buyerUserAccountId)
+      this.updateSalesItemState(_id, newState, requiredCurrentState, buyerUserAccountId)
     );
   }
 
@@ -246,7 +246,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   updateSalesItemState(
     _id: string,
     newState: SalesItemState,
-    requiredCurrentStates?: SalesItemState[],
+    requiredCurrentState?: SalesItemState,
     buyerUserAccountId?: string
   ): PromiseOfErrorOr<null> {
     return this.dbManager.updateEntity(
@@ -255,8 +255,8 @@ export default class SalesItemServiceImpl extends SalesItemService {
       {
         preHooks: [
           {
-            shouldExecutePreHook: () => !!requiredCurrentStates,
-            isSuccessfulOrTrue: ({ state }) => (requiredCurrentStates ?? []).includes(state),
+            shouldExecutePreHook: () => !!requiredCurrentState,
+            isSuccessfulOrTrue: ({ state }) => requiredCurrentState === state,
             error: salesItemServiceErrors.invalidSalesItemState
           },
           {
