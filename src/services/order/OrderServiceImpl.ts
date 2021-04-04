@@ -127,7 +127,9 @@ export default class OrderServiceImpl extends OrderService {
       preHooks: (order) =>
         this.salesItemService.updateSalesItemStates(
           JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
-          'reserved'
+          'reserved',
+          'sold',
+          order.userAccountId
         )
     });
   }
