@@ -327,7 +327,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
             error: salesItemServiceErrors.invalidSalesItemState
           },
           {
-            shouldExecutePreHook: () => newState === 'sold' || newState === 'forSale',
+            shouldExecutePreHook: () => newState === 'sold',
             isSuccessfulOrTrue: ({ buyerUserAccountId }) => buyerUserAccountId === buyerUserAccountId,
             error: salesItemServiceErrors.invalidSalesItemState
           }
