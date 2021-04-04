@@ -26,7 +26,8 @@ export default async function getEntityWhere<T>(
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
   postHook?: PostHook<T>,
-  isSelectForUpdate = false
+  isSelectForUpdate = false,
+  isInternalCall = false
 ): PromiseOfErrorOr<T> {
   if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {
     throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
@@ -69,7 +70,7 @@ export default async function getEntityWhere<T>(
       joinClauses,
       filterValues,
       outerSortClause
-    } = getSqlSelectStatementParts(dbManager, finalPostQueryOperations, EntityClass, filters);
+    } = getSqlSelectStatementParts(dbManager, finalPostQueryOperations, EntityClass, filters, isInternalCall);
 
     const tableName = getTableName(EntityClass.name);
     const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();

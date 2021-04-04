@@ -185,6 +185,7 @@ export default function parseTypescriptLinesForTypeName(
                 }
 
                 if (isPrivate) {
+                  // TODO correct path
                   importLines.push(
                     "import Entity from '../../../../backk/decorators/typeproperty/IsPrivate';"
                   );
@@ -241,6 +242,7 @@ export default function parseTypescriptLinesForTypeName(
 
         if (isPrivate) {
           importLines.push(
+            // TODO correct path
             "import Entity from '../../../../backk/decorators/typeproperty/IsPrivate';"
           );
 

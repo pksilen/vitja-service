@@ -859,7 +859,8 @@ export default class MongoDbManager extends AbstractDbManager {
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     },
-    isSelectForUpdate = false
+    isSelectForUpdate = false,
+    isInternalCall = false
   ): PromiseOfErrorOr<T> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
@@ -929,7 +930,7 @@ export default class MongoDbManager extends AbstractDbManager {
         );
 
         paginateSubEntities(rows, options?.postQueryOperations?.paginations, EntityClass, this.getTypes());
-        removePrivateProperties(rows, EntityClass, this.getTypes());
+        removePrivateProperties(rows, EntityClass, this.getTypes(), isInternalCall);
         decryptEntities(rows, EntityClass, this.getTypes(), false);
         return rows;
       });
@@ -1682,6 +1683,7 @@ export default class MongoDbManager extends AbstractDbManager {
           fieldValue,
           EntityClass,
           { postQueryOperations: options?.postQueryOperations },
+          true,
           true
         );
 
