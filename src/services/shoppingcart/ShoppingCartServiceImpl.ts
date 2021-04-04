@@ -101,15 +101,13 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       salesItemId,
       ShoppingCart,
       {
-        preHooks: {
-          shouldExecutePreHook: async () => {
-            const [salesItem] = await this.salesItemService.getSalesItem({ _id: salesItemId });
-            return salesItem
-              ? salesItem.state === 'reserved' && salesItem.buyerUserAccountId === userAccountId
-              : false;
-          },
-          isSuccessfulOrTrue: () => this.salesItemService.updateSalesItemState(salesItemId, 'forSale')
-        }
+        preHooks: () =>
+          this.salesItemService.updateSalesItemStatesByFilters(
+            [salesItemId],
+            'forSale',
+            'reserved',
+            userAccountId
+          )
       }
     );
   }
@@ -119,10 +117,12 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   emptyShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart, {
       preHooks: ({ salesItems }) =>
-        this.salesItemService.updateSalesItemStatesByFilters(salesItems, 'forSale', {
-          state: 'reserved',
-          buyerUserAccountId: userAccountId
-        })
+        this.salesItemService.updateSalesItemStatesByFilters(
+          salesItems.map(({ _id }) => _id),
+          'forSale',
+          'reserved',
+          userAccountId
+        )
     });
   }
 
@@ -138,11 +138,11 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       return removeError
         ? [null, removeError]
         : this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
-          postHook: {
-            isSuccessfulOrTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
-            error
-          }
-        });
+            postHook: {
+              isSuccessfulOrTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
+              error
+            }
+          });
     });
   }
 
@@ -150,7 +150,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     return this.dbManager.removeSubEntitiesWhere(
       'userAccountId',
       userAccountId,
-      `salesItems[?(@.state !== "reserved" || @.buyerUserAccountId !== ${userAccountId} )]`,
+      `salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`,
       ShoppingCart
     );
   }

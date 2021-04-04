@@ -49,8 +49,9 @@ export default abstract class SalesItemService extends CrudEntityService {
   ): PromiseOfErrorOr<null>;
 
   abstract updateSalesItemStatesByFilters(
-    salesItems: ShoppingCartOrOrderSalesItem[],
+    salesItemIds: string[],
     newState: SalesItemState,
-    filters: Partial<SalesItem>
+    currentStateFilter: SalesItemState,
+    buyerUserAccountIdFilter: string
   ): PromiseOfErrorOr<null>;
 }

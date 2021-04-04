@@ -34,6 +34,7 @@ import { PostTests } from '../../backk/decorators/service/function/PostTests';
 import getThumbnailImageDataUri from '../common/utils/getThumbnailImageDataUri';
 import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
 import { Update } from '../../backk/decorators/service/function/Update';
+import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -338,10 +339,25 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @AllowForServiceInternalUse()
   updateSalesItemStatesByFilters(
-    salesItems: ShoppingCartOrOrderSalesItem[],
+    salesItemIds: string[],
     newState: SalesItemState,
-    filters: Partial<SalesItem>
+    currentStateFilter: SalesItemState,
+    buyerUserAccountIdFilter: string
   ): PromiseOfErrorOr<null> {
-    return this.dbManager.updateEntitiesByFilters(filters, { state: newState }, SalesItem);
+    const finalFilters = this.dbManager.getFilters(
+      [
+        new MongoDbQuery({
+          _id: { $in: salesItemIds },
+          state: currentStateFilter,
+          buyerUserAccountId: buyerUserAccountIdFilter
+        })
+      ],
+      [
+        new SqlInExpression('_id', salesItemIds),
+        new SqlEquals({ state: currentStateFilter, buyerUserAccountId: buyerUserAccountIdFilter })
+      ]
+    );
+
+    return this.dbManager.updateEntitiesByFilters<SalesItem>(finalFilters, { state: newState }, SalesItem);
   }
 }

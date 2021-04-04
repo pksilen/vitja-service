@@ -30,7 +30,8 @@ export default async function getEntitiesByFilters<T>(
   filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations,
-  isRecursive = false
+  isRecursive = false,
+  isInternalCall = false
 ): PromiseOfErrorOr<T[]> {
   const dbOperationStartTimeInMillis = startDbOperation(dbManager, 'getEntitiesByFilters');
   if (!isRecursive) {
@@ -106,11 +107,12 @@ export default async function getEntitiesByFilters<T>(
         EntityClass,
         dbManager.getTypes(),
         finalFilters as Array<MongoDbQuery<T>>,
-        postQueryOperations
+        postQueryOperations,
+        isInternalCall
       );
 
       paginateSubEntities(rows, postQueryOperations.paginations, EntityClass, dbManager.getTypes());
-      removePrivateProperties(rows, EntityClass, dbManager.getTypes());
+      removePrivateProperties(rows, EntityClass, dbManager.getTypes(), isInternalCall);
       decryptEntities(rows, EntityClass, dbManager.getTypes(), false);
       return rows;
     });

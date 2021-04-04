@@ -24,8 +24,9 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
   Types: object,
   filters?: Array<MongoDbQuery<T>>,
   postQueryOperations?: PostQueryOperations,
+  isInternalCall = false,
   propertyJsonPath = '$.',
-  subEntityPath = ''
+  subEntityPath = '',
 ): Promise<void> {
   const entityPropertyNameToPropertyTypeMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
   const projection = getProjection(EntityClass, postQueryOperations);
@@ -106,7 +107,8 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
               sortBys: subEntitySortBys,
               paginations: subEntityPaginations
             },
-            true
+            true,
+            isInternalCall
           );
 
           if (error) {
@@ -131,6 +133,7 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
           Types,
           filters,
           postQueryOperations,
+          isInternalCall,
           propertyJsonPath + propertyName + '[*].',
           subEntityPath + propertyName
         );

@@ -719,7 +719,8 @@ export default class MongoDbManager extends AbstractDbManager {
           EntityClass,
           this.getTypes(),
           undefined,
-          options?.postQueryOperations
+          options?.postQueryOperations,
+          isInternalCall
         );
 
         paginateSubEntities(rows, options?.postQueryOperations?.paginations, EntityClass, this.getTypes());
@@ -926,7 +927,8 @@ export default class MongoDbManager extends AbstractDbManager {
           EntityClass,
           this.getTypes(),
           filters as Array<MongoDbQuery<T>>,
-          options?.postQueryOperations
+          options?.postQueryOperations,
+          isInternalCall
         );
 
         paginateSubEntities(rows, options?.postQueryOperations?.paginations, EntityClass, this.getTypes());
