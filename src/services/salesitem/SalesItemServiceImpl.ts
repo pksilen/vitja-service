@@ -336,6 +336,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     );
   }
 
+  @AllowForServiceInternalUse()
   updateSalesItemStatesByFilters(
     salesItems: ShoppingCartOrOrderSalesItem[],
     newState: SalesItemState,
