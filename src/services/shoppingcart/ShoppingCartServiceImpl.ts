@@ -47,21 +47,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     });
   }
 
-  @AllowForServiceInternalUse()
-  getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseOfErrorOr<ShoppingCart> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      const [, removeError] = await this.removeExpiredSalesItemsFromShoppingCart(userAccountId);
-      return removeError
-        ? [null, removeError]
-        : this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
-          postHook: {
-            isSuccessfulOrTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
-            error
-          }
-        });
-    });
-  }
-
   @AllowForSelf()
   @Update('addOrRemove')
   addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
@@ -144,6 +129,21 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForServiceInternalUse()
   deleteShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart);
+  }
+
+  @AllowForServiceInternalUse()
+  getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseOfErrorOr<ShoppingCart> {
+    return this.dbManager.executeInsideTransaction(async () => {
+      const [, removeError] = await this.removeExpiredSalesItemsFromShoppingCart(userAccountId);
+      return removeError
+        ? [null, removeError]
+        : this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
+          postHook: {
+            isSuccessfulOrTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
+            error
+          }
+        });
+    });
   }
 
   private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseOfErrorOr<null> {
