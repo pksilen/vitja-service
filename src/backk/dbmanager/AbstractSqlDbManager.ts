@@ -855,6 +855,32 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
+  async removeSubEntitiesWhere<T extends BackkEntity>(
+    fieldName: string,
+    fieldValue: T[keyof T],
+    subEntitiesJsonPath: string,
+    EntityClass: new () => T,
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseOfErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesWhere');
+     const response = await removeSubEntitiesWhere(
+      this,
+      fieldName,
+      fieldValue,
+      subEntitiesJsonPath,
+      EntityClass,
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
+    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
   async removeSubEntityByIdWhere<T extends BackkEntity>(
     fieldName: string,
     fieldValue: T[keyof T],

@@ -80,6 +80,7 @@ export default function parseTypescriptLinesForTypeName(
   isReadonly: boolean,
   isPublic: boolean,
   isNonNullable: boolean,
+  isPrivate: boolean,
   keys: string[],
   keyType: 'omit' | 'pick',
   originatingTypeFilePathName: string,
@@ -183,10 +184,33 @@ export default function parseTypescriptLinesForTypeName(
                   );
                 }
 
+                if (isPrivate) {
+                  importLines.push(
+                    "import Entity from '../../../../backk/decorators/typeproperty/IsPrivate';"
+                  );
+
+                  classProperty.decorators.push({
+                    type: 'Decorator',
+                    expression: {
+                      type: 'CallExpression',
+                      callee: {
+                        type: 'Identifier',
+                        name: 'Private'
+                      },
+                      arguments: [],
+                      optional: false
+                    }
+                  });
+                }
+
                 if (isNonNullable) {
                   classProperty.optional = false;
-                  if (classProperty.typeAnnotation.typeAnnotation.type === 'TSUnionType' && classProperty.typeAnnotation.typeAnnotation?.types[1]?.type === 'TSNullKeyword') {
-                    classProperty.typeAnnotation.typeAnnotation = classProperty.typeAnnotation.typeAnnotation.types[0];
+                  if (
+                    classProperty.typeAnnotation.typeAnnotation.type === 'TSUnionType' &&
+                    classProperty.typeAnnotation.typeAnnotation?.types[1]?.type === 'TSNullKeyword'
+                  ) {
+                    classProperty.typeAnnotation.typeAnnotation =
+                      classProperty.typeAnnotation.typeAnnotation.types[0];
                   }
                 }
 
@@ -215,10 +239,33 @@ export default function parseTypescriptLinesForTypeName(
           );
         }
 
+        if (isPrivate) {
+          importLines.push(
+            "import Entity from '../../../../backk/decorators/typeproperty/IsPrivate';"
+          );
+
+          classBodyNode.decorators.push({
+            type: 'Decorator',
+            expression: {
+              type: 'CallExpression',
+              callee: {
+                type: 'Identifier',
+                name: 'Private'
+              },
+              arguments: [],
+              optional: false
+            }
+          });
+        }
+
         if (isNonNullable) {
           classBodyNode.optional = false;
-          if (classBodyNode.typeAnnotation.typeAnnotation.type === 'TSUnionType' && classBodyNode.typeAnnotation.typeAnnotation?.types[1]?.type === 'TSNullKeyword') {
-            classBodyNode.typeAnnotation.typeAnnotation = classBodyNode.typeAnnotation.typeAnnotation.types[0];
+          if (
+            classBodyNode.typeAnnotation.typeAnnotation.type === 'TSUnionType' &&
+            classBodyNode.typeAnnotation.typeAnnotation?.types[1]?.type === 'TSNullKeyword'
+          ) {
+            classBodyNode.typeAnnotation.typeAnnotation =
+              classBodyNode.typeAnnotation.typeAnnotation.types[0];
           }
         }
 

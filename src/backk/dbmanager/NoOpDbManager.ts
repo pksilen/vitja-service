@@ -197,4 +197,8 @@ export default class NoOpDbManager extends AbstractDbManager {
   removeFieldValues<T extends BackkEntity>(): PromiseOfErrorOr<null> {
     throw new Error('Not implemented');
   }
+
+  removeSubEntitiesWhere<T extends BackkEntity, U extends object>(): PromiseOfErrorOr<null> {
+    throw new Error('Not implemented');
+  }
 }

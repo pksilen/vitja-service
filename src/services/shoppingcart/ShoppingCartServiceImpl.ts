@@ -32,6 +32,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   async getShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<ShoppingCart> {
     return this.dbManager.executeInsideTransaction(async () => {
+      const [, removeError] = await this.removeExpiredSalesItemsFromShoppingCart(userAccountId);
       const [shoppingCart, error] = await this.dbManager.getEntityWhere(
         'userAccountId',
         userAccountId,
@@ -42,17 +43,22 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
         return this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
       }
 
-      return [shoppingCart, error];
+      return [shoppingCart, removeError ?? error];
     });
   }
 
   @AllowForServiceInternalUse()
   getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseOfErrorOr<ShoppingCart> {
-    return this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
-      postHook: {
-        isSuccessfulOrTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
-        error
-      }
+    return this.dbManager.executeInsideTransaction(async () => {
+      const [, removeError] = await this.removeExpiredSalesItemsFromShoppingCart(userAccountId);
+      return removeError
+        ? [null, removeError]
+        : this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
+          postHook: {
+            isSuccessfulOrTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
+            error
+          }
+        });
     });
   }
 
@@ -128,12 +134,24 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   emptyShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart, {
       preHooks: ({ salesItems }) =>
-        this.salesItemService.updateSalesItemStates(salesItems, 'forSale', 'reserved', userAccountId)
+        this.salesItemService.updateSalesItemStatesByFilters(salesItems, 'forSale', {
+          state: 'reserved',
+          buyerUserAccountId: userAccountId
+        })
     });
   }
 
   @AllowForServiceInternalUse()
   deleteShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart);
+  }
+
+  private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseOfErrorOr<null> {
+    return this.dbManager.removeSubEntitiesWhere(
+      'userAccountId',
+      userAccountId,
+      `salesItems[?(@.state !== "reserved" || @.buyerUserAccountId !== ${userAccountId} )]`,
+      ShoppingCart
+    );
   }
 }

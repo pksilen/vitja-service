@@ -29,6 +29,12 @@ function generateTypescriptFileFor(
       let isReadonly = false;
       let isPublic = false;
       let isNonNullable = false;
+      let isPrivate = false;
+
+      if (spreadType.startsWith('Private<')) {
+        spreadType = spreadType.slice(8, -1);
+        isPrivate = true;
+      }
 
       if (spreadType.startsWith('Public<')) {
         spreadType = spreadType.slice(7, -1);
@@ -74,6 +80,7 @@ function generateTypescriptFileFor(
           isReadonly,
           isPublic,
           isNonNullable,
+          isPrivate,
           omittedKeys,
           'omit',
           typeFilePathName
@@ -132,6 +139,7 @@ function generateTypescriptFileFor(
           isReadonly,
           isPublic,
           isNonNullable,
+          isPrivate,
           pickedKeys,
           'pick',
           typeFilePathName,
@@ -155,6 +163,7 @@ function generateTypescriptFileFor(
           isReadonly,
           isPublic,
           isNonNullable,
+          isPrivate,
           [],
           'omit',
           typeFilePathName

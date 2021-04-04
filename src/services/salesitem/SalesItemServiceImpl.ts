@@ -33,7 +33,7 @@ import { Test } from '../../backk/decorators/service/function/Test';
 import { PostTests } from '../../backk/decorators/service/function/PostTests';
 import getThumbnailImageDataUri from '../common/utils/getThumbnailImageDataUri';
 import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
-import { Update } from "../../backk/decorators/service/function/Update";
+import { Update } from '../../backk/decorators/service/function/Update';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -187,13 +187,23 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   @Update('addOrRemove')
   followSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
-    return this.dbManager.addFieldValues(_id, 'priceChangeFollowingUserAccountIds', [userAccountId], SalesItem);
+    return this.dbManager.addFieldValues(
+      _id,
+      'priceChangeFollowingUserAccountIds',
+      [userAccountId],
+      SalesItem
+    );
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   unfollowSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
-    return this.dbManager.removeFieldValues(_id, 'priceChangeFollowingUserAccountIds', [userAccountId], SalesItem);
+    return this.dbManager.removeFieldValues(
+      _id,
+      'priceChangeFollowingUserAccountIds',
+      [userAccountId],
+      SalesItem
+    );
   }
 
   @AllowForSelf()
@@ -228,45 +238,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
           )
       }
     });
-  }
-
-  @AllowForServiceInternalUse()
-  updateSalesItemStates(
-    salesItems: ShoppingCartOrOrderSalesItem[],
-    newState: SalesItemState,
-    requiredCurrentState?: SalesItemState,
-    buyerUserAccountId?: string
-  ): PromiseOfErrorOr<null> {
-    return executeForAll(salesItems, ({ _id }) =>
-      this.updateSalesItemState(_id, newState, requiredCurrentState, buyerUserAccountId)
-    );
-  }
-
-  @AllowForServiceInternalUse()
-  updateSalesItemState(
-    _id: string,
-    newState: SalesItemState,
-    requiredCurrentState?: SalesItemState,
-    buyerUserAccountId?: string
-  ): PromiseOfErrorOr<null> {
-    return this.dbManager.updateEntity(
-      { _id, state: newState, buyerUserAccountId: newState === 'forSale' ? null : buyerUserAccountId },
-      SalesItem,
-      {
-        preHooks: [
-          {
-            shouldExecutePreHook: () => !!requiredCurrentState,
-            isSuccessfulOrTrue: ({ state }) => requiredCurrentState === state,
-            error: salesItemServiceErrors.invalidSalesItemState
-          },
-          {
-            shouldExecutePreHook: () => newState === 'sold' || newState === 'forSale',
-            isSuccessfulOrTrue: ({ buyerUserAccountId }) => buyerUserAccountId === buyerUserAccountId,
-            error: salesItemServiceErrors.invalidSalesItemState
-          }
-        ]
-      }
-    );
   }
 
   @CronJob({ minuteInterval: 1 })
@@ -324,5 +295,52 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   deleteSalesItem({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, SalesItem);
+  }
+
+  @AllowForServiceInternalUse()
+  updateSalesItemStates(
+    salesItems: ShoppingCartOrOrderSalesItem[],
+    newState: SalesItemState,
+    requiredCurrentState?: SalesItemState,
+    buyerUserAccountId?: string
+  ): PromiseOfErrorOr<null> {
+    return executeForAll(salesItems, ({ _id }) =>
+      this.updateSalesItemState(_id, newState, requiredCurrentState, buyerUserAccountId)
+    );
+  }
+
+  @AllowForServiceInternalUse()
+  updateSalesItemState(
+    _id: string,
+    newState: SalesItemState,
+    requiredCurrentState?: SalesItemState,
+    buyerUserAccountId?: string
+  ): PromiseOfErrorOr<null> {
+    return this.dbManager.updateEntity(
+      { _id, state: newState, buyerUserAccountId: newState === 'forSale' ? null : buyerUserAccountId },
+      SalesItem,
+      {
+        preHooks: [
+          {
+            shouldExecutePreHook: () => !!requiredCurrentState,
+            isSuccessfulOrTrue: ({ state }) => requiredCurrentState === state,
+            error: salesItemServiceErrors.invalidSalesItemState
+          },
+          {
+            shouldExecutePreHook: () => newState === 'sold' || newState === 'forSale',
+            isSuccessfulOrTrue: ({ buyerUserAccountId }) => buyerUserAccountId === buyerUserAccountId,
+            error: salesItemServiceErrors.invalidSalesItemState
+          }
+        ]
+      }
+    );
+  }
+
+  updateSalesItemStatesByFilters(
+    salesItems: ShoppingCartOrOrderSalesItem[],
+    newState: SalesItemState,
+    filters: Partial<SalesItem>
+  ): PromiseOfErrorOr<null> {
+    return this.dbManager.updateEntitiesByFilters(filters, { state: newState }, SalesItem);
   }
 }

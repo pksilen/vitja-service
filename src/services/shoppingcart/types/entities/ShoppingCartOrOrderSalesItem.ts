@@ -5,6 +5,7 @@
 import { MaxLength } from 'class-validator';
 import { Lengths, Values } from '../../../../backk/constants/constants';
 import Entity from '../../../../backk/decorators/entity/Entity';
+import Index from '../../../../backk/decorators/typeproperty';
 import IsAnyString from '../../../../backk/decorators/typeproperty/IsAnyString';
 import IsDataUri from '../../../../backk/decorators/typeproperty/IsDataUri';
 import { IsFloat } from '../../../../backk/decorators/typeproperty/IsFloat';
@@ -12,6 +13,8 @@ import IsStringOrObjectId from '../../../../backk/decorators/typeproperty/IsStri
 import IsUndefined from '../../../../backk/decorators/typeproperty/IsUndefined';
 import MaxLengthAndMatches from '../../../../backk/decorators/typeproperty/MaxLengthAndMatches';
 import MinMax from '../../../../backk/decorators/typeproperty/MinMax';
+import { Private } from '../../../../backk/decorators/typeproperty/Private';
+import { SalesItemState } from '../../../salesitem/types/enums/SalesItemState';
 
 @Entity('SalesItem')
 export default class ShoppingCartOrOrderSalesItem {
@@ -26,19 +29,26 @@ export default class ShoppingCartOrOrderSalesItem {
   })
   public _id!: string;
 
+  @Index()
+  @Private()
+  public readonly state!: SalesItemState;
+
   @MaxLength(Lengths._64)
   @IsAnyString()
-  public title?: string;
+  public title!: string;
 
   @IsFloat(2)
   @MinMax(0, Values._1B)
-  public price?: number;
+  public price!: number;
 
   @IsFloat(2)
   @MinMax(0, Values._1B)
-  public shippingCost?: number;
+  public shippingCost!: number;
 
   @MaxLength(Lengths._1M)
   @IsDataUri()
-  public readonly primaryImageThumbnailDataUri?: string;
+  public readonly primaryImageThumbnailDataUri!: string;
+
+  @Private()
+  readonly buyerUserAccountId: string | null = null;
 }
