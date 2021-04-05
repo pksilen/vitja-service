@@ -35,6 +35,7 @@ export default async function tryExecutePreHooks<T extends BackkEntity | SubEnti
       );
     }
 
+    console.log(hookCallResult);
     if (
       (Array.isArray(hookCallResult) && hookCallResult[1]) ||
       hookCallResult === false ||

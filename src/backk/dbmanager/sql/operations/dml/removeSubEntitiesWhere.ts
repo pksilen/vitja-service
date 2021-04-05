@@ -43,7 +43,7 @@ export default async function removeSubEntitiesWhere<T extends BackkEntity, U ex
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
-    const [currentEntity, error] = await getEntityWhere(
+    const [currentEntity] = await getEntityWhere(
       dbManager,
       fieldName,
       fieldValue,
@@ -57,7 +57,7 @@ export default async function removeSubEntitiesWhere<T extends BackkEntity, U ex
     );
 
     if (!currentEntity) {
-      throw error;
+      return [null, null];
     }
 
     await tryExecuteEntityPreHooks(preHooks ?? [], currentEntity);
