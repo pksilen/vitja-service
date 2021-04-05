@@ -95,33 +95,35 @@ export default async function getEntityWhere<T>(
 
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
+    let entity, error = null;
     if (dbManager.getResultRows(result).length === 0 && ifEntityNotFoundReturn) {
-      return await ifEntityNotFoundReturn();
-    }
+      [entity, error] = await ifEntityNotFoundReturn();
+    } else {
+      if (dbManager.getResultRows(result).length === 0) {
+        await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
+        return [
+          null,
+          createBackkErrorFromErrorCodeMessageAndStatus({
+            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+            message: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
+          })
+        ];
+      }
 
-    if (dbManager.getResultRows(result).length === 0) {
-      return [
-        null,
-        createBackkErrorFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-          message: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
-        })
-      ];
+      entity = transformRowsToObjects(
+        dbManager.getResultRows(result),
+        EntityClass,
+        finalPostQueryOperations,
+        dbManager
+      )[0];
     }
-
-    const entity = transformRowsToObjects(
-      dbManager.getResultRows(result),
-      EntityClass,
-      finalPostQueryOperations,
-      dbManager
-    )[0];
 
     if (postHook) {
       await tryExecutePostHook(postHook, entity);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return [entity, null];
+    return [entity, error];
   } catch (error) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [null, createBackkErrorFromError(error)];

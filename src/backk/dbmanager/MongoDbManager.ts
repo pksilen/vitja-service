@@ -946,7 +946,7 @@ export default class MongoDbManager extends AbstractDbManager {
       }
 
       if (entities.length === 0 && options?.ifEntityNotFoundReturn) {
-        return options.ifEntityNotFoundReturn();
+        return await options.ifEntityNotFoundReturn();
       }
 
       return entities.length === 0
