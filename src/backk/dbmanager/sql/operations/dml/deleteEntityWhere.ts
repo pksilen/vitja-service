@@ -44,6 +44,7 @@ export default async function deleteEntityWhere<T extends BackkEntity>(
         fieldName,
         fieldValue,
         EntityClass,
+        undefined,
         postQueryOperations,
         undefined,
         undefined,

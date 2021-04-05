@@ -48,6 +48,7 @@ export default async function removeSubEntitiesWhere<T extends BackkEntity, U ex
       fieldName,
       fieldValue,
       EntityClass,
+      undefined,
       postQueryOperations,
       undefined,
       undefined,
