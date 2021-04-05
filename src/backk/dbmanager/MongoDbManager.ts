@@ -941,23 +941,27 @@ export default class MongoDbManager extends AbstractDbManager {
         return rows;
       });
 
-      if (options?.postHook) {
-        await tryExecutePostHook(options?.postHook, entities[0]);
-      }
-
-      if (entities.length === 0 && options?.ifEntityNotFoundReturn) {
-        return await options.ifEntityNotFoundReturn();
-      }
-
-      return entities.length === 0
-        ? [
+      let entity, error = null;
+      if (entities.length === 0) {
+        if (options?.ifEntityNotFoundReturn) {
+          [entity, error] = await options.ifEntityNotFoundReturn();
+          entities.push(entity);
+        } else {
+          return [
             null,
             createBackkErrorFromErrorCodeMessageAndStatus({
               ...BACKK_ERRORS.ENTITY_NOT_FOUND,
               message: `${EntityClass.name} with ${fieldName}: ${fieldValue} not found`
             })
-          ]
-        : [entities[0], null];
+          ];
+        }
+      }
+
+      if (options?.postHook) {
+        await tryExecutePostHook(options?.postHook, entities[0]);
+      }
+
+      return [entities[0], error];
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
         ? [null, errorOrBackkError]
