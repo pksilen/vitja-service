@@ -31,19 +31,10 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   async getShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<ShoppingCart> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      const [, removeError] = await this.removeExpiredSalesItemsFromShoppingCart(userAccountId);
-      const [shoppingCart, error] = await this.dbManager.getEntityWhere(
-        'userAccountId',
-        userAccountId,
-        ShoppingCart
-      );
-
-      if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
-        return this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart);
-      }
-
-      return [shoppingCart, removeError ?? error];
+    return this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
+      preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
+      ifEntityNotFoundReturn: () =>
+        this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart)
     });
   }
 
@@ -90,10 +81,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemove')
-  removeFromShoppingCart({
-    userAccountId,
-    salesItemId
-  }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
+  removeFromShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
     return this.dbManager.removeSubEntityByIdWhere(
       'userAccountId',
       userAccountId,

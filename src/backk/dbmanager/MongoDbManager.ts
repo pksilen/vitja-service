@@ -857,8 +857,10 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
+      preHooks?: PreHook | PreHook[],
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
     },
     isSelectForUpdate = false,
     isInternalCall = false
@@ -910,6 +912,10 @@ export default class MongoDbManager extends AbstractDbManager {
             .findOneAndUpdate(matchExpression, { $set: { _backkLock: new ObjectId() } });
         }
 
+        if (options?.preHooks) {
+          await tryExecutePreHooks(options.preHooks);
+        }
+
         const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
 
         const cursor = client
@@ -939,6 +945,10 @@ export default class MongoDbManager extends AbstractDbManager {
 
       if (options?.postHook) {
         await tryExecutePostHook(options?.postHook, entities[0]);
+      }
+
+      if (entities.length === 0 && options?.ifEntityNotFoundReturn) {
+        return options.ifEntityNotFoundReturn();
       }
 
       return entities.length === 0

@@ -19,6 +19,7 @@ import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransact
 import { getNamespace } from "cls-hooked";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 
+// noinspection OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function getEntityWhere<T>(
   dbManager: AbstractSqlDbManager,
   fieldPathName: string,
@@ -26,6 +27,7 @@ export default async function getEntityWhere<T>(
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
   postHook?: PostHook<T>,
+  ifEntityNotFoundReturn?: () => PromiseErrorOr<T>,
   isSelectForUpdate = false,
   isInternalCall = false
 ): PromiseErrorOr<T> {
@@ -87,6 +89,10 @@ export default async function getEntityWhere<T>(
       .join(' ');
 
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
+
+    if (dbManager.getResultRows(result).length === 0 && ifEntityNotFoundReturn) {
+      return ifEntityNotFoundReturn();
+    }
 
     if (dbManager.getResultRows(result).length === 0) {
       return [

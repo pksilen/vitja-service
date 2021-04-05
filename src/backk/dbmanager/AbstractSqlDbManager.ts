@@ -644,8 +644,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldValue: any,
     entityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations
+      postHook?: PostHook<T>,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
     },
     isSelectForUpdate = false
   ): PromiseErrorOr<T> {
@@ -657,6 +658,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       entityClass,
       options?.postQueryOperations,
       options?.postHook,
+      options?.ifEntityNotFoundReturn,
       isSelectForUpdate
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);

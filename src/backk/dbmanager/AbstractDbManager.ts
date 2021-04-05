@@ -218,8 +218,10 @@ export default abstract class AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     options?: {
+      preHooks?: PreHook | PreHook[],
       postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>
+      postHook?: PostHook<T>,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
     },
     isSelectForUpdate?: boolean
   ): PromiseErrorOr<T>;
