@@ -22,37 +22,30 @@ export default class TagServiceImpl extends TagService {
   }
 
   @OnStartUp()
-  async initializeDbVersion1(): PromiseErrorOr<null> {
-    let [, error] = await this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion);
-
-    if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
-      [, error] = await this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, {
-        preHooks: () => {
-          const tags = tryGetSeparatedValuesFromTextFile('resources/tags1.txt');
-          return executeForAll(tags, (tag) => this.dbManager.createEntity({ name: tag }, Tag));
-        }
-      });
-    }
-
-    return [null, error];
+  async initializeDbVersion1(): PromiseErrorOr<DbTableVersion> {
+    return this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion, {
+      ifEntityNotFoundReturn: () =>
+        this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, {
+          preHooks: () => {
+            const tags = tryGetSeparatedValuesFromTextFile('resources/tags1.txt');
+            return executeForAll(tags, (tag) => this.dbManager.createEntity({ name: tag }, Tag));
+          }
+        })
+    });
   }
 
   @OnStartUp()
-  async migrateDbFromVersion1To2(): PromiseErrorOr<null> {
-    const [tagDbTableVersion1, error] = await this.dbManager.getEntityByFilters(
-      { entityName: 'Tag', version: 1 },
-      DbTableVersion
-    );
-
-    if (!tagDbTableVersion1) {
-      return [null, error?.statusCode === HttpStatusCodes.NOT_FOUND ? null : error];
-    }
-
-    return this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, {
-      preHooks: () => {
-        const tags = tryGetSeparatedValuesFromTextFile('resources/tags2.txt');
-        return executeForAll(tags, (tag) => this.dbManager.createEntity({ name: tag }, Tag));
-      }
+  async migrateDbFromVersion1To2(): PromiseErrorOr<DbTableVersion> {
+    return this.dbManager.getEntityByFilters({ entityName: 'Tag', version: 1 }, DbTableVersion, {
+      postHook: (tagDbTableVersion1) =>
+        tagDbTableVersion1
+          ? this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, {
+              preHooks: () => {
+                const tags = tryGetSeparatedValuesFromTextFile('resources/tags2.txt');
+                return executeForAll(tags, (tag) => this.dbManager.createEntity({ name: tag }, Tag));
+              }
+            })
+          : true
     });
   }
 
