@@ -867,7 +867,6 @@ export default class MongoDbManager extends AbstractDbManager {
     }
 
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
-    updateDbLocalTransactionCount(this);
 
     let finalFieldValue = fieldValue;
     const lastDotPosition = fieldPathName.lastIndexOf('.');
@@ -888,9 +887,11 @@ export default class MongoDbManager extends AbstractDbManager {
     let shouldUseTransaction = false;
 
     try {
-      if (options?.postHook || options?.preHooks) {
+      if (options?.postHook || options?.preHooks || options?.ifEntityNotFoundReturn) {
         shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
       }
+
+      updateDbLocalTransactionCount(this);
 
       if (
         getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
@@ -1687,7 +1688,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async () => {
-        const [currentEntity, error] = await this.getEntityWhere(
+        const [currentEntity] = await this.getEntityWhere(
           fieldName,
           fieldValue,
           EntityClass,

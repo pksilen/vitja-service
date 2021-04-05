@@ -45,7 +45,7 @@ export default async function getEntityWhere<T>(
 
   try {
 
-    if (postHook || preHooks) {
+    if (postHook || preHooks || ifEntityNotFoundReturn) {
       didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     }
 
