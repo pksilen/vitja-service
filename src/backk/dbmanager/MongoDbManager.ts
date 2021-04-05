@@ -1697,16 +1697,14 @@ export default class MongoDbManager extends AbstractDbManager {
           true
         );
 
-        if (!currentEntity) {
-          return [null, null];
-        }
+        if (currentEntity) {
+          await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+          const subEntities = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
 
-        await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
-        const subEntities = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
-
-        if (subEntities.length > 0) {
-          removeSubEntities(currentEntity, subEntities);
-          await this.updateEntity(currentEntity as any, EntityClass, undefined, false, true);
+          if (subEntities.length > 0) {
+            removeSubEntities(currentEntity, subEntities);
+            await this.updateEntity(currentEntity as any, EntityClass, undefined, false, true);
+          }
         }
 
         if (options?.postHook) {

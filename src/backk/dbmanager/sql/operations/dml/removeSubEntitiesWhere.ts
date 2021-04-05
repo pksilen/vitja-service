@@ -56,54 +56,52 @@ export default async function removeSubEntitiesWhere<T extends BackkEntity, U ex
       true
     );
 
-    if (!currentEntity) {
-      return [null, null];
-    }
+    if (currentEntity) {
+      await tryExecuteEntityPreHooks(preHooks ?? [], currentEntity);
+      await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntity, EntityClass);
+      const currentEntityInstance = plainToClass(EntityClass, currentEntity);
+      const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesJsonPath });
 
-    await tryExecuteEntityPreHooks(preHooks ?? [], currentEntity);
-    await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntity, EntityClass);
-    const currentEntityInstance = plainToClass(EntityClass, currentEntity);
-    const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesJsonPath });
-
-    await forEachAsyncParallel(subEntities, async (subEntity: any) => {
-      const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
-        EntityClass,
-        subEntity.constructor,
-        dbManager.getTypes()
-      );
-
-      if (
-        parentEntityClassAndPropertyNameForSubEntity &&
-        typePropertyAnnotationContainer.isTypePropertyManyToMany(
-          parentEntityClassAndPropertyNameForSubEntity[0],
-          parentEntityClassAndPropertyNameForSubEntity[1]
-        )
-      ) {
-        const associationTableName = `${EntityClass.name}_${getSingularName(
-          parentEntityClassAndPropertyNameForSubEntity[1]
-        )}`;
-
-        const {
-          entityForeignIdFieldName,
-          subEntityForeignIdFieldName
-        } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
-
-        const numericId = parseInt(currentEntity._id, 10);
-
-        await dbManager.tryExecuteSql(
-          `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
-            1
-          )} AND ${subEntityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(2)}`,
-          [numericId, subEntity._id]
+      await forEachAsyncParallel(subEntities, async (subEntity: any) => {
+        const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
+          EntityClass,
+          subEntity.constructor,
+          dbManager.getTypes()
         );
-      } else {
-        const [, error] = await deleteEntityById(dbManager, subEntity._id, subEntity.constructor);
 
-        if (error) {
-          throw error;
+        if (
+          parentEntityClassAndPropertyNameForSubEntity &&
+          typePropertyAnnotationContainer.isTypePropertyManyToMany(
+            parentEntityClassAndPropertyNameForSubEntity[0],
+            parentEntityClassAndPropertyNameForSubEntity[1]
+          )
+        ) {
+          const associationTableName = `${EntityClass.name}_${getSingularName(
+            parentEntityClassAndPropertyNameForSubEntity[1]
+          )}`;
+
+          const {
+            entityForeignIdFieldName,
+            subEntityForeignIdFieldName
+          } = entityAnnotationContainer.getManyToManyRelationTableSpec(associationTableName);
+
+          const numericId = parseInt(currentEntity._id, 10);
+
+          await dbManager.tryExecuteSql(
+            `DELETE FROM ${dbManager.schema.toLowerCase()}.${associationTableName.toLowerCase()} WHERE ${entityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
+              1
+            )} AND ${subEntityForeignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(2)}`,
+            [numericId, subEntity._id]
+          );
+        } else {
+          const [, error] = await deleteEntityById(dbManager, subEntity._id, subEntity.constructor);
+
+          if (error) {
+            throw error;
+          }
         }
-      }
-    });
+      });
+    }
 
     if (postHook) {
       await tryExecutePostHook(postHook, null);
