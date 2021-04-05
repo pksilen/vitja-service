@@ -644,9 +644,10 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldValue: any,
     entityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations
-      postHook?: PostHook<T>,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
     },
     isSelectForUpdate = false
   ): PromiseErrorOr<T> {
@@ -656,6 +657,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       fieldPathName,
       fieldValue,
       entityClass,
+      options?.preHooks,
       options?.postQueryOperations,
       options?.postHook,
       options?.ifEntityNotFoundReturn,
@@ -869,7 +871,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesWhere');
-     const response = await removeSubEntitiesWhere(
+    const response = await removeSubEntitiesWhere(
       this,
       fieldName,
       fieldValue,

@@ -18,6 +18,8 @@ import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import { getNamespace } from "cls-hooked";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import { PreHook } from "../../../hooks/PreHook";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 
 // noinspection OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function getEntityWhere<T>(
@@ -25,6 +27,7 @@ export default async function getEntityWhere<T>(
   fieldPathName: string,
   fieldValue: any,
   EntityClass: new () => T,
+  preHooks?: PreHook | PreHook[],
   postQueryOperations?: PostQueryOperations,
   postHook?: PostHook<T>,
   ifEntityNotFoundReturn?: () => PromiseErrorOr<T>,
@@ -45,6 +48,8 @@ export default async function getEntityWhere<T>(
     if (postHook) {
       didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     }
+
+    await tryExecutePreHooks(preHooks ?? []);
 
     if (
       getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
