@@ -891,7 +891,7 @@ export default class MongoDbManager extends AbstractDbManager {
     let shouldUseTransaction = false;
 
     try {
-      if (options?.postHook) {
+      if (options?.postHook || options?.preHooks) {
         shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
       }
 
