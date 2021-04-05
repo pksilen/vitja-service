@@ -121,16 +121,12 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForServiceInternalUse()
   getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseErrorOr<ShoppingCart> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      const [, removeError] = await this.removeExpiredSalesItemsFromShoppingCart(userAccountId);
-      return removeError
-        ? [null, removeError]
-        : this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
-            postHook: {
-              isSuccessfulOrTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
-              error
-            }
-          });
+    return this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
+      preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
+      postHook: {
+        isSuccessfulOrTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
+        error
+      }
     });
   }
 
