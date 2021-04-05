@@ -96,7 +96,7 @@ export default async function getEntityWhere<T>(
     const result = await dbManager.tryExecuteQueryWithNamedParameters(selectStatement, filterValues);
 
     if (dbManager.getResultRows(result).length === 0 && ifEntityNotFoundReturn) {
-      return ifEntityNotFoundReturn();
+      return await ifEntityNotFoundReturn();
     }
 
     if (dbManager.getResultRows(result).length === 0) {
