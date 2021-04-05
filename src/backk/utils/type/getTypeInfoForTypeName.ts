@@ -2,10 +2,10 @@
 export default function getTypeInfoForTypeName(typeName: string) {
   let canBeError = false;
 
-  if (typeName.startsWith('PromiseOfErrorOr<')) {
+  if (typeName.startsWith('PromiseErrorOr<')) {
     canBeError = true;
     // noinspection AssignmentToFunctionParameterJS
-    typeName = typeName.slice(17, -1);
+    typeName = typeName.slice(15, -1);
   }
 
   const isOptionalType = typeName.startsWith('?');

@@ -35,7 +35,7 @@ import { PostHook } from './hooks/PostHook';
 import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../errors/backkErrors';
-import { PromiseOfErrorOr } from '../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../types/PromiseErrorOr';
 import updateEntitiesByFilters from './sql/operations/dml/updateEntitiesByFilters';
 import { EntityPreHook } from './hooks/EntityPreHook';
 import deleteEntityWhere from './sql/operations/dml/deleteEntityWhere';
@@ -371,7 +371,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     }
   }
 
-  async executeInsideTransaction<T>(executable: () => PromiseOfErrorOr<T>): PromiseOfErrorOr<T> {
+  async executeInsideTransaction<T>(executable: () => PromiseErrorOr<T>): PromiseErrorOr<T> {
     if (getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction')) {
       return executable();
     }
@@ -428,7 +428,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postQueryOperations?: PostQueryOperations;
     },
     shouldReturnItem = true
-  ): PromiseOfErrorOr<T> {
+  ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'createEntity');
 
     const response = await createEntity(
@@ -458,7 +458,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
 
     const response = await addSubEntities(
@@ -489,7 +489,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
 
     const response = await addSubEntities(
@@ -511,7 +511,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async getAllEntities<T>(
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): PromiseOfErrorOr<T[]> {
+  ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     const response = await getAllEntities(this, entityClass, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -522,7 +522,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): PromiseOfErrorOr<T[]> {
+  ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     const response = await getEntitiesByFilters(this, filters, entityClass, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -533,7 +533,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): PromiseOfErrorOr<T> {
+  ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
 
     const [response, error] = await getEntitiesByFilters(
@@ -561,7 +561,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async getEntitiesCount<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object | undefined,
     entityClass: new () => T
-  ): PromiseOfErrorOr<number> {
+  ): PromiseErrorOr<number> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
     const response = await getEntitiesCount(this, filters, entityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -575,7 +575,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
-  ): PromiseOfErrorOr<T> {
+  ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
     const response = await getEntityById(
       this,
@@ -593,7 +593,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     subEntityPath: string,
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): PromiseOfErrorOr<U> {
+  ): PromiseErrorOr<U> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntity');
 
     const [response, error] = await getSubEntities<T, U>(
@@ -614,7 +614,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     subEntityPath: string,
     entityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): PromiseOfErrorOr<U[]> {
+  ): PromiseErrorOr<U[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntities');
     const response = await getSubEntities<T, U>(
       this,
@@ -632,7 +632,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     _ids: string[],
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): PromiseOfErrorOr<T[]> {
+  ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByIds');
     const response = await getEntitiesByIds(this, _ids, entityClass, postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -648,7 +648,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
     },
     isSelectForUpdate = false
-  ): PromiseOfErrorOr<T> {
+  ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityWhere');
     const response = await getEntityWhere(
       this,
@@ -668,7 +668,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldValue: any,
     entityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): PromiseOfErrorOr<T[]> {
+  ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesWhere');
 
     const response = await getEntitiesWhere(
@@ -691,7 +691,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
     const response = await updateEntity(
       this,
@@ -709,7 +709,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     entity: Partial<T>,
     EntityClass: new () => T
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntitiesByFilters');
     const response = await updateEntitiesByFilters(this, filters, entity, EntityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -726,7 +726,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
 
     const response = await updateEntityWhere(
@@ -752,7 +752,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
     const response = await deleteEntityById(
       this,
@@ -770,7 +770,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldName: string,
     fieldValue: T[keyof T],
     entityClass: new () => T
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesWhere');
     const response = await deleteEntitiesWhere(this, fieldName, fieldValue, entityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -786,7 +786,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityWhere');
     const response = await deleteEntityWhere(
       this,
@@ -804,7 +804,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async deleteEntitiesByFilters<T extends object>(
     filters: Array<MongoDbQuery<T>> | SqlExpression[] | UserDefinedFilter[] | Partial<T> | object,
     entityClass: new () => T
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
     const response = await deleteEntitiesByFilters(this, filters, entityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -820,7 +820,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
 
     const response = await removeSubEntities(
@@ -847,7 +847,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
     const response = await this.removeSubEntities(_id, subEntityJsonPath, entityClass, options);
@@ -865,7 +865,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesWhere');
      const response = await removeSubEntitiesWhere(
       this,
@@ -892,7 +892,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityByIdWhere');
     const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
     const response = await removeSubEntitiesWhere(
@@ -909,7 +909,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async deleteAllEntities<T>(entityClass: new () => T): PromiseOfErrorOr<null> {
+  async deleteAllEntities<T>(entityClass: new () => T): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteAllEntities');
     const response = await deleteAllEntities(this, entityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -921,7 +921,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldName: string,
     fieldValues: (string | number | boolean)[],
     EntityClass: new () => T
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addFieldValues');
     const response = await addFieldValues(this, _id, fieldName, fieldValues, EntityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -933,7 +933,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     fieldName: string,
     fieldValues: (string | number | boolean)[],
     EntityClass: new () => T
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeFieldValues');
     const response = await removeFieldValues(this, _id, fieldName, fieldValues, EntityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);

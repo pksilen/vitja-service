@@ -24,7 +24,7 @@ import createErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import getSingularName from "../../../../utils/getSingularName";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PreHook } from "../../../hooks/PreHook";
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
@@ -40,7 +40,7 @@ export default async function createEntity<T extends BackkEntity | SubEntity>(
   postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false,
   shouldReturnItem = true
-): PromiseOfErrorOr<T> {
+): PromiseErrorOr<T> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;

@@ -6,14 +6,14 @@ import sendOneOrMoreToKafka, { SendAcknowledgementType } from './kafka/sendOneOr
 import sendOneOrMoreToRedis from './redis/sendOneOrMoreToRedis';
 import parseRemoteServiceFunctionCallUrlParts from '../utils/parseRemoteServiceFunctionCallUrlParts';
 import { validateServiceFunctionArguments } from '../utils/validateServiceFunctionArguments';
-import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../types/PromiseErrorOr';
 
 export interface SendToOptions {
   compressionType?: CompressionTypes;
   sendAcknowledgementType?: SendAcknowledgementType;
 }
 
-export async function sendOneOrMore(sends: CallOrSendTo[], isTransactional: boolean): PromiseOfErrorOr<null> {
+export async function sendOneOrMore(sends: CallOrSendTo[], isTransactional: boolean): PromiseErrorOr<null> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
 
   if (clsNamespace?.get('isInsidePostHook')) {
@@ -45,7 +45,7 @@ export default async function sendToRemoteService(
   serviceFunctionArgument: object,
   responseUrl?: string,
   options?: SendToOptions
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   return sendOneOrMore(
     [
       {

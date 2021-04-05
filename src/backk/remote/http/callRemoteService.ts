@@ -11,7 +11,7 @@ import {
 } from '../utils/validateServiceFunctionArguments';
 import parseRemoteServiceFunctionCallUrlParts from '../utils/parseRemoteServiceFunctionCallUrlParts';
 import fs from 'fs';
-import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../types/PromiseErrorOr';
 import { backkErrorSymbol } from '../../types/BackkError';
 
 export interface HttpRequestOptions {
@@ -23,7 +23,7 @@ export default async function callRemoteService(
   remoteServiceFunctionUrl: string,
   serviceFunctionArgument?: object,
   options?: HttpRequestOptions
-): PromiseOfErrorOr<object> {
+): PromiseErrorOr<object> {
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('remoteServiceCallCount', clsNamespace?.get('remoteServiceCallCount') + 1);
 

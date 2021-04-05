@@ -1,8 +1,8 @@
 import BaseService from "../BaseService";
-import { PromiseOfErrorOr } from "../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../types/PromiseErrorOr";
 
 export default abstract class StartupCheckService extends BaseService {
   static controller: any | undefined;
 
-  abstract isServiceStarted(): PromiseOfErrorOr<null>;
+  abstract isServiceStarted(): PromiseErrorOr<null>;
 }

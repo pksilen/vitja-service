@@ -3,7 +3,7 @@ import { SubEntity } from '../../types/entities/SubEntity';
 import { EntityPreHook } from '../hooks/EntityPreHook';
 import { PostHook } from '../hooks/PostHook';
 import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
-import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../types/PromiseErrorOr';
 import tryExecuteEntityPreHooks from '../hooks/tryExecuteEntityPreHooks';
 import MongoDbManager from '../MongoDbManager';
 import startDbOperation from '../utils/startDbOperation';
@@ -37,7 +37,7 @@ export default async function removeSimpleSubEntityByIdWhere<T extends BackkEnti
     postHook?: PostHook<T>;
     postQueryOperations?: PostQueryOperations;
   }
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   const dbOperationStartTimeInMillis = startDbOperation(dbManager, 'removeSubEntitiesByIdWhere');
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);

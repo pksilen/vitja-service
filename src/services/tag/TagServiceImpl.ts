@@ -7,13 +7,12 @@ import { AllowForEveryUser } from "../../backk/decorators/service/function/Allow
 import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
 import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
 import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
-import { SalesItem } from "../salesitem/types/entities/SalesItem";
 import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
 import DbTableVersion from "../../backk/dbmanager/version/DbTableVersion";
 import { HttpStatusCodes } from "../../backk/constants/constants";
 import tryGetSeparatedValuesFromTextFile from "../../backk/file/tryGetSeparatedValuesFromTextFile";
 import executeForAll from "../../backk/utils/executeForAll";
-import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../backk/types/PromiseErrorOr";
 import TagName from "./args/TagName";
 
 @Injectable()
@@ -23,7 +22,7 @@ export default class TagServiceImpl extends TagService {
   }
 
   @OnStartUp()
-  async initializeDatabase(): PromiseOfErrorOr<null> {
+  async initializeDbVersion1(): PromiseErrorOr<null> {
     let [, error] = await this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion);
 
     if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
@@ -39,7 +38,7 @@ export default class TagServiceImpl extends TagService {
   }
 
   @OnStartUp()
-  async migrateDbFromVersion1To2(): PromiseOfErrorOr<null> {
+  async migrateDbFromVersion1To2(): PromiseErrorOr<null> {
     const [tagDbTableVersion1, error] = await this.dbManager.getEntityByFilters(
       { entityName: 'Tag', version: 1 },
       DbTableVersion
@@ -58,22 +57,18 @@ export default class TagServiceImpl extends TagService {
   }
 
   @AllowForTests()
-  deleteAllTags(): PromiseOfErrorOr<null> {
+  deleteAllTags(): PromiseErrorOr<null> {
     return this.dbManager.deleteAllEntities(Tag);
-    /*return this.dbManager.executeInsideTransaction(async () => {
-      const [, error] = await this.dbManager.deleteAllEntities(SalesItem);
-      return error ? [null, error] : this.dbManager.deleteAllEntities(Tag);
-    });*/
   }
 
   @AllowForEveryUser()
   @NoCaptcha()
-  createTag(tag: Tag): PromiseOfErrorOr<Tag> {
+  createTag(tag: Tag): PromiseErrorOr<Tag> {
     return this.dbManager.createEntity(tag, Tag);
   }
 
   @AllowForEveryUser()
-  getTagsByName({ name }: TagName): PromiseOfErrorOr<Tag[]> {
+  getTagsByName({ name }: TagName): PromiseErrorOr<Tag[]> {
     const filters = this.dbManager.getFilters<Tag>({ name: new RegExp(name) }, [
       new SqlExpression('name LIKE :name', { name: `%${name}%` })
     ]);

@@ -1,7 +1,7 @@
 import MongoDbQuery from "../../../mongodb/MongoDbQuery";
 import SqlExpression from "../../expressions/SqlExpression";
 import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import convertFilterObjectToSqlEquals from "../dql/utils/convertFilterObjectToSqlEquals";
 import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
 import tryGetWhereClause from "../dql/clauses/tryGetWhereClause";
@@ -22,7 +22,7 @@ export default async function updateEntitiesByFilters<T extends BackkEntity>(
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
   update: Partial<T>,
   EntityClass: new () => T
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);

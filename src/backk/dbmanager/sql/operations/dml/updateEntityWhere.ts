@@ -9,7 +9,7 @@ import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransact
 import getEntityWhere from "../dql/getEntityWhere";
 import { PostHook } from "../../../hooks/PostHook";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import { EntityPreHook } from "../../../hooks/EntityPreHook";
@@ -24,7 +24,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
   preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;

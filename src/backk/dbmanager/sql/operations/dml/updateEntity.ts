@@ -26,7 +26,7 @@ import createErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import getSingularName from "../../../../utils/getSingularName";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import { BackkError } from "../../../../types/BackkError";
@@ -42,7 +42,7 @@ export default async function updateEntity<T extends BackkEntity>(
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;

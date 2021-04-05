@@ -25,7 +25,7 @@ import createBackkErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import getSingularName from "../../../../utils/getSingularName";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { EntityPreHook } from "../../../hooks/EntityPreHook";
 import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
@@ -41,7 +41,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
   preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   // noinspection AssignmentToFunctionParameterJS

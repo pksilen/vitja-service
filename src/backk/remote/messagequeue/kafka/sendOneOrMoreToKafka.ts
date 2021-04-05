@@ -11,7 +11,7 @@ import minimumLoggingSeverityToKafkaLoggingLevelMap from "./minimumLoggingSeveri
 import logCreator from "./logCreator";
 import defaultServiceMetrics from "../../../observability/metrics/defaultServiceMetrics";
 import getNamespacedServiceName from "../../../utils/getServiceNamespace";
-import { PromiseOfErrorOr } from "../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../types/PromiseErrorOr";
 
 const kafkaServerToKafkaClientMap: { [key: string]: Kafka } = {};
 
@@ -24,7 +24,7 @@ export enum SendAcknowledgementType {
 export default async function sendOneOrMoreToKafka(
   sends: CallOrSendTo[],
   isTransactional: boolean
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   const { server, topic } = parseRemoteServiceFunctionCallUrlParts(sends[0].remoteServiceFunctionUrl);
 
   if (!kafkaServerToKafkaClientMap[server]) {

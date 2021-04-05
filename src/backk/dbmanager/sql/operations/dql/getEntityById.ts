@@ -10,7 +10,7 @@ import getTableName from '../../../utils/getTableName';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
 import { PostHook } from '../../../hooks/PostHook';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
@@ -27,7 +27,7 @@ export default async function getEntityById<T>(
   postHook?: PostHook<T>,
   isSelectForUpdate = false,
   isInternalCall = false
-): PromiseOfErrorOr<T> {
+): PromiseErrorOr<T> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();

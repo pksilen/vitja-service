@@ -2,7 +2,7 @@ import { BackkEntity } from '../../types/entities/BackkEntity';
 import { EntityPreHook } from '../hooks/EntityPreHook';
 import { PostHook } from '../hooks/PostHook';
 import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
-import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../types/PromiseErrorOr';
 import tryExecuteEntityPreHooks from '../hooks/tryExecuteEntityPreHooks';
 import MongoDbManager from '../MongoDbManager';
 import tryStartLocalTransactionIfNeeded from '../sql/operations/transaction/tryStartLocalTransactionIfNeeded';
@@ -25,7 +25,7 @@ export default async function removeFieldValues<T extends BackkEntity>(
     postHook?: PostHook<T>;
     postQueryOperations?: PostQueryOperations;
   }
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let shouldUseTransaction = false;

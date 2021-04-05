@@ -6,12 +6,12 @@ import forEachAsyncSequential from "../../../utils/forEachAsyncSequential";
 import log, { Severity } from "../../../observability/logging/log";
 import createBackkErrorFromError from "../../../errors/createBackkErrorFromError";
 import defaultServiceMetrics from "../../../observability/metrics/defaultServiceMetrics";
-import { PromiseOfErrorOr } from "../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../types/PromiseErrorOr";
 
 export default async function sendOneOrMoreToRedis(
   sends: CallOrSendTo[],
   isTransactional: boolean
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   const remoteServiceUrl = sends[0].remoteServiceFunctionUrl;
   const { server, topic } = parseRemoteServiceFunctionCallUrlParts(remoteServiceUrl);
   const redis = new Redis(server);

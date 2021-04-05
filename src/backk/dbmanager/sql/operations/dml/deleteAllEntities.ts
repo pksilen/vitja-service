@@ -6,7 +6,7 @@ import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransa
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
 import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
 import getClassPropertyNameToPropertyTypeNameMap from '../../../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import forEachAsyncSequential from '../../../../utils/forEachAsyncSequential';
 import getTypeInfoForTypeName from '../../../../utils/type/getTypeInfoForTypeName';
@@ -16,7 +16,7 @@ export default async function deleteAllEntities<T>(
   dbManager: AbstractSqlDbManager,
   EntityClass: new () => T,
   isRecursive = false
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;

@@ -21,7 +21,7 @@ import { PostHook } from "../../../hooks/PostHook";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import getSingularName from "../../../../utils/getSingularName";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { EntityPreHook } from "../../../hooks/EntityPreHook";
 import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
@@ -34,7 +34,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
   preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;

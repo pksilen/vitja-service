@@ -8,7 +8,7 @@ import getTableName from "../../../utils/getTableName";
 import createBackkErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import { getNamespace } from "cls-hooked";
 import getClassPropertyNameToPropertyTypeNameMap
   from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
@@ -18,7 +18,7 @@ export default async function getEntitiesByIds<T>(
   _ids: string[],
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
-): PromiseOfErrorOr<T[]> {
+): PromiseErrorOr<T[]> {
   try {
     updateDbLocalTransactionCount(dbManager);
 

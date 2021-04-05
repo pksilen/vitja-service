@@ -3,11 +3,11 @@ import createBackkErrorFromErrorMessageAndStatusCode
   from "../../../backk/errors/createBackkErrorFromErrorMessageAndStatusCode";
 import { HttpStatusCodes } from "../../../backk/constants/constants";
 import tryGetValuesByXPathFromXmlFile from "../../../backk/file/tryGetValuesByXPathFromXmlFile";
-import { PromiseOfErrorOr } from "../../../backk/types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../backk/types/PromiseErrorOr";
 
 let cities: Name[] = [];
 
-export default function getCities(): PromiseOfErrorOr<Name[]> {
+export default function getCities(): PromiseErrorOr<Name[]> {
   if (cities.length === 0) {
     try {
       cities = tryGetValuesByXPathFromXmlFile(

@@ -1,5 +1,5 @@
 import { BackkEntity } from '../../../../types/entities/BackkEntity';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
 import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import getEntityById from '../dql/getEntityById';
@@ -19,7 +19,7 @@ export default async function removeFieldValues<T extends BackkEntity>(
   fieldName: string,
   fieldValues: (string | number | boolean)[],
   EntityClass: new () => T
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   if (fieldName.includes('.')) {
     throw new Error('fieldName parameter may not contain dots, i.e. it cannot be a field path name');
   }

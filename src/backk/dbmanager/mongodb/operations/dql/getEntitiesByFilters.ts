@@ -2,7 +2,7 @@ import MongoDbQuery from '../../MongoDbQuery';
 import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
 import SqlExpression from '../../../sql/expressions/SqlExpression';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
 import startDbOperation from '../../../utils/startDbOperation';
 import updateDbLocalTransactionCount from '../../../sql/operations/dql/utils/updateDbLocalTransactionCount';
 import convertFilterObjectToMongoDbQueries from '../../convertFilterObjectToMongoDbQueries';
@@ -32,7 +32,7 @@ export default async function getEntitiesByFilters<T>(
   postQueryOperations: PostQueryOperations,
   isRecursive = false,
   isInternalCall = false
-): PromiseOfErrorOr<T[]> {
+): PromiseErrorOr<T[]> {
   const dbOperationStartTimeInMillis = startDbOperation(dbManager, 'getEntitiesByFilters');
   if (!isRecursive) {
     updateDbLocalTransactionCount(dbManager);

@@ -9,7 +9,7 @@ import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransact
 import { PostHook } from "../../../hooks/PostHook";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 import { BackkEntity } from "../../../../types/entities/BackkEntity";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import { EntityPreHook } from "../../../hooks/EntityPreHook";
@@ -24,7 +24,7 @@ export default async function deleteEntityWhere<T extends BackkEntity>(
   preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   if (fieldName.includes('.')) {
     throw new Error('fieldName parameter may not contain dots, i.e. it cannot be a field path name');
   }

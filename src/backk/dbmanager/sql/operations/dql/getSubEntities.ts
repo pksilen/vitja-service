@@ -4,7 +4,7 @@ import getEntityById from './getEntityById';
 import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
 import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQueryOperations';
 import updateDbLocalTransactionCount from './utils/updateDbLocalTransactionCount';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
 
 export default async function getSubEntities<T extends object, U extends object>(
   dbManager: AbstractSqlDbManager,
@@ -13,7 +13,7 @@ export default async function getSubEntities<T extends object, U extends object>
   EntityClass: new () => T,
   postQueryOperations?: PostQueryOperations,
   responseMode?: 'first' | 'all'
-): PromiseOfErrorOr<U[]> {
+): PromiseErrorOr<U[]> {
   updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);

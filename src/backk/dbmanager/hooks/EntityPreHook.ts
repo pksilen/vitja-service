@@ -1,6 +1,6 @@
 import { BackkEntity } from '../../types/entities/BackkEntity';
 import { SubEntity } from '../../types/entities/SubEntity';
-import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../types/PromiseErrorOr';
 import { BackkError } from '../../types/BackkError';
 
 export interface ErrorDef {
@@ -11,14 +11,14 @@ export interface ErrorDef {
 
 export type EntityPreHook<T extends BackkEntity | SubEntity> =
   | {
-  shouldExecutePreHook?: (entity: T) => boolean | Promise<boolean> | PromiseOfErrorOr<boolean>;
+  shouldExecutePreHook?: (entity: T) => boolean | Promise<boolean> | PromiseErrorOr<boolean>;
   isSuccessfulOrTrue: (entity: T) =>
-    | PromiseOfErrorOr<BackkEntity | null>
+    | PromiseErrorOr<BackkEntity | null>
     | Promise<boolean | BackkError | null | undefined>
     | boolean;
   error?: ErrorDef;
 }
   | ((entity: T) =>
-  | PromiseOfErrorOr<boolean | BackkEntity | null>
+  | PromiseErrorOr<boolean | BackkEntity | null>
   | Promise<boolean | BackkError | null | undefined>
   | boolean);

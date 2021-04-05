@@ -1,6 +1,6 @@
 import BaseService from "./BaseService";
-import { PromiseOfErrorOr } from "../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../types/PromiseErrorOr";
 
 export default abstract class LivenessCheckService extends BaseService {
-  abstract isServiceAlive(): PromiseOfErrorOr<null>;
+  abstract isServiceAlive(): PromiseErrorOr<null>;
 }

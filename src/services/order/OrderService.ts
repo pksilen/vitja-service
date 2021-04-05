@@ -5,22 +5,22 @@ import CrudEntityService from "../../backk/service/crudentity/CrudEntityService"
 import _Id from "../../backk/types/id/_Id";
 import PayOrderArg from "./types/args/PayOrderArg";
 import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
-import { PromiseOfErrorOr } from "../../backk/types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../backk/types/PromiseErrorOr";
 import RemoveOrderItemArg from "./types/args/RemoveOrderItemArg";
 import DeleteUnpaidOrdersArg from "./types/args/DeleteUnpaidOrdersArg";
 import _IdAndOrderItemId from "./types/args/_IdAndOrderItemId";
 
 export default abstract class OrderService extends CrudEntityService {
-  abstract deleteAllOrders(): PromiseOfErrorOr<null>;
-  abstract placeOrder(arg: PlaceOrderArg): PromiseOfErrorOr<Order>;
-  abstract getOrder(arg: _IdAndUserAccountId): PromiseOfErrorOr<Order>;
-  abstract discardUnpaidOrder(arg: _Id): PromiseOfErrorOr<null>;
-  abstract payOrder(arg: PayOrderArg):PromiseOfErrorOr<null>;
-  abstract removeUndeliveredOrderItem(arg: RemoveOrderItemArg): PromiseOfErrorOr<null>;
-  abstract deleteUndeliveredPaidOrder(arg: _IdAndUserAccountId): PromiseOfErrorOr<null>;
-  abstract deliverOrderItem(arg: DeliverOrderItemArg): PromiseOfErrorOr<null>;
-  abstract receiveOrderItem(arg: _IdAndOrderItemId): PromiseOfErrorOr<null>;
-  abstract returnOrderItem(arg: _IdAndOrderItemId): PromiseOfErrorOr<null>;
-  abstract receiveReturnedOrderItem(arg: _IdAndOrderItemId): PromiseOfErrorOr<null>;
-  abstract deleteUnpaidOrders(arg: DeleteUnpaidOrdersArg): PromiseOfErrorOr<null>;
+  abstract deleteAllOrders(): PromiseErrorOr<null>;
+  abstract placeOrder(arg: PlaceOrderArg): PromiseErrorOr<Order>;
+  abstract getOrder(arg: _IdAndUserAccountId): PromiseErrorOr<Order>;
+  abstract discardUnpaidOrder(arg: _Id): PromiseErrorOr<null>;
+  abstract payOrder(arg: PayOrderArg):PromiseErrorOr<null>;
+  abstract removeUndeliveredOrderItem(arg: RemoveOrderItemArg): PromiseErrorOr<null>;
+  abstract deleteUndeliveredPaidOrder(arg: _IdAndUserAccountId): PromiseErrorOr<null>;
+  abstract deliverOrderItem(arg: DeliverOrderItemArg): PromiseErrorOr<null>;
+  abstract receiveOrderItem(arg: _IdAndOrderItemId): PromiseErrorOr<null>;
+  abstract returnOrderItem(arg: _IdAndOrderItemId): PromiseErrorOr<null>;
+  abstract receiveReturnedOrderItem(arg: _IdAndOrderItemId): PromiseErrorOr<null>;
+  abstract deleteUnpaidOrders(arg: DeleteUnpaidOrdersArg): PromiseErrorOr<null>;
 }

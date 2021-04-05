@@ -3,7 +3,7 @@ import { SubEntity } from '../../types/entities/SubEntity';
 import { EntityPreHook } from '../hooks/EntityPreHook';
 import { PostHook } from '../hooks/PostHook';
 import { PostQueryOperations } from '../../types/postqueryoperations/PostQueryOperations';
-import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../types/PromiseErrorOr';
 import tryExecuteEntityPreHooks from '../hooks/tryExecuteEntityPreHooks';
 import MongoDbManager from '../MongoDbManager';
 import { MongoClient, ObjectId } from 'mongodb';
@@ -22,7 +22,7 @@ export default async function addSimpleSubEntitiesOrValues<T extends BackkEntity
     postHook?: PostHook<T>;
     postQueryOperations?: PostQueryOperations;
   }
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   if (options?.preHooks) {
     const [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, undefined, true, true);
     if (!currentEntity) {

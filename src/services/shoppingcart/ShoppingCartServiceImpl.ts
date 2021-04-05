@@ -10,7 +10,7 @@ import { Delete } from '../../backk/decorators/service/function/Delete';
 import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
 import ShoppingCartOrOrderSalesItem from './types/entities/ShoppingCartOrOrderSalesItem';
 import UserAccountIdAndSalesItemId from './types/args/UserAccountIdAndSalesItemId';
-import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../backk/types/PromiseErrorOr';
 import { Update } from '../../backk/decorators/service/function/Update';
 import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
 import UserAccountId from '../../backk/types/useraccount/UserAccountId';
@@ -25,12 +25,12 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForTests()
-  deleteAllShoppingCarts(): PromiseOfErrorOr<null> {
+  deleteAllShoppingCarts(): PromiseErrorOr<null> {
     return this.dbManager.deleteAllEntities(ShoppingCart);
   }
 
   @AllowForSelf()
-  async getShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<ShoppingCart> {
+  async getShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<ShoppingCart> {
     return this.dbManager.executeInsideTransaction(async () => {
       const [, removeError] = await this.removeExpiredSalesItemsFromShoppingCart(userAccountId);
       const [shoppingCart, error] = await this.dbManager.getEntityWhere(
@@ -49,7 +49,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Update('addOrRemove')
-  addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
+  addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
     return this.dbManager.executeInsideTransaction(async () => {
       let [shoppingCart, error] = await this.dbManager.getEntityWhere(
         'userAccountId',
@@ -93,7 +93,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   removeFromShoppingCart({
     userAccountId,
     salesItemId
-  }: UserAccountIdAndSalesItemId): PromiseOfErrorOr<null> {
+  }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
     return this.dbManager.removeSubEntityByIdWhere(
       'userAccountId',
       userAccountId,
@@ -114,7 +114,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   @Delete()
-  emptyShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
+  emptyShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<null> {
     return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart, {
       preHooks: ({ salesItems }) =>
         this.salesItemService.updateSalesItemStatesByFilters(
@@ -127,12 +127,12 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForServiceInternalUse()
-  deleteShoppingCart({ userAccountId }: UserAccountId): PromiseOfErrorOr<null> {
+  deleteShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<null> {
     return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart);
   }
 
   @AllowForServiceInternalUse()
-  getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseOfErrorOr<ShoppingCart> {
+  getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseErrorOr<ShoppingCart> {
     return this.dbManager.executeInsideTransaction(async () => {
       const [, removeError] = await this.removeExpiredSalesItemsFromShoppingCart(userAccountId);
       return removeError
@@ -146,7 +146,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     });
   }
 
-  private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseOfErrorOr<null> {
+  private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseErrorOr<null> {
     return this.dbManager.removeSubEntitiesWhere(
       'userAccountId',
       userAccountId,

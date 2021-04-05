@@ -13,7 +13,7 @@ import createErrorFromErrorCodeMessageAndStatus
   from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../../../../errors/backkErrors";
 import { BackkEntity } from "../../../../types/entities/BackkEntity";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
 import { EntityPreHook } from "../../../hooks/EntityPreHook";
@@ -27,7 +27,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations,
   isRecursive = false
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   let didStartTransaction = false;

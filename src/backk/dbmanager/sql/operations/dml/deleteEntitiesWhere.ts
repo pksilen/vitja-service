@@ -9,7 +9,7 @@ import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransa
 import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
 import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
 import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 
 export default async function deleteEntitiesWhere<T extends object>(
@@ -17,7 +17,7 @@ export default async function deleteEntitiesWhere<T extends object>(
   fieldName: string,
   fieldValue: T[keyof T] | string,
   EntityClass: new () => T
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   if (fieldName.includes('.')) {
     throw new Error('fieldName parameter may not contain dots, i.e. it cannot be a field path name');
   }

@@ -1,6 +1,6 @@
 import BaseService from "./BaseService";
-import { PromiseOfErrorOr } from "../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../types/PromiseErrorOr";
 
 export default abstract class ReadinessCheckService extends BaseService {
-  abstract isServiceReady(): PromiseOfErrorOr<null>;
+  abstract isServiceReady(): PromiseErrorOr<null>;
 }

@@ -1,7 +1,6 @@
 # Vitja service
 
 TODO:
-- Shoopongcartorordersalesitem: can partial be removed, add buyerUserAccount and state as private
 - @Private(isPublicInTests)
 - test error cases
 

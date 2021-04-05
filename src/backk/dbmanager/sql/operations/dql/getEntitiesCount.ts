@@ -8,13 +8,13 @@ import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedF
 import MongoDbQuery from "../../../mongodb/MongoDbQuery";
 import convertFilterObjectToSqlEquals from "./utils/convertFilterObjectToSqlEquals";
 import getTableName from "../../../utils/getTableName";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 
 export default async function getEntitiesCount<T>(
   dbManager: AbstractSqlDbManager,
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object | undefined,
   EntityClass: new () => T
-): PromiseOfErrorOr<number> {
+): PromiseErrorOr<number> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);

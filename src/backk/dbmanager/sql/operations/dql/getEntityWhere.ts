@@ -10,7 +10,7 @@ import createBackkErrorFromError from '../../../../errors/createBackkErrorFromEr
 import getTableName from '../../../utils/getTableName';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
 import { PostHook } from '../../../hooks/PostHook';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
@@ -28,7 +28,7 @@ export default async function getEntityWhere<T>(
   postHook?: PostHook<T>,
   isSelectForUpdate = false,
   isInternalCall = false
-): PromiseOfErrorOr<T> {
+): PromiseErrorOr<T> {
   if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {
     throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
   }

@@ -21,7 +21,7 @@ import DeleteOldUnsoldSalesItemsArg from './types/args/DeleteOldUnsoldSalesItems
 import dayjs from 'dayjs';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
 import UserAccountId from '../../backk/types/useraccount/UserAccountId';
-import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../backk/types/PromiseErrorOr';
 import User from '../user/types/entities/User';
 import FollowedUserSalesItem from './types/responses/FollowedUserSalesItem';
 import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
@@ -52,13 +52,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForTests()
-  deleteAllSalesItems(): PromiseOfErrorOr<null> {
+  deleteAllSalesItems(): PromiseErrorOr<null> {
     return this.dbManager.deleteAllEntities(SalesItem);
   }
 
   @AllowForSelf()
   @NoCaptcha()
-  createSalesItem(arg: SalesItem): PromiseOfErrorOr<SalesItem> {
+  createSalesItem(arg: SalesItem): PromiseErrorOr<SalesItem> {
     return this.dbManager.createEntity(
       {
         ...arg,
@@ -95,7 +95,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     minPrice,
     maxPrice,
     ...sortingAndPagination
-  }: GetSalesItemsArg): PromiseOfErrorOr<SalesItem[]> {
+  }: GetSalesItemsArg): PromiseErrorOr<SalesItem[]> {
     const filters = this.dbManager.getFilters<SalesItem>(
       {
         state: 'forSale' as SalesItemState,
@@ -138,14 +138,14 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForEveryUser()
   getSalesItemsByUserDefinedFilters({
     filters
-  }: GetSalesItemsByUserDefinedFiltersArg): PromiseOfErrorOr<SalesItem[]> {
+  }: GetSalesItemsByUserDefinedFiltersArg): PromiseErrorOr<SalesItem[]> {
     return this.dbManager.getEntitiesByFilters(filters, SalesItem, new DefaultPostQueryOperations());
   }
 
   @AllowForSelf()
   async getFollowedUsersSalesItems({
     userAccountId
-  }: UserAccountId): PromiseOfErrorOr<FollowedUserSalesItem[]> {
+  }: UserAccountId): PromiseErrorOr<FollowedUserSalesItem[]> {
     const [user, error] = await this.dbManager.getEntityByFilters(
       { _id: userAccountId, 'followedUserAccounts.ownSalesItems.state': 'forSale' },
       User,
@@ -181,13 +181,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForEveryUser()
-  async getSalesItem({ _id }: _Id): PromiseOfErrorOr<SalesItem> {
+  async getSalesItem({ _id }: _Id): PromiseErrorOr<SalesItem> {
     return this.dbManager.getEntityById(_id, SalesItem);
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
-  followSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
+  followSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
     return this.dbManager.addFieldValues(
       _id,
       'priceChangeFollowingUserAccountIds',
@@ -198,7 +198,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @AllowForSelf()
   @Update('addOrRemove')
-  unfollowSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
+  unfollowSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
     return this.dbManager.removeFieldValues(
       _id,
       'priceChangeFollowingUserAccountIds',
@@ -208,7 +208,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  async updateSalesItem(salesItem: SalesItem): PromiseOfErrorOr<null> {
+  async updateSalesItem(salesItem: SalesItem): PromiseErrorOr<null> {
     let isPriceUpdated: boolean;
 
     return this.dbManager.updateEntity(salesItem, SalesItem, {
@@ -244,7 +244,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @CronJob({ minuteInterval: 1 })
   changeExpiredReservedSalesItemStatesToForSale({
     maxSalesItemReservationDurationInMinutes
-  }: ChangeExpiredReservedSalesItemStatesToForSaleArg): PromiseOfErrorOr<null> {
+  }: ChangeExpiredReservedSalesItemStatesToForSaleArg): PromiseErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {
         state: 'reserved',
@@ -272,7 +272,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @CronJob({ minutes: 0, hours: 2 })
   deleteOldUnsoldSalesItemsDaily({
     deletableUnsoldSalesItemMinAgeInMonths
-  }: DeleteOldUnsoldSalesItemsArg): PromiseOfErrorOr<null> {
+  }: DeleteOldUnsoldSalesItemsArg): PromiseErrorOr<null> {
     const filters = this.dbManager.getFilters(
       {
         state: 'forSale',
@@ -294,7 +294,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  deleteSalesItem({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
+  deleteSalesItem({ _id }: _IdAndUserAccountId): PromiseErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, SalesItem);
   }
 
@@ -304,7 +304,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     newState: SalesItemState,
     requiredCurrentState?: SalesItemState,
     buyerUserAccountId?: string
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     return executeForAll(salesItems, ({ _id }) =>
       this.updateSalesItemState(_id, newState, requiredCurrentState, buyerUserAccountId)
     );
@@ -316,7 +316,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     newState: SalesItemState,
     requiredCurrentState?: SalesItemState,
     buyerUserAccountId?: string
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, state: newState, buyerUserAccountId: newState === 'forSale' ? null : buyerUserAccountId },
       SalesItem,
@@ -343,7 +343,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     newState: SalesItemState,
     currentStateFilter: SalesItemState,
     buyerUserAccountIdFilter: string
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const finalFilters = this.dbManager.getFilters(
       [
         new MongoDbQuery({

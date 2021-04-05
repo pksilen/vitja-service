@@ -12,7 +12,7 @@ import SqlEquals from '../../expressions/SqlEquals';
 import getTableName from '../../../utils/getTableName';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
 import { getNamespace } from "cls-hooked";
 
 export default async function getEntitiesWhere<T>(
@@ -21,7 +21,7 @@ export default async function getEntitiesWhere<T>(
   fieldValue: any,
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
-): PromiseOfErrorOr<T[]> {
+): PromiseErrorOr<T[]> {
   if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {
     throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
   }

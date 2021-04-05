@@ -28,7 +28,7 @@ import dayjs from 'dayjs';
 import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
 import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
 import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
-import { PromiseOfErrorOr } from '../../backk/types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../backk/types/PromiseErrorOr';
 import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
 import { orderServiceErrors } from './errors/orderServiceErrors';
 import RemoveOrderItemArg from './types/args/RemoveOrderItemArg';
@@ -55,7 +55,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForTests()
-  deleteAllOrders(): PromiseOfErrorOr<null> {
+  deleteAllOrders(): PromiseErrorOr<null> {
     return this.dbManager.deleteAllEntities(Order);
   }
 
@@ -71,7 +71,7 @@ export default class OrderServiceImpl extends OrderService {
     userAccountId,
     iAgreeWithTermsAndConditions,
     paymentGateway
-  }: PlaceOrderArg): PromiseOfErrorOr<Order> {
+  }: PlaceOrderArg): PromiseErrorOr<Order> {
     return this.dbManager.executeInsideTransaction(async () => {
       const [shoppingCart, error] = await this.shoppingCartService.getShoppingCartOrErrorIfEmpty(
         userAccountId,
@@ -116,13 +116,13 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
-  getOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<Order> {
+  getOrder({ _id }: _IdAndUserAccountId): PromiseErrorOr<Order> {
     return this.dbManager.getEntityById(_id, Order);
   }
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Delete()
-  discardUnpaidOrder({ _id }: _Id): PromiseOfErrorOr<null> {
+  discardUnpaidOrder({ _id }: _Id): PromiseErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, Order, {
       preHooks: (order) =>
         this.salesItemService.updateSalesItemStates(
@@ -136,7 +136,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update('update')
-  payOrder({ _id, ...restOfEntity }: PayOrderArg): PromiseOfErrorOr<null> {
+  payOrder({ _id, ...restOfEntity }: PayOrderArg): PromiseErrorOr<null> {
     return this.dbManager.updateEntity({ _id, ...restOfEntity }, Order, {
       preHooks: [
         ({ userAccountId }) => this.shoppingCartService.deleteShoppingCart({ userAccountId }),
@@ -157,7 +157,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   @Update('addOrRemove')
-  removeUndeliveredOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseOfErrorOr<null> {
+  removeUndeliveredOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseErrorOr<null> {
     return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
       preHooks: [
         this.isPaidOrderPreHook,
@@ -174,7 +174,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @AllowForSelf()
-  deleteUndeliveredPaidOrder({ _id }: _IdAndUserAccountId): PromiseOfErrorOr<null> {
+  deleteUndeliveredPaidOrder({ _id }: _IdAndUserAccountId): PromiseErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, Order, {
       preHooks: [
         this.isPaidOrderPreHook,
@@ -201,7 +201,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  async deliverOrderItem({ _id, version, orderItems }: DeliverOrderItemArg): PromiseOfErrorOr<null> {
+  async deliverOrderItem({ _id, version, orderItems }: DeliverOrderItemArg): PromiseErrorOr<null> {
     const [orderItem] = orderItems;
 
     return this.dbManager.updateEntity(
@@ -234,7 +234,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  async receiveOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
+  async receiveOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'delivered' }] },
       Order,
@@ -253,7 +253,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  async returnOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
+  async returnOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'returning' }] },
       Order,
@@ -272,7 +272,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  async receiveReturnedOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseOfErrorOr<null> {
+  async receiveReturnedOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'returned' }] },
       Order,
@@ -292,7 +292,7 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @CronJob({ minuteInterval: 5 })
-  deleteUnpaidOrders({ unpaidOrderTimeToLiveInMinutes }: DeleteUnpaidOrdersArg): PromiseOfErrorOr<null> {
+  deleteUnpaidOrders({ unpaidOrderTimeToLiveInMinutes }: DeleteUnpaidOrdersArg): PromiseErrorOr<null> {
     return this.dbManager.executeInsideTransaction(async () => {
       const orderFilters = this.dbManager.getFilters(
         {
@@ -337,7 +337,7 @@ export default class OrderServiceImpl extends OrderService {
     });
   }
 
-  private static refundOrderItem(orderId: string, orderItemId: string): PromiseOfErrorOr<null> {
+  private static refundOrderItem(orderId: string, orderItemId: string): PromiseErrorOr<null> {
     return sendToRemoteService(
       `kafka://${process.env.KAFKA_SERVER}/refund-service.vitja/refundService.refundOrderItem`,
       {
@@ -403,7 +403,7 @@ export default class OrderServiceImpl extends OrderService {
     );
   }
 
-  private updateSalesItemStateToForSale(order: Order, orderItemId: string): PromiseOfErrorOr<null> {
+  private updateSalesItemStateToForSale(order: Order, orderItemId: string): PromiseErrorOr<null> {
     return this.salesItemService.updateSalesItemState(
       JSONPath({
         json: order,

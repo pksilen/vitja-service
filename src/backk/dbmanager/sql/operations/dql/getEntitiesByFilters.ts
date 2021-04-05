@@ -9,7 +9,7 @@ import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedF
 import MongoDbQuery from '../../../mongodb/MongoDbQuery';
 import convertFilterObjectToSqlEquals from './utils/convertFilterObjectToSqlEquals';
 import getTableName from '../../../utils/getTableName';
-import { PromiseOfErrorOr } from '../../../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
 import { getNamespace } from "cls-hooked";
 
 export default async function getEntitiesByFilters<T>(
@@ -17,7 +17,7 @@ export default async function getEntitiesByFilters<T>(
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
   EntityClass: new () => T,
   postQueryOperations: PostQueryOperations
-): PromiseOfErrorOr<T[]> {
+): PromiseErrorOr<T[]> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);

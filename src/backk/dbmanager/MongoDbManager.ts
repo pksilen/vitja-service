@@ -56,7 +56,7 @@ import getFieldOrdering from "./mongodb/getFieldOrdering";
 import createBackkErrorFromErrorCodeMessageAndStatus
   from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
 import { BACKK_ERRORS } from "../errors/backkErrors";
-import { PromiseOfErrorOr } from "../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../types/PromiseErrorOr";
 import isBackkError from "../errors/isBackkError";
 import { ErrorOr } from "../types/ErrorOr";
 import { EntityPreHook } from "./hooks/EntityPreHook";
@@ -198,7 +198,7 @@ export default class MongoDbManager extends AbstractDbManager {
       ?.endSession();
   }
 
-  async executeInsideTransaction<T>(executable: () => PromiseOfErrorOr<T>): PromiseOfErrorOr<T> {
+  async executeInsideTransaction<T>(executable: () => PromiseErrorOr<T>): PromiseErrorOr<T> {
     if (getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction')) {
       return executable();
     }
@@ -247,7 +247,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postQueryOperations?: PostQueryOperations;
     },
     isInternalCall = false
-  ): PromiseOfErrorOr<T> {
+  ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'createEntity');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -341,7 +341,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
 
     const response = this.addSubEntities(
@@ -368,7 +368,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -492,7 +492,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async getAllEntities<T>(
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): PromiseOfErrorOr<T[]> {
+  ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getAllEntities');
     updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
@@ -559,7 +559,7 @@ export default class MongoDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): PromiseOfErrorOr<T[]> {
+  ): PromiseErrorOr<T[]> {
     return getEntitiesByFilters(this, filters, EntityClass, postQueryOperations, false);
   }
 
@@ -567,7 +567,7 @@ export default class MongoDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): PromiseOfErrorOr<T> {
+  ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
 
     const [response, error] = await this.getEntitiesByFilters(
@@ -594,7 +594,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async getEntitiesCount<T>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T
-  ): PromiseOfErrorOr<number> {
+  ): PromiseErrorOr<number> {
     let matchExpression: object;
     let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
 
@@ -656,7 +656,7 @@ export default class MongoDbManager extends AbstractDbManager {
     },
     isSelectForUpdate = false,
     isInternalCall = false
-  ): PromiseOfErrorOr<T> {
+  ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
     updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
@@ -747,7 +747,7 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntityPath: string,
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations
-  ): PromiseOfErrorOr<U> {
+  ): PromiseErrorOr<U> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntity');
     const [response, error] = await this.getSubEntities<T, U>(
       _id,
@@ -767,7 +767,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     postQueryOperations?: PostQueryOperations,
     responseMode: 'first' | 'all' = 'all'
-  ): PromiseOfErrorOr<U[]> {
+  ): PromiseErrorOr<U[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntities');
     updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
@@ -788,7 +788,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _ids: string[],
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): PromiseOfErrorOr<T[]> {
+  ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByIds');
     updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
@@ -862,7 +862,7 @@ export default class MongoDbManager extends AbstractDbManager {
     },
     isSelectForUpdate = false,
     isInternalCall = false
-  ): PromiseOfErrorOr<T> {
+  ): PromiseErrorOr<T> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
     }
@@ -964,7 +964,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     postQueryOperations: PostQueryOperations
-  ): PromiseOfErrorOr<T[]> {
+  ): PromiseErrorOr<T[]> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
     }
@@ -1062,7 +1062,7 @@ export default class MongoDbManager extends AbstractDbManager {
     },
     isRecursiveCall = false,
     isInternalCall = false
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1191,7 +1191,7 @@ export default class MongoDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     entity: Partial<T>,
     EntityClass: new () => T
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1275,7 +1275,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1324,7 +1324,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1375,7 +1375,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldName: string,
     fieldValue: T[keyof T] | string,
     EntityClass: new () => T
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesWhere');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1411,7 +1411,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async deleteEntitiesByFilters<T extends object>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1478,7 +1478,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1534,7 +1534,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityById');
     const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
     let response;
@@ -1557,7 +1557,7 @@ export default class MongoDbManager extends AbstractDbManager {
     return response;
   }
 
-  async deleteAllEntities<T>(EntityClass: new () => T): PromiseOfErrorOr<null> {
+  async deleteAllEntities<T>(EntityClass: new () => T): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteAllEntities');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1607,7 +1607,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityWhere');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1670,7 +1670,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesWhere');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1728,7 +1728,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityByIdWhere');
     const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
     let response;
@@ -1763,7 +1763,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldName: string,
     fieldValues: (string | number | boolean)[],
     EntityClass: new () => T
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addFieldValues');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -1790,7 +1790,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldName: string,
     fieldValues: any,
     EntityClass: new () => T
-  ): PromiseOfErrorOr<null> {
+  ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addFieldValues');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);

@@ -12,14 +12,14 @@ import tryGetWhereClause from "../dql/clauses/tryGetWhereClause";
 import getFilterValues from "../dql/utils/getFilterValues";
 import MongoDbQuery from "../../../mongodb/MongoDbQuery";
 import convertFilterObjectToSqlEquals from "../dql/utils/convertFilterObjectToSqlEquals";
-import { PromiseOfErrorOr } from "../../../../types/PromiseOfErrorOr";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 
 export default async function deleteEntitiesByFilters<T extends object>(
   dbManager: AbstractSqlDbManager,
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
   EntityClass: new () => T
-): PromiseOfErrorOr<null> {
+): PromiseErrorOr<null> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);

@@ -6,7 +6,7 @@ import initializeDatabase, { isDbInitialized } from '../../dbmanager/sql/operati
 import { HttpStatusCodes } from '../../constants/constants';
 import { AllowForClusterInternalUse } from '../../decorators/service/function/AllowForClusterInternalUse';
 import scheduleJobsForExecution, { scheduledJobs } from '../../scheduling/scheduleJobsForExecution';
-import { PromiseOfErrorOr } from '../../types/PromiseOfErrorOr';
+import { PromiseErrorOr } from '../../types/PromiseErrorOr';
 
 @Injectable()
 export default class StartupCheckServiceImpl extends StartupCheckService {
@@ -16,7 +16,7 @@ export default class StartupCheckServiceImpl extends StartupCheckService {
 
   // noinspection FunctionWithMoreThanThreeNegationsJS
   @AllowForClusterInternalUse()
-  async isServiceStarted(): PromiseOfErrorOr<null> {
+  async isServiceStarted(): PromiseErrorOr<null> {
     if (
       !(await isDbInitialized(this.dbManager)) &&
       !(await initializeDatabase(StartupCheckService.controller, this.dbManager))
