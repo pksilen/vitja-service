@@ -1,13 +1,13 @@
-import { Injectable } from "@nestjs/common";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import _Id from "../../backk/types/id/_Id";
-import GetUsersArg from ".//types/args/GetUsersArg";
-import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import User from "./types/entities/User";
-import UserService from "./UserService";
-import { PromiseErrorOr } from "../../backk/types/PromiseErrorOr";
+import { Injectable } from '@nestjs/common';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import _Id from '../../backk/types/id/_Id';
+import GetUsersArg from './/types/args/GetUsersArg';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import User from './types/entities/User';
+import UserService from './UserService';
+import { PromiseErrorOr } from '../../backk/types/PromiseErrorOr';
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -30,8 +30,10 @@ export default class UserServiceImpl extends UserService {
     );
 
     return this.dbManager.getEntitiesByFilters(filters, User, {
-      ...postQueryOperations,
-      includeResponseFields: ['_id', 'displayName', 'city', 'imageDataUri']
+      postQueryOperations: {
+        ...postQueryOperations,
+        includeResponseFields: ['_id', 'displayName', 'city', 'imageDataUri']
+      }
     });
   }
 

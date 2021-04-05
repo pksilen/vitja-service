@@ -29,15 +29,7 @@ export default async function addFieldValues<T extends BackkEntity>(
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    const [currentEntity, error] = await getEntityById(
-      dbManager,
-      _id,
-      EntityClass,
-      undefined,
-      undefined,
-      true,
-      true
-    );
+    const [currentEntity, error] = await getEntityById(dbManager, _id, EntityClass, undefined, true, true);
 
     if (!currentEntity) {
       throw error;

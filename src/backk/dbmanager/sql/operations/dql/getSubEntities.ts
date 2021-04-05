@@ -19,7 +19,7 @@ export default async function getSubEntities<T extends object, U extends object>
   EntityClass = dbManager.getType(EntityClass);
 
   try {
-    const [entity, error] = await getEntityById(dbManager, _id, EntityClass, postQueryOperations);
+    const [entity, error] = await getEntityById(dbManager, _id, EntityClass, { postQueryOperations });
     const subItems: U[] = JSONPath({ json: entity ?? null, path: subEntityPath });
     return responseMode === 'first' ? [[subItems[0]], error] : [subItems, error];
   } catch (error) {

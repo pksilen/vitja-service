@@ -170,13 +170,21 @@ export default abstract class AbstractDbManager {
   abstract getEntitiesByFilters<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
-    postQueryOperations: PostQueryOperations
+    options?: {
+      preHooks?: PreHook | PreHook[]
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseErrorOr<T[]>;
 
   abstract getEntityByFilters<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      preHooks?: PreHook | PreHook[]
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+    }
   ): PromiseErrorOr<T>;
 
   abstract getEntitiesCount<T>(
@@ -188,8 +196,10 @@ export default abstract class AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations
-      postHook?: PostHook<T>;
+      preHooks?: PreHook | PreHook[]
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
     }
   ): PromiseErrorOr<T>;
 

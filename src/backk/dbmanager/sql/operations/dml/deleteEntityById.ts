@@ -41,8 +41,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
         dbManager,
         _id,
         EntityClass,
-        postQueryOperations,
-        undefined,
+        { postQueryOperations },
         true,
         true
       );

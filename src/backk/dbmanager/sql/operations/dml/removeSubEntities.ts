@@ -46,8 +46,7 @@ export default async function removeSubEntities<T extends BackkEntity, U extends
       dbManager,
       _id,
       EntityClass,
-      postQueryOperations,
-      undefined,
+      { postQueryOperations },
       true,
       true
     );

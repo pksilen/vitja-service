@@ -34,7 +34,6 @@ export default async function removeFieldValues<T extends BackkEntity>(
       _id,
       EntityClass,
       undefined,
-      undefined,
       true,
       true
     );

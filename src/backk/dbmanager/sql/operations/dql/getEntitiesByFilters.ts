@@ -10,13 +10,20 @@ import MongoDbQuery from '../../../mongodb/MongoDbQuery';
 import convertFilterObjectToSqlEquals from './utils/convertFilterObjectToSqlEquals';
 import getTableName from '../../../utils/getTableName';
 import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
-import { getNamespace } from "cls-hooked";
+import { getNamespace } from 'cls-hooked';
+import { PreHook } from '../../../hooks/PreHook';
+import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
+import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
+import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
 
 export default async function getEntitiesByFilters<T>(
   dbManager: AbstractSqlDbManager,
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
   EntityClass: new () => T,
-  postQueryOperations: PostQueryOperations
+  options?: {
+    preHooks?: PreHook | PreHook[];
+    postQueryOperations?: PostQueryOperations;
+  }
 ): PromiseErrorOr<T[]> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
@@ -25,11 +32,17 @@ export default async function getEntitiesByFilters<T>(
     throw new Error('filters must be an array of SqlExpressions and/or UserDefinedFilters');
   }
 
-  updateDbLocalTransactionCount(dbManager);
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
+  let didStartTransaction = false;
 
   try {
+    if (options?.preHooks) {
+      didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
+    }
+
+    await tryExecutePreHooks(options?.preHooks ?? []);
+    updateDbLocalTransactionCount(dbManager);
     let isSelectForUpdate = false;
 
     if (
@@ -48,7 +61,12 @@ export default async function getEntitiesByFilters<T>(
       joinClauses,
       filterValues,
       outerSortClause
-    } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters as any);
+    } = getSqlSelectStatementParts(
+      dbManager,
+      options?.postQueryOperations ?? new DefaultPostQueryOperations(),
+      EntityClass,
+      filters as any
+    );
 
     const tableName = getTableName(EntityClass.name);
     const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
@@ -71,7 +89,7 @@ export default async function getEntitiesByFilters<T>(
     const entities = transformRowsToObjects(
       dbManager.getResultRows(result),
       EntityClass,
-      postQueryOperations,
+      options?.postQueryOperations ?? new DefaultPostQueryOperations(),
       dbManager
     );
 

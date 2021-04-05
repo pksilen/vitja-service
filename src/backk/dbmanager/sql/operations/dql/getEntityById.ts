@@ -18,32 +18,42 @@ import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocal
 import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
 import { getNamespace } from 'cls-hooked';
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
+import { PreHook } from "../../../hooks/PreHook";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 
+// noinspection OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function getEntityById<T>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   EntityClass: new () => T,
-  postQueryOperations?: PostQueryOperations,
-  postHook?: PostHook<T>,
+  options?: {
+    preHooks?: PreHook | PreHook[],
+    postQueryOperations?: PostQueryOperations,
+    postHook?: PostHook<T>,
+    ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+  },
   isSelectForUpdate = false,
   isInternalCall = false
 ): PromiseErrorOr<T> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
-  const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
+  const finalPostQueryOperations = options?.postQueryOperations ?? new DefaultPostQueryOperations();
   let didStartTransaction = false;
 
   try {
     if (
-      postQueryOperations?.includeResponseFields?.length === 1 &&
-      postQueryOperations.includeResponseFields[0] === '_id'
+      finalPostQueryOperations?.includeResponseFields?.length === 1 &&
+      finalPostQueryOperations.includeResponseFields[0] === '_id'
     ) {
       return { _id } as any;
     }
 
-    if (postHook) {
+    if (options?.postHook || options?.preHooks || options?.ifEntityNotFoundReturn) {
       didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     }
+
+    await tryExecutePreHooks(options?.preHooks ?? []);
+    updateDbLocalTransactionCount(dbManager);
 
     if (
       getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
@@ -53,8 +63,6 @@ export default async function getEntityById<T>(
       // noinspection AssignmentToFunctionParameterJS
       isSelectForUpdate = true;
     }
-
-    updateDbLocalTransactionCount(dbManager);
 
     const { columns, joinClauses, outerSortClause } = getSqlSelectStatementParts(
       dbManager,
@@ -91,30 +99,36 @@ export default async function getEntityById<T>(
 
     const result = await dbManager.tryExecuteQuery(selectStatement, [numericId]);
 
-    if (dbManager.getResultRows(result).length === 0) {
-      return [
-        null,
-        createBackkErrorFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-          message: `${EntityClass.name} with _id: ${_id} not found`
-        })
-      ];
+    let entity, error = null;
+    if (dbManager.getResultRows(result).length === 0 && options?.ifEntityNotFoundReturn) {
+      [entity, error] = await options?.ifEntityNotFoundReturn();
+    } else {
+      if (dbManager.getResultRows(result).length === 0) {
+        await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
+        return [
+          null,
+          createBackkErrorFromErrorCodeMessageAndStatus({
+            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+            message: `${EntityClass.name} with _id ${_id} not found`
+          })
+        ];
+      }
+
+      entity = transformRowsToObjects(
+        dbManager.getResultRows(result),
+        EntityClass,
+        finalPostQueryOperations,
+        dbManager,
+        isInternalCall
+      )[0];
     }
 
-    const entity = transformRowsToObjects(
-      dbManager.getResultRows(result),
-      EntityClass,
-      finalPostQueryOperations,
-      dbManager,
-      isInternalCall
-    )[0];
-
-    if (postHook) {
-      await tryExecutePostHook(postHook, entity);
+    if (options?.postHook) {
+      await tryExecutePostHook(options?.postHook, entity);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return [entity, null];
+    return [entity, error];
   } catch (error) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [null, createBackkErrorFromError(error)];

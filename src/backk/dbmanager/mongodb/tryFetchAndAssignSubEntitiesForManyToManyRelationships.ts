@@ -101,12 +101,12 @@ export default async function tryFetchAndAssignSubEntitiesForManyToManyRelations
               ...(subEntityFilters ?? [])
             ],
             (Types as any)[baseTypeName],
-            {
+            { postQueryOperations: {
               includeResponseFields: subEntityIncludeResponseFields,
               excludeResponseFields: subEntityExcludeResponseFields,
               sortBys: subEntitySortBys,
               paginations: subEntityPaginations
-            },
+            }},
             true,
             isInternalCall
           );

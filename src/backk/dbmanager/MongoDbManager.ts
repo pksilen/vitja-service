@@ -555,37 +555,57 @@ export default class MongoDbManager extends AbstractDbManager {
   getEntitiesByFilters<T>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
-    postQueryOperations: PostQueryOperations
+    options?: {
+      preHooks?: PreHook | PreHook[]
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseErrorOr<T[]> {
-    return getEntitiesByFilters(this, filters, EntityClass, postQueryOperations, false);
+    return getEntitiesByFilters(this, filters, EntityClass, options, false);
   }
 
   async getEntityByFilters<T>(
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      preHooks?: PreHook | PreHook[],
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+    },
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
 
-    const [response, error] = await this.getEntitiesByFilters(
+    let entities: any;
+    let error;
+    // eslint-disable-next-line prefer-const
+    [entities, error] = await this.getEntitiesByFilters(
       filters,
       EntityClass,
-      postQueryOperations ?? new DefaultPostQueryOperations()
+      options
     );
 
-    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-
-    if (response?.length === 0) {
-      return [
-        null,
-        createBackkErrorFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-          message: `${EntityClass.name} with given filter(s) not found`
-        })
-      ];
+    let entity;
+    if (entities?.length === 0) {
+      if (options?.ifEntityNotFoundReturn) {
+        [entity, error] = await options.ifEntityNotFoundReturn();
+        entities.push(entity);
+      } else {
+        return [
+          null,
+          createBackkErrorFromErrorCodeMessageAndStatus({
+            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+            message: `${EntityClass.name} with given filter(s) not found`
+          })
+        ];
+      }
     }
 
-    return [response ? response[0] : null, error];
+    if (options?.postHook) {
+      await tryExecutePostHook(options?.postHook, entities[0]);
+    }
+
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return [entities[0], error];
   }
 
   async getEntitiesCount<T>(
@@ -648,14 +668,16 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
+      preHooks?: PreHook | PreHook[],
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
     },
     isSelectForUpdate = false,
     isInternalCall = false
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
-    updateDbLocalTransactionCount(this);
+
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     let shouldUseTransaction = false;
@@ -668,9 +690,11 @@ export default class MongoDbManager extends AbstractDbManager {
         return [({ _id } as unknown) as T, null];
       }
 
-      if (options?.postHook) {
+      if (options?.postHook || options?.preHooks || options?.ifEntityNotFoundReturn) {
         shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
       }
+
+      updateDbLocalTransactionCount(this);
 
       if (
         getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
@@ -681,12 +705,16 @@ export default class MongoDbManager extends AbstractDbManager {
         isSelectForUpdate = true;
       }
 
-      return await this.tryExecute(shouldUseTransaction, async (client) => {
+      const entities: any[] = await this.tryExecute(shouldUseTransaction, async (client) => {
         if (isSelectForUpdate) {
           await client
             .db(this.dbName)
             .collection(EntityClass.name.toLowerCase())
             .findOneAndUpdate({ _id: new ObjectId(_id) }, { $set: { _backkLock: new ObjectId() } });
+        }
+
+        if (options?.preHooks) {
+          await tryExecutePreHooks(options.preHooks);
         }
 
         const joinPipelines = getJoinPipelines(EntityClass, this.getTypes());
@@ -699,16 +727,6 @@ export default class MongoDbManager extends AbstractDbManager {
 
         performPostQueryOperations(cursor, options?.postQueryOperations, EntityClass, this.getTypes());
         const rows = await cursor.toArray();
-
-        if (rows.length === 0) {
-          return [
-            null,
-            createBackkErrorFromErrorCodeMessageAndStatus({
-              ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-              message: `${EntityClass.name} with _id: ${_id} not found`
-            })
-          ];
-        }
 
         await tryFetchAndAssignSubEntitiesForManyToManyRelationships(
           this,
@@ -723,13 +741,31 @@ export default class MongoDbManager extends AbstractDbManager {
         paginateSubEntities(rows, options?.postQueryOperations?.paginations, EntityClass, this.getTypes());
         removePrivateProperties(rows, EntityClass, this.getTypes(), isInternalCall);
         decryptEntities(rows, EntityClass, this.getTypes(), false);
-
-        if (options?.postHook) {
-          await tryExecutePostHook(options?.postHook, rows[0]);
-        }
-
-        return [rows[0], null];
+        return rows;
       });
+
+      let entity, error = null;
+      if (entities.length === 0) {
+        if (options?.ifEntityNotFoundReturn) {
+          [entity, error] = await options.ifEntityNotFoundReturn();
+          entities.push(entity);
+        } else {
+          return [
+            null,
+            createBackkErrorFromErrorCodeMessageAndStatus({
+              ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+              message: `${EntityClass.name} with _id: ${_id} not found`
+            })
+          ];
+        }
+      }
+
+      if (options?.postHook) {
+        await tryExecutePostHook(options?.postHook, entities[0]);
+      }
+
+      return [entities[0], error];
+
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
         ? [null, errorOrBackkError]
@@ -854,10 +890,10 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
+      preHooks?: PreHook | PreHook[],
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
     },
     isSelectForUpdate = false,
     isInternalCall = false

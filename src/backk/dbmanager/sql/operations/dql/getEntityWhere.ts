@@ -44,7 +44,6 @@ export default async function getEntityWhere<T>(
   let didStartTransaction = false;
 
   try {
-
     if (postHook || preHooks || ifEntityNotFoundReturn) {
       didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     }
@@ -114,7 +113,8 @@ export default async function getEntityWhere<T>(
         dbManager.getResultRows(result),
         EntityClass,
         finalPostQueryOperations,
-        dbManager
+        dbManager,
+        isInternalCall
       )[0];
     }
 

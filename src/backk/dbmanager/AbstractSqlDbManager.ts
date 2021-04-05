@@ -42,6 +42,7 @@ import deleteEntityWhere from './sql/operations/dml/deleteEntityWhere';
 import removeSubEntitiesWhere from './sql/operations/dml/removeSubEntitiesWhere';
 import addFieldValues from './sql/operations/dml/addFieldValues';
 import removeFieldValues from './sql/operations/dml/removeFieldValues';
+import tryExecutePostHook from "./hooks/tryExecutePostHook";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -521,10 +522,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async getEntitiesByFilters<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     entityClass: new () => T,
-    postQueryOperations: PostQueryOperations
+    options?: {
+      preHooks?: PreHook | PreHook[]
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
-    const response = await getEntitiesByFilters(this, filters, entityClass, postQueryOperations);
+    const response = await getEntitiesByFilters(this, filters, entityClass, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -532,30 +536,46 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async getEntityByFilters<T>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      preHooks?: PreHook | PreHook[]
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+    }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
 
-    const [response, error] = await getEntitiesByFilters(
-      this,
+    let entities: any;
+    let error;
+    // eslint-disable-next-line prefer-const
+    [entities, error] = await this.getEntitiesByFilters(
       filters,
       EntityClass,
-      postQueryOperations ?? new DefaultPostQueryOperations()
+      options
     );
 
-    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-
-    if (response?.length === 0) {
-      return [
-        null,
-        createBackkErrorFromErrorCodeMessageAndStatus({
-          ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-          message: EntityClass.name + ' with given filter(s) not found'
-        })
-      ];
+    let entity;
+    if (entities?.length === 0) {
+      if (options?.ifEntityNotFoundReturn) {
+        [entity, error] = await options.ifEntityNotFoundReturn();
+        entities.push(entity);
+      } else {
+        return [
+          null,
+          createBackkErrorFromErrorCodeMessageAndStatus({
+            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+            message: `${EntityClass.name} with given filter(s) not found`
+          })
+        ];
+      }
     }
 
-    return [response ? response[0] : null, error];
+    if (options?.postHook) {
+      await tryExecutePostHook(options?.postHook, entities[0]);
+    }
+
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return [entities[0], error];
   }
 
   async getEntitiesCount<T>(
@@ -572,8 +592,10 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     _id: string,
     entityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
+      preHooks?: PreHook | PreHook[]
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
     }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
@@ -581,8 +603,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       this,
       _id,
       entityClass,
-      options?.postQueryOperations,
-      options?.postHook
+      options
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
