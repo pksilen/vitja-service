@@ -9,18 +9,28 @@ export default async function tryExecutePostHook<T extends BackkEntity | SubEnti
   postHook: PostHook<T>,
   entity: T | null | undefined
 ) {
+  if (typeof postHook === 'object' && postHook.shouldBeTrue && postHook.shouldSucceed) {
+    throw new Error("Post hook should have either 'shouldBeTrue' or 'shouldSucceed' property")
+  }
+
+  if (typeof postHook === 'object' && !postHook.shouldBeTrue && !postHook.shouldSucceed) {
+    throw new Error("Post hook should have either 'shouldBeTrue' or 'shouldSucceed' property")
+  }
+
   const clsNamespace = getNamespace('serviceFunctionExecution');
   clsNamespace?.set('isInsidePostHook', true);
-  const postHookFunc = typeof postHook === 'function' ? postHook : postHook.shouldSucceedOrBeTrue;
+  const postHookFunc = typeof postHook === 'function' ? postHook : postHook.shouldSucceed ?? postHook.shouldBeTrue;
   let hookCallResult;
 
   try {
     if (typeof postHook === 'object' && postHook.executePostHookIf) {
       if (postHook.executePostHookIf(entity ?? null)) {
-        hookCallResult = await postHookFunc(entity ?? null);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        hookCallResult = await postHookFunc!(entity ?? null);
       }
     } else {
-      hookCallResult = await postHookFunc(entity ?? null);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      hookCallResult = await postHookFunc!(entity ?? null);
     }
   } catch (error) {
     throw new Error(
