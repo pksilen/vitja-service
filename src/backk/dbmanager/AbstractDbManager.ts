@@ -144,6 +144,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -158,6 +159,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -172,6 +174,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -186,6 +189,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;

@@ -18,7 +18,6 @@ import tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded
 import typePropertyAnnotationContainer
   from "../../../../decorators/typeproperty/typePropertyAnnotationContainer";
 import { SubEntity } from "../../../../types/entities/SubEntity";
-import getEntityById from "../dql/getEntityById";
 import { PostHook } from "../../../hooks/PostHook";
 import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 import createBackkErrorFromErrorCodeMessageAndStatus
@@ -30,6 +29,7 @@ import isBackkError from "../../../../errors/isBackkError";
 import { EntityPreHook } from "../../../hooks/EntityPreHook";
 import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
 import getEntityWhere from "../dql/getEntityWhere";
+import { HttpStatusCodes } from "../../../../constants/constants";
 
 // noinspection OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(
@@ -40,9 +40,12 @@ export default async function addSubEntitiesWhere<T extends BackkEntity, U exten
   newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
   SubEntityClass: new () => U,
-  preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
-  postHook?: PostHook<T>,
-  postQueryOperations?: PostQueryOperations
+  options?: {
+    ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+    preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+    postHook?: PostHook<T>;
+    postQueryOperations?: PostQueryOperations;
+  }
 ): PromiseErrorOr<null> {
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
@@ -53,24 +56,28 @@ export default async function addSubEntitiesWhere<T extends BackkEntity, U exten
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
-    const [currentEntity, error] = await getEntityWhere(
+    let [currentEntity, error] = await getEntityWhere(
       dbManager,
       fieldName,
       fieldValue,
       EntityClass,
       undefined,
-      postQueryOperations,
+      options?.postQueryOperations,
       undefined,
       undefined,
       true,
       true
     );
 
+    if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
+      [currentEntity, error] = await options.ifEntityNotFoundUse();
+    }
+
     if (!currentEntity) {
       throw error;
     }
 
-    await tryExecuteEntityPreHooks(preHooks ?? [], currentEntity);
+    await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
     await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntity, EntityClass);
 
     const maxSubItemId = JSONPath({ json: currentEntity, path: subEntitiesJsonPath }).reduce(
@@ -168,8 +175,8 @@ export default async function addSubEntitiesWhere<T extends BackkEntity, U exten
       }
     });
 
-    if (postHook) {
-      await tryExecutePostHook(postHook, null);
+    if (options?.postHook) {
+      await tryExecutePostHook(options?.postHook, null);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);

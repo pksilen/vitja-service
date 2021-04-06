@@ -66,6 +66,7 @@ import removeSimpleSubEntityByIdWhere from './mongodb/removeSimpleSubEntityByIdW
 import getEntitiesByFilters from './mongodb/operations/dql/getEntitiesByFilters';
 import removeFieldValues from './mongodb/removeFieldValues';
 import addSimpleSubEntitiesOrValuesWhere from "./mongodb/addSimpleSubEntitiesOrValuesWhere";
+import { HttpStatusCodes } from "../constants/constants";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -335,6 +336,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entityClass: new () => T,
     subEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -361,6 +363,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -387,6 +390,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -417,7 +421,11 @@ export default class MongoDbManager extends AbstractDbManager {
             options
           );
         } else {
-          const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+          let [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+
+          if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
+            [currentEntity, error] = await options.ifEntityNotFoundUse();
+          }
 
           if (!currentEntity) {
             return [null, error];
@@ -520,6 +528,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -551,7 +560,11 @@ export default class MongoDbManager extends AbstractDbManager {
             options
           );
         } else {
-          const [currentEntity, error] = await this.getEntityWhere(fieldName, fieldValue, EntityClass, undefined, true, true);
+          let [currentEntity, error] = await this.getEntityWhere(fieldName, fieldValue, EntityClass, undefined, true, true);
+
+          if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
+            [currentEntity, error] = await options.ifEntityNotFoundUse();
+          }
 
           if (!currentEntity) {
             return [null, error];

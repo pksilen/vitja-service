@@ -42,7 +42,7 @@ import deleteEntityWhere from './sql/operations/dml/deleteEntityWhere';
 import removeSubEntitiesWhere from './sql/operations/dml/removeSubEntitiesWhere';
 import addFieldValues from './sql/operations/dml/addFieldValues';
 import removeFieldValues from './sql/operations/dml/removeFieldValues';
-import tryExecutePostHook from "./hooks/tryExecutePostHook";
+import tryExecutePostHook from './hooks/tryExecutePostHook';
 import addSubEntitiesWhere from './sql/operations/dml/addSubEntitiesWhere';
 
 @Injectable()
@@ -432,7 +432,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     shouldReturnItem = true
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'createEntity');
-
     const response = await createEntity(
       this,
       entity,
@@ -443,7 +442,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       false,
       shouldReturnItem
     );
-
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -453,9 +451,10 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     _id: string,
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
-    entityClass: new () => T,
-    subEntityClass: new () => U,
+    EntityClass: new () => T,
+    SubEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -467,11 +466,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       _id,
       subEntitiesJsonPath,
       [newSubEntity],
-      entityClass,
-      subEntityClass,
-      options?.preHooks,
-      options?.postHook,
-      options?.postQueryOperations
+      EntityClass,
+      SubEntityClass,
+      options
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
@@ -485,13 +482,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityWhere');
-
     const response = await addSubEntitiesWhere(
       this,
       fieldName,
@@ -500,16 +497,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       [newSubEntity],
       EntityClass,
       SubEntityClass,
-      options?.preHooks,
-      options?.postHook,
-      options?.postQueryOperations
+      options
     );
-
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
- async addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(
+  async addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(
     fieldName: string,
     fieldValue: any,
     subEntitiesJsonPath: string,
@@ -517,27 +511,26 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<null> {
-   const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesWhere');
-   const response = await addSubEntitiesWhere(
-     this,
-     fieldName,
-     fieldValue,
-     subEntitiesJsonPath,
-     newSubEntities,
-     EntityClass,
-     SubEntityClass,
-     options?.preHooks,
-     options?.postHook,
-     options?.postQueryOperations
-   );
-   recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-   return response;
- }
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesWhere');
+    const response = await addSubEntitiesWhere(
+      this,
+      fieldName,
+      fieldValue,
+      subEntitiesJsonPath,
+      newSubEntities,
+      EntityClass,
+      SubEntityClass,
+      options
+    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
 
   // noinspection OverlyComplexFunctionJS
   async addSubEntities<T extends BackkEntity, U extends SubEntity>(
@@ -547,6 +540,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     entityClass: new () => T,
     subEntityClass: new () => U,
     options: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -560,9 +554,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       newSubEntities,
       entityClass,
       subEntityClass,
-      options?.preHooks,
-      options?.postHook,
-      options?.postQueryOperations
+      options
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
@@ -582,8 +574,8 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     entityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[]
-      postQueryOperations?: PostQueryOperations
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
@@ -596,10 +588,10 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[]
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
     }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
@@ -607,11 +599,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     let entities: any;
     let error;
     // eslint-disable-next-line prefer-const
-    [entities, error] = await this.getEntitiesByFilters(
-      filters,
-      EntityClass,
-      options
-    );
+    [entities, error] = await this.getEntitiesByFilters(filters, EntityClass, options);
 
     let entity;
     if (entities?.length === 0) {
@@ -651,19 +639,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     _id: string,
     entityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[]
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
     }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
-    const response = await getEntityById(
-      this,
-      _id,
-      entityClass,
-      options
-    );
+    const response = await getEntityById(this, _id, entityClass, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

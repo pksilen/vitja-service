@@ -9,6 +9,7 @@ import MongoDbManager from '../MongoDbManager';
 import { MongoClient, ObjectId } from 'mongodb';
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
+import { HttpStatusCodes } from "../../constants/constants";
 
 export default async function addSimpleSubEntitiesOrValuesByEntityId<T extends BackkEntity, U extends SubEntity>(
   client: MongoClient,
@@ -18,16 +19,23 @@ export default async function addSimpleSubEntitiesOrValuesByEntityId<T extends B
   newSubEntities: Array<Omit<U, 'id'> | { _id: string } | string | number | boolean>,
   EntityClass: new () => T,
   options?: {
+    ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
     preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
     postHook?: PostHook<T>;
     postQueryOperations?: PostQueryOperations;
   }
 ): PromiseErrorOr<null> {
   if (options?.preHooks) {
-    const [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, undefined, true, true);
+    let [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, undefined, true, true);
+
+    if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
+      [currentEntity, error] = await options.ifEntityNotFoundUse();
+    }
+
     if (!currentEntity) {
       return [null, error];
     }
+
     await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
   }
 
