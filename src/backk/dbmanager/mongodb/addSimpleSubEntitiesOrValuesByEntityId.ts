@@ -20,12 +20,12 @@ export default async function addSimpleSubEntitiesOrValuesByEntityId<T extends B
   EntityClass: new () => T,
   options?: {
     ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
-    preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+    entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
     postHook?: PostHook<T>;
     postQueryOperations?: PostQueryOperations;
   }
 ): PromiseErrorOr<null> {
-  if (options?.preHooks) {
+  if (options?.entityPreHooks) {
     let [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, undefined, true, true);
 
     if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
@@ -36,7 +36,7 @@ export default async function addSimpleSubEntitiesOrValuesByEntityId<T extends B
       return [null, error];
     }
 
-    await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+    await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
   }
 
   if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, subEntityPath)) {

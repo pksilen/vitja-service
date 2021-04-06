@@ -22,12 +22,12 @@ export default async function addSimpleSubEntitiesOrValuesWhere<T extends BackkE
   EntityClass: new () => T,
   options?: {
     ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
-    preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+    entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
     postHook?: PostHook<T>;
     postQueryOperations?: PostQueryOperations;
   }
 ): PromiseErrorOr<null> {
-  if (options?.preHooks) {
+  if (options?.entityPreHooks) {
     let [currentEntity, error] = await dbManager.getEntityByField(fieldName, fieldValue, EntityClass, undefined, true, true);
 
     if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
@@ -38,7 +38,7 @@ export default async function addSimpleSubEntitiesOrValuesWhere<T extends BackkE
       return [null, error];
     }
 
-    await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+    await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
   }
 
   if (typePropertyAnnotationContainer.isTypePropertyManyToMany(EntityClass, subEntityPath)) {
