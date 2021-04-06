@@ -137,73 +137,73 @@ export default abstract class AbstractDbManager {
   }
 
   // noinspection OverlyComplexFunctionJS
-  abstract addSubEntityForEntityById<T extends BackkEntity, U extends SubEntity>(
+  abstract addSubEntityToEntityById<T extends BackkEntity, U extends SubEntity>(
     _id: string,
     EntityClass: new () => T,
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
-  abstract addSubEntityForEntityByField<T extends BackkEntity, U extends SubEntity>(
-    fieldName: string,
-    fieldValue: any,
+  abstract addSubEntityToEntityByField<T extends BackkEntity, U extends SubEntity>(
+    entityFieldPathName: string,
+    entityFieldValue: any,
     EntityClass: new () => T,
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>,
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
-  abstract addSubEntitiesForEntityByField<T extends BackkEntity, U extends SubEntity>(
-    fieldName: string,
-    fieldValue: any,
+  abstract addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(
+    entityFieldPathName: string,
+    entityFieldValue: any,
     EntityClass: new () => T,
     subEntitiesJsonPath: string,
     newSubEntity: Array<Omit<U, 'id'> | { _id: string }>,
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
   // noinspection OverlyComplexFunctionJS
-  abstract addSubEntitiesForEntityById<T extends BackkEntity, U extends SubEntity>(
+  abstract addSubEntitiesToEntityById<T extends BackkEntity, U extends SubEntity>(
     _id: string,
     EntityClass: new () => T,
     subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
-  abstract getAllEntities<T>(
+  abstract getAllEntities<T extends BackkEntity>(
     EntityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<T[]>;
 
-  abstract getEntitiesByFilters<T>(
+  abstract getEntitiesByFilters<T extends BackkEntity>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
     options?: {
@@ -212,96 +212,105 @@ export default abstract class AbstractDbManager {
     }
   ): PromiseErrorOr<T[]>;
 
-  abstract getEntityByFilters<T>(
+  abstract getEntityByFilters<T extends BackkEntity>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[],
-      postQueryOperations?: PostQueryOperations,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>,
-      postHook?: PostHook<T>
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<T>;
 
-  abstract getEntityCount<T>(
+  abstract getEntityCount<T extends BackkEntity>(
     EntityClass: new () => T,
-    filters?: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    filters?: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object
   ): PromiseErrorOr<number>;
 
-  abstract getEntityById<T>(
+  abstract getEntityById<T extends BackkEntity>(
     _id: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[],
-      postQueryOperations?: PostQueryOperations,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>,
-      postHook?: PostHook<T>
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<T>;
 
-  abstract getSubEntity<T extends object, U extends object>(
+  abstract getSubEntityOfEntityById<T extends BackkEntity, U extends object>(
     _id: string,
-    subEntityJsonPath: string,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    subEntityJsonPath: string,
+    options?: {
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseErrorOr<U>;
 
-  abstract getSubEntities<T extends object, U extends object>(
+  abstract getSubEntitiesOfEntityById<T extends BackkEntity, U extends object>(
     _id: string,
     subEntityJsonPath: string,
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseErrorOr<U[]>;
 
-  abstract getEntitiesByIds<T>(
+  abstract getEntitiesByIds<T extends BackkEntity>(
     _ids: string[],
     EntityClass: new () => T,
-    postQueryOperations: PostQueryOperations
+    options?: {
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseErrorOr<T[]>;
 
-  abstract getEntityWhere<T>(
+  abstract getEntityByField<T extends BackkEntity>(
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
       ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
+      postHook?: PostHook<T>;
     },
     isSelectForUpdate?: boolean
   ): PromiseErrorOr<T>;
 
-  abstract getEntitiesWhere<T>(
+  abstract getEntitiesByField<T extends BackkEntity>(
     fieldPathName: string,
     fieldValue: any,
     EntityClass: new () => T,
-    postQueryOperations: PostQueryOperations
+    options?: {
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseErrorOr<T[]>;
 
   abstract updateEntity<T extends BackkEntity>(
-    entity: RecursivePartial<T> & { _id: string },
+    entityUpdate: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
+      preHooks?: PreHook | PreHook[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
   abstract updateEntitiesByFilters<T extends BackkEntity>(
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    entity: Partial<T>,
+    entityUpdate: Partial<T>,
     EntityClass: new () => T
   ): PromiseErrorOr<null>;
 
   updateEntities<T extends BackkEntity>(
-    entities: Array<RecursivePartial<T> & { _id: string }>,
+    entityUpdates: Array<RecursivePartial<T> & { _id: string }>,
     EntityClass: new () => T
   ): PromiseErrorOr<null> {
     return this.executeInsideTransaction(async () => {
       try {
-        return await forEachAsyncParallel(entities, async (entity, index) => {
+        return await forEachAsyncParallel(entityUpdates, async (entity, index) => {
           const [, error] = await this.updateEntity(entity, EntityClass);
 
           if (error) {
@@ -315,15 +324,15 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract updateEntityWhere<T extends BackkEntity>(
+  abstract updateEntityByField<T extends BackkEntity>(
     fieldPathName: string,
     fieldValue: any,
-    entity: RecursivePartial<T>,
+    entityUpdate: RecursivePartial<T>,
     EntityClass: new () => T,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
@@ -331,9 +340,9 @@ export default abstract class AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
@@ -354,21 +363,21 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract deleteEntityWhere<T extends BackkEntity>(
-    fieldName: string,
+  abstract deleteEntityByField<T extends BackkEntity>(
+    fieldName: keyof T & string,
     fieldValue: T[keyof T],
-    EntityClass: new () => T,
+    EntityClass: { new (): T },
     options?: {
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
-  abstract deleteEntitiesWhere<T extends BackkEntity>(
-    fieldName: string,
-    fieldValue: any,
-    EntityClass: new () => T
+  abstract deleteEntitiesByField<T extends BackkEntity>(
+    fieldName: keyof T & string,
+    fieldValue: T[keyof T],
+    EntityClass: { new (): T }
   ): PromiseErrorOr<null>;
 
   abstract deleteEntitiesByFilters<T extends BackkEntity>(
@@ -376,66 +385,66 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T
   ): PromiseErrorOr<null>;
 
-  abstract removeSubEntities<T extends BackkEntity>(
+  abstract removeSubEntitiesFromEntityById<T extends BackkEntity>(
     _id: string,
-    subEntitiesJsonPath: string,
     EntityClass: new () => T,
+    subEntitiesJsonPath: string,
     options?: {
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
-  abstract removeSubEntityById<T extends BackkEntity>(
+  abstract removeSubEntityFromEntityById<T extends BackkEntity>(
     _id: string,
+    EntityClass: new () => T,
     subEntitiesJsonPath: string,
     subEntityId: string,
-    EntityClass: new () => T,
     options?: {
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
-  abstract removeSubEntitiesWhere<T extends BackkEntity, U extends object>(
-    fieldName: string,
-    fieldValue: T[keyof T],
+  abstract removeSubEntitiesFromEntityByField<T extends BackkEntity, U extends object>(
+    entityFieldPathName: string,
+    entityFieldValue: any,
+    EntityClass: new () => T,
     subEntitiesJsonPath: string,
-    EntityClass: new () => T,
     options?: {
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
-  abstract removeSubEntityByIdWhere<T extends BackkEntity>(
-    fieldName: string,
-    fieldValue: T[keyof T],
+  abstract removeSubEntityFromEntityByField<T extends BackkEntity>(
+    entityFieldPathName: string,
+    entityFieldValue: any,
+    EntityClass: new () => T,
     subEntitiesJsonPath: string,
     subEntityId: string,
-    EntityClass: new () => T,
     options?: {
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
   abstract deleteAllEntities<T>(EntityClass: new () => T): PromiseErrorOr<null>;
 
-  abstract addFieldValues<T extends BackkEntity>(
+  abstract addEntityFieldValues<T extends BackkEntity>(
     _id: string,
-    fieldName: string,
+    fieldName: keyof T & string,
     values: (string | number | boolean)[],
     EntityClass: new () => T
   ): PromiseErrorOr<null>;
 
-  abstract removeFieldValues<T extends BackkEntity>(
+  abstract removeEntityFieldValues<T extends BackkEntity>(
     _id: string,
-    fieldName: string,
+    fieldName: keyof T & string,
     values: (string | number | boolean)[],
     EntityClass: new () => T
   ): PromiseErrorOr<null>;

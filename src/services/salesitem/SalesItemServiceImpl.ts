@@ -66,7 +66,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       SalesItem,
       {
         preHooks: {
-          isSuccessfulOrTrue: async () => {
+          shouldSucceedOrBeTrue: async () => {
             const [usersSellableSalesItemCount, error] = await this.dbManager.getEntityCount(SalesItem, {
               userAccountId: arg.userAccountId,
               state: 'forSale'
@@ -191,23 +191,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   @Update('addOrRemove')
   followSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.addFieldValues(
-      _id,
-      'priceChangeFollowingUserAccountIds',
-      [userAccountId],
-      SalesItem
-    );
+    return this.dbManager.addEntityFieldValues(_id, "priceChangeFollowingUserAccountIds", [userAccountId], SalesItem);
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   unfollowSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.removeFieldValues(
-      _id,
-      'priceChangeFollowingUserAccountIds',
-      [userAccountId],
-      SalesItem
-    );
+    return this.dbManager.removeEntityFieldValues(_id, "priceChangeFollowingUserAccountIds", [userAccountId], SalesItem);
   }
 
   @AllowForSelf()
@@ -215,9 +205,9 @@ export default class SalesItemServiceImpl extends SalesItemService {
     let isPriceUpdated: boolean;
 
     return this.dbManager.updateEntity(salesItem, SalesItem, {
-      preHooks: [
+      entityPreHooks: [
         {
-          isSuccessfulOrTrue: ({ state }) => state === 'forSale',
+          shouldSucceedOrBeTrue: ({ state }) => state === 'forSale',
           error: salesItemServiceErrors.salesItemStateIsNotForSale
         },
         ({ _id, price }) => {
@@ -229,8 +219,8 @@ export default class SalesItemServiceImpl extends SalesItemService {
         }
       ],
       postHook: {
-        shouldExecutePostHook: () => isPriceUpdated,
-        isSuccessfulOrTrue: () =>
+        executePostHookIf: () => isPriceUpdated,
+        shouldSucceedOrBeTrue: () =>
           sendToRemoteService(
             `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendPriceChangeNotifications`,
             {
@@ -324,15 +314,15 @@ export default class SalesItemServiceImpl extends SalesItemService {
       { _id, state: newState, buyerUserAccountId: newState === 'forSale' ? null : buyerUserAccountId },
       SalesItem,
       {
-        preHooks: [
+        entityPreHooks: [
           {
-            shouldExecutePreHook: () => !!requiredCurrentState,
-            isSuccessfulOrTrue: ({ state }) => requiredCurrentState === state,
+            executePreHookIf: () => !!requiredCurrentState,
+            shouldSucceedOrBeTrue: ({ state }) => requiredCurrentState === state,
             error: salesItemServiceErrors.invalidSalesItemState
           },
           {
-            shouldExecutePreHook: () => newState === 'sold',
-            isSuccessfulOrTrue: ({ buyerUserAccountId }) => buyerUserAccountId === buyerUserAccountId,
+            executePreHookIf: () => newState === 'sold',
+            shouldSucceedOrBeTrue: ({ buyerUserAccountId }) => buyerUserAccountId === buyerUserAccountId,
             error: salesItemServiceErrors.invalidSalesItemState
           }
         ]

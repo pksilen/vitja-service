@@ -12,12 +12,12 @@ export default async function tryExecuteEntityPreHooks<T extends BackkEntity | S
   await forEachAsyncSequential(
     Array.isArray(preHooks) ? preHooks : [preHooks],
     async (preHook: EntityPreHook<T>) => {
-      const hookFunc = typeof preHook === 'function' ? preHook : preHook.isSuccessfulOrTrue;
+      const hookFunc = typeof preHook === 'function' ? preHook : preHook.shouldSucceedOrBeTrue;
       let hookCallResult;
 
       try {
-        if (typeof preHook === 'object' && preHook.shouldExecutePreHook) {
-          const shouldExecuteResult = await preHook.shouldExecutePreHook(entity);
+        if (typeof preHook === 'object' && preHook.executePreHookIf) {
+          const shouldExecuteResult = await preHook.executePreHookIf(entity);
 
           if (typeof shouldExecuteResult === 'object' && shouldExecuteResult[1]) {
             throw shouldExecuteResult[1];

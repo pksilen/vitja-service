@@ -30,7 +30,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   async getShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<ShoppingCart> {
-    return this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
+    return this.dbManager.getEntityByField('userAccountId', userAccountId, ShoppingCart, {
       preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
       ifEntityNotFoundReturn: () =>
         this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart)
@@ -40,7 +40,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemove')
   addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntityForEntityByField(
+    return this.dbManager.addSubEntityToEntityByField(
       'userAccountId',
       userAccountId,
       ShoppingCart,
@@ -51,7 +51,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
         ifEntityNotFoundUse: () =>
           this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart),
         preHooks: {
-          isSuccessfulOrTrue: () =>
+          shouldSucceedOrBeTrue: () =>
             this.salesItemService.updateSalesItemState(salesItemId, 'reserved', 'forSale', userAccountId),
           error: shoppingCartServiceErrors.salesItemReservedOrSold
         }
@@ -62,33 +62,26 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemove')
   removeFromShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityByIdWhere(
-      'userAccountId',
-      userAccountId,
-      'salesItems',
-      salesItemId,
-      ShoppingCart,
-      {
-        preHooks: () =>
-          this.salesItemService.updateSalesItemStatesByFilters(
-            [salesItemId],
-            'forSale',
-            'reserved',
-            userAccountId
-          )
-      }
-    );
+    return this.dbManager.removeSubEntityFromEntityByField("userAccountId", userAccountId, ShoppingCart, "salesItems", salesItemId, {
+      preHooks: () =>
+        this.salesItemService.updateSalesItemStatesByFilters(
+          [salesItemId],
+          "forSale",
+          "reserved",
+          userAccountId
+        )
+    });
   }
 
   @AllowForSelf()
   @Delete()
   emptyShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart, {
+    return this.dbManager.deleteEntityByField("userAccountId", userAccountId, ShoppingCart, {
       preHooks: ({ salesItems }) =>
         this.salesItemService.updateSalesItemStatesByFilters(
           salesItems.map(({ _id }) => _id),
-          'forSale',
-          'reserved',
+          "forSale",
+          "reserved",
           userAccountId
         )
     });
@@ -96,26 +89,21 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForServiceInternalUse()
   deleteShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityWhere('userAccountId', userAccountId, ShoppingCart);
+    return this.dbManager.deleteEntityByField("userAccountId", userAccountId, ShoppingCart);
   }
 
   @AllowForServiceInternalUse()
   getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseErrorOr<ShoppingCart> {
-    return this.dbManager.getEntityWhere('userAccountId', userAccountId, ShoppingCart, {
+    return this.dbManager.getEntityByField('userAccountId', userAccountId, ShoppingCart, {
       preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
       postHook: {
-        isSuccessfulOrTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
+        shouldSucceedOrBeTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
         error
       }
     });
   }
 
   private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntitiesWhere(
-      'userAccountId',
-      userAccountId,
-      `salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`,
-      ShoppingCart
-    );
+    return this.dbManager.removeSubEntitiesFromEntityByField("userAccountId", userAccountId, ShoppingCart, `salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`);
   }
 }

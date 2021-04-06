@@ -42,7 +42,7 @@ import { SalesItem } from '../salesitem/types/entities/SalesItem';
 @AllowServiceForUserRoles(['vitjaAdmin'])
 export default class OrderServiceImpl extends OrderService {
   private readonly isPaidOrderPreHook: EntityPreHook<Order> = {
-    isSuccessfulOrTrue: ({ transactionId }) => transactionId !== null,
+    shouldSucceedOrBeTrue: ({ transactionId }) => transactionId !== null,
     error: orderServiceErrors.cannotUpdateOrderWhichIsNotPaid
   };
 
@@ -98,7 +98,7 @@ export default class OrderServiceImpl extends OrderService {
             {
               preHooks: [
                 {
-                  isSuccessfulOrTrue: () => iAgreeWithTermsAndConditions,
+                  shouldSucceedOrBeTrue: () => iAgreeWithTermsAndConditions,
                   error: orderServiceErrors.notAgreedWithTermsAndConditions
                 },
                 () =>
@@ -124,7 +124,7 @@ export default class OrderServiceImpl extends OrderService {
   @Delete()
   discardUnpaidOrder({ _id }: _Id): PromiseErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, Order, {
-      preHooks: (order) =>
+      entityPreHooks: (order) =>
         this.salesItemService.updateSalesItemStates(
           JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
           'reserved',
@@ -138,10 +138,10 @@ export default class OrderServiceImpl extends OrderService {
   @Update('update')
   payOrder({ _id, ...restOfEntity }: PayOrderArg): PromiseErrorOr<null> {
     return this.dbManager.updateEntity({ _id, ...restOfEntity }, Order, {
-      preHooks: [
+      entityPreHooks: [
         ({ userAccountId }) => this.shoppingCartService.deleteShoppingCart({ userAccountId }),
         {
-          isSuccessfulOrTrue: ({ transactionId }) => transactionId === null,
+          shouldSucceedOrBeTrue: ({ transactionId }) => transactionId === null,
           error: orderServiceErrors.orderAlreadyPaid
         }
       ],
@@ -158,13 +158,13 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForSelf()
   @Update('addOrRemove')
   removeUndeliveredOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityById(_id, 'orderItems', orderItemId, Order, {
+    return this.dbManager.removeSubEntityFromEntityById(_id, Order, "orderItems", orderItemId, {
       preHooks: [
         this.isPaidOrderPreHook,
         {
-          isSuccessfulOrTrue: (order) =>
+          shouldSucceedOrBeTrue: (order) =>
             JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
-            'toBeDelivered',
+            "toBeDelivered",
           error: orderServiceErrors.cannotRemoveDeliveredOrderItem
         },
         (order) => this.updateSalesItemStateToForSale(order, orderItemId)
@@ -176,10 +176,10 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForSelf()
   deleteUndeliveredPaidOrder({ _id }: _IdAndUserAccountId): PromiseErrorOr<null> {
     return this.dbManager.deleteEntityById(_id, Order, {
-      preHooks: [
+      entityPreHooks: [
         this.isPaidOrderPreHook,
         {
-          isSuccessfulOrTrue: (order) =>
+          shouldSucceedOrBeTrue: (order) =>
             JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
           error: orderServiceErrors.deliveredOrderDeleteNotAllowed
         },
@@ -212,10 +212,10 @@ export default class OrderServiceImpl extends OrderService {
       },
       Order,
       {
-        preHooks: [
+        entityPreHooks: [
           this.isPaidOrderPreHook,
           {
-            isSuccessfulOrTrue: (order) =>
+            shouldSucceedOrBeTrue: (order) =>
               OrderServiceImpl.hasOrderItemState(order, orderItem.id, 'toBeDelivered'),
             error: orderServiceErrors.orderItemAlreadyDelivered
           }
@@ -239,10 +239,10 @@ export default class OrderServiceImpl extends OrderService {
       { _id, version, orderItems: [{ id: orderItemId, state: 'delivered' }] },
       Order,
       {
-        preHooks: [
+        entityPreHooks: [
           this.isPaidOrderPreHook,
           {
-            isSuccessfulOrTrue: (order) =>
+            shouldSucceedOrBeTrue: (order) =>
               OrderServiceImpl.hasOrderItemState(order, orderItemId, 'delivering'),
             error: orderServiceErrors.invalidOrderItemCurrentState
           }
@@ -258,10 +258,10 @@ export default class OrderServiceImpl extends OrderService {
       { _id, version, orderItems: [{ id: orderItemId, state: 'returning' }] },
       Order,
       {
-        preHooks: [
+        entityPreHooks: [
           this.isPaidOrderPreHook,
           {
-            isSuccessfulOrTrue: (order) =>
+            shouldSucceedOrBeTrue: (order) =>
               OrderServiceImpl.hasOrderItemState(order, orderItemId, 'delivered'),
             error: orderServiceErrors.invalidOrderItemCurrentState
           }
@@ -277,11 +277,11 @@ export default class OrderServiceImpl extends OrderService {
       { _id, version, orderItems: [{ id: orderItemId, state: 'returned' }] },
       Order,
       {
-        preHooks: [
+        entityPreHooks: [
           this.isPaidOrderPreHook,
           (order) => this.updateSalesItemStateToForSale(order, orderItemId),
           {
-            isSuccessfulOrTrue: (order) =>
+           shouldSucceedOrBeTrue: (order) =>
               OrderServiceImpl.hasOrderItemState(order, orderItemId, 'returning'),
             error: orderServiceErrors.invalidOrderItemCurrentState
           }

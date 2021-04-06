@@ -70,7 +70,7 @@ export default async function removeSimpleSubEntityByIdWhere<T extends BackkEnti
 
     return await dbManager.tryExecute(shouldUseTransaction, async (client) => {
       if (options?.preHooks) {
-        const [currentEntity, error] = await dbManager.getEntityWhere(
+        const [currentEntity, error] = await dbManager.getEntityByField(
           fieldPathName,
           fieldValue,
           EntityClass,

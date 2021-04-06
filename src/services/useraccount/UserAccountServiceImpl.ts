@@ -74,9 +74,9 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemove')
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntityForEntityById(_id, UserAccount, "followedUserAccounts", { _id: followedUserAccountId }, FollowedUserAccount, {
+    return this.dbManager.addSubEntityToEntityById(_id, UserAccount, "followedUserAccounts", { _id: followedUserAccountId }, FollowedUserAccount, {
       preHooks: () =>
-        this.dbManager.addSubEntityForEntityById(
+        this.dbManager.addSubEntityToEntityById(
           followedUserAccountId,
           UserAccount,
           "followingUserAccounts",
@@ -89,28 +89,22 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemove')
   unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityById(
-      _id,
-      'followedUserAccounts',
-      followedUserAccountId,
-      UserAccount,
-      {
-        preHooks: () =>
-          this.dbManager.removeSubEntityById(followedUserAccountId, 'followingUserAccounts', _id, UserAccount)
-      }
-    );
+    return this.dbManager.removeSubEntityFromEntityById(_id, UserAccount, "followedUserAccounts", followedUserAccountId, {
+      preHooks: () =>
+        this.dbManager.removeSubEntityFromEntityById(followedUserAccountId, UserAccount, "followingUserAccounts", _id)
+    });
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntityForEntityById(_id, UserAccount, "favoriteSalesItems", { _id: salesItemId }, SalesItem);
+    return this.dbManager.addSubEntityToEntityById(_id, UserAccount, "favoriteSalesItems", { _id: salesItemId }, SalesItem);
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityById(_id, 'favoriteSalesItems', salesItemId, UserAccount);
+    return this.dbManager.removeSubEntityFromEntityById(_id, UserAccount, "favoriteSalesItems", salesItemId);
   }
 
   @AllowForSelf()
@@ -127,24 +121,24 @@ export default class UserAccountServiceImpl extends UserAccountService {
     repeatNewPassword
   }: ChangeUserPasswordArg): PromiseErrorOr<null> {
     return this.dbManager.updateEntity({ _id, password: newPassword }, UserAccount, {
-      preHooks: [
+      entityPreHooks: [
         {
-          isSuccessfulOrTrue: ({ userName: currentUserName }) => userName === currentUserName,
+          shouldSucceedOrBeTrue: ({ userName: currentUserName }) => userName === currentUserName,
           error: userAccountServiceErrors.invalidUserName
         },
         {
-          isSuccessfulOrTrue: ({ password: hashedCurrentPassword }) =>
+          shouldSucceedOrBeTrue: ({ password: hashedCurrentPassword }) =>
             argon2.verify(hashedCurrentPassword, currentPassword),
           error: userAccountServiceErrors.invalidCurrentPassword
         },
         {
-          isSuccessfulOrTrue: async ({ password: hashedCurrentPassword }) => {
+          shouldSucceedOrBeTrue: async ({ password: hashedCurrentPassword }) => {
             return !(await argon2.verify(hashedCurrentPassword, newPassword));
           },
           error: userAccountServiceErrors.newPasswordCannotBeSameAsCurrentPassword
         },
         {
-          isSuccessfulOrTrue: async () => newPassword === repeatNewPassword,
+          shouldSucceedOrBeTrue: async () => newPassword === repeatNewPassword,
           error: userAccountServiceErrors.newPasswordAndRepeatNewPasswordDoNotMatch
         }
       ]

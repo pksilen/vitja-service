@@ -10,8 +10,8 @@ export interface ErrorDef {
 
 export type PreHook<> =
   | {
-      shouldExecutePreHook?: () => boolean | Promise<boolean> | PromiseErrorOr<boolean>;
-      isSuccessfulOrTrue: () =>
+      executePreHookIf?: () => boolean | Promise<boolean> | PromiseErrorOr<boolean>;
+      shouldSucceedOrBeTrue: () =>
         | PromiseErrorOr<BackkEntity[] | BackkEntity | null>
         | Promise<boolean | BackkError | null | undefined | void>
         | boolean;

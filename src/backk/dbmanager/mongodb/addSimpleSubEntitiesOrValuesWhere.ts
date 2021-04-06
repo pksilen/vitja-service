@@ -28,7 +28,7 @@ export default async function addSimpleSubEntitiesOrValuesWhere<T extends BackkE
   }
 ): PromiseErrorOr<null> {
   if (options?.preHooks) {
-    let [currentEntity, error] = await dbManager.getEntityWhere(fieldName, fieldValue, EntityClass, undefined, true, true);
+    let [currentEntity, error] = await dbManager.getEntityByField(fieldName, fieldValue, EntityClass, undefined, true, true);
 
     if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
       [currentEntity, error] = await options.ifEntityNotFoundUse();

@@ -18,7 +18,7 @@ export default async function tryInitializeCronJobSchedulingTable(dbManager: Abs
         await dbManager.tryReserveDbConnectionFromPool();
 
         const [, error] = await dbManager.executeInsideTransaction(async () => {
-          const [entity, error] = await dbManager.getEntityWhere(
+          const [entity, error] = await dbManager.getEntityByField(
             'serviceFunctionName',
             serviceFunctionName,
             __Backk__CronJobScheduling,

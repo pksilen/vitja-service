@@ -3,4 +3,5 @@ export interface BackkEntity {
   id?: string;
   version?: number;
   lastModifiedTimestamp?: Date;
+  [key: string]: any;
 }

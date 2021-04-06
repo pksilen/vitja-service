@@ -12,12 +12,13 @@ import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import { getNamespace } from "cls-hooked";
 import getClassPropertyNameToPropertyTypeNameMap
   from "../../../../metadata/getClassPropertyNameToPropertyTypeNameMap";
+import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
 
 export default async function getEntitiesByIds<T>(
   dbManager: AbstractSqlDbManager,
   _ids: string[],
   EntityClass: new () => T,
-  postQueryOperations: PostQueryOperations
+  postQueryOperations?: PostQueryOperations
 ): PromiseErrorOr<T[]> {
   try {
     updateDbLocalTransactionCount(dbManager);
@@ -38,7 +39,7 @@ export default async function getEntitiesByIds<T>(
       columns,
       joinClauses,
       outerSortClause
-    } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass);
+    } = getSqlSelectStatementParts(dbManager, postQueryOperations ?? new DefaultPostQueryOperations(), EntityClass);
 
     const numericIds = _ids.map((id) => {
       const numericId = parseInt(id, 10);
@@ -83,7 +84,7 @@ export default async function getEntitiesByIds<T>(
     const entities = transformRowsToObjects(
       dbManager.getResultRows(result),
       EntityClass,
-      postQueryOperations,
+      postQueryOperations ?? new DefaultPostQueryOperations(),
       dbManager
     );
 

@@ -14,13 +14,14 @@ import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/cr
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
 import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
 import { getNamespace } from "cls-hooked";
+import DefaultPostQueryOperations from "../../../../types/postqueryoperations/DefaultPostQueryOperations";
 
 export default async function getEntitiesWhere<T>(
   dbManager: AbstractSqlDbManager,
   fieldPathName: string,
   fieldValue: any,
   EntityClass: new () => T,
-  postQueryOperations: PostQueryOperations
+  postQueryOperations?: PostQueryOperations
 ): PromiseErrorOr<T[]> {
   if (!isUniqueField(fieldPathName, EntityClass, dbManager.getTypes())) {
     throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
@@ -64,7 +65,7 @@ export default async function getEntitiesWhere<T>(
       joinClauses,
       filterValues,
       outerSortClause
-    } = getSqlSelectStatementParts(dbManager, postQueryOperations, EntityClass, filters);
+    } = getSqlSelectStatementParts(dbManager, postQueryOperations ?? new DefaultPostQueryOperations(), EntityClass, filters);
 
     const tableName = getTableName(EntityClass.name);
     const tableAlias = dbManager.schema + '_' + EntityClass.name.toLowerCase();
@@ -97,7 +98,7 @@ export default async function getEntitiesWhere<T>(
     const entities = transformRowsToObjects(
       dbManager.getResultRows(result),
       EntityClass,
-      postQueryOperations,
+      postQueryOperations ?? new DefaultPostQueryOperations(),
       dbManager
     );
 

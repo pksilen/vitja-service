@@ -10,11 +10,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  addSubEntitiesForEntityById<T extends BackkEntity, U extends object>(): PromiseErrorOr<null> {
+  addSubEntitiesToEntityById<T extends BackkEntity, U extends object>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  addSubEntityForEntityById<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
+  addSubEntityToEntityById<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
@@ -30,7 +30,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  deleteEntitiesWhere<T extends object>(): PromiseErrorOr<null> {
+  deleteEntitiesByField<T extends object>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
@@ -66,7 +66,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  getEntitiesWhere<T>(): PromiseErrorOr<T[]> {
+  getEntitiesByField<T>(): PromiseErrorOr<T[]> {
     throw new Error('Not implemented');
   }
 
@@ -74,7 +74,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  getEntityWhere<T>(): PromiseErrorOr<T> {
+  getEntityByField<T>(): PromiseErrorOr<T> {
     throw new Error('Not implemented');
   }
 
@@ -82,11 +82,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     return '';
   }
 
-  getSubEntities<T extends object, U extends object>(): PromiseErrorOr<U[]> {
+  getSubEntitiesOfEntityById<T extends object, U extends object>(): PromiseErrorOr<U[]> {
     throw new Error('Not implemented');
   }
 
-  getSubEntity<T extends object, U extends object>(): PromiseErrorOr<U> {
+  getSubEntityOfEntityById<T extends object, U extends object>(): PromiseErrorOr<U> {
     throw new Error('Not implemented');
   }
 
@@ -102,11 +102,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     return Promise.resolve(false);
   }
 
-  removeSubEntities<T extends BackkEntity>(): PromiseErrorOr<null> {
+  removeSubEntitiesFromEntityById<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  removeSubEntityById<T extends BackkEntity>(): PromiseErrorOr<null> {
+  removeSubEntityFromEntityById<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
@@ -134,7 +134,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  updateEntityWhere<T extends BackkEntity>(): PromiseErrorOr<null> {
+  updateEntityByField<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
@@ -182,31 +182,31 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  deleteEntityWhere<T extends BackkEntity>(): PromiseErrorOr<null> {
+  deleteEntityByField<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  removeSubEntityByIdWhere<T extends BackkEntity>(): PromiseErrorOr<null> {
+  removeSubEntityFromEntityByField<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  addFieldValues<T extends BackkEntity>(): PromiseErrorOr<null> {
+  addEntityFieldValues<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  removeFieldValues<T extends BackkEntity>(): PromiseErrorOr<null> {
+  removeEntityFieldValues<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  removeSubEntitiesWhere<T extends BackkEntity, U extends object>(): PromiseErrorOr<null> {
+  removeSubEntitiesFromEntityByField<T extends BackkEntity, U extends object>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  addSubEntitiesForEntityByField<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
+  addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  addSubEntityForEntityByField<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
+  addSubEntityToEntityByField<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 }

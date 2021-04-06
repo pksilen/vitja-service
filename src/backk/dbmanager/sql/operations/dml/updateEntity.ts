@@ -29,13 +29,16 @@ import { PostQueryOperations } from '../../../../types/postqueryoperations/PostQ
 import { BackkError } from '../../../../types/BackkError';
 import { EntityPreHook } from '../../../hooks/EntityPreHook';
 import tryExecuteEntityPreHooks from '../../../hooks/tryExecuteEntityPreHooks';
+import { PreHook } from "../../../hooks/PreHook";
+import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
 
 // noinspection FunctionWithMoreThanThreeNegationsJS,FunctionWithMoreThanThreeNegationsJS,OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function updateEntity<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
   { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
   EntityClass: new () => T,
-  preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+  preHooks?: PreHook | PreHook[],
+  entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations,
   isRecursiveCall = false
@@ -72,11 +75,11 @@ export default async function updateEntity<T extends BackkEntity>(
       }
 
       let eTagCheckPreHook: EntityPreHook<T>;
-      let finalPreHooks = Array.isArray(preHooks) ? preHooks ?? [] : preHooks ? [preHooks] : [];
+      let finalPreHooks = Array.isArray(entityPreHooks) ? entityPreHooks ?? [] : entityPreHooks ? [entityPreHooks] : [];
 
       if ('version' in currentEntity && restOfEntity.version && restOfEntity.version !== -1) {
         eTagCheckPreHook = {
-          isSuccessfulOrTrue: ({ version }) => version === restOfEntity.version,
+          shouldSucceedOrBeTrue: ({ version }) => version === restOfEntity.version,
           error: BACKK_ERRORS.ENTITY_VERSION_MISMATCH
         };
 
@@ -87,7 +90,7 @@ export default async function updateEntity<T extends BackkEntity>(
         (restOfEntity as any).lastModifiedTimestamp.getTime() !== 0
       ) {
         eTagCheckPreHook = {
-          isSuccessfulOrTrue: ({ lastModifiedTimestamp }) =>
+          shouldSucceedOrBeTrue: ({ lastModifiedTimestamp }) =>
             lastModifiedTimestamp?.getTime() === (restOfEntity as any).lastModifiedTimestamp.getTime(),
           error: BACKK_ERRORS.ENTITY_LAST_MODIFIED_TIMESTAMP_MISMATCH
         };
@@ -97,6 +100,8 @@ export default async function updateEntity<T extends BackkEntity>(
 
       await tryExecuteEntityPreHooks(finalPreHooks, currentEntity);
     }
+
+    await tryExecutePreHooks(preHooks ?? []);
 
     const entityMetadata = getClassPropertyNameToPropertyTypeNameMap(EntityClass as any);
     const columns: any = [];
@@ -214,6 +219,7 @@ export default async function updateEntity<T extends BackkEntity>(
                   undefined,
                   undefined,
                   undefined,
+                  undefined,
                   true
                 );
 
@@ -230,6 +236,7 @@ export default async function updateEntity<T extends BackkEntity>(
             dbManager,
             subEntityOrEntities,
             (Types as any)[baseTypeName],
+            undefined,
             undefined,
             undefined,
             undefined,

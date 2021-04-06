@@ -11,8 +11,8 @@ export interface ErrorDef {
 
 export type EntityPreHook<T extends BackkEntity | SubEntity> =
   | {
-  shouldExecutePreHook?: (entity: T) => boolean | Promise<boolean> | PromiseErrorOr<boolean>;
-  isSuccessfulOrTrue: (entity: T) =>
+  executePreHookIf?: (entity: T) => boolean | Promise<boolean> | PromiseErrorOr<boolean>;
+  shouldSucceedOrBeTrue: (entity: T) =>
     | PromiseErrorOr<BackkEntity | BackkEntity[] | null>
     | Promise<boolean | BackkError | null | undefined>
     | boolean;

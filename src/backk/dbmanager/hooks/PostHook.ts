@@ -5,8 +5,8 @@ import { ErrorDef } from "./PreHook";
 
 export type PostHook<T extends BackkEntity | SubEntity> =
   | {
-      shouldExecutePostHook?: (entity: T | null) => boolean;
-      isSuccessfulOrTrue: (entity: T | null) => PromiseErrorOr<BackkEntity | null> | Promise<boolean> | boolean;
+      executePostHookIf?: (entity: T | null) => boolean;
+      shouldSucceedOrBeTrue: (entity: T | null) => PromiseErrorOr<BackkEntity | null> | Promise<boolean> | boolean;
       error?:  ErrorDef
     }
   | ((entity: T | null) => PromiseErrorOr<BackkEntity | null> | Promise<boolean> | boolean);
