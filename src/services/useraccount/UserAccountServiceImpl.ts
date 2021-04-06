@@ -74,23 +74,16 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemove')
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntity(
-      _id,
-      'followedUserAccounts',
-      { _id: followedUserAccountId },
-      UserAccount,
-      FollowedUserAccount,
-      {
-        preHooks: () =>
-          this.dbManager.addSubEntity(
-            followedUserAccountId,
-            'followingUserAccounts',
-            { _id },
-            UserAccount,
-            FollowingUserAccount
-          )
-      }
-    );
+    return this.dbManager.addSubEntityForEntityById(_id, UserAccount, "followedUserAccounts", { _id: followedUserAccountId }, FollowedUserAccount, {
+      preHooks: () =>
+        this.dbManager.addSubEntityForEntityById(
+          followedUserAccountId,
+          UserAccount,
+          "followingUserAccounts",
+          { _id },
+          FollowingUserAccount
+        )
+    });
   }
 
   @AllowForSelf()
@@ -111,13 +104,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemove')
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntity(
-      _id,
-      'favoriteSalesItems',
-      { _id: salesItemId },
-      UserAccount,
-      SalesItem
-    );
+    return this.dbManager.addSubEntityForEntityById(_id, UserAccount, "favoriteSalesItems", { _id: salesItemId }, SalesItem);
   }
 
   @AllowForSelf()

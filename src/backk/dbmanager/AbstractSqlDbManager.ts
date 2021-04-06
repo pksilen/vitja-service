@@ -447,20 +447,15 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   // noinspection OverlyComplexFunctionJS
-  async addSubEntity<T extends BackkEntity, U extends SubEntity>(
+  async addSubEntityForEntityById<T extends BackkEntity, U extends SubEntity>(
     _id: string,
+    EntityClass: { new(): T },
     subEntitiesJsonPath: string,
-    newSubEntity: Omit<U, 'id'> | { _id: string },
-    EntityClass: new () => T,
-    SubEntityClass: new () => U,
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    newSubEntity: Omit<U, "id"> | { _id: string },
+    SubEntityClass: { new(): U },
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityForEntityById');
     const response = await addSubEntities(
       this,
       _id,
@@ -474,12 +469,12 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async addSubEntityWhere<T extends BackkEntity, U extends SubEntity>(
+  async addSubEntityForEntityByField<T extends BackkEntity, U extends SubEntity>(
     fieldName: string,
     fieldValue: any,
+    EntityClass: new () => T,
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
-    EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
@@ -488,7 +483,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityWhere');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityForEntityByField');
     const response = await addSubEntitiesWhere(
       this,
       fieldName,

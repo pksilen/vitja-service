@@ -101,25 +101,25 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     options?: {
       preHooks?: PreHook | PreHook[];
-      postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<T>;
 
   async createEntities<T extends BackkEntity>(
     entities: Array<Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>>,
     EntityClass: new () => T,
-    preHooks?: PreHook | PreHook[],
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<T[]> {
     return this.executeInsideTransaction(async () => {
       try {
         const createdEntities = await Promise.all(
           entities.map(async (entity, index) => {
-            const [createdEntity, error] = await this.createEntity(entity, EntityClass, {
-              preHooks,
-              postQueryOperations
-            });
+            const [createdEntity, error] = await this.createEntity(entity, EntityClass, options);
 
             if (error) {
               error.message = 'Entity ' + index + ': ' + error.message;
@@ -137,29 +137,29 @@ export default abstract class AbstractDbManager {
   }
 
   // noinspection OverlyComplexFunctionJS
-  abstract addSubEntity<T extends BackkEntity, U extends SubEntity>(
+  abstract addSubEntityForEntityById<T extends BackkEntity, U extends SubEntity>(
     _id: string,
+    EntityClass: new () => T,
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
-    EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<null>;
 
-  abstract addSubEntityWhere<T extends BackkEntity, U extends SubEntity>(
+  abstract addSubEntityForEntityByField<T extends BackkEntity, U extends SubEntity>(
     fieldName: string,
     fieldValue: any,
+    EntityClass: new () => T,
     subEntitiesJsonPath: string,
     newSubEntity: Omit<U, 'id'> | { _id: string },
-    EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -174,7 +174,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
@@ -189,7 +189,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;

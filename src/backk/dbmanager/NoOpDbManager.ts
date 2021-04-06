@@ -14,7 +14,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  addSubEntity<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
+  addSubEntityForEntityById<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
@@ -206,7 +206,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  addSubEntityWhere<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
+  addSubEntityForEntityByField<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 }

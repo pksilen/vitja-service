@@ -1,21 +1,20 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import ShoppingCartService from './ShoppingCartService';
-import ShoppingCart from './types/entities/ShoppingCart';
-import SalesItemService from '../salesitem/SalesItemService';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { Delete } from '../../backk/decorators/service/function/Delete';
-import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
-import ShoppingCartOrOrderSalesItem from './types/entities/ShoppingCartOrOrderSalesItem';
-import UserAccountIdAndSalesItemId from './types/args/UserAccountIdAndSalesItemId';
-import { PromiseErrorOr } from '../../backk/types/PromiseErrorOr';
-import { Update } from '../../backk/decorators/service/function/Update';
-import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
-import UserAccountId from '../../backk/types/useraccount/UserAccountId';
-import { ErrorDef } from '../../backk/dbmanager/hooks/PreHook';
-import { HttpStatusCodes } from '../../backk/constants/constants';
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import ShoppingCartService from "./ShoppingCartService";
+import ShoppingCart from "./types/entities/ShoppingCart";
+import SalesItemService from "../salesitem/SalesItemService";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { Delete } from "../../backk/decorators/service/function/Delete";
+import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
+import ShoppingCartOrOrderSalesItem from "./types/entities/ShoppingCartOrOrderSalesItem";
+import UserAccountIdAndSalesItemId from "./types/args/UserAccountIdAndSalesItemId";
+import { PromiseErrorOr } from "../../backk/types/PromiseErrorOr";
+import { Update } from "../../backk/decorators/service/function/Update";
+import { shoppingCartServiceErrors } from "./errors/shoppingCartServiceErrors";
+import UserAccountId from "../../backk/types/useraccount/UserAccountId";
+import { ErrorDef } from "../../backk/dbmanager/hooks/PreHook";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -41,12 +40,12 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemove')
   addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntityWhere(
+    return this.dbManager.addSubEntityForEntityByField(
       'userAccountId',
       userAccountId,
+      ShoppingCart,
       'salesItems',
       { _id: salesItemId },
-      ShoppingCart,
       ShoppingCartOrOrderSalesItem,
       {
         ifEntityNotFoundUse: () =>
