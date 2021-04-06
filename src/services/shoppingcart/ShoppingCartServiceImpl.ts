@@ -41,42 +41,23 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemove')
   addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      let [shoppingCart, error] = await this.dbManager.getEntityWhere(
-        'userAccountId',
-        userAccountId,
-        ShoppingCart
-      );
-
-      if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
-        [shoppingCart, error] = await this.dbManager.createEntity(
-          { userAccountId, salesItems: [] },
-          ShoppingCart
-        );
+    return this.dbManager.addSubEntityWhere(
+      'userAccountId',
+      userAccountId,
+      'salesItems',
+      { _id: salesItemId },
+      ShoppingCart,
+      ShoppingCartOrOrderSalesItem,
+      {
+        ifEntityNotFoundUse: () =>
+          this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart),
+        preHooks: {
+          isSuccessfulOrTrue: () =>
+            this.salesItemService.updateSalesItemState(salesItemId, 'reserved', 'forSale', userAccountId),
+          error: shoppingCartServiceErrors.salesItemReservedOrSold
+        }
       }
-
-      return shoppingCart
-        ? this.dbManager.addSubEntity(
-            shoppingCart._id,
-            'salesItems',
-            { _id: salesItemId },
-            ShoppingCart,
-            ShoppingCartOrOrderSalesItem,
-            {
-              preHooks: {
-                isSuccessfulOrTrue: () =>
-                  this.salesItemService.updateSalesItemState(
-                    salesItemId,
-                    'reserved',
-                    'forSale',
-                    userAccountId
-                  ),
-                error: shoppingCartServiceErrors.salesItemReservedOrSold
-              }
-            }
-          )
-        : [null, error];
-    });
+    );
   }
 
   @AllowForSelf()
