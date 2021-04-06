@@ -26,9 +26,13 @@ export default class TagServiceImpl extends TagService {
     return this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion, {
       ifEntityNotFoundReturn: () =>
         this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, {
-          preHooks: () => {
-            const tags = tryGetSeparatedValuesFromTextFile('resources/tags1.txt');
-            return executeForAll(tags, (tag) => this.dbManager.createEntity({ name: tag }, Tag));
+          preHooks: async () => {
+            await this.dbManager.createEntities(
+              tryGetSeparatedValuesFromTextFile('resources/tags1.txt').map((tag) => ({
+                name: tag
+              })),
+              Tag
+            );
           }
         })
     });

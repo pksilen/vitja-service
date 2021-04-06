@@ -13,11 +13,11 @@ export type PreHook<> =
       shouldExecutePreHook?: () => boolean | Promise<boolean> | PromiseErrorOr<boolean>;
       isSuccessfulOrTrue: () =>
         | PromiseErrorOr<BackkEntity | null>
-        | Promise<boolean | BackkError | null | undefined>
+        | Promise<boolean | BackkError | null | undefined | void>
         | boolean;
       error?: ErrorDef;
     }
   | (() =>
       | PromiseErrorOr<boolean | BackkEntity | null>
-      | Promise<boolean | BackkError | null | undefined>
+      | Promise<boolean | BackkError | null | undefined | void>
       | boolean);

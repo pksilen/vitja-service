@@ -16,8 +16,8 @@ import MongoDbQuery from './mongodb/MongoDbQuery';
 import { PostHook } from './hooks/PostHook';
 import { FilterQuery } from 'mongodb';
 import { PromiseErrorOr } from '../types/PromiseErrorOr';
-import { EntityPreHook } from "./hooks/EntityPreHook";
-import DbTableVersion from "./version/DbTableVersion";
+import { EntityPreHook } from './hooks/EntityPreHook';
+import DbTableVersion from './version/DbTableVersion';
 
 export interface Field {
   name: string;
@@ -114,22 +114,24 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<T[]> {
     return this.executeInsideTransaction(async () => {
       try {
-        return await Promise.all(
+        const createdEntities = await Promise.all(
           entities.map(async (entity, index) => {
-            const [, error] = await this.createEntity(entity, EntityClass, {
+            const [createdEntity, error] = await this.createEntity(entity, EntityClass, {
               preHooks,
-              postQueryOperations,
-              postHook: undefined
+              postQueryOperations
             });
 
             if (error) {
               error.message = 'Entity ' + index + ': ' + error.message;
               throw error;
             }
+
+            return createdEntity as T;
           })
         );
+        return [createdEntities, null];
       } catch (error) {
-        return error;
+        return [null, error];
       }
     });
   }
@@ -171,8 +173,8 @@ export default abstract class AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[]
-      postQueryOperations?: PostQueryOperations
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<T[]>;
 
@@ -180,10 +182,10 @@ export default abstract class AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[]
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
     }
   ): PromiseErrorOr<T>;
 
@@ -196,10 +198,10 @@ export default abstract class AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[]
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
     }
   ): PromiseErrorOr<T>;
 
@@ -228,10 +230,10 @@ export default abstract class AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[],
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
     },
     isSelectForUpdate?: boolean
   ): PromiseErrorOr<T>;
@@ -285,9 +287,9 @@ export default abstract class AbstractDbManager {
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
-      postHook?: PostHook<T>,
-      postQueryOperations?: PostQueryOperations
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<null>;
 
@@ -295,16 +297,13 @@ export default abstract class AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
-      postHook?: PostHook<T>,
-      postQueryOperations?: PostQueryOperations
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<null>;
 
-  deleteEntitiesByIds<T extends BackkEntity>(
-    _ids: string[],
-    EntityClass: new () => T
-  ): PromiseErrorOr<null> {
+  deleteEntitiesByIds<T extends BackkEntity>(_ids: string[], EntityClass: new () => T): PromiseErrorOr<null> {
     return this.executeInsideTransaction(async () => {
       try {
         return await forEachAsyncParallel(_ids, async (_id, index) => {
@@ -326,9 +325,9 @@ export default abstract class AbstractDbManager {
     fieldValue: T[keyof T],
     EntityClass: new () => T,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
-      postHook?: PostHook<T>,
-      postQueryOperations?: PostQueryOperations
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<null>;
 
@@ -372,9 +371,9 @@ export default abstract class AbstractDbManager {
     subEntitiesJsonPath: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
-      postHook?: PostHook<T>,
-      postQueryOperations?: PostQueryOperations
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<null>;
 
@@ -397,14 +396,13 @@ export default abstract class AbstractDbManager {
     _id: string,
     fieldName: string,
     values: (string | number | boolean)[],
-    EntityClass: new() => T
+    EntityClass: new () => T
   ): PromiseErrorOr<null>;
 
   abstract removeFieldValues<T extends BackkEntity>(
     _id: string,
     fieldName: string,
     values: (string | number | boolean)[],
-    EntityClass: new() => T
+    EntityClass: new () => T
   ): PromiseErrorOr<null>;
 }
-
