@@ -38,6 +38,7 @@ export default class TagServiceImpl extends TagService {
   @OnStartUp()
   async migrateDbFromVersion1To2(): PromiseErrorOr<DbTableVersion> {
     return this.dbManager.getEntityByFilters({ entityName: 'Tag', version: 1 }, DbTableVersion, {
+      ifEntityNotFoundReturn: () => Promise.resolve([null, null]),
       postHook: (tagDbTableVersion1) =>
         tagDbTableVersion1
           ? this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, {
