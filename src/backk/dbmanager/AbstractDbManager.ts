@@ -144,10 +144,10 @@ export default abstract class AbstractDbManager {
     newSubEntity: Omit<U, 'id'> | { _id: string },
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>
     }
   ): PromiseErrorOr<null>;
 
@@ -159,10 +159,10 @@ export default abstract class AbstractDbManager {
     newSubEntity: Omit<U, 'id'> | { _id: string },
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
       postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>,
     }
   ): PromiseErrorOr<null>;
 
@@ -174,10 +174,10 @@ export default abstract class AbstractDbManager {
     newSubEntity: Array<Omit<U, 'id'> | { _id: string }>,
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>
     }
   ): PromiseErrorOr<null>;
 
@@ -189,10 +189,10 @@ export default abstract class AbstractDbManager {
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+      postQueryOperations?: PostQueryOperations,
+      postHook?: PostHook<T>
     }
   ): PromiseErrorOr<null>;
 
@@ -216,10 +216,10 @@ export default abstract class AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
+      preHooks?: PreHook | PreHook[],
+      postQueryOperations?: PostQueryOperations,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>,
+      postHook?: PostHook<T>
     }
   ): PromiseErrorOr<T>;
 
@@ -232,10 +232,10 @@ export default abstract class AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
+      preHooks?: PreHook | PreHook[],
+      postQueryOperations?: PostQueryOperations,
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>,
+      postHook?: PostHook<T>
     }
   ): PromiseErrorOr<T>;
 

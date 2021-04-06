@@ -1,6 +1,7 @@
 # Vitja service
 
 TODO:
+- add/remove subentities should read all entities for given path
 - @Private(isPublicInTests)
 - test error cases
 
