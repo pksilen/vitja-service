@@ -21,7 +21,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
   fieldValue: any,
   entity: RecursivePartial<T>,
   EntityClass: new () => T,
-  preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+  entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
 ): PromiseErrorOr<null> {
@@ -49,7 +49,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
       throw error;
     }
 
-    await tryExecuteEntityPreHooks(preHooks ?? [], currentEntity);
+    await tryExecuteEntityPreHooks(entityPreHooks ?? [], currentEntity);
 
      [, error] = await dbManager.updateEntity(
       { _id: currentEntity?._id ?? '', ...entity },

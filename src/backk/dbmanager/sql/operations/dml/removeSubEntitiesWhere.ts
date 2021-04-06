@@ -29,7 +29,7 @@ export default async function removeSubEntitiesWhere<T extends BackkEntity, U ex
   fieldValue: T[keyof T],
   subEntitiesJsonPath: string,
   EntityClass: new () => T,
-  preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+  entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
 ): PromiseErrorOr<null> {
@@ -54,7 +54,7 @@ export default async function removeSubEntitiesWhere<T extends BackkEntity, U ex
     );
 
     if (currentEntity) {
-      await tryExecuteEntityPreHooks(preHooks ?? [], currentEntity);
+      await tryExecuteEntityPreHooks(entityPreHooks ?? [], currentEntity);
       await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntity, EntityClass);
       const currentEntityInstance = plainToClass(EntityClass, currentEntity);
       const subEntities = JSONPath({ json: currentEntityInstance, path: subEntitiesJsonPath });

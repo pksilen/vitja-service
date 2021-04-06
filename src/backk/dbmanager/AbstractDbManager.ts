@@ -145,7 +145,7 @@ export default abstract class AbstractDbManager {
     SubEntityClass: new () => U,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
@@ -160,7 +160,7 @@ export default abstract class AbstractDbManager {
     SubEntityClass: new () => U,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
@@ -175,7 +175,7 @@ export default abstract class AbstractDbManager {
     SubEntityClass: new () => U,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
@@ -190,7 +190,7 @@ export default abstract class AbstractDbManager {
     SubEntityClass: new () => U,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
@@ -368,7 +368,7 @@ export default abstract class AbstractDbManager {
     fieldValue: T[keyof T],
     EntityClass: { new (): T },
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
@@ -390,7 +390,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     subEntitiesJsonPath: string,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
@@ -402,7 +402,7 @@ export default abstract class AbstractDbManager {
     subEntitiesJsonPath: string,
     subEntityId: string,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
@@ -414,7 +414,7 @@ export default abstract class AbstractDbManager {
     EntityClass: new () => T,
     subEntitiesJsonPath: string,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
@@ -427,7 +427,7 @@ export default abstract class AbstractDbManager {
     subEntitiesJsonPath: string,
     subEntityId: string,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }

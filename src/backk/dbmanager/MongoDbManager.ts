@@ -331,14 +331,26 @@ export default class MongoDbManager extends AbstractDbManager {
 
   addSubEntityToEntityById<T extends BackkEntity, U extends SubEntity>(
     _id: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
-    newSubEntity: Omit<U, "id"> | { _id: string },
-    SubEntityClass: { new(): U },
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
+    newSubEntity: Omit<U, 'id'> | { _id: string },
+    SubEntityClass: { new (): U },
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityToEntityById');
-    const response = this.addSubEntitiesToEntityById(_id, EntityClass, subEntitiesJsonPath, [newSubEntity], SubEntityClass, options);
+    const response = this.addSubEntitiesToEntityById(
+      _id,
+      EntityClass,
+      subEntitiesJsonPath,
+      [newSubEntity],
+      SubEntityClass,
+      options
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -351,25 +363,38 @@ export default class MongoDbManager extends AbstractDbManager {
     newSubEntity: Omit<U, 'id'> | { _id: string },
     SubEntityClass: new () => U,
     options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityToEntityByField');
-    const response = this.addSubEntitiesToEntityByField(fieldName, fieldValue, EntityClass, subEntitiesJsonPath, [newSubEntity], SubEntityClass, options);
+    const response = this.addSubEntitiesToEntityByField(
+      fieldName,
+      fieldValue,
+      EntityClass,
+      subEntitiesJsonPath,
+      [newSubEntity],
+      SubEntityClass,
+      options
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
   async addSubEntitiesToEntityById<T extends BackkEntity, U extends SubEntity>(
     _id: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
-    newSubEntities: Array<Omit<U, "id"> | { _id: string }>,
-    SubEntityClass: { new(): U },
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
+    newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
+    SubEntityClass: { new (): U },
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesToEntityById');
     // noinspection AssignmentToFunctionParameterJS
@@ -406,7 +431,7 @@ export default class MongoDbManager extends AbstractDbManager {
             return [null, error];
           }
 
-          await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+          await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
           const [parentEntity] = JSONPath({
             json: currentEntity,
             path: subEntitiesJsonPath + '^'
@@ -498,11 +523,16 @@ export default class MongoDbManager extends AbstractDbManager {
   async addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(
     fieldName: string,
     fieldValue: any,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
-    newSubEntity: Array<Omit<U, "id"> | { _id: string }>,
-    SubEntityClass: { new(): U },
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
+    newSubEntity: Array<Omit<U, 'id'> | { _id: string }>,
+    SubEntityClass: { new (): U },
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesToEntityById');
     // noinspection AssignmentToFunctionParameterJS
@@ -530,7 +560,14 @@ export default class MongoDbManager extends AbstractDbManager {
             options
           );
         } else {
-          let [currentEntity, error] = await this.getEntityByField(fieldName, fieldValue, EntityClass, undefined, true, true);
+          let [currentEntity, error] = await this.getEntityByField(
+            fieldName,
+            fieldValue,
+            EntityClass,
+            undefined,
+            true,
+            true
+          );
 
           if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
             [currentEntity, error] = await options.ifEntityNotFoundUse();
@@ -540,7 +577,7 @@ export default class MongoDbManager extends AbstractDbManager {
             return [null, error];
           }
 
-          await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+          await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
           const [parentEntity] = JSONPath({
             json: currentEntity,
             path: subEntitiesJsonPath + '^'
@@ -632,7 +669,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async getAllEntities<T>(
     EntityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getAllEntities');
@@ -701,8 +738,8 @@ export default class MongoDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[]
-      postQueryOperations?: PostQueryOperations
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<T[]> {
     return getEntitiesByFilters(this, filters, EntityClass, options, false);
@@ -712,22 +749,18 @@ export default class MongoDbManager extends AbstractDbManager {
     filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[],
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
-    },
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
+    }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
 
     let entities: any;
     let error;
     // eslint-disable-next-line prefer-const
-    [entities, error] = await this.getEntitiesByFilters(
-      filters,
-      EntityClass,
-      options
-    );
+    [entities, error] = await this.getEntitiesByFilters(filters, EntityClass, options);
 
     let entity;
     if (entities?.length === 0) {
@@ -755,7 +788,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getEntityCount<T>(
     EntityClass: new () => T,
-    filters?: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T>,
+    filters?: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T>
   ): PromiseErrorOr<number> {
     let matchExpression: object;
     let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
@@ -765,7 +798,7 @@ export default class MongoDbManager extends AbstractDbManager {
     } else if (filters) {
       finalFilters = filters;
     } else {
-      finalFilters = []
+      finalFilters = [];
     }
 
     if (Array.isArray(finalFilters) && finalFilters?.find((filter) => filter instanceof SqlExpression)) {
@@ -815,10 +848,10 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[],
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
     },
     isSelectForUpdate = false,
     isInternalCall = false
@@ -891,7 +924,8 @@ export default class MongoDbManager extends AbstractDbManager {
         return rows;
       });
 
-      let entity, error = null;
+      let entity,
+        error = null;
       if (entities.length === 0) {
         if (options?.ifEntityNotFoundReturn) {
           [entity, error] = await options.ifEntityNotFoundReturn();
@@ -912,7 +946,6 @@ export default class MongoDbManager extends AbstractDbManager {
       }
 
       return [entities[0], error];
-
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
         ? [null, errorOrBackkError]
@@ -924,10 +957,10 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getSubEntityOfEntityById<T extends object, U extends object>(
     _id: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     subEntityJsonPath: string,
     options?: {
-      postQueryOperations?: PostQueryOperations
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<U> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntityOfEntityById');
@@ -947,7 +980,7 @@ export default class MongoDbManager extends AbstractDbManager {
     subEntityPath: string,
     EntityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations
+      postQueryOperations?: PostQueryOperations;
     },
     responseMode: 'first' | 'all' = 'all'
   ): PromiseErrorOr<U[]> {
@@ -957,7 +990,9 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass = this.getType(EntityClass);
 
     try {
-      const [entity, error] = await this.getEntityById(_id, EntityClass, { postQueryOperations: options?.postQueryOperations });
+      const [entity, error] = await this.getEntityById(_id, EntityClass, {
+        postQueryOperations: options?.postQueryOperations
+      });
       const subItems = JSONPath({ json: entity ?? null, path: subEntityPath });
       return responseMode === 'first' ? [[subItems?.[0]], error] : [subItems, error];
     } catch (error) {
@@ -971,7 +1006,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _ids: string[],
     EntityClass: new () => T,
     options?: {
-      postQueryOperations: PostQueryOperations
+      postQueryOperations: PostQueryOperations;
     }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByIds');
@@ -1041,10 +1076,10 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[],
-      postQueryOperations?: PostQueryOperations,
-      postHook?: PostHook<T>,
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
     },
     isSelectForUpdate = false,
     isInternalCall = false
@@ -1128,7 +1163,8 @@ export default class MongoDbManager extends AbstractDbManager {
         return rows;
       });
 
-      let entity, error = null;
+      let entity,
+        error = null;
       if (entities.length === 0) {
         if (options?.ifEntityNotFoundReturn) {
           [entity, error] = await options.ifEntityNotFoundReturn();
@@ -1163,7 +1199,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldValue: any,
     EntityClass: new () => T,
     options?: {
-      postQueryOperations?: PostQueryOperations
+      postQueryOperations?: PostQueryOperations;
     }
   ): PromiseErrorOr<T[]> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
@@ -1257,10 +1293,10 @@ export default class MongoDbManager extends AbstractDbManager {
     { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
     options?: {
-      preHooks?: PreHook | PreHook[],
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[],
-      postHook?: PostHook<T>,
-      postQueryOperations?: PostQueryOperations,
+      preHooks?: PreHook | PreHook[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
     },
     isRecursiveCall = false,
     isInternalCall = false
@@ -1475,7 +1511,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entity: RecursivePartial<T>,
     EntityClass: new () => T,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -1501,7 +1537,7 @@ export default class MongoDbManager extends AbstractDbManager {
           return [null, error];
         }
 
-        await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+        await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
         await this.updateEntity({ _id: currentEntity._id, ...entity }, EntityClass);
 
         if (options?.postHook) {
@@ -1524,7 +1560,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     EntityClass: new () => T,
     options?: {
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postHook?: PostHook<T>;
       postQueryOperations?: PostQueryOperations;
     }
@@ -1538,7 +1574,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
-        if (options?.preHooks) {
+        if (options?.entityPreHooks) {
           const [currentEntity, error] = await this.getEntityById(
             _id,
             EntityClass,
@@ -1551,7 +1587,7 @@ export default class MongoDbManager extends AbstractDbManager {
             return [null, error];
           }
 
-          await tryExecuteEntityPreHooks(options?.preHooks, currentEntity);
+          await tryExecuteEntityPreHooks(options?.entityPreHooks, currentEntity);
         }
 
         await client
@@ -1578,7 +1614,7 @@ export default class MongoDbManager extends AbstractDbManager {
   async deleteEntitiesByField<T extends object>(
     fieldName: keyof T & string,
     fieldValue: T[keyof T] | string,
-    EntityClass: { new(): T }
+    EntityClass: { new (): T }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByField');
     // noinspection AssignmentToFunctionParameterJS
@@ -1675,9 +1711,13 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async removeSubEntitiesFromEntityById<T extends BackkEntity>(
     _id: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
-    options?: { preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesFromEntityById');
     // noinspection AssignmentToFunctionParameterJS
@@ -1693,7 +1733,7 @@ export default class MongoDbManager extends AbstractDbManager {
           throw error;
         }
 
-        await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+        await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
         const subEntities = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
         let updateError = null;
 
@@ -1726,10 +1766,14 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async removeSubEntityFromEntityById<T extends BackkEntity>(
     _id: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
     subEntityId: string,
-    options?: { preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityFromEntityById');
     const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
@@ -1797,8 +1841,12 @@ export default class MongoDbManager extends AbstractDbManager {
   async deleteEntityByField<T extends BackkEntity>(
     fieldName: keyof T & string,
     fieldValue: T[keyof T] | string,
-    EntityClass: { new(): T },
-    options?: { preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    EntityClass: { new (): T },
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityByField');
     // noinspection AssignmentToFunctionParameterJS
@@ -1815,7 +1863,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
-        if (options?.preHooks) {
+        if (options?.entityPreHooks) {
           const [currentEntity, error] = await this.getEntityByField(
             fieldName,
             fieldValue,
@@ -1828,7 +1876,7 @@ export default class MongoDbManager extends AbstractDbManager {
             return [null, error];
           }
 
-          await tryExecuteEntityPreHooks(options?.preHooks, currentEntity);
+          await tryExecuteEntityPreHooks(options?.entityPreHooks, currentEntity);
         }
 
         await client
@@ -1855,9 +1903,13 @@ export default class MongoDbManager extends AbstractDbManager {
   async removeSubEntitiesFromEntityByField<T extends BackkEntity, U extends object>(
     entityFieldPathName: string,
     entityFieldValue: any,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
-    options?: { preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesFromEntityByField');
     // noinspection AssignmentToFunctionParameterJS
@@ -1878,7 +1930,7 @@ export default class MongoDbManager extends AbstractDbManager {
         );
 
         if (currentEntity) {
-          await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+          await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
           const subEntities = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
 
           if (subEntities.length > 0) {
@@ -1906,10 +1958,14 @@ export default class MongoDbManager extends AbstractDbManager {
   async removeSubEntityFromEntityByField<T extends BackkEntity>(
     entityFieldPathName: string,
     entityFieldValue: any,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
     subEntityId: string,
-    options?: { preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityFromEntityByField');
     const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
@@ -1927,7 +1983,13 @@ export default class MongoDbManager extends AbstractDbManager {
       );
     } else {
       const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-      response = await this.removeSubEntitiesFromEntityByField(entityFieldPathName, entityFieldValue, EntityClass, subEntityJsonPath, options);
+      response = await this.removeSubEntitiesFromEntityByField(
+        entityFieldPathName,
+        entityFieldValue,
+        EntityClass,
+        subEntityJsonPath,
+        options
+      );
     }
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1938,7 +2000,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     fieldName: keyof T & string,
     values: (string | number | boolean)[],
-    EntityClass: { new(): T }
+    EntityClass: { new (): T }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityFieldValues');
     // noinspection AssignmentToFunctionParameterJS
@@ -1965,7 +2027,7 @@ export default class MongoDbManager extends AbstractDbManager {
     _id: string,
     fieldName: keyof T & string,
     values: (string | number | boolean)[],
-    EntityClass: { new(): T }
+    EntityClass: { new (): T }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityFieldValues');
     // noinspection AssignmentToFunctionParameterJS

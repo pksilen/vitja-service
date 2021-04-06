@@ -42,7 +42,7 @@ export default async function addSubEntitiesWhere<T extends BackkEntity, U exten
   SubEntityClass: new () => U,
   options?: {
     ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
-    preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+    entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
     postHook?: PostHook<T>;
     postQueryOperations?: PostQueryOperations;
   }
@@ -77,7 +77,7 @@ export default async function addSubEntitiesWhere<T extends BackkEntity, U exten
       throw error;
     }
 
-    await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+    await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
     await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntity, EntityClass);
 
     const maxSubItemId = JSONPath({ json: currentEntity, path: subEntitiesJsonPath }).reduce(

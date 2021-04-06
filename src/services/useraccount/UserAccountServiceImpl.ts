@@ -75,7 +75,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update('addOrRemove')
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseErrorOr<null> {
     return this.dbManager.addSubEntityToEntityById(_id, UserAccount, "followedUserAccounts", { _id: followedUserAccountId }, FollowedUserAccount, {
-      preHooks: () =>
+      entityPreHooks: () =>
         this.dbManager.addSubEntityToEntityById(
           followedUserAccountId,
           UserAccount,
@@ -90,7 +90,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update('addOrRemove')
   unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseErrorOr<null> {
     return this.dbManager.removeSubEntityFromEntityById(_id, UserAccount, "followedUserAccounts", followedUserAccountId, {
-      preHooks: () =>
+      entityPreHooks: () =>
         this.dbManager.removeSubEntityFromEntityById(followedUserAccountId, UserAccount, "followingUserAccounts", _id)
     });
   }

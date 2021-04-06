@@ -50,7 +50,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       {
         ifEntityNotFoundUse: () =>
           this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart),
-        preHooks: {
+        entityPreHooks: {
           shouldSucceedOrBeTrue: () =>
             this.salesItemService.updateSalesItemState(salesItemId, 'reserved', 'forSale', userAccountId),
           error: shoppingCartServiceErrors.salesItemReservedOrSold
@@ -63,7 +63,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @Update('addOrRemove')
   removeFromShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
     return this.dbManager.removeSubEntityFromEntityByField("userAccountId", userAccountId, ShoppingCart, "salesItems", salesItemId, {
-      preHooks: () =>
+      entityPreHooks: () =>
         this.salesItemService.updateSalesItemStatesByFilters(
           [salesItemId],
           "forSale",
@@ -77,7 +77,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @Delete()
   emptyShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<null> {
     return this.dbManager.deleteEntityByField("userAccountId", userAccountId, ShoppingCart, {
-      preHooks: ({ salesItems }) =>
+      entityPreHooks: ({ salesItems }) =>
         this.salesItemService.updateSalesItemStatesByFilters(
           salesItems.map(({ _id }) => _id),
           "forSale",
@@ -104,6 +104,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntitiesFromEntityByField("userAccountId", userAccountId, ShoppingCart, `salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`);
+    return this.dbManager.removeSubEntitiesFromEntityByField('userAccountId', userAccountId, ShoppingCart, `salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`);
   }
 }

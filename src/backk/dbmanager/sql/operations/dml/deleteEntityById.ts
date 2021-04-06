@@ -23,7 +23,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
   EntityClass: new () => T,
-  preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+  entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations,
   isRecursive = false
@@ -36,7 +36,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     let currentEntity, error;
 
-    if (preHooks) {
+    if (entityPreHooks) {
       [currentEntity, error] = await getEntityById(
         dbManager,
         _id,
@@ -50,7 +50,7 @@ export default async function deleteEntityById<T extends BackkEntity>(
         throw error;
       }
 
-      await tryExecuteEntityPreHooks(preHooks, currentEntity);
+      await tryExecuteEntityPreHooks(entityPreHooks, currentEntity);
     }
 
     const numericId = parseInt(_id, 10);

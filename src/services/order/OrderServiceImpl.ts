@@ -159,7 +159,7 @@ export default class OrderServiceImpl extends OrderService {
   @Update('addOrRemove')
   removeUndeliveredOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseErrorOr<null> {
     return this.dbManager.removeSubEntityFromEntityById(_id, Order, "orderItems", orderItemId, {
-      preHooks: [
+      entityPreHooks: [
         this.isPaidOrderPreHook,
         {
           shouldSucceedOrBeTrue: (order) =>

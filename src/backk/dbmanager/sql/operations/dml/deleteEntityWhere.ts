@@ -21,7 +21,7 @@ export default async function deleteEntityWhere<T extends BackkEntity>(
   fieldName: string,
   fieldValue: T[keyof T],
   EntityClass: new () => T,
-  preHooks?: EntityPreHook<T> | EntityPreHook<T>[],
+  entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[],
   postHook?: PostHook<T>,
   postQueryOperations?: PostQueryOperations
 ): PromiseErrorOr<null> {
@@ -38,7 +38,7 @@ export default async function deleteEntityWhere<T extends BackkEntity>(
 
     let currentEntity, error;
 
-    if (preHooks) {
+    if (entityPreHooks) {
       [currentEntity, error] = await getEntityWhere(
         dbManager,
         fieldName,
@@ -55,7 +55,7 @@ export default async function deleteEntityWhere<T extends BackkEntity>(
         throw error;
       }
 
-      await tryExecuteEntityPreHooks(preHooks, currentEntity);
+      await tryExecuteEntityPreHooks(entityPreHooks, currentEntity);
     }
 
     await Promise.all([
