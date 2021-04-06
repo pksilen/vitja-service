@@ -97,7 +97,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     return this.dbManager.getEntityByField('userAccountId', userAccountId, ShoppingCart, {
       preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
       postHook: {
-        shouldBeTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
+        shouldSucceedOrBeTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
         error
       }
     });

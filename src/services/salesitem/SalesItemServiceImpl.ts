@@ -220,7 +220,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       ],
       postHook: {
         executePostHookIf: () => isPriceUpdated,
-        shouldSucceed: () =>
+        shouldSucceedOrBeTrue: () =>
           sendToRemoteService(
             `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendPriceChangeNotifications`,
             {

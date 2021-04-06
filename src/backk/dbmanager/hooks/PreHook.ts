@@ -1,6 +1,6 @@
-import { BackkEntity } from "../../types/entities/BackkEntity";
-import { PromiseErrorOr } from "../../types/PromiseErrorOr";
-import { BackkError } from "../../types/BackkError";
+import { BackkEntity } from '../../types/entities/BackkEntity';
+import { PromiseErrorOr } from '../../types/PromiseErrorOr';
+import { BackkError } from '../../types/BackkError';
 
 export interface ErrorDef {
   errorCode: string;
