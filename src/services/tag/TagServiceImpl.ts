@@ -26,14 +26,13 @@ export default class TagServiceImpl extends TagService {
     return this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion, {
       ifEntityNotFoundReturn: () =>
         this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, {
-          preHooks: async () => {
-            await this.dbManager.createEntities(
+          preHooks: () =>
+            this.dbManager.createEntities(
               tryGetSeparatedValuesFromTextFile('resources/tags1.txt').map((tag) => ({
                 name: tag
               })),
               Tag
-            );
-          }
+            )
         })
     });
   }
@@ -44,10 +43,13 @@ export default class TagServiceImpl extends TagService {
       postHook: (tagDbTableVersion1) =>
         tagDbTableVersion1
           ? this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, {
-              preHooks: () => {
-                const tags = tryGetSeparatedValuesFromTextFile('resources/tags2.txt');
-                return executeForAll(tags, (tag) => this.dbManager.createEntity({ name: tag }, Tag));
-              }
+              preHooks: () =>
+                this.dbManager.createEntities(
+                  tryGetSeparatedValuesFromTextFile('resources/tags1.txt').map((tag) => ({
+                    name: tag
+                  })),
+                  Tag
+                )
             })
           : true
     });

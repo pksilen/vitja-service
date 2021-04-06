@@ -13,12 +13,12 @@ export type EntityPreHook<T extends BackkEntity | SubEntity> =
   | {
   shouldExecutePreHook?: (entity: T) => boolean | Promise<boolean> | PromiseErrorOr<boolean>;
   isSuccessfulOrTrue: (entity: T) =>
-    | PromiseErrorOr<BackkEntity | null>
+    | PromiseErrorOr<BackkEntity | BackkEntity[] | null>
     | Promise<boolean | BackkError | null | undefined>
     | boolean;
   error?: ErrorDef;
 }
   | ((entity: T) =>
-  | PromiseErrorOr<boolean | BackkEntity | null>
+  | PromiseErrorOr<boolean | BackkEntity[] | BackkEntity | null>
   | Promise<boolean | BackkError | null | undefined>
   | boolean);
