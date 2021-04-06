@@ -338,14 +338,7 @@ export default class MongoDbManager extends AbstractDbManager {
     options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityForEntityById');
-    const response = this.addSubEntities(
-      _id,
-      subEntitiesJsonPath,
-      [newSubEntity],
-      EntityClass,
-      SubEntityClass,
-      options
-    );
+    const response = this.addSubEntitiesForEntityById(_id, EntityClass, subEntitiesJsonPath, [newSubEntity], SubEntityClass, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -365,33 +358,20 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityForEntityByField');
-    const response = this.addSubEntitiesWhere(
-      fieldName,
-      fieldValue,
-      subEntitiesJsonPath,
-      [newSubEntity],
-      EntityClass,
-      SubEntityClass,
-      options
-    );
+    const response = this.addSubEntitiesForEntityByField(fieldName, fieldValue, EntityClass, subEntitiesJsonPath, [newSubEntity], SubEntityClass, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
-  async addSubEntities<T extends BackkEntity, U extends SubEntity>(
+  async addSubEntitiesForEntityById<T extends BackkEntity, U extends SubEntity>(
     _id: string,
+    EntityClass: { new(): T },
     subEntitiesJsonPath: string,
-    newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
-    EntityClass: new () => T,
-    SubEntityClass: new () => U,
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    newSubEntities: Array<Omit<U, "id"> | { _id: string }>,
+    SubEntityClass: { new(): U },
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesForEntityById');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     // noinspection AssignmentToFunctionParameterJS
@@ -515,21 +495,16 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(
+  async addSubEntitiesForEntityByField<T extends BackkEntity, U extends SubEntity>(
     fieldName: string,
     fieldValue: any,
+    EntityClass: { new(): T },
     subEntitiesJsonPath: string,
-    newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
-    EntityClass: new () => T,
-    SubEntityClass: new () => U,
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    newSubEntity: Array<Omit<U, "id"> | { _id: string }>,
+    SubEntityClass: { new(): U },
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesForEntityById');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     // noinspection AssignmentToFunctionParameterJS
@@ -550,7 +525,7 @@ export default class MongoDbManager extends AbstractDbManager {
             fieldName,
             fieldValue,
             subEntitiesJsonPath,
-            newSubEntities,
+            newSubEntity,
             EntityClass,
             options
           );
@@ -597,7 +572,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
             if (
               foundArrayMaxSizeValidation &&
-              maxSubItemId + newSubEntities.length >= foundArrayMaxSizeValidation.constraints[0]
+              maxSubItemId + newSubEntity.length >= foundArrayMaxSizeValidation.constraints[0]
             ) {
               // noinspection ExceptionCaughtLocallyJS
               throw createBackkErrorFromErrorCodeMessageAndStatus({
@@ -612,7 +587,7 @@ export default class MongoDbManager extends AbstractDbManager {
             }
           }
 
-          await forEachAsyncParallel(newSubEntities, async (newSubEntity, index) => {
+          await forEachAsyncParallel(newSubEntity, async (newSubEntity, index) => {
             if (
               parentEntityClassAndPropertyNameForSubEntity &&
               typePropertyAnnotationContainer.isTypePropertyManyToMany(
@@ -656,13 +631,15 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async getAllEntities<T>(
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getAllEntities');
     updateDbLocalTransactionCount(this);
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
-    const finalPostQueryOperations = postQueryOperations ?? new DefaultPostQueryOperations();
+    const finalPostQueryOperations = options?.postQueryOperations ?? new DefaultPostQueryOperations();
 
     try {
       let isSelectForUpdate = false;
@@ -776,17 +753,19 @@ export default class MongoDbManager extends AbstractDbManager {
     return [entities[0], error];
   }
 
-  async getEntitiesCount<T>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
-    EntityClass: new () => T
+  async getEntityCount<T>(
+    EntityClass: new () => T,
+    filters?: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T>,
   ): PromiseErrorOr<number> {
     let matchExpression: object;
     let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
 
     if (typeof filters === 'object' && !Array.isArray(filters)) {
       finalFilters = convertFilterObjectToMongoDbQueries(filters);
-    } else {
+    } else if (filters) {
       finalFilters = filters;
+    } else {
+      finalFilters = []
     }
 
     if (Array.isArray(finalFilters) && finalFilters?.find((filter) => filter instanceof SqlExpression)) {
@@ -812,7 +791,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
     replaceIdStringsWithObjectIds(matchExpression);
 
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityCount');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
 

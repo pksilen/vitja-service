@@ -166,12 +166,12 @@ export default abstract class AbstractDbManager {
     }
   ): PromiseErrorOr<null>;
 
-  abstract addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(
+  abstract addSubEntitiesForEntityByField<T extends BackkEntity, U extends SubEntity>(
     fieldName: string,
     fieldValue: any,
+    EntityClass: new () => T,
     subEntitiesJsonPath: string,
     newSubEntity: Array<Omit<U, 'id'> | { _id: string }>,
-    EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
@@ -182,11 +182,11 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<null>;
 
   // noinspection OverlyComplexFunctionJS
-  abstract addSubEntities<T extends BackkEntity, U extends SubEntity>(
+  abstract addSubEntitiesForEntityById<T extends BackkEntity, U extends SubEntity>(
     _id: string,
+    EntityClass: new () => T,
     subEntitiesJsonPath: string,
     newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
-    EntityClass: new () => T,
     SubEntityClass: new () => U,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
@@ -198,7 +198,9 @@ export default abstract class AbstractDbManager {
 
   abstract getAllEntities<T>(
     EntityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseErrorOr<T[]>;
 
   abstract getEntitiesByFilters<T>(
@@ -221,9 +223,9 @@ export default abstract class AbstractDbManager {
     }
   ): PromiseErrorOr<T>;
 
-  abstract getEntitiesCount<T>(
-    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object | undefined,
-    EntityClass: new () => T
+  abstract getEntityCount<T>(
+    EntityClass: new () => T,
+    filters?: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
   ): PromiseErrorOr<number>;
 
   abstract getEntityById<T>(

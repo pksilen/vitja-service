@@ -498,25 +498,43 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(
+  async addSubEntitiesForEntityByField<T extends BackkEntity, U extends SubEntity>(
     fieldName: string,
     fieldValue: any,
+    EntityClass: { new(): T },
     subEntitiesJsonPath: string,
-    newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
-    EntityClass: new () => T,
-    SubEntityClass: new () => U,
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    newSubEntity: Array<Omit<U, "id"> | { _id: string }>,
+    SubEntityClass: { new(): U },
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesWhere');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesForEntityByField');
     const response = await addSubEntitiesWhere(
       this,
       fieldName,
       fieldValue,
+      subEntitiesJsonPath,
+      newSubEntity,
+      EntityClass,
+      SubEntityClass,
+      options
+    );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  // noinspection OverlyComplexFunctionJS
+  async addSubEntitiesForEntityById<T extends BackkEntity, U extends SubEntity>(
+    _id: string,
+    EntityClass: { new(): T },
+    subEntitiesJsonPath: string,
+    newSubEntities: Array<Omit<U, "id"> | { _id: string }>,
+    SubEntityClass: { new(): U },
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; preHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postHook?: PostHook<T>; postQueryOperations?: PostQueryOperations }
+  ): PromiseErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesForEntityById');
+    const response = await addSubEntities(
+      this,
+      _id,
       subEntitiesJsonPath,
       newSubEntities,
       EntityClass,
@@ -527,40 +545,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  // noinspection OverlyComplexFunctionJS
-  async addSubEntities<T extends BackkEntity, U extends SubEntity>(
-    _id: string,
-    subEntitiesJsonPath: string,
-    newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
-    entityClass: new () => T,
-    subEntityClass: new () => U,
-    options: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
-  ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
-    const response = await addSubEntities(
-      this,
-      _id,
-      subEntitiesJsonPath,
-      newSubEntities,
-      entityClass,
-      subEntityClass,
-      options
-    );
-    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-    return response;
-  }
-
   async getAllEntities<T>(
     entityClass: new () => T,
-    postQueryOperations?: PostQueryOperations
+    options?: {
+      postQueryOperations?: PostQueryOperations
+    }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
-    const response = await getAllEntities(this, entityClass, postQueryOperations);
+    const response = await getAllEntities(this, entityClass, options?.postQueryOperations);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -620,11 +612,11 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return [entities[0], error];
   }
 
-  async getEntitiesCount<T>(
-    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object | undefined,
-    entityClass: new () => T
+  async getEntityCount<T>(
+    entityClass: new () => T,
+    filters?: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
   ): PromiseErrorOr<number> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesCount');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityCount');
     const response = await getEntitiesCount(this, filters, entityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
