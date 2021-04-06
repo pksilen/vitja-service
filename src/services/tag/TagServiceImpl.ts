@@ -45,7 +45,7 @@ export default class TagServiceImpl extends TagService {
           ? this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, {
               preHooks: () =>
                 this.dbManager.createEntities(
-                  tryGetSeparatedValuesFromTextFile('resources/tags1.txt').map((tag) => ({
+                  tryGetSeparatedValuesFromTextFile('resources/tags2.txt').map((tag) => ({
                     name: tag
                   })),
                   Tag
