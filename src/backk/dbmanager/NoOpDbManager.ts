@@ -201,4 +201,12 @@ export default class NoOpDbManager extends AbstractDbManager {
   removeSubEntitiesWhere<T extends BackkEntity, U extends object>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
+
+  addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
+    throw new Error('Not implemented');
+  }
+
+  addSubEntityWhere<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
+    throw new Error('Not implemented');
+  }
 }

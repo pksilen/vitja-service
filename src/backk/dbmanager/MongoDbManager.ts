@@ -60,11 +60,12 @@ import { EntityPreHook } from './hooks/EntityPreHook';
 import tryExecuteEntityPreHooks from './hooks/tryExecuteEntityPreHooks';
 import handleNestedManyToManyRelations from './mongodb/handleNestedManyToManyRelations';
 import handleNestedOneToManyRelations from './mongodb/handleNestedOneToManyRelations';
-import addSimpleSubEntitiesOrValues from './mongodb/addSimpleSubEntitiesOrValues';
+import addSimpleSubEntitiesOrValuesByEntityId from './mongodb/addSimpleSubEntitiesOrValuesByEntityId';
 import removeSimpleSubEntityById from './mongodb/removeSimpleSubEntityById';
 import removeSimpleSubEntityByIdWhere from './mongodb/removeSimpleSubEntityByIdWhere';
 import getEntitiesByFilters from './mongodb/operations/dql/getEntitiesByFilters';
 import removeFieldValues from './mongodb/removeFieldValues';
+import addSimpleSubEntitiesOrValuesWhere from "./mongodb/addSimpleSubEntitiesOrValuesWhere";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -340,7 +341,6 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
-
     const response = this.addSubEntities(
       _id,
       subEntitiesJsonPath,
@@ -349,7 +349,33 @@ export default class MongoDbManager extends AbstractDbManager {
       subEntityClass,
       options
     );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
 
+  addSubEntityWhere<T extends BackkEntity, U extends SubEntity>(
+    fieldName: string,
+    fieldValue: any,
+    subEntitiesJsonPath: string,
+    newSubEntity: Omit<U, 'id'> | { _id: string },
+    EntityClass: new () => T,
+    SubEntityClass: new () => U,
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityWhere');
+    const response = this.addSubEntitiesWhere(
+      fieldName,
+      fieldValue,
+      subEntitiesJsonPath,
+      [newSubEntity],
+      EntityClass,
+      SubEntityClass,
+      options
+    );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -381,7 +407,7 @@ export default class MongoDbManager extends AbstractDbManager {
         let updateError;
 
         if (isNonNestedColumnName) {
-          [, updateError] = await addSimpleSubEntitiesOrValues(
+          [, updateError] = await addSimpleSubEntitiesOrValuesByEntityId(
             client,
             this,
             _id,
@@ -392,6 +418,140 @@ export default class MongoDbManager extends AbstractDbManager {
           );
         } else {
           const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+
+          if (!currentEntity) {
+            return [null, error];
+          }
+
+          await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+          const [parentEntity] = JSONPath({
+            json: currentEntity,
+            path: subEntitiesJsonPath + '^'
+          });
+
+          const [subEntities] = JSONPath({ json: currentEntity, path: subEntitiesJsonPath });
+          const maxSubItemId = subEntities.reduce((maxSubItemId: number, subEntity: any) => {
+            const subItemId = parseInt(subEntity.id, 10);
+            return subItemId > maxSubItemId ? subItemId : maxSubItemId;
+          }, -1);
+
+          const parentEntityClassAndPropertyNameForSubEntity = findParentEntityAndPropertyNameForSubEntity(
+            EntityClass,
+            SubEntityClass,
+            this.getTypes()
+          );
+
+          if (parentEntityClassAndPropertyNameForSubEntity) {
+            const metadataForValidations = getFromContainer(MetadataStorage).getTargetValidationMetadatas(
+              parentEntityClassAndPropertyNameForSubEntity[0],
+              ''
+            );
+
+            const foundArrayMaxSizeValidation = metadataForValidations.find(
+              (validationMetadata: ValidationMetadata) =>
+                validationMetadata.propertyName === parentEntityClassAndPropertyNameForSubEntity[1] &&
+                validationMetadata.type === 'arrayMaxSize'
+            );
+
+            if (
+              foundArrayMaxSizeValidation &&
+              maxSubItemId + newSubEntities.length >= foundArrayMaxSizeValidation.constraints[0]
+            ) {
+              // noinspection ExceptionCaughtLocallyJS
+              throw createBackkErrorFromErrorCodeMessageAndStatus({
+                ...BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED,
+                message:
+                  parentEntityClassAndPropertyNameForSubEntity[0].name +
+                  '.' +
+                  parentEntityClassAndPropertyNameForSubEntity[1] +
+                  ': ' +
+                  BACKK_ERRORS.MAX_ENTITY_COUNT_REACHED.message
+              });
+            }
+          }
+
+          await forEachAsyncParallel(newSubEntities, async (newSubEntity, index) => {
+            if (
+              parentEntityClassAndPropertyNameForSubEntity &&
+              typePropertyAnnotationContainer.isTypePropertyManyToMany(
+                parentEntityClassAndPropertyNameForSubEntity[0],
+                parentEntityClassAndPropertyNameForSubEntity[1]
+              )
+            ) {
+              parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push(newSubEntity);
+            } else if (parentEntityClassAndPropertyNameForSubEntity) {
+              parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push({
+                ...newSubEntity,
+                id: (maxSubItemId + 1 + index).toString()
+              });
+            }
+          });
+
+          [, updateError] = await this.updateEntity(
+            currentEntity as any,
+            EntityClass,
+            undefined,
+            false,
+            true
+          );
+        }
+
+        if (options?.postHook) {
+          await tryExecutePostHook(options?.postHook, null);
+        }
+
+        return [null, updateError];
+      });
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
+  }
+
+  async addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(
+    fieldName: string,
+    fieldValue: any,
+    subEntitiesJsonPath: string,
+    newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
+    EntityClass: new () => T,
+    SubEntityClass: new () => U,
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    // noinspection AssignmentToFunctionParameterJS
+    SubEntityClass = this.getType(SubEntityClass);
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      return await this.tryExecute(shouldUseTransaction, async (client) => {
+        const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
+        let updateError;
+
+        if (isNonNestedColumnName) {
+          [, updateError] = await addSimpleSubEntitiesOrValuesWhere(
+            client,
+            this,
+            fieldName,
+            fieldValue,
+            subEntitiesJsonPath,
+            newSubEntities,
+            EntityClass,
+            options
+          );
+        } else {
+          const [currentEntity, error] = await this.getEntityWhere(fieldName, fieldValue, EntityClass, undefined, true, true);
 
           if (!currentEntity) {
             return [null, error];
@@ -1240,7 +1400,7 @@ export default class MongoDbManager extends AbstractDbManager {
     entity: Partial<T>,
     EntityClass: new () => T
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityWhere');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityByFilters');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
 
@@ -1819,7 +1979,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        return addSimpleSubEntitiesOrValues(client, this, _id, fieldName, fieldValues, EntityClass);
+        return addSimpleSubEntitiesOrValuesByEntityId(client, this, _id, fieldName, fieldValues, EntityClass);
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)

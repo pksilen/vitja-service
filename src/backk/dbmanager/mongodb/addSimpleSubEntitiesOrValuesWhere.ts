@@ -10,10 +10,11 @@ import { MongoClient, ObjectId } from 'mongodb';
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 
-export default async function addSimpleSubEntitiesOrValues<T extends BackkEntity, U extends SubEntity>(
+export default async function addSimpleSubEntitiesOrValuesWhere<T extends BackkEntity, U extends SubEntity>(
   client: MongoClient,
   dbManager: MongoDbManager,
-  _id: string,
+  fieldName: string,
+  fieldValue: any,
   subEntityPath: string,
   newSubEntities: Array<Omit<U, 'id'> | { _id: string } | string | number | boolean>,
   EntityClass: new () => T,
@@ -24,7 +25,7 @@ export default async function addSimpleSubEntitiesOrValues<T extends BackkEntity
   }
 ): PromiseErrorOr<null> {
   if (options?.preHooks) {
-    const [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, undefined, true, true);
+    const [currentEntity, error] = await dbManager.getEntityWhere(fieldName, fieldValue, EntityClass, undefined, true, true);
     if (!currentEntity) {
       return [null, error];
     }
@@ -52,7 +53,7 @@ export default async function addSimpleSubEntitiesOrValues<T extends BackkEntity
     .db(dbManager.dbName)
     .collection(EntityClass.name.toLowerCase())
     .updateOne(
-      { _id: new ObjectId(_id) },
+      { [fieldName]: fieldValue },
       { ...versionUpdate, ...lastModifiedTimestampUpdate, $push: { [subEntityPath]: { $each: newSubEntities } } }
     );
 

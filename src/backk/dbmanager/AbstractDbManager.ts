@@ -150,6 +150,34 @@ export default abstract class AbstractDbManager {
     }
   ): PromiseErrorOr<null>;
 
+  abstract addSubEntityWhere<T extends BackkEntity, U extends SubEntity>(
+    fieldName: string,
+    fieldValue: any,
+    subEntitiesJsonPath: string,
+    newSubEntity: Omit<U, 'id'> | { _id: string },
+    EntityClass: new () => T,
+    SubEntityClass: new () => U,
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseErrorOr<null>;
+
+  abstract addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(
+    fieldName: string,
+    fieldValue: any,
+    subEntitiesJsonPath: string,
+    newSubEntity: Array<Omit<U, 'id'> | { _id: string }>,
+    EntityClass: new () => T,
+    SubEntityClass: new () => U,
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseErrorOr<null>;
+
   // noinspection OverlyComplexFunctionJS
   abstract addSubEntities<T extends BackkEntity, U extends SubEntity>(
     _id: string,

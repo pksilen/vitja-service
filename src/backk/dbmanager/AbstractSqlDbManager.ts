@@ -43,6 +43,7 @@ import removeSubEntitiesWhere from './sql/operations/dml/removeSubEntitiesWhere'
 import addFieldValues from './sql/operations/dml/addFieldValues';
 import removeFieldValues from './sql/operations/dml/removeFieldValues';
 import tryExecutePostHook from "./hooks/tryExecutePostHook";
+import addSubEntitiesWhere from './sql/operations/dml/addSubEntitiesWhere';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -461,7 +462,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntity');
-
     const response = await addSubEntities(
       this,
       _id,
@@ -473,10 +473,71 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       options?.postHook,
       options?.postQueryOperations
     );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  async addSubEntityWhere<T extends BackkEntity, U extends SubEntity>(
+    fieldName: string,
+    fieldValue: any,
+    subEntitiesJsonPath: string,
+    newSubEntity: Omit<U, 'id'> | { _id: string },
+    EntityClass: new () => T,
+    SubEntityClass: new () => U,
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityWhere');
+
+    const response = await addSubEntitiesWhere(
+      this,
+      fieldName,
+      fieldValue,
+      subEntitiesJsonPath,
+      [newSubEntity],
+      EntityClass,
+      SubEntityClass,
+      options?.preHooks,
+      options?.postHook,
+      options?.postQueryOperations
+    );
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
+
+ async addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(
+    fieldName: string,
+    fieldValue: any,
+    subEntitiesJsonPath: string,
+    newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
+    EntityClass: new () => T,
+    SubEntityClass: new () => U,
+    options?: {
+      preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postHook?: PostHook<T>;
+      postQueryOperations?: PostQueryOperations;
+    }
+  ): PromiseErrorOr<null> {
+   const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesWhere');
+   const response = await addSubEntitiesWhere(
+     this,
+     fieldName,
+     fieldValue,
+     subEntitiesJsonPath,
+     newSubEntities,
+     EntityClass,
+     SubEntityClass,
+     options?.preHooks,
+     options?.postHook,
+     options?.postQueryOperations
+   );
+   recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+   return response;
+ }
 
   // noinspection OverlyComplexFunctionJS
   async addSubEntities<T extends BackkEntity, U extends SubEntity>(
@@ -492,7 +553,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntities');
-
     const response = await addSubEntities(
       this,
       _id,
@@ -504,7 +564,6 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       options?.postHook,
       options?.postQueryOperations
     );
-
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
