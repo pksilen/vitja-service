@@ -61,7 +61,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemove')
   removeFromShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityFromEntityByField(
+    return this.dbManager.removeSubEntityByIdFromEntityByField(
       'salesItems',
       salesItemId,
       ShoppingCart,
@@ -110,11 +110,6 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntitiesFromEntityByField(
-      ShoppingCart,
-      'userAccountId',
-      userAccountId,
-      `salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`
-    );
+    return this.dbManager.removeSubEntitiesByJsonPathFromEntityByField(`salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`, ShoppingCart, "userAccountId", userAccountId);
   }
 }

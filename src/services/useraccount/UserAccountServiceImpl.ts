@@ -98,14 +98,14 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemove')
   unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityFromEntityById(
+    return this.dbManager.removeSubEntityByIdFromEntityById(
       'followedUserAccounts',
       followedUserAccountId,
       UserAccount,
       _id,
       {
         entityPreHooks: () =>
-          this.dbManager.removeSubEntityFromEntityById(
+          this.dbManager.removeSubEntityByIdFromEntityById(
             'followingUserAccounts',
             _id,
             UserAccount,
@@ -129,7 +129,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemove')
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityFromEntityById('favoriteSalesItems', salesItemId, UserAccount, _id);
+    return this.dbManager.removeSubEntityByIdFromEntityById('favoriteSalesItems', salesItemId, UserAccount, _id);
   }
 
   @AllowForSelf()

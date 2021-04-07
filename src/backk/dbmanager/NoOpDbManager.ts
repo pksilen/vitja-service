@@ -82,10 +82,6 @@ export default class NoOpDbManager extends AbstractDbManager {
     return '';
   }
 
-  getSubEntitiesOfEntityById<T extends object, U extends object>(): PromiseErrorOr<U[]> {
-    throw new Error('Not implemented');
-  }
-
   getFirstSubEntityOfEntityById<T extends object, U extends object>(): PromiseErrorOr<U> {
     throw new Error('Not implemented');
   }
@@ -102,11 +98,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     return Promise.resolve(false);
   }
 
-  removeSubEntitiesFromEntityById<T extends BackkEntity>(): PromiseErrorOr<null> {
+  removeSubEntitiesByJsonPathFromEntityById<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  removeSubEntityFromEntityById<T extends BackkEntity>(): PromiseErrorOr<null> {
+  removeSubEntityByIdFromEntityById<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
@@ -186,7 +182,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  removeSubEntityFromEntityByField<T extends BackkEntity>(): PromiseErrorOr<null> {
+  removeSubEntityByIdFromEntityByField<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
@@ -198,7 +194,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  removeSubEntitiesFromEntityByField<T extends BackkEntity, U extends object>(): PromiseErrorOr<null> {
+  removeSubEntitiesByJsonPathFromEntityByField<T extends BackkEntity, U extends object>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 

@@ -237,13 +237,6 @@ export default abstract class AbstractDbManager {
     }
   ): PromiseErrorOr<T>;
 
-  abstract getSubEntitiesOfEntityById<T extends BackkEntity, U extends object>(
-    EntityClass: { new (): T },
-    _id: string,
-    subEntitiesJsonPath: string,
-    options?: { postQueryOperations?: PostQueryOperations }
-  ): PromiseErrorOr<U[]>;
-
   abstract getEntitiesByIds<T extends BackkEntity>(
     EntityClass: { new (): T },
     _ids: string[],
@@ -371,35 +364,31 @@ export default abstract class AbstractDbManager {
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object
   ): PromiseErrorOr<null>;
 
-  abstract removeSubEntitiesFromEntityById<T extends BackkEntity>(
-    EntityClass: { new (): T },
-    _id: string,
+  abstract removeSubEntitiesByJsonPathFromEntityById<T extends BackkEntity>(
     subEntitiesJsonPath: string,
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-    }
+    EntityClass: { new(): T },
+    _id: string,
+    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null>;
 
-  abstract removeSubEntityFromEntityById<T extends BackkEntity>(
-    subEntitiesJsonPath: string,
+  abstract removeSubEntityByIdFromEntityById<T extends BackkEntity>(
+    subEntityPath: string,
     subEntityId: string,
     EntityClass: { new(): T },
     _id: string,
     options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null>;
 
-  abstract removeSubEntitiesFromEntityByField<T extends BackkEntity, U extends object>(
+  abstract removeSubEntitiesByJsonPathFromEntityByField<T extends BackkEntity, U extends object>(
+    subEntitiesJsonPath: string,
     EntityClass: { new(): T },
     entityFieldPathName: string,
     entityFieldValue: any,
-    subEntitiesJsonPath: string,
     options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null>;
 
-  abstract removeSubEntityFromEntityByField<T extends BackkEntity>(
-    subEntitiesJsonPath: string,
+  abstract removeSubEntityByIdFromEntityByField<T extends BackkEntity>(
+    subEntityPath: string,
     subEntityId: string,
     EntityClass: { new(): T },
     entityFieldPathName: string,
