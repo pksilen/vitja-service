@@ -29,14 +29,17 @@ import { PreHook } from "../../../hooks/PreHook";
 import tryStartLocalTransactionIfNeeded
   from "../../../sql/operations/transaction/tryStartLocalTransactionIfNeeded";
 import tryExecutePreHooks from "../../../hooks/tryExecutePreHooks";
+import { EntitiesPostHook } from "../../../hooks/EntitiesPostHook";
+import tryExecuteEntitiesPostHook from "../../../hooks/tryExecuteEntitiesPostHook";
 
 export default async function getEntitiesByFilters<T>(
   dbManager: MongoDbManager,
   filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
   EntityClass: new () => T,
   options?: {
-    preHooks?: PreHook | PreHook[]
-    postQueryOperations?: PostQueryOperations
+    preHooks?: PreHook | PreHook[];
+    postQueryOperations?: PostQueryOperations;
+    postHook?: EntitiesPostHook<T>
   },
   isRecursive = false,
   isInternalCall = false
@@ -134,6 +137,10 @@ export default async function getEntitiesByFilters<T>(
       decryptEntities(rows, EntityClass, dbManager.getTypes(), false);
       return rows;
     });
+
+    if (options?.postHook) {
+      await tryExecuteEntitiesPostHook(options.postHook, entities);
+    }
 
     return [entities, null];
   } catch (errorOrBackkError) {

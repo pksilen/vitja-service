@@ -158,13 +158,13 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForSelf()
   @Update('addOrRemove')
   removeUndeliveredOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityFromEntityById(_id, Order, "orderItems", orderItemId, {
+    return this.dbManager.removeSubEntityFromEntityById(_id, Order, 'orderItems', orderItemId, {
       entityPreHooks: [
         this.isPaidOrderPreHook,
         {
           shouldSucceedOrBeTrue: (order) =>
             JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
-            "toBeDelivered",
+            'toBeDelivered',
           error: orderServiceErrors.cannotRemoveDeliveredOrderItem
         },
         (order) => this.updateSalesItemStateToForSale(order, orderItemId)
@@ -281,7 +281,7 @@ export default class OrderServiceImpl extends OrderService {
           this.isPaidOrderPreHook,
           (order) => this.updateSalesItemStateToForSale(order, orderItemId),
           {
-           shouldSucceedOrBeTrue: (order) =>
+            shouldSucceedOrBeTrue: (order) =>
               OrderServiceImpl.hasOrderItemState(order, orderItemId, 'returning'),
             error: orderServiceErrors.invalidOrderItemCurrentState
           }
@@ -311,28 +311,30 @@ export default class OrderServiceImpl extends OrderService {
         ]
       );
 
-      const [orders, error] = await this.dbManager.getEntitiesByFilters<Order>(orderFilters, Order, {
+      const [unpaidOrders, error] = await this.dbManager.getEntitiesByFilters(orderFilters, Order, {
         postQueryOperations: {
           includeResponseFields: ['orderItems.salesItems._id'],
           paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
         }
       });
 
-      if (orders) {
-        const salesItemIdsToUpdate = JSONPath({ json: orders, path: '$[*].orderItems[*].salesItems[*]._id' });
-        if (salesItemIdsToUpdate.length > 0) {
-          const salesItemFilters = this.dbManager.getFilters({ _id: { $in: salesItemIdsToUpdate } }, [
-            new SqlInExpression('_id', salesItemIdsToUpdate)
-          ]);
+      const salesItemIdsToUpdate = JSONPath({
+        json: unpaidOrders ?? null,
+        path: '$[*].orderItems[*].salesItems[*]._id'
+      });
 
-          const [, error] = await this.dbManager.updateEntitiesByFilters<SalesItem>(
-            salesItemFilters,
-            { state: 'forSale' },
-            SalesItem
-          );
+      if (salesItemIdsToUpdate.length > 0) {
+        const salesItemFilters = this.dbManager.getFilters({ _id: { $in: salesItemIdsToUpdate } }, [
+          new SqlInExpression('_id', salesItemIdsToUpdate)
+        ]);
 
-          return error ? [null, error] : this.dbManager.deleteEntitiesByFilters(orderFilters, Order);
-        }
+        const [, error] = await this.dbManager.updateEntitiesByFilters(
+          salesItemFilters,
+          { state: 'forSale' },
+          SalesItem
+        );
+
+        return error ? [null, error] : this.dbManager.deleteEntitiesByFilters(orderFilters, Order);
       }
 
       return [null, error];

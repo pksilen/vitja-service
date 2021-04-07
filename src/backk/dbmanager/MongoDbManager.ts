@@ -65,8 +65,9 @@ import removeSimpleSubEntityById from './mongodb/removeSimpleSubEntityById';
 import removeSimpleSubEntityByIdWhere from './mongodb/removeSimpleSubEntityByIdWhere';
 import getEntitiesByFilters from './mongodb/operations/dql/getEntitiesByFilters';
 import removeFieldValues from './mongodb/removeFieldValues';
-import addSimpleSubEntitiesOrValuesWhere from "./mongodb/addSimpleSubEntitiesOrValuesWhere";
-import { HttpStatusCodes } from "../constants/constants";
+import addSimpleSubEntitiesOrValuesWhere from './mongodb/addSimpleSubEntitiesOrValuesWhere';
+import { HttpStatusCodes } from '../constants/constants';
+import { EntitiesPostHook } from './hooks/EntitiesPostHook';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -740,6 +741,7 @@ export default class MongoDbManager extends AbstractDbManager {
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
+      postHook?: EntitiesPostHook<T>;
     }
   ): PromiseErrorOr<T[]> {
     return getEntitiesByFilters(this, filters, EntityClass, options, false);
@@ -760,7 +762,10 @@ export default class MongoDbManager extends AbstractDbManager {
     let entities: any;
     let error;
     // eslint-disable-next-line prefer-const
-    [entities, error] = await this.getEntitiesByFilters(filters, EntityClass, options);
+    [entities, error] = await this.getEntitiesByFilters(filters, EntityClass, {
+      preHooks: options?.preHooks,
+      postQueryOperations: options?.postQueryOperations
+    });
 
     let entity;
     if (entities?.length === 0) {

@@ -18,6 +18,7 @@ import { FilterQuery } from 'mongodb';
 import { PromiseErrorOr } from '../types/PromiseErrorOr';
 import { EntityPreHook } from './hooks/EntityPreHook';
 import DbTableVersion from './version/DbTableVersion';
+import { EntitiesPostHook } from "./hooks/EntitiesPostHook";
 
 export interface Field {
   name: string;
@@ -209,6 +210,7 @@ export default abstract class AbstractDbManager {
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
+      postHook?: EntitiesPostHook<T>;
     }
   ): PromiseErrorOr<T[]>;
 
