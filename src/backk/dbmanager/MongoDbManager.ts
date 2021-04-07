@@ -917,12 +917,10 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getSubEntityOfEntityById<T extends object, U extends object>(
+    EntityClass: { new(): T },
     _id: string,
-    EntityClass: { new (): T },
     subEntityJsonPath: string,
-    options?: {
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<U> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntityOfEntityById');
     const [response, error] = await this.getSubEntitiesOfEntityById<T, U>(
@@ -1318,7 +1316,7 @@ export default class MongoDbManager extends AbstractDbManager {
               finalEntityPreHooks = [eTagCheckPreHook, ...finalEntityPreHooks];
             }
           }
-          
+
           await tryExecuteEntityPreHooks(finalEntityPreHooks, currentEntity);
         }
 
