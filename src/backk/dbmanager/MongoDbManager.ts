@@ -392,7 +392,7 @@ export default class MongoDbManager extends AbstractDbManager {
             options
           );
         } else {
-          let [currentEntity, error] = await this.getEntityById(EntityClass, _id, undefined);
+          let [currentEntity, error] = await this.getEntityById(EntityClass, _id, undefined, true, true);
 
           if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
             [currentEntity, error] = await options.ifEntityNotFoundUse();
@@ -1318,8 +1318,7 @@ export default class MongoDbManager extends AbstractDbManager {
               finalEntityPreHooks = [eTagCheckPreHook, ...finalEntityPreHooks];
             }
           }
-
-          console.log(currentEntity);
+          
           await tryExecuteEntityPreHooks(finalEntityPreHooks, currentEntity);
         }
 
