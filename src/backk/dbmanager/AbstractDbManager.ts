@@ -241,20 +241,11 @@ export default abstract class AbstractDbManager {
     }
   ): PromiseErrorOr<T>;
 
-  abstract getSubEntityOfEntityById<T extends BackkEntity, U extends object>(
+  abstract getSubEntitiesOfEntityById<T extends BackkEntity, U extends object>(
     EntityClass: { new(): T },
     _id: string,
-    subEntityJsonPath: string,
+    subEntitiesJsonPath: string,
     options?: { postQueryOperations?: PostQueryOperations }
-  ): PromiseErrorOr<U>;
-
-  abstract getSubEntitiesOfEntityById<T extends BackkEntity, U extends object>(
-    _id: string,
-    subEntityJsonPath: string,
-    EntityClass: new () => T,
-    options?: {
-      postQueryOperations?: PostQueryOperations;
-    }
   ): PromiseErrorOr<U[]>;
 
   abstract getEntitiesByIds<T extends BackkEntity>(

@@ -86,7 +86,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  getSubEntityOfEntityById<T extends object, U extends object>(): PromiseErrorOr<U> {
+  getFirstSubEntityOfEntityById<T extends object, U extends object>(): PromiseErrorOr<U> {
     throw new Error('Not implemented');
   }
 

@@ -916,32 +916,13 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async getSubEntityOfEntityById<T extends object, U extends object>(
-    EntityClass: { new(): T },
-    _id: string,
-    subEntityJsonPath: string,
-    options?: { postQueryOperations?: PostQueryOperations }
-  ): PromiseErrorOr<U> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntityOfEntityById');
-    const [response, error] = await this.getSubEntitiesOfEntityById<T, U>(
-      _id,
-      subEntityJsonPath,
-      EntityClass,
-      options,
-      'first'
-    );
-    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-    return [response ? response[0] : null, error];
-  }
-
   async getSubEntitiesOfEntityById<T extends object, U extends object>(
+    EntityClass: new () => T,
     _id: string,
     subEntityPath: string,
-    EntityClass: new () => T,
     options?: {
       postQueryOperations?: PostQueryOperations;
-    },
-    responseMode: 'first' | 'all' = 'all'
+    }
   ): PromiseErrorOr<U[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntitiesOfEntityById');
     updateDbLocalTransactionCount(this);
@@ -953,7 +934,7 @@ export default class MongoDbManager extends AbstractDbManager {
         postQueryOperations: options?.postQueryOperations
       });
       const subItems = JSONPath({ json: entity ?? null, path: subEntityPath });
-      return responseMode === 'first' ? [[subItems?.[0]], error] : [subItems, error];
+      return [subItems, error];
     } catch (error) {
       return [null, createBackkErrorFromError(error)];
     } finally {

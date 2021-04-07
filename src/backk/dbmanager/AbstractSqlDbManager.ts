@@ -624,41 +624,18 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async getSubEntityOfEntityById<T extends object, U extends object>(
+  async getSubEntitiesOfEntityById<T extends object, U extends object>(
     EntityClass: { new(): T },
     _id: string,
-    subEntityJsonPath: string,
+    subEntitiesJsonPath: string,
     options?: { postQueryOperations?: PostQueryOperations }
-  ): PromiseErrorOr<U> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntityOfEntityById');
-
-    const [response, error] = await getSubEntities<T, U>(
-      this,
-      _id,
-      subEntityJsonPath,
-      EntityClass,
-      options?.postQueryOperations,
-      'first'
-    );
-
-    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-    return [response ? response[0] : null, error];
-  }
-
-  async getSubEntitiesOfEntityById<T extends object, U extends object>(
-    _id: string,
-    subEntityPath: string,
-    entityClass: new () => T,
-    options?: {
-      postQueryOperations?: PostQueryOperations;
-    }
   ): PromiseErrorOr<U[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getSubEntitiesOfEntityById');
     const response = await getSubEntities<T, U>(
       this,
       _id,
-      subEntityPath,
-      entityClass,
+      subEntitiesJsonPath,
+      EntityClass,
       options?.postQueryOperations,
       'all'
     );
