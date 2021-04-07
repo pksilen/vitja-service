@@ -423,8 +423,8 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async createEntity<T extends BackkEntity | SubEntity>(
-    entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     entityClass: new () => T,
+    entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
     options?: {
       preHooks?: PreHook | PreHook[];
       postHook?: PostHook<T>;
@@ -449,24 +449,19 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   // noinspection OverlyComplexFunctionJS
   async addSubEntityToEntityById<T extends BackkEntity, U extends SubEntity>(
+    SubEntityClass: { new(): U },
+    subEntity: Omit<U, "id"> | { _id: string },
+    EntityClass: { new(): T },
     _id: string,
-    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
-    newSubEntity: Omit<U, 'id'> | { _id: string },
-    SubEntityClass: { new (): U },
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityToEntityById');
     const response = await addSubEntities(
       this,
       _id,
       subEntitiesJsonPath,
-      [newSubEntity],
+      [subEntity],
       EntityClass,
       SubEntityClass,
       options
@@ -476,26 +471,21 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async addSubEntityToEntityByField<T extends BackkEntity, U extends SubEntity>(
-    fieldName: string,
-    fieldValue: any,
-    EntityClass: new () => T,
+    SubEntityClass: { new(): U },
+    subEntity: Omit<U, "id"> | { _id: string },
+    EntityClass: { new(): T },
+    entityFieldPathName: string,
+    entityFieldValue: any,
     subEntitiesJsonPath: string,
-    newSubEntity: Omit<U, 'id'> | { _id: string },
-    SubEntityClass: new () => U,
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityToEntityByField');
     const response = await addSubEntitiesWhere(
       this,
-      fieldName,
-      fieldValue,
+      entityFieldPathName,
+      entityFieldValue,
       subEntitiesJsonPath,
-      [newSubEntity],
+      [subEntity],
       EntityClass,
       SubEntityClass,
       options

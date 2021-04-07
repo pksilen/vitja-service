@@ -81,15 +81,12 @@ export default async function tryScheduleJobExecution(
   await clsNamespace.runAndReturn(async () => {
     await dbManager.tryReserveDbConnectionFromPool();
 
-    [entity, error] = await dbManager.createEntity(
-      {
-        serviceFunctionName,
-        retryIntervalsInSecs: retryIntervalsInSecsStr,
-        scheduledExecutionTimestamp: scheduledExecutionTimestampAsDate,
-        serviceFunctionArgument: serviceFunctionArgumentStr
-      },
-      __Backk__JobScheduling
-    );
+    [entity, error] = await dbManager.createEntity(__Backk__JobScheduling, {
+      serviceFunctionName,
+      retryIntervalsInSecs: retryIntervalsInSecsStr,
+      scheduledExecutionTimestamp: scheduledExecutionTimestampAsDate,
+      serviceFunctionArgument: serviceFunctionArgumentStr
+    });
 
     dbManager.tryReleaseDbConnectionBackToPool();
   });

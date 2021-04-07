@@ -33,30 +33,22 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
     return this.dbManager.getEntityByField('userAccountId', userAccountId, ShoppingCart, {
       preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
       ifEntityNotFoundReturn: () =>
-        this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart)
+        this.dbManager.createEntity(ShoppingCart, { userAccountId, salesItems: [] })
     });
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntityToEntityByField(
-      'userAccountId',
-      userAccountId,
-      ShoppingCart,
-      'salesItems',
-      { _id: salesItemId },
-      ShoppingCartOrOrderSalesItem,
-      {
-        ifEntityNotFoundUse: () =>
-          this.dbManager.createEntity({ userAccountId, salesItems: [] }, ShoppingCart),
-        entityPreHooks: {
-          shouldSucceedOrBeTrue: () =>
-            this.salesItemService.updateSalesItemState(salesItemId, 'reserved', 'forSale', userAccountId),
-          error: shoppingCartServiceErrors.salesItemReservedOrSold
-        }
+    return this.dbManager.addSubEntityToEntityByField(ShoppingCartOrOrderSalesItem, { _id: salesItemId }, ShoppingCart, "userAccountId", userAccountId, "salesItems", {
+      ifEntityNotFoundUse: () =>
+        this.dbManager.createEntity(ShoppingCart, { userAccountId, salesItems: [] }),
+      entityPreHooks: {
+        shouldSucceedOrBeTrue: () =>
+          this.salesItemService.updateSalesItemState(salesItemId, "reserved", "forSale", userAccountId),
+        error: shoppingCartServiceErrors.salesItemReservedOrSold
       }
-    );
+    });
   }
 
   @AllowForSelf()

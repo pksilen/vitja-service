@@ -43,15 +43,15 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForEveryUser()
   createUserAccount(userAccount: UserAccount): PromiseErrorOr<UserAccount> {
-    return this.dbManager.createEntity(
-      { ...userAccount, commissionDiscountPercentage: 0, isLocked: false },
-      UserAccount,
-      {
-        postQueryOperations: {
-          includeResponseFields: ['_id', 'commissionDiscountPercentage']
-        }
+    return this.dbManager.createEntity(UserAccount, {
+      ...userAccount,
+      commissionDiscountPercentage: 0,
+      isLocked: false
+    }, {
+      postQueryOperations: {
+        includeResponseFields: ["_id", "commissionDiscountPercentage"]
       }
-    );
+    });
   }
 
   getUserNameById({ _id }: _Id): PromiseErrorOr<UserName> {
@@ -74,15 +74,9 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemove')
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntityToEntityById(_id, UserAccount, "followedUserAccounts", { _id: followedUserAccountId }, FollowedUserAccount, {
+    return this.dbManager.addSubEntityToEntityById(FollowedUserAccount, { _id: followedUserAccountId }, UserAccount, _id, "followedUserAccounts", {
       entityPreHooks: () =>
-        this.dbManager.addSubEntityToEntityById(
-          followedUserAccountId,
-          UserAccount,
-          "followingUserAccounts",
-          { _id },
-          FollowingUserAccount
-        )
+        this.dbManager.addSubEntityToEntityById(FollowingUserAccount, { _id }, UserAccount, followedUserAccountId, "followingUserAccounts")
     });
   }
 
@@ -98,7 +92,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @AllowForSelf()
   @Update('addOrRemove')
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntityToEntityById(_id, UserAccount, "favoriteSalesItems", { _id: salesItemId }, SalesItem);
+    return this.dbManager.addSubEntityToEntityById(SalesItem, { _id: salesItemId }, UserAccount, _id, "favoriteSalesItems");
   }
 
   @AllowForSelf()

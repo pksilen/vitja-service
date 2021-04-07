@@ -79,38 +79,34 @@ export default class OrderServiceImpl extends OrderService {
       );
 
       return shoppingCart
-        ? this.dbManager.createEntity(
+        ? this.dbManager.createEntity(Order, {
+          userAccountId,
+          orderItems: shoppingCart.salesItems.map((salesItem, index) => ({
+            id: index.toString(),
+            state: "toBeDelivered",
+            trackingUrl: null,
+            deliveryTimestamp: null,
+            salesItems: [salesItem]
+          })),
+          paymentGateway,
+          transactionId: null,
+          transactionTimestamp: null,
+          paymentAmount: null
+        }, {
+          preHooks: [
             {
-              userAccountId,
-              orderItems: shoppingCart.salesItems.map((salesItem, index) => ({
-                id: index.toString(),
-                state: 'toBeDelivered',
-                trackingUrl: null,
-                deliveryTimestamp: null,
-                salesItems: [salesItem]
-              })),
-              paymentGateway,
-              transactionId: null,
-              transactionTimestamp: null,
-              paymentAmount: null
+              shouldSucceedOrBeTrue: () => iAgreeWithTermsAndConditions,
+              error: orderServiceErrors.notAgreedWithTermsAndConditions
             },
-            Order,
-            {
-              preHooks: [
-                {
-                  shouldSucceedOrBeTrue: () => iAgreeWithTermsAndConditions,
-                  error: orderServiceErrors.notAgreedWithTermsAndConditions
-                },
-                () =>
-                  this.salesItemService.updateSalesItemStates(
-                    shoppingCart.salesItems,
-                    'sold',
-                    'reserved',
-                    userAccountId
-                  )
-              ]
-            }
-          )
+            () =>
+              this.salesItemService.updateSalesItemStates(
+                shoppingCart.salesItems,
+                "sold",
+                "reserved",
+                userAccountId
+              )
+          ]
+        })
         : [null, error];
     });
   }

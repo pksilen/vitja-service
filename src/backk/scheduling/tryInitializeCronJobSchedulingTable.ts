@@ -29,14 +29,11 @@ export default async function tryInitializeCronJobSchedulingTable(dbManager: Abs
           const interval = parser.parseExpression(cronSchedule);
 
           if (error?.statusCode === HttpStatusCodes.NOT_FOUND) {
-            return dbManager.createEntity(
-              {
-                serviceFunctionName,
-                lastScheduledTimestamp: new Date(120000),
-                nextScheduledTimestamp: interval.next().toDate()
-              },
-              __Backk__CronJobScheduling
-            );
+            return dbManager.createEntity(__Backk__CronJobScheduling, {
+              serviceFunctionName,
+              lastScheduledTimestamp: new Date(120000),
+              nextScheduledTimestamp: interval.next().toDate()
+            });
           } else if (entity) {
             return dbManager.updateEntity(
               {

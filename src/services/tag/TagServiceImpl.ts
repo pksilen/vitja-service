@@ -22,14 +22,11 @@ export default class TagServiceImpl extends TagService {
   initializeDbVersion1(): PromiseErrorOr<DbTableVersion> {
     return this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion, {
       ifEntityNotFoundReturn: () =>
-        this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, {
+        this.dbManager.createEntity(DbTableVersion, { entityName: "Tag" }, {
           preHooks: () =>
-            this.dbManager.createEntities(
-              tryGetSeparatedValuesFromTextFile('resources/tags1.txt').map((tag) => ({
-                name: tag
-              })),
-              Tag
-            )
+            this.dbManager.createEntities(Tag, tryGetSeparatedValuesFromTextFile("resources/tags1.txt").map((tag) => ({
+              name: tag
+            })))
         })
     });
   }
@@ -42,13 +39,10 @@ export default class TagServiceImpl extends TagService {
         tagDbTableVersion1
           ? this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, {
               preHooks: () =>
-                this.dbManager.createEntities(
-                  tryGetSeparatedValuesFromTextFile('resources/tags2.txt').map((tag) => ({
-                    name: tag
-                  })),
-                  Tag
-                )
-            })
+                this.dbManager.createEntities(Tag, tryGetSeparatedValuesFromTextFile("resources/tags2.txt").map((tag) => ({
+                  name: tag
+                })))
+          })
           : true
     });
   }
@@ -61,7 +55,7 @@ export default class TagServiceImpl extends TagService {
   @AllowForEveryUser()
   @NoCaptcha()
   createTag(tag: Tag): PromiseErrorOr<Tag> {
-    return this.dbManager.createEntity(tag, Tag);
+    return this.dbManager.createEntity(Tag, tag);
   }
 
   @AllowForEveryUser()

@@ -18,7 +18,7 @@ import { FilterQuery } from 'mongodb';
 import { PromiseErrorOr } from '../types/PromiseErrorOr';
 import { EntityPreHook } from './hooks/EntityPreHook';
 import DbTableVersion from './version/DbTableVersion';
-import { EntitiesPostHook } from "./hooks/EntitiesPostHook";
+import { EntitiesPostHook } from './hooks/EntitiesPostHook';
 
 export interface Field {
   name: string;
@@ -98,8 +98,8 @@ export default abstract class AbstractDbManager {
   abstract executeInsideTransaction<T>(executable: () => PromiseErrorOr<T>): PromiseErrorOr<T>;
 
   abstract createEntity<T extends BackkEntity>(
+    EntityClass: { new (): T },
     entity: Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>,
-    EntityClass: new () => T,
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
@@ -108,8 +108,8 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<T>;
 
   async createEntities<T extends BackkEntity>(
+    EntityClass: { new (): T },
     entities: Array<Omit<T, '_id' | 'createdAtTimestamp' | 'version' | 'lastModifiedTimestamp'>>,
-    EntityClass: new () => T,
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
@@ -120,7 +120,7 @@ export default abstract class AbstractDbManager {
       try {
         const createdEntities = await Promise.all(
           entities.map(async (entity, index) => {
-            const [createdEntity, error] = await this.createEntity(entity, EntityClass, options);
+            const [createdEntity, error] = await this.createEntity(EntityClass, entity, options);
 
             if (error) {
               error.message = 'Entity ' + index + ': ' + error.message;
@@ -139,32 +139,22 @@ export default abstract class AbstractDbManager {
 
   // noinspection OverlyComplexFunctionJS
   abstract addSubEntityToEntityById<T extends BackkEntity, U extends SubEntity>(
+    SubEntityClass: { new(): U },
+    subEntity: Omit<U, "id"> | { _id: string },
+    EntityClass: { new(): T },
     _id: string,
-    EntityClass: new () => T,
     subEntitiesJsonPath: string,
-    newSubEntity: Omit<U, 'id'> | { _id: string },
-    SubEntityClass: new () => U,
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-    }
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null>;
 
   abstract addSubEntityToEntityByField<T extends BackkEntity, U extends SubEntity>(
+    SubEntityClass: { new(): U },
+    subEntity: Omit<U, "id"> | { _id: string },
+    EntityClass: { new(): T },
     entityFieldPathName: string,
     entityFieldValue: any,
-    EntityClass: new () => T,
     subEntitiesJsonPath: string,
-    newSubEntity: Omit<U, 'id'> | { _id: string },
-    SubEntityClass: new () => U,
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-    }
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null>;
 
   abstract addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(

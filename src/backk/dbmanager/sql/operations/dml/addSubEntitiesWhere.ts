@@ -157,16 +157,11 @@ export default async function addSubEntitiesWhere<T extends BackkEntity, U exten
       } else {
         const foreignIdFieldName = entityAnnotationContainer.getForeignIdFieldName(SubEntityClass.name);
 
-        const [, error] = await dbManager.createEntity(
-          {
-            ...newSubEntity,
-            [foreignIdFieldName]: currentEntity?._id,
-            id: (maxSubItemId + 1 + index).toString()
-          } as any,
-          SubEntityClass,
-          undefined,
-          false
-        );
+        const [, error] = await dbManager.createEntity(SubEntityClass, {
+          ...newSubEntity,
+          [foreignIdFieldName]: currentEntity?._id,
+          id: (maxSubItemId + 1 + index).toString()
+        } as any, undefined);
 
         if (error) {
           // noinspection ExceptionCaughtLocallyJS

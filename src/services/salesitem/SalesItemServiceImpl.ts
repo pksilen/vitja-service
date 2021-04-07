@@ -56,30 +56,26 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   @NoCaptcha()
   createSalesItem(arg: SalesItem): PromiseErrorOr<SalesItem> {
-    return this.dbManager.createEntity(
-      {
-        ...arg,
-        state: 'forSale',
-        previousPrice: null,
-        primaryImageThumbnailDataUri: getThumbnailImageDataUri(arg.primaryImageDataUri)
-      },
-      SalesItem,
-      {
-        preHooks: {
-          shouldSucceedOrBeTrue: async () => {
-            const [usersSellableSalesItemCount, error] = await this.dbManager.getEntityCount(SalesItem, {
-              userAccountId: arg.userAccountId,
-              state: 'forSale'
-            });
+    return this.dbManager.createEntity(SalesItem, {
+      ...arg,
+      state: "forSale",
+      previousPrice: null,
+      primaryImageThumbnailDataUri: getThumbnailImageDataUri(arg.primaryImageDataUri)
+    }, {
+      preHooks: {
+        shouldSucceedOrBeTrue: async () => {
+          const [usersSellableSalesItemCount, error] = await this.dbManager.getEntityCount(SalesItem, {
+            userAccountId: arg.userAccountId,
+            state: "forSale"
+          });
 
-            return typeof usersSellableSalesItemCount === 'number'
-              ? usersSellableSalesItemCount < 100
-              : error;
-          },
-          error: salesItemServiceErrors.maximumSalesItemCountPerUserExceeded
-        }
+          return typeof usersSellableSalesItemCount === "number"
+            ? usersSellableSalesItemCount < 100
+            : error;
+        },
+        error: salesItemServiceErrors.maximumSalesItemCountPerUserExceeded
       }
-    );
+    });
   }
 
   @AllowForEveryUser()
