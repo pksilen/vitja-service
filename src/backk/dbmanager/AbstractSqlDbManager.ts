@@ -495,26 +495,21 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(
-    fieldName: string,
-    fieldValue: any,
-    EntityClass: { new (): T },
+    SubEntityClass: { new(): U },
+    subEntities: Array<Omit<U, "id"> | { _id: string }>,
+    EntityClass: { new(): T },
+    entityFieldPathName: string,
+    entityFieldValue: any,
     subEntitiesJsonPath: string,
-    newSubEntity: Array<Omit<U, 'id'> | { _id: string }>,
-    SubEntityClass: { new (): U },
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesToEntityByField');
     const response = await addSubEntitiesWhere(
       this,
-      fieldName,
-      fieldValue,
+      entityFieldPathName,
+      entityFieldValue,
       subEntitiesJsonPath,
-      newSubEntity,
+      subEntities,
       EntityClass,
       SubEntityClass,
       options

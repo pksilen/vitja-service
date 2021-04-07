@@ -361,15 +361,7 @@ export default class MongoDbManager extends AbstractDbManager {
     options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityToEntityByField');
-    const response = this.addSubEntitiesToEntityByField(
-      entityFieldPathName,
-      entityFieldValue,
-      EntityClass,
-      subEntitiesJsonPath,
-      [subEntity],
-      SubEntityClass,
-      options
-    );
+    const response = this.addSubEntitiesToEntityByField(SubEntityClass, [subEntity], EntityClass, entityFieldPathName, entityFieldValue, subEntitiesJsonPath, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -512,18 +504,13 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(
-    fieldName: string,
-    fieldValue: any,
-    EntityClass: { new (): T },
+    SubEntityClass: { new(): U },
+    subEntities: Array<Omit<U, "id"> | { _id: string }>,
+    EntityClass: { new(): T },
+    entityFieldPathName: string,
+    entityFieldValue: any,
     subEntitiesJsonPath: string,
-    newSubEntity: Array<Omit<U, 'id'> | { _id: string }>,
-    SubEntityClass: { new (): U },
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesToEntityById');
     // noinspection AssignmentToFunctionParameterJS
@@ -543,17 +530,17 @@ export default class MongoDbManager extends AbstractDbManager {
           [, updateError] = await addSimpleSubEntitiesOrValuesWhere(
             client,
             this,
-            fieldName,
-            fieldValue,
+            entityFieldPathName,
+            entityFieldValue,
             subEntitiesJsonPath,
-            newSubEntity,
+            subEntities,
             EntityClass,
             options
           );
         } else {
           let [currentEntity, error] = await this.getEntityByField(
-            fieldName,
-            fieldValue,
+            entityFieldPathName,
+            entityFieldValue,
             EntityClass,
             undefined,
             true,
@@ -600,7 +587,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
             if (
               foundArrayMaxSizeValidation &&
-              maxSubItemId + newSubEntity.length >= foundArrayMaxSizeValidation.constraints[0]
+              maxSubItemId + subEntities.length >= foundArrayMaxSizeValidation.constraints[0]
             ) {
               // noinspection ExceptionCaughtLocallyJS
               throw createBackkErrorFromErrorCodeMessageAndStatus({
@@ -615,7 +602,7 @@ export default class MongoDbManager extends AbstractDbManager {
             }
           }
 
-          await forEachAsyncParallel(newSubEntity, async (newSubEntity, index) => {
+          await forEachAsyncParallel(subEntities, async (newSubEntity, index) => {
             if (
               parentEntityClassAndPropertyNameForSubEntity &&
               typePropertyAnnotationContainer.isTypePropertyManyToMany(
