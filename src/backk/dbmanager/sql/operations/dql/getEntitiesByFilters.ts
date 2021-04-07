@@ -15,6 +15,11 @@ import { PreHook } from '../../../hooks/PreHook';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
+import { EntitiesPostHook } from "../../../hooks/EntitiesPostHook";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import tryExecuteEntitiesPostHook from "../../../hooks/tryExecuteEntitiesPostHook";
 
 export default async function getEntitiesByFilters<T>(
   dbManager: AbstractSqlDbManager,
@@ -23,6 +28,7 @@ export default async function getEntitiesByFilters<T>(
   options?: {
     preHooks?: PreHook | PreHook[];
     postQueryOperations?: PostQueryOperations;
+    postHook?: EntitiesPostHook<T>
   }
 ): PromiseErrorOr<T[]> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
@@ -37,7 +43,7 @@ export default async function getEntitiesByFilters<T>(
   let didStartTransaction = false;
 
   try {
-    if (options?.preHooks) {
+    if (options?.preHooks || options?.postHook) {
       didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     }
 
@@ -93,8 +99,16 @@ export default async function getEntitiesByFilters<T>(
       dbManager
     );
 
+    if(options?.postHook) {
+      await tryExecuteEntitiesPostHook(options.postHook, entities);
+    }
+
+    await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [entities, null];
   } catch (error) {
+    await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [null, createBackkErrorFromError(error)];
+  } finally {
+    cleanupLocalTransactionIfNeeded(didStartTransaction, dbManager);
   }
 }

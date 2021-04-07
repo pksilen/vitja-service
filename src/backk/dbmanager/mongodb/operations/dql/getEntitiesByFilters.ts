@@ -82,7 +82,7 @@ export default async function getEntitiesByFilters<T>(
   let shouldUseTransaction = false;
 
   try {
-    if (options?.preHooks) {
+    if (options?.preHooks || options?.postHook) {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     }
 

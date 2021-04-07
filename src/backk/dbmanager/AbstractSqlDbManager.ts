@@ -44,6 +44,7 @@ import addFieldValues from './sql/operations/dml/addFieldValues';
 import removeFieldValues from './sql/operations/dml/removeFieldValues';
 import tryExecutePostHook from './hooks/tryExecutePostHook';
 import addSubEntitiesWhere from './sql/operations/dml/addSubEntitiesWhere';
+import { EntitiesPostHook } from './hooks/EntitiesPostHook';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -578,6 +579,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
+      postHook?: EntitiesPostHook<T>;
     }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
@@ -601,7 +603,10 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     let entities: any;
     let error;
     // eslint-disable-next-line prefer-const
-    [entities, error] = await this.getEntitiesByFilters(filters, EntityClass, options);
+    [entities, error] = await this.getEntitiesByFilters(filters, EntityClass, {
+      preHooks: options?.preHooks,
+      postQueryOperations: options?.postQueryOperations
+    });
 
     let entity;
     if (entities?.length === 0) {
