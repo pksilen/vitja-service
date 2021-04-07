@@ -112,10 +112,9 @@ export default class UserAccountServiceImpl extends UserAccountService {
         entityPreHooks: () =>
           this.dbManager.removeSubEntityFromEntityById(
             'followingUserAccounts',
-            followedUserAccountId,
+            _id,
             UserAccount,
-
-            _id
+            followedUserAccountId
           )
       }
     );

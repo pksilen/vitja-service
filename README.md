@@ -1,7 +1,7 @@
 # Vitja service
 
 TODO:
-- when is postQueryOperations required
+- getallentities should read by default all
 - add/remove subentities should read all entities for given path
 - @Private(isPublicInTests)
 - test error cases
