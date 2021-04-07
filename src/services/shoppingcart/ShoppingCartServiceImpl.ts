@@ -41,12 +41,11 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @Update('addOrRemove')
   addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
     return this.dbManager.addSubEntityToEntityByField(
-      ShoppingCartOrOrderSalesItem,
+      'salesItems',
       { _id: salesItemId },
       ShoppingCart,
       'userAccountId',
       userAccountId,
-      'salesItems',
       {
         ifEntityNotFoundUse: () =>
           this.dbManager.createEntity(ShoppingCart, { userAccountId, salesItems: [] }),
@@ -62,26 +61,33 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemove')
   removeFromShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityFromEntityByField("salesItems", salesItemId, ShoppingCart, "userAccountId", userAccountId, {
-      entityPreHooks: () =>
-        this.salesItemService.updateSalesItemStatesByFilters(
-          [salesItemId],
-          "forSale",
-          "reserved",
-          userAccountId
-        )
-    });
+    return this.dbManager.removeSubEntityFromEntityByField(
+      'salesItems',
+      salesItemId,
+      ShoppingCart,
+      'userAccountId',
+      userAccountId,
+      {
+        entityPreHooks: () =>
+          this.salesItemService.updateSalesItemStatesByFilters(
+            [salesItemId],
+            'forSale',
+            'reserved',
+            userAccountId
+          )
+      }
+    );
   }
 
   @AllowForSelf()
   @Delete()
   emptyShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityByField(ShoppingCart, "userAccountId", userAccountId, {
+    return this.dbManager.deleteEntityByField(ShoppingCart, 'userAccountId', userAccountId, {
       entityPreHooks: ({ salesItems }) =>
         this.salesItemService.updateSalesItemStatesByFilters(
           salesItems.map(({ _id }) => _id),
-          "forSale",
-          "reserved",
+          'forSale',
+          'reserved',
           userAccountId
         )
     });
@@ -89,7 +95,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForServiceInternalUse()
   deleteShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityByField(ShoppingCart, "userAccountId", userAccountId);
+    return this.dbManager.deleteEntityByField(ShoppingCart, 'userAccountId', userAccountId);
   }
 
   @AllowForServiceInternalUse()
@@ -104,6 +110,11 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntitiesFromEntityByField(ShoppingCart, "userAccountId", userAccountId, `salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`);
+    return this.dbManager.removeSubEntitiesFromEntityByField(
+      ShoppingCart,
+      'userAccountId',
+      userAccountId,
+      `salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`
+    );
   }
 }

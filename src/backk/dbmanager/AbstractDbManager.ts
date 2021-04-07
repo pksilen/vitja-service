@@ -139,11 +139,10 @@ export default abstract class AbstractDbManager {
 
   // noinspection OverlyComplexFunctionJS
   abstract addSubEntityToEntityById<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new (): U },
+    subEntityPath: string,
     subEntity: Omit<U, 'id'> | { _id: string },
     EntityClass: { new (): T },
     _id: string,
-    subEntitiesJsonPath: string,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -153,12 +152,11 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<null>;
 
   abstract addSubEntityToEntityByField<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new (): U },
+    subEntityPath: string,
     subEntity: Omit<U, 'id'> | { _id: string },
     EntityClass: { new (): T },
     entityFieldPathName: string,
     entityFieldValue: any,
-    subEntitiesJsonPath: string,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -168,12 +166,11 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<null>;
 
   abstract addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new (): U },
+    subEntityPath: string,
     subEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: { new (): T },
     entityFieldPathName: string,
     entityFieldValue: any,
-    subEntitiesJsonPath: string,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -184,11 +181,10 @@ export default abstract class AbstractDbManager {
 
   // noinspection OverlyComplexFunctionJS
   abstract addSubEntitiesToEntityById<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new (): U },
+    subEntityPath: string,
     subEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: { new (): T },
     _id: string,
-    subEntitiesJsonPath: string,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];

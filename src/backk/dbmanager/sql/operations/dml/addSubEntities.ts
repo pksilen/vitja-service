@@ -30,15 +30,15 @@ import isBackkError from "../../../../errors/isBackkError";
 import { EntityPreHook } from "../../../hooks/EntityPreHook";
 import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
 import { HttpStatusCodes } from "../../../../constants/constants";
+import findSubEntityClass from "../../../../utils/type/findSubEntityClass";
 
 // noinspection OverlyComplexFunctionJS,FunctionTooLongJS
 export default async function addSubEntities<T extends BackkEntity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
   _id: string,
-  subEntitiesJsonPath: string,
+  subEntityPath: string,
   newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
-  SubEntityClass: new () => U,
   options?: {
     ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
     entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -49,7 +49,10 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
   // noinspection AssignmentToFunctionParameterJS
   EntityClass = dbManager.getType(EntityClass);
   // noinspection AssignmentToFunctionParameterJS
-  SubEntityClass = dbManager.getType(SubEntityClass);
+  const SubEntityClass = findSubEntityClass(subEntityPath, EntityClass, dbManager.getTypes());
+  if (!SubEntityClass) {
+    throw new Error('Invalid subEntityPath: ' + subEntityPath);
+  }
   let didStartTransaction = false;
 
   try {
@@ -75,7 +78,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
     await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
     await tryUpdateEntityVersionAndLastModifiedTimestampIfNeeded(dbManager, currentEntity, EntityClass);
 
-    const maxSubItemId = JSONPath({ json: currentEntity, path: subEntitiesJsonPath }).reduce(
+    const maxSubItemId = JSONPath({ json: currentEntity, path: subEntityPath }).reduce(
       (maxSubItemId: number, subItem: any) => {
         const subItemId = parseInt(subItem.id);
         return subItemId > maxSubItemId ? subItemId : maxSubItemId;

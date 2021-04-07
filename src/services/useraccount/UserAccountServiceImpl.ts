@@ -1,28 +1,25 @@
-import { Injectable } from '@nestjs/common';
-import * as argon2 from 'argon2';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import UserAccount from './types/entities/UserAccount';
-import _Id from '../../backk/types/id/_Id';
-import ChangeUserPasswordArg from './types/args/ChangeUserPasswordArg';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { Update } from '../../backk/decorators/service/function/Update';
-import { Name } from '../../backk/types/Name';
-import getCities from './validation/getCities';
-import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
-import { Metadata } from '../../backk/decorators/service/function/Metadata';
-import UserAccountService from './UserAccountService';
-import UserName from '../../backk/types/useraccount/UserName';
-import { PromiseErrorOr } from '../../backk/types/PromiseErrorOr';
-import { SalesItem } from '../salesitem/types/entities/SalesItem';
-import GetUserAccountArg from './types/args/GetUserAccountArg';
-import _IdAndSalesItemId from './types/args/_IdAndSalesItemId';
-import _IdAndFollowedUserAccountId from './types/args/_IdAndFollowedUserAccountId';
-import FollowedUserAccount from './types/entities/FollowedUserAccount';
-import FollowingUserAccount from './types/entities/FollowingUserAccount';
-import { userAccountServiceErrors } from './errors/userAccountServiceErrors';
+import { Injectable } from "@nestjs/common";
+import * as argon2 from "argon2";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import UserAccount from "./types/entities/UserAccount";
+import _Id from "../../backk/types/id/_Id";
+import ChangeUserPasswordArg from "./types/args/ChangeUserPasswordArg";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { Update } from "../../backk/decorators/service/function/Update";
+import { Name } from "../../backk/types/Name";
+import getCities from "./validation/getCities";
+import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
+import { Metadata } from "../../backk/decorators/service/function/Metadata";
+import UserAccountService from "./UserAccountService";
+import UserName from "../../backk/types/useraccount/UserName";
+import { PromiseErrorOr } from "../../backk/types/PromiseErrorOr";
+import GetUserAccountArg from "./types/args/GetUserAccountArg";
+import _IdAndSalesItemId from "./types/args/_IdAndSalesItemId";
+import _IdAndFollowedUserAccountId from "./types/args/_IdAndFollowedUserAccountId";
+import { userAccountServiceErrors } from "./errors/userAccountServiceErrors";
 
 @AllowServiceForUserRoles(['vitjaAdmin'])
 @Injectable()
@@ -82,19 +79,17 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update('addOrRemove')
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseErrorOr<null> {
     return this.dbManager.addSubEntityToEntityById(
-      FollowedUserAccount,
+      'followedUserAccounts',
       { _id: followedUserAccountId },
       UserAccount,
       _id,
-      'followedUserAccounts',
       {
         entityPreHooks: () =>
           this.dbManager.addSubEntityToEntityById(
-            FollowingUserAccount,
+            'followingUserAccounts',
             { _id },
             UserAccount,
-            followedUserAccountId,
-            'followingUserAccounts'
+            followedUserAccountId
           )
       }
     );
@@ -124,11 +119,10 @@ export default class UserAccountServiceImpl extends UserAccountService {
   @Update('addOrRemove')
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseErrorOr<null> {
     return this.dbManager.addSubEntityToEntityById(
-      SalesItem,
+      'favoriteSalesItems',
       { _id: salesItemId },
       UserAccount,
-      _id,
-      'favoriteSalesItems'
+      _id
     );
   }
 

@@ -1,50 +1,50 @@
-import { Injectable } from '@nestjs/common';
-import SqlExpression from './sql/expressions/SqlExpression';
-import AbstractDbManager, { Field } from './AbstractDbManager';
-import createEntity from './sql/operations/dml/createEntity';
-import getEntitiesByFilters from './sql/operations/dql/getEntitiesByFilters';
-import getEntitiesCount from './sql/operations/dql/getEntitiesCount';
-import getEntityById from './sql/operations/dql/getEntityById';
-import getEntityWhere from './sql/operations/dql/getEntityWhere';
-import getEntitiesWhere from './sql/operations/dql/getEntitiesWhere';
-import updateEntity from './sql/operations/dml/updateEntity';
-import deleteEntityById from './sql/operations/dml/deleteEntityById';
-import removeSubEntities from './sql/operations/dml/removeSubEntities';
-import deleteAllEntities from './sql/operations/dml/deleteAllEntities';
-import getEntitiesByIds from './sql/operations/dql/getEntitiesByIds';
-import { RecursivePartial } from '../types/RecursivePartial';
-import { PreHook } from './hooks/PreHook';
-import { BackkEntity } from '../types/entities/BackkEntity';
-import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
-import defaultServiceMetrics from '../observability/metrics/defaultServiceMetrics';
-import createBackkErrorFromError from '../errors/createBackkErrorFromError';
-import log, { Severity } from '../observability/logging/log';
-import addSubEntities from './sql/operations/dml/addSubEntities';
-import getSubEntities from './sql/operations/dql/getSubEntities';
-import startDbOperation from './utils/startDbOperation';
-import recordDbOperationDuration from './utils/recordDbOperationDuration';
-import deleteEntitiesWhere from './sql/operations/dml/deleteEntitiesWhere';
-import { getNamespace } from 'cls-hooked';
-import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
-import updateEntityWhere from './sql/operations/dml/updateEntityWhere';
-import getAllEntities from './sql/operations/dql/getAllEntities';
-import { SubEntity } from '../types/entities/SubEntity';
-import deleteEntitiesByFilters from './sql/operations/dml/deleteEntitiesByFilters';
-import MongoDbQuery from './mongodb/MongoDbQuery';
-import { PostHook } from './hooks/PostHook';
-import DefaultPostQueryOperations from '../types/postqueryoperations/DefaultPostQueryOperations';
-import createBackkErrorFromErrorCodeMessageAndStatus from '../errors/createBackkErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../errors/backkErrors';
-import { PromiseErrorOr } from '../types/PromiseErrorOr';
-import updateEntitiesByFilters from './sql/operations/dml/updateEntitiesByFilters';
-import { EntityPreHook } from './hooks/EntityPreHook';
-import deleteEntityWhere from './sql/operations/dml/deleteEntityWhere';
-import removeSubEntitiesWhere from './sql/operations/dml/removeSubEntitiesWhere';
-import addFieldValues from './sql/operations/dml/addFieldValues';
-import removeFieldValues from './sql/operations/dml/removeFieldValues';
-import tryExecutePostHook from './hooks/tryExecutePostHook';
-import addSubEntitiesWhere from './sql/operations/dml/addSubEntitiesWhere';
-import { EntitiesPostHook } from './hooks/EntitiesPostHook';
+import { Injectable } from "@nestjs/common";
+import SqlExpression from "./sql/expressions/SqlExpression";
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import createEntity from "./sql/operations/dml/createEntity";
+import getEntitiesByFilters from "./sql/operations/dql/getEntitiesByFilters";
+import getEntitiesCount from "./sql/operations/dql/getEntitiesCount";
+import getEntityById from "./sql/operations/dql/getEntityById";
+import getEntityWhere from "./sql/operations/dql/getEntityWhere";
+import getEntitiesWhere from "./sql/operations/dql/getEntitiesWhere";
+import updateEntity from "./sql/operations/dml/updateEntity";
+import deleteEntityById from "./sql/operations/dml/deleteEntityById";
+import removeSubEntities from "./sql/operations/dml/removeSubEntities";
+import deleteAllEntities from "./sql/operations/dml/deleteAllEntities";
+import getEntitiesByIds from "./sql/operations/dql/getEntitiesByIds";
+import { RecursivePartial } from "../types/RecursivePartial";
+import { PreHook } from "./hooks/PreHook";
+import { BackkEntity } from "../types/entities/BackkEntity";
+import { PostQueryOperations } from "../types/postqueryoperations/PostQueryOperations";
+import defaultServiceMetrics from "../observability/metrics/defaultServiceMetrics";
+import createBackkErrorFromError from "../errors/createBackkErrorFromError";
+import log, { Severity } from "../observability/logging/log";
+import addSubEntities from "./sql/operations/dml/addSubEntities";
+import getSubEntities from "./sql/operations/dql/getSubEntities";
+import startDbOperation from "./utils/startDbOperation";
+import recordDbOperationDuration from "./utils/recordDbOperationDuration";
+import deleteEntitiesWhere from "./sql/operations/dml/deleteEntitiesWhere";
+import { getNamespace } from "cls-hooked";
+import UserDefinedFilter from "../types/userdefinedfilters/UserDefinedFilter";
+import updateEntityWhere from "./sql/operations/dml/updateEntityWhere";
+import getAllEntities from "./sql/operations/dql/getAllEntities";
+import { SubEntity } from "../types/entities/SubEntity";
+import deleteEntitiesByFilters from "./sql/operations/dml/deleteEntitiesByFilters";
+import MongoDbQuery from "./mongodb/MongoDbQuery";
+import { PostHook } from "./hooks/PostHook";
+import createBackkErrorFromErrorCodeMessageAndStatus
+  from "../errors/createBackkErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../errors/backkErrors";
+import { PromiseErrorOr } from "../types/PromiseErrorOr";
+import updateEntitiesByFilters from "./sql/operations/dml/updateEntitiesByFilters";
+import { EntityPreHook } from "./hooks/EntityPreHook";
+import deleteEntityWhere from "./sql/operations/dml/deleteEntityWhere";
+import removeSubEntitiesWhere from "./sql/operations/dml/removeSubEntitiesWhere";
+import addFieldValues from "./sql/operations/dml/addFieldValues";
+import removeFieldValues from "./sql/operations/dml/removeFieldValues";
+import tryExecutePostHook from "./hooks/tryExecutePostHook";
+import addSubEntitiesWhere from "./sql/operations/dml/addSubEntitiesWhere";
+import { EntitiesPostHook } from "./hooks/EntitiesPostHook";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -449,21 +449,24 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   // noinspection OverlyComplexFunctionJS
   async addSubEntityToEntityById<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new(): U },
-    subEntity: Omit<U, "id"> | { _id: string },
-    EntityClass: { new(): T },
+    subEntityPath: string,
+    subEntity: Omit<U, 'id'> | { _id: string },
+    EntityClass: { new (): T },
     _id: string,
-    subEntitiesJsonPath: string,
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityToEntityById');
     const response = await addSubEntities(
       this,
       _id,
-      subEntitiesJsonPath,
+      subEntityPath,
       [subEntity],
       EntityClass,
-      SubEntityClass,
       options
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -471,23 +474,26 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async addSubEntityToEntityByField<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new(): U },
-    subEntity: Omit<U, "id"> | { _id: string },
-    EntityClass: { new(): T },
+    subEntityPath: string,
+    subEntity: Omit<U, 'id'> | { _id: string },
+    EntityClass: { new (): T },
     entityFieldPathName: string,
     entityFieldValue: any,
-    subEntitiesJsonPath: string,
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityToEntityByField');
     const response = await addSubEntitiesWhere(
       this,
       entityFieldPathName,
       entityFieldValue,
-      subEntitiesJsonPath,
+      subEntityPath,
       [subEntity],
       EntityClass,
-      SubEntityClass,
       options
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -495,23 +501,26 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new(): U },
-    subEntities: Array<Omit<U, "id"> | { _id: string }>,
-    EntityClass: { new(): T },
+    subEntityPath: string,
+    subEntities: Array<Omit<U, 'id'> | { _id: string }>,
+    EntityClass: { new (): T },
     entityFieldPathName: string,
     entityFieldValue: any,
-    subEntitiesJsonPath: string,
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesToEntityByField');
     const response = await addSubEntitiesWhere(
       this,
       entityFieldPathName,
       entityFieldValue,
-      subEntitiesJsonPath,
+      subEntityPath,
       subEntities,
       EntityClass,
-      SubEntityClass,
       options
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -520,21 +529,24 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   // noinspection OverlyComplexFunctionJS
   async addSubEntitiesToEntityById<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new(): U },
-    subEntities: Array<Omit<U, "id"> | { _id: string }>,
-    EntityClass: { new(): T },
+    subEntityPath: string,
+    subEntities: Array<Omit<U, 'id'> | { _id: string }>,
+    EntityClass: { new (): T },
     _id: string,
-    subEntitiesJsonPath: string,
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesToEntityById');
     const response = await addSubEntities(
       this,
       _id,
-      subEntitiesJsonPath,
+      subEntityPath,
       subEntities,
       EntityClass,
-      SubEntityClass,
       options
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -554,9 +566,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByFilters<T>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    options?: { preHooks?: PreHook | PreHook[]; postQueryOperations?: PostQueryOperations; postHook?: EntitiesPostHook<T> }
+    options?: {
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: EntitiesPostHook<T>;
+    }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
     const response = await getEntitiesByFilters(this, filters, EntityClass, options);
@@ -565,9 +581,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntityByFilters<T>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    options?: { preHooks?: PreHook | PreHook[]; postQueryOperations?: PostQueryOperations; ifEntityNotFoundReturn?: () => PromiseErrorOr<T>; postHook?: PostHook<T> }
+    options?: {
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
 
@@ -614,9 +635,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntityById<T>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
-    options?: { preHooks?: PreHook | PreHook[]; postQueryOperations?: PostQueryOperations; ifEntityNotFoundReturn?: () => PromiseErrorOr<T>; postHook?: PostHook<T> }
+    options?: {
+      preHooks?: PreHook | PreHook[];
+      postQueryOperations?: PostQueryOperations;
+      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
     const response = await getEntityById(this, _id, EntityClass, options);
@@ -625,7 +651,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getSubEntitiesOfEntityById<T extends object, U extends object>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
     subEntitiesJsonPath: string,
     options?: { postQueryOperations?: PostQueryOperations }
@@ -644,7 +670,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByIds<T>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _ids: string[],
     options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<T[]> {
@@ -683,7 +709,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByField<T>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     fieldPathName: string,
     fieldValue: any,
     options?: { postQueryOperations?: PostQueryOperations }
@@ -703,9 +729,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async updateEntity<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     entityUpdate: RecursivePartial<T> & { _id: string },
-    options?: { preHooks?: PreHook | PreHook[]; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      preHooks?: PreHook | PreHook[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
     const response = await updateEntity(
@@ -722,7 +753,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async updateEntitiesByFilters<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     entityUpdate: Partial<T>
   ): PromiseErrorOr<null> {
@@ -733,11 +764,15 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async updateEntityByField<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     fieldPathName: string,
     fieldValue: any,
     entityUpdate: RecursivePartial<T>,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityByField');
 
@@ -757,9 +792,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async deleteEntityById<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
     const response = await deleteEntityById(
@@ -775,7 +814,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async deleteEntitiesByField<T extends object>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     fieldName: keyof T & string,
     fieldValue: T[keyof T] | string
   ): PromiseErrorOr<null> {
@@ -786,10 +825,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async deleteEntityByField<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     fieldName: keyof T & string,
     fieldValue: T[keyof T],
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityByField');
     const response = await deleteEntityWhere(
@@ -806,7 +849,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async deleteEntitiesByFilters<T extends object>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
@@ -816,10 +859,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async removeSubEntitiesFromEntityById<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
     subEntitiesJsonPath: string,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesFromEntityById');
 
@@ -840,9 +887,13 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async removeSubEntityFromEntityById<T extends BackkEntity>(
     subEntitiesJsonPath: string,
     subEntityId: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityFromEntityById');
     const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
@@ -852,11 +903,15 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async removeSubEntitiesFromEntityByField<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     entityFieldPathName: string,
     entityFieldValue: any,
     subEntitiesJsonPath: string,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesFromEntityByField');
     const response = await removeSubEntitiesWhere(
@@ -876,10 +931,14 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   async removeSubEntityFromEntityByField<T extends BackkEntity>(
     subEntitiesJsonPath: string,
     subEntityId: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     entityFieldPathName: string,
     entityFieldValue: any,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityFromEntityByField');
     const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
@@ -905,7 +964,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async addEntityFieldValues<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
     fieldValues: (string | number | boolean)[]
@@ -917,7 +976,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async removeEntityFieldValues<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
     fieldValues: (string | number | boolean)[]
