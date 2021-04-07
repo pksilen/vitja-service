@@ -527,9 +527,9 @@ export default class MongoDbManager extends AbstractDbManager {
           );
         } else {
           let [currentEntity, error] = await this.getEntityByField(
+            EntityClass,
             entityFieldPathName,
             entityFieldValue,
-            EntityClass,
             undefined,
             true,
             true
@@ -943,11 +943,9 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByIds<T>(
+    EntityClass: { new(): T },
     _ids: string[],
-    EntityClass: new () => T,
-    options?: {
-      postQueryOperations: PostQueryOperations;
-    }
+    options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByIds');
     updateDbLocalTransactionCount(this);
@@ -1012,9 +1010,9 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntityByField<T>(
+    EntityClass: new () => T,
     fieldPathName: string,
     fieldValue: any,
-    EntityClass: new () => T,
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
@@ -1460,9 +1458,9 @@ export default class MongoDbManager extends AbstractDbManager {
 
       await this.tryExecute(shouldUseTransaction, async () => {
         const [currentEntity, error] = await this.getEntityByField(
+          EntityClass,
           fieldPathName,
           fieldValue,
-          EntityClass,
           { postQueryOperations: options?.postQueryOperations },
           true
         );
@@ -1793,9 +1791,9 @@ export default class MongoDbManager extends AbstractDbManager {
       await this.tryExecute(shouldUseTransaction, async (client) => {
         if (options?.entityPreHooks) {
           const [currentEntity, error] = await this.getEntityByField(
+            EntityClass,
             fieldName,
             fieldValue,
-            EntityClass,
             { postQueryOperations: options?.postQueryOperations },
             true
           );
@@ -1849,9 +1847,9 @@ export default class MongoDbManager extends AbstractDbManager {
 
       return await this.tryExecute(shouldUseTransaction, async () => {
         const [currentEntity] = await this.getEntityByField(
+          EntityClass,
           entityFieldPathName,
           entityFieldValue,
-          EntityClass,
           { postQueryOperations: options?.postQueryOperations },
           true,
           true

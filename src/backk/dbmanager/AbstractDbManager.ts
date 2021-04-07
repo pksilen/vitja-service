@@ -249,17 +249,15 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<U[]>;
 
   abstract getEntitiesByIds<T extends BackkEntity>(
+    EntityClass: { new(): T },
     _ids: string[],
-    EntityClass: new () => T,
-    options?: {
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<T[]>;
 
   abstract getEntityByField<T extends BackkEntity>(
+    EntityClass: new () => T,
     fieldPathName: string,
     fieldValue: any,
-    EntityClass: new () => T,
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
