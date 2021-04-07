@@ -138,9 +138,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   getSalesItemsByUserDefinedFilters({
     filters
   }: GetSalesItemsByUserDefinedFiltersArg): PromiseErrorOr<SalesItem[]> {
-    return this.dbManager.getEntitiesByFilters(filters, SalesItem, {
-      postQueryOperations: new DefaultPostQueryOperations()
-    });
+    return this.dbManager.getEntitiesByFilters(filters, SalesItem);
   }
 
   @AllowForSelf()
