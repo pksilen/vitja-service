@@ -71,8 +71,6 @@ export default class TagServiceImpl extends TagService {
       new SqlExpression('name LIKE :name', { name: `%${name}%` })
     ]);
 
-    return this.dbManager.getEntitiesByFilters(filters, Tag, {
-      postQueryOperations: new DefaultPostQueryOperations()
-    });
+    return this.dbManager.getEntitiesByFilters(filters, Tag);
   }
 }
