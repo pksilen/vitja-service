@@ -201,7 +201,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  async deliverOrderItem({ _id, version, orderItems }: DeliverOrderItemArg): PromiseErrorOr<null> {
+  deliverOrderItem({ _id, version, orderItems }: DeliverOrderItemArg): PromiseErrorOr<null> {
     const [orderItem] = orderItems;
 
     return this.dbManager.updateEntity(
@@ -234,7 +234,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  async receiveOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
+  receiveOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'delivered' }] },
       Order,
@@ -253,7 +253,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  async returnOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
+  returnOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'returning' }] },
       Order,
@@ -272,7 +272,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
-  async receiveReturnedOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
+  receiveReturnedOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
     return this.dbManager.updateEntity(
       { _id, version, orderItems: [{ id: orderItemId, state: 'returned' }] },
       Order,
@@ -292,53 +292,48 @@ export default class OrderServiceImpl extends OrderService {
   }
 
   @CronJob({ minuteInterval: 5 })
-  deleteUnpaidOrders({ unpaidOrderTimeToLiveInMinutes }: DeleteUnpaidOrdersArg): PromiseErrorOr<null> {
-    return this.dbManager.executeInsideTransaction(async () => {
-      const orderFilters = this.dbManager.getFilters(
-        {
-          transactionId: null,
-          lastModifiedTimestamp: {
-            $lte: dayjs()
-              .subtract(unpaidOrderTimeToLiveInMinutes, 'minutes')
-              .toDate()
-          }
-        },
-        [
-          new SqlEquals({ transactionId: null }),
-          new SqlExpression(
-            `lastmodifiedtimestamp <= current_timestamp - INTERVAL '${unpaidOrderTimeToLiveInMinutes}' minute`
-          )
-        ]
-      );
-
-      const [unpaidOrders, error] = await this.dbManager.getEntitiesByFilters(orderFilters, Order, {
-        postQueryOperations: {
-          includeResponseFields: ['orderItems.salesItems._id'],
-          paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
+  async deleteUnpaidOrders({ unpaidOrderTimeToLiveInMinutes }: DeleteUnpaidOrdersArg): PromiseErrorOr<null> {
+    const unpaidOrderFilters = this.dbManager.getFilters(
+      {
+        transactionId: null,
+        lastModifiedTimestamp: {
+          $lte: dayjs()
+            .subtract(unpaidOrderTimeToLiveInMinutes, 'minutes')
+            .toDate()
         }
-      });
+      },
+      [
+        new SqlEquals({ transactionId: null }),
+        new SqlExpression(
+          `lastmodifiedtimestamp <= current_timestamp - INTERVAL '${unpaidOrderTimeToLiveInMinutes}' minute`
+        )
+      ]
+    );
 
-      const salesItemIdsToUpdate = JSONPath({
-        json: unpaidOrders ?? null,
-        path: '$[*].orderItems[*].salesItems[*]._id'
-      });
+    const [, error] = await this.dbManager.getEntitiesByFilters(unpaidOrderFilters, Order, {
+      postQueryOperations: {
+        includeResponseFields: ['orderItems.salesItems._id'],
+        paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
+      },
+      postHook: (unpaidOrders) => {
+        const salesItemIdsToUpdate = JSONPath({
+          json: unpaidOrders ?? null,
+          path: '$[*].orderItems[*].salesItems[*]._id'
+        });
 
-      if (salesItemIdsToUpdate.length > 0) {
-        const salesItemFilters = this.dbManager.getFilters({ _id: { $in: salesItemIdsToUpdate } }, [
-          new SqlInExpression('_id', salesItemIdsToUpdate)
-        ]);
-
-        const [, error] = await this.dbManager.updateEntitiesByFilters(
-          salesItemFilters,
-          { state: 'forSale' },
-          SalesItem
-        );
-
-        return error ? [null, error] : this.dbManager.deleteEntitiesByFilters(orderFilters, Order);
+        return salesItemIdsToUpdate.length > 0
+          ? this.dbManager.updateEntitiesByFilters(
+              this.dbManager.getFilters({ _id: { $in: salesItemIdsToUpdate } }, [
+                new SqlInExpression('_id', salesItemIdsToUpdate)
+              ]),
+              { state: 'forSale' },
+              SalesItem
+            )
+          : true;
       }
-
-      return [null, error];
     });
+
+    return error ? [null, error] : this.dbManager.deleteEntitiesByFilters(unpaidOrderFilters, Order);
   }
 
   private static refundOrderItem(orderId: string, orderItemId: string): PromiseErrorOr<null> {
