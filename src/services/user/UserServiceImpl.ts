@@ -29,16 +29,16 @@ export default class UserServiceImpl extends UserService {
       ]
     );
 
-    return this.dbManager.getEntitiesByFilters(filters, User, {
+    return this.dbManager.getEntitiesByFilters(User, filters, {
       postQueryOperations: {
         ...postQueryOperations,
-        includeResponseFields: ['_id', 'displayName', 'city', 'imageDataUri']
+        includeResponseFields: ["_id", "displayName", "city", "imageDataUri"]
       }
     });
   }
 
   @AllowForEveryUser()
   getUser({ _id }: _Id): PromiseErrorOr<User> {
-    return this.dbManager.getEntityById(_id, User);
+    return this.dbManager.getEntityById(User, _id);
   }
 }

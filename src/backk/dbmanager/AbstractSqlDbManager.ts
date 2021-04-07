@@ -554,36 +554,27 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByFilters<T>(
+    EntityClass: { new(): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    entityClass: new () => T,
-    options?: {
-      preHooks?: PreHook | PreHook[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: EntitiesPostHook<T>;
-    }
+    options?: { preHooks?: PreHook | PreHook[]; postQueryOperations?: PostQueryOperations; postHook?: EntitiesPostHook<T> }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByFilters');
-    const response = await getEntitiesByFilters(this, filters, entityClass, options);
+    const response = await getEntitiesByFilters(this, filters, EntityClass, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
   async getEntityByFilters<T>(
+    EntityClass: { new(): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    EntityClass: new () => T,
-    options?: {
-      preHooks?: PreHook | PreHook[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
-    }
+    options?: { preHooks?: PreHook | PreHook[]; postQueryOperations?: PostQueryOperations; ifEntityNotFoundReturn?: () => PromiseErrorOr<T>; postHook?: PostHook<T> }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
 
     let entities: any;
     let error;
     // eslint-disable-next-line prefer-const
-    [entities, error] = await this.getEntitiesByFilters(filters, EntityClass, {
+    [entities, error] = await this.getEntitiesByFilters(EntityClass, filters, {
       preHooks: options?.preHooks,
       postQueryOperations: options?.postQueryOperations
     });
@@ -623,17 +614,12 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntityById<T>(
+    EntityClass: { new(): T },
     _id: string,
-    entityClass: new () => T,
-    options?: {
-      preHooks?: PreHook | PreHook[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
-    }
+    options?: { preHooks?: PreHook | PreHook[]; postQueryOperations?: PostQueryOperations; ifEntityNotFoundReturn?: () => PromiseErrorOr<T>; postHook?: PostHook<T> }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityById');
-    const response = await getEntityById(this, _id, entityClass, options);
+    const response = await getEntityById(this, _id, EntityClass, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

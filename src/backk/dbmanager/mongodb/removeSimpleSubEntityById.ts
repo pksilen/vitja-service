@@ -39,7 +39,7 @@ export default async function removeSimpleSubEntityById<T extends BackkEntity, U
 
     return await dbManager.tryExecute(shouldUseTransaction, async (client) => {
       if (options?.entityPreHooks) {
-        const [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, undefined, true, true);
+        const [currentEntity, error] = await dbManager.getEntityById(EntityClass, _id, undefined);
         if (!currentEntity) {
           throw error;
         }

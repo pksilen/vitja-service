@@ -20,7 +20,7 @@ export default class TagServiceImpl extends TagService {
 
   @OnStartUp()
   initializeDbVersion1(): PromiseErrorOr<DbTableVersion> {
-    return this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion, {
+    return this.dbManager.getEntityByFilters(DbTableVersion, { entityName: "Tag" }, {
       ifEntityNotFoundReturn: () =>
         this.dbManager.createEntity(DbTableVersion, { entityName: "Tag" }, {
           preHooks: () =>
@@ -33,15 +33,15 @@ export default class TagServiceImpl extends TagService {
 
   @OnStartUp()
   migrateDbFromVersion1To2(): PromiseErrorOr<DbTableVersion> {
-    return this.dbManager.getEntityByFilters({ entityName: 'Tag', version: 1 }, DbTableVersion, {
+    return this.dbManager.getEntityByFilters(DbTableVersion, { entityName: "Tag", version: 1 }, {
       ifEntityNotFoundReturn: () => Promise.resolve([null, null]),
       postHook: (tagDbTableVersion1) =>
         tagDbTableVersion1
           ? this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, {
-              preHooks: () =>
-                this.dbManager.createEntities(Tag, tryGetSeparatedValuesFromTextFile("resources/tags2.txt").map((tag) => ({
-                  name: tag
-                })))
+            preHooks: () =>
+              this.dbManager.createEntities(Tag, tryGetSeparatedValuesFromTextFile("resources/tags2.txt").map((tag) => ({
+                name: tag
+              })))
           })
           : true
     });
@@ -64,6 +64,6 @@ export default class TagServiceImpl extends TagService {
       new SqlExpression('name LIKE :name', { name: `%${name}%` })
     ]);
 
-    return this.dbManager.getEntitiesByFilters(filters, Tag);
+    return this.dbManager.getEntitiesByFilters(Tag, filters);
   }
 }

@@ -55,20 +55,19 @@ export default class UserAccountServiceImpl extends UserAccountService {
   }
 
   getUserNameById({ _id }: _Id): PromiseErrorOr<UserName> {
-    return this.dbManager.getEntityById(_id, UserAccount, {
-      postQueryOperations: { includeResponseFields: ['userName'] }
+    return this.dbManager.getEntityById(UserAccount, _id, {
+      postQueryOperations: { includeResponseFields: ["userName"] }
     });
   }
 
   @AllowForSelf()
   getUserAccount({ userName, ...postQueryOperations }: GetUserAccountArg): PromiseErrorOr<UserAccount> {
-    return this.dbManager.getEntityByFilters(
-      { userName, 'favoriteSalesItems.state': 'forSale' },
-      UserAccount,
-      {
-        postQueryOperations
-      }
-    );
+    return this.dbManager.getEntityByFilters(UserAccount, {
+      userName,
+      "favoriteSalesItems.state": "forSale"
+    }, {
+      postQueryOperations
+    });
   }
 
   @AllowForSelf()

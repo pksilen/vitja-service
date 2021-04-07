@@ -127,7 +127,7 @@ export default async function addSubEntities<T extends BackkEntity, U extends Su
           parentEntityClassAndPropertyNameForSubEntity[1]
         )
       ) {
-        const [subEntity, error] = await dbManager.getEntityById(newSubEntity._id ?? '', SubEntityClass);
+        const [subEntity, error] = await dbManager.getEntityById(SubEntityClass, newSubEntity._id ?? "");
 
         if (!subEntity) {
           // noinspection ExceptionCaughtLocallyJS

@@ -26,7 +26,7 @@ export default async function addSimpleSubEntitiesOrValuesByEntityId<T extends B
   }
 ): PromiseErrorOr<null> {
   if (options?.entityPreHooks) {
-    let [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, undefined, true, true);
+    let [currentEntity, error] = await dbManager.getEntityById(EntityClass, _id, undefined);
 
     if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
       [currentEntity, error] = await options.ifEntityNotFoundUse();

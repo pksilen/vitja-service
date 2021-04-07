@@ -139,42 +139,62 @@ export default abstract class AbstractDbManager {
 
   // noinspection OverlyComplexFunctionJS
   abstract addSubEntityToEntityById<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new(): U },
-    subEntity: Omit<U, "id"> | { _id: string },
-    EntityClass: { new(): T },
+    SubEntityClass: { new (): U },
+    subEntity: Omit<U, 'id'> | { _id: string },
+    EntityClass: { new (): T },
     _id: string,
     subEntitiesJsonPath: string,
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null>;
 
   abstract addSubEntityToEntityByField<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new(): U },
-    subEntity: Omit<U, "id"> | { _id: string },
-    EntityClass: { new(): T },
+    SubEntityClass: { new (): U },
+    subEntity: Omit<U, 'id'> | { _id: string },
+    EntityClass: { new (): T },
     entityFieldPathName: string,
     entityFieldValue: any,
     subEntitiesJsonPath: string,
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null>;
 
   abstract addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new(): U },
-    subEntities: Array<Omit<U, "id"> | { _id: string }>,
-    EntityClass: { new(): T },
+    SubEntityClass: { new (): U },
+    subEntities: Array<Omit<U, 'id'> | { _id: string }>,
+    EntityClass: { new (): T },
     entityFieldPathName: string,
     entityFieldValue: any,
     subEntitiesJsonPath: string,
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null>;
 
   // noinspection OverlyComplexFunctionJS
   abstract addSubEntitiesToEntityById<T extends BackkEntity, U extends SubEntity>(
-    SubEntityClass: { new(): U },
-    subEntities: Array<Omit<U, "id"> | { _id: string }>,
-    EntityClass: { new(): T },
+    SubEntityClass: { new (): U },
+    subEntities: Array<Omit<U, 'id'> | { _id: string }>,
+    EntityClass: { new (): T },
     _id: string,
     subEntitiesJsonPath: string,
-    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null>;
 
   abstract getAllEntities<T extends BackkEntity>(
@@ -185,8 +205,8 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<T[]>;
 
   abstract getEntitiesByFilters<T extends BackkEntity>(
+    EntityClass: { new (): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    EntityClass: new () => T,
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
@@ -195,8 +215,8 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<T[]>;
 
   abstract getEntityByFilters<T extends BackkEntity>(
+    EntityClass: { new (): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    EntityClass: new () => T,
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
@@ -211,8 +231,8 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<number>;
 
   abstract getEntityById<T extends BackkEntity>(
+    EntityClass: { new (): T },
     _id: string,
-    EntityClass: new () => T,
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;

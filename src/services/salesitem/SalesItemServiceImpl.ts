@@ -122,7 +122,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       ]
     );
 
-    return this.dbManager.getEntitiesByFilters(filters, SalesItem, {
+    return this.dbManager.getEntitiesByFilters(SalesItem, filters, {
       postQueryOperations: {
         ...sortingAndPagination,
         includeResponseFields: SalesItemServiceImpl.DEFAULT_SALES_ITEM_FIELDS
@@ -134,35 +134,34 @@ export default class SalesItemServiceImpl extends SalesItemService {
   getSalesItemsByUserDefinedFilters({
     filters
   }: GetSalesItemsByUserDefinedFiltersArg): PromiseErrorOr<SalesItem[]> {
-    return this.dbManager.getEntitiesByFilters(filters, SalesItem);
+    return this.dbManager.getEntitiesByFilters(SalesItem, filters);
   }
 
   @AllowForSelf()
   async getFollowedUsersSalesItems({
     userAccountId
   }: UserAccountId): PromiseErrorOr<FollowedUserSalesItem[]> {
-    const [user, error] = await this.dbManager.getEntityByFilters(
-      { _id: userAccountId, 'followedUserAccounts.ownSalesItems.state': 'forSale' },
-      User,
-      {
-        postQueryOperations: {
-          sortBys: [
-            {
-              subEntityPath: 'followedUserAccounts.ownSalesItems',
-              fieldName: 'lastModifiedTimestamp',
-              sortDirection: 'DESC'
-            }
-          ],
-          includeResponseFields: [
-            'followedUserAccounts._id',
-            'followedUserAccounts.displayName',
-            ...SalesItemServiceImpl.DEFAULT_SALES_ITEM_FIELDS.map(
-              (defaultSalesItemField) => `followedUserAccounts.ownSalesItems.${defaultSalesItemField}`
-            )
-          ]
-        }
+    const [user, error] = await this.dbManager.getEntityByFilters(User, {
+      _id: userAccountId,
+      "followedUserAccounts.ownSalesItems.state": "forSale"
+    }, {
+      postQueryOperations: {
+        sortBys: [
+          {
+            subEntityPath: "followedUserAccounts.ownSalesItems",
+            fieldName: "lastModifiedTimestamp",
+            sortDirection: "DESC"
+          }
+        ],
+        includeResponseFields: [
+          "followedUserAccounts._id",
+          "followedUserAccounts.displayName",
+          ...SalesItemServiceImpl.DEFAULT_SALES_ITEM_FIELDS.map(
+            (defaultSalesItemField) => `followedUserAccounts.ownSalesItems.${defaultSalesItemField}`
+          )
+        ]
       }
-    );
+    });
 
     const followedUserSalesItems = user?.followedUserAccounts
       .map((followedUserAccount) =>
@@ -179,7 +178,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @AllowForEveryUser()
  getSalesItem({ _id }: _Id): PromiseErrorOr<SalesItem> {
-    return this.dbManager.getEntityById(_id, SalesItem);
+    return this.dbManager.getEntityById(SalesItem, _id);
   }
 
   @AllowForSelf()

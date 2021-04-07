@@ -35,7 +35,7 @@ export default async function removeFieldValues<T extends BackkEntity>(
 
     return await dbManager.tryExecute(shouldUseTransaction, async (client) => {
       if (options?.preHooks) {
-        const [currentEntity, error] = await dbManager.getEntityById(_id, EntityClass, undefined, true, true);
+        const [currentEntity, error] = await dbManager.getEntityById(EntityClass, _id, undefined);
         if (!currentEntity) {
           throw error;
         }

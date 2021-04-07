@@ -113,7 +113,7 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   getOrder({ _id }: _IdAndUserAccountId): PromiseErrorOr<Order> {
-    return this.dbManager.getEntityById(_id, Order);
+    return this.dbManager.getEntityById(Order, _id);
   }
 
   @AllowForUserRoles(['vitjaPaymentGateway'])
@@ -307,23 +307,23 @@ export default class OrderServiceImpl extends OrderService {
     );
 
     return this.dbManager.executeInsideTransaction(async () => {
-      const [, error] = await this.dbManager.getEntitiesByFilters(unpaidOrderFilters, Order, {
+      const [, error] = await this.dbManager.getEntitiesByFilters(Order, unpaidOrderFilters, {
         postQueryOperations: {
-          includeResponseFields: ['orderItems.salesItems._id'],
-          paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
+          includeResponseFields: ["orderItems.salesItems._id"],
+          paginations: [{ subEntityPath: "*", pageSize: 1000, pageNumber: 1 }]
         },
         postHook: (unpaidOrders) => {
           const salesItemIdsToUpdate = JSONPath({
             json: unpaidOrders ?? null,
-            path: '$[*].orderItems[*].salesItems[*]._id'
+            path: "$[*].orderItems[*].salesItems[*]._id"
           });
 
           const salesItemFilters = this.dbManager.getFilters({ _id: { $in: salesItemIdsToUpdate } }, [
-            new SqlInExpression('_id', salesItemIdsToUpdate)
+            new SqlInExpression("_id", salesItemIdsToUpdate)
           ]);
 
           return salesItemIdsToUpdate.length > 0
-            ? this.dbManager.updateEntitiesByFilters(salesItemFilters, { state: 'forSale' }, SalesItem)
+            ? this.dbManager.updateEntitiesByFilters(salesItemFilters, { state: "forSale" }, SalesItem)
             : true;
         }
       });

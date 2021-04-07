@@ -312,7 +312,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         const [createdEntity, error] = isInternalCall
           ? ([{ _id } as T, null] as [T, null])
-          : await this.getEntityById(_id, EntityClass, { postQueryOperations: options?.postQueryOperations });
+          : await this.getEntityById(EntityClass, _id, { postQueryOperations: options?.postQueryOperations });
 
         if (options?.postHook) {
           await tryExecutePostHook(options?.postHook, createdEntity);
@@ -392,7 +392,7 @@ export default class MongoDbManager extends AbstractDbManager {
             options
           );
         } else {
-          let [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+          let [currentEntity, error] = await this.getEntityById(EntityClass, _id, undefined);
 
           if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
             [currentEntity, error] = await options.ifEntityNotFoundUse();
@@ -701,33 +701,24 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   getEntitiesByFilters<T>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
-    EntityClass: new () => T,
-    options?: {
-      preHooks?: PreHook | PreHook[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: EntitiesPostHook<T>;
-    }
+    EntityClass: { new(): T },
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    options?: { preHooks?: PreHook | PreHook[]; postQueryOperations?: PostQueryOperations; postHook?: EntitiesPostHook<T> }
   ): PromiseErrorOr<T[]> {
     return getEntitiesByFilters(this, filters, EntityClass, options, false);
   }
 
   async getEntityByFilters<T>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
-    EntityClass: new () => T,
-    options?: {
-      preHooks?: PreHook | PreHook[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
-    }
+    EntityClass: { new(): T },
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    options?: { preHooks?: PreHook | PreHook[]; postQueryOperations?: PostQueryOperations; ifEntityNotFoundReturn?: () => PromiseErrorOr<T>; postHook?: PostHook<T> }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
 
     let entities: any;
     let error;
     // eslint-disable-next-line prefer-const
-    [entities, error] = await this.getEntitiesByFilters(filters, EntityClass, {
+    [entities, error] = await this.getEntitiesByFilters(EntityClass, filters, {
       preHooks: options?.preHooks,
       postQueryOperations: options?.postQueryOperations
     });
@@ -815,8 +806,8 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntityById<T>(
-    _id: string,
     EntityClass: new () => T,
+    _id: string,
     options?: {
       preHooks?: PreHook | PreHook[];
       postQueryOperations?: PostQueryOperations;
@@ -960,7 +951,7 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass = this.getType(EntityClass);
 
     try {
-      const [entity, error] = await this.getEntityById(_id, EntityClass, {
+      const [entity, error] = await this.getEntityById(EntityClass, _id, {
         postQueryOperations: options?.postQueryOperations
       });
       const subItems = JSONPath({ json: entity ?? null, path: subEntityPath });
@@ -1292,13 +1283,7 @@ export default class MongoDbManager extends AbstractDbManager {
           !isRecursiveCall &&
           (options?.entityPreHooks || restOfEntity.version || restOfEntity.lastModifiedTimestamp)
         ) {
-          [currentEntity, error] = await this.getEntityById(
-            _id,
-            EntityClass,
-            { postQueryOperations: options?.postQueryOperations },
-            true,
-            true
-          );
+          [currentEntity, error] = await this.getEntityById(EntityClass, _id, { postQueryOperations: options?.postQueryOperations });
 
           if (!currentEntity) {
             return [null, error];
@@ -1545,13 +1530,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
         if (options?.entityPreHooks) {
-          const [currentEntity, error] = await this.getEntityById(
-            _id,
-            EntityClass,
-            { postQueryOperations: options?.postQueryOperations },
-            true,
-            true
-          );
+          const [currentEntity, error] = await this.getEntityById(EntityClass, _id, { postQueryOperations: options?.postQueryOperations });
 
           if (!currentEntity) {
             return [null, error];
@@ -1698,7 +1677,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        const [currentEntity, error] = await this.getEntityById(_id, EntityClass, undefined, true, true);
+        const [currentEntity, error] = await this.getEntityById(EntityClass, _id, undefined);
         if (!currentEntity) {
           throw error;
         }
