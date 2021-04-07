@@ -184,13 +184,13 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   @Update('addOrRemove')
   followSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.addEntityFieldValues(_id, "priceChangeFollowingUserAccountIds", [userAccountId], SalesItem);
+    return this.dbManager.addEntityFieldValues(SalesItem, _id, "priceChangeFollowingUserAccountIds", [userAccountId]);
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   unfollowSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.removeEntityFieldValues(_id, "priceChangeFollowingUserAccountIds", [userAccountId], SalesItem);
+    return this.dbManager.removeEntityFieldValues(SalesItem, _id, "priceChangeFollowingUserAccountIds", [userAccountId]);
   }
 
   @AllowForSelf()

@@ -1869,10 +1869,10 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async addEntityFieldValues<T extends BackkEntity>(
+    EntityClass: { new(): T },
     _id: string,
     fieldName: keyof T & string,
-    values: (string | number | boolean)[],
-    EntityClass: { new (): T }
+    fieldValues: (string | number | boolean)[]
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityFieldValues');
     // noinspection AssignmentToFunctionParameterJS
@@ -1883,7 +1883,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        return addSimpleSubEntitiesOrValuesByEntityId(client, this, _id, fieldName, values, EntityClass);
+        return addSimpleSubEntitiesOrValuesByEntityId(client, this, _id, fieldName, fieldValues, EntityClass);
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
@@ -1896,10 +1896,10 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async removeEntityFieldValues<T extends BackkEntity>(
+    EntityClass: { new(): T },
     _id: string,
     fieldName: keyof T & string,
-    values: (string | number | boolean)[],
-    EntityClass: { new (): T }
+    fieldValues: (string | number | boolean)[]
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityFieldValues');
     // noinspection AssignmentToFunctionParameterJS
@@ -1910,7 +1910,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        return removeFieldValues(client, this, _id, fieldName, values, EntityClass);
+        return removeFieldValues(client, this, _id, fieldName, fieldValues, EntityClass);
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
