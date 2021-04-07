@@ -275,7 +275,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
       ]
     );
 
-    return this.dbManager.deleteEntitiesByFilters(filters, SalesItem);
+    return this.dbManager.deleteEntitiesByFilters(SalesItem, filters);
   }
 
   @AllowForSelf()

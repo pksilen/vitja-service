@@ -154,13 +154,13 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForSelf()
   @Update('addOrRemove')
   removeUndeliveredOrderItem({ _id, orderItemId }: RemoveOrderItemArg): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityFromEntityById(_id, Order, 'orderItems', orderItemId, {
+    return this.dbManager.removeSubEntityFromEntityById("orderItems", orderItemId, Order, _id, {
       entityPreHooks: [
         this.isPaidOrderPreHook,
         {
           shouldSucceedOrBeTrue: (order) =>
             JSONPath({ json: order, path: `orderItems[?(@.id == '${orderItemId}')].state` })[0] ===
-            'toBeDelivered',
+            "toBeDelivered",
           error: orderServiceErrors.cannotRemoveDeliveredOrderItem
         },
         (order) => this.updateSalesItemStateToForSale(order, orderItemId)
@@ -324,7 +324,7 @@ export default class OrderServiceImpl extends OrderService {
         }
       });
 
-      return error ? [null, error] : this.dbManager.deleteEntitiesByFilters(unpaidOrderFilters, Order);
+      return error ? [null, error] : this.dbManager.deleteEntitiesByFilters(Order, unpaidOrderFilters);
     });
   }
 

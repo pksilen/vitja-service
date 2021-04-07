@@ -1516,9 +1516,9 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async deleteEntitiesByField<T extends object>(
+    EntityClass: { new(): T },
     fieldName: keyof T & string,
-    fieldValue: T[keyof T] | string,
-    EntityClass: { new (): T }
+    fieldValue: T[keyof T] | string
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByField');
     // noinspection AssignmentToFunctionParameterJS
@@ -1553,8 +1553,8 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async deleteEntitiesByFilters<T extends object>(
-    filters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression> | Partial<T> | object,
-    EntityClass: new () => T
+    EntityClass: { new(): T },
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
     // noinspection AssignmentToFunctionParameterJS
@@ -1614,14 +1614,10 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async removeSubEntitiesFromEntityById<T extends BackkEntity>(
+    EntityClass: { new(): T },
     _id: string,
-    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesFromEntityById');
     // noinspection AssignmentToFunctionParameterJS
@@ -1663,15 +1659,11 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async removeSubEntityFromEntityById<T extends BackkEntity>(
-    _id: string,
-    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
     subEntityId: string,
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    EntityClass: { new(): T },
+    _id: string,
+    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityFromEntityById');
     const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
@@ -1688,7 +1680,7 @@ export default class MongoDbManager extends AbstractDbManager {
       );
     } else {
       const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-      response = await this.removeSubEntitiesFromEntityById(_id, EntityClass, subEntityPath, options);
+      response = await this.removeSubEntitiesFromEntityById(EntityClass, _id, subEntityPath, options);
     }
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1737,14 +1729,10 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async deleteEntityByField<T extends BackkEntity>(
+    EntityClass: { new(): T },
     fieldName: keyof T & string,
     fieldValue: T[keyof T] | string,
-    EntityClass: { new (): T },
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-    }
+    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityByField');
     // noinspection AssignmentToFunctionParameterJS
@@ -1799,15 +1787,11 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async removeSubEntitiesFromEntityByField<T extends BackkEntity, U extends object>(
+    EntityClass: { new(): T },
     entityFieldPathName: string,
     entityFieldValue: any,
-    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-    }
+    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesFromEntityByField');
     // noinspection AssignmentToFunctionParameterJS
@@ -1854,16 +1838,12 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async removeSubEntityFromEntityByField<T extends BackkEntity>(
-    entityFieldPathName: string,
-    entityFieldValue: any,
-    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
     subEntityId: string,
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-    }
+    EntityClass: { new(): T },
+    entityFieldPathName: string,
+    entityFieldValue: any,
+    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityFromEntityByField');
     const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
@@ -1881,13 +1861,7 @@ export default class MongoDbManager extends AbstractDbManager {
       );
     } else {
       const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-      response = await this.removeSubEntitiesFromEntityByField(
-        entityFieldPathName,
-        entityFieldValue,
-        EntityClass,
-        subEntityJsonPath,
-        options
-      );
+      response = await this.removeSubEntitiesFromEntityByField(EntityClass, entityFieldPathName, entityFieldValue, subEntityJsonPath, options);
     }
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
