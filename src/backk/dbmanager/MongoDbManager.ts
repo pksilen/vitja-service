@@ -1283,7 +1283,7 @@ export default class MongoDbManager extends AbstractDbManager {
           !isRecursiveCall &&
           (options?.entityPreHooks || restOfEntity.version || restOfEntity.lastModifiedTimestamp)
         ) {
-          [currentEntity, error] = await this.getEntityById(EntityClass, _id, { postQueryOperations: options?.postQueryOperations });
+          [currentEntity, error] = await this.getEntityById(EntityClass, _id, { postQueryOperations: options?.postQueryOperations }, true, true);
 
           if (!currentEntity) {
             return [null, error];
@@ -1319,6 +1319,7 @@ export default class MongoDbManager extends AbstractDbManager {
             }
           }
 
+          console.log(currentEntity);
           await tryExecuteEntityPreHooks(finalEntityPreHooks, currentEntity);
         }
 
@@ -1530,7 +1531,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
       await this.tryExecute(shouldUseTransaction, async (client) => {
         if (options?.entityPreHooks) {
-          const [currentEntity, error] = await this.getEntityById(EntityClass, _id, { postQueryOperations: options?.postQueryOperations });
+          const [currentEntity, error] = await this.getEntityById(EntityClass, _id, { postQueryOperations: options?.postQueryOperations }, true, true);
 
           if (!currentEntity) {
             return [null, error];
@@ -1677,7 +1678,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        const [currentEntity, error] = await this.getEntityById(EntityClass, _id, undefined);
+        const [currentEntity, error] = await this.getEntityById(EntityClass, _id, undefined, true, true);
         if (!currentEntity) {
           throw error;
         }
