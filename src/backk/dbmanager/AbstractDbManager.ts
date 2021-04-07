@@ -312,32 +312,24 @@ export default abstract class AbstractDbManager {
   }
 
   abstract updateEntityByField<T extends BackkEntity>(
+    EntityClass: { new(): T },
     fieldPathName: string,
     fieldValue: any,
     entityUpdate: RecursivePartial<T>,
-    EntityClass: new () => T,
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-    }
+    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null>;
 
   abstract deleteEntityById<T extends BackkEntity>(
+    EntityClass: { new(): T },
     _id: string,
-    EntityClass: new () => T,
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-    }
+    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null>;
 
   deleteEntitiesByIds<T extends BackkEntity>(_ids: string[], EntityClass: new () => T): PromiseErrorOr<null> {
     return this.executeInsideTransaction(async () => {
       try {
         return await forEachAsyncParallel(_ids, async (_id, index) => {
-          const [, error] = await this.deleteEntityById(_id, EntityClass);
+          const [, error] = await this.deleteEntityById(EntityClass, _id);
 
           if (error) {
             error.message = 'Entity ' + index + ': ' + error.message;

@@ -182,7 +182,7 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForSelf()
   deleteUserAccount({ _id }: _Id): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id, UserAccount);
+    return this.dbManager.deleteEntityById(UserAccount, _id);
   }
 
   @AllowForEveryUser()

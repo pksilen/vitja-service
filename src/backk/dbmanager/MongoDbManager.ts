@@ -1424,15 +1424,11 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async updateEntityByField<T extends BackkEntity>(
+    EntityClass: { new(): T },
     fieldPathName: string,
-    fieldValue: T[keyof T],
-    entity: RecursivePartial<T>,
-    EntityClass: new () => T,
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    fieldValue: any,
+    entityUpdate: RecursivePartial<T>,
+    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityByField');
     // noinspection AssignmentToFunctionParameterJS
@@ -1456,7 +1452,7 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
-        await this.updateEntity(EntityClass, { _id: currentEntity._id, ...entity });
+        await this.updateEntity(EntityClass, { _id: currentEntity._id, ...entityUpdate });
 
         if (options?.postHook) {
           await tryExecutePostHook(options.postHook, null);
@@ -1475,13 +1471,9 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async deleteEntityById<T extends BackkEntity>(
+    EntityClass: { new(): T },
     _id: string,
-    EntityClass: new () => T,
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityById');
     // noinspection AssignmentToFunctionParameterJS

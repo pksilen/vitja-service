@@ -40,18 +40,15 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
                 const [, error] = await dbManager.executeInsideTransaction(async () => {
                   getClsNamespace('multipleServiceFunctionExecutions').set('globalTransaction', true);
 
-                  const [, error] = await dbManager.updateEntityByField(
-                    'serviceFunctionName',
-                    serviceFunctionName,
-                    { lastScheduledTimestamp: new Date(), nextScheduledTimestamp: interval.next().toDate() },
-                    __Backk__CronJobScheduling,
-                    {
-                      entityPreHooks: {
-                        shouldSucceedOrBeTrue: ({ nextScheduledTimestamp }) =>
-                          Math.abs(Date.now() - nextScheduledTimestamp.valueOf()) < Values._500
-                      }
+                  const [, error] = await dbManager.updateEntityByField(__Backk__CronJobScheduling, "serviceFunctionName", serviceFunctionName, {
+                    lastScheduledTimestamp: new Date(),
+                    nextScheduledTimestamp: interval.next().toDate()
+                  }, {
+                    entityPreHooks: {
+                      shouldSucceedOrBeTrue: ({ nextScheduledTimestamp }) =>
+                        Math.abs(Date.now() - nextScheduledTimestamp.valueOf()) < Values._500
                     }
-                  );
+                  });
 
                   if (error?.statusCode === HttpStatusCodes.BAD_REQUEST) {
                     return [null, null];

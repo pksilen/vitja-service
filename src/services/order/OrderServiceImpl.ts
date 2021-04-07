@@ -119,12 +119,12 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Delete()
   discardUnpaidOrder({ _id }: _Id): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id, Order, {
+    return this.dbManager.deleteEntityById(Order, _id, {
       entityPreHooks: (order) =>
         this.salesItemService.updateSalesItemStates(
-          JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
-          'reserved',
-          'sold',
+          JSONPath({ json: order, path: "orderItems[*].salesItems[*]" }),
+          "reserved",
+          "sold",
           order.userAccountId
         )
     });
@@ -171,18 +171,18 @@ export default class OrderServiceImpl extends OrderService {
 
   @AllowForSelf()
   deleteUndeliveredPaidOrder({ _id }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id, Order, {
+    return this.dbManager.deleteEntityById(Order, _id, {
       entityPreHooks: [
         this.isPaidOrderPreHook,
         {
           shouldSucceedOrBeTrue: (order) =>
-            JSONPath({ json: order, path: 'orderItems[?(@.state != "toBeDelivered")]' }).length === 0,
+            JSONPath({ json: order, path: "orderItems[?(@.state != \"toBeDelivered\")]" }).length === 0,
           error: orderServiceErrors.deliveredOrderDeleteNotAllowed
         },
         (order) =>
           this.salesItemService.updateSalesItemStates(
-            JSONPath({ json: order, path: 'orderItems[*].salesItems[*]' }),
-            'forSale'
+            JSONPath({ json: order, path: "orderItems[*].salesItems[*]" }),
+            "forSale"
           )
       ],
       postHook: () =>

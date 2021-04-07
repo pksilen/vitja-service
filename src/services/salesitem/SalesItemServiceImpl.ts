@@ -280,7 +280,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @AllowForSelf()
   deleteSalesItem({ _id }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityById(_id, SalesItem);
+    return this.dbManager.deleteEntityById(SalesItem, _id);
   }
 
   @AllowForServiceInternalUse()
