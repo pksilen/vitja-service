@@ -339,14 +339,7 @@ export default class MongoDbManager extends AbstractDbManager {
     options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityToEntityById');
-    const response = this.addSubEntitiesToEntityById(
-      _id,
-      EntityClass,
-      subEntitiesJsonPath,
-      [subEntity],
-      SubEntityClass,
-      options
-    );
+    const response = this.addSubEntitiesToEntityById(SubEntityClass, [subEntity], EntityClass, _id, subEntitiesJsonPath, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
@@ -367,17 +360,12 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async addSubEntitiesToEntityById<T extends BackkEntity, U extends SubEntity>(
+    SubEntityClass: { new(): U },
+    subEntities: Array<Omit<U, "id"> | { _id: string }>,
+    EntityClass: { new(): T },
     _id: string,
-    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
-    newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
-    SubEntityClass: { new (): U },
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesToEntityById');
     // noinspection AssignmentToFunctionParameterJS
@@ -399,7 +387,7 @@ export default class MongoDbManager extends AbstractDbManager {
             this,
             _id,
             subEntitiesJsonPath,
-            newSubEntities,
+            subEntities,
             EntityClass,
             options
           );
@@ -446,7 +434,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
             if (
               foundArrayMaxSizeValidation &&
-              maxSubItemId + newSubEntities.length >= foundArrayMaxSizeValidation.constraints[0]
+              maxSubItemId + subEntities.length >= foundArrayMaxSizeValidation.constraints[0]
             ) {
               // noinspection ExceptionCaughtLocallyJS
               throw createBackkErrorFromErrorCodeMessageAndStatus({
@@ -461,7 +449,7 @@ export default class MongoDbManager extends AbstractDbManager {
             }
           }
 
-          await forEachAsyncParallel(newSubEntities, async (newSubEntity, index) => {
+          await forEachAsyncParallel(subEntities, async (newSubEntity, index) => {
             if (
               parentEntityClassAndPropertyNameForSubEntity &&
               typePropertyAnnotationContainer.isTypePropertyManyToMany(
@@ -472,7 +460,7 @@ export default class MongoDbManager extends AbstractDbManager {
               parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push(newSubEntity);
             } else if (parentEntityClassAndPropertyNameForSubEntity) {
               parentEntity[parentEntityClassAndPropertyNameForSubEntity[1]].push({
-                ...newSubEntity,
+                ...newSubEntity as any,
                 id: (maxSubItemId + 1 + index).toString()
               });
             }

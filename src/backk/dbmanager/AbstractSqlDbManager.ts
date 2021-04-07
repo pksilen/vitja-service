@@ -520,24 +520,19 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
 
   // noinspection OverlyComplexFunctionJS
   async addSubEntitiesToEntityById<T extends BackkEntity, U extends SubEntity>(
+    SubEntityClass: { new(): U },
+    subEntities: Array<Omit<U, "id"> | { _id: string }>,
+    EntityClass: { new(): T },
     _id: string,
-    EntityClass: { new (): T },
     subEntitiesJsonPath: string,
-    newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
-    SubEntityClass: { new (): U },
-    options?: {
-      ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { ifEntityNotFoundUse?: () => PromiseErrorOr<T>; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntitiesToEntityById');
     const response = await addSubEntities(
       this,
       _id,
       subEntitiesJsonPath,
-      newSubEntities,
+      subEntities,
       EntityClass,
       SubEntityClass,
       options
