@@ -133,7 +133,7 @@ export default class OrderServiceImpl extends OrderService {
   @AllowForUserRoles(['vitjaPaymentGateway'])
   @Update('update')
   payOrder({ _id, ...restOfEntity }: PayOrderArg): PromiseErrorOr<null> {
-    return this.dbManager.updateEntity({ _id, ...restOfEntity }, Order, {
+    return this.dbManager.updateEntity(Order, { _id, ...restOfEntity }, {
       entityPreHooks: [
         ({ userAccountId }) => this.shoppingCartService.deleteShoppingCart({ userAccountId }),
         {
@@ -200,91 +200,87 @@ export default class OrderServiceImpl extends OrderService {
   deliverOrderItem({ _id, version, orderItems }: DeliverOrderItemArg): PromiseErrorOr<null> {
     const [orderItem] = orderItems;
 
-    return this.dbManager.updateEntity(
-      {
-        version,
-        _id,
-        orderItems: [{ ...orderItem, state: 'delivering' }]
-      },
-      Order,
-      {
-        entityPreHooks: [
-          this.isPaidOrderPreHook,
+    return this.dbManager.updateEntity(Order, {
+      version,
+      _id,
+      orderItems: [{ ...orderItem, state: "delivering" }]
+    }, {
+      entityPreHooks: [
+        this.isPaidOrderPreHook,
+        {
+          shouldSucceedOrBeTrue: (order) =>
+            OrderServiceImpl.hasOrderItemState(order, orderItem.id, "toBeDelivered"),
+          error: orderServiceErrors.orderItemAlreadyDelivered
+        }
+      ],
+      postHook: () =>
+        sendToRemoteService(
+          `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderItemDeliveryNotification`,
           {
-            shouldSucceedOrBeTrue: (order) =>
-              OrderServiceImpl.hasOrderItemState(order, orderItem.id, 'toBeDelivered'),
-            error: orderServiceErrors.orderItemAlreadyDelivered
+            orderId: _id,
+            orderItem
           }
-        ],
-        postHook: () =>
-          sendToRemoteService(
-            `kafka://${process.env.KAFKA_SERVER}/notification-service.vitja/orderNotificationsService.sendOrderItemDeliveryNotification`,
-            {
-              orderId: _id,
-              orderItem
-            }
-          )
-      }
-    );
+        )
+    });
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
   receiveOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
-    return this.dbManager.updateEntity(
-      { _id, version, orderItems: [{ id: orderItemId, state: 'delivered' }] },
-      Order,
-      {
-        entityPreHooks: [
-          this.isPaidOrderPreHook,
-          {
-            shouldSucceedOrBeTrue: (order) =>
-              OrderServiceImpl.hasOrderItemState(order, orderItemId, 'delivering'),
-            error: orderServiceErrors.invalidOrderItemCurrentState
-          }
-        ]
-      }
-    );
+    return this.dbManager.updateEntity(Order, {
+      _id,
+      version,
+      orderItems: [{ id: orderItemId, state: "delivered" }]
+    }, {
+      entityPreHooks: [
+        this.isPaidOrderPreHook,
+        {
+          shouldSucceedOrBeTrue: (order) =>
+            OrderServiceImpl.hasOrderItemState(order, orderItemId, "delivering"),
+          error: orderServiceErrors.invalidOrderItemCurrentState
+        }
+      ]
+    });
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
   returnOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
-    return this.dbManager.updateEntity(
-      { _id, version, orderItems: [{ id: orderItemId, state: 'returning' }] },
-      Order,
-      {
-        entityPreHooks: [
-          this.isPaidOrderPreHook,
-          {
-            shouldSucceedOrBeTrue: (order) =>
-              OrderServiceImpl.hasOrderItemState(order, orderItemId, 'delivered'),
-            error: orderServiceErrors.invalidOrderItemCurrentState
-          }
-        ]
-      }
-    );
+    return this.dbManager.updateEntity(Order, {
+      _id,
+      version,
+      orderItems: [{ id: orderItemId, state: "returning" }]
+    }, {
+      entityPreHooks: [
+        this.isPaidOrderPreHook,
+        {
+          shouldSucceedOrBeTrue: (order) =>
+            OrderServiceImpl.hasOrderItemState(order, orderItemId, "delivered"),
+          error: orderServiceErrors.invalidOrderItemCurrentState
+        }
+      ]
+    });
   }
 
   @AllowForUserRoles(['vitjaLogisticsPartner'])
   @Update('update')
   receiveReturnedOrderItem({ _id, version, orderItemId }: _IdAndOrderItemId): PromiseErrorOr<null> {
-    return this.dbManager.updateEntity(
-      { _id, version, orderItems: [{ id: orderItemId, state: 'returned' }] },
-      Order,
-      {
-        entityPreHooks: [
-          this.isPaidOrderPreHook,
-          (order) => this.updateSalesItemStateToForSale(order, orderItemId),
-          {
-            shouldSucceedOrBeTrue: (order) =>
-              OrderServiceImpl.hasOrderItemState(order, orderItemId, 'returning'),
-            error: orderServiceErrors.invalidOrderItemCurrentState
-          }
-        ],
-        postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
-      }
-    );
+    return this.dbManager.updateEntity(Order, {
+      _id,
+      version,
+      orderItems: [{ id: orderItemId, state: "returned" }]
+    }, {
+      entityPreHooks: [
+        this.isPaidOrderPreHook,
+        (order) => this.updateSalesItemStateToForSale(order, orderItemId),
+        {
+          shouldSucceedOrBeTrue: (order) =>
+            OrderServiceImpl.hasOrderItemState(order, orderItemId, "returning"),
+          error: orderServiceErrors.invalidOrderItemCurrentState
+        }
+      ],
+      postHook: () => OrderServiceImpl.refundOrderItem(_id, orderItemId)
+    });
   }
 
   @CronJob({ minuteInterval: 5 })
@@ -323,7 +319,7 @@ export default class OrderServiceImpl extends OrderService {
           ]);
 
           return salesItemIdsToUpdate.length > 0
-            ? this.dbManager.updateEntitiesByFilters(salesItemFilters, { state: "forSale" }, SalesItem)
+            ? this.dbManager.updateEntitiesByFilters(SalesItem, salesItemFilters, { state: "forSale" })
             : true;
         }
       });

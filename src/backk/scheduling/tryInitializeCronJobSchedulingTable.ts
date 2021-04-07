@@ -35,15 +35,12 @@ export default async function tryInitializeCronJobSchedulingTable(dbManager: Abs
               nextScheduledTimestamp: interval.next().toDate()
             });
           } else if (entity) {
-            return dbManager.updateEntity(
-              {
-                _id: entity._id,
-                serviceFunctionName,
-                lastScheduledTimestamp: new Date(120000),
-                nextScheduledTimestamp: interval.next().toDate()
-              },
-              __Backk__CronJobScheduling
-            );
+            return dbManager.updateEntity(__Backk__CronJobScheduling, {
+              _id: entity._id,
+              serviceFunctionName,
+              lastScheduledTimestamp: new Date(120000),
+              nextScheduledTimestamp: interval.next().toDate()
+            });
           }
 
           return [entity, error];

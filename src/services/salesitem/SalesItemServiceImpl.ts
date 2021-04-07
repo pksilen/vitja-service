@@ -197,16 +197,16 @@ export default class SalesItemServiceImpl extends SalesItemService {
   updateSalesItem(salesItem: SalesItem): PromiseErrorOr<null> {
     let isPriceUpdated: boolean;
 
-    return this.dbManager.updateEntity(salesItem, SalesItem, {
+    return this.dbManager.updateEntity(SalesItem, salesItem, {
       entityPreHooks: [
         {
-          shouldSucceedOrBeTrue: ({ state }) => state === 'forSale',
+          shouldSucceedOrBeTrue: ({ state }) => state === "forSale",
           error: salesItemServiceErrors.salesItemStateIsNotForSale
         },
         ({ _id, price }) => {
           if (salesItem.price !== price) {
             isPriceUpdated = true;
-            return this.dbManager.updateEntity({ _id, previousPrice: price }, SalesItem);
+            return this.dbManager.updateEntity(SalesItem, { _id, previousPrice: price });
           }
           return true;
         }
@@ -248,11 +248,10 @@ export default class SalesItemServiceImpl extends SalesItemService {
       ]
     );
 
-    return this.dbManager.updateEntitiesByFilters<SalesItem>(
-      filters,
-      { state: 'forSale', buyerUserAccountId: null },
-      SalesItem
-    );
+    return this.dbManager.updateEntitiesByFilters<SalesItem>(SalesItem, filters, {
+      state: "forSale",
+      buyerUserAccountId: null
+    });
   }
 
   @CronJob({ minutes: 0, hours: 2 })
@@ -303,24 +302,24 @@ export default class SalesItemServiceImpl extends SalesItemService {
     requiredCurrentState?: SalesItemState,
     buyerUserAccountId?: string
   ): PromiseErrorOr<null> {
-    return this.dbManager.updateEntity(
-      { _id, state: newState, buyerUserAccountId: newState === 'forSale' ? null : buyerUserAccountId },
-      SalesItem,
-      {
-        entityPreHooks: [
-          {
-            executePreHookIf: () => !!requiredCurrentState,
-            shouldSucceedOrBeTrue: ({ state }) => requiredCurrentState === state,
-            error: salesItemServiceErrors.invalidSalesItemState
-          },
-          {
-            executePreHookIf: () => newState === 'sold',
-            shouldSucceedOrBeTrue: ({ buyerUserAccountId }) => buyerUserAccountId === buyerUserAccountId,
-            error: salesItemServiceErrors.invalidSalesItemState
-          }
-        ]
-      }
-    );
+    return this.dbManager.updateEntity(SalesItem, {
+      _id,
+      state: newState,
+      buyerUserAccountId: newState === "forSale" ? null : buyerUserAccountId
+    }, {
+      entityPreHooks: [
+        {
+          executePreHookIf: () => !!requiredCurrentState,
+          shouldSucceedOrBeTrue: ({ state }) => requiredCurrentState === state,
+          error: salesItemServiceErrors.invalidSalesItemState
+        },
+        {
+          executePreHookIf: () => newState === "sold",
+          shouldSucceedOrBeTrue: ({ buyerUserAccountId }) => buyerUserAccountId === buyerUserAccountId,
+          error: salesItemServiceErrors.invalidSalesItemState
+        }
+      ]
+    });
   }
 
   @AllowForServiceInternalUse()
@@ -344,6 +343,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
       ]
     );
 
-    return this.dbManager.updateEntitiesByFilters<SalesItem>(finalFilters, { state: newState }, SalesItem);
+    return this.dbManager.updateEntitiesByFilters<SalesItem>(SalesItem, finalFilters, { state: newState });
   }
 }

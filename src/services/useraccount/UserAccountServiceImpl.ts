@@ -43,66 +43,104 @@ export default class UserAccountServiceImpl extends UserAccountService {
 
   @AllowForEveryUser()
   createUserAccount(userAccount: UserAccount): PromiseErrorOr<UserAccount> {
-    return this.dbManager.createEntity(UserAccount, {
-      ...userAccount,
-      commissionDiscountPercentage: 0,
-      isLocked: false
-    }, {
-      postQueryOperations: {
-        includeResponseFields: ["_id", "commissionDiscountPercentage"]
+    return this.dbManager.createEntity(
+      UserAccount,
+      {
+        ...userAccount,
+        commissionDiscountPercentage: 0,
+        isLocked: false
+      },
+      {
+        postQueryOperations: {
+          includeResponseFields: ['_id', 'commissionDiscountPercentage']
+        }
       }
-    });
+    );
   }
 
   getUserNameById({ _id }: _Id): PromiseErrorOr<UserName> {
     return this.dbManager.getEntityById(UserAccount, _id, {
-      postQueryOperations: { includeResponseFields: ["userName"] }
+      postQueryOperations: { includeResponseFields: ['userName'] }
     });
   }
 
   @AllowForSelf()
   getUserAccount({ userName, ...postQueryOperations }: GetUserAccountArg): PromiseErrorOr<UserAccount> {
-    return this.dbManager.getEntityByFilters(UserAccount, {
-      userName,
-      "favoriteSalesItems.state": "forSale"
-    }, {
-      postQueryOperations
-    });
+    return this.dbManager.getEntityByFilters(
+      UserAccount,
+      {
+        userName,
+        'favoriteSalesItems.state': 'forSale'
+      },
+      {
+        postQueryOperations
+      }
+    );
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   followUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntityToEntityById(FollowedUserAccount, { _id: followedUserAccountId }, UserAccount, _id, "followedUserAccounts", {
-      entityPreHooks: () =>
-        this.dbManager.addSubEntityToEntityById(FollowingUserAccount, { _id }, UserAccount, followedUserAccountId, "followingUserAccounts")
-    });
+    return this.dbManager.addSubEntityToEntityById(
+      FollowedUserAccount,
+      { _id: followedUserAccountId },
+      UserAccount,
+      _id,
+      'followedUserAccounts',
+      {
+        entityPreHooks: () =>
+          this.dbManager.addSubEntityToEntityById(
+            FollowingUserAccount,
+            { _id },
+            UserAccount,
+            followedUserAccountId,
+            'followingUserAccounts'
+          )
+      }
+    );
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   unfollowUser({ _id, followedUserAccountId }: _IdAndFollowedUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityFromEntityById(_id, UserAccount, "followedUserAccounts", followedUserAccountId, {
-      entityPreHooks: () =>
-        this.dbManager.removeSubEntityFromEntityById(followedUserAccountId, UserAccount, "followingUserAccounts", _id)
-    });
+    return this.dbManager.removeSubEntityFromEntityById(
+      _id,
+      UserAccount,
+      'followedUserAccounts',
+      followedUserAccountId,
+      {
+        entityPreHooks: () =>
+          this.dbManager.removeSubEntityFromEntityById(
+            followedUserAccountId,
+            UserAccount,
+            'followingUserAccounts',
+            _id
+          )
+      }
+    );
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   addToFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntityToEntityById(SalesItem, { _id: salesItemId }, UserAccount, _id, "favoriteSalesItems");
+    return this.dbManager.addSubEntityToEntityById(
+      SalesItem,
+      { _id: salesItemId },
+      UserAccount,
+      _id,
+      'favoriteSalesItems'
+    );
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   removeFromFavoriteSalesItems({ _id, salesItemId }: _IdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityFromEntityById(_id, UserAccount, "favoriteSalesItems", salesItemId);
+    return this.dbManager.removeSubEntityFromEntityById(_id, UserAccount, 'favoriteSalesItems', salesItemId);
   }
 
   @AllowForSelf()
   updateUserAccount(userAccount: UserAccount): PromiseErrorOr<null> {
-    return this.dbManager.updateEntity(userAccount, UserAccount);
+    return this.dbManager.updateEntity(UserAccount, userAccount);
   }
 
   @AllowForSelf()
@@ -113,29 +151,33 @@ export default class UserAccountServiceImpl extends UserAccountService {
     newPassword,
     repeatNewPassword
   }: ChangeUserPasswordArg): PromiseErrorOr<null> {
-    return this.dbManager.updateEntity({ _id, password: newPassword }, UserAccount, {
-      entityPreHooks: [
-        {
-          shouldSucceedOrBeTrue: ({ userName: currentUserName }) => userName === currentUserName,
-          error: userAccountServiceErrors.invalidUserName
-        },
-        {
-          shouldSucceedOrBeTrue: ({ password: hashedCurrentPassword }) =>
-            argon2.verify(hashedCurrentPassword, currentPassword),
-          error: userAccountServiceErrors.invalidCurrentPassword
-        },
-        {
-          shouldSucceedOrBeTrue: async ({ password: hashedCurrentPassword }) => {
-            return !(await argon2.verify(hashedCurrentPassword, newPassword));
+    return this.dbManager.updateEntity(
+      UserAccount,
+      { _id, password: newPassword },
+      {
+        entityPreHooks: [
+          {
+            shouldSucceedOrBeTrue: ({ userName: currentUserName }) => userName === currentUserName,
+            error: userAccountServiceErrors.invalidUserName
           },
-          error: userAccountServiceErrors.newPasswordCannotBeSameAsCurrentPassword
-        },
-        {
-          shouldSucceedOrBeTrue: async () => newPassword === repeatNewPassword,
-          error: userAccountServiceErrors.newPasswordAndRepeatNewPasswordDoNotMatch
-        }
-      ]
-    });
+          {
+            shouldSucceedOrBeTrue: ({ password: hashedCurrentPassword }) =>
+              argon2.verify(hashedCurrentPassword, currentPassword),
+            error: userAccountServiceErrors.invalidCurrentPassword
+          },
+          {
+            shouldSucceedOrBeTrue: async ({ password: hashedCurrentPassword }) => {
+              return !(await argon2.verify(hashedCurrentPassword, newPassword));
+            },
+            error: userAccountServiceErrors.newPasswordCannotBeSameAsCurrentPassword
+          },
+          {
+            shouldSucceedOrBeTrue: async () => newPassword === repeatNewPassword,
+            error: userAccountServiceErrors.newPasswordAndRepeatNewPasswordDoNotMatch
+          }
+        ]
+      }
+    );
   }
 
   @AllowForSelf()

@@ -242,14 +242,14 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<T>;
 
   abstract getSubEntitiesOfEntityById<T extends BackkEntity, U extends object>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
     subEntitiesJsonPath: string,
     options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<U[]>;
 
   abstract getEntitiesByIds<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _ids: string[],
     options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<T[]>;
@@ -268,17 +268,15 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<T>;
 
   abstract getEntitiesByField<T extends BackkEntity>(
+    EntityClass: { new (): T },
     fieldPathName: string,
     fieldValue: any,
-    EntityClass: new () => T,
-    options?: {
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<T[]>;
 
   abstract updateEntity<T extends BackkEntity>(
+    EntityClass: { new (): T },
     entityUpdate: RecursivePartial<T> & { _id: string },
-    EntityClass: new () => T,
     options?: {
       preHooks?: PreHook | PreHook[];
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -288,19 +286,19 @@ export default abstract class AbstractDbManager {
   ): PromiseErrorOr<null>;
 
   abstract updateEntitiesByFilters<T extends BackkEntity>(
+    EntityClass: { new(): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    entityUpdate: Partial<T>,
-    EntityClass: new () => T
+    entityUpdate: Partial<T>
   ): PromiseErrorOr<null>;
 
   updateEntities<T extends BackkEntity>(
-    entityUpdates: Array<RecursivePartial<T> & { _id: string }>,
-    EntityClass: new () => T
+    EntityClass: { new(): T },
+    entityUpdates: Array<RecursivePartial<T> & { _id: string }>
   ): PromiseErrorOr<null> {
     return this.executeInsideTransaction(async () => {
       try {
         return await forEachAsyncParallel(entityUpdates, async (entity, index) => {
-          const [, error] = await this.updateEntity(entity, EntityClass);
+          const [, error] = await this.updateEntity(EntityClass, entity);
 
           if (error) {
             error.message = 'Entity ' + index + ': ' + error.message;

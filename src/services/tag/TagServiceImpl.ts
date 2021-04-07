@@ -37,7 +37,7 @@ export default class TagServiceImpl extends TagService {
       ifEntityNotFoundReturn: () => Promise.resolve([null, null]),
       postHook: (tagDbTableVersion1) =>
         tagDbTableVersion1
-          ? this.dbManager.updateEntity(tagDbTableVersion1, DbTableVersion, {
+          ? this.dbManager.updateEntity(DbTableVersion, tagDbTableVersion1, {
             preHooks: () =>
               this.dbManager.createEntities(Tag, tryGetSeparatedValuesFromTextFile("resources/tags2.txt").map((tag) => ({
                 name: tag

@@ -683,12 +683,10 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByField<T>(
+    EntityClass: { new(): T },
     fieldPathName: string,
     fieldValue: any,
-    entityClass: new () => T,
-    options?: {
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<T[]> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntitiesByField');
 
@@ -696,7 +694,7 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       this,
       fieldPathName,
       fieldValue,
-      entityClass,
+      EntityClass,
       options?.postQueryOperations
     );
 
@@ -705,20 +703,15 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async updateEntity<T extends BackkEntity>(
-    entity: RecursivePartial<T> & { _id: string },
-    entityClass: new () => T,
-    options?: {
-      preHooks?: PreHook | PreHook[];
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postHook?: PostHook<T>;
-      postQueryOperations?: PostQueryOperations;
-    }
+    EntityClass: { new(): T },
+    entityUpdate: RecursivePartial<T> & { _id: string },
+    options?: { preHooks?: PreHook | PreHook[]; entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntity');
     const response = await updateEntity(
       this,
-      entity,
-      entityClass,
+      entityUpdate,
+      EntityClass,
       options?.preHooks,
       options?.entityPreHooks,
       options?.postHook,
@@ -729,12 +722,12 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   }
 
   async updateEntitiesByFilters<T extends BackkEntity>(
+    EntityClass: { new(): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    entity: Partial<T>,
-    EntityClass: new () => T
+    entityUpdate: Partial<T>
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntitiesByFilters');
-    const response = await updateEntitiesByFilters(this, filters, entity, EntityClass);
+    const response = await updateEntitiesByFilters(this, filters, entityUpdate, EntityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

@@ -51,10 +51,7 @@ export default async function updateEntityWhere<T extends BackkEntity>(
 
     await tryExecuteEntityPreHooks(entityPreHooks ?? [], currentEntity);
 
-     [, error] = await dbManager.updateEntity(
-      { _id: currentEntity?._id ?? '', ...entity },
-      EntityClass
-    );
+     [, error] = await dbManager.updateEntity(EntityClass, { _id: currentEntity?._id ?? "", ...entity });
 
     if (postHook) {
       await tryExecutePostHook(postHook, null);

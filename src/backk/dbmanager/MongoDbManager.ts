@@ -466,13 +466,7 @@ export default class MongoDbManager extends AbstractDbManager {
             }
           });
 
-          [, updateError] = await this.updateEntity(
-            currentEntity as any,
-            EntityClass,
-            undefined,
-            false,
-            true
-          );
+          [, updateError] = await this.updateEntity(EntityClass, currentEntity as any, undefined);
         }
 
         if (options?.postHook) {
@@ -607,13 +601,7 @@ export default class MongoDbManager extends AbstractDbManager {
             }
           });
 
-          [, updateError] = await this.updateEntity(
-            currentEntity as any,
-            EntityClass,
-            undefined,
-            false,
-            true
-          );
+          [, updateError] = await this.updateEntity(EntityClass, currentEntity as any, undefined);
         }
 
         if (options?.postHook) {
@@ -1133,12 +1121,10 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async getEntitiesByField<T>(
+    EntityClass: { new(): T },
     fieldPathName: string,
     fieldValue: any,
-    EntityClass: new () => T,
-    options?: {
-      postQueryOperations?: PostQueryOperations;
-    }
+    options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<T[]> {
     if (!isUniqueField(fieldPathName, EntityClass, this.getTypes())) {
       throw new Error(`Field ${fieldPathName} is not unique. Annotate entity field with @Unique annotation`);
@@ -1228,8 +1214,8 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async updateEntity<T extends BackkEntity>(
-    { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
     EntityClass: new () => T,
+    { _id, id, ...restOfEntity }: RecursivePartial<T> & { _id: string },
     options?: {
       preHooks?: PreHook | PreHook[];
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -1360,9 +1346,9 @@ export default class MongoDbManager extends AbstractDbManager {
   }
 
   async updateEntitiesByFilters<T extends object>(
+    EntityClass: { new(): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    entity: Partial<T>,
-    EntityClass: new () => T
+    entityUpdate: Partial<T>
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityByFilters');
     // noinspection AssignmentToFunctionParameterJS
@@ -1408,14 +1394,14 @@ export default class MongoDbManager extends AbstractDbManager {
       const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
       let versionUpdate = {};
       if (entityPropertyNameToPropertyTypeNameMap.version) {
-        delete (entity as any).version;
+        delete (entityUpdate as any).version;
         // noinspection ReuseOfLocalVariableJS
         versionUpdate = { $inc: { version: 1 } };
       }
 
       let lastModifiedTimestampUpdate = {};
       if (entityPropertyNameToPropertyTypeNameMap.lastModifiedTimestamp) {
-        delete (entity as any).lastModifiedTimestamp;
+        delete (entityUpdate as any).lastModifiedTimestamp;
         lastModifiedTimestampUpdate = { $set: { lastModifiedTimestamp: new Date() } };
       }
 
@@ -1423,7 +1409,7 @@ export default class MongoDbManager extends AbstractDbManager {
         await client
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
-          .updateMany(matchExpression, { ...versionUpdate, ...lastModifiedTimestampUpdate, $set: entity });
+          .updateMany(matchExpression, { ...versionUpdate, ...lastModifiedTimestampUpdate, $set: entityUpdate });
       });
 
       return [null, null];
@@ -1470,7 +1456,7 @@ export default class MongoDbManager extends AbstractDbManager {
         }
 
         await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
-        await this.updateEntity({ _id: currentEntity._id, ...entity }, EntityClass);
+        await this.updateEntity(EntityClass, { _id: currentEntity._id, ...entity });
 
         if (options?.postHook) {
           await tryExecutePostHook(options.postHook, null);
@@ -1665,13 +1651,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
         if (subEntities.length > 0) {
           removeSubEntities(currentEntity, subEntities);
-          [, updateError] = await this.updateEntity(
-            currentEntity as any,
-            EntityClass,
-            undefined,
-            false,
-            true
-          );
+          [, updateError] = await this.updateEntity(EntityClass, currentEntity as any, undefined);
         }
 
         if (options?.postHook) {
@@ -1861,7 +1841,7 @@ export default class MongoDbManager extends AbstractDbManager {
 
           if (subEntities.length > 0) {
             removeSubEntities(currentEntity, subEntities);
-            await this.updateEntity(currentEntity as any, EntityClass, undefined, false, true);
+            await this.updateEntity(EntityClass, currentEntity as any, undefined);
           }
         }
 
