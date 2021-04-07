@@ -310,30 +310,32 @@ export default class OrderServiceImpl extends OrderService {
       ]
     );
 
-    const [, error] = await this.dbManager.getEntitiesByFilters(unpaidOrderFilters, Order, {
-      postQueryOperations: {
-        includeResponseFields: ['orderItems.salesItems._id'],
-        paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
-      },
-      postHook: (unpaidOrders) => {
-        const salesItemIdsToUpdate = JSONPath({
-          json: unpaidOrders ?? null,
-          path: '$[*].orderItems[*].salesItems[*]._id'
-        });
+    return this.dbManager.executeInsideTransaction(async () => {
+      const [, error] = await this.dbManager.getEntitiesByFilters(unpaidOrderFilters, Order, {
+        postQueryOperations: {
+          includeResponseFields: ['orderItems.salesItems._id'],
+          paginations: [{ subEntityPath: '*', pageSize: 1000, pageNumber: 1 }]
+        },
+        postHook: (unpaidOrders) => {
+          const salesItemIdsToUpdate = JSONPath({
+            json: unpaidOrders ?? null,
+            path: '$[*].orderItems[*].salesItems[*]._id'
+          });
 
-        return salesItemIdsToUpdate.length > 0
-          ? this.dbManager.updateEntitiesByFilters(
-              this.dbManager.getFilters({ _id: { $in: salesItemIdsToUpdate } }, [
-                new SqlInExpression('_id', salesItemIdsToUpdate)
-              ]),
-              { state: 'forSale' },
-              SalesItem
-            )
-          : true;
-      }
+          return salesItemIdsToUpdate.length > 0
+            ? this.dbManager.updateEntitiesByFilters(
+                this.dbManager.getFilters({ _id: { $in: salesItemIdsToUpdate } }, [
+                  new SqlInExpression('_id', salesItemIdsToUpdate)
+                ]),
+                { state: 'forSale' },
+                SalesItem
+              )
+            : true;
+        }
+      });
+
+      return error ? [null, error] : this.dbManager.deleteEntitiesByFilters(unpaidOrderFilters, Order);
     });
-
-    return error ? [null, error] : this.dbManager.deleteEntitiesByFilters(unpaidOrderFilters, Order);
   }
 
   private static refundOrderItem(orderId: string, orderItemId: string): PromiseErrorOr<null> {
