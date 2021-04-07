@@ -322,14 +322,12 @@ export default class OrderServiceImpl extends OrderService {
             path: '$[*].orderItems[*].salesItems[*]._id'
           });
 
+          const salesItemFilters = this.dbManager.getFilters({ _id: { $in: salesItemIdsToUpdate } }, [
+            new SqlInExpression('_id', salesItemIdsToUpdate)
+          ]);
+
           return salesItemIdsToUpdate.length > 0
-            ? this.dbManager.updateEntitiesByFilters(
-                this.dbManager.getFilters({ _id: { $in: salesItemIdsToUpdate } }, [
-                  new SqlInExpression('_id', salesItemIdsToUpdate)
-                ]),
-                { state: 'forSale' },
-                SalesItem
-              )
+            ? this.dbManager.updateEntitiesByFilters(salesItemFilters, { state: 'forSale' }, SalesItem)
             : true;
         }
       });

@@ -182,7 +182,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForEveryUser()
-  async getSalesItem({ _id }: _Id): PromiseErrorOr<SalesItem> {
+ getSalesItem({ _id }: _Id): PromiseErrorOr<SalesItem> {
     return this.dbManager.getEntityById(_id, SalesItem);
   }
 
@@ -199,7 +199,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForSelf()
-  async updateSalesItem(salesItem: SalesItem): PromiseErrorOr<null> {
+  updateSalesItem(salesItem: SalesItem): PromiseErrorOr<null> {
     let isPriceUpdated: boolean;
 
     return this.dbManager.updateEntity(salesItem, SalesItem, {

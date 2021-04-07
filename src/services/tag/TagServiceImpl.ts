@@ -1,17 +1,16 @@
-import { Injectable } from "@nestjs/common";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import TagService from "./TagService";
-import Tag from "./entities/Tag";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import DefaultPostQueryOperations from "../../backk/types/postqueryoperations/DefaultPostQueryOperations";
-import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
-import { OnStartUp } from "../../backk/decorators/service/function/OnStartUp";
-import DbTableVersion from "../../backk/dbmanager/version/DbTableVersion";
-import tryGetSeparatedValuesFromTextFile from "../../backk/file/tryGetSeparatedValuesFromTextFile";
-import { PromiseErrorOr } from "../../backk/types/PromiseErrorOr";
-import TagName from "./args/TagName";
+import { Injectable } from '@nestjs/common';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import TagService from './TagService';
+import Tag from './entities/Tag';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
+import { OnStartUp } from '../../backk/decorators/service/function/OnStartUp';
+import DbTableVersion from '../../backk/dbmanager/version/DbTableVersion';
+import tryGetSeparatedValuesFromTextFile from '../../backk/file/tryGetSeparatedValuesFromTextFile';
+import { PromiseErrorOr } from '../../backk/types/PromiseErrorOr';
+import TagName from './args/TagName';
 
 @Injectable()
 export default class TagServiceImpl extends TagService {
@@ -20,7 +19,7 @@ export default class TagServiceImpl extends TagService {
   }
 
   @OnStartUp()
-  async initializeDbVersion1(): PromiseErrorOr<DbTableVersion> {
+  initializeDbVersion1(): PromiseErrorOr<DbTableVersion> {
     return this.dbManager.getEntityByFilters({ entityName: 'Tag' }, DbTableVersion, {
       ifEntityNotFoundReturn: () =>
         this.dbManager.createEntity({ entityName: 'Tag' }, DbTableVersion, {
@@ -36,7 +35,7 @@ export default class TagServiceImpl extends TagService {
   }
 
   @OnStartUp()
-  async migrateDbFromVersion1To2(): PromiseErrorOr<DbTableVersion> {
+  migrateDbFromVersion1To2(): PromiseErrorOr<DbTableVersion> {
     return this.dbManager.getEntityByFilters({ entityName: 'Tag', version: 1 }, DbTableVersion, {
       ifEntityNotFoundReturn: () => Promise.resolve([null, null]),
       postHook: (tagDbTableVersion1) =>

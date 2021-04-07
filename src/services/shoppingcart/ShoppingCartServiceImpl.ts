@@ -29,7 +29,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   @AllowForSelf()
-  async getShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<ShoppingCart> {
+ getShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<ShoppingCart> {
     return this.dbManager.getEntityByField('userAccountId', userAccountId, ShoppingCart, {
       preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
       ifEntityNotFoundReturn: () =>
