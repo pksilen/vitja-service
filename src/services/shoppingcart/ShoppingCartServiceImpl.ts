@@ -1,20 +1,19 @@
-import { Injectable } from '@nestjs/common';
-import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
-import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
-import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
-import ShoppingCartService from './ShoppingCartService';
-import ShoppingCart from './types/entities/ShoppingCart';
-import SalesItemService from '../salesitem/SalesItemService';
-import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
-import { Delete } from '../../backk/decorators/service/function/Delete';
-import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
-import ShoppingCartOrOrderSalesItem from './types/entities/ShoppingCartOrOrderSalesItem';
-import UserAccountIdAndSalesItemId from './types/args/UserAccountIdAndSalesItemId';
-import { PromiseErrorOr } from '../../backk/types/PromiseErrorOr';
-import { Update } from '../../backk/decorators/service/function/Update';
-import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
-import UserAccountId from '../../backk/types/useraccount/UserAccountId';
-import { ErrorDef } from '../../backk/dbmanager/hooks/PreHook';
+import { Injectable } from "@nestjs/common";
+import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
+import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
+import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
+import ShoppingCartService from "./ShoppingCartService";
+import ShoppingCart from "./types/entities/ShoppingCart";
+import SalesItemService from "../salesitem/SalesItemService";
+import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
+import { Delete } from "../../backk/decorators/service/function/Delete";
+import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
+import UserAccountIdAndSalesItemId from "./types/args/UserAccountIdAndSalesItemId";
+import { PromiseErrorOr } from "../../backk/types/PromiseErrorOr";
+import { Update } from "../../backk/decorators/service/function/Update";
+import { shoppingCartServiceErrors } from "./errors/shoppingCartServiceErrors";
+import UserAccountId from "../../backk/types/useraccount/UserAccountId";
+import { ErrorDef } from "../../backk/dbmanager/hooks/PreHook";
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -48,7 +47,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       'salesItems',
       { _id: salesItemId },
       ShoppingCart,
-      {userAccountId },
+      { userAccountId },
       {
         ifEntityNotFoundUse: () =>
           this.dbManager.createEntity(ShoppingCart, { userAccountId, salesItems: [] }),
@@ -85,7 +84,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Delete()
   emptyShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityByField(ShoppingCart, 'userAccountId', userAccountId, {
+    return this.dbManager.deleteEntityByFilters(ShoppingCart, { userAccountId }, {
       entityPreHooks: ({ salesItems }) =>
         this.salesItemService.updateSalesItemStatesByFilters(
           salesItems.map(({ _id }) => _id),
@@ -98,18 +97,22 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForServiceInternalUse()
   deleteShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityByField(ShoppingCart, 'userAccountId', userAccountId);
+    return this.dbManager.deleteEntitiesByFilters(ShoppingCart, { userAccountId });
   }
 
   @AllowForServiceInternalUse()
   getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseErrorOr<ShoppingCart> {
-    return this.dbManager.getEntityByFilters(ShoppingCart, { userAccountId }, {
-      preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
-      postHook: {
-        shouldSucceedOrBeTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
-        error
+    return this.dbManager.getEntityByFilters(
+      ShoppingCart,
+      { userAccountId },
+      {
+        preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
+        postHook: {
+          shouldSucceedOrBeTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
+          error
+        }
       }
-    });
+    );
   }
 
   private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseErrorOr<null> {

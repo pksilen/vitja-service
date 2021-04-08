@@ -31,7 +31,7 @@ import { mongoDbManager } from "../database/mongoDbManager";
   imports: [],
   controllers: [AppController],
   providers: [
-    { provide: AbstractDbManager, useValue: mongoDbManager },
+    { provide: AbstractDbManager, useValue: postgreSqlDbManager },
     { provide: ResponseCacheConfigService, useClass: ResponseCacheConfigServiceImpl },
     { provide: AuditLoggingService, useClass: AuditLoggingServiceImpl },
     { provide: StartupCheckService, useClass: StartupCheckServiceImpl },

@@ -241,18 +241,22 @@ export default abstract class AbstractDbManager {
     options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<T[]>;
 
-  abstract getEntitiesByField<T extends BackkEntity>(
-    EntityClass: { new (): T },
-    fieldPathName: string,
-    fieldValue: any,
-    options?: { postQueryOperations?: PostQueryOperations }
-  ): PromiseErrorOr<T[]>;
-
   abstract updateEntity<T extends BackkEntity>(
     EntityClass: { new (): T },
     entityUpdate: RecursivePartial<T> & { _id: string },
     options?: {
       preHooks?: PreHook | PreHook[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
+  ): PromiseErrorOr<null>;
+
+  abstract updateEntityByFilters<T extends BackkEntity>(
+    EntityClass: { new (): T },
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    entityUpdate: Partial<T>,
+    options?: {
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
@@ -285,18 +289,6 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract updateEntityByField<T extends BackkEntity>(
-    EntityClass: { new (): T },
-    fieldPathName: string,
-    fieldValue: any,
-    entityUpdate: RecursivePartial<T>,
-    options?: {
-      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
-      postQueryOperations?: PostQueryOperations;
-      postHook?: PostHook<T>;
-    }
-  ): PromiseErrorOr<null>;
-
   abstract deleteEntityById<T extends BackkEntity>(
     EntityClass: { new (): T },
     _id: string,
@@ -327,21 +319,14 @@ export default abstract class AbstractDbManager {
     });
   }
 
-  abstract deleteEntityByField<T extends BackkEntity>(
+  abstract deleteEntityByFilters<T extends BackkEntity>(
     EntityClass: { new (): T },
-    fieldName: keyof T & string,
-    fieldValue: T[keyof T] | string,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     options?: {
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
-  ): PromiseErrorOr<null>;
-
-  abstract deleteEntitiesByField<T extends BackkEntity>(
-    EntityClass: { new (): T },
-    fieldName: keyof T & string,
-    fieldValue: T[keyof T] | string
   ): PromiseErrorOr<null>;
 
   abstract deleteEntitiesByFilters<T extends BackkEntity>(

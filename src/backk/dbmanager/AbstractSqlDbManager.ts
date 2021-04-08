@@ -41,6 +41,8 @@ import removeFieldValues from "./sql/operations/dml/removeFieldValues";
 import addSubEntitiesByFilters from "./sql/operations/dml/addSubEntitiesByFilters";
 import { EntitiesPostHook } from "./hooks/EntitiesPostHook";
 import getEntityByFilters from "./sql/operations/dql/getEntityByFilters";
+import deleteEntityByFilters from "./sql/operations/dml/deleteEntityByFilters";
+import updateEntityByFilters from "./sql/operations/dml/updateEntityByFilters";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -683,6 +685,22 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
+  async updateEntityByFilters<T extends BackkEntity>(
+    EntityClass: { new (): T },
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    entityUpdate: Partial<T>,
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
+  ): PromiseErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityByFilters');
+    const response = await updateEntityByFilters(this, filters, entityUpdate, EntityClass, options);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
   async updateEntitiesByFilters<T extends BackkEntity>(
     EntityClass: { new (): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
@@ -775,6 +793,21 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
       options?.postHook,
       options?.postQueryOperations
     );
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  async deleteEntityByFilters<T extends BackkEntity>(
+    EntityClass: { new (): T },
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
+  ): PromiseErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntityByFilters');
+    const response = await deleteEntityByFilters(this, filters, EntityClass, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

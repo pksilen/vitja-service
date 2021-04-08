@@ -1329,6 +1329,111 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
+  async updateEntityByFilters<T extends BackkEntity>(
+    EntityClass: { new (): T },
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    entityUpdate: Partial<T>,
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
+  ): PromiseErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'updateEntityByFilters');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+
+    let matchExpression: any;
+    let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
+
+    if (typeof filters === 'object' && !Array.isArray(filters)) {
+      finalFilters = convertFilterObjectToMongoDbQueries(filters);
+    } else {
+      finalFilters = filters;
+    }
+
+    if (Array.isArray(finalFilters) && finalFilters?.find((filter) => filter instanceof SqlExpression)) {
+      throw new Error('SqlExpression is not supported for MongoDB');
+    } else {
+      const rootFilters = getRootOperations(finalFilters, EntityClass, this.getTypes());
+      const rootUserDefinedFilters = rootFilters.filter((filter) => !(filter instanceof MongoDbQuery));
+      const rootMongoDbQueries = rootFilters.filter((filter) => filter instanceof MongoDbQuery);
+
+      const userDefinedFiltersMatchExpression = convertUserDefinedFiltersToMatchExpression(
+        rootUserDefinedFilters as UserDefinedFilter[]
+      );
+
+      const mongoDbQueriesMatchExpression = convertMongoDbQueriesToMatchExpression(
+        rootMongoDbQueries as Array<MongoDbQuery<T>>
+      );
+
+      matchExpression = {
+        ...userDefinedFiltersMatchExpression,
+        ...mongoDbQueriesMatchExpression
+      };
+
+      replaceIdStringsWithObjectIds(matchExpression);
+    }
+
+    let shouldUseTransaction = false;
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);
+      let versionUpdate = {};
+      if (entityPropertyNameToPropertyTypeNameMap.version) {
+        delete (entityUpdate as any).version;
+        // noinspection ReuseOfLocalVariableJS
+        versionUpdate = { $inc: { version: 1 } };
+      }
+
+      let lastModifiedTimestampUpdate = {};
+      if (entityPropertyNameToPropertyTypeNameMap.lastModifiedTimestamp) {
+        delete (entityUpdate as any).lastModifiedTimestamp;
+        lastModifiedTimestampUpdate = { $set: { lastModifiedTimestamp: new Date() } };
+      }
+
+      await this.tryExecute(shouldUseTransaction, async (client) => {
+        const [currentEntity, error] = await this.getEntityByFilters(
+          EntityClass,
+          filters,
+          { postQueryOperations: options?.postQueryOperations },
+          true,
+          true
+        );
+
+        if (!currentEntity) {
+          return [null, error];
+        }
+
+        await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
+
+        await client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .updateMany(matchExpression, {
+            ...versionUpdate,
+            ...lastModifiedTimestampUpdate,
+            $set: entityUpdate
+          });
+
+        if (options?.postHook) {
+          await tryExecutePostHook(options.postHook, null);
+        }
+      });
+
+      return [null, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
+  }
+
   async updateEntitiesByFilters<T extends object>(
     EntityClass: { new (): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
@@ -1541,6 +1646,92 @@ export default class MongoDbManager extends AbstractDbManager {
           .db(this.dbName)
           .collection(EntityClass.name.toLowerCase())
           .deleteOne({ [fieldName]: fieldValue });
+      });
+
+      return [null, null];
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
+    } finally {
+      cleanupLocalTransactionIfNeeded(shouldUseTransaction, this);
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
+  }
+
+  async deleteEntityByFilters<T extends BackkEntity>(
+    EntityClass: { new (): T },
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
+  ): PromiseErrorOr<null> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'deleteEntitiesByFilters');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+    let shouldUseTransaction = false;
+    let matchExpression: any;
+    let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
+
+    if (typeof filters === 'object' && !Array.isArray(filters)) {
+      finalFilters = convertFilterObjectToMongoDbQueries(filters);
+    } else {
+      finalFilters = filters;
+    }
+
+    if (Array.isArray(finalFilters) && finalFilters?.find((filter) => filter instanceof SqlExpression)) {
+      throw new Error('SqlExpression is not supported for MongoDB');
+    } else {
+      const rootFilters = getRootOperations(finalFilters, EntityClass, this.getTypes());
+      const rootUserDefinedFilters = rootFilters.filter((filter) => !(filter instanceof MongoDbQuery));
+      const rootMongoDbQueries = rootFilters.filter((filter) => filter instanceof MongoDbQuery);
+
+      const userDefinedFiltersMatchExpression = convertUserDefinedFiltersToMatchExpression(
+        rootUserDefinedFilters as UserDefinedFilter[]
+      );
+
+      const mongoDbQueriesMatchExpression = convertMongoDbQueriesToMatchExpression(
+        rootMongoDbQueries as Array<MongoDbQuery<T>>
+      );
+
+      matchExpression = {
+        ...userDefinedFiltersMatchExpression,
+        ...mongoDbQueriesMatchExpression
+      };
+    }
+
+    replaceIdStringsWithObjectIds(matchExpression);
+
+    try {
+      shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
+
+      await this.tryExecute(shouldUseTransaction, async (client) => {
+        if (options?.entityPreHooks) {
+          const [currentEntity, error] = await this.getEntityByFilters(
+            EntityClass,
+            filters,
+            { postQueryOperations: options?.postQueryOperations },
+            true,
+            true
+          );
+
+          if (!currentEntity) {
+            return [null, error];
+          }
+
+          await tryExecuteEntityPreHooks(options?.entityPreHooks, currentEntity);
+        }
+
+        await client
+          .db(this.dbName)
+          .collection(EntityClass.name.toLowerCase())
+          .deleteOne(matchExpression);
+
+        if (options?.postHook) {
+          await tryExecutePostHook(options?.postHook, null);
+        }
       });
 
       return [null, null];

@@ -40,7 +40,7 @@ export default function scheduleCronJobsForExecution(controller: any, dbManager:
                 const [, error] = await dbManager.executeInsideTransaction(async () => {
                   getClsNamespace('multipleServiceFunctionExecutions').set('globalTransaction', true);
 
-                  const [, error] = await dbManager.updateEntityByField(__Backk__CronJobScheduling, "serviceFunctionName", serviceFunctionName, {
+                  const [, error] = await dbManager.updateEntityByFilters(__Backk__CronJobScheduling, { serviceFunctionName }, {
                     lastScheduledTimestamp: new Date(),
                     nextScheduledTimestamp: interval.next().toDate()
                   }, {

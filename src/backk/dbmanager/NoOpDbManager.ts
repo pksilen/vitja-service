@@ -1,11 +1,23 @@
-import AbstractDbManager, { Field } from "./AbstractDbManager";
-import { BackkEntity } from "../types/entities/BackkEntity";
-import { SubEntity } from "../types/entities/SubEntity";
-import MongoDbQuery from "./mongodb/MongoDbQuery";
-import SqlExpression from "./sql/expressions/SqlExpression";
-import { PromiseErrorOr } from "../types/PromiseErrorOr";
+import AbstractDbManager, { Field } from './AbstractDbManager';
+import { BackkEntity } from '../types/entities/BackkEntity';
+import { SubEntity } from '../types/entities/SubEntity';
+import MongoDbQuery from './mongodb/MongoDbQuery';
+import SqlExpression from './sql/expressions/SqlExpression';
+import { PromiseErrorOr } from '../types/PromiseErrorOr';
+import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
+import { EntityPreHook } from './hooks/EntityPreHook';
+import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
+import { PostHook } from './hooks/PostHook';
 
 export default class NoOpDbManager extends AbstractDbManager {
+  updateEntityByFilters<T extends BackkEntity>(): PromiseErrorOr<null> {
+    throw new Error('Not implemented');
+  }
+
+  deleteEntityByFilters<T extends BackkEntity>(): PromiseErrorOr<null> {
+    throw new Error('Not implemented');
+  }
+
   getModifyColumnStatement(): string {
     throw new Error('Not implemented');
   }
@@ -194,7 +206,9 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  removeSubEntitiesByJsonPathFromEntityByField<T extends BackkEntity, U extends object>(): PromiseErrorOr<null> {
+  removeSubEntitiesByJsonPathFromEntityByField<T extends BackkEntity, U extends object>(): PromiseErrorOr<
+    null
+  > {
     throw new Error('Not implemented');
   }
 
