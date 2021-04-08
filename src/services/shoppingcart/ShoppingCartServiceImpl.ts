@@ -48,8 +48,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
       'salesItems',
       { _id: salesItemId },
       ShoppingCart,
-      'userAccountId',
-      userAccountId,
+      {userAccountId },
       {
         ifEntityNotFoundUse: () =>
           this.dbManager.createEntity(ShoppingCart, { userAccountId, salesItems: [] }),
