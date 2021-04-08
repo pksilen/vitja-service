@@ -10,12 +10,22 @@ import { MongoClient } from 'mongodb';
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
 import { HttpStatusCodes } from '../../constants/constants';
+import MongoDbQuery from './MongoDbQuery';
+import SqlExpression from '../sql/expressions/SqlExpression';
+import UserDefinedFilter from '../../types/userdefinedfilters/UserDefinedFilter';
+import convertFilterObjectToMongoDbQueries from './convertFilterObjectToMongoDbQueries';
+import getRootOperations from './getRootOperations';
+import convertUserDefinedFiltersToMatchExpression from './convertUserDefinedFiltersToMatchExpression';
+import convertMongoDbQueriesToMatchExpression from './convertMongoDbQueriesToMatchExpression';
+import replaceIdStringsWithObjectIds from './replaceIdStringsWithObjectIds';
 
-export default async function addSimpleSubEntitiesOrValuesWhere<T extends BackkEntity, U extends SubEntity>(
+export default async function addSimpleSubEntitiesOrValuesByFilters<
+  T extends BackkEntity,
+  U extends SubEntity
+>(
   client: MongoClient,
   dbManager: MongoDbManager,
-  fieldName: string,
-  fieldValue: any,
+  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
   subEntityPath: string,
   newSubEntities: Array<Omit<U, 'id'> | { _id: string } | string | number | boolean>,
   EntityClass: new () => T,
@@ -26,11 +36,42 @@ export default async function addSimpleSubEntitiesOrValuesWhere<T extends BackkE
     postQueryOperations?: PostQueryOperations;
   }
 ): PromiseErrorOr<null> {
+  let matchExpression: any;
+  let finalFilters: Array<MongoDbQuery<T> | UserDefinedFilter | SqlExpression>;
+
+  if (typeof filters === 'object' && !Array.isArray(filters)) {
+    finalFilters = convertFilterObjectToMongoDbQueries(filters);
+  } else {
+    finalFilters = filters;
+  }
+
+  if (Array.isArray(finalFilters) && finalFilters?.find((filter) => filter instanceof SqlExpression)) {
+    throw new Error('SqlExpression is not supported for MongoDB');
+  } else {
+    const rootFilters = getRootOperations(finalFilters, EntityClass, dbManager.getTypes());
+    const rootUserDefinedFilters = rootFilters.filter((filter) => !(filter instanceof MongoDbQuery));
+    const rootMongoDbQueries = rootFilters.filter((filter) => filter instanceof MongoDbQuery);
+
+    const userDefinedFiltersMatchExpression = convertUserDefinedFiltersToMatchExpression(
+      rootUserDefinedFilters as UserDefinedFilter[]
+    );
+
+    const mongoDbQueriesMatchExpression = convertMongoDbQueriesToMatchExpression(
+      rootMongoDbQueries as Array<MongoDbQuery<T>>
+    );
+
+    matchExpression = {
+      ...userDefinedFiltersMatchExpression,
+      ...mongoDbQueriesMatchExpression
+    };
+  }
+
+  replaceIdStringsWithObjectIds(matchExpression);
+
   if (options?.entityPreHooks) {
-    let [currentEntity, error] = await dbManager.getEntityByField(
+    let [currentEntity, error] = await dbManager.getEntityByFilters(
       EntityClass,
-      fieldName,
-      fieldValue,
+      filters,
       undefined,
       true,
       true
@@ -67,14 +108,11 @@ export default async function addSimpleSubEntitiesOrValuesWhere<T extends BackkE
   await client
     .db(dbManager.dbName)
     .collection(EntityClass.name.toLowerCase())
-    .updateOne(
-      { [fieldName]: fieldValue },
-      {
-        ...versionUpdate,
-        ...lastModifiedTimestampUpdate,
-        $push: { [subEntityPath]: { $each: newSubEntities } }
-      }
-    );
+    .updateOne(matchExpression, {
+      ...versionUpdate,
+      ...lastModifiedTimestampUpdate,
+      $push: { [subEntityPath]: { $each: newSubEntities } }
+    });
 
   return [null, null];
 }

@@ -28,20 +28,22 @@ import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
 import isBackkError from "../../../../errors/isBackkError";
 import { EntityPreHook } from "../../../hooks/EntityPreHook";
 import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
-import getEntityWhere from "../dql/getEntityWhere";
 import { HttpStatusCodes } from "../../../../constants/constants";
 import findSubEntityClass from "../../../../utils/type/findSubEntityClass";
+import MongoDbQuery from "../../../mongodb/MongoDbQuery";
+import SqlExpression from "../../expressions/SqlExpression";
+import UserDefinedFilter from "../../../../types/userdefinedfilters/UserDefinedFilter";
+import getEntityByFilters from "../dql/getEntityByFilters";
 
 // noinspection OverlyComplexFunctionJS,FunctionTooLongJS
-export default async function addSubEntitiesWhere<T extends BackkEntity, U extends SubEntity>(
+export default async function addSubEntitiesByFilters<T extends BackkEntity, U extends SubEntity>(
   dbManager: AbstractSqlDbManager,
-  fieldName: string,
-  fieldValue: any,
+  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
   subEntityPath: string,
   newSubEntities: Array<Omit<U, 'id'> | { _id: string }>,
   EntityClass: new () => T,
   options?: {
-    ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+    ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
     entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
     postHook?: PostHook<T>;
     postQueryOperations?: PostQueryOperations;
@@ -58,15 +60,11 @@ export default async function addSubEntitiesWhere<T extends BackkEntity, U exten
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
-    let [currentEntity, error] = await getEntityWhere(
+    let [currentEntity, error] = await getEntityByFilters(
       dbManager,
-      fieldName,
-      fieldValue,
+      filters,
       EntityClass,
-      undefined,
-      options?.postQueryOperations,
-      undefined,
-      undefined,
+      { postQueryOperations: options?.postQueryOperations },
       true,
       true
     );
@@ -134,7 +132,7 @@ export default async function addSubEntitiesWhere<T extends BackkEntity, U exten
           parentEntityClassAndPropertyNameForSubEntity[1]
         )
       ) {
-        const [subEntity, error] = await dbManager.getEntityById(SubEntityClass, newSubEntity._id ?? "");
+        const [subEntity, error] = await dbManager.getEntityById(SubEntityClass, newSubEntity._id ?? '');
 
         if (!subEntity) {
           // noinspection ExceptionCaughtLocallyJS
@@ -159,11 +157,15 @@ export default async function addSubEntitiesWhere<T extends BackkEntity, U exten
       } else {
         const foreignIdFieldName = entityAnnotationContainer.getForeignIdFieldName(SubEntityClass.name);
 
-        const [, error] = await dbManager.createEntity(SubEntityClass, {
-          ...newSubEntity,
-          [foreignIdFieldName]: currentEntity?._id,
-          id: (maxSubItemId + 1 + index).toString()
-        } as any, undefined);
+        const [, error] = await dbManager.createEntity(
+          SubEntityClass,
+          {
+            ...newSubEntity,
+            [foreignIdFieldName]: currentEntity?._id,
+            id: (maxSubItemId + 1 + index).toString()
+          } as any,
+          undefined
+        );
 
         if (error) {
           // noinspection ExceptionCaughtLocallyJS

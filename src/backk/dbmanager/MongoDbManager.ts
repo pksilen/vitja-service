@@ -65,11 +65,11 @@ import removeSimpleSubEntityById from './mongodb/removeSimpleSubEntityById';
 import removeSimpleSubEntityByIdWhere from './mongodb/removeSimpleSubEntityByIdWhere';
 import getEntitiesByFilters from './mongodb/operations/dql/getEntitiesByFilters';
 import removeFieldValues from './mongodb/removeFieldValues';
-import addSimpleSubEntitiesOrValuesWhere from './mongodb/addSimpleSubEntitiesOrValuesWhere';
 import { HttpStatusCodes } from '../constants/constants';
 import { EntitiesPostHook } from './hooks/EntitiesPostHook';
-import findSubEntityClass from "../utils/type/findSubEntityClass";
+import findSubEntityClass from '../utils/type/findSubEntityClass';
 import getEntityByFilters from './mongodb/operations/dql/getEntityByFiltes';
+import addSimpleSubEntitiesOrValuesByFilters from "./mongodb/addSimpleSubEntitiesOrValuesByFilters";
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -350,12 +350,11 @@ export default class MongoDbManager extends AbstractDbManager {
     return response;
   }
 
-  addSubEntityToEntityByField<T extends BackkEntity, U extends SubEntity>(
+  addSubEntityToEntityByFilters<T extends BackkEntity, U extends SubEntity>(
     subEntityPath: string,
     subEntity: Omit<U, 'id'> | { _id: string },
     EntityClass: { new (): T },
-    entityFieldPathName: string,
-    entityFieldValue: any,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -363,13 +362,12 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityToEntityByField');
-    const response = this.addSubEntitiesToEntityByField(
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addSubEntityToEntityByFilters');
+    const response = this.addSubEntitiesToEntityByFilters(
       subEntityPath,
       [subEntity],
       EntityClass,
-      entityFieldPathName,
-      entityFieldValue,
+      filters,
       options
     );
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -508,12 +506,11 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(
+  async addSubEntitiesToEntityByFilters<T extends BackkEntity, U extends SubEntity>(
     subEntityPath: string,
     subEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: { new (): T },
-    entityFieldPathName: string,
-    entityFieldValue: any,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -538,21 +535,19 @@ export default class MongoDbManager extends AbstractDbManager {
         let updateError;
 
         if (isNonNestedColumnName) {
-          [, updateError] = await addSimpleSubEntitiesOrValuesWhere(
+          [, updateError] = await addSimpleSubEntitiesOrValuesByFilters(
             client,
             this,
-            entityFieldPathName,
-            entityFieldValue,
+            filters,
             subEntityPath,
             subEntities,
             EntityClass,
             options
           );
         } else {
-          let [currentEntity, error] = await this.getEntityByField(
+          let [currentEntity, error] = await this.getEntityByFilters(
             EntityClass,
-            entityFieldPathName,
-            entityFieldValue,
+            filters,
             undefined,
             true,
             true
@@ -737,10 +732,12 @@ export default class MongoDbManager extends AbstractDbManager {
       postQueryOperations?: PostQueryOperations;
       ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
       postHook?: PostHook<T>;
-    }
+    },
+    isSelectForUpdate = false,
+    isInternalCall = false
   ): PromiseErrorOr<T> {
-    return getEntityByFilters(this, filters, EntityClass, options);
-   }
+    return getEntityByFilters(this, filters, EntityClass, options, isSelectForUpdate, isInternalCall);
+  }
 
   async getEntityCount<T>(
     EntityClass: new () => T,
@@ -1620,9 +1617,13 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async removeSubEntitiesByJsonPathFromEntityById<T extends BackkEntity>(
     subEntitiesJsonPath: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesByJsonPathFromEntityById');
     // noinspection AssignmentToFunctionParameterJS
@@ -1689,7 +1690,12 @@ export default class MongoDbManager extends AbstractDbManager {
       );
     } else {
       const subEntityPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-      response = await this.removeSubEntitiesByJsonPathFromEntityById(subEntityPath, EntityClass, _id, options);
+      response = await this.removeSubEntitiesByJsonPathFromEntityById(
+        subEntityPath,
+        EntityClass,
+        _id,
+        options
+      );
     }
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
@@ -1801,12 +1807,19 @@ export default class MongoDbManager extends AbstractDbManager {
 
   async removeSubEntitiesByJsonPathFromEntityByField<T extends BackkEntity, U extends object>(
     subEntitiesJsonPath: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     entityFieldPathName: string,
     entityFieldValue: any,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntitiesByJsonPathFromEntityByField');
+    const dbOperationStartTimeInMillis = startDbOperation(
+      this,
+      'removeSubEntitiesByJsonPathFromEntityByField'
+    );
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     let shouldUseTransaction = false;
@@ -1878,7 +1891,13 @@ export default class MongoDbManager extends AbstractDbManager {
       );
     } else {
       const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-      response = await this.removeSubEntitiesByJsonPathFromEntityByField(subEntityJsonPath, EntityClass, entityFieldPathName, entityFieldValue, options);
+      response = await this.removeSubEntitiesByJsonPathFromEntityByField(
+        subEntityJsonPath,
+        EntityClass,
+        entityFieldPathName,
+        entityFieldValue,
+        options
+      );
     }
 
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);

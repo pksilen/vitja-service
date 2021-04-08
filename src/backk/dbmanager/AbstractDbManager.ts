@@ -151,12 +151,11 @@ export default abstract class AbstractDbManager {
     }
   ): PromiseErrorOr<null>;
 
-  abstract addSubEntityToEntityByField<T extends BackkEntity, U extends SubEntity>(
+  abstract addSubEntityToEntityByFilters<T extends BackkEntity, U extends SubEntity>(
     subEntityPath: string,
     subEntity: Omit<U, 'id'> | { _id: string },
     EntityClass: { new (): T },
-    entityFieldPathName: string,
-    entityFieldValue: any,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
@@ -165,12 +164,11 @@ export default abstract class AbstractDbManager {
     }
   ): PromiseErrorOr<null>;
 
-  abstract addSubEntitiesToEntityByField<T extends BackkEntity, U extends SubEntity>(
+  abstract addSubEntitiesToEntityByFilters<T extends BackkEntity, U extends SubEntity>(
     subEntityPath: string,
     subEntities: Array<Omit<U, 'id'> | { _id: string }>,
     EntityClass: { new (): T },
-    entityFieldPathName: string,
-    entityFieldValue: any,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     options?: {
       ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];

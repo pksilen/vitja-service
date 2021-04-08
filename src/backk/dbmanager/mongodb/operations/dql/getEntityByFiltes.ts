@@ -27,7 +27,6 @@ import MongoDbManager from '../../../MongoDbManager';
 import { PreHook } from '../../../hooks/PreHook';
 import tryStartLocalTransactionIfNeeded from '../../../sql/operations/transaction/tryStartLocalTransactionIfNeeded';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
-import tryExecuteEntitiesPostHook from '../../../hooks/tryExecuteEntitiesPostHook';
 import { PostHook } from '../../../hooks/PostHook';
 import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
 import { BACKK_ERRORS } from '../../../../errors/backkErrors';
@@ -43,7 +42,7 @@ export default async function getEntityByFilters<T>(
     ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
     postHook?: PostHook<T>;
   },
-  isRecursive = false,
+  isSelectForUpdate = false,
   isInternalCall = false
 ): PromiseErrorOr<T> {
   const dbOperationStartTimeInMillis = startDbOperation(dbManager, 'getEntitiesByFilters');
@@ -88,17 +87,14 @@ export default async function getEntityByFilters<T>(
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
     }
 
-    if (!isRecursive) {
-      updateDbLocalTransactionCount(dbManager);
-    }
-
-    let isSelectForUpdate = false;
+    updateDbLocalTransactionCount(dbManager);
 
     if (
       getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
       dbManager.getClsNamespace()?.get('globalTransaction') ||
       dbManager.getClsNamespace()?.get('localTransaction')
     ) {
+      // noinspection AssignmentToFunctionParameterJS
       isSelectForUpdate = true;
     }
 

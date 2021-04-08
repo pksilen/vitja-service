@@ -44,7 +44,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemove')
   addToShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.addSubEntityToEntityByField(
+    return this.dbManager.addSubEntityToEntityByFilters(
       'salesItems',
       { _id: salesItemId },
       ShoppingCart,
