@@ -69,6 +69,7 @@ import addSimpleSubEntitiesOrValuesWhere from './mongodb/addSimpleSubEntitiesOrV
 import { HttpStatusCodes } from '../constants/constants';
 import { EntitiesPostHook } from './hooks/EntitiesPostHook';
 import findSubEntityClass from "../utils/type/findSubEntityClass";
+import getEntityByFilters from './mongodb/operations/dql/getEntityByFiltes';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -725,7 +726,7 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: EntitiesPostHook<T>;
     }
   ): PromiseErrorOr<T[]> {
-    return getEntitiesByFilters(this, filters, EntityClass, options, false);
+    return getEntitiesByFilters(this, filters, EntityClass, options);
   }
 
   async getEntityByFilters<T>(
@@ -738,39 +739,8 @@ export default class MongoDbManager extends AbstractDbManager {
       postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<T> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
-
-    let entities: any;
-    let error;
-    // eslint-disable-next-line prefer-const
-    [entities, error] = await this.getEntitiesByFilters(EntityClass, filters, {
-      preHooks: options?.preHooks,
-      postQueryOperations: options?.postQueryOperations
-    });
-
-    let entity;
-    if (entities?.length === 0) {
-      if (options?.ifEntityNotFoundReturn) {
-        [entity, error] = await options.ifEntityNotFoundReturn();
-        entities.push(entity);
-      } else {
-        return [
-          null,
-          createBackkErrorFromErrorCodeMessageAndStatus({
-            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-            message: `${EntityClass.name} with given filter(s) not found`
-          })
-        ];
-      }
-    }
-
-    if (options?.postHook) {
-      await tryExecutePostHook(options?.postHook, entities[0]);
-    }
-
-    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-    return [entities[0], error];
-  }
+    return getEntityByFilters(this, filters, EntityClass, options);
+   }
 
   async getEntityCount<T>(
     EntityClass: new () => T,
