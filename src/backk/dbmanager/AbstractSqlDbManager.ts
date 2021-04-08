@@ -45,6 +45,7 @@ import removeFieldValues from "./sql/operations/dml/removeFieldValues";
 import tryExecutePostHook from "./hooks/tryExecutePostHook";
 import addSubEntitiesWhere from "./sql/operations/dml/addSubEntitiesWhere";
 import { EntitiesPostHook } from "./hooks/EntitiesPostHook";
+import getEntityByFilters from "./sql/operations/dql/getEntityByFilters";
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -591,37 +592,9 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     }
   ): PromiseErrorOr<T> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'getEntityByFilters');
-
-    let entities: any;
-    let error;
-    // eslint-disable-next-line prefer-const
-    [entities, error] = await this.getEntitiesByFilters(EntityClass, filters, {
-      preHooks: options?.preHooks,
-      postQueryOperations: options?.postQueryOperations
-    });
-
-    let entity;
-    if (entities?.length === 0) {
-      if (options?.ifEntityNotFoundReturn) {
-        [entity, error] = await options.ifEntityNotFoundReturn();
-        entities.push(entity);
-      } else {
-        return [
-          null,
-          createBackkErrorFromErrorCodeMessageAndStatus({
-            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
-            message: `${EntityClass.name} with given filter(s) not found`
-          })
-        ];
-      }
-    }
-
-    if (options?.postHook) {
-      await tryExecutePostHook(options?.postHook, entities[0]);
-    }
-
+    const response = await getEntityByFilters(this, filters, EntityClass, options)
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
-    return [entities[0], error];
+    return response;
   }
 
   async getEntityCount<T>(

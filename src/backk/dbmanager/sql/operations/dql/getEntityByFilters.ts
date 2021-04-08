@@ -15,22 +15,26 @@ import { PreHook } from '../../../hooks/PreHook';
 import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
 import tryExecutePreHooks from '../../../hooks/tryExecutePreHooks';
 import DefaultPostQueryOperations from '../../../../types/postqueryoperations/DefaultPostQueryOperations';
-import { EntitiesPostHook } from "../../../hooks/EntitiesPostHook";
-import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
-import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
-import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
-import tryExecuteEntitiesPostHook from "../../../hooks/tryExecuteEntitiesPostHook";
+import { EntitiesPostHook } from '../../../hooks/EntitiesPostHook';
+import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
+import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
+import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import createBackkErrorFromErrorCodeMessageAndStatus from '../../../../errors/createBackkErrorFromErrorCodeMessageAndStatus';
+import { BACKK_ERRORS } from '../../../../errors/backkErrors';
+import tryExecutePostHook from '../../../hooks/tryExecutePostHook';
+import { PostHook } from '../../../hooks/PostHook';
 
-export default async function getEntitiesByFilters<T>(
+export default async function getEntityByFilters<T>(
   dbManager: AbstractSqlDbManager,
   filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | object,
   EntityClass: new () => T,
   options?: {
     preHooks?: PreHook | PreHook[];
     postQueryOperations?: PostQueryOperations;
-    postHook?: EntitiesPostHook<T>
+    ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
+    postHook?: PostHook<T>;
   }
-): PromiseErrorOr<T[]> {
+): PromiseErrorOr<T> {
   if (typeof filters === 'object' && !Array.isArray(filters)) {
     // noinspection AssignmentToFunctionParameterJS
     filters = convertFilterObjectToSqlEquals(filters);
@@ -99,12 +103,29 @@ export default async function getEntitiesByFilters<T>(
       dbManager
     );
 
-    if(options?.postHook) {
-      await tryExecuteEntitiesPostHook(options.postHook, entities);
+    let entity: T | null | undefined = entities[0],
+      error;
+    if (entities?.length === 0) {
+      if (options?.ifEntityNotFoundReturn) {
+        [entity, error] = await options.ifEntityNotFoundReturn();
+        entities.push(entity);
+      } else {
+        return [
+          null,
+          createBackkErrorFromErrorCodeMessageAndStatus({
+            ...BACKK_ERRORS.ENTITY_NOT_FOUND,
+            message: `${EntityClass.name} with given filter(s) not found`
+          })
+        ];
+      }
+    }
+
+    if (options?.postHook) {
+      await tryExecutePostHook(options.postHook, entity);
     }
 
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
-    return [entities, null];
+    return [entity, error];
   } catch (error) {
     await tryRollbackLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [null, createBackkErrorFromError(error)];
