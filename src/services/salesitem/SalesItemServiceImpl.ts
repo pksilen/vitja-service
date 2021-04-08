@@ -61,7 +61,8 @@ export default class SalesItemServiceImpl extends SalesItemService {
         ...arg,
         state: 'forSale',
         previousPrice: null,
-        primaryImageThumbnailDataUri: getThumbnailImageDataUri(arg.primaryImageDataUri)
+        primaryImageThumbnailDataUri: getThumbnailImageDataUri(arg.primaryImageDataUri),
+        likeCount: 0
       },
       {
         preHooks: {
