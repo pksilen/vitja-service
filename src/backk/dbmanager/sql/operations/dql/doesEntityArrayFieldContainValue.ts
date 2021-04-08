@@ -23,17 +23,6 @@ export default async function doesEntityArrayFieldContainValue<T extends BackkEn
   EntityClass = dbManager.getType(EntityClass);
 
   try {
-    let isSelectForUpdate = false;
-
-    if (
-      getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
-      dbManager.getClsNamespace()?.get('globalTransaction') ||
-      dbManager.getClsNamespace()?.get('localTransaction')
-    ) {
-      // noinspection AssignmentToFunctionParameterJS
-      isSelectForUpdate = true;
-    }
-
     const foreignIdFieldName = EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
     const numericId = parseInt(_id, 10);
     if (isNaN(numericId)) {
@@ -53,10 +42,6 @@ export default async function doesEntityArrayFieldContainValue<T extends BackkEn
         .toLowerCase()} WHERE ${foreignIdFieldName.toLowerCase()} = ${dbManager.getValuePlaceholder(
       1
     )} AND ${fieldName.slice(0, -1).toLowerCase()} = ${dbManager.getValuePlaceholder(2)}`;
-
-    if (isSelectForUpdate) {
-      selectStatement += ' ' + dbManager.getUpdateForClause(tableName);
-    }
 
     const result = await dbManager.tryExecuteQuery(selectStatement, [numericId, fieldValue]);
     const entityCount = dbManager.getResultRows(result)[0].count;
