@@ -216,7 +216,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
             'likedUserAccountIds',
             userAccountId
           );
-
           return error ?? !doesContainUserAccountId;
         },
         ({ likeCount }) => this.dbManager.updateEntity(SalesItem, { _id, likeCount: likeCount + 1 })

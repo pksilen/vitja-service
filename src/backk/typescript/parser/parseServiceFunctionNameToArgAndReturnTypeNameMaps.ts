@@ -64,13 +64,14 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
              continue;
             }
 
+
             const functionArgumentTypeNameStart = classBodyNode.params[0].typeAnnotation.loc.start;
             const functionArgumentTypeNameEnd = classBodyNode.params[0].typeAnnotation.loc.end;
 
             const functionArgumentTypeName = fileRows[functionArgumentTypeNameStart.line - 1].slice(
-              functionArgumentTypeNameStart.column + 2,
+              functionArgumentTypeNameStart.column + 1,
               functionArgumentTypeNameEnd.column
-            );
+            ).trim();
 
             if (
               !isValidFunctionArgumentTypeName(functionArgumentTypeName, remoteServiceRootDir) &&
@@ -79,6 +80,7 @@ export default function parseServiceFunctionNameToArgAndReturnTypeNameMaps(
                 functionName
               )
             ) {
+              console.log(fileRows[functionArgumentTypeNameStart.line - 1])
               throw new Error(
                 serviceName + '.' + functionName + ': input argument type must be a user-defined class type'
               );
