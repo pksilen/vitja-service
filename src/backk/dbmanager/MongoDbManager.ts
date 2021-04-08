@@ -2094,7 +2094,12 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
-    fieldValues: (string | number | boolean)[]
+    fieldValues: (string | number | boolean)[],
+    options?: {
+      entityPreHooks: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityArrayFieldValues');
     // noinspection AssignmentToFunctionParameterJS
@@ -2105,7 +2110,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        return addSimpleSubEntitiesOrValuesByEntityId(client, this, _id, fieldName, fieldValues, EntityClass);
+        return addSimpleSubEntitiesOrValuesByEntityId(client, this, _id, fieldName, fieldValues, EntityClass, options);
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)
@@ -2172,7 +2177,12 @@ export default class MongoDbManager extends AbstractDbManager {
     EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
-    fieldValues: (string | number | boolean)[]
+    fieldValues: (string | number | boolean)[],
+    options?: {
+      entityPreHooks: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityArrayFieldValues');
     // noinspection AssignmentToFunctionParameterJS
@@ -2183,7 +2193,7 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async (client) => {
-        return removeFieldValues(client, this, _id, fieldName, fieldValues, EntityClass);
+        return removeFieldValues(client, this, _id, fieldName, fieldValues, EntityClass, options);
       });
     } catch (errorOrBackkError) {
       return isBackkError(errorOrBackkError)

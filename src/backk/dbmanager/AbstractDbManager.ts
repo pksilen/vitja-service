@@ -336,60 +336,80 @@ export default abstract class AbstractDbManager {
 
   abstract removeSubEntitiesByJsonPathFromEntityById<T extends BackkEntity>(
     subEntitiesJsonPath: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null>;
 
   abstract removeSubEntityByIdFromEntityById<T extends BackkEntity>(
     subEntityPath: string,
     subEntityId: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null>;
 
   abstract removeSubEntitiesByJsonPathFromEntityByFilters<T extends BackkEntity, U extends object>(
     subEntitiesJsonPath: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null>;
 
   abstract removeSubEntityByIdFromEntityByFilters<T extends BackkEntity>(
     subEntityPath: string,
     subEntityId: string,
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
-    options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null>;
 
   abstract deleteAllEntities<T>(EntityClass: new () => T): PromiseErrorOr<null>;
 
   abstract addEntityArrayFieldValues<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
     fieldValuesToAdd: (string | number | boolean)[],
     options?: {
-      entityPreHooks: EntityPreHook<T> | EntityPreHook<T>[]
+      entityPreHooks: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 
   abstract doesEntityArrayFieldContainValue<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
-    fieldValue: (string | number | boolean)
+    fieldValue: string | number | boolean
   ): PromiseErrorOr<boolean>;
 
   abstract removeEntityArrayFieldValues<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
     fieldValuesToRemove: (string | number | boolean)[],
     options?: {
-      entityPreHooks: EntityPreHook<T> | EntityPreHook<T>[]
+      entityPreHooks: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null>;
 }

@@ -21,7 +21,7 @@ export default async function removeFieldValues<T extends BackkEntity>(
   fieldValues: (string | number | boolean)[],
   EntityClass: new () => T,
   options?: {
-    preHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+    entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
     postHook?: PostHook<T>;
     postQueryOperations?: PostQueryOperations;
   }
@@ -34,12 +34,12 @@ export default async function removeFieldValues<T extends BackkEntity>(
     shouldUseTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
     return await dbManager.tryExecute(shouldUseTransaction, async (client) => {
-      if (options?.preHooks) {
+      if (options?.entityPreHooks) {
         const [currentEntity, error] = await dbManager.getEntityById(EntityClass, _id, undefined);
         if (!currentEntity) {
           throw error;
         }
-        await tryExecuteEntityPreHooks(options?.preHooks ?? [], currentEntity);
+        await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
       }
 
       const entityPropertyNameToPropertyTypeNameMap = getClassPropertyNameToPropertyTypeNameMap(EntityClass);

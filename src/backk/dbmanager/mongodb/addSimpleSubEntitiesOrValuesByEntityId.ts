@@ -9,9 +9,13 @@ import MongoDbManager from '../MongoDbManager';
 import { MongoClient, ObjectId } from 'mongodb';
 import typePropertyAnnotationContainer from '../../decorators/typeproperty/typePropertyAnnotationContainer';
 import getClassPropertyNameToPropertyTypeNameMap from '../../metadata/getClassPropertyNameToPropertyTypeNameMap';
-import { HttpStatusCodes } from "../../constants/constants";
+import { HttpStatusCodes } from '../../constants/constants';
+import tryExecutePostHook from "../hooks/tryExecutePostHook";
 
-export default async function addSimpleSubEntitiesOrValuesByEntityId<T extends BackkEntity, U extends SubEntity>(
+export default async function addSimpleSubEntitiesOrValuesByEntityId<
+  T extends BackkEntity,
+  U extends SubEntity
+>(
   client: MongoClient,
   dbManager: MongoDbManager,
   _id: string,
@@ -19,14 +23,16 @@ export default async function addSimpleSubEntitiesOrValuesByEntityId<T extends B
   newSubEntities: Array<Omit<U, 'id'> | { _id: string } | string | number | boolean>,
   EntityClass: new () => T,
   options?: {
-    ifEntityNotFoundUse?: () => PromiseErrorOr<T>,
+    ifEntityNotFoundUse?: () => PromiseErrorOr<T>;
     entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
     postHook?: PostHook<T>;
     postQueryOperations?: PostQueryOperations;
   }
 ): PromiseErrorOr<null> {
   if (options?.entityPreHooks) {
-    let [currentEntity, error] = await dbManager.getEntityById(EntityClass, _id, undefined);
+    let [currentEntity, error] = await dbManager.getEntityById(EntityClass, _id, {
+      postQueryOperations: options?.postQueryOperations
+    });
 
     if (error?.statusCode === HttpStatusCodes.NOT_FOUND && options?.ifEntityNotFoundUse) {
       [currentEntity, error] = await options.ifEntityNotFoundUse();
@@ -61,8 +67,15 @@ export default async function addSimpleSubEntitiesOrValuesByEntityId<T extends B
     .collection(EntityClass.name.toLowerCase())
     .updateOne(
       { _id: new ObjectId(_id) },
-      { ...versionUpdate, ...lastModifiedTimestampUpdate, $push: { [subEntityPath]: { $each: newSubEntities } } }
+      {
+        ...versionUpdate,
+        ...lastModifiedTimestampUpdate,
+        $push: { [subEntityPath]: { $each: newSubEntities } }
+      }
     );
 
+  if (options?.postHook) {
+    await tryExecutePostHook(options.postHook, null)
+  }
   return [null, null];
 }
