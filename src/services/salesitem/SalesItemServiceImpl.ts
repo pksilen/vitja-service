@@ -207,48 +207,41 @@ export default class SalesItemServiceImpl extends SalesItemService {
 
   @AllowForSelf()
   @Update('addOrRemove')
-  likeSalesItem({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.addEntityArrayFieldValues(SalesItem, _id, 'likedUserAccountIds', [userAccountId], {
-      entityPreHooks: [
-        async () => {
-          const [doesContainUserAccountId, error] = await this.dbManager.doesEntityArrayFieldContainValue(
-            SalesItem,
-            _id,
-            'likedUserAccountIds',
-            userAccountId
-          );
-          return error ?? !doesContainUserAccountId;
-        },
-        ({ likeCount, version }) =>
-          this.dbManager.updateEntity(SalesItem, { _id, version, likeCount: likeCount + 1 })
-      ]
-    });
-  }
+  toggleLikeSalesItem({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
+    return this.dbManager.executeInsideTransaction(async () => {
+      const [isLiked, error] = await this.dbManager.doesEntityArrayFieldContainValue(
+        SalesItem,
+        _id,
+        'likedUserAccountIds',
+        userAccountId
+      );
 
-  @AllowForSelf()
-  @Update('addOrRemove')
-  unlikeSalesItem({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.removeEntityArrayFieldValues(
-      SalesItem,
-      _id,
-      'likedUserAccountIds',
-      [userAccountId],
-      {
-        entityPreHooks: [
-          async () => {
-            const [doesContainUserAccountId, error] = await this.dbManager.doesEntityArrayFieldContainValue(
-              SalesItem,
-              _id,
-              'likedUserAccountIds',
-              userAccountId
-            );
-            return error ?? doesContainUserAccountId;
-          },
-          ({ likeCount, version }) =>
-            this.dbManager.updateEntity(SalesItem, { _id, version, likeCount: likeCount - 1 })
-        ]
+      if (isLiked === true) {
+        return this.dbManager.removeEntityArrayFieldValues(
+          SalesItem,
+          _id,
+          'likedUserAccountIds',
+          [userAccountId],
+          {
+            entityPreHooks: ({ likeCount, version }) =>
+              this.dbManager.updateEntity(SalesItem, { _id, version, likeCount: likeCount - 1 })
+          }
+        );
+      } else if (isLiked === false) {
+        return this.dbManager.addEntityArrayFieldValues(
+          SalesItem,
+          _id,
+          'likedUserAccountIds',
+          [userAccountId],
+          {
+            entityPreHooks: ({ likeCount, version }) =>
+              this.dbManager.updateEntity(SalesItem, { _id, version, likeCount: likeCount + 1 })
+          }
+        );
       }
-    );
+
+      return [null, error];
+    });
   }
 
   @AllowForSelf()
