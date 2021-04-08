@@ -1,37 +1,36 @@
-import { Injectable } from "@nestjs/common";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForEveryUser } from "../../backk/decorators/service/function/AllowForEveryUser";
-import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
-import { NoCaptcha } from "../../backk/decorators/service/function/NoCaptcha";
-import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import SqlEquals from "../../backk/dbmanager/sql/expressions/SqlEquals";
-import SqlExpression from "../../backk/dbmanager/sql/expressions/SqlExpression";
-import SqlInExpression from "../../backk/dbmanager/sql/expressions/SqlInExpression";
-import SalesItemService from "./SalesItemService";
-import GetSalesItemsArg from "./types/args/GetSalesItemsArg";
-import { SalesItem } from "./types/entities/SalesItem";
-import _Id from "../../backk/types/id/_Id";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import { SalesItemState } from "./types/enums/SalesItemState";
-import GetSalesItemsByUserDefinedFiltersArg from "./types/args/GetSalesItemsByUserDefinedFiltersArg";
-import { CronJob } from "../../backk/decorators/service/function/CronJob";
-import DeleteOldUnsoldSalesItemsArg from "./types/args/DeleteOldUnsoldSalesItemsArg";
-import dayjs from "dayjs";
-import _IdAndUserAccountId from "../../backk/types/id/_IdAndUserAccountId";
-import UserAccountId from "../../backk/types/useraccount/UserAccountId";
-import { PromiseErrorOr } from "../../backk/types/PromiseErrorOr";
-import User from "../user/types/entities/User";
-import FollowedUserSalesItem from "./types/responses/FollowedUserSalesItem";
-import ShoppingCartOrOrderSalesItem from "../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem";
-import executeForAll from "../../backk/utils/executeForAll";
-import ChangeExpiredReservedSalesItemStatesToForSaleArg
-  from "./types/args/ChangeExpiredReservedSalesItemStatesToForSaleArg";
-import { salesItemServiceErrors } from "./errors/salesItemServiceErrors";
-import getThumbnailImageDataUri from "../common/utils/getThumbnailImageDataUri";
-import sendToRemoteService from "../../backk/remote/messagequeue/sendToRemoteService";
-import { Update } from "../../backk/decorators/service/function/Update";
-import MongoDbQuery from "../../backk/dbmanager/mongodb/MongoDbQuery";
+import { Injectable } from '@nestjs/common';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForEveryUser } from '../../backk/decorators/service/function/AllowForEveryUser';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import { NoCaptcha } from '../../backk/decorators/service/function/NoCaptcha';
+import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import SqlEquals from '../../backk/dbmanager/sql/expressions/SqlEquals';
+import SqlExpression from '../../backk/dbmanager/sql/expressions/SqlExpression';
+import SqlInExpression from '../../backk/dbmanager/sql/expressions/SqlInExpression';
+import SalesItemService from './SalesItemService';
+import GetSalesItemsArg from './types/args/GetSalesItemsArg';
+import { SalesItem } from './types/entities/SalesItem';
+import _Id from '../../backk/types/id/_Id';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import { SalesItemState } from './types/enums/SalesItemState';
+import GetSalesItemsByUserDefinedFiltersArg from './types/args/GetSalesItemsByUserDefinedFiltersArg';
+import { CronJob } from '../../backk/decorators/service/function/CronJob';
+import DeleteOldUnsoldSalesItemsArg from './types/args/DeleteOldUnsoldSalesItemsArg';
+import dayjs from 'dayjs';
+import _IdAndUserAccountId from '../../backk/types/id/_IdAndUserAccountId';
+import UserAccountId from '../../backk/types/useraccount/UserAccountId';
+import { PromiseErrorOr } from '../../backk/types/PromiseErrorOr';
+import User from '../user/types/entities/User';
+import FollowedUserSalesItem from './types/responses/FollowedUserSalesItem';
+import ShoppingCartOrOrderSalesItem from '../shoppingcart/types/entities/ShoppingCartOrOrderSalesItem';
+import executeForAll from '../../backk/utils/executeForAll';
+import ChangeExpiredReservedSalesItemStatesToForSaleArg from './types/args/ChangeExpiredReservedSalesItemStatesToForSaleArg';
+import { salesItemServiceErrors } from './errors/salesItemServiceErrors';
+import getThumbnailImageDataUri from '../common/utils/getThumbnailImageDataUri';
+import sendToRemoteService from '../../backk/remote/messagequeue/sendToRemoteService';
+import { Update } from '../../backk/decorators/service/function/Update';
+import MongoDbQuery from '../../backk/dbmanager/mongodb/MongoDbQuery';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -56,26 +55,30 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   @NoCaptcha()
   createSalesItem(arg: SalesItem): PromiseErrorOr<SalesItem> {
-    return this.dbManager.createEntity(SalesItem, {
-      ...arg,
-      state: "forSale",
-      previousPrice: null,
-      primaryImageThumbnailDataUri: getThumbnailImageDataUri(arg.primaryImageDataUri)
-    }, {
-      preHooks: {
-        shouldSucceedOrBeTrue: async () => {
-          const [usersSellableSalesItemCount, error] = await this.dbManager.getEntityCount(SalesItem, {
-            userAccountId: arg.userAccountId,
-            state: "forSale"
-          });
+    return this.dbManager.createEntity(
+      SalesItem,
+      {
+        ...arg,
+        state: 'forSale',
+        previousPrice: null,
+        primaryImageThumbnailDataUri: getThumbnailImageDataUri(arg.primaryImageDataUri)
+      },
+      {
+        preHooks: {
+          shouldSucceedOrBeTrue: async () => {
+            const [usersSellableSalesItemCount, error] = await this.dbManager.getEntityCount(SalesItem, {
+              userAccountId: arg.userAccountId,
+              state: 'forSale'
+            });
 
-          return typeof usersSellableSalesItemCount === "number"
-            ? usersSellableSalesItemCount < 100
-            : error;
-        },
-        error: salesItemServiceErrors.maximumSalesItemCountPerUserExceeded
+            return typeof usersSellableSalesItemCount === 'number'
+              ? usersSellableSalesItemCount < 100
+              : error;
+          },
+          error: salesItemServiceErrors.maximumSalesItemCountPerUserExceeded
+        }
       }
-    });
+    );
   }
 
   @AllowForEveryUser()
@@ -141,27 +144,31 @@ export default class SalesItemServiceImpl extends SalesItemService {
   async getFollowedUsersSalesItems({
     userAccountId
   }: UserAccountId): PromiseErrorOr<FollowedUserSalesItem[]> {
-    const [user, error] = await this.dbManager.getEntityByFilters(User, {
-      _id: userAccountId,
-      "followedUserAccounts.ownSalesItems.state": "forSale"
-    }, {
-      postQueryOperations: {
-        sortBys: [
-          {
-            subEntityPath: "followedUserAccounts.ownSalesItems",
-            fieldName: "lastModifiedTimestamp",
-            sortDirection: "DESC"
-          }
-        ],
-        includeResponseFields: [
-          "followedUserAccounts._id",
-          "followedUserAccounts.displayName",
-          ...SalesItemServiceImpl.DEFAULT_SALES_ITEM_FIELDS.map(
-            (defaultSalesItemField) => `followedUserAccounts.ownSalesItems.${defaultSalesItemField}`
-          )
-        ]
+    const [user, error] = await this.dbManager.getEntityByFilters(
+      User,
+      {
+        _id: userAccountId,
+        'followedUserAccounts.ownSalesItems.state': 'forSale'
+      },
+      {
+        postQueryOperations: {
+          sortBys: [
+            {
+              subEntityPath: 'followedUserAccounts.ownSalesItems',
+              fieldName: 'lastModifiedTimestamp',
+              sortDirection: 'DESC'
+            }
+          ],
+          includeResponseFields: [
+            'followedUserAccounts._id',
+            'followedUserAccounts.displayName',
+            ...SalesItemServiceImpl.DEFAULT_SALES_ITEM_FIELDS.map(
+              (defaultSalesItemField) => `followedUserAccounts.ownSalesItems.${defaultSalesItemField}`
+            )
+          ]
+        }
       }
-    });
+    );
 
     const followedUserSalesItems = user?.followedUserAccounts
       .map((followedUserAccount) =>
@@ -177,20 +184,64 @@ export default class SalesItemServiceImpl extends SalesItemService {
   }
 
   @AllowForEveryUser()
- getSalesItem({ _id }: _Id): PromiseErrorOr<SalesItem> {
+  getSalesItem({ _id }: _Id): PromiseErrorOr<SalesItem> {
     return this.dbManager.getEntityById(SalesItem, _id);
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   followSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.addEntityArrayFieldValues(SalesItem, _id, "priceChangeFollowingUserAccountIds", [userAccountId]);
+    return this.dbManager.addEntityArrayFieldValues(SalesItem, _id, 'priceChangeFollowingUserAccountIds', [
+      userAccountId
+    ]);
   }
 
   @AllowForSelf()
   @Update('addOrRemove')
   unfollowSalesItemPriceChange({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.removeEntityArrayFieldValues(SalesItem, _id, "priceChangeFollowingUserAccountIds", [userAccountId]);
+    return this.dbManager.removeEntityArrayFieldValues(SalesItem, _id, 'priceChangeFollowingUserAccountIds', [
+      userAccountId
+    ]);
+  }
+
+  @AllowForSelf()
+  @Update('addOrRemove')
+  likeSalesItem({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
+    return this.dbManager.addEntityArrayFieldValues(SalesItem, _id, 'likedUserAccountIds', [userAccountId], {
+      entityPreHooks: [
+        async () => {
+          const [doesContainUserAccountId, error] = await this.dbManager.doesEntityArrayFieldContainValue(
+            SalesItem,
+            _id,
+            'likedUserAccountIds',
+            userAccountId
+          );
+
+          return error ?? !doesContainUserAccountId;
+        },
+        ({ likeCount }) => this.dbManager.updateEntity(SalesItem, { _id, likeCount: likeCount + 1 })
+      ]
+    });
+  }
+
+  @AllowForSelf()
+  @Update('addOrRemove')
+  unlikeSalesItem({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
+    return this.dbManager.removeEntityArrayFieldValues(SalesItem, _id, 'likedUserAccountIds', [userAccountId], {
+      entityPreHooks: [
+        async () => {
+          const [doesContainUserAccountId, error] = await this.dbManager.doesEntityArrayFieldContainValue(
+            SalesItem,
+            _id,
+            'likedUserAccountIds',
+            userAccountId
+          );
+
+          return error ?? doesContainUserAccountId;
+        },
+        ({ likeCount }) => this.dbManager.updateEntity(SalesItem, { _id, likeCount: likeCount - 1 })
+      ]
+    });
   }
 
   @AllowForSelf()
@@ -200,7 +251,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     return this.dbManager.updateEntity(SalesItem, salesItem, {
       entityPreHooks: [
         {
-          shouldSucceedOrBeTrue: ({ state }) => state === "forSale",
+          shouldSucceedOrBeTrue: ({ state }) => state === 'forSale',
           error: salesItemServiceErrors.salesItemStateIsNotForSale
         },
         ({ _id, price }) => {
@@ -249,7 +300,7 @@ export default class SalesItemServiceImpl extends SalesItemService {
     );
 
     return this.dbManager.updateEntitiesByFilters<SalesItem>(SalesItem, filters, {
-      state: "forSale",
+      state: 'forSale',
       buyerUserAccountId: null
     });
   }
@@ -302,24 +353,28 @@ export default class SalesItemServiceImpl extends SalesItemService {
     requiredCurrentState?: SalesItemState,
     buyerUserAccountId?: string
   ): PromiseErrorOr<null> {
-    return this.dbManager.updateEntity(SalesItem, {
-      _id,
-      state: newState,
-      buyerUserAccountId: newState === "forSale" ? null : buyerUserAccountId
-    }, {
-      entityPreHooks: [
-        {
-          executePreHookIf: () => !!requiredCurrentState,
-          shouldSucceedOrBeTrue: ({ state }) => requiredCurrentState === state,
-          error: salesItemServiceErrors.invalidSalesItemState
-        },
-        {
-          executePreHookIf: () => newState === "sold",
-          shouldSucceedOrBeTrue: ({ buyerUserAccountId }) => buyerUserAccountId === buyerUserAccountId,
-          error: salesItemServiceErrors.invalidSalesItemState
-        }
-      ]
-    });
+    return this.dbManager.updateEntity(
+      SalesItem,
+      {
+        _id,
+        state: newState,
+        buyerUserAccountId: newState === 'forSale' ? null : buyerUserAccountId
+      },
+      {
+        entityPreHooks: [
+          {
+            executePreHookIf: () => !!requiredCurrentState,
+            shouldSucceedOrBeTrue: ({ state }) => requiredCurrentState === state,
+            error: salesItemServiceErrors.invalidSalesItemState
+          },
+          {
+            executePreHookIf: () => newState === 'sold',
+            shouldSucceedOrBeTrue: ({ buyerUserAccountId }) => buyerUserAccountId === buyerUserAccountId,
+            error: salesItemServiceErrors.invalidSalesItemState
+          }
+        ]
+      }
+    );
   }
 
   @AllowForServiceInternalUse()

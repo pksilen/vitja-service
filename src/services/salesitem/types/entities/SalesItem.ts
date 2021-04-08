@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, ArrayUnique, MaxLength } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, ArrayUnique, IsInt, MaxLength } from "class-validator";
 import Entity from "../../../../backk/decorators/entity/Entity";
 import { Area } from "../enums/Area";
 import { Department } from "../enums/Department";
@@ -11,7 +11,7 @@ import MinMax from "../../../../backk/decorators/typeproperty/MinMax";
 import IsAnyString from "../../../../backk/decorators/typeproperty/IsAnyString";
 import IsDataUri from "../../../../backk/decorators/typeproperty/IsDataUri";
 import ArrayNotUnique from "../../../../backk/decorators/typeproperty/ArrayNotUnique";
-import { Lengths, Values } from "../../../../backk/constants/constants";
+import { Lengths, MAX_INT_VALUE, Values } from "../../../../backk/constants/constants";
 import _IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId
   from "../../../../backk/types/id/_IdAndVersionAndCreatedAtTimestampAndLastModifiedTimestampAndUserAccountId";
 import { IsFloat } from "../../../../backk/decorators/typeproperty/IsFloat";
@@ -73,4 +73,12 @@ export class SalesItem extends _IdAndVersionAndCreatedAtTimestampAndLastModified
   @ArrayUnique()
   @Private()
   readonly priceChangeFollowingUserAccountIds!: string[];
+
+  @ArrayUnique()
+  @Private()
+  readonly likedUserAccountIds!: string[];
+
+  @IsInt()
+  @MinMax(0, MAX_INT_VALUE)
+  public readonly likeCount!: number;
 }

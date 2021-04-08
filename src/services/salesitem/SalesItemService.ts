@@ -25,6 +25,8 @@ export default abstract class SalesItemService extends CrudEntityService {
   abstract getSalesItem(arg: _Id): PromiseErrorOr<SalesItem>;
   abstract followSalesItemPriceChange(arg: _IdAndUserAccountId): PromiseErrorOr<null>;
   abstract unfollowSalesItemPriceChange(arg: _IdAndUserAccountId): PromiseErrorOr<null>;
+  abstract likeSalesItem(arg:_IdAndUserAccountId): PromiseErrorOr<null>;
+  abstract unlikeSalesItem(arg: _IdAndUserAccountId): PromiseErrorOr<null>;
   abstract updateSalesItem(arg: SalesItem): PromiseErrorOr<null>;
 
   abstract changeExpiredReservedSalesItemStatesToForSale(

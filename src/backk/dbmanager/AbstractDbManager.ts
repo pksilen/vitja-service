@@ -370,7 +370,7 @@ export default abstract class AbstractDbManager {
     EntityClass: { new(): T },
     _id: string,
     fieldName: keyof T & string,
-    fieldValues: (string | number | boolean)[]
+    fieldValuesToAdd: (string | number | boolean)[]
   ): PromiseErrorOr<null>;
 
   abstract doesEntityArrayFieldContainValue<T extends BackkEntity>(
@@ -384,6 +384,6 @@ export default abstract class AbstractDbManager {
     EntityClass: { new(): T },
     _id: string,
     fieldName: keyof T & string,
-    fieldValues: (string | number | boolean)[]
+    fieldValuesToRemove: (string | number | boolean)[]
   ): PromiseErrorOr<null>;
 }
