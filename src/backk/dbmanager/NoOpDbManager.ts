@@ -1,13 +1,9 @@
-import AbstractDbManager, { Field } from './AbstractDbManager';
-import { BackkEntity } from '../types/entities/BackkEntity';
-import { SubEntity } from '../types/entities/SubEntity';
-import MongoDbQuery from './mongodb/MongoDbQuery';
-import SqlExpression from './sql/expressions/SqlExpression';
-import { PromiseErrorOr } from '../types/PromiseErrorOr';
-import UserDefinedFilter from '../types/userdefinedfilters/UserDefinedFilter';
-import { EntityPreHook } from './hooks/EntityPreHook';
-import { PostQueryOperations } from '../types/postqueryoperations/PostQueryOperations';
-import { PostHook } from './hooks/PostHook';
+import AbstractDbManager, { Field } from "./AbstractDbManager";
+import { BackkEntity } from "../types/entities/BackkEntity";
+import { SubEntity } from "../types/entities/SubEntity";
+import MongoDbQuery from "./mongodb/MongoDbQuery";
+import SqlExpression from "./sql/expressions/SqlExpression";
+import { PromiseErrorOr } from "../types/PromiseErrorOr";
 
 export default class NoOpDbManager extends AbstractDbManager {
   updateEntityByFilters<T extends BackkEntity>(): PromiseErrorOr<null> {
@@ -217,6 +213,10 @@ export default class NoOpDbManager extends AbstractDbManager {
   }
 
   addSubEntityToEntityByFilters<T extends BackkEntity, U extends SubEntity>(): PromiseErrorOr<null> {
+    throw new Error('Not implemented');
+  }
+
+  doesEntityArrayFieldContainValue<T extends BackkEntity>(): PromiseErrorOr<boolean> {
     throw new Error('Not implemented');
   }
 }

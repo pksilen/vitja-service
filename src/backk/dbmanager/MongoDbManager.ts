@@ -2117,6 +2117,57 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
+  async doesEntityArrayFieldContainValue<T extends BackkEntity>(
+    EntityClass: { new (): T },
+    _id: string,
+    fieldName: keyof T & string,
+    fieldValue: string | number | boolean
+  ): PromiseErrorOr<boolean> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityArrayFieldValues');
+    // noinspection AssignmentToFunctionParameterJS
+    EntityClass = this.getType(EntityClass);
+
+    try {
+      let isSelectForUpdate = false;
+
+      if (
+        getNamespace('multipleServiceFunctionExecutions')?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('globalTransaction') ||
+        this.getClsNamespace()?.get('localTransaction')
+      ) {
+        // noinspection AssignmentToFunctionParameterJS
+        isSelectForUpdate = true;
+      }
+
+      return await this.tryExecute(false, async (client) => {
+        if (isSelectForUpdate) {
+          await client
+            .db(this.dbName)
+            .collection(EntityClass.name.toLowerCase())
+            .findOneAndUpdate({ _id: new ObjectId(_id) }, { $set: { _backkLock: new ObjectId() } });
+        }
+
+        const cursor = client
+          .db(this.dbName)
+          .collection(getTableName(EntityClass.name))
+          .find({ _id: new ObjectId(_id), [fieldName]: fieldValue });
+
+        const rows = await cursor.toArray();
+
+        if (rows.length >= 1) {
+          return [true, null];
+        }
+        return [false, null];
+      });
+    } catch (errorOrBackkError) {
+      return isBackkError(errorOrBackkError)
+        ? [null, errorOrBackkError]
+        : [null, createBackkErrorFromError(errorOrBackkError)];
+    } finally {
+      recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    }
+  }
+
   async removeEntityArrayFieldValues<T extends BackkEntity>(
     EntityClass: { new (): T },
     _id: string,

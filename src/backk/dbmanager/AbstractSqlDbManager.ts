@@ -44,6 +44,7 @@ import getEntityByFilters from './sql/operations/dql/getEntityByFilters';
 import deleteEntityByFilters from './sql/operations/dml/deleteEntityByFilters';
 import updateEntityByFilters from './sql/operations/dml/updateEntityByFilters';
 import removeSubEntitiesByFilters from './sql/operations/dml/removeSubEntitiesWhere';
+import doesEntityArrayFieldContainValue from './sql/operations/dql/doesEntityArrayFieldContainValue';
 
 @Injectable()
 export default abstract class AbstractSqlDbManager extends AbstractDbManager {
@@ -940,6 +941,18 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityArrayFieldValues');
     const response = await addFieldValues(this, _id, fieldName, fieldValues, EntityClass);
+    recordDbOperationDuration(this, dbOperationStartTimeInMillis);
+    return response;
+  }
+
+  async doesEntityArrayFieldContainValue<T extends BackkEntity>(
+    EntityClass: { new(): T },
+    _id: string,
+    fieldName: keyof T & string,
+    fieldValue: (string | number | boolean)
+  ): PromiseErrorOr<boolean> {
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'doesEntityArrayFieldContainValue');
+    const response = await doesEntityArrayFieldContainValue(this, EntityClass, _id, fieldName, fieldValue);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

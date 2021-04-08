@@ -373,6 +373,13 @@ export default abstract class AbstractDbManager {
     fieldValues: (string | number | boolean)[]
   ): PromiseErrorOr<null>;
 
+  abstract doesEntityArrayFieldContainValue<T extends BackkEntity>(
+    EntityClass: { new(): T },
+    _id: string,
+    fieldName: keyof T & string,
+    fieldValue: (string | number | boolean)
+  ): PromiseErrorOr<boolean>;
+
   abstract removeEntityArrayFieldValues<T extends BackkEntity>(
     EntityClass: { new(): T },
     _id: string,
