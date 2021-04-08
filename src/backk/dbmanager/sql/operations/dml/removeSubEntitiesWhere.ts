@@ -22,11 +22,14 @@ import isBackkError from '../../../../errors/isBackkError';
 import { EntityPreHook } from '../../../hooks/EntityPreHook';
 import tryExecuteEntityPreHooks from '../../../hooks/tryExecuteEntityPreHooks';
 import getEntityWhere from '../dql/getEntityWhere';
+import MongoDbQuery from '../../../mongodb/MongoDbQuery';
+import SqlExpression from '../../expressions/SqlExpression';
+import UserDefinedFilter from '../../../../types/userdefinedfilters/UserDefinedFilter';
+import getEntityByFilters from '../dql/getEntityByFilters';
 
-export default async function removeSubEntitiesWhere<T extends BackkEntity, U extends object>(
+export default async function removeSubEntitiesByFilters<T extends BackkEntity, U extends object>(
   dbManager: AbstractSqlDbManager,
-  fieldName: string,
-  fieldValue: T[keyof T],
+  filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
   subEntitiesJsonPath: string,
   EntityClass: new () => T,
   entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[],
@@ -40,15 +43,11 @@ export default async function removeSubEntitiesWhere<T extends BackkEntity, U ex
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
 
-    const [currentEntity] = await getEntityWhere(
+    const [currentEntity] = await getEntityByFilters(
       dbManager,
-      fieldName,
-      fieldValue,
+      filters,
       EntityClass,
-      undefined,
-      postQueryOperations,
-      undefined,
-      undefined,
+      { postQueryOperations },
       true,
       true
     );

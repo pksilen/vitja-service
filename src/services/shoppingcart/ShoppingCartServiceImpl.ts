@@ -1,19 +1,19 @@
-import { Injectable } from "@nestjs/common";
-import AllowServiceForUserRoles from "../../backk/decorators/service/AllowServiceForUserRoles";
-import { AllowForSelf } from "../../backk/decorators/service/function/AllowForSelf";
-import AbstractDbManager from "../../backk/dbmanager/AbstractDbManager";
-import ShoppingCartService from "./ShoppingCartService";
-import ShoppingCart from "./types/entities/ShoppingCart";
-import SalesItemService from "../salesitem/SalesItemService";
-import { AllowForTests } from "../../backk/decorators/service/function/AllowForTests";
-import { Delete } from "../../backk/decorators/service/function/Delete";
-import { AllowForServiceInternalUse } from "../../backk/decorators/service/function/AllowForServiceInternalUse";
-import UserAccountIdAndSalesItemId from "./types/args/UserAccountIdAndSalesItemId";
-import { PromiseErrorOr } from "../../backk/types/PromiseErrorOr";
-import { Update } from "../../backk/decorators/service/function/Update";
-import { shoppingCartServiceErrors } from "./errors/shoppingCartServiceErrors";
-import UserAccountId from "../../backk/types/useraccount/UserAccountId";
-import { ErrorDef } from "../../backk/dbmanager/hooks/PreHook";
+import { Injectable } from '@nestjs/common';
+import AllowServiceForUserRoles from '../../backk/decorators/service/AllowServiceForUserRoles';
+import { AllowForSelf } from '../../backk/decorators/service/function/AllowForSelf';
+import AbstractDbManager from '../../backk/dbmanager/AbstractDbManager';
+import ShoppingCartService from './ShoppingCartService';
+import ShoppingCart from './types/entities/ShoppingCart';
+import SalesItemService from '../salesitem/SalesItemService';
+import { AllowForTests } from '../../backk/decorators/service/function/AllowForTests';
+import { Delete } from '../../backk/decorators/service/function/Delete';
+import { AllowForServiceInternalUse } from '../../backk/decorators/service/function/AllowForServiceInternalUse';
+import UserAccountIdAndSalesItemId from './types/args/UserAccountIdAndSalesItemId';
+import { PromiseErrorOr } from '../../backk/types/PromiseErrorOr';
+import { Update } from '../../backk/decorators/service/function/Update';
+import { shoppingCartServiceErrors } from './errors/shoppingCartServiceErrors';
+import UserAccountId from '../../backk/types/useraccount/UserAccountId';
+import { ErrorDef } from '../../backk/dbmanager/hooks/PreHook';
 
 @Injectable()
 @AllowServiceForUserRoles(['vitjaAdmin'])
@@ -63,12 +63,11 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Update('addOrRemove')
   removeFromShoppingCart({ userAccountId, salesItemId }: UserAccountIdAndSalesItemId): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntityByIdFromEntityByField(
+    return this.dbManager.removeSubEntityByIdFromEntityByFilters(
       'salesItems',
       salesItemId,
       ShoppingCart,
-      'userAccountId',
-      userAccountId,
+      { userAccountId },
       {
         entityPreHooks: () =>
           this.salesItemService.updateSalesItemStatesByFilters(
@@ -84,15 +83,19 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   @AllowForSelf()
   @Delete()
   emptyShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.deleteEntityByFilters(ShoppingCart, { userAccountId }, {
-      entityPreHooks: ({ salesItems }) =>
-        this.salesItemService.updateSalesItemStatesByFilters(
-          salesItems.map(({ _id }) => _id),
-          'forSale',
-          'reserved',
-          userAccountId
-        )
-    });
+    return this.dbManager.deleteEntityByFilters(
+      ShoppingCart,
+      { userAccountId },
+      {
+        entityPreHooks: ({ salesItems }) =>
+          this.salesItemService.updateSalesItemStatesByFilters(
+            salesItems.map(({ _id }) => _id),
+            'forSale',
+            'reserved',
+            userAccountId
+          )
+      }
+    );
   }
 
   @AllowForServiceInternalUse()
@@ -116,11 +119,10 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntitiesByJsonPathFromEntityByField(
+    return this.dbManager.removeSubEntitiesByJsonPathFromEntityByFilters(
       `salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`,
       ShoppingCart,
-      'userAccountId',
-      userAccountId
+      { userAccountId }
     );
   }
 }

@@ -62,14 +62,14 @@ import handleNestedManyToManyRelations from './mongodb/handleNestedManyToManyRel
 import handleNestedOneToManyRelations from './mongodb/handleNestedOneToManyRelations';
 import addSimpleSubEntitiesOrValuesByEntityId from './mongodb/addSimpleSubEntitiesOrValuesByEntityId';
 import removeSimpleSubEntityById from './mongodb/removeSimpleSubEntityById';
-import removeSimpleSubEntityByIdWhere from './mongodb/removeSimpleSubEntityByIdWhere';
+import removeSimpleSubEntityByIdFromEntityByFilters from './mongodb/removeSimpleSubEntityByIdFromEntityByFilters';
 import getEntitiesByFilters from './mongodb/operations/dql/getEntitiesByFilters';
 import removeFieldValues from './mongodb/removeFieldValues';
 import { HttpStatusCodes } from '../constants/constants';
 import { EntitiesPostHook } from './hooks/EntitiesPostHook';
 import findSubEntityClass from '../utils/type/findSubEntityClass';
 import getEntityByFilters from './mongodb/operations/dql/getEntityByFiltes';
-import addSimpleSubEntitiesOrValuesByFilters from "./mongodb/addSimpleSubEntitiesOrValuesByFilters";
+import addSimpleSubEntitiesOrValuesByFilters from './mongodb/addSimpleSubEntitiesOrValuesByFilters';
 
 @Injectable()
 export default class MongoDbManager extends AbstractDbManager {
@@ -1996,11 +1996,10 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async removeSubEntitiesByJsonPathFromEntityByField<T extends BackkEntity, U extends object>(
+  async removeSubEntitiesByJsonPathFromEntityByFilters<T extends BackkEntity, U extends object>(
     subEntitiesJsonPath: string,
     EntityClass: { new (): T },
-    entityFieldPathName: string,
-    entityFieldValue: any,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     options?: {
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
@@ -2009,7 +2008,7 @@ export default class MongoDbManager extends AbstractDbManager {
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(
       this,
-      'removeSubEntitiesByJsonPathFromEntityByField'
+      'removeSubEntitiesByJsonPathFromEntityByFilters'
     );
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
@@ -2019,10 +2018,9 @@ export default class MongoDbManager extends AbstractDbManager {
       shouldUseTransaction = await tryStartLocalTransactionIfNeeded(this);
 
       return await this.tryExecute(shouldUseTransaction, async () => {
-        const [currentEntity] = await this.getEntityByField(
+        const [currentEntity] = await this.getEntityByFilters(
           EntityClass,
-          entityFieldPathName,
-          entityFieldValue,
+          filters,
           { postQueryOperations: options?.postQueryOperations },
           true,
           true
@@ -2054,27 +2052,25 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async removeSubEntityByIdFromEntityByField<T extends BackkEntity>(
+  async removeSubEntityByIdFromEntityByFilters<T extends BackkEntity>(
     subEntitiesJsonPath: string,
     subEntityId: string,
     EntityClass: { new (): T },
-    entityFieldPathName: string,
-    entityFieldValue: any,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     options?: {
       entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityByIdFromEntityByField');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeSubEntityByIdFromEntityByFilters');
     const isNonNestedColumnName = subEntitiesJsonPath.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
     let response;
 
     if (isNonNestedColumnName) {
-      response = await removeSimpleSubEntityByIdWhere(
+      response = await removeSimpleSubEntityByIdFromEntityByFilters(
         this,
-        entityFieldPathName,
-        entityFieldValue,
+        filters,
         subEntitiesJsonPath,
         subEntityId,
         EntityClass,
@@ -2082,11 +2078,10 @@ export default class MongoDbManager extends AbstractDbManager {
       );
     } else {
       const subEntityJsonPath = `${subEntitiesJsonPath}[?(@.id == '${subEntityId}' || @._id == '${subEntityId}')]`;
-      response = await this.removeSubEntitiesByJsonPathFromEntityByField(
+      response = await this.removeSubEntitiesByJsonPathFromEntityByFilters(
         subEntityJsonPath,
         EntityClass,
-        entityFieldPathName,
-        entityFieldValue,
+        filters,
         options
       );
     }

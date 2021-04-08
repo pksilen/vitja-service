@@ -349,20 +349,18 @@ export default abstract class AbstractDbManager {
     options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null>;
 
-  abstract removeSubEntitiesByJsonPathFromEntityByField<T extends BackkEntity, U extends object>(
+  abstract removeSubEntitiesByJsonPathFromEntityByFilters<T extends BackkEntity, U extends object>(
     subEntitiesJsonPath: string,
     EntityClass: { new(): T },
-    entityFieldPathName: string,
-    entityFieldValue: any,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null>;
 
-  abstract removeSubEntityByIdFromEntityByField<T extends BackkEntity>(
+  abstract removeSubEntityByIdFromEntityByFilters<T extends BackkEntity>(
     subEntityPath: string,
     subEntityId: string,
     EntityClass: { new(): T },
-    entityFieldPathName: string,
-    entityFieldValue: any,
+    filters: Array<MongoDbQuery<T> | SqlExpression | UserDefinedFilter> | Partial<T> | object,
     options?: { entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[]; postQueryOperations?: PostQueryOperations; postHook?: PostHook<T> }
   ): PromiseErrorOr<null>;
 

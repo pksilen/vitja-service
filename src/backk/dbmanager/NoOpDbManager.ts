@@ -194,7 +194,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  removeSubEntityByIdFromEntityByField<T extends BackkEntity>(): PromiseErrorOr<null> {
+  removeSubEntityByIdFromEntityByFilters<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
@@ -206,7 +206,7 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  removeSubEntitiesByJsonPathFromEntityByField<T extends BackkEntity, U extends object>(): PromiseErrorOr<
+  removeSubEntitiesByJsonPathFromEntityByFilters<T extends BackkEntity, U extends object>(): PromiseErrorOr<
     null
   > {
     throw new Error('Not implemented');
