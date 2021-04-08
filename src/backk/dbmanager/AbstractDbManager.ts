@@ -243,19 +243,6 @@ export default abstract class AbstractDbManager {
     options?: { postQueryOperations?: PostQueryOperations }
   ): PromiseErrorOr<T[]>;
 
-  abstract getEntityByField<T extends BackkEntity>(
-    EntityClass: new () => T,
-    fieldPathName: string,
-    fieldValue: any,
-    options?: {
-      preHooks?: PreHook | PreHook[];
-      postQueryOperations?: PostQueryOperations;
-      ifEntityNotFoundReturn?: () => PromiseErrorOr<T>;
-      postHook?: PostHook<T>;
-    },
-    isSelectForUpdate?: boolean
-  ): PromiseErrorOr<T>;
-
   abstract getEntitiesByField<T extends BackkEntity>(
     EntityClass: { new (): T },
     fieldPathName: string,
@@ -398,14 +385,14 @@ export default abstract class AbstractDbManager {
 
   abstract deleteAllEntities<T>(EntityClass: new () => T): PromiseErrorOr<null>;
 
-  abstract addEntityFieldValues<T extends BackkEntity>(
+  abstract addEntityArrayFieldValues<T extends BackkEntity>(
     EntityClass: { new(): T },
     _id: string,
     fieldName: keyof T & string,
     fieldValues: (string | number | boolean)[]
   ): PromiseErrorOr<null>;
 
-  abstract removeEntityFieldValues<T extends BackkEntity>(
+  abstract removeEntityArrayFieldValues<T extends BackkEntity>(
     EntityClass: { new(): T },
     _id: string,
     fieldName: keyof T & string,

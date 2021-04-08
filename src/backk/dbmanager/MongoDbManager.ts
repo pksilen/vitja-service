@@ -1915,13 +1915,13 @@ export default class MongoDbManager extends AbstractDbManager {
     return response;
   }
 
-  async addEntityFieldValues<T extends BackkEntity>(
+  async addEntityArrayFieldValues<T extends BackkEntity>(
     EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
     fieldValues: (string | number | boolean)[]
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityFieldValues');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityArrayFieldValues');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     let shouldUseTransaction = false;
@@ -1942,13 +1942,13 @@ export default class MongoDbManager extends AbstractDbManager {
     }
   }
 
-  async removeEntityFieldValues<T extends BackkEntity>(
+  async removeEntityArrayFieldValues<T extends BackkEntity>(
     EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
     fieldValues: (string | number | boolean)[]
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityFieldValues');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityArrayFieldValues');
     // noinspection AssignmentToFunctionParameterJS
     EntityClass = this.getType(EntityClass);
     let shouldUseTransaction = false;

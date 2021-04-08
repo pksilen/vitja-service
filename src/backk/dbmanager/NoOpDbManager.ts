@@ -186,11 +186,11 @@ export default class NoOpDbManager extends AbstractDbManager {
     throw new Error('Not implemented');
   }
 
-  addEntityFieldValues<T extends BackkEntity>(): PromiseErrorOr<null> {
+  addEntityArrayFieldValues<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 
-  removeEntityFieldValues<T extends BackkEntity>(): PromiseErrorOr<null> {
+  removeEntityArrayFieldValues<T extends BackkEntity>(): PromiseErrorOr<null> {
     throw new Error('Not implemented');
   }
 

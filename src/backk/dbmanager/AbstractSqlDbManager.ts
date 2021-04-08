@@ -936,25 +936,25 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     return response;
   }
 
-  async addEntityFieldValues<T extends BackkEntity>(
+  async addEntityArrayFieldValues<T extends BackkEntity>(
     EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
     fieldValues: (string | number | boolean)[]
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityFieldValues');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityArrayFieldValues');
     const response = await addFieldValues(this, _id, fieldName, fieldValues, EntityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
-  async removeEntityFieldValues<T extends BackkEntity>(
+  async removeEntityArrayFieldValues<T extends BackkEntity>(
     EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
     fieldValues: (string | number | boolean)[]
   ): PromiseErrorOr<null> {
-    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeEntityFieldValues');
+    const dbOperationStartTimeInMillis = startDbOperation(this, 'removeEntityArrayFieldValues');
     const response = await removeFieldValues(this, _id, fieldName, fieldValues, EntityClass);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
