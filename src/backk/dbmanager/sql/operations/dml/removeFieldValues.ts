@@ -43,7 +43,7 @@ export default async function removeFieldValues<T extends BackkEntity>(
       dbManager,
       _id,
       EntityClass,
-      undefined,
+      { postQueryOperations: options?.postQueryOperations },
       true,
       true
     );
