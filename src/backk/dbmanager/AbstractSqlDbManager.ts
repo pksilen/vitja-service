@@ -937,19 +937,24 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
-    fieldValues: (string | number | boolean)[]
+    fieldValues: (string | number | boolean)[],
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'addEntityArrayFieldValues');
-    const response = await addFieldValues(this, _id, fieldName, fieldValues, EntityClass);
+    const response = await addFieldValues(this, _id, fieldName, fieldValues, EntityClass, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }
 
   async doesEntityArrayFieldContainValue<T extends BackkEntity>(
-    EntityClass: { new(): T },
+    EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
-    fieldValue: (string | number | boolean)
+    fieldValue: string | number | boolean
   ): PromiseErrorOr<boolean> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'doesEntityArrayFieldContainValue');
     const response = await doesEntityArrayFieldContainValue(this, EntityClass, _id, fieldName, fieldValue);
@@ -961,10 +966,15 @@ export default abstract class AbstractSqlDbManager extends AbstractDbManager {
     EntityClass: { new (): T },
     _id: string,
     fieldName: keyof T & string,
-    fieldValues: (string | number | boolean)[]
+    fieldValues: (string | number | boolean)[],
+    options?: {
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+      postQueryOperations?: PostQueryOperations;
+      postHook?: PostHook<T>;
+    }
   ): PromiseErrorOr<null> {
     const dbOperationStartTimeInMillis = startDbOperation(this, 'removeEntityArrayFieldValues');
-    const response = await removeFieldValues(this, _id, fieldName, fieldValues, EntityClass);
+    const response = await removeFieldValues(this, _id, fieldName, fieldValues, EntityClass, options);
     recordDbOperationDuration(this, dbOperationStartTimeInMillis);
     return response;
   }

@@ -388,7 +388,7 @@ export default abstract class AbstractDbManager {
     fieldName: keyof T & string,
     fieldValuesToAdd: (string | number | boolean)[],
     options?: {
-      entityPreHooks: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
@@ -407,7 +407,7 @@ export default abstract class AbstractDbManager {
     fieldName: keyof T & string,
     fieldValuesToRemove: (string | number | boolean)[],
     options?: {
-      entityPreHooks: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }

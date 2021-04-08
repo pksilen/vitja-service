@@ -1,16 +1,22 @@
-import { BackkEntity } from '../../../../types/entities/BackkEntity';
-import { PromiseErrorOr } from '../../../../types/PromiseErrorOr';
-import AbstractSqlDbManager from '../../../AbstractSqlDbManager';
-import tryStartLocalTransactionIfNeeded from '../transaction/tryStartLocalTransactionIfNeeded';
-import createErrorFromErrorCodeMessageAndStatus from '../../../../errors/createErrorFromErrorCodeMessageAndStatus';
-import { BACKK_ERRORS } from '../../../../errors/backkErrors';
-import forEachAsyncParallel from '../../../../utils/forEachAsyncParallel';
-import getEntityById from '../dql/getEntityById';
-import tryCommitLocalTransactionIfNeeded from '../transaction/tryCommitLocalTransactionIfNeeded';
-import tryRollbackLocalTransactionIfNeeded from '../transaction/tryRollbackLocalTransactionIfNeeded';
-import isBackkError from '../../../../errors/isBackkError';
-import createBackkErrorFromError from '../../../../errors/createBackkErrorFromError';
-import cleanupLocalTransactionIfNeeded from '../transaction/cleanupLocalTransactionIfNeeded';
+import { BackkEntity } from "../../../../types/entities/BackkEntity";
+import { PromiseErrorOr } from "../../../../types/PromiseErrorOr";
+import AbstractSqlDbManager from "../../../AbstractSqlDbManager";
+import tryStartLocalTransactionIfNeeded from "../transaction/tryStartLocalTransactionIfNeeded";
+import createErrorFromErrorCodeMessageAndStatus
+  from "../../../../errors/createErrorFromErrorCodeMessageAndStatus";
+import { BACKK_ERRORS } from "../../../../errors/backkErrors";
+import forEachAsyncParallel from "../../../../utils/forEachAsyncParallel";
+import getEntityById from "../dql/getEntityById";
+import tryCommitLocalTransactionIfNeeded from "../transaction/tryCommitLocalTransactionIfNeeded";
+import tryRollbackLocalTransactionIfNeeded from "../transaction/tryRollbackLocalTransactionIfNeeded";
+import isBackkError from "../../../../errors/isBackkError";
+import createBackkErrorFromError from "../../../../errors/createBackkErrorFromError";
+import cleanupLocalTransactionIfNeeded from "../transaction/cleanupLocalTransactionIfNeeded";
+import { EntityPreHook } from "../../../hooks/EntityPreHook";
+import { PostQueryOperations } from "../../../../types/postqueryoperations/PostQueryOperations";
+import { PostHook } from "../../../hooks/PostHook";
+import tryExecuteEntityPreHooks from "../../../hooks/tryExecuteEntityPreHooks";
+import tryExecutePostHook from "../../../hooks/tryExecutePostHook";
 
 // noinspection FunctionTooLongJS
 export default async function addFieldValues<T extends BackkEntity>(
@@ -18,7 +24,12 @@ export default async function addFieldValues<T extends BackkEntity>(
   _id: string,
   fieldName: string,
   fieldValues: (string | number | boolean)[],
-  EntityClass: new () => T
+  EntityClass: new () => T,
+  options?: {
+    entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
+    postQueryOperations?: PostQueryOperations;
+    postHook?: PostHook<T>;
+  }
 ): PromiseErrorOr<null> {
   if (fieldName.includes('.')) {
     throw new Error('fieldName parameter may not contain dots, i.e. it cannot be a field path name');
@@ -29,12 +40,20 @@ export default async function addFieldValues<T extends BackkEntity>(
 
   try {
     didStartTransaction = await tryStartLocalTransactionIfNeeded(dbManager);
-    const [currentEntity, error] = await getEntityById(dbManager, _id, EntityClass, undefined, true, true);
+    const [currentEntity, error] = await getEntityById(
+      dbManager,
+      _id,
+      EntityClass,
+      { postQueryOperations: options?.postQueryOperations },
+      true,
+      true
+    );
 
     if (!currentEntity) {
       throw error;
     }
 
+    await tryExecuteEntityPreHooks(options?.entityPreHooks ?? [], currentEntity);
     const promises = [];
     const foreignIdFieldName = EntityClass.name.charAt(0).toLowerCase() + EntityClass.name.slice(1) + 'Id';
 
@@ -94,6 +113,11 @@ export default async function addFieldValues<T extends BackkEntity>(
     }
 
     await Promise.all(promises);
+
+    if (options?.postHook) {
+      await tryExecutePostHook(options?.postHook, null);
+    }
+
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [null, null];
   } catch (errorOrBackkError) {

@@ -2096,7 +2096,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldName: keyof T & string,
     fieldValues: (string | number | boolean)[],
     options?: {
-      entityPreHooks: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }
@@ -2179,7 +2179,7 @@ export default class MongoDbManager extends AbstractDbManager {
     fieldName: keyof T & string,
     fieldValues: (string | number | boolean)[],
     options?: {
-      entityPreHooks: EntityPreHook<T> | EntityPreHook<T>[];
+      entityPreHooks?: EntityPreHook<T> | EntityPreHook<T>[];
       postQueryOperations?: PostQueryOperations;
       postHook?: PostHook<T>;
     }

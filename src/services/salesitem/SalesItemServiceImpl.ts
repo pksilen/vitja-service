@@ -242,7 +242,6 @@ export default class SalesItemServiceImpl extends SalesItemService {
               'likedUserAccountIds',
               userAccountId
             );
-
             return error ?? doesContainUserAccountId;
           },
           ({ likeCount, version }) =>
