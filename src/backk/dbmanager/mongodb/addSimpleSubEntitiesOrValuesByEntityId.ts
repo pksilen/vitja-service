@@ -77,5 +77,6 @@ export default async function addSimpleSubEntitiesOrValuesByEntityId<
   if (options?.postHook) {
     await tryExecutePostHook(options.postHook, null)
   }
+
   return [null, null];
 }

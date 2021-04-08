@@ -219,7 +219,8 @@ export default class SalesItemServiceImpl extends SalesItemService {
           );
           return error ?? !doesContainUserAccountId;
         },
-        ({ likeCount }) => this.dbManager.updateEntity(SalesItem, { _id, likeCount: likeCount + 1 })
+        ({ likeCount, version }) =>
+          this.dbManager.updateEntity(SalesItem, { _id, version, likeCount: likeCount + 1 })
       ]
     });
   }
@@ -227,21 +228,28 @@ export default class SalesItemServiceImpl extends SalesItemService {
   @AllowForSelf()
   @Update('addOrRemove')
   unlikeSalesItem({ _id, userAccountId }: _IdAndUserAccountId): PromiseErrorOr<null> {
-    return this.dbManager.removeEntityArrayFieldValues(SalesItem, _id, 'likedUserAccountIds', [userAccountId], {
-      entityPreHooks: [
-        async () => {
-          const [doesContainUserAccountId, error] = await this.dbManager.doesEntityArrayFieldContainValue(
-            SalesItem,
-            _id,
-            'likedUserAccountIds',
-            userAccountId
-          );
+    return this.dbManager.removeEntityArrayFieldValues(
+      SalesItem,
+      _id,
+      'likedUserAccountIds',
+      [userAccountId],
+      {
+        entityPreHooks: [
+          async () => {
+            const [doesContainUserAccountId, error] = await this.dbManager.doesEntityArrayFieldContainValue(
+              SalesItem,
+              _id,
+              'likedUserAccountIds',
+              userAccountId
+            );
 
-          return error ?? doesContainUserAccountId;
-        },
-        ({ likeCount }) => this.dbManager.updateEntity(SalesItem, { _id, likeCount: likeCount - 1 })
-      ]
-    });
+            return error ?? doesContainUserAccountId;
+          },
+          ({ likeCount, version }) =>
+            this.dbManager.updateEntity(SalesItem, { _id, version, likeCount: likeCount - 1 })
+        ]
+      }
+    );
   }
 
   @AllowForSelf()
