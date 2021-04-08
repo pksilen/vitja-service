@@ -30,11 +30,15 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForSelf()
   getShoppingCart({ userAccountId }: UserAccountId): PromiseErrorOr<ShoppingCart> {
-    return this.dbManager.getEntityByField(ShoppingCart, 'userAccountId', userAccountId, {
-      preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
-      ifEntityNotFoundReturn: () =>
-        this.dbManager.createEntity(ShoppingCart, { userAccountId, salesItems: [] })
-    });
+    return this.dbManager.getEntityByFilters(
+      ShoppingCart,
+      { userAccountId },
+      {
+        preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
+        ifEntityNotFoundReturn: () =>
+          this.dbManager.createEntity(ShoppingCart, { userAccountId, salesItems: [] })
+      }
+    );
   }
 
   @AllowForSelf()
@@ -100,7 +104,7 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
 
   @AllowForServiceInternalUse()
   getShoppingCartOrErrorIfEmpty(userAccountId: string, error: ErrorDef): PromiseErrorOr<ShoppingCart> {
-    return this.dbManager.getEntityByField(ShoppingCart, 'userAccountId', userAccountId, {
+    return this.dbManager.getEntityByFilters(ShoppingCart, { userAccountId }, {
       preHooks: () => this.removeExpiredSalesItemsFromShoppingCart(userAccountId),
       postHook: {
         shouldSucceedOrBeTrue: (shoppingCart) => (shoppingCart?.salesItems.length ?? 0) > 0,
@@ -110,6 +114,11 @@ export default class ShoppingCartServiceImpl extends ShoppingCartService {
   }
 
   private removeExpiredSalesItemsFromShoppingCart(userAccountId: string): PromiseErrorOr<null> {
-    return this.dbManager.removeSubEntitiesByJsonPathFromEntityByField(`salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`, ShoppingCart, "userAccountId", userAccountId);
+    return this.dbManager.removeSubEntitiesByJsonPathFromEntityByField(
+      `salesItems[?(@.state !== 'reserved' || @.buyerUserAccountId !== '${userAccountId}' )]`,
+      ShoppingCart,
+      'userAccountId',
+      userAccountId
+    );
   }
 }
