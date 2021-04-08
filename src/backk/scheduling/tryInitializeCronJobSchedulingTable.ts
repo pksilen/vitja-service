@@ -18,12 +18,10 @@ export default async function tryInitializeCronJobSchedulingTable(dbManager: Abs
         await dbManager.tryReserveDbConnectionFromPool();
 
         const [, error] = await dbManager.executeInsideTransaction(async () => {
-          const [entity, error] = await dbManager.getEntityByField(
+          const [entity, error] = await dbManager.getEntityByFilters(
             __Backk__CronJobScheduling,
-            'serviceFunctionName',
-            serviceFunctionName,
-            undefined,
-            true
+            {serviceFunctionName },
+            undefined
           );
 
           const interval = parser.parseExpression(cronSchedule);
