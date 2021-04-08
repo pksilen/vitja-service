@@ -46,7 +46,7 @@ export default async function doesEntityArrayFieldContainValue<T extends BackkEn
 
     const tableName = getTableName(EntityClass.name);
 
-    let selectStatement = `SELECT COUNT(_id) FROM ${dbManager.schema.toLowerCase()}.${tableName +
+    let selectStatement = `SELECT COUNT(*) FROM ${dbManager.schema.toLowerCase()}.${tableName +
       '_' +
       fieldName
         .slice(0, -1)
