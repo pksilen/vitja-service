@@ -115,7 +115,7 @@ export default async function removeFieldValues<T extends BackkEntity>(
     if (options?.postHook) {
       await tryExecutePostHook(options?.postHook, null);
     }
-    
+
     await tryCommitLocalTransactionIfNeeded(didStartTransaction, dbManager);
     return [null, null];
   } catch (errorOrBackkError) {
