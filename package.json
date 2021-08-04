@@ -72,7 +72,7 @@
     "rimraf": "^3.0.0",
     "rxjs": "^6.5.4",
     "typedoc-pksilen": "^0.17.4",
-    "xmldom": "^0.4.0",
+    "xmldom": "^0.6.0",
     "xpath": "0.0.32",
     "yaml": "^1.10.0",
     "yesql": "^4.1.1"
