@@ -79,7 +79,7 @@
   },
   "devDependencies": {
     "@babel/generator": "^7.11.6",
-    "@nestjs/cli": "^6.13.2",
+    "@nestjs/cli": "^9.1.5",
     "@nestjs/schematics": "^6.8.1",
     "@nestjs/testing": "^6.10.14",
     "@types/cls-hooked": "^4.3.1",
