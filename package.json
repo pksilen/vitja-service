@@ -61,7 +61,7 @@
     "kafkajs": "^1.15.0",
     "libphonenumber-js": "^1.9.9",
     "lodash": "^4.17.21",
-    "mongodb": "^3.6.3",
+    "mongodb": "^3.6.10",
     "mustache": "^4.0.1",
     "mysql2": "^2.2.5",
     "node-fetch": "^3.2.10",
